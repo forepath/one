@@ -1,5 +1,6 @@
 import type {
   AgentContentWriteOperation,
+  AgentDeploymentOperation,
   AgentTaskActorType,
   AgentTaskRunStatus,
 } from '@forepath/agenstra/shared/util-opencode-config';
@@ -68,6 +69,13 @@ export class AgentTaskEntity {
    */
   @Column({ type: 'jsonb', name: 'allowed_content_writes', default: () => "'[]'::jsonb" })
   allowedContentWrites!: AgentContentWriteOperation[];
+
+  /**
+   * Deployment run actions (`deployment.trigger`, `deployment.cancel`) the runs may request without asking (approved
+   * content like the prompt; empty: none). Checked again by the controller; the workflow rules apply on top.
+   */
+  @Column({ type: 'jsonb', name: 'allowed_deployment_operations', default: () => "'[]'::jsonb" })
+  allowedDeploymentOperations!: AgentDeploymentOperation[];
 
   /** Next scheduled occurrence; `null` while disabled. */
   @Column({ type: 'timestamptz', name: 'next_run_at', nullable: true })

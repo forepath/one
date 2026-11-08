@@ -3,6 +3,7 @@ import {
   AGENSTRA_CONTEXT_API_ROUTE,
   AGENSTRA_CONTEXT_MCP_ENV,
   AGENSTRA_CONTENT_CHANGES_API_SEGMENT,
+  AGENSTRA_DEPLOYMENTS_API_SEGMENT,
   AGENSTRA_GRAPH_API_SEGMENT,
   AGENSTRA_HANDOFFS_API_SEGMENT,
   AGENSTRA_TASKS_API_SEGMENT,
@@ -13,6 +14,17 @@ import {
   type AgentContextSearchResponse,
   type AgentContentChangeRequest,
   type AgentContentChangeResponse,
+  type AgentDeploymentActionResponse,
+  type AgentDeploymentRunListResponse,
+  type AgentDeploymentSyncResponse,
+  type AgentDeploymentWorkflowInput,
+  type AgentDeploymentWorkflowListResponse,
+  type AgentDeploymentWorkflowUpdateInput,
+  type DeploymentConnectionOption,
+  type DeploymentRunDetail,
+  type DeploymentRunLogs,
+  type DeploymentTriggerInput,
+  type DeploymentWorkflowSummary,
   type AgentHandoffAgentSummary,
   type AgentHandoffAgentsResponse,
   type AgentHandoffProfileInput,
@@ -41,6 +53,13 @@ const ACCESS_REQUEST_TIMEOUT_MS = 150_000;
 const PROFILE_REQUEST_TIMEOUT_MS = 170_000;
 /** The first graph query of an environment builds its graph (streams the workspace), which can take a while. */
 const GRAPH_REQUEST_TIMEOUT_MS = 170_000;
+/** Deployment calls reach the CI/CD provider (dispatch, run lookup, log download) through the controller. */
+const DEPLOYMENT_REQUEST_TIMEOUT_MS = 90_000;
+/**
+ * Trigger / cancel long-poll on the manager while the user decides in a visible chat (up to 120 s), then reach the
+ * CI/CD provider through the controller (up to 60 s).
+ */
+const DEPLOYMENT_ACTION_TIMEOUT_MS = 200_000;
 
 /** Query parameters of graph requests (undefined / empty values are omitted). */
 export type GraphQuery = Record<string, string | number | undefined>;
@@ -78,7 +97,10 @@ export function readContextApiConfig(env: NodeJS.ProcessEnv = process.env): Cont
 
 type FetchFn = typeof fetch;
 
-/** HTTP client for the agent-manager context API (`/agent-context`, incl. the agent's own tasks and handoffs). */
+/**
+ * HTTP client for the agent-manager context API (`/agent-context`, incl. the agent's own tasks, handoffs and the
+ * deployments available to its environment).
+ */
 export class ContextApiClient {
   constructor(
     private readonly config: ContextApiConfig,
@@ -205,6 +227,136 @@ export class ContextApiClient {
 
   respondToHandoff(handoffId: string, input: AgentHandoffRespondInput): Promise<AgentHandoffResponse> {
     return this.request('POST', `${AGENSTRA_HANDOFFS_API_SEGMENT}/${encodeURIComponent(handoffId)}/response`, input);
+  }
+
+  listDeploymentWorkflows(): Promise<AgentDeploymentWorkflowListResponse> {
+    return this.request(
+      'GET',
+      `${AGENSTRA_DEPLOYMENTS_API_SEGMENT}/workflows`,
+      undefined,
+      DEPLOYMENT_REQUEST_TIMEOUT_MS,
+    );
+  }
+
+  listDeploymentRuns(options: { workflowId?: string; limit?: number } = {}): Promise<AgentDeploymentRunListResponse> {
+    const params = new URLSearchParams();
+
+    if (options.workflowId) params.set('workflowId', options.workflowId);
+    if (options.limit !== undefined) params.set('limit', String(options.limit));
+
+    const query = params.toString();
+
+    return this.request(
+      'GET',
+      `${AGENSTRA_DEPLOYMENTS_API_SEGMENT}/runs${query ? `?${query}` : ''}`,
+      undefined,
+      DEPLOYMENT_REQUEST_TIMEOUT_MS,
+    );
+  }
+
+  getDeploymentRun(runId: string): Promise<DeploymentRunDetail> {
+    return this.request(
+      'GET',
+      `${AGENSTRA_DEPLOYMENTS_API_SEGMENT}/runs/${encodeURIComponent(runId)}`,
+      undefined,
+      DEPLOYMENT_REQUEST_TIMEOUT_MS,
+    );
+  }
+
+  getDeploymentRunLogs(runId: string, jobId?: string): Promise<DeploymentRunLogs> {
+    const query = jobId ? `?${new URLSearchParams({ jobId }).toString()}` : '';
+
+    return this.request(
+      'GET',
+      `${AGENSTRA_DEPLOYMENTS_API_SEGMENT}/runs/${encodeURIComponent(runId)}/logs${query}`,
+      undefined,
+      DEPLOYMENT_REQUEST_TIMEOUT_MS,
+    );
+  }
+
+  /** Start a run (decided per session: pending while the user decides, see {@link deploymentActionStatus}). */
+  triggerDeployment(
+    ticket: string,
+    workflowId: string,
+    input: DeploymentTriggerInput,
+  ): Promise<AgentDeploymentActionResponse> {
+    return this.request(
+      'POST',
+      `${AGENSTRA_DEPLOYMENTS_API_SEGMENT}/workflows/${encodeURIComponent(workflowId)}/trigger`,
+      { ticket, ...input },
+      DEPLOYMENT_ACTION_TIMEOUT_MS,
+    );
+  }
+
+  cancelDeploymentRun(ticket: string, runId: string): Promise<AgentDeploymentActionResponse> {
+    return this.request(
+      'POST',
+      `${AGENSTRA_DEPLOYMENTS_API_SEGMENT}/runs/${encodeURIComponent(runId)}/cancel`,
+      { ticket },
+      DEPLOYMENT_ACTION_TIMEOUT_MS,
+    );
+  }
+
+  /** Keep waiting on a pending trigger / cancel. */
+  deploymentActionStatus(ticket: string, requestId: string): Promise<AgentDeploymentActionResponse> {
+    return this.request(
+      'GET',
+      `${AGENSTRA_DEPLOYMENTS_API_SEGMENT}/actions/${encodeURIComponent(requestId)}?${new URLSearchParams({ ticket }).toString()}`,
+      undefined,
+      DEPLOYMENT_ACTION_TIMEOUT_MS,
+    );
+  }
+
+  listDeploymentConnections(): Promise<{ connections: DeploymentConnectionOption[] }> {
+    return this.request(
+      'GET',
+      `${AGENSTRA_DEPLOYMENTS_API_SEGMENT}/connections`,
+      undefined,
+      DEPLOYMENT_REQUEST_TIMEOUT_MS,
+    );
+  }
+
+  createDeploymentWorkflow(input: AgentDeploymentWorkflowInput): Promise<DeploymentWorkflowSummary> {
+    return this.request('POST', `${AGENSTRA_DEPLOYMENTS_API_SEGMENT}/workflows`, input, DEPLOYMENT_REQUEST_TIMEOUT_MS);
+  }
+
+  updateDeploymentWorkflow(
+    workflowId: string,
+    input: AgentDeploymentWorkflowUpdateInput,
+  ): Promise<DeploymentWorkflowSummary> {
+    return this.request(
+      'PATCH',
+      `${AGENSTRA_DEPLOYMENTS_API_SEGMENT}/workflows/${encodeURIComponent(workflowId)}`,
+      input,
+      DEPLOYMENT_REQUEST_TIMEOUT_MS,
+    );
+  }
+
+  getDeploymentWorkflow(workflowId: string): Promise<DeploymentWorkflowSummary> {
+    return this.request(
+      'GET',
+      `${AGENSTRA_DEPLOYMENTS_API_SEGMENT}/workflows/${encodeURIComponent(workflowId)}`,
+      undefined,
+      DEPLOYMENT_REQUEST_TIMEOUT_MS,
+    );
+  }
+
+  syncDeploymentWorkflow(workflowId: string): Promise<AgentDeploymentSyncResponse> {
+    return this.request(
+      'POST',
+      `${AGENSTRA_DEPLOYMENTS_API_SEGMENT}/workflows/${encodeURIComponent(workflowId)}/sync`,
+      undefined,
+      DEPLOYMENT_REQUEST_TIMEOUT_MS,
+    );
+  }
+
+  deleteDeploymentWorkflow(workflowId: string): Promise<void> {
+    return this.request(
+      'DELETE',
+      `${AGENSTRA_DEPLOYMENTS_API_SEGMENT}/workflows/${encodeURIComponent(workflowId)}`,
+      undefined,
+      DEPLOYMENT_REQUEST_TIMEOUT_MS,
+    );
   }
 
   /** Read-only graph endpoints (`/agent-context/graphs/<path>?<query>`). */

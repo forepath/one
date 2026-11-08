@@ -24,6 +24,9 @@ import { WorkspaceGraphSnapshotEntity } from '../entities/workspace-graph-snapsh
 import { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
 import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
+import { DeploymentConnectionEntity } from '../entities/deployment-connection.entity';
+import { DeploymentRunEntity } from '../entities/deployment-run.entity';
+import { DeploymentWorkflowEntity } from '../entities/deployment-workflow.entity';
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
 import { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
 import { KnowledgeNodeEmbeddingEntity } from '../entities/knowledge-node-embedding.entity';
@@ -272,6 +275,12 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(AtlassianSiteConnectionEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(ExternalImportConfigEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(DeploymentConnectionEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(DeploymentWorkflowEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(DeploymentRunEntity))
       .useValue(mockRepository)
       .overrideProvider(UsersRepository)
       .useValue(mockRepository);

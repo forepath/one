@@ -1,6 +1,11 @@
 import { inject } from '@angular/core';
 import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
 import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/agenstra/frontend/util-configuration';
+import type {
+  DeploymentRunSummary,
+  DeploymentWorkflowRemovedPayload,
+  DeploymentWorkflowSummary,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { createSocketAuthOption, OidcAuthService, resolveAuthorizationHeader$ } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
@@ -65,6 +70,16 @@ import {
 } from '../agent-tasks/agent-tasks.actions';
 import type { AgentTaskRemovedEvent, AgentTaskResponseDto } from '../agent-tasks/agent-tasks.types';
 import { chatPlanUpsertReceived } from '../chat-plans/chat-plans.actions';
+import {
+  deploymentRunUpsertReceived,
+  deploymentWorkflowRemovedReceived,
+  deploymentWorkflowUpsertReceived,
+} from '../workspace-deployments/workspace-deployments.actions';
+import {
+  CLIENT_DEPLOYMENT_RUN_UPSERT_SOCKET_EVENT,
+  CLIENT_DEPLOYMENT_WORKFLOW_REMOVED_SOCKET_EVENT,
+  CLIENT_DEPLOYMENT_WORKFLOW_UPSERT_SOCKET_EVENT,
+} from './client-deployments.constants';
 import {
   connectSocket,
   connectSocketFailure,
@@ -655,6 +670,21 @@ export const routeForwardedEvents$ = createEffect(
 
         if (event === CLIENT_AGENT_TASK_REMOVED_SOCKET_EVENT && payload && typeof payload === 'object') {
           routed.push(agentTaskRemovedReceived({ event: payload as unknown as AgentTaskRemovedEvent }));
+        }
+
+        // Deployments page (`/deployments`): workflows and runs of the workspace room.
+        if (event === CLIENT_DEPLOYMENT_WORKFLOW_UPSERT_SOCKET_EVENT && payload && typeof payload === 'object') {
+          routed.push(deploymentWorkflowUpsertReceived({ workflow: payload as unknown as DeploymentWorkflowSummary }));
+        }
+
+        if (event === CLIENT_DEPLOYMENT_WORKFLOW_REMOVED_SOCKET_EVENT && payload && typeof payload === 'object') {
+          routed.push(
+            deploymentWorkflowRemovedReceived({ event: payload as unknown as DeploymentWorkflowRemovedPayload }),
+          );
+        }
+
+        if (event === CLIENT_DEPLOYMENT_RUN_UPSERT_SOCKET_EVENT && payload && typeof payload === 'object') {
+          routed.push(deploymentRunUpsertReceived({ run: payload as unknown as DeploymentRunSummary }));
         }
 
         return from(routed);

@@ -59,6 +59,26 @@ describe('agent task dto parsing', () => {
     ).toThrow(BadRequestException);
   });
 
+  it('accepts proposed content and deployment opt-ins as lists of known operations', () => {
+    expect(
+      parseAgentTaskUpdate({
+        allowedContentWrites: ['ticket.comment', 'ticket.create', 'ticket.comment'],
+        allowedDeploymentOperations: ['deployment.cancel', 'deployment.trigger'],
+      }),
+    ).toEqual({
+      allowedContentWrites: ['ticket.create', 'ticket.comment'],
+      allowedDeploymentOperations: ['deployment.trigger', 'deployment.cancel'],
+    });
+    expect(parseAgentTaskUpdate({ allowedDeploymentOperations: [] })).toEqual({ allowedDeploymentOperations: [] });
+    expect(() => parseAgentTaskUpdate({ allowedDeploymentOperations: 'deployment.trigger' })).toThrow(
+      BadRequestException,
+    );
+    expect(() => parseAgentTaskUpdate({ allowedDeploymentOperations: ['deployment.delete'] })).toThrow(
+      BadRequestException,
+    );
+    expect(() => parseAgentTaskUpdate({ allowedContentWrites: [1] })).toThrow(BadRequestException);
+  });
+
   it('accepts UUID task ids only', () => {
     expect(parseAgentTaskId(' 33333333-3333-4333-8333-33333333333A ')).toBe('33333333-3333-4333-8333-33333333333a');
     expect(() => parseAgentTaskId('task-1')).toThrow(NotFoundException);

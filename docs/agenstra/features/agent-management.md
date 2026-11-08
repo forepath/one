@@ -129,7 +129,7 @@ The provider advertises capabilities (including chat/streaming/tools/questions) 
 
 ### Adding New Agent Types
 
-Harness plugins (`DYNAMIC_AGENT_PROVIDERS`) are no longer supported. Pipeline and chat-filter dynamic plugins remain available — see [Dynamic provider plugins](./dynamic-provider-plugins.md).
+Harness plugins (`DYNAMIC_AGENT_PROVIDERS`) are no longer supported. Chat-filter dynamic plugins remain available — see [Dynamic provider plugins](./dynamic-provider-plugins.md).
 
 ## Agent Operations
 
@@ -213,7 +213,7 @@ Agent-scoped environment variables are stored on the **agent-manager** and appli
 
 A running process cannot have its environment changed from outside, so applying a change always restarts the container's processes. Only the container restart is unavoidable; the container itself is never deleted.
 
-See also [Deployment](./deployment.md) for CI/CD tokens stored in deployment configuration.
+CI/CD credentials are not environment variables: they belong to instance-wide deployment connections on the controller. See [Deployments](./deployment.md).
 
 ### Message filters
 
@@ -247,7 +247,7 @@ For detailed API documentation, see the application and API reference docs linke
 - **[Message Filters](./message-filters.md)** Regex filters
 - **[Egress Filtering](./egress-filtering.md)** Web traffic filtering
 - **[Container Isolation Levels](./container-isolation.md)** Standard, gVisor-sandboxed, gVisor-on-KVM and microVM environments
-- **[Dynamic provider plugins](./dynamic-provider-plugins.md)** Custom agent, pipeline, and filter providers
+- **[Dynamic provider plugins](./dynamic-provider-plugins.md)** Custom provisioning, context import, and filter providers
 - **[Backend Agent Manager Application](../applications/backend-agent-manager.md)** Application details
 
 ---

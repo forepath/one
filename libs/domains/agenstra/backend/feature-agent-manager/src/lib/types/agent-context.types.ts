@@ -77,6 +77,8 @@ export interface AgentContextTicketRecord extends AgentContextTicketBinding {
   createdRefs: string[];
   /** Content changes requested with this ticket (bounded per turn). */
   changeCount: number;
+  /** Deployment actions (trigger / cancel) requested with this ticket (bounded per turn). */
+  deploymentActionCount?: number;
   createdAt: number;
   lastUsedAt: number;
 }

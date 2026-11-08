@@ -1,7 +1,10 @@
 import {
   AGENSTRA_WORKSPACE_MOUNT_ROOT,
+  AGENT_DEPLOYMENT_REQUEST_EVENT,
   AGENT_HANDOFF_REQUEST_EVENT,
   AGENT_TASK_REQUEST_EVENT,
+  type AgentDeploymentControllerRequest,
+  type AgentDeploymentControllerResponse,
   type AgentHandoffControllerRequest,
   type AgentHandoffControllerResponse,
   type AgentTaskControllerRequest,
@@ -29,8 +32,10 @@ import type { EnvironmentProgressDto } from '../dto/environment-progress.dto';
 import {
   AGENT_CONTEXT_ACCESS_QUESTION_SUBTYPE,
   AGENT_CONTEXT_CHANGE_QUESTION_SUBTYPE,
+  AGENT_CONTEXT_DEPLOYMENT_QUESTION_SUBTYPE,
   AGENT_CONTEXT_REQUEST_EVENT,
   AGENT_CONTEXT_REQUEST_TIMEOUT_MS,
+  AGENT_DEPLOYMENT_REQUEST_TIMEOUT_MS,
 } from '../constants/agent-context.constants';
 import {
   isChatPlanResumeSessionSuffix,
@@ -61,6 +66,7 @@ import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
 import { AgentContextApiService } from '../services/agent-context-api.service';
 import { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
+import { AgentDeploymentsApiService } from '../services/agent-deployments-api.service';
 import { AgentHandoffsApiService } from '../services/agent-handoffs-api.service';
 import { AgentTasksApiService } from '../services/agent-tasks-api.service';
 import { AgentsService } from '../services/agents.service';
@@ -298,6 +304,11 @@ interface RestoreChatHistoryResult {
 const DEFAULT_RESTORE_CHAT_LIMIT = 20;
 const MAX_RESTORE_CHAT_LIMIT = 50;
 
+/** Deployment controller ops that change something (sent to one controller socket only, never retried). */
+const DEPLOYMENT_MUTATION_OPS: ReadonlySet<AgentDeploymentControllerRequest['op']> = new Set<
+  AgentDeploymentControllerRequest['op']
+>(['trigger', 'cancelRun', 'createWorkflow', 'updateWorkflow', 'deleteWorkflow', 'syncWorkflow']);
+
 // Helper functions to create standardized responses
 const createSuccessResponse = <T>(data: T): SuccessResponse<T> => ({
   success: true,
@@ -392,6 +403,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     @Optional() private readonly agentHandoffsApi?: AgentHandoffsApiService,
     @Optional() private readonly oidcVerifier?: OidcTokenVerifier,
     @Optional() private readonly graphReferences?: AgentGraphReferencesService,
+    @Optional() private readonly agentDeploymentsApi?: AgentDeploymentsApiService,
   ) {}
 
   /**
@@ -443,6 +455,8 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         this.publishContextAccessQuestion(record, requestId, prompt),
       publishContextChangeQuestion: (record, requestId, prompt) =>
         this.publishContextAccessQuestion(record, requestId, prompt, AGENT_CONTEXT_CHANGE_QUESTION_SUBTYPE),
+      publishContextDeploymentQuestion: (record, requestId, prompt) =>
+        this.publishContextAccessQuestion(record, requestId, prompt, AGENT_CONTEXT_DEPLOYMENT_QUESTION_SUBTYPE),
       publishInteractionAnswered: (agentId, questionIds, message) =>
         this.publishInteractionAnswered(agentId, questionIds, message),
     });
@@ -451,6 +465,9 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     });
     this.agentHandoffsApi?.registerBridge({
       requestControllerHandoffs: (agentId, request) => this.requestControllerHandoffs(agentId, request),
+    });
+    this.agentDeploymentsApi?.registerBridge({
+      requestControllerDeployments: (agentId, request) => this.requestControllerDeployments(agentId, request),
     });
   }
 
@@ -733,21 +750,40 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     );
   }
 
+  /**
+   * Deployments available to the agent through a controller connection of this agent (Socket.IO ack); the controller
+   * scopes them to the workspace of that connection and to the workflows of the agent. Reads fall through to the next
+   * socket; mutations (trigger / cancel, workflow create / update / delete) use one socket only so a slow ack cannot
+   * apply them twice.
+   */
+  private requestControllerDeployments(
+    agentId: string,
+    request: AgentDeploymentControllerRequest,
+  ): Promise<AgentDeploymentControllerResponse> {
+    return this.requestControllerForAgent<AgentDeploymentControllerResponse>(
+      AGENT_DEPLOYMENT_REQUEST_EVENT,
+      agentId,
+      request,
+      !DEPLOYMENT_MUTATION_OPS.has(request.op),
+      'No controller connection is available to manage deployments',
+      AGENT_DEPLOYMENT_REQUEST_TIMEOUT_MS,
+    );
+  }
+
   private async requestControllerForAgent<T extends { ok: boolean }>(
     event: string,
     agentId: string,
     request: object,
     readOnly: boolean,
     unavailableMessage: string,
+    timeoutMs: number = AGENT_CONTEXT_REQUEST_TIMEOUT_MS,
   ): Promise<T | { ok: false; error: string; status: number }> {
     const candidates = this.controllerSocketsForAgent(agentId);
     const attempts = readOnly ? candidates : candidates.slice(0, 1);
 
     for (const socket of attempts) {
       try {
-        const response = (await socket
-          .timeout(AGENT_CONTEXT_REQUEST_TIMEOUT_MS)
-          .emitWithAck(event, { ...request, agentId })) as T | undefined;
+        const response = (await socket.timeout(timeoutMs).emitWithAck(event, { ...request, agentId })) as T | undefined;
 
         if (response && typeof response === 'object' && typeof response.ok === 'boolean') {
           return response;

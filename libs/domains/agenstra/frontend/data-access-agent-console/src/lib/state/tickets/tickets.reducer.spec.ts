@@ -459,6 +459,7 @@ describe('ticketsReducer', () => {
       contextEnvironmentIds: [] as string[],
       autoEnrichmentEnabled: true,
       allowedContentWrites: [],
+      allowedDeploymentOperations: [],
       verifierProfile: null,
       requiresApproval: false,
       approvedAt: null,

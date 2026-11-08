@@ -13,6 +13,19 @@ It also serves `tasks_*` tools (`agenstra_tasks_*` in OpenCode) for the agent's 
 `handoff_*` tools (`agenstra_handoff_*`) hand tasks over to other agents of the same workspace
 (`/api/agent-context/handoffs`). See [Agent handoffs](../../../docs/agenstra/features/agent-handoffs.md).
 
+`graph_*` tools (`agenstra_graph_*`) read environment graphs (`/api/agent-context/graphs`). See
+[Environment graphs](../../../docs/agenstra/features/environment-graphs.md).
+
+`deployments_*` tools (`agenstra_deployments_*`) list the CI/CD deployment workflows available to the agent's
+environment, follow their runs and logs, and trigger / cancel runs where the workflow allows environments to
+(`agentTriggerEnabled`) (`/api/agent-context/deployments`). Trigger / cancel carry the context ticket of the prompt and
+are decided per session like content changes (visible chats ask the user — pending requests are polled with
+`deployments_action_status`; scheduled tasks / ticket automation only take the operations allowed for them; plans
+never). The agent can also propose workflows for itself (`deployments_list_connections`,
+`deployments_create_workflow` / `_update_workflow` / `_delete_workflow`): they are assigned to its environment only and
+wait for approval by a workspace admin. See
+[Agent Context MCP — Deployments](../../../docs/agenstra/ai-agents/context-mcp.md#deployments).
+
 ## Environment (set by the agent-manager)
 
 | Variable                       | Purpose                                           |

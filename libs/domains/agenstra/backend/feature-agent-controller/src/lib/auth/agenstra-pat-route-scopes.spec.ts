@@ -6,6 +6,7 @@ import { auditPatRouteScopes, collectControllerClasses } from '@forepath/identit
 import { AdminOpencodeConfigController } from '../controllers/admin-opencode-config.controller';
 import { AdminOpencodeLayerFilesController } from '../controllers/admin-opencode-layer-files.controller';
 import { ContextImportController } from '../controllers/context-import.controller';
+import { DeploymentConnectionsController } from '../controllers/deployment-connections.controller';
 
 import { AGENSTRA_PAT_SCOPES } from './agenstra-pat.scopes';
 
@@ -31,6 +32,7 @@ describe('Agenstra PAT route scopes', () => {
           AdminOpencodeConfigController,
           AdminOpencodeLayerFilesController,
           ContextImportController,
+          DeploymentConnectionsController,
         ],
       }),
     ).toEqual([]);

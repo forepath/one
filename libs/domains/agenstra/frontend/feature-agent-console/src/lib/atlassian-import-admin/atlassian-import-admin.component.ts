@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, LOCALE_ID, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -16,16 +16,15 @@ import {
   TicketsFacade,
   updateAtlassianConnectionSuccess,
   updateExternalImportConfigSuccess,
+  type AtlassianConnectionAuthType,
   type AtlassianSiteConnectionDto,
   type ClientResponseDto,
-  type CreateAtlassianSiteConnectionDto,
   type CreateExternalImportConfigDto,
   type ExternalImportConfigDto,
   type ExternalImportKind,
   type KnowledgeNodeDto,
   type TicketResponseDto,
   type TicketStatus,
-  type UpdateAtlassianSiteConnectionDto,
   type UpdateExternalImportConfigDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
@@ -34,6 +33,8 @@ import {
   FpcConfirmDialogComponent,
   FpcDataTableComponent,
   FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormCheckGroupComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcFormSwitchComponent,
@@ -46,7 +47,9 @@ import {
   FpcTableRowDetailDirective,
   FpcTypeaheadSelectComponent,
   fpcCopyText,
+  fpcFormatDateTime,
   fpcRunBulk,
+  type FpcTableState,
   type FpcMenuItem,
   type FpcTableColumn,
   FpcDatePipe,
@@ -54,6 +57,16 @@ import {
 import { Actions, ofType } from '@ngrx/effects';
 import { debounceTime, distinctUntilChanged, firstValueFrom, skip } from 'rxjs';
 
+import {
+  type AtlassianConnectionFormErrors,
+  type AtlassianConnectionFormField,
+  type AtlassianConnectionFormModel,
+  emptyAtlassianConnectionForm,
+  hasAtlassianConnectionFormErrors,
+  toCreateAtlassianConnectionDto,
+  toUpdateAtlassianConnectionDto,
+  validateAtlassianConnectionForm,
+} from './atlassian-connection-form.util';
 import { DEFAULT_ATLASSIAN_CONFLUENCE_CQL, DEFAULT_ATLASSIAN_JIRA_JQL } from './atlassian-import-defaults';
 import {
   filterKnowledgeFoldersForImportSuggest,
@@ -87,6 +100,8 @@ export type AtlassianImportAdminLane = 'connections' | 'configs';
     FpcConfirmDialogComponent,
     FpcDataTableComponent,
     FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormCheckGroupComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcFormSwitchComponent,
@@ -118,8 +133,10 @@ export class AtlassianImportAdminComponent implements OnInit {
   private readonly knowledgeFacade = inject(KnowledgeFacade);
   private readonly actions$ = inject(Actions);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly locale = inject(LOCALE_ID);
 
-  readonly pageTitle = $localize`:@@featureAtlassianImportAdmin-pageTitle:Atlassian import (Jira & Confluence)`;
+  readonly pageTitle = $localize`:@@featureAtlassianImportAdmin-pageTitle:Atlassian connections`;
+  readonly pageSubtitle = $localize`:@@featureAtlassianImportAdmin-pageSubtitle:Atlassian Jira and Confluence sites, and the imports that pull their issues and pages into workspaces.`;
   readonly refreshTitle = $localize`:@@featureAtlassianImportAdmin-refresh:Refresh`;
   readonly dismissAriaLabel = $localize`:@@featureAtlassianImportAdmin-dismiss:Dismiss`;
   readonly searchConnectionsPlaceholder = $localize`:@@featureAtlassianImportAdmin-searchConnectionsPlaceholder:Search connections`;
@@ -171,7 +188,26 @@ export class AtlassianImportAdminComponent implements OnInit {
   });
   readonly selectedEnabledConfigs = computed(() => this.selectedConfigs().filter((c) => c.enabled));
 
+  readonly authTypeOptions: readonly { value: AtlassianConnectionAuthType; label: string; hint: string }[] = [
+    {
+      value: 'app',
+      label: $localize`:@@featureAtlassianImportAdmin-authTypeApp:OAuth (service account)`,
+      hint: $localize`:@@featureAtlassianImportAdmin-authTypeAppHint:Recommended. OAuth 2.0 client credentials of an Atlassian service account (Atlassian Cloud).`,
+    },
+    {
+      value: 'token',
+      label: $localize`:@@featureAtlassianImportAdmin-authTypeToken:API token`,
+      hint: $localize`:@@featureAtlassianImportAdmin-authTypeTokenHint:Account email and API token (HTTP Basic). Also works with Jira / Confluence Server and Data Center.`,
+    },
+  ];
+
   readonly connectionColumns: FpcTableColumn<AtlassianSiteConnectionDto>[] = [
+    {
+      id: 'status',
+      label: $localize`:@@featureAtlassianImportAdmin-colStatus:Status`,
+      type: 'state',
+      state: (c) => this.connectionStatusState(c),
+    },
     {
       id: 'name',
       label: $localize`:@@featureAtlassianImportAdmin-colConnection:Connection`,
@@ -186,9 +222,15 @@ export class AtlassianImportAdminComponent implements OnInit {
       priority: 1,
     },
     {
+      id: 'auth',
+      label: $localize`:@@featureAtlassianImportAdmin-colAuthentication:Authentication`,
+      value: (c) => this.authTypeLabel(c.authType),
+      priority: 2,
+    },
+    {
       id: 'account',
       label: $localize`:@@featureAtlassianImportAdmin-colAccount:Account`,
-      value: (c) => c.accountEmail,
+      value: (c) => (c.authType === 'app' ? c.oauthClientId : c.accountEmail),
       priority: 2,
     },
   ];
@@ -284,14 +326,13 @@ export class AtlassianImportAdminComponent implements OnInit {
     { value: 'closed', label: $localize`:@@featureAtlassianImportAdmin-swimlaneClosed:Closed` },
   ];
 
-  newConnection: CreateAtlassianSiteConnectionDto = {
-    baseUrl: '',
-    accountEmail: '',
-    apiToken: '',
-  };
+  newConnection: AtlassianConnectionFormModel = emptyAtlassianConnectionForm();
+  /** Validation errors shown after a submit attempt of the create modal. */
+  readonly newConnectionErrors = signal<AtlassianConnectionFormErrors>({});
 
   connectionToEdit: AtlassianSiteConnectionDto | null = null;
-  editConnection: UpdateAtlassianSiteConnectionDto & { apiToken?: string } = {};
+  editConnection: AtlassianConnectionFormModel = emptyAtlassianConnectionForm();
+  readonly editConnectionErrors = signal<AtlassianConnectionFormErrors>({});
 
   newConfig: CreateExternalImportConfigDto = {
     provider: 'atlassian',
@@ -415,7 +456,7 @@ export class AtlassianImportAdminComponent implements OnInit {
   adminLaneLabel(lane: AtlassianImportAdminLane): string {
     switch (lane) {
       case 'connections':
-        return $localize`:@@featureAtlassianImportAdmin-laneConnections:Site connections`;
+        return $localize`:@@featureAtlassianImportAdmin-laneConnections:Connections`;
       case 'configs':
         return $localize`:@@featureAtlassianImportAdmin-laneConfigs:Import configs`;
     }
@@ -471,7 +512,82 @@ export class AtlassianImportAdminComponent implements OnInit {
   }
 
   resetNewConnection(): void {
-    this.newConnection = { baseUrl: '', accountEmail: '', apiToken: '' };
+    this.newConnection = emptyAtlassianConnectionForm();
+    this.newConnectionErrors.set({});
+  }
+
+  authTypeLabel(authType: AtlassianConnectionAuthType): string {
+    return this.authTypeOptions.find((o) => o.value === authType)?.label ?? authType;
+  }
+
+  onNewConnectionAuthTypeSelect(value: string): void {
+    if (value === 'app' || value === 'token') {
+      this.newConnection.authType = value;
+      this.newConnectionErrors.set({});
+    }
+  }
+
+  onEditConnectionAuthTypeSelect(value: string): void {
+    if (value === 'app' || value === 'token') {
+      this.editConnection.authType = value;
+      this.editConnectionErrors.set({});
+    }
+  }
+
+  /** Whether the edit modal switches the auth type (then the new credentials are required). */
+  editConnectionSwitchesAuthType(): boolean {
+    return !!this.connectionToEdit && this.connectionToEdit.authType !== this.editConnection.authType;
+  }
+
+  connectionFieldError(errors: AtlassianConnectionFormErrors, field: AtlassianConnectionFormField): string | null {
+    switch (errors[field]) {
+      case 'required':
+        return $localize`:@@featureAtlassianImportAdmin-fieldRequired:Required`;
+      case 'url':
+        return $localize`:@@featureAtlassianImportAdmin-fieldInvalidUrl:Enter an absolute http(s) URL`;
+      case 'email':
+        return $localize`:@@featureAtlassianImportAdmin-fieldInvalidEmail:Enter a valid email address`;
+      default:
+        return null;
+    }
+  }
+
+  /** State column: last persisted connection test (label doubles as tooltip with time and message). */
+  connectionStatusState(c: AtlassianSiteConnectionDto): FpcTableState {
+    const details: string[] = [];
+
+    if (c.lastTestedAt) {
+      const when = fpcFormatDateTime(c.lastTestedAt, this.locale);
+
+      details.push($localize`:@@featureAtlassianImportAdmin-connectionStatusTestedAt:Last tested ${when}:when:`);
+    }
+
+    if (c.lastTestMessage) {
+      details.push(c.lastTestMessage);
+    }
+
+    const suffix = details.length ? ` · ${details.join(' · ')}` : '';
+
+    switch (c.lastTestStatus) {
+      case 'ok':
+        return {
+          label: $localize`:@@featureAtlassianImportAdmin-connectionStatusOk:Connection OK` + suffix,
+          tone: 'success',
+          icon: 'check-circle-fill',
+        };
+      case 'failed':
+        return {
+          label: $localize`:@@featureAtlassianImportAdmin-connectionStatusFailed:Connection test failed` + suffix,
+          tone: 'danger',
+          icon: 'x-circle-fill',
+        };
+      default:
+        return {
+          label: $localize`:@@featureAtlassianImportAdmin-connectionStatusUntested:Not tested yet` + suffix,
+          tone: 'neutral',
+          icon: 'dash-circle',
+        };
+    }
   }
 
   openCreateConnectionModal(): void {
@@ -493,47 +609,48 @@ export class AtlassianImportAdminComponent implements OnInit {
   }
 
   submitNewConnection(): void {
-    const dto: CreateAtlassianSiteConnectionDto = {
-      ...this.newConnection,
-      label: this.newConnection.label?.trim() || undefined,
-    };
+    const errors = validateAtlassianConnectionForm(this.newConnection, null);
 
-    if (!dto.baseUrl.trim() || !dto.accountEmail.trim() || !dto.apiToken.trim()) {
+    this.newConnectionErrors.set(errors);
+
+    if (hasAtlassianConnectionFormErrors(errors)) {
       return;
     }
 
-    this.facade.createConnection(dto);
+    this.facade.createConnection(toCreateAtlassianConnectionDto(this.newConnection));
   }
 
   openEditConnection(c: AtlassianSiteConnectionDto): void {
     this.connectionToEdit = c;
     this.editConnection = {
+      ...emptyAtlassianConnectionForm(c.authType),
       label: c.label ?? '',
       baseUrl: c.baseUrl,
-      accountEmail: c.accountEmail,
-      apiToken: '',
+      accountEmail: c.accountEmail ?? '',
+      oauthClientId: c.oauthClientId ?? '',
     };
+    this.editConnectionErrors.set({});
     this.editConnectionModalOpen.set(true);
   }
 
   onEditConnectionModalHidden(): void {
     this.connectionToEdit = null;
+    this.editConnection = emptyAtlassianConnectionForm();
+    this.editConnectionErrors.set({});
   }
 
   submitEditConnection(): void {
     if (!this.connectionToEdit) return;
 
-    const dto: UpdateAtlassianSiteConnectionDto = {
-      label: this.editConnection.label,
-      baseUrl: this.editConnection.baseUrl,
-      accountEmail: this.editConnection.accountEmail,
-    };
+    const errors = validateAtlassianConnectionForm(this.editConnection, this.connectionToEdit.authType);
 
-    if (this.editConnection.apiToken?.trim()) {
-      dto.apiToken = this.editConnection.apiToken.trim();
+    this.editConnectionErrors.set(errors);
+
+    if (hasAtlassianConnectionFormErrors(errors)) {
+      return;
     }
 
-    this.facade.updateConnection(this.connectionToEdit.id, dto);
+    this.facade.updateConnection(this.connectionToEdit.id, toUpdateAtlassianConnectionDto(this.editConnection));
   }
 
   openDeleteConnectionConfirm(c: AtlassianSiteConnectionDto): void {
@@ -973,7 +1090,10 @@ export class AtlassianImportAdminComponent implements OnInit {
     }
   }
 
-  /** Bulk Test: one test call per connection; a failed test counts as failed (with the provider message). */
+  /**
+   * Bulk Test: one test call per connection; a failed test counts as failed (with the provider message). The lists
+   * reload afterwards so the persisted connection status shows up.
+   */
   onBulkTestConnections(): void {
     void this.runBulk(
       this.selectedConnections(),
@@ -986,7 +1106,6 @@ export class AtlassianImportAdminComponent implements OnInit {
       },
       (c) => this.connectionLabel(c),
       this.selectedConnectionIds,
-      false,
     );
   }
 

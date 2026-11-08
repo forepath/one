@@ -73,6 +73,7 @@ describe('AgentContextChangesService', () => {
       ),
       publishContextAccessQuestion: jest.fn(),
       publishContextChangeQuestion: jest.fn(),
+      publishContextDeploymentQuestion: jest.fn(),
       publishInteractionAnswered: jest.fn(),
     };
     api.registerBridge(bridge);

@@ -53,6 +53,102 @@ files), the path tree and the prompt reference history of the own environment an
 `/opt/workspace` (`/api/agent-context/graphs`, same agent token, answered by the manager itself). See
 [Environment graphs](../features/environment-graphs.md).
 
+`agenstra_deployments_*` tools follow, start and propose the CI/CD deployment workflows (GitHub Actions, GitLab CI,
+Jenkins) available to the agent's environment (`/api/agent-context/deployments`, same agent token, forwarded as
+`agentDeploymentRequest`). See [Deployments](#deployments).
+
+### Deployments
+
+Workspace admins define deployment workflows on top of instance-wide CI/CD connections (console _Deployments_ page,
+connections under _Connections_). A workflow is either available to every environment of the workspace (`global`) or
+assigned to selected environments; `agentTriggerEnabled` decides whether those environments may start and cancel runs
+or only read them. Environments can also propose workflows for themselves (see
+[Workflows an environment manages for itself](#workflows-an-environment-manages-for-itself)).
+
+| Tool                                    | Purpose                                                                                                  |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `agenstra_deployments_list_workflows`   | Enabled, approved workflows available to the environment, plus its own proposals (with `approvalStatus`) |
+| `agenstra_deployments_get_workflow`     | One of those workflows (refs, defined inputs, `agentTriggerEnabled`, `approvalStatus`)                   |
+| `agenstra_deployments_sync`             | Import the provider's latest runs of a usable workflow into the history (once every 30 s per workflow)   |
+| `agenstra_deployments_list_runs`        | Recent runs of those workflows, newest first (`workflowId`, `limit` ≤ 100)                               |
+| `agenstra_deployments_get_run`          | One run with its jobs (active runs are refreshed from the provider)                                      |
+| `agenstra_deployments_get_run_logs`     | Log tail of a run or one job (at most 200 000 bytes, `truncated` when cut)                               |
+| `agenstra_deployments_trigger`          | Start a run (`ticket`, `workflowId`; `ref` must be the default ref; `inputs` only defined names)         |
+| `agenstra_deployments_cancel_run`       | Cancel an active run (`ticket`, `runId`)                                                                 |
+| `agenstra_deployments_action_status`    | Keep waiting on a `pending` trigger / cancel (`ticket`, `requestId`)                                     |
+| `agenstra_deployments_list_connections` | Connections the workspace may build workflows on (id, label, provider, status; no repository browsing)   |
+| `agenstra_deployments_create_workflow`  | Propose a workflow for the own environment (pending until a workspace admin approves it)                 |
+| `agenstra_deployments_update_workflow`  | Change an own workflow (assigned to this environment alone); content changes need approval again         |
+| `agenstra_deployments_delete_workflow`  | Delete an own workflow (assigned to this environment alone) with its run history                         |
+
+Routes (manager, agent token) below `/api/agent-context`: `GET deployments/workflows`, `POST deployments/workflows`,
+`GET deployments/workflows/:workflowId`, `POST deployments/workflows/:workflowId/sync`,
+`PATCH deployments/workflows/:workflowId`, `DELETE deployments/workflows/:workflowId`, `GET deployments/connections`,
+`POST deployments/workflows/:workflowId/trigger` (body `{ ticket, ref?, inputs? }`), `GET deployments/runs`,
+`GET deployments/runs/:runId`, `GET deployments/runs/:runId/logs?jobId`, `POST deployments/runs/:runId/cancel`
+(body `{ ticket }`), `GET deployments/actions/:requestId?ticket=`.
+
+#### Starting and cancelling runs
+
+`agenstra_deployments_trigger` and `agenstra_deployments_cancel_run` take the context ticket of the prompt (like the
+content tools) and are decided per session, like [content changes](#content-changes). The result is a decision:
+`applied` (with the run), `pending` (call `agenstra_deployments_action_status` with the `requestId`), `denied` or
+`failed` (with a message).
+
+| Session                                             | Trigger / cancel                                                                                      |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Visible chat                                        | Asks you per action (subtype `context_deployment`): _Allow once_, _Allow for this chat_, _Deny_       |
+| Recurring task runs (`-task-*`, unattended)         | Only the operations a user approved for the task (`allowedDeploymentOperations`, default none)        |
+| Ticket automation (`-ticket-auto-*`, unattended)    | Only the operations allowed for the ticket's automation (`allowedDeploymentOperations`, default none) |
+| Chat plan explore / refine (`-plan-*`, read-only)   | Never (the plan ruleset does not allow `agenstra_deployments_*`)                                      |
+| Prompt enhancement, ticket body generation (hidden) | Never                                                                                                 |
+
+- **The prompt shows what runs.** Triggers name the workflow, repository (and GitHub workflow file), connection, the
+  ref that will be deployed (the workflow default ref) and the inputs the agent overrides; cancellations name the run,
+  its status and workflow. _Allow for this chat_ covers further actions of the **same operation on the same workflow**
+  in that chat only. Prompts are answered on the permission reply endpoint (ids start with `ctx_dep_`); undecided
+  prompts expire after 30 minutes. Actions the controller would refuse anyway (pending or disabled workflow, no
+  `agentTriggerEnabled`, other ref, unknown inputs, completed run) are answered right away without a prompt.
+- **Unattended runs only do what was allowed for them.** The manager forwards the session's source (`task` with its id,
+  or `automation`), never agent input, and only while that hidden session is the only one the agent runs; the
+  controller re-reads the task (approved, operation in `allowedDeploymentOperations`) or the ticket automation
+  (operation allowed) before it starts or cancels anything. `agentTriggerEnabled` alone no longer lets unattended runs
+  start every workflow.
+- At most 10 trigger / cancel actions per context ticket (turn).
+
+#### Workflow rules
+
+- **Controller is the authority.** The manager only validates shapes and bounds and forwards the authenticated agent
+  id; the controller answers within the workspace bound to the connection and only exposes enabled, approved workflows
+  that are global or assigned to the agent (plus the agent's own proposals), runs of those workflows, and
+  `trigger` / `cancelRun` only with `agentTriggerEnabled`. Unknown ids and workflows of other environments are reported
+  as not found; a connection that is no longer available to the workspace answers 403.
+- **Pinned triggers.** Environment triggers always use the workflow default ref and may only override the inputs listed
+  in `defaultInputs`; any other ref or input name is refused.
+- **No duplicate runs.** Reads try every controller connection of the agent; mutations (trigger, cancel, workflow
+  create / update / delete, history sync) are sent to a single connection (60 s acknowledgement timeout, the
+  controller calls the provider), so a slow answer can never apply them twice.
+- **Recorded as the agent.** Runs started by an environment carry `triggeredBy: agent` and its `agentId`, appear live
+  on the console _Deployments_ page and in the workspace audit log.
+- Provider credentials never reach the worker; the tools only see run metadata and logs.
+
+#### Workflows an environment manages for itself
+
+Like recurring tasks, an environment can propose deployment workflows for itself with
+`agenstra_deployments_create_workflow` (connection from `agenstra_deployments_list_connections`, repository, GitHub
+workflow file, default ref / inputs, optionally `agentTriggerEnabled`). These tools need no context ticket; approval
+protects them:
+
+- The workflow is always assigned to the proposing environment only (`scope: environments`, no other environments;
+  scope and assignment are not part of the input) and is **pending** until a workspace admin approves it on the console
+  _Deployments_ page. Nobody can start runs of a pending workflow, and other environments do not see it.
+- The environment can only change or delete workflows assigned to it alone; anything else answers not found. Changing
+  approved content (connection, repository, workflow, default ref / inputs, name, description, `agentTriggerEnabled`)
+  or re-enabling makes the workflow pending again; disabling keeps the approval.
+- Request `agentTriggerEnabled` only if the environment needs to run the workflow itself; runs still follow the session
+  rules above.
+- Plan sessions never get these tools (the plan ruleset denies every `agenstra_deployments_*` tool).
+
 ### Workspace mounts
 
 Every worker mounts the host's agent directories read-only at `/opt/workspace` (see

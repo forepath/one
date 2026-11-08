@@ -287,6 +287,14 @@
                     >
                   }
                 }
+                @if (deploymentOperationLabels(task); as deploymentOperations) {
+                  @if (deploymentOperations.length > 0) {
+                    <strong class="d-block mt-1" i18n="@@featureAgentTasks-pendingApprovalDeploymentOperationsHint"
+                      >Once approved, this task can request these CI actions without asking:
+                      {{ deploymentOperations.join(', ') }}</strong
+                    >
+                  }
+                }
               </span>
               <fpc-button variant="warning" [disabled]="saving()" (clicked)="onApprove(task)">
                 <i class="bi bi-check2-circle me-1" aria-hidden="true"></i
@@ -327,6 +335,16 @@
                     {{ contentWrites.join(', ') }}
                   } @else {
                     <span class="text-body-secondary" i18n="@@featureAgentTasks-noContentWrites">None</span>
+                  }
+                }
+              </dd>
+              <dt class="col-sm-3">{{ allowedDeploymentOperationsLabel }}</dt>
+              <dd class="col-sm-9">
+                @if (deploymentOperationLabels(task); as deploymentOperations) {
+                  @if (deploymentOperations.length > 0) {
+                    {{ deploymentOperations.join(', ') }}
+                  } @else {
+                    <span class="text-body-secondary" i18n="@@featureAgentTasks-noDeploymentOperations">None</span>
                   }
                 }
               </dd>
@@ -617,6 +635,21 @@
         [label]="option.label"
         [checked]="isEditorContentWriteAllowed(option.operation)"
         (checkedChange)="onToggleEditorContentWrite(option.operation, $event)"
+      />
+    }
+  </fpc-form-check-group>
+  <fpc-form-check-group
+    class="d-block mb-3"
+    legendId="agentTaskEditorDeploymentOperationsLegend"
+    [label]="allowedDeploymentOperationsLabel"
+    [hint]="allowedDeploymentOperationsHint"
+  >
+    @for (option of deploymentOperationOptions; track option.operation) {
+      <fpc-form-check
+        [checkId]="'agentTaskEditorDeploymentOperation-' + option.operation"
+        [label]="option.label"
+        [checked]="isEditorDeploymentOperationAllowed(option.operation)"
+        (checkedChange)="onToggleEditorDeploymentOperation(option.operation, $event)"
       />
     }
   </fpc-form-check-group>

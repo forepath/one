@@ -1232,6 +1232,23 @@
                               />
                             }
                           </div>
+                          <div class="mb-3" role="group" aria-labelledby="ticketAutomationDeploymentOperationsLabel">
+                            <div class="form-label" id="ticketAutomationDeploymentOperationsLabel">
+                              {{ automationDeploymentOperationsHeading }}
+                            </div>
+                            <p class="form-text fpc-form-text--wrap mt-0 mb-2">
+                              {{ automationDeploymentOperationsHint }}
+                            </p>
+                            @for (option of automationDeploymentOperationOptions; track option.operation) {
+                              <fpc-form-check
+                                class="mb-1"
+                                [checkId]="'ticketAutomationDeploymentOperation-' + option.operation"
+                                [label]="option.label"
+                                [checked]="isAutomationDeploymentOperationAllowed(option.operation)"
+                                (checkedChange)="onAutomationDeploymentOperationToggle(option.operation, $event)"
+                              />
+                            }
+                          </div>
                           <fpc-form-field
                             forId="ticketAutomationBranch"
                             i18n-label="@@featureTicketsBoard-automationDefaultBranch"

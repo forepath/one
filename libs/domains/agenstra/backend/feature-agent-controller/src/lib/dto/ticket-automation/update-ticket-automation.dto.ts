@@ -1,6 +1,8 @@
 import {
+  AGENT_DEPLOYMENT_OPERATIONS,
   TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS,
   type AgentContentWriteOperation,
+  type AgentDeploymentOperation,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { Type } from 'class-transformer';
 import {
@@ -77,6 +79,13 @@ export class UpdateTicketAutomationDto {
   @ArrayMaxSize(TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS.length)
   @IsIn(TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS, { each: true })
   allowedContentWrites?: AgentContentWriteOperation[];
+
+  /** Deployment run actions autonomous runs may request (`deployment.trigger`, `deployment.cancel`; empty: none). */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(AGENT_DEPLOYMENT_OPERATIONS.length)
+  @IsIn(AGENT_DEPLOYMENT_OPERATIONS, { each: true })
+  allowedDeploymentOperations?: AgentDeploymentOperation[];
 
   @IsOptional()
   @ValidateNested()

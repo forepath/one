@@ -18,6 +18,8 @@ export enum StatisticsEntityType {
   AGENT = 'agent',
   CLIENT_USER = 'client_user',
   PROVISIONING_REFERENCE = 'provisioning_reference',
+  DEPLOYMENT_WORKFLOW = 'deployment_workflow',
+  DEPLOYMENT_RUN = 'deployment_run',
 }
 
 /**

@@ -98,7 +98,6 @@ describe('AgentsService container isolation', () => {
       undefined,
       undefined,
       undefined,
-      undefined,
       isolation as never,
     );
   });

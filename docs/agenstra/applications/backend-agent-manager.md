@@ -84,20 +84,6 @@ Isolation capabilities are probed on startup, periodically, on demand and after 
 
 Environment variables: `AGENT_SANDBOX_RUNTIME`, `AGENT_SANDBOX_SHARED_NETNS_RUNTIME`, `AGENT_ISOLATION_SANDBOX_ENABLED`, `AGENT_SANDBOX_KVM_RUNTIME`, `AGENT_SANDBOX_KVM_SHARED_NETNS_RUNTIME`, `AGENT_ISOLATION_SANDBOX_KVM_ENABLED`, `AGENT_ISOLATION_MICROVM_ENABLED`, `AGENT_MICROVM_IMAGE`, `AGENT_ISOLATION_MICROVM_PROBE_TIMEOUT_MS`, `AGENT_ISOLATION_PROBE_ENABLED`, `AGENT_ISOLATION_PROBE_INTERVAL_MS`, `AGENT_ISOLATION_PROBE_TIMEOUT_MS`, `AGENT_ISOLATION_PROBE_IMAGE`, `AGENT_ISOLATION_FAILURE_THRESHOLD`. The gVisor runtimes (and, with `/dev/kvm`, the KVM runtimes) are prepared on the host (cloud-init or `apps/agenstra/backend-agent-manager/host/agenstra-gvisor.sh`), not by the manager container.
 
-### Deployments (CI/CD)
-
-- `GET/POST /api/agents/:agentId/deployments/configuration` and `DELETE` - Provider token and defaults (encrypted at rest; upsert via POST)
-- `GET /api/agents/:agentId/deployments/repositories` - Repositories
-- `GET .../repositories/:repositoryId/branches` - Branches
-- `GET .../repositories/:repositoryId/workflows` - Workflows
-- `POST /api/agents/:agentId/deployments/workflows/trigger` - Trigger a run
-- `GET /api/agents/:agentId/deployments/runs` - List runs
-- `GET .../deployments/runs/:runId` - Run detail
-- `GET .../deployments/runs/:runId/logs` - Run logs
-- `GET .../deployments/runs/:runId/jobs` - Jobs
-- `GET .../deployments/runs/:runId/jobs/:jobId/logs` - Job logs
-- `POST .../deployments/runs/:runId/cancel` - Cancel run
-
 ### Chat sessions
 
 User-visible chat sessions per agent environment (primary plus operator-created threads). Hidden session suffixes are not exposed here. See [Chat Interface](../features/chat-interface.md).
@@ -291,7 +277,6 @@ See the application docs and environment configuration for complete environment 
 
 **Dynamic provider plugins (optional):** `DYNAMIC_AGENT_PROVIDERS` - Extra agent backend packages
 
-- `DYNAMIC_PIPELINE_PROVIDERS` - Extra CI/CD provider packages
 - `DYNAMIC_CHAT_FILTERS` - Extra chat filter packages
 - `DYNAMIC_PROVIDER_PLUGIN_PATH` / `DYNAMIC_PROVIDER_PLUGIN_INSTALL` - Post-build plugin mount and startup install
 
@@ -370,7 +355,7 @@ Before deploying to production, ensure:
 - **[Message Filters](../features/message-filters.md)** Layered chat message filters
 - **[Egress Filtering](../features/egress-filtering.md)** Per-environment web traffic filtering
 - **[Container Isolation Levels](../features/container-isolation.md)** Standard (`runc`), gVisor-sandboxed, gVisor-on-KVM and microVM environments
-- **[Dynamic provider plugins](../features/dynamic-provider-plugins.md)** Custom agent, pipeline, and filter providers
+- **[Dynamic provider plugins](../features/dynamic-provider-plugins.md)** Custom agent and filter providers
 - **[Backend Agent Controller](./backend-agent-controller.md)** Control plane and proxy paths used by the console
 - **[Deployment Guide](../deployment/production-checklist.md)** Production deployment guide
 

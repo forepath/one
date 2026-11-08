@@ -90,7 +90,7 @@
   }
   <section class="section__row flex-grow-1">
     <!-- Column 1: Workspace list (hidden when a tool window panel is open) -->
-    @if (!editorOpen() && !deploymentManagerOpen() && !virtualDesktopOpen() && !isToolWindowRoute()) {
+    @if (!editorOpen() && !virtualDesktopOpen() && !isToolWindowRoute()) {
       <div class="section__column d-flex flex-column border-end" [class.active-column]="!(activeClientId$ | async)">
         <fpc-page-header [title]="workspacesHeaderTitle" />
         <!-- Workspaces as a rail table (3.38 decision 7); pages fill from the append-style clients store. -->
@@ -163,13 +163,7 @@
     }
 
     <!-- Column 2: Agent list (hidden when a tool window panel is open) -->
-    @if (
-      !editorOpen() &&
-      !deploymentManagerOpen() &&
-      !virtualDesktopOpen() &&
-      !isToolWindowRoute() &&
-      (activeClientId$ | async)
-    ) {
+    @if (!editorOpen() && !virtualDesktopOpen() && !isToolWindowRoute() && (activeClientId$ | async)) {
       @let workspaceConnectionError = workspaceConnectionError$ | async;
       <div
         class="section__column d-flex flex-column border-end"
@@ -269,18 +263,6 @@
                 </span>
               }
             </ng-template>
-            <ng-template fpcTableCell="deployment" let-row>
-              @if (row.agent && (activeClientId$ | async); as railClientId) {
-                @if (getAgentDeploymentStatus$(railClientId, row.id) | async; as deploymentStatus) {
-                  <fpc-badge
-                    iconOnly
-                    [tone]="deploymentStatus.tone"
-                    [icon]="deploymentStatus.badgeIcon"
-                    [label]="deploymentStatus.status"
-                  />
-                }
-              }
-            </ng-template>
           </fpc-data-table>
         }
       </div>
@@ -290,7 +272,7 @@
     @if (editorOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
       <div
         class="section__column section__column--editor d-flex flex-column border-end"
-        [class.mobile-hidden]="chatVisible() || deploymentManagerOpen()"
+        [class.mobile-hidden]="chatVisible()"
       >
         <framework-file-editor
           #fileEditor
@@ -303,36 +285,10 @@
       </div>
     }
 
-    <!-- Column: Deployment Manager (shown when deployment manager is open, to the left of chat) -->
-    @if (deploymentManagerOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
-      <div
-        class="section__column section__column--deployment-manager d-flex flex-column"
-        [class.mobile-hidden]="chatVisible() || editorOpen()"
-      >
-        <div class="editor-toolbar-container border-bottom bg-body-tertiary">
-          <div class="editor-toolbar ps-2 pe-3 py-3 d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-2">
-              <div class="brand-icon-container brand-icon-container--toolbar me-2 fs-3 bg-primary p-3">
-                <img src="assets/images/icon_light.svg" alt="Agenstra" class="brand-icon" />
-              </div>
-              <span class="fw-bold">Agenstra</span>
-              <fpc-badge variant="info" color="primary">Deployment Manager</fpc-badge>
-            </div>
-          </div>
-        </div>
-        <framework-deployment-manager
-          #deploymentManager
-          [clientId]="(activeClientId$ | async)!"
-          [agentId]="(selectedAgent$ | async)!.id"
-          (closeRequested)="onCloseDeploymentManager()"
-        ></framework-deployment-manager>
-      </div>
-    }
-
     @if (virtualDesktopOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
       <div
         class="section__column section__column--virtual-desktop d-flex flex-column"
-        [class.mobile-hidden]="chatVisible() || editorOpen() || deploymentManagerOpen()"
+        [class.mobile-hidden]="chatVisible() || editorOpen()"
       >
         <div class="editor-toolbar-container border-bottom bg-body-tertiary">
           <div class="editor-toolbar ps-2 pe-3 py-3 d-flex justify-content-between align-items-center">
@@ -603,15 +559,6 @@
             }
             @if (activeClient$ | async; as activeClient) {
               @if (selectedAgent$ | async; as selectedAgent) {
-                <fpc-button
-                  iconOnly
-                  [variant]="deploymentManagerOpen() ? 'primary' : 'dark'"
-                  [ariaPressed]="deploymentManagerOpen()"
-                  (clicked)="onOpenDeploymentManager()"
-                  [title]="getOpenDeploymentManagerTitle()"
-                >
-                  <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>
-                </fpc-button>
                 <fpc-button
                   iconOnly
                   [variant]="virtualDesktopOpen() ? 'primary' : 'dark'"

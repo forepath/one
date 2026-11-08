@@ -174,7 +174,8 @@ export function buildAgentContextHintLines(record: AgentContextTicketRecord): st
 
   return [
     `Context ticket: ${record.ticket} (pass it as \`ticket\` to every ${AGENSTRA_CONTEXT_MCP_SERVER_KEY}_context_* ` +
-      `and ${content} tool).`,
+      `and ${content} tool, and to the deployment run actions ${AGENSTRA_CONTEXT_MCP_SERVER_KEY}_deployments_trigger / ` +
+      `_cancel_run / _action_status).`,
     ...lines,
   ];
 }

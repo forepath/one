@@ -47,6 +47,19 @@ export class OpenSearchService implements OnModuleDestroy {
       return;
     }
 
+    try {
+      await this.createIndex(client, index, mappings);
+    } catch (error) {
+      // Concurrent writers (live sync + reindex) may create the index between the check and the create.
+      if (isResourceAlreadyExistsError(error)) {
+        return;
+      }
+
+      throw error;
+    }
+  }
+
+  private async createIndex(client: Client, index: string, mappings?: Record<string, unknown>): Promise<void> {
     await client.indices.create({
       index,
       body: {
@@ -278,4 +291,13 @@ export class OpenSearchService implements OnModuleDestroy {
 
     return this.client;
   }
+}
+
+function isResourceAlreadyExistsError(error: unknown): boolean {
+  const meta = (error as { meta?: { body?: { error?: { type?: string } } } } | null)?.meta;
+
+  return (
+    meta?.body?.error?.type === 'resource_already_exists_exception' ||
+    (error instanceof Error && error.message.includes('resource_already_exists_exception'))
+  );
 }

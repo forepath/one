@@ -46,14 +46,14 @@ sequenceDiagram
 ## Approval
 
 Runs are unattended and every permission is allowed (like ticket automation), so a task only runs once a workspace
-user approved what it does — its title, prompt, model, schedule, allowed handoff agents and allowed content changes
-(the title is part of the run prompt):
+user approved what it does — its title, prompt, model, schedule, allowed handoff agents, allowed content changes and
+allowed deployment actions (the title is part of the run prompt):
 
 - Tasks created in the console, and tasks saved with the console editor (which submits all of these fields), are
   approved by that user. Partial user updates (e.g. the **Enabled** switch) never approve content the user did not
   submit.
-- Tasks the **agent** creates, and any change by the agent to title, prompt, model, schedule, allowed handoff agents or
-  allowed content changes (or enabling it again), wait for approval: the `/tasks` page shows **Awaiting approval** and an **Approve** button
+- Tasks the **agent** creates, and any change by the agent to title, prompt, model, schedule, allowed handoff agents,
+  allowed content changes or allowed deployment actions (or enabling it again), wait for approval: the `/tasks` page shows **Awaiting approval** and an **Approve** button
   (`POST /clients/:clientId/agents/:agentId/tasks/:taskId/approval` with the reviewed `updatedAt`; a task changed in
   between is refused with `409`). Unapproved tasks are never scheduled or run, also not with **Run now**. Disabling
   keeps the approval.
@@ -90,6 +90,13 @@ user approved what it does — its title, prompt, model, schedule, allowed hando
   approved content like the prompt (the approval alert names them), the run prompt lists them, and the controller
   checks them again — approved task, operation allowed, run working — for every change. Existing elements must also
   be readable by the run. See [Agent Context MCP](../ai-agents/context-mcp.md#content-changes).
+- Runs start / cancel deployment runs (`agenstra_deployments_trigger` / `agenstra_deployments_cancel_run`) only with
+  the operations listed in **Allowed deployment actions** (`allowedDeploymentOperations`, default none;
+  `deployment.trigger`, `deployment.cancel`). Like content changes they are approved content, listed in the run prompt
+  and checked again by the controller (approved task, operation allowed, run working); the workflow rules apply on top
+  (enabled and approved workflow available to the environment, `agentTriggerEnabled`, default ref, defined inputs).
+  An agent may propose them with `agenstra_tasks_update`, which makes the task wait for approval again. See
+  [Deployments](./deployment.md#environment-actions-and-approvals).
 - Runs are streamed like plan mode and settle on the agent's final answer. Every chat event of the turn (prompt, thinking,
   tool calls, answer; streaming deltas omitted, long strings capped) is stored on the run and shown as the task's
   **session history** on the `/tasks` detail page (**View task** on a chat card jumps to that run). The chat card itself

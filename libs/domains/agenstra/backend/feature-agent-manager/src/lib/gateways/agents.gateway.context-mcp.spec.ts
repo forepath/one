@@ -283,6 +283,40 @@ describe('AgentsGateway context MCP integration', () => {
       expect(persistEvent).toHaveBeenCalledWith(agentId, expect.objectContaining({ kind: 'question' }), 'chat-1');
     });
 
+    it('publishes deployment action prompts with their own subtype through the context bridge', () => {
+      const viewer = socket('viewer');
+      const rec = tickets.mint({
+        agentId,
+        sessionKey: 'chat-1',
+        chatSessionId: 'chat-1',
+        chatId: 'chat-1',
+        ephemeral: false,
+        correlationId: 'corr',
+        accessMode: 'ask',
+        items: [],
+      });
+
+      login(viewer);
+      contextApi.publishDeploymentQuestion(rec, 'ctx_dep_1', 'The agent wants to start the deployment workflow "X".');
+
+      const [, envelope] = viewer.emit.mock.calls.find(([event]) => event === 'chatEvent') as [string, any];
+
+      expect(envelope.data).toMatchObject({
+        kind: 'question',
+        chatId: 'chat-1',
+        payload: {
+          questionId: 'ctx_dep_1',
+          prompt: 'The agent wants to start the deployment workflow "X".',
+          subtype: 'context_deployment',
+          options: [
+            { id: 'once', label: 'Allow once' },
+            { id: 'always', label: 'Allow for this chat' },
+            { id: 'reject', label: 'Deny' },
+          ],
+        },
+      });
+    });
+
     it('only notifies the requesting socket for ephemeral turns', () => {
       const origin = socket('origin');
       const viewer = socket('viewer');

@@ -66,6 +66,14 @@ Events are published from the **agent-controller** service after proxied operati
 
 **Comments:** Adding a comment publishes `ticket.comment.created`. Comments cannot be updated or deleted via the API, so there are no update/delete comment events.
 
+### Deployments
+
+- `deployment_workflow.created`, `deployment_workflow.updated`, `deployment_workflow.deleted`: a workspace deployment workflow was created, changed (including enable / disable) or deleted, by a console user or by an environment managing its own workflows (`createdBy` / `updatedBy`: `user` or `agent`, `createdByAgentId`). `approvalStatus` (`approved` / `pending`) and `approvedAt` show whether runs can be started; an admin approving a pending workflow publishes `deployment_workflow.updated` (there is no separate approval event, like tasks). `defaultInputs` are never included
+- `deployment_run.created`: a deployment run was triggered through Agenstra (console, API or an environment through the `agenstra` MCP server; `triggeredBy` is `user` or `agent`)
+- `deployment_run.completed`: a tracked run (including `external` runs synced from the provider while still active) changed to `completed`; `conclusion` holds the result (`success`, `failure`, `cancelled`, ...). Runs imported already completed do not publish it
+
+Run payloads never include run `inputs`, logs or connection credentials.
+
 ### Agents (environments)
 
 - `agent.created`, `agent.updated`, `agent.deleted`: an agent environment was created, updated or deleted through the controller
@@ -143,6 +151,29 @@ These events are instance-wide (no `client_id`).
 ```
 
 Author email is never included. Ticket body `content` is never included on ticket lifecycle events.
+
+### `deployment_run.created` / `deployment_run.completed`
+
+```json
+{
+  "id": "run-uuid",
+  "clientId": "client-uuid",
+  "workflowId": "workflow-uuid",
+  "workflowName": "Deploy production",
+  "agentId": null,
+  "providerRunId": "123456789",
+  "status": "completed",
+  "conclusion": "success",
+  "ref": "main",
+  "sha": "4f2a…",
+  "url": "https://github.com/acme/app/actions/runs/123456789",
+  "triggeredBy": "user",
+  "triggeredByUserId": "user-uuid",
+  "startedAt": "2026-07-01T11:00:05.000Z",
+  "completedAt": "2026-07-01T11:04:40.000Z",
+  "createdAt": "2026-07-01T11:00:00.000Z"
+}
+```
 
 ### `agent.created` / `agent.updated` / `agent.deleted`
 

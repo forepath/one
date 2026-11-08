@@ -8,7 +8,7 @@ describe('ContextImportAdminService', () => {
   let service: ContextImportAdminService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3100/api';
-  const baseUrl = `${apiUrl}/imports/atlassian`;
+  const baseUrl = `${apiUrl}/connections/atlassian`;
 
   beforeEach(() => {
     TestBed.configureTestingModule({

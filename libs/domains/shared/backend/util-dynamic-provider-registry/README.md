@@ -36,7 +36,6 @@ Plugin packages should declare Nest/host dependencies as **peerDependencies** so
 | `DYNAMIC_PROVISIONING_PROVIDERS`    | critical    | Extra provisioning providers                                                        |
 | `DYNAMIC_CONTEXT_IMPORT_PROVIDERS`  | optional    | Extra context import providers                                                      |
 | `DYNAMIC_AGENT_PROVIDERS`           | optional    | Extra agent backends                                                                |
-| `DYNAMIC_PIPELINE_PROVIDERS`        | optional    | Extra CI/CD providers                                                               |
 | `DYNAMIC_CHAT_FILTERS`              | optional    | Extra chat filters                                                                  |
 | `DYNAMIC_PAYMENT_PROCESSORS`        | critical    | Extra payment processors                                                            |
 | `DYNAMIC_BILLING_PROVIDER_METADATA` | optional    | Extra billing UI provider metadata                                                  |

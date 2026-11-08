@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 /** How long an API request waits for the matching tool call to show up in the worker's event stream. */
 export const AGENT_TOOL_CALL_CLAIM_WAIT_MS = 10_000;
@@ -8,8 +8,8 @@ const AGENT_TOOL_CALL_TTL_MS = 2 * 60 * 60_000;
 /** Per agent: one busy worker can never evict another agent's state. */
 const AGENT_TOOL_CALLS_MAX_PER_AGENT = 500;
 const AGENT_RELATIONS_MAX_PER_AGENT = 5_000;
-/** Only platform context / content tools authorize anything. */
-const TRACKED_TOOL_PREFIXES = ['agenstra_context_', 'agenstra_content_'];
+/** Only platform context / content / deployment tools authorize anything (auto tickets of unattended runs). */
+const TRACKED_TOOL_PREFIXES = ['agenstra_context_', 'agenstra_content_', 'agenstra_deployments_'];
 /** Unknown answer messages are looked up in their session at most this often (claims poll every 100 ms). */
 const MESSAGE_LOOKUP_INTERVAL_MS = 1_000;
 /** Subagents of subagents: bounded walk up the chain. */
@@ -57,6 +57,8 @@ function asString(value: unknown): string | undefined {
  */
 @Injectable()
 export class AgentToolCallsService {
+  private readonly logger = new Logger(AgentToolCallsService.name);
+
   private readonly calls = new Map<string, ObservedToolCall>();
   /** Per agent: messageId → message. */
   private readonly messages = new Map<string, Map<string, ObservedMessage>>();
@@ -160,12 +162,33 @@ export class AgentToolCallsService {
       }
 
       if (Date.now() >= deadline) {
+        this.logClaimFailure(agentId, ticket, tool, rootMessageId);
+
         return false;
       }
 
       await this.lookupUnknownMessages(agentId, tool);
       await new Promise((resolve) => setTimeout(resolve, AGENT_TOOL_CALL_CLAIM_POLL_MS));
     }
+  }
+
+  /** Why a claim failed (debug only; no inputs or ticket values are logged). */
+  private logClaimFailure(agentId: string, ticket: string, tool: string, rootMessageId: string | undefined): void {
+    const calls = [...this.calls.values()].filter((call) => call.agentId === agentId && call.tool === tool);
+    const reason = !rootMessageId
+      ? 'no platform prompt carries the ticket'
+      : !this.isUserMessage(agentId, rootMessageId)
+        ? 'the ticket root is not a known user message'
+        : calls.length === 0
+          ? 'no running call of the tool was observed'
+          : calls.every((call) => call.claimed)
+            ? 'every observed call was already claimed'
+            : 'no observed call matches the arguments and answers the ticket prompt';
+
+    this.logger.debug(
+      `Tool call claim refused for agent ${agentId} (${tool}, ticket ${ticket.slice(0, 8)}…): ${reason} ` +
+        `(observed calls: ${calls.length})`,
+    );
   }
 
   /** Sessions with unclaimed calls of `tool` whose message is unknown: record their messages from the worker. */

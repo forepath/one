@@ -62,7 +62,7 @@
         i18n-title="@@featureContainer-spacesTitle"
         title="Workspaces"
       >
-        <i class="bi bi-grid me-1"></i>
+        <i class="bi bi-grid"></i>
         <span class="small" i18n="@@featureContainer-spaces">Workspaces</span>
         @if (spacesAttentionBadge$ | async; as attentionBadge) {
           <fpc-notification-indicator [kind]="attentionBadge" placement="absolute" />
@@ -77,7 +77,7 @@
         i18n-title="@@featureContainer-ticketsTitle"
         title="Tickets"
       >
-        <i class="bi bi-kanban me-1"></i>
+        <i class="bi bi-kanban"></i>
         <span class="small" i18n="@@featureContainer-tickets">Tickets</span>
       </a>
       <a
@@ -88,7 +88,7 @@
         i18n-title="@@featureContainer-pagesTitle"
         title="Knowledge"
       >
-        <i class="bi bi-journal-richtext me-1"></i>
+        <i class="bi bi-journal-richtext"></i>
         <span class="small" i18n="@@featureContainer-pages">Knowledge</span>
       </a>
       <a
@@ -99,7 +99,7 @@
         i18n-title="@@featureContainer-plansTitle"
         title="Plans"
       >
-        <i class="bi bi-list-check me-1"></i>
+        <i class="bi bi-list-check"></i>
         <span class="small" i18n="@@featureContainer-plans">Plans</span>
       </a>
       <a
@@ -110,8 +110,19 @@
         i18n-title="@@featureContainer-tasksTitle"
         title="Tasks"
       >
-        <i class="bi bi-alarm me-1"></i>
+        <i class="bi bi-alarm"></i>
         <span class="small" i18n="@@featureContainer-tasks">Tasks</span>
+      </a>
+      <a
+        [routerLink]="deploymentsSidebarLink()"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        class="sidebar__item"
+        i18n-title="@@featureContainer-deploymentsTitle"
+        title="CI/CD deployments"
+      >
+        <i class="bi bi-infinity"></i>
+        <span class="small" i18n="@@featureContainer-deployments">CI</span>
       </a>
       <a
         [routerLink]="graphsSidebarLink()"
@@ -121,7 +132,7 @@
         i18n-title="@@featureContainer-graphsTitle"
         title="Graphs"
       >
-        <i class="bi bi-diagram-3 me-1"></i>
+        <i class="bi bi-diagram-3"></i>
         <span class="small" i18n="@@featureContainer-graphs">Graphs</span>
       </a>
       <a
@@ -131,7 +142,7 @@
         i18n-title="@@featureContainer-auditTitle"
         title="Audit"
       >
-        <i class="bi bi-graph-up me-1"></i>
+        <i class="bi bi-graph-up"></i>
         <span class="small" i18n="@@featureContainer-audit">Audit</span>
       </a>
       <div fpcSidebarFooter>
@@ -149,7 +160,7 @@
               aria-label="Account"
               data-testid="sidebar-account"
             >
-              <i class="bi bi-person-circle me-1"></i>
+              <i class="bi bi-person-circle"></i>
               <span class="small" i18n="@@featureContainer-account">Account</span>
               @if (isUsersAuth && (showSecurityAuthenticatorBadge$ | async)) {
                 <fpc-notification-indicator kind="security-warning" placement="absolute" />
@@ -168,7 +179,7 @@
                 [attr.data-testid]="'sidebar-account-' + item.navKey"
                 (click)="accountPopoverOpen = false"
               >
-                <i class="bi {{ item.icon }} me-1" aria-hidden="true"></i>
+                <i class="bi {{ item.icon }}" aria-hidden="true"></i>
                 <span class="small">{{ item.label }}</span>
                 @if (item.navKey === 'security' && (showSecurityAuthenticatorBadge$ | async)) {
                   <fpc-notification-indicator kind="security-warning" placement="absolute" />
@@ -194,7 +205,7 @@
               i18n-aria-label="@@featureContainer-adminTitle"
               aria-label="Admin"
             >
-              <i class="bi bi-command me-1"></i>
+              <i class="bi bi-command"></i>
               <span class="small" i18n="@@featureContainer-admin">Admin</span>
               @if (updatesAttentionBadge$ | async) {
                 <fpc-notification-indicator placement="absolute" />
@@ -210,7 +221,7 @@
                 [attr.aria-label]="item.title"
                 (click)="adminPopoverOpen = false"
               >
-                <i class="bi {{ item.icon }} me-1" aria-hidden="true"></i>
+                <i class="bi {{ item.icon }}" aria-hidden="true"></i>
                 <span class="small">{{ item.label }}</span>
                 @if (item.navKey === 'updates' && (updatesAttentionBadge$ | async)) {
                   <fpc-notification-indicator placement="absolute" />

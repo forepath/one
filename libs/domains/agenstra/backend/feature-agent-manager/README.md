@@ -711,7 +711,6 @@ nx test agenstra-backend-feature-agent-manager --coverage
 ### Dynamic provider plugins (optional)
 
 - `DYNAMIC_AGENT_PROVIDERS` - Comma-separated extra agent backend packages (`alias=@forepath/pkg`)
-- `DYNAMIC_PIPELINE_PROVIDERS` - Comma-separated extra CI/CD provider packages
 - `DYNAMIC_CHAT_FILTERS` - Comma-separated extra chat filter packages
 - `DYNAMIC_PROVIDERS_FAIL_FAST` - When `true`, abort startup if critical dynamic providers fail to load
 

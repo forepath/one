@@ -56,6 +56,8 @@ export const ControllerJobName = {
   UPDATE_CHECK: UPDATE_CHECK_JOB_NAME,
   OPENCODE_PROVIDERS_REFRESH: OPENCODE_PROVIDERS_REFRESH_JOB_NAME,
   OPENCODE_MCP_SERVERS_REFRESH: OPENCODE_MCP_SERVERS_REFRESH_JOB_NAME,
+  DEPLOYMENT_RUN_POLL_COORDINATOR: 'deployment-run-poll.coordinator',
+  DEPLOYMENT_HISTORY_SYNC_COORDINATOR: 'deployment-history-sync.coordinator',
 } as const;
 
 export type ControllerJobName = (typeof ControllerJobName)[keyof typeof ControllerJobName];
@@ -228,7 +230,35 @@ export function getControllerRepeatableJobs(): ControllerRepeatableJobDefinition
     });
   }
 
+  // Workspace deployments: live status of active runs, and runs started on the provider (external history).
+  const deploymentRunPollInterval = parseIntervalMs('DEPLOYMENT_RUN_POLL_INTERVAL_MS', 30_000);
+
+  if (deploymentRunPollInterval > 0) {
+    jobs.push({
+      name: ControllerJobName.DEPLOYMENT_RUN_POLL_COORDINATOR,
+      coordinatorJobId: buildCoordinatorJobId('deployment-run-poll'),
+      everyMs: deploymentRunPollInterval,
+    });
+  }
+
+  const deploymentHistorySyncInterval = parseIntervalMs('DEPLOYMENT_HISTORY_SYNC_INTERVAL_MS', 300_000);
+
+  if (deploymentHistorySyncInterval > 0) {
+    jobs.push({
+      name: ControllerJobName.DEPLOYMENT_HISTORY_SYNC_COORDINATOR,
+      coordinatorJobId: buildCoordinatorJobId('deployment-history-sync'),
+      everyMs: deploymentHistorySyncInterval,
+    });
+  }
+
   return jobs;
+}
+
+/** Active deployment runs refreshed per poll, and enabled workflows synced per history sync. */
+export function getDeploymentRunPollBatchSize(): number {
+  const parsed = parseInt(process.env.DEPLOYMENT_RUN_POLL_BATCH ?? '50', 10);
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 50;
 }
 
 export function getContextImportItemBudget(): number {

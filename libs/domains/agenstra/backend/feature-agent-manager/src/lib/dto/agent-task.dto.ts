@@ -1,5 +1,9 @@
 import {
+  AGENT_CONTENT_WRITE_OPERATIONS,
+  AGENT_DEPLOYMENT_OPERATIONS,
   AGENT_TASK_LIMITS,
+  normalizeAgentContentWriteOperations,
+  normalizeAgentDeploymentOperations,
   type AgentTaskCreateInput,
   type AgentTaskUpdateInput,
 } from '@forepath/agenstra/shared/util-opencode-config';
@@ -14,6 +18,18 @@ const STRING_FIELDS: Array<{ key: keyof AgentTaskUpdateInput & string; maxLength
   { key: 'timezone', maxLength: AGENT_TASK_LIMITS.timezoneMaxLength },
   { key: 'model', maxLength: AGENT_TASK_LIMITS.modelMaxLength },
 ];
+
+function parseOperationList(raw: unknown, field: string, allowed: readonly string[]): string[] {
+  if (
+    !Array.isArray(raw) ||
+    raw.length > allowed.length * 2 ||
+    raw.some((value) => typeof value !== 'string' || !allowed.includes(value))
+  ) {
+    throw new BadRequestException(`${field} must only contain ${allowed.join(', ')}`);
+  }
+
+  return raw as string[];
+}
 
 /**
  * The agent-manager has no global ValidationPipe, so agent-facing task input is normalized here. Shape and
@@ -63,6 +79,23 @@ function parseTaskFields(raw: unknown): AgentTaskUpdateInput {
     }
 
     fields.allowedHandoffAgentIds = ids.map((id: string) => id.trim().toLowerCase());
+  }
+
+  // Opt-ins the agent proposes for its unattended runs; they only take effect once a workspace user approved the task.
+  if (body['allowedContentWrites'] !== undefined) {
+    fields.allowedContentWrites = normalizeAgentContentWriteOperations(
+      parseOperationList(body['allowedContentWrites'], 'allowedContentWrites', AGENT_CONTENT_WRITE_OPERATIONS),
+    );
+  }
+
+  if (body['allowedDeploymentOperations'] !== undefined) {
+    fields.allowedDeploymentOperations = normalizeAgentDeploymentOperations(
+      parseOperationList(
+        body['allowedDeploymentOperations'],
+        'allowedDeploymentOperations',
+        AGENT_DEPLOYMENT_OPERATIONS,
+      ),
+    );
   }
 
   return fields;

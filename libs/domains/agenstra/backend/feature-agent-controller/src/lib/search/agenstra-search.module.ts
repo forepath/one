@@ -4,6 +4,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
+import { DeploymentConnectionEntity } from '../entities/deployment-connection.entity';
+import { DeploymentRunEntity } from '../entities/deployment-run.entity';
+import { DeploymentWorkflowEntity } from '../entities/deployment-workflow.entity';
 import { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
@@ -28,6 +31,9 @@ import { AgenstraSearchIndexService } from './agenstra-search-index.service';
       TicketEntity,
       KnowledgeNodeEntity,
       AtlassianSiteConnectionEntity,
+      DeploymentConnectionEntity,
+      DeploymentWorkflowEntity,
+      DeploymentRunEntity,
       ExternalImportConfigEntity,
       StatisticsAgentEntity,
       StatisticsClientEntity,

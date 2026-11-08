@@ -24,9 +24,10 @@ The Agent Controller HTTP API provides:
 - Usage statistics (`/clients/:id/statistics/*`, `/statistics/*`)
 - Agent web traffic (egress) status, policy evaluation, and event statistics (`/clients/:id/agents/:agentId/egress`, `/clients/:id/statistics/egress-events`)
 - Container isolation summary and re-probe of workspace hosts (`/clients/:id/isolation`, `/clients/:id/isolation/probe`)
-- Atlassian site connections and import configurations for administrators (`/imports/atlassian/*`)
+- Atlassian connections and import configurations for administrators (`/connections/atlassian/*`, scope `connections:admin`)
 - Agent autonomy configuration per workspace and per agent
-- Proxied agent operations (CRUD, models, start/stop/restart, environment variables, deployments)
+- Proxied agent operations (CRUD, models, start/stop/restart, environment variables)
+- Workspace deployments: workflows, runs, jobs and logs (`/clients/:id/deployments/*`, scopes `deployments:read` / `deployments:write`) and CI/CD deployment connections for administrators (`/connections/deployments/*`, scope `connections:admin`)
 - Proxied file operations (read, write, create, delete, move)
 - Proxied version control operations (including workspace prepare-clean and automation verify-commands)
 - Server provisioning (Hetzner Cloud, DigitalOcean)
@@ -90,7 +91,6 @@ The Agent Manager HTTP API provides:
 - Workspace configuration overrides (`/configuration-overrides`)
 - File system operations (read, write, create, delete, move; optional `context` query)
 - Version control operations (git status, branches, commit, push, pull, rebase, workspace prepare-clean, automation verify-commands)
-- Deployment configuration and CI/CD run APIs (`/agents/:agentId/deployments/...`)
 - Configuration endpoint (`/config`)
 
 #### Contract hygiene (deferred gaps)

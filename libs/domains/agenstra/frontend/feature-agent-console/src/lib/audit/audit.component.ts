@@ -2,7 +2,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, OnInit, signal, untracked, LOCALE_ID } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, type UrlTree } from '@angular/router';
 import {
   AuthenticationFacade,
   ClientsFacade,
@@ -78,6 +78,11 @@ import { getUnavailableDisplayLabel, resolveNamedDisplayLabel } from '../display
 import { ClientSelectComponent } from '../client-select/client-select.component';
 import { AG_DL_CHAT, agOpenItem } from '../shared/data-list';
 
+import {
+  deploymentAuditEntityContext,
+  deploymentAuditEntityRoute,
+  isDeploymentAuditEntityType,
+} from './audit-deployment-entity.util';
 import {
   alignSecuritySeries,
   countAxisScale,
@@ -796,10 +801,15 @@ export class AuditComponent implements OnInit {
    */
   buildEntityEventRoute(row: {
     entityType: string;
+    eventType?: string;
     originalEntityId: string;
     clientId?: string;
     agentId?: string;
   }): string | null {
+    if (isDeploymentAuditEntityType(row.entityType)) {
+      return deploymentAuditEntityRoute(row);
+    }
+
     if (row.entityType === 'client') {
       return row.originalEntityId ? `/clients/${row.originalEntityId}` : null;
     }
@@ -809,6 +819,13 @@ export class AuditComponent implements OnInit {
     }
 
     return null;
+  }
+
+  /** Router link of an entity event row (a UrlTree, so `?workflowId=` / `?runId=` stay query parameters). */
+  entityEventLink(row: Parameters<AuditComponent['buildEntityEventRoute']>[0]): UrlTree | null {
+    const route = this.buildEntityEventRoute(row);
+
+    return route ? this.router.parseUrl(route) : null;
   }
 
   /** Display text for entity event: resolved name when available; never raw UUID. */
@@ -824,6 +841,13 @@ export class AuditComponent implements OnInit {
       const client = this.clients().find((c) => c.id === row.originalEntityId);
 
       return resolveNamedDisplayLabel(client?.name);
+    }
+
+    if (isDeploymentAuditEntityType(row.entityType)) {
+      const context = deploymentAuditEntityContext(row);
+      const kind = this.formatEntityType(row.entityType);
+
+      return context ? `${context} · ${kind}` : kind;
     }
 
     if (row.entityType === 'agent') {
@@ -1213,6 +1237,10 @@ export class AuditComponent implements OnInit {
         return $localize`:@@featureAudit-entityTypeClientUser:Workspace member`;
       case 'provisioning_reference':
         return $localize`:@@featureAudit-entityTypeProvisioningReference:Provisioning reference`;
+      case 'deployment_workflow':
+        return $localize`:@@featureAudit-entityTypeDeploymentWorkflow:Pipeline`;
+      case 'deployment_run':
+        return $localize`:@@featureAudit-entityTypeDeploymentRun:Pipeline run`;
       default:
         return entityType;
     }

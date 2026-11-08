@@ -8,11 +8,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AgentsChatSessionsController } from '../controllers/agents-chat-sessions.controller';
 import { AgentsContextController } from '../controllers/agents-context.controller';
+import { AgentsContextDeploymentsController } from '../controllers/agents-context-deployments.controller';
 import { AgentGraphsComposeController, AgentsGraphController } from '../controllers/agents-graph.controller';
 import { AgentsGraphContextController } from '../controllers/agents-graph-context.controller';
 import { AgentsTasksController } from '../controllers/agents-tasks.controller';
 import { AgentsHandoffsController } from '../controllers/agents-handoffs.controller';
-import { AgentsDeploymentsController } from '../controllers/agents-deployments.controller';
 import { InstanceStatusController } from '../controllers/instance-status.controller';
 import { AgentsEnvironmentVariablesController } from '../controllers/agents-environment-variables.controller';
 import { AgentsFilesController } from '../controllers/agents-files.controller';
@@ -38,8 +38,6 @@ import { AgentEntity } from '../entities/agent.entity';
 import { AgentDirectoryIndexEntity } from '../entities/agent-directory-index.entity';
 import { AgentGraphPromptEntity } from '../entities/agent-graph-prompt.entity';
 import { AgentGraphEntity } from '../entities/agent-graph.entity';
-import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
-import { DeploymentRunEntity } from '../entities/deployment-run.entity';
 import { AgentEgressEventEntity } from '../entities/agent-egress-event.entity';
 import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-configuration-override.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
@@ -64,19 +62,13 @@ import { MessageFiltersIncomingChatFilter } from '../providers/filters/message-f
 import { MessageFiltersOutgoingChatFilter } from '../providers/filters/message-filters-outgoing-chat-filter';
 import { NoopChatFilter } from '../providers/filters/noop-chat-filter';
 import { OutgoingChatFilter } from '../providers/filters/outgoing-chat-filter';
-import { PipelineProviderFactory } from '../providers/pipeline-provider.factory';
 import { AgenstraManagerMetricsCollectorService } from '../services/agenstra-manager-metrics-collector.service';
-import type { PipelineProvider } from '../providers/pipeline-provider.interface';
 import type { ChatFilter } from '../providers/chat-filter.interface';
-import { GitHubProvider } from '../providers/pipelines/github.provider';
-import { GitLabProvider } from '../providers/pipelines/gitlab.provider';
 import { AgentChatSessionsRepository } from '../repositories/agent-chat-sessions.repository';
 import { AgentEnvironmentVariablesRepository } from '../repositories/agent-environment-variables.repository';
 import { AgentMessageEventsRepository } from '../repositories/agent-message-events.repository';
 import { AgentMessagesRepository } from '../repositories/agent-messages.repository';
 import { AgentsRepository } from '../repositories/agents.repository';
-import { DeploymentConfigurationsRepository } from '../repositories/deployment-configurations.repository';
-import { DeploymentRunsRepository } from '../repositories/deployment-runs.repository';
 import { AgentEgressEventsRepository } from '../repositories/agent-egress-events.repository';
 import { WorkspaceConfigurationOverridesRepository } from '../repositories/workspace-configuration-overrides.repository';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
@@ -86,6 +78,8 @@ import { AgentContextChangesService } from '../services/agent-context-changes.se
 import { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
 import { AgentTasksApiService } from '../services/agent-tasks-api.service';
+import { AgentDeploymentActionsService } from '../services/agent-deployment-actions.service';
+import { AgentDeploymentsApiService } from '../services/agent-deployments-api.service';
 import { AgentHandoffsApiService } from '../services/agent-handoffs-api.service';
 import { AgentWorkspaceMountsService } from '../services/agent-workspace-mounts.service';
 import { AgentGraphAccessService } from '../services/agent-graph-access.service';
@@ -114,7 +108,6 @@ import { AgentsService } from '../services/agents.service';
 import { ConfigService } from '../services/config.service';
 import { InstanceStatusService } from '../services/instance-status.service';
 import { IsolationCapabilitiesService } from '../services/isolation-capabilities.service';
-import { DeploymentsService } from '../services/deployments.service';
 import { DockerService } from '../services/docker.service';
 import { EnvironmentProgressService } from '../services/environment-progress.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
@@ -140,8 +133,6 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
       AgentMessageEventEntity,
       AgentChatSessionEntity,
       AgentEnvironmentVariableEntity,
-      DeploymentConfigurationEntity,
-      DeploymentRunEntity,
       AgentEgressEventEntity,
       WorkspaceConfigurationOverrideEntity,
     ]),
@@ -157,13 +148,13 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentsWorkspaceIndexController,
     AgentsVcsController,
     AgentsVerificationController,
-    AgentsDeploymentsController,
     AgentsVncController,
     AgentsEnvironmentVariablesController,
     AgentsChatSessionsController,
     AgentsContextController,
     AgentsTasksController,
     AgentsHandoffsController,
+    AgentsContextDeploymentsController,
     AgentsGraphController,
     AgentGraphsComposeController,
     AgentsGraphContextController,
@@ -190,6 +181,8 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentContextChangesService,
     AgentTasksApiService,
     AgentHandoffsApiService,
+    AgentDeploymentsApiService,
+    AgentDeploymentActionsService,
     AgentWorkspaceMountsService,
     AgentGraphService,
     AgentGraphCollectorService,
@@ -217,14 +210,11 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     IsolationCapabilitiesService,
     InstanceStatusService,
     PasswordService,
-    DeploymentsService,
     AgentsRepository,
     AgentMessagesRepository,
     AgentMessageEventsRepository,
     AgentChatSessionsRepository,
     AgentEnvironmentVariablesRepository,
-    DeploymentConfigurationsRepository,
-    DeploymentRunsRepository,
     DockerService,
     OpenCodeClientFactory,
     OpenCodeSessionService,
@@ -236,9 +226,6 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     { provide: OutboundAgentEventPublisher, useClass: NoopOutboundAgentEventPublisher },
     AgentProviderFactory,
     OpenCodeAgentProvider,
-    PipelineProviderFactory,
-    GitHubProvider,
-    GitLabProvider,
     ChatFilterFactory,
     NoopChatFilter,
     IncomingChatFilter,
@@ -261,29 +248,6 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
         return true;
       },
       inject: [AgentProviderFactory, OpenCodeAgentProvider],
-    },
-    {
-      provide: 'PIPELINE_PROVIDER_INIT',
-      useFactory: async (
-        factory: PipelineProviderFactory,
-        githubProvider: GitHubProvider,
-        gitlabProvider: GitLabProvider,
-        dynamicLoader: DynamicProviderLoaderService,
-      ) => {
-        factory.registerProvider(githubProvider);
-        factory.registerProvider(gitlabProvider);
-
-        await registerDynamicProviders<PipelineProvider>({
-          envKey: 'DYNAMIC_PIPELINE_PROVIDERS',
-          criticality: 'optional',
-          register: (provider) => factory.registerProvider(provider),
-          dynamicLoader,
-          loggerContext: 'PipelineProviderFactory',
-        });
-
-        return true;
-      },
-      inject: [PipelineProviderFactory, GitHubProvider, GitLabProvider, DynamicProviderLoaderService],
     },
     {
       provide: 'CHAT_FILTER_INIT',
@@ -332,13 +296,10 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentChatSessionsService,
     AgentEnvironmentVariablesService,
     AgentMessagesService,
-    DeploymentsService,
     AgentsRepository,
     AgentChatSessionsRepository,
     AgentEnvironmentVariablesRepository,
     AgentMessagesRepository,
-    DeploymentConfigurationsRepository,
-    DeploymentRunsRepository,
   ],
 })
 export class AgentsModule {}

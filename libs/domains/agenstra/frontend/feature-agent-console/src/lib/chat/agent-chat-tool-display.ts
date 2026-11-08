@@ -224,6 +224,86 @@ export function resolveAgentChatToolDisplay(toolNameOrKind: string | undefined):
         label: $localize`:@@featureChat-toolDisplayTasksRun:Run task now`,
         icon: 'play-circle',
       };
+    // Platform deployment tools (`agenstra_deployments_*`): workflows available to the environment.
+    case 'agenstra_deployments_list_workflows':
+    case 'deployments_list_workflows':
+      return {
+        label: $localize`:@@featureChat-toolDisplayDeploymentsListWorkflows:List pipelines`,
+        icon: 'rocket',
+      };
+    case 'agenstra_deployments_get_workflow':
+    case 'deployments_get_workflow':
+      return {
+        label: $localize`:@@featureChat-toolDisplayDeploymentsGetWorkflow:Read pipeline`,
+        icon: 'diagram-3',
+      };
+    case 'agenstra_deployments_sync':
+    case 'deployments_sync':
+      return {
+        label: $localize`:@@featureChat-toolDisplayDeploymentsSync:Sync pipeline history`,
+        icon: 'arrow-repeat',
+      };
+    case 'agenstra_deployments_list_runs':
+    case 'deployments_list_runs':
+      return {
+        label: $localize`:@@featureChat-toolDisplayDeploymentsListRuns:List pipeline runs`,
+        icon: 'list-ul',
+      };
+    case 'agenstra_deployments_get_run':
+    case 'deployments_get_run':
+      return {
+        label: $localize`:@@featureChat-toolDisplayDeploymentsGetRun:Read pipeline run`,
+        icon: 'rocket-takeoff',
+      };
+    case 'agenstra_deployments_get_run_logs':
+    case 'deployments_get_run_logs':
+      return {
+        label: $localize`:@@featureChat-toolDisplayDeploymentsGetRunLogs:Read pipeline logs`,
+        icon: 'terminal',
+      };
+    case 'agenstra_deployments_trigger':
+    case 'deployments_trigger':
+      return {
+        label: $localize`:@@featureChat-toolDisplayDeploymentsTrigger:Trigger pipeline run`,
+        icon: 'play-circle',
+      };
+    case 'agenstra_deployments_cancel_run':
+    case 'deployments_cancel_run':
+      return {
+        label: $localize`:@@featureChat-toolDisplayDeploymentsCancelRun:Cancel pipeline run`,
+        icon: 'stop-circle',
+      };
+    case 'agenstra_deployments_action_status':
+    case 'deployments_action_status':
+      return {
+        label: $localize`:@@featureChat-toolDisplayDeploymentsActionStatus:CI action status`,
+        icon: 'hourglass-split',
+      };
+    // The environment manages workflows for itself (pending until a workspace admin approves them).
+    case 'agenstra_deployments_list_connections':
+    case 'deployments_list_connections':
+      return {
+        label: $localize`:@@featureChat-toolDisplayDeploymentsListConnections:List CI/CD connections`,
+        icon: 'plug',
+      };
+    case 'agenstra_deployments_create_workflow':
+    case 'deployments_create_workflow':
+      return {
+        label: $localize`:@@featureChat-toolDisplayDeploymentsCreateWorkflow:Propose pipeline`,
+        icon: 'plus-circle',
+      };
+    case 'agenstra_deployments_update_workflow':
+    case 'deployments_update_workflow':
+      return {
+        label: $localize`:@@featureChat-toolDisplayDeploymentsUpdateWorkflow:Update pipeline`,
+        icon: 'pencil-square',
+      };
+    case 'agenstra_deployments_delete_workflow':
+    case 'deployments_delete_workflow':
+      return {
+        label: $localize`:@@featureChat-toolDisplayDeploymentsDeleteWorkflow:Delete pipeline`,
+        icon: 'trash',
+      };
     // Platform handoff tools (`agenstra_handoff_*`): tasks handed over between agents of the workspace.
     // `handoff` / `handoffresponse` are the embed kinds of create / respond.
     case 'agenstra_handoff_agents':

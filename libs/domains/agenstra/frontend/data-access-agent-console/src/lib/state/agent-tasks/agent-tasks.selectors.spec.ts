@@ -19,6 +19,7 @@ function agentTaskFixture(overrides: Partial<AgentTaskResponseDto> = {}): AgentT
     approvalStatus: 'approved',
     allowedHandoffAgentIds: [],
     allowedContentWrites: [],
+    allowedDeploymentOperations: [],
     approvedAt: '2026-10-21T09:00:00.000Z',
     createdBy: 'user',
     updatedBy: 'user',

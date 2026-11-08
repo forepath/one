@@ -38,7 +38,7 @@ There is no separate “start run” HTTP call for this path: eligible tickets a
    - `new_per_run`: ephemeral branch `automation/run/{first 8 chars of run UUID}` per run.
    - `force_new_automation_branch_next_run`: with `reuse_per_ticket`, forces one ephemeral branch for the next run, then clears the flag.
 4. **Optional pre-improve** If autonomy `pre_improve_ticket` is true, one chat turn asks the agent to clarify the ticket only (no implementation).
-5. **Implementation loop** Up to `max_iterations` remote chat turns (default `20`). Each turn uses an OpenCode automation session with session-scoped allow-all permissions and structured `json_schema` turn status. The loop exits successfully only when structured output reports `status: "complete"`.
+5. **Implementation loop** Up to `max_iterations` remote chat turns (default `20`). Each turn uses an OpenCode automation session with session-scoped allow-all permissions and structured `json_schema` turn status. Every run starts in a fresh hidden session (the first turn is sent with `continue: false`); later turns of the run continue it, so transcripts of earlier runs never accumulate and each turn's context ticket stays resolvable for tool calls. The loop exits successfully only when structured output reports `status: "complete"`.
 6. **Verification** If a `verifier_profile` with `commands` is configured, those commands run in the agent workspace (bounded timeout); any non-zero exit fails the run.
 7. **Finalize** Stage changes, generate a Conventional-Commits-style subject (with fallback), `git commit` and `git push` unless the tree is already clean.
 8. **Success** Run status `succeeded`, ticket status set to **`prototype`**, failure counters cleared, lease released, board and activity events emitted.
@@ -54,6 +54,17 @@ Reserved resume-session suffixes (`-ticket-auto-pre`, `-ticket-auto-loop`, `-tic
 - Keep transcripts out of the user’s primary chat history; run progress still surfaces via automation chat cards / board events.
 
 Ticket approval and agent autonomy prerequisites still apply. Only reserved automation sessions bypass interactive permission prompts.
+
+### Platform actions (opt-ins)
+
+Platform changes through the `agenstra` MCP server are not covered by the allow-all permission ruleset; nobody can approve them during a run, so the automation settings (`PATCH /tickets/{ticketId}/automation`) list what runs may do, both empty by default and **approval-relevant** like the other settings (changing them clears the approval and is recorded as an automation settings activity):
+
+| Setting                       | Values                                                  | Effect                                                                                                                                                                         |
+| ----------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `allowedContentWrites`        | `ticket.create`, `ticket.update`, `ticket.comment`, ... | Ticket changes (`agenstra_content_*`) within the automated ticket's tree; see [Agent Context MCP](../ai-agents/context-mcp.md#content-changes)                                 |
+| `allowedDeploymentOperations` | `deployment.trigger`, `deployment.cancel`               | Deployment run actions (`agenstra_deployments_trigger` / `_cancel_run`); the workflow rules apply on top; see [Deployments](./deployment.md#environment-actions-and-approvals) |
+
+The controller checks them again for every request: the environment must have exactly one working automation run, and that run's ticket must allow the operation (`403` otherwise).
 
 The manager's `opencode-config-sync-progress` tests include opt-in worker security checks. Set `AGENSTRA_WORKER_SECURITY_TEST_IMAGE` to a locally available worker image when running that suite to verify link handling, ownership, read-only worker access, and protection against worker-controlled executables. Each check uses a disposable, network-disabled container without host mounts; these checks are skipped when the variable is unset.
 

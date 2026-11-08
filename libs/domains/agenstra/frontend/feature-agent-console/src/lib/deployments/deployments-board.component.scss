@@ -1,0 +1,136 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.section__content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.section__row {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+.section__column {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.deployments-sidebar {
+  flex: 0 0 380px;
+  max-width: 45%;
+}
+
+// An open run gets its own column to the right (like the chat at /clients): the workflow keeps its column, every
+// column just gets narrower.
+.deployments-run {
+  flex: 1 1 0;
+  min-width: 0;
+  border-left: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.deployments-row--run-open .deployments-sidebar {
+  flex-basis: 300px;
+  max-width: 30%;
+}
+
+.deployments-list {
+  min-height: 0;
+}
+
+// Phones (like tasks / plans): one view at a time; an open workflow replaces the list, an open run the workflow.
+@media (max-width: 767.98px) {
+  .deployments-row {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+
+  .deployments-sidebar {
+    flex: 1 1 0;
+    max-width: none;
+    width: 100%;
+  }
+
+  .deployments-detail {
+    flex: 1 1 0;
+    width: 100%;
+  }
+
+  .deployments-run {
+    flex: 1 1 0;
+    width: 100%;
+    border-left: 0;
+  }
+
+  .deployments-row:not(.deployments-row--detail-open) .deployments-detail,
+  .deployments-row--detail-open .deployments-sidebar,
+  .deployments-row--run-open .deployments-detail {
+    display: none !important;
+  }
+}
+
+.deployments-detail {
+  min-width: 0;
+}
+
+/* Workflow / run facts; scroll on their own so the runs / jobs table keeps most of the column. */
+.deployments-detail__info {
+  flex: 0 1 auto;
+  max-height: 40%;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Runs / jobs table: a bounded flex column; only the table rows scroll (heads and pager stay pinned). */
+.deployments-detail__table {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  > fpc-data-table {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+}
+
+.deployments-detail__description {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.deployments-detail__chip {
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--bs-border-radius-sm);
+  background-color: var(--bs-tertiary-bg);
+  word-break: break-all;
+}
+
+.deployments-logs {
+  max-height: 65vh;
+  overflow: auto;
+  padding: 1rem;
+  border-radius: var(--bs-border-radius);
+  background-color: var(--bs-dark);
+  color: var(--bs-light);
+  font-family: var(--bs-font-monospace);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

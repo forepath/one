@@ -1,4 +1,4 @@
-%% Agenstra - full architecture (controller, managers, workers, agenstra MCP: context, tasks, handoffs)
+%% Agenstra - full architecture (controller, managers, workers, agenstra MCP: context, tasks, handoffs, deployments)
 flowchart TB
   Users(["Users<br/>browser, desktop app (Electron), API, PATs"])
   Visitors(["Visitors<br/>marketing site, docs, plans"])
@@ -11,7 +11,7 @@ flowchart TB
   ModelsDev(["models.dev<br/>provider + model catalog"])
   GitHubReleases(["GitHub Releases<br/>update checks"])
   GitHosts(["Git hosts<br/>GitHub, GitLab, self-hosted (HTTPS / SSH)"])
-  Pipelines(["CI pipelines<br/>GitHub Actions, GitLab CI"])
+  Pipelines(["CI/CD providers<br/>GitHub Actions (App / PAT), GitLab CI (token),<br/>Jenkins (user + API token)"])
   Llm(["LLM providers<br/>via OpenCode provider credentials"])
   Internet(["Internet"])
   Registry(["ghcr.io/forepath<br/>controller-api, manager-api, manager-worker,<br/>manager-worker-microvm, manager-egress-guard, console-server, landingpage-server"])
@@ -19,7 +19,7 @@ flowchart TB
   Communication(["Forepath communication API (:3300)<br/>contact form, Turnstile"])
 
   subgraph Frontends["Frontends (Angular SSR, Express)"]
-    Console["Agent console (:4100)<br/>chat, tool + permission embeds, editor (Monaco),<br/>terminal, VNC desktop, Git, tickets board,<br/>knowledge tree, chat plans, agent tasks (/tasks),<br/>handoff cards + chats, statistics, config layers"]
+    Console["Agent console (:4100)<br/>chat, tool + permission embeds, editor (Monaco),<br/>terminal, VNC desktop, Git, tickets board,<br/>knowledge tree, chat plans, agent tasks (/tasks),<br/>handoff cards + chats, deployments (/deployments),<br/>connections (/connections), statistics, config layers"]
     Native["Native agent console<br/>Electron, bundled SSR server"]
     Landing["Landing page (:4101)"]
     Docs["Docs (:4102)<br/>markdown + OpenAPI / AsyncAPI renderers"]
@@ -39,7 +39,7 @@ flowchart TB
 
   subgraph Controller["Agent controller (NestJS :3100, one image, QUEUE_ROLE = api | worker | scheduler)"]
     CAuth["Authentication<br/>api-key, oidc, saml, users, PAT scopes"]
-    CApi["REST API /api<br/>clients (workspaces), agents proxy, files, VCS,<br/>deployments, env vars, isolation, statistics"]
+    CApi["REST API /api<br/>clients (workspaces), agents proxy, files, VCS,<br/>workspace deployments, connections, env vars,<br/>isolation, statistics"]
     CGw["Socket.IO gateways<br/>socket/clients (forward to managers),<br/>socket/tickets, socket/pages, socket/status, WS /socket/vnc"]
     Tickets["Tickets + ticket automation<br/>autonomous run orchestrator, leases, verifier, commit + push"]
     Knowledge["Knowledge tree + relations<br/>local hash embeddings (pgvector), auto-enrichment"]
@@ -47,15 +47,16 @@ flowchart TB
     AgentTasks["Agent tasks<br/>cron schedules, coordinator + unit jobs,<br/>hidden -task-{id} runs, main chat run cards,<br/>approved handoff agents, awaiting_handoff runs"]
     Handoffs["Agent handoffs<br/>same workspace only, handoff chat on target,<br/>respond repair turns, delivery to requesting chat<br/>or into the waiting task run's session"]
     Attachments["Attachments<br/>mirrored read-only into workers"]
-    CtxHandler["Agent request handlers (ack, workspace of the connection)<br/>agentContextRequest: search, describe, content<br/>agentTaskRequest: own tasks / agentHandoffRequest"]
+    CtxHandler["Agent request handlers (ack, workspace of the connection)<br/>agentContextRequest: search, describe, content<br/>agentTaskRequest: own tasks / agentHandoffRequest<br/>agentDeploymentRequest: assigned workflows + runs"]
     OcConfig["OpenCode config layering<br/>global / workspace / agent overlays, layer files,<br/>MCP + provider catalogs, platform security policy"]
     Provisioning["Server provisioning<br/>manager hosts with Docker + gVisor<br/>(+ KVM modules / runsc-kvm when /dev/kvm is available)"]
-    Import["Context import<br/>Jira / Confluence to tickets + knowledge"]
+    Deployments["Workspace deployments<br/>admin connections /connections/deployments,<br/>workflows (global / environments), runs, history sync,<br/>live status, agent trigger permission"]
+    Import["Atlassian connections + context import<br/>/connections/atlassian, Jira / Confluence to tickets + knowledge"]
     Notify["Notifications + updates<br/>email, webhooks, release checks"]
     Search["Search<br/>entity indexes, workspace full-text index"]
-    Queue["BullMQ queue agent-controller<br/>config / layer sync, embeddings, imports, egress ingest,<br/>isolation probes, automation, reindex, catalogs, deliveries"]
+    Queue["BullMQ queue agent-controller<br/>config / layer sync, embeddings, imports, egress ingest,<br/>isolation probes, automation, reindex, catalogs, deliveries,<br/>deployment run poll + history sync"]
     CStatus["Instance scrape + console status<br/>manager /api/instance-status"]
-    CPg[("Postgres + pgvector<br/>clients, tickets, knowledge, embeddings, plans,<br/>automation runs, agent tasks + runs, handoffs,<br/>statistics, config layers")]
+    CPg[("Postgres + pgvector<br/>clients, tickets, knowledge, embeddings, plans,<br/>automation runs, agent tasks + runs, handoffs,<br/>deployment connections / workflows / runs,<br/>statistics, config layers")]
     Valkey[("Valkey<br/>BullMQ, VNC tickets, caches, updates")]
     OpenSearch[("OpenSearch<br/>agenstra-* indexes, workspace-files")]
     Files[("File storage<br/>local or S3: attachments")]
@@ -66,20 +67,22 @@ flowchart TB
   CApi --> CAuth
   CGw --> CAuth
   CAuth -.OIDC / SAML.-> IdP
-  CApi --> Tickets & Knowledge & Plans & AgentTasks & Attachments & OcConfig & Provisioning & Import & Search
+  CApi --> Tickets & Knowledge & Plans & AgentTasks & Attachments & OcConfig & Provisioning & Import & Deployments & Search
   CGw -.enrich prompts: refs, auto-context, granted bodies.-> Knowledge
   CGw -.ticket prototype prompts.-> Tickets
-  CtxHandler --> Tickets & Knowledge & AgentTasks & Handoffs
-  Tickets & Knowledge & Plans & AgentTasks & Handoffs & OcConfig --> CPg
+  CtxHandler --> Tickets & Knowledge & AgentTasks & Handoffs & Deployments
+  Tickets & Knowledge & Plans & AgentTasks & Handoffs & Deployments & OcConfig --> CPg
   Handoffs -.task run handoffs: checks approval + targets,<br/>continues the waiting run.-> AgentTasks
   Attachments --> Files
   Queue --> Valkey
   Notify --> Valkey
   Search --> OpenSearch
-  Queue -.jobs.-> OcConfig & Knowledge & Import & Tickets & AgentTasks & Handoffs & Search & Notify & CStatus
+  Queue -.jobs.-> OcConfig & Knowledge & Import & Deployments & Tickets & AgentTasks & Handoffs & Search & Notify & CStatus
   Notify --> Smtp
   Notify -.release feed.-> GitHubReleases
-  Import --> Atlassian
+  Import -.->|"OAuth client credentials via api.atlassian.com,<br/>or email + API token"| Atlassian
+  Deployments -.trigger, poll, cancel, logs (encrypted connection credentials).-> Pipelines
+  Deployments -.deploymentWorkflowUpsert / deploymentRunUpsert.-> CGw
   OcConfig -.daily catalogs.-> McpRegistry & ModelsDev
   Provisioning --> CloudProviders
   Controller -.metrics.-> Otel
@@ -87,12 +90,12 @@ flowchart TB
   subgraph ManagerHost["Agent manager host (one per workspace, Docker + optional gVisor runsc-systrap / -hostnet,<br/>+ gVisor on KVM runsc-kvm / -hostnet and microVM launchers when /dev/kvm is available)"]
     subgraph Manager["Agent manager (NestJS :3000, docker.sock)"]
       MAuth["Authentication<br/>api-key / oidc, per-agent socket login"]
-      MApi["REST API /api<br/>agents, files, VCS, deployments, env vars, egress,<br/>isolation, workspace index, OpenCode config + MCP, permissions"]
+      MApi["REST API /api<br/>agents, files, VCS, env vars, egress,<br/>isolation, workspace index, OpenCode config + MCP, permissions"]
       MGw["Socket.IO socket/agents<br/>chat, enhance, ticket body, terminals, events;<br/>WS /socket/vnc bridge"]
       Composer["Prompt context composer<br/>MCP mode: hints + context ticket<br/>fallback: inline hidden context"]
       CtxTickets["Context tickets<br/>bound to agent + chat session, 2 h idle TTL,<br/>granted refs, session grants"]
       CtxAccess["Context access requests<br/>ask (chat) / auto (automation, plans) / deny (hidden)"]
-      CtxApi["Agent context API /api/agent-context<br/>tickets: list, search, get, access-requests<br/>tasks (own), handoffs (agents, create, get, response)<br/>per-agent HMAC token, no user auth"]
+      CtxApi["Agent context API /api/agent-context<br/>tickets: list, search, get, access-requests<br/>tasks (own), handoffs (agents, create, get, response),<br/>deployments (assigned workflows, runs, trigger / cancel)<br/>per-agent HMAC token, no user auth"]
       ActiveTurns["Active turns<br/>running OpenCode turns per agent:<br/>handoffs only from one working visible chat<br/>or one task run (-task-{id}), prompts of one session serialized"]
       Profiles["Handoff profiles<br/>own profile updates, peer profiles generated<br/>on request in read-only -handoff-profile sessions"]
       Runtime["OpenCode runtime<br/>sessions per chat / reserved suffix, SSE event bridge,<br/>permission + question tracking, auto-replies"]
@@ -100,16 +103,15 @@ flowchart TB
       Egress["Egress service<br/>guard lifecycle, policy render, events collector"]
       Isolation["Isolation probes<br/>standard (runc) / sandboxed (gVisor) /<br/>sandboxed-kvm (gVisor on KVM) / microvm (probe microVM)"]
       Filters["Chat filters<br/>incoming / outgoing, plugins"]
-      Deploy["Deployments<br/>GitHub / GitLab pipeline providers"]
       WsIndex["Workspace index<br/>inotify supervisor, change notifier"]
-      MPg[("Postgres<br/>agents (incl. handoff profile), messages, events, chat sessions<br/>(primary / user / handoff),<br/>deployments, env vars, egress events")]
+      MPg[("Postgres<br/>agents (incl. handoff profile), messages, events, chat sessions<br/>(primary / user / handoff),<br/>env vars, egress events")]
     end
 
     subgraph Agent["Per agent"]
       subgraph Worker["Worker container (agenstra-manager-worker, io.agenstra.context-mcp=1)<br/>runtime per isolation level: runc / runsc-systrap(-hostnet) / runsc-kvm(-hostnet);<br/>microvm: agenstra-manager-worker-microvm on runc + /dev/kvm, worker below /guest as KVM guest"]
         Launcher["MicroVM launcher (microvm only, container root)<br/>libvirt session + QEMU/KVM + virtiofsd as agenstra-vmm,<br/>bridge daemon: vm-exec, ports 4096 / 6080, loopback relay :3128,<br/>user networking = sockets in the container netns"]
         OpenCode["OpenCode serve :4096<br/>agents: build, agenstra-automation, agenstra-plan"]
-        CtxMcp["agenstra MCP server (stdio)<br/>/opt/agenstra/mcp, root-owned<br/>context_* (list, search, get, request_access),<br/>tasks_* (own recurring tasks),<br/>handoff_* (agents, profile_get, profile_update,<br/>create, get, respond)"]
+        CtxMcp["agenstra MCP server (stdio)<br/>/opt/agenstra/mcp, root-owned<br/>context_* (list, search, get, request_access),<br/>tasks_* (own recurring tasks),<br/>handoff_* (agents, profile_get, profile_update,<br/>create, get, respond),<br/>deployments_* (workflows, runs, logs, trigger / cancel)"]
         Desktop["XFCE + TigerVNC + websockify :6080<br/>Chromium, vnc-auth-proxy"]
         AppVol[("/app workspace volume<br/>+ read-only /opt/workspace, attachments")]
       end
@@ -122,7 +124,7 @@ flowchart TB
   CGw -.WS VNC proxy.-> MGw
   CStatus -.scrape.-> MApi
   Queue -.config + layer file sync, egress events ingest, isolation.-> MApi
-  MGw -.agentContextRequest / agentTaskRequest / agentHandoffRequest (ack).-> CtxHandler
+  MGw -.agentContextRequest / agentTaskRequest / agentHandoffRequest /<br/>agentDeploymentRequest (ack).-> CtxHandler
   MApi --> MAuth
   MGw --> MAuth
   MGw --> Filters
@@ -136,7 +138,7 @@ flowchart TB
   CtxApi -.handoff profiles.-> Profiles
   Profiles -.read-only self-description turn.-> Runtime
   CtxAccess -.permission reply ctx_*.-> MApi
-  MApi --> ConfigSync & Egress & Isolation & Deploy & WsIndex
+  MApi --> ConfigSync & Egress & Isolation & WsIndex
   Manager --> MPg
   Runtime <-->|"HTTP + SSE events (Basic auth)"| OpenCode
   ConfigSync -->|"config, provider auth, MCP"| OpenCode
@@ -152,7 +154,6 @@ flowchart TB
   Guard -->|"filtered egress"| Internet
   Guard -.Git over SSH to curated hosts.-> GitHosts
   OpenCode -.model calls.-> Llm
-  Deploy --> Pipelines
   Manager -.metrics.-> Otel
   Registry -.images.-> Manager & Worker & Guard & Controller
   IsolationLab(["E2E isolation lab (feature-isolation-lab)<br/>QEMU/KVM VMs in Docker: host scripts, probes,<br/>guard modes, DNS per isolation level, nested microVMs"])

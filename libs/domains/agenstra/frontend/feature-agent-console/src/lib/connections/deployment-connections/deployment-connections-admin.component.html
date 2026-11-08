@@ -1,0 +1,412 @@
+<div class="section__content-wrapper deployment-connections d-flex flex-column">
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (error() && !editorOpen()) {
+    <fpc-alert
+      [flush]="true"
+      variant="danger"
+      [dismissible]="true"
+      [message]="error()"
+      (closed)="onDismissError()"
+      data-testid="deployment-connections-error"
+    />
+  }
+  @if (lastTest(); as test) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="test.result.ok ? 'success' : 'warning'"
+      [dismissible]="true"
+      (closed)="onDismissTest()"
+      data-testid="deployment-connections-test-result"
+    >
+      <strong>{{ lastTestConnection()?.label }}</strong>
+      @if (test.result.ok) {
+        <span class="ms-1" i18n="@@featureDeploymentConnections-testResultOk">Connection works.</span>
+      } @else {
+        <span class="ms-1" i18n="@@featureDeploymentConnections-testResultFailed">Connection test failed.</span>
+      }
+      @if (test.result.message) {
+        <div class="small mt-1 text-break">{{ test.result.message }}</div>
+      }
+    </fpc-alert>
+  }
+  @if (bulkResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="bulkResult.set(null)"
+      data-testid="deployment-connections-bulk-result"
+    />
+  }
+
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="tableLabel"
+    [columns]="columns"
+    [rows]="connections()"
+    paging="server"
+    [(page)]="page"
+    [(pageSize)]="pageSize"
+    [hasNext]="hasNext()"
+    persistKey="agenstra-deployment-connections"
+    [query]="search()"
+    (queryChange)="search.set($event)"
+    [searchPlaceholder]="searchPlaceholder"
+    [filtered]="!!search().trim() || !!providerFilter()"
+    [loading]="loading()"
+    selectable
+    [(selected)]="selectedIds"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    (rowActivate)="openEdit($event)"
+    emptyIcon="plug"
+    showFilterButton
+    [filtersActive]="providerFilter() ? 1 : 0"
+    (filtersCleared)="onProviderFilterChange('')"
+    data-testid="deployment-connections-table"
+  >
+    <span fpcDataTableToolbar class="d-inline-flex gap-2">
+      <fpc-button
+        variant="dark"
+        iconOnly
+        [ariaLabel]="refreshTitle"
+        [title]="refreshTitle"
+        [disabled]="loading()"
+        (clicked)="onRefresh()"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+      <fpc-button
+        variant="primary"
+        iconOnly
+        [ariaLabel]="createTitle"
+        [title]="createTitle"
+        (clicked)="openCreate()"
+        data-testid="deployment-connection-create"
+      >
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+      </fpc-button>
+    </span>
+    <fpc-form-field fpcDataTableFilters forId="deploymentConnectionsProviderFilter" [label]="providerFilterLabel">
+      <fpc-form-control
+        controlId="deploymentConnectionsProviderFilter"
+        controlType="select"
+        [ngModel]="providerFilter() ?? ''"
+        (ngModelChange)="onProviderFilterChange($event)"
+      >
+        <option value="" i18n="@@featureDeploymentConnections-allProviders">All providers</option>
+        @for (provider of providers; track provider) {
+          <option [value]="provider">{{ providerLabel(provider) }}</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+
+    <fpc-button
+      fpcDataTableBatch
+      variant="dark"
+      [disabled]="bulkBusy()"
+      (clicked)="onBulkTest()"
+      data-testid="deployment-connections-bulk-test"
+      iconOnly
+      [ariaLabel]="testLabel"
+      [title]="testLabel"
+    >
+      <i class="bi bi-plug" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
+      variant="danger"
+      [disabled]="bulkBusy()"
+      (clicked)="bulkDeleteConfirmOpen.set(true)"
+      data-testid="deployment-connections-bulk-delete"
+      iconOnly
+      [ariaLabel]="deleteLabel"
+      [title]="deleteLabel"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
+    </fpc-button>
+
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        size="sm"
+        icon="plug"
+        message="No CI/CD connections yet"
+        i18n-message="@@featureDeploymentConnections-empty"
+      >
+        <p class="small text-body-secondary mb-0" i18n="@@featureDeploymentConnections-emptyHint">
+          Connect GitHub Actions, GitLab CI/CD or Jenkins so workspaces can run their pipelines from Agenstra.
+        </p>
+      </fpc-empty-state>
+    </span>
+
+    <ng-template fpcTableCell="label" let-row>
+      <span class="d-flex align-items-center gap-2 min-w-0">
+        <i class="bi bi-{{ providerIcon(row.provider) }} flex-shrink-0" aria-hidden="true"></i>
+        <span class="text-truncate" [title]="row.label">{{ row.label }}</span>
+      </span>
+    </ng-template>
+    <ng-template fpcTableCell="auth" let-row>
+      <fpc-badge color="secondary">{{ authLabel(row.authType, row.provider) }}</fpc-badge>
+    </ng-template>
+    <ng-template fpcTableCell="access" let-row>
+      <span [title]="row.workspaceAccess === 'selected' ? accessNames(row) : ''">{{ accessSummary(row) }}</span>
+    </ng-template>
+    <ng-template fpcTableCell="baseUrl" let-row>
+      <span class="font-monospace small text-truncate d-block" [title]="row.baseUrl ?? ''">{{
+        row.baseUrl ?? '—'
+      }}</span>
+    </ng-template>
+    <ng-template fpcTableCell="tested" let-row>
+      @if (testState(row.lastTestStatus); as state) {
+        <span class="d-flex flex-column gap-1 min-w-0">
+          <span class="d-flex align-items-center gap-2 flex-wrap">
+            <fpc-badge [tone]="state.tone" [icon]="state.icon ?? null">{{ state.label }}</fpc-badge>
+            @if (row.lastTestedAt) {
+              <small class="text-body-secondary">{{ formatDate(row.lastTestedAt) }}</small>
+            }
+          </span>
+          @if (row.lastTestMessage) {
+            <small class="text-body-secondary deployment-connections__status-message" [title]="row.lastTestMessage">{{
+              row.lastTestMessage
+            }}</small>
+          }
+        </span>
+      }
+    </ng-template>
+  </fpc-data-table>
+</div>
+
+<fpc-modal [(open)]="editorOpen" size="lg" [scrollable]="true" [title]="editing() ? editTitle : createTitle">
+  @if (error()) {
+    <fpc-alert variant="danger" class="mb-3" [message]="error()" />
+  }
+  @let f = form();
+  <div class="row g-2">
+    <div class="col-md-6">
+      <fpc-form-field forId="deploymentConnectionProvider" [label]="providerLabelText" required>
+        <fpc-form-control
+          controlId="deploymentConnectionProvider"
+          controlType="select"
+          [disabled]="!!editing()"
+          [ngModel]="f.provider"
+          (ngModelChange)="onProviderChange($event)"
+          data-testid="deployment-connection-provider"
+        >
+          @for (provider of providers; track provider) {
+            <option [value]="provider">{{ providerLabel(provider) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field forId="deploymentConnectionLabel" [label]="labelLabel" required>
+        <fpc-form-control
+          controlId="deploymentConnectionLabel"
+          [maxLength]="limits.labelMaxLength"
+          [ngModel]="f.label"
+          (ngModelChange)="patchForm({ label: $event })"
+          data-testid="deployment-connection-label"
+        />
+      </fpc-form-field>
+    </div>
+  </div>
+
+  <fpc-form-field
+    forId="deploymentConnectionBaseUrl"
+    [label]="baseUrlLabel"
+    [hint]="baseUrlHint()"
+    [required]="baseUrlRequired()"
+    [error]="formError() === 'baseUrl' && !!f.baseUrl.trim() ? invalidBaseUrlLabel : null"
+  >
+    <fpc-form-control
+      controlId="deploymentConnectionBaseUrl"
+      inputType="url"
+      controlClass="font-monospace"
+      [maxLength]="limits.baseUrlMaxLength"
+      [invalid]="formError() === 'baseUrl' && !!f.baseUrl.trim()"
+      [ngModel]="f.baseUrl"
+      (ngModelChange)="patchForm({ baseUrl: $event })"
+      data-testid="deployment-connection-base-url"
+    />
+  </fpc-form-field>
+
+  @if (authTypes().length > 1) {
+    <fpc-form-check-group class="d-block mb-3" legendId="deploymentConnectionAuthLegend" [label]="authTypeLabel">
+      @for (authType of authTypes(); track authType) {
+        <fpc-form-check
+          type="radio"
+          [inline]="true"
+          name="deploymentConnectionAuthType"
+          [checkId]="'deploymentConnectionAuth-' + authType"
+          [value]="authType"
+          [label]="authLabel(authType, f.provider)"
+          [checked]="f.authType === authType"
+          (checkedChange)="onAuthTypeChange(authType, $event)"
+          [attr.data-testid]="'deployment-connection-auth-' + authType"
+        />
+      }
+    </fpc-form-check-group>
+  } @else {
+    <div class="mb-3 small">
+      <span class="form-label d-block mb-1">{{ authTypeLabel }}</span>
+      <fpc-badge color="secondary">{{ authLabel(f.authType, f.provider) }}</fpc-badge>
+    </div>
+  }
+
+  @if (f.authType === 'app') {
+    <p class="small text-body-secondary">{{ appHint }}</p>
+    <div class="row g-2">
+      <div class="col-md-6">
+        <fpc-form-field forId="deploymentConnectionAppId" [label]="appIdLabel" required>
+          <fpc-form-control
+            controlId="deploymentConnectionAppId"
+            controlClass="font-monospace"
+            [maxLength]="limits.appIdMaxLength"
+            [ngModel]="f.appId"
+            (ngModelChange)="patchForm({ appId: $event })"
+            data-testid="deployment-connection-app-id"
+          />
+        </fpc-form-field>
+      </div>
+      <div class="col-md-6">
+        <fpc-form-field forId="deploymentConnectionInstallationId" [label]="installationIdLabel" required>
+          <fpc-form-control
+            controlId="deploymentConnectionInstallationId"
+            controlClass="font-monospace"
+            [maxLength]="limits.appIdMaxLength"
+            [ngModel]="f.installationId"
+            (ngModelChange)="patchForm({ installationId: $event })"
+            data-testid="deployment-connection-installation-id"
+          />
+        </fpc-form-field>
+      </div>
+    </div>
+    <fpc-form-field
+      forId="deploymentConnectionPrivateKey"
+      [label]="privateKeyLabel"
+      [hint]="secretsOptional() ? keepSecretHint : null"
+      [required]="!secretsOptional()"
+    >
+      <fpc-form-control
+        controlId="deploymentConnectionPrivateKey"
+        controlType="textarea"
+        controlClass="deployment-connections__private-key small"
+        autocomplete="off"
+        [rows]="5"
+        [maxLength]="limits.privateKeyMaxLength"
+        placeholder="-----BEGIN RSA PRIVATE KEY-----"
+        [ngModel]="f.privateKey"
+        (ngModelChange)="patchForm({ privateKey: $event })"
+        data-testid="deployment-connection-private-key"
+      />
+    </fpc-form-field>
+  } @else {
+    <div class="row g-2">
+      @if (f.provider === 'jenkins') {
+        <div class="col-md-6">
+          <fpc-form-field forId="deploymentConnectionUsername" [label]="usernameLabel" required>
+            <fpc-form-control
+              controlId="deploymentConnectionUsername"
+              autocomplete="off"
+              [maxLength]="limits.usernameMaxLength"
+              [ngModel]="f.username"
+              (ngModelChange)="patchForm({ username: $event })"
+              data-testid="deployment-connection-username"
+            />
+          </fpc-form-field>
+        </div>
+      }
+      <div [class.col-md-6]="f.provider === 'jenkins'" [class.col-12]="f.provider !== 'jenkins'">
+        <fpc-form-field
+          forId="deploymentConnectionToken"
+          [label]="authLabel(f.authType, f.provider)"
+          [hint]="secretsOptional() ? keepSecretHint : tokenHint()"
+          [required]="!secretsOptional()"
+        >
+          <fpc-form-control
+            controlId="deploymentConnectionToken"
+            inputType="password"
+            autocomplete="new-password"
+            [maxLength]="limits.tokenMaxLength"
+            [ngModel]="f.token"
+            (ngModelChange)="patchForm({ token: $event })"
+            data-testid="deployment-connection-token"
+          />
+        </fpc-form-field>
+      </div>
+    </div>
+  }
+
+  <fpc-form-check-group class="d-block mb-2" legendId="deploymentConnectionAccessLegend" [label]="workspaceAccessLabel">
+    <fpc-form-check
+      type="radio"
+      [inline]="true"
+      name="deploymentConnectionAccess"
+      checkId="deploymentConnectionAccessAll"
+      value="all"
+      [label]="accessAllLabel"
+      [checked]="f.workspaceAccess === 'all'"
+      (checkedChange)="$event && patchForm({ workspaceAccess: 'all' })"
+      data-testid="deployment-connection-access-all"
+    />
+    <fpc-form-check
+      type="radio"
+      [inline]="true"
+      name="deploymentConnectionAccess"
+      checkId="deploymentConnectionAccessSelected"
+      value="selected"
+      [label]="accessSelectedLabel"
+      [checked]="f.workspaceAccess === 'selected'"
+      (checkedChange)="$event && patchForm({ workspaceAccess: 'selected' })"
+      data-testid="deployment-connection-access-selected"
+    />
+  </fpc-form-check-group>
+  @if (f.workspaceAccess === 'selected') {
+    <fpc-form-field forId="deploymentConnectionWorkspaces" [label]="workspacesLabel" required>
+      <fpc-multi-select
+        controlId="deploymentConnectionWorkspaces"
+        [options]="workspaceOptions()"
+        [value]="f.allowedClientIds"
+        (valueChange)="patchForm({ allowedClientIds: [...$event] })"
+        [searchPlaceholder]="searchWorkspacesLabel"
+        [removeLabel]="removeWorkspaceLabel"
+        [emptyLabel]="noWorkspacesLabel"
+        data-testid="deployment-connection-workspaces"
+      />
+    </fpc-form-field>
+  }
+
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      [loading]="saving()"
+      [disabled]="saving() || !!formError()"
+      (clicked)="onSave()"
+      data-testid="deployment-connection-save"
+    >
+      {{ editing() ? saveLabel : createLabel }}
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="deleteConfirmOpen"
+  [title]="deleteTitle"
+  [message]="deleteConfirmMessage()"
+  [confirmLabel]="deleteLabel"
+  [danger]="true"
+  [busy]="saving()"
+  (confirmed)="onConfirmDelete()"
+  (cancelled)="pendingDelete.set(null)"
+/>
+
+<fpc-confirm-dialog
+  [(open)]="bulkDeleteConfirmOpen"
+  [title]="bulkDeleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [danger]="true"
+  (confirmed)="onConfirmBulkDelete()"
+/>

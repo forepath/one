@@ -1,3 +1,4 @@
+import type { DeploymentRunSummary, DeploymentWorkflowSummary } from '@forepath/agenstra/shared/util-opencode-config';
 import { ClientEntity, IIdentityNotificationPublisher } from '@forepath/identity/backend';
 import { INSTANCE_SCOPE_KEY, NotificationDispatcherService } from '@forepath/shared/backend';
 import { Injectable } from '@nestjs/common';
@@ -225,6 +226,19 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
     this.publish(type, this.toTicketPayload(ticket), ticket.clientId);
   }
 
+  /** Workflow metadata only; default inputs are never included (they may carry deployment parameters). */
+  publishDeploymentWorkflow(
+    type: 'deployment_workflow.created' | 'deployment_workflow.updated' | 'deployment_workflow.deleted',
+    workflow: DeploymentWorkflowSummary,
+  ): void {
+    this.publish(type, this.toDeploymentWorkflowPayload(workflow), workflow.clientId);
+  }
+
+  /** `created`: triggered through Agenstra (console / environment); `completed`: any recorded run finished. */
+  publishDeploymentRun(type: 'deployment_run.created' | 'deployment_run.completed', run: DeploymentRunSummary): void {
+    this.publish(type, this.toDeploymentRunPayload(run), run.clientId);
+  }
+
   publishTicketComment(clientId: string, comment: TicketCommentResponseDto | TicketCommentNotificationPayload): void {
     this.publish('ticket.comment.created', this.toTicketCommentPayload(comment), clientId);
   }
@@ -382,6 +396,51 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
       longSha: node.longSha ?? null,
       createdAt: this.toIsoString(node.createdAt),
       updatedAt: this.toIsoString(node.updatedAt),
+    };
+  }
+
+  private toDeploymentWorkflowPayload(workflow: DeploymentWorkflowSummary): Record<string, unknown> {
+    return {
+      id: workflow.id,
+      clientId: workflow.clientId,
+      connectionId: workflow.connectionId,
+      provider: workflow.provider,
+      name: workflow.name,
+      repository: workflow.repository,
+      workflow: workflow.workflow,
+      defaultRef: workflow.defaultRef,
+      scope: workflow.scope,
+      agentIds: workflow.agentIds,
+      agentTriggerEnabled: workflow.agentTriggerEnabled,
+      enabled: workflow.enabled,
+      approvalStatus: workflow.approvalStatus,
+      approvedAt: workflow.approvedAt,
+      createdBy: workflow.createdBy,
+      updatedBy: workflow.updatedBy,
+      createdByAgentId: workflow.createdByAgentId,
+      createdAt: workflow.createdAt,
+      updatedAt: workflow.updatedAt,
+    };
+  }
+
+  private toDeploymentRunPayload(run: DeploymentRunSummary): Record<string, unknown> {
+    return {
+      id: run.id,
+      clientId: run.clientId,
+      workflowId: run.workflowId,
+      workflowName: run.workflowName,
+      agentId: run.agentId,
+      providerRunId: run.providerRunId,
+      status: run.status,
+      conclusion: run.conclusion,
+      ref: run.ref,
+      sha: run.sha,
+      url: run.url,
+      triggeredBy: run.triggeredBy,
+      triggeredByUserId: run.triggeredByUserId,
+      startedAt: run.startedAt,
+      completedAt: run.completedAt,
+      createdAt: run.createdAt,
     };
   }
 

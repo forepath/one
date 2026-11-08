@@ -30,6 +30,8 @@ import { combineLatest, distinctUntilChanged, filter, map, pairwise, startWith }
 
 import { ThemeService } from '../theme.service';
 
+import { isAdminNavUrl, isMainSidebarUrl, isToolWindowUrl } from './container-nav-urls';
+
 interface AdminNavItem {
   activePaths: string[];
   icon: string;
@@ -97,7 +99,7 @@ export class AgentConsoleContainerComponent implements OnInit {
   readonly isPatUiEnabled = !usesStaticCredential(this.authEnvironment.authentication.type);
 
   /**
-   * True when on the main clients mask (not editor, deployments, etc.)
+   * True when on the main clients mask (not editor, VNC, etc.)
    */
   readonly isMainMask = toSignal(
     this.router.events
@@ -148,6 +150,11 @@ export class AgentConsoleContainerComponent implements OnInit {
   readonly tasksSidebarLink = toSignal(
     this.clientsFacade.activeClientId$.pipe(map((id): string[] => (id ? ['/tasks', id] : ['/tasks']))),
     { initialValue: ['/tasks'] },
+  );
+
+  readonly deploymentsSidebarLink = toSignal(
+    this.clientsFacade.activeClientId$.pipe(map((id): string[] => (id ? ['/deployments', id] : ['/deployments']))),
+    { initialValue: ['/deployments'] },
   );
 
   readonly graphsSidebarLink = toSignal(
@@ -266,11 +273,11 @@ export class AgentConsoleContainerComponent implements OnInit {
       label: $localize`:@@featureContainer-agentConfig:Agent config`,
     },
     {
-      routerLink: ['/imports/atlassian'],
-      activePaths: ['/imports'],
-      icon: 'bi-cloud-download',
-      title: $localize`:@@featureContainer-importTitle:Atlassian import (Jira & Confluence)`,
-      label: $localize`:@@featureContainer-imports:Imports`,
+      routerLink: ['/connections'],
+      activePaths: ['/connections'],
+      icon: 'bi-plug',
+      title: $localize`:@@featureContainer-connectionsTitle:Connections (CI/CD, Atlassian)`,
+      label: $localize`:@@featureContainer-connections:Connections`,
     },
   ];
 
@@ -299,7 +306,7 @@ export class AgentConsoleContainerComponent implements OnInit {
   );
 
   /**
-   * True on editor / deployments / VNC tool window routes (compact chrome, no main sidebar).
+   * True on editor / VNC tool window routes (compact chrome, no main sidebar).
    */
   readonly isToolWindowRoute = toSignal(
     this.router.events.pipe(
@@ -319,53 +326,17 @@ export class AgentConsoleContainerComponent implements OnInit {
     return $localize`:@@featureContainer-ariaLabelRole:Role ${role}:role:`;
   }
 
-  /** Main nav routes that keep the app sidebar (excludes agent editor/deployments/vnc). */
+  /** Main nav routes that keep the app sidebar (excludes agent editor/vnc). */
   private shouldShowMainSidebar(url: string): boolean {
-    const path = url.split(/[?#]/)[0] ?? url;
-    const onMainRoute =
-      path.includes('/clients') ||
-      path.includes('/users') ||
-      path.includes('/webhooks') ||
-      path.includes('/updates') ||
-      path.includes('/audit') ||
-      path.includes('/tickets') ||
-      path.includes('/imports') ||
-      path.includes('/knowledge') ||
-      path.includes('/plans') ||
-      path.includes('/tasks') ||
-      path.includes('/graphs') ||
-      path.includes('/agent-config') ||
-      path.includes('/settings/tokens') ||
-      path.includes('/settings/apps') ||
-      path === '/apps' ||
-      path.startsWith('/apps/') ||
-      path.includes('/settings/security');
-
-    if (!onMainRoute) {
-      return false;
-    }
-
-    return !this.isToolWindowUrl(url);
+    return isMainSidebarUrl(url);
   }
 
   private isToolWindowUrl(url: string): boolean {
-    const path = url.split(/[?#]/)[0] ?? url;
-
-    return path.includes('/editor') || path.includes('/deployments') || path.includes('/vnc');
+    return isToolWindowUrl(url);
   }
 
   private isAdminNavUrl(url: string): boolean {
-    const path = url.split(/[?#]/)[0] ?? url;
-
-    return (
-      path.includes('/users') ||
-      path === '/apps' ||
-      path.startsWith('/apps/') ||
-      path.includes('/agent-config') ||
-      path.includes('/imports') ||
-      path.includes('/webhooks') ||
-      path.includes('/updates')
-    );
+    return isAdminNavUrl(url);
   }
 
   /**

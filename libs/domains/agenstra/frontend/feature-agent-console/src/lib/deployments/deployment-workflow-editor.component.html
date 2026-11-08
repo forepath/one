@@ -1,0 +1,239 @@
+<fpc-modal [(open)]="open" size="lg" [scrollable]="true" [title]="mode() === 'create' ? createTitle : editTitle">
+  @if (error()) {
+    <fpc-alert variant="danger" class="mb-3" [message]="error()" />
+  }
+  @if (workflow()?.approvalStatus === 'pending') {
+    <fpc-alert
+      variant="warning"
+      class="mb-3"
+      [message]="pendingApprovalSaveHint"
+      data-testid="deployment-editor-pending-approval"
+    />
+  }
+  @if (!connectionsLoading() && connections().length === 0) {
+    <fpc-alert
+      variant="warning"
+      class="mb-3"
+      [message]="noConnectionsLabel"
+      data-testid="deployment-editor-no-connections"
+    />
+  }
+
+  <div class="row g-2">
+    <div class="col-md-6">
+      <fpc-form-field forId="deploymentEditorName" [label]="nameLabel" required>
+        <fpc-form-control
+          controlId="deploymentEditorName"
+          [maxLength]="limits.nameMaxLength"
+          [ngModel]="name()"
+          (ngModelChange)="name.set($event)"
+          data-testid="deployment-editor-name"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field forId="deploymentEditorConnection" [label]="connectionLabel" [hint]="connectionHint" required>
+        <fpc-form-control
+          controlId="deploymentEditorConnection"
+          controlType="select"
+          [ngModel]="connectionId()"
+          (ngModelChange)="onConnectionChange($event)"
+          data-testid="deployment-editor-connection"
+        >
+          <option value="" disabled>—</option>
+          @if (workflow(); as wf) {
+            @if (!selectedConnection() && connectionId() === wf.connectionId) {
+              <option [value]="wf.connectionId">{{ wf.connectionLabel }} ({{ providerLabel(wf.provider) }})</option>
+            }
+          }
+          @for (connection of connections(); track connection.id) {
+            <option [value]="connection.id">{{ connection.label }} ({{ providerLabel(connection.provider) }})</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+  </div>
+
+  <fpc-form-field forId="deploymentEditorDescription" [label]="descriptionLabel">
+    <fpc-form-control
+      controlType="textarea"
+      controlId="deploymentEditorDescription"
+      [rows]="2"
+      [maxLength]="limits.descriptionMaxLength"
+      [ngModel]="description()"
+      (ngModelChange)="description.set($event)"
+    />
+  </fpc-form-field>
+
+  <fpc-form-field forId="deploymentEditorRepository" [label]="repositoryLabel" required>
+    <fpc-typeahead-select
+      inputId="deploymentEditorRepository"
+      listboxId="deploymentEditorRepository-listbox"
+      [placeholder]="repositoryPlaceholder"
+      [disabled]="!connectionId()"
+      [query]="repository()"
+      (queryChange)="onRepositoryInput($event)"
+      [open]="repositoryMenuOpen()"
+      (openChange)="onRepositoryMenuOpenChange($event)"
+      [loading]="repositoriesLoading()"
+      (cleared)="onRepositoryInput('')"
+      (focusout)="onRepositoryCommit()"
+      data-testid="deployment-editor-repository"
+    >
+      <div fpcTypeaheadSuggestions>
+        @for (repo of repositories(); track repo.id) {
+          <button type="button" class="dropdown-item py-2 text-start" (mousedown)="onPickRepository(repo, $event)">
+            <span class="d-flex align-items-center gap-2 min-w-0">
+              <i
+                class="bi"
+                [class.bi-lock]="repo.private"
+                [class.bi-journal-code]="!repo.private"
+                aria-hidden="true"
+              ></i>
+              <span class="text-truncate small">{{ repo.fullName }}</span>
+            </span>
+          </button>
+        } @empty {
+          <span class="dropdown-item-text small text-body-secondary">{{ noRepositoriesLabel }}</span>
+        }
+      </div>
+    </fpc-typeahead-select>
+    @if (repositoryFullName(); as fullName) {
+      <span fpcFormFieldHint class="text-truncate">{{ fullName }}</span>
+    }
+  </fpc-form-field>
+
+  <div class="row g-2">
+    @if (needsProviderWorkflow()) {
+      <div class="col-md-6">
+        <fpc-form-field forId="deploymentEditorWorkflow" [label]="workflowLabel" [hint]="workflowHint" required>
+          @if (providerWorkflowOptions().length > 0) {
+            <fpc-form-control
+              controlId="deploymentEditorWorkflow"
+              controlType="select"
+              [ngModel]="providerWorkflow()"
+              (ngModelChange)="providerWorkflow.set($event)"
+              data-testid="deployment-editor-workflow"
+            >
+              <option value="" disabled>—</option>
+              @for (option of providerWorkflowOptions(); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </fpc-form-control>
+          } @else {
+            <fpc-form-control
+              controlId="deploymentEditorWorkflow"
+              controlClass="font-monospace"
+              placeholder="deploy.yml"
+              [maxLength]="limits.workflowMaxLength"
+              [ngModel]="providerWorkflow()"
+              (ngModelChange)="providerWorkflow.set($event)"
+              data-testid="deployment-editor-workflow"
+            />
+          }
+        </fpc-form-field>
+      </div>
+    }
+    <div [class.col-md-6]="needsProviderWorkflow()" [class.col-12]="!needsProviderWorkflow()">
+      <fpc-form-field forId="deploymentEditorDefaultRef" [label]="defaultRefLabel">
+        @if (branchOptions().length > 0) {
+          <fpc-form-control
+            controlId="deploymentEditorDefaultRef"
+            controlType="select"
+            [ngModel]="defaultRef()"
+            (ngModelChange)="defaultRef.set($event)"
+            data-testid="deployment-editor-default-ref"
+          >
+            <option value="">{{ repositoryDefaultLabel }}</option>
+            @for (branch of branchOptions(); track branch) {
+              <option [value]="branch">{{ branch }}</option>
+            }
+          </fpc-form-control>
+        } @else {
+          <fpc-form-control
+            controlId="deploymentEditorDefaultRef"
+            controlClass="font-monospace"
+            [placeholder]="repositoryDefaultLabel"
+            [maxLength]="limits.refMaxLength"
+            [ngModel]="defaultRef()"
+            (ngModelChange)="defaultRef.set($event)"
+            data-testid="deployment-editor-default-ref"
+          />
+        }
+      </fpc-form-field>
+    </div>
+  </div>
+
+  <fpc-map-editor
+    class="d-block mb-3"
+    [label]="defaultInputsLabel"
+    [hint]="defaultInputsHint"
+    [labels]="inputsLabels"
+    [value]="defaultInputs()"
+    (valueChange)="defaultInputs.set($event)"
+  />
+
+  <fpc-form-check-group class="d-block mb-2" legendId="deploymentEditorScopeLegend" [label]="scopeLabel">
+    <fpc-form-check
+      type="radio"
+      name="deploymentEditorScope"
+      checkId="deploymentEditorScopeGlobal"
+      value="global"
+      [label]="scopeGlobalLabel"
+      [checked]="scope() === 'global'"
+      (checkedChange)="$event && scope.set('global')"
+      data-testid="deployment-editor-scope-global"
+    />
+    <fpc-form-check
+      type="radio"
+      name="deploymentEditorScope"
+      checkId="deploymentEditorScopeEnvironments"
+      value="environments"
+      [label]="scopeEnvironmentsLabel"
+      [checked]="scope() === 'environments'"
+      (checkedChange)="$event && scope.set('environments')"
+      data-testid="deployment-editor-scope-environments"
+    />
+  </fpc-form-check-group>
+  @if (scope() === 'environments') {
+    <fpc-form-field forId="deploymentEditorEnvironments" [label]="environmentsLabel" required>
+      <fpc-multi-select
+        controlId="deploymentEditorEnvironments"
+        [options]="agentOptions()"
+        [value]="agentIds()"
+        (valueChange)="agentIds.set($event)"
+        [searchPlaceholder]="searchEnvironmentsLabel"
+        [removeLabel]="removeEnvironmentLabel"
+        [emptyLabel]="noEnvironmentsLabel"
+        data-testid="deployment-editor-environments"
+      />
+    </fpc-form-field>
+  }
+
+  <fpc-form-switch
+    class="d-block mb-2"
+    switchId="deploymentEditorAgentTrigger"
+    [label]="agentTriggerLabel"
+    [hint]="agentTriggerHint"
+    [checked]="agentTriggerEnabled()"
+    (checkedChange)="agentTriggerEnabled.set($event)"
+  />
+  <fpc-form-switch
+    switchId="deploymentEditorEnabled"
+    [label]="enabledLabel"
+    [checked]="enabled()"
+    (checkedChange)="enabled.set($event)"
+  />
+
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      [loading]="busy()"
+      [disabled]="busy() || !valid()"
+      (clicked)="onSubmit()"
+      data-testid="deployment-editor-submit"
+    >
+      {{ mode() === 'create' ? createLabel : saveLabel }}
+    </fpc-button>
+  </div>
+</fpc-modal>

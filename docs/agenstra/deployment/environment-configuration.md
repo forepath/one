@@ -291,10 +291,9 @@ When building `Dockerfile.api` images that mount `/var/run/docker.sock`:
 
 ### Dynamic provider plugins
 
-Optional runtime extensions for agents, CI/CD pipelines, and chat filters. See [Dynamic provider plugins](../features/dynamic-provider-plugins.md).
+Optional runtime extensions for agents and chat filters. See [Dynamic provider plugins](../features/dynamic-provider-plugins.md).
 
 - `DYNAMIC_AGENT_PROVIDERS` - Comma-separated extra agent backend packages.
-- `DYNAMIC_PIPELINE_PROVIDERS` - Comma-separated extra CI/CD provider packages.
 - `DYNAMIC_CHAT_FILTERS` - Comma-separated extra chat filter packages.
 - `DYNAMIC_PROVIDERS_FAIL_FAST` - When `true`, abort startup if a **critical** dynamic provider fails to load (manager registries are optional; this mainly affects shared loader policy when combined with critical env on other services).
 - `DYNAMIC_PROVIDER_PLUGIN_PATH` - Absolute plugin root for post-build loading (unset by default; use `/var/lib/forepath/provider-plugins` with the compose volume when enabling plugins).
@@ -421,6 +420,17 @@ Used by **agent controller** for [recurring agent tasks](../features/agent-tasks
 | `AGENT_TASKS_MAX_PER_AGENT`          | Tasks per environment (console and agent-created)               | `25`      |
 | `AGENT_TASK_HANDOFF_WAIT_TIMEOUT_MS` | How long a run waits for a handoff response before it fails     | `3600000` |
 | `AGENT_TASK_RUN_MAX_HANDOFFS`        | Handoffs one run may make in total (one open at a time)         | `3`       |
+
+## Workspace deployments
+
+Used by **agent controller** for [workspace deployments](../features/deployment.md) (runs of deployment workflows on GitHub Actions, GitLab CI and Jenkins connections).
+
+| Variable                                | Description                                                                                               | Default  |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------- | -------- |
+| `DEPLOYMENT_RUN_POLL_INTERVAL_MS`       | Coordinator interval that refreshes active runs from the provider (`0` disables)                          | `30000`  |
+| `DEPLOYMENT_RUN_POLL_BATCH`             | Active runs refreshed per poll; enabled workflows synced per history sync                                 | `50`     |
+| `DEPLOYMENT_HISTORY_SYNC_INTERVAL_MS`   | Coordinator interval that imports runs started on the provider as `external` (`0` disables)               | `300000` |
+| `DEPLOYMENT_REALTIME_RELAY_INTERVAL_MS` | API process: relays run / workflow changes made by the queue worker to the console sockets (`0` disables) | `5000`   |
 
 ## Agent handoffs
 

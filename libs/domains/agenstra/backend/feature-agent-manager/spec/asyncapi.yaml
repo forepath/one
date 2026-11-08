@@ -286,6 +286,27 @@ channels:
       `run`) use one socket only. The controller answers within the workspace bound to the connection, scoped to that
       agent, with `{ ok: true, tasks | task | runs | deleted | queued }` or `{ ok: false, error, status }`, and never
       forwards this event to browsers.
+  agents/agentDeploymentRequest:
+    address: agents/agentDeploymentRequest
+    messages:
+      agentDeploymentRequestEvent:
+        $ref: '#/components/messages/AgentDeploymentRequest'
+    description: |
+      Server → controller request with Socket.IO acknowledgement, emitted when the worker `agenstra` MCP server reads,
+      starts or manages the deployments of the agent's environment (`/api/agent-context/deployments`). `agentId` is the
+      agent authenticated by its context token. Reads (`listWorkflows`, `getWorkflow`, `listRuns`, `getRun`,
+      `getRunLogs`, `describeWorkflow`, `listConnections`) try every socket logged into the agent; mutations (`trigger`,
+      `cancelRun`, `createWorkflow`, `updateWorkflow`, `deleteWorkflow`, `syncWorkflow`) use one socket only (60 s ack timeout each, the controller
+      calls the CI/CD provider). `trigger` / `cancelRun` carry the `source` the manager determined from the context
+      ticket of the prompt (`{ kind: chat }` after the user approved it in the visible chat, `{ kind: task, taskId }`
+      for scheduled task runs, `{ kind: automation }` for ticket automation; plans and other hidden sessions are refused
+      before this event); the controller checks the task / automation opt-ins (`allowedDeploymentOperations`) itself.
+      Workflows created / updated by the agent are assigned to it only and pending until a workspace admin approves
+      them. The controller answers within the workspace bound to the connection, limited to the workflows available to
+      the agent, with `{ ok: true, workflows | runs | run | jobs | logs | cancelled | workflow | connections | deleted |
+      synced }` or `{ ok: false, error, status }`, and never forwards this event to browsers. Approval prompts of run actions in
+      visible chats arrive as `chatEvent` `question` frames with `subtype: context_deployment` and ids starting with
+      `ctx_dep_` (answered via the permission reply endpoint).
   agents/agentHandoffRequest:
     address: agents/agentHandoffRequest
     messages:
@@ -309,6 +330,12 @@ operations:
       $ref: '#/channels/agents~1agentHandoffRequest'
     messages:
       - $ref: '#/channels/agents~1agentHandoffRequest/messages/agentHandoffRequestEvent'
+  serverRequestsAgentDeployments:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1agentDeploymentRequest'
+    messages:
+      - $ref: '#/channels/agents~1agentDeploymentRequest/messages/agentDeploymentRequestEvent'
   serverRequestsAgentTasks:
     action: receive
     channel:
@@ -649,6 +676,70 @@ components:
           input:
             type: object
             description: create — targetAgentId, title, message, model; respond — status, response
+    AgentDeploymentRequest:
+      name: agentDeploymentRequest
+      title: Agent deployment request (ack)
+      contentType: application/json
+      payload:
+        type: object
+        required: [op, agentId]
+        properties:
+          op:
+            type: string
+            enum:
+              [
+                listWorkflows,
+                getWorkflow,
+                syncWorkflow,
+                listRuns,
+                getRun,
+                getRunLogs,
+                trigger,
+                cancelRun,
+                describeWorkflow,
+                listConnections,
+                createWorkflow,
+                updateWorkflow,
+                deleteWorkflow,
+              ]
+          agentId:
+            type: string
+            format: uuid
+          workflowId:
+            type: string
+            format: uuid
+            description: |
+              trigger / getWorkflow / syncWorkflow / describeWorkflow / updateWorkflow / deleteWorkflow (required), listRuns
+              (optional filter)
+          runId:
+            type: string
+            format: uuid
+            description: getRun / getRunLogs / cancelRun
+          jobId:
+            type: string
+            description: getRunLogs — provider job id (optional)
+          limit:
+            type: integer
+            minimum: 1
+            maximum: 100
+            description: listRuns only
+          input:
+            type: object
+            description: |
+              trigger — ref, inputs (string map); createWorkflow / updateWorkflow — connectionId, name, description,
+              repository, workflow, defaultRef, defaultInputs, agentTriggerEnabled, enabled (never scope / environments)
+          source:
+            type: object
+            description: trigger / cancelRun — who asks (determined by the manager, never agent input)
+            required: [kind]
+            properties:
+              kind:
+                type: string
+                enum: [chat, task, automation]
+              taskId:
+                type: string
+                format: uuid
+                description: kind task only
     AgentTaskRequest:
       name: agentTaskRequest
       title: Agent task request (ack)
@@ -669,7 +760,9 @@ components:
             description: all operations except list / create
           input:
             type: object
-            description: create / update — title, prompt, cronExpression, timezone, model, enabled, allowedHandoffAgentIds
+            description: |
+              create / update — title, prompt, cronExpression, timezone, model, enabled, allowedHandoffAgentIds,
+              allowedContentWrites, allowedDeploymentOperations
     AgentContextRequest:
       name: agentContextRequest
       title: Agent context request (ack)

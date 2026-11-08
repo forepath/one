@@ -10,7 +10,7 @@ This application provides a comprehensive user interface for managing clients, a
 
 This application provides:
 
-- **Chat Interface** Real-time bidirectional communication with AI agents via WebSocket
+- **Chat Interface** Real-time bidirectional communication with AI agents via WebSocket; permission-style prompts of the platform `agenstra` MCP server (context access, content changes `ctx_chg_…`, deployment actions `ctx_dep_…` with subtype `context_deployment`) are answered with **Allow once** / **Allow for this chat** / **Deny**
 - **Chat plan mode** Composer-driven explore/refine/execute planning flow with chat-scoped timeline cards and modal refinement UI ([Chat plan mode](../features/chat-plan-mode.md))
 - **Plans** `/plans/:clientId` (sidebar between Knowledge and Tasks): searchable plans of an environment, markdown editing until a plan is executed, refine with the agent, activity log, context reference (`plan:<sha>`); chat plan cards link here and **Select context** links plans of the environment as chat context ([Chat plan mode](../features/chat-plan-mode.md#plans-page))
 - **Monaco Editor** Integrated code editor with syntax highlighting and code completion
@@ -19,8 +19,10 @@ This application provides:
 - **Container Statistics** Real-time container resource monitoring (CPU, memory, network)
 - **Client Management** Create, update, and delete clients (remote agent-manager instances)
 - **Agent Management** Create, update, delete, start, stop, and restart agents; environment variables; models list
-- **Tickets** Workspace ticket board with comments, activity, migration, and automation runs ([Tickets and Workspaces](../features/tickets-and-workspaces.md))
-- **Deployments** CI/CD configuration and runs per agent ([Deployment](../features/deployment.md))
+- **Tickets** Workspace ticket board with comments, activity, migration, and automation runs ([Tickets and Workspaces](../features/tickets-and-workspaces.md)); the ticket automation settings include the opt-ins **Ticket changes** and **Allowed CI actions** (start / cancel pipeline runs without asking; `allowedDeploymentOperations`)
+- **Tasks** Recurring agent tasks with approval of agent-created / agent-changed tasks; the task editor and detail show **Allowed ticket / knowledge changes** and **Allowed CI actions** (**Start pipeline runs**, **Cancel pipeline runs**). Both opt-ins are approved content: a complete save of the form by a workspace user approves the task, and the pending-approval banner lists them. CI actions only work on pipelines that allow environment runs, with the default branch and defined inputs only
+- **Continuous Integration** (sidebar **CI**) Workspace pipelines (deployment workflows in the API) on instance-wide CI/CD connections (GitHub Actions, GitLab CI/CD, Jenkins): run, follow, cancel and audit runs, jobs and logs ([Deployment](../features/deployment.md))
+- **Connections** Admin area for CI/CD connections (rail tab **CI/CD**) and Atlassian connections
 - **Usage statistics** Controller-backed analytics slices for operators ([Usage Statistics](../features/usage-statistics.md))
 - **Message filters and web traffic** Security tabs in the agent configuration editor ([Message Filters](../features/message-filters.md), [Egress Filtering](../features/egress-filtering.md))
 - **Container isolation** Isolation level selection when creating environments, isolation badges and a host re-check action ([Container Isolation Levels](../features/container-isolation.md))
@@ -97,14 +99,20 @@ The application uses NgRx for state management with the following state slices:
 - Environment variables for the selected agent
 - Batch load and count helpers
 
-### Deployments state (`deployments`)
+### Workspace deployments state (`workspaceDeployments`)
 
-- Deployment configuration, repositories, branches, workflows
-- Runs, logs, job logs, cancel operations
+- `WorkspaceDeploymentsFacade` / `WorkspaceDeploymentsService` (`/clients/:clientId/deployments/...`)
+- Workflows page (server search / environment filter / paging) and the opened workflow, runs page (`{ items, total }`, status filter, search) and the opened run with its jobs, run / job logs, trigger / sync / cancel requests, connection options for the workflow editor
+- Live updates: `deploymentWorkflowUpsert`, `deploymentWorkflowRemoved` and `deploymentRunUpsert` on the clients socket (`client-deployments.constants.ts`, routed by `routeForwardedEvents$`); newer snapshots (`updatedAt`) win, new runs are prepended to an unfiltered first page
+- Approval of workflows an environment proposed or changed: `approveWorkflow(clientId, workflowId, updatedAt)` → `POST /clients/:clientId/deployments/workflows/:workflowId/approval` `{ updatedAt }` (the reviewed version); the approved workflow is upserted, a `409` (changed since it was reviewed) keeps the backend message and reloads the listed page and the opened workflow (`reloadDeploymentWorkflowAfterApprovalConflict$`)
+
+### Deployment connections state (`deploymentConnections`)
+
+- `DeploymentConnectionsFacade` / `DeploymentConnectionsService` (`/connections/deployments`, instance admins): connections page (server search / provider filter / paging), create / update / delete (409 message of connections still used by workflows), connection tests (result mirrored on the row)
 
 ### Tickets state (`tickets`, `ticketAutomation`)
 
-- Ticket lists and detail, comments, automation configuration and runs
+- Ticket lists and detail, comments, automation configuration (incl. `allowedContentWrites` and `allowedDeploymentOperations`) and runs
 
 ### Client agent autonomy state (`clientAgentAutonomy`)
 
@@ -141,14 +149,16 @@ Routes are defined in the framework library `libs/domains/agenstra/frontend/feat
 - **Identity** `identityAuthRoutes` (login, register, password reset, email confirmation, user management) merged under the shell component
 - `/audit`. Audit (authenticated)
 - `/agent-config`. Admin **Agent configuration** editor (structured + raw; **admin** guard); see [Agent configuration](../features/agent-configuration.md)
-- `/imports/atlassian`. Atlassian site connections and import configurations (**admin** guard; sidebar with Users)
+- `/connections` → redirect to `/connections/deployments` (**admin** popover item **Connections**)
+- `/connections/deployments`. **CI/CD connections** (GitHub Actions, GitLab CI/CD, Jenkins) (**admin** guard; page title "CI/CD connections")
+- `/connections/atlassian`. Atlassian connections and import configurations (**admin** guard; sidebar **Connections**)
+- `/deployments`, `/deployments/:clientId`. **Continuous Integration** page: the pipelines (deployment workflows) of a workspace (**authenticated**; requires active client context; sidebar **CI** (∞ icon, tooltip "CI/CD deployments") after **Tasks**); query `agentId` (environment filter), `workflowId`, `runId` (deep links, e.g. from the audit log; a `runId` without `workflowId` resolves the workflow from the run)
 - `/tickets`, `/tickets/:clientId`. Ticket board (**authenticated**; requires active client context)
 - `/clients`. Default **Manager** view: client and agent chat shell
   - `/clients`. Landing list
   - `/clients/:clientId`. Workspace selected
   - `/clients/:clientId/agents/:agentId`. Agent chat
   - `/clients/:clientId/agents/:agentId/editor`. Editor layout for the same shell
-  - `/clients/:clientId/agents/:agentId/deployments`. Deployments UI for the agent
 - `**` → redirect to `clients`
 
 ## Components
@@ -165,13 +175,25 @@ Main workspace shell: chat (including a **session switcher** for multiple user-v
 
 Ticket board and detail experience for the active workspace (`/tickets`).
 
+### DeploymentsBoardComponent
+
+The **Continuous Integration** page (`/deployments/:clientId`, `feature-agent-console/src/lib/deployments/`; sidebar **CI**). The UI calls deployment workflows **pipelines**; **GitHub workflow** only means the GitHub Actions workflow file a pipeline dispatches. Same workspace chip / switch and phone layout as Tasks and Plans: the pipelines table (state = last run or disabled, search, **Environment** and **Approval** (all / waiting for approval / approved; `?approval=`) filters in the Filters drawer, row menu open / run / edit / copy ID / delete, bulk sync / enable / disable / delete) and a detail column with the pipeline overview (connection, repository, GitHub workflow, default branch, default inputs, availability: all environments or the assigned ones, whether environments may trigger runs) and its run history (server-paged, search, status filter, live). A selected run opens in its own column to the right (like the chat at `/clients`; the pipeline and its run history stay visible, every column just narrows; on phones it replaces the pipeline) with its jobs table, a logs modal for the run or a job (copy, download; truncated tail note), **Open in provider** and **Cancel run** (confirmation). **Run pipeline** opens the trigger modal (ref with branch suggestions for workspace admins, free text otherwise; inputs prefilled from the pipeline defaults; optional environment). Workspace admins (`canManageWorkspaceConfiguration`) additionally create (**New pipeline**) / edit / delete pipelines (`DeploymentWorkflowEditorComponent`: connection, repository typeahead, GitHub workflow and default branch pickers, default inputs, scope, agent trigger, enabled); management actions are hidden for other members. The run history and the jobs table list the newest runs / jobs first by start time (runs that did not start yet fall back to their creation time, jobs without a start go last; live upserts keep that order); the jobs table starts sorted by **Started**, descending.
+
+Workflows an environment proposed or changed through the `agenstra` MCP server (`approvalStatus: pending`) show **Waiting for approval** (warning state with an hourglass icon) in the table and as a badge in the header, plus a banner with **Proposed by environment …** / **Changed by environment …** (the overview also lists **Proposed by**). Nobody can start runs meanwhile: **Run workflow** is disabled with a tooltip, also in the row menu. Workspace admins get **Approve** (header, banner and row menu) with a confirmation dialog that shows what is approved (connection, repository, workflow, default branch, inputs, availability and whether environments may trigger runs); the approval is bound to the reviewed `updatedAt`, and a `409` shows the backend message and reloads the workflow. Saving the complete workflow in the editor approves it as well (the editor always sends every content field and shows a hint for pending workflows).
+
+### DeploymentConnectionsAdminComponent
+
+Instance-admin CI/CD connections (`/connections/deployments`). Table with provider, authentication badge, workspace access, connection status (ok / failed / untested with last test time and message), single and bulk **Test**, delete with confirmation (the controller refuses connections still used by pipelines and the message is shown). The create / edit modal offers only the auth types the provider supports (`DEPLOYMENT_PROVIDER_AUTH_TYPES`, default first: GitHub App or token for GitHub; token for GitLab; username + API token for Jenkins), the base URL (required for Jenkins, optional for GitHub Enterprise / GitLab self-managed) and workspace access (all or selected workspaces). Secrets are write-only (empty on edit keeps the stored ones unless the auth type changes). Both connection pages are child routes of `ConnectionsShellComponent` (`/connections`), whose left rail (vertical tab group, like `/agent-config`) switches between **CI/CD** and **Atlassian**.
+
 ### AtlassianImportAdminComponent
 
-Administrative UI for Atlassian site connections and import configurations (`/imports/atlassian`).
+Administrative UI for Atlassian connections and import configurations (`/connections/atlassian`, **Connections → Atlassian**). Connections are created with an auth variant switch (**OAuth (service account)**, default: client id + client secret; **API token**: email + token), list their connection status (ok / failed / untested badge with last test time and message), and update it when **Test** runs. Secrets are write-only: leaving them empty on edit keeps the stored ones.
 
 ### AuditComponent
 
 Administrative audit views (`/audit`).
+
+Entity events of type `deployment_workflow` / `deployment_run` (approvals and environment changes are `updated` events of the workflow) are labelled **Pipeline** / **Pipeline run** and link to `/deployments/:clientId?workflowId=…` / `?runId=…` (deleted workflows are not linked).
 
 ### FileEditorComponent
 
@@ -309,7 +331,7 @@ Before deploying to production:
 - **[File Management Feature](../features/file-management.md)** File operations guide
 - **[Version Control Feature](../features/version-control.md)** Git operations guide
 - **[Tickets and Workspaces](../features/tickets-and-workspaces.md)** Ticket board and automation
-- **[Deployment](../features/deployment.md)** CI/CD from the console
+- **[Deployment](../features/deployment.md)** Workspace deployment workflows and CI/CD connections
 - **[Usage Statistics](../features/usage-statistics.md)** Controller analytics
 - **[Message Filters](../features/message-filters.md)** Layered chat message filters
 - **[Egress Filtering](../features/egress-filtering.md)** Per-environment web traffic filtering

@@ -63,6 +63,19 @@ describe('AgentTaskRequestHandlerService', () => {
     });
   });
 
+  it('forwards proposed deployment operations (strings only) to the task service', async () => {
+    await handler.handle(clientId, {
+      op: 'update',
+      agentId,
+      taskId,
+      input: { allowedDeploymentOperations: ['deployment.trigger', 3, null] },
+    });
+
+    expect(tasks['updateForAgent']).toHaveBeenCalledWith(clientId, agentId, taskId, {
+      allowedDeploymentOperations: ['deployment.trigger'],
+    });
+  });
+
   it('shapes results per operation', async () => {
     await expect(handler.handle(clientId, { op: 'list', agentId })).resolves.toEqual({
       ok: true,

@@ -1,8 +1,10 @@
 import {
   AGENSTRA_TASKS_MCP_TOOL_NAMES,
   AGENT_CONTENT_WRITE_OPERATIONS,
+  AGENT_DEPLOYMENT_OPERATIONS,
   AGENT_TASK_LIMITS,
   normalizeAgentContentWriteOperations,
+  normalizeAgentDeploymentOperations,
   type AgentTaskCreateInput,
   type AgentTaskUpdateInput,
 } from '@forepath/agenstra/shared/util-opencode-config';
@@ -51,6 +53,14 @@ const TASK_FIELD_PROPERTIES = {
     description:
       'Ticket / knowledge page changes the runs may make with the agenstra_content_* tools (e.g. "ticket.create", ' +
       '"ticket.comment"). Only takes effect after a user approved the task; empty means the runs cannot change any.',
+  },
+  allowedDeploymentOperations: {
+    type: 'array',
+    items: { type: 'string', enum: [...AGENT_DEPLOYMENT_OPERATIONS] },
+    description:
+      'Deployment run actions the runs may take with deployments_trigger / deployments_cancel_run ' +
+      '("deployment.trigger", "deployment.cancel"; only on workflows that allow environment triggers). Only takes ' +
+      'effect after a user approved the task; empty means the runs cannot start or cancel deployments.',
   },
 };
 
@@ -154,6 +164,10 @@ function taskFields(args: Record<string, unknown>): AgentTaskUpdateInput {
 
   if (Array.isArray(args['allowedContentWrites'])) {
     fields.allowedContentWrites = normalizeAgentContentWriteOperations(args['allowedContentWrites']);
+  }
+
+  if (Array.isArray(args['allowedDeploymentOperations'])) {
+    fields.allowedDeploymentOperations = normalizeAgentDeploymentOperations(args['allowedDeploymentOperations']);
   }
 
   return fields;

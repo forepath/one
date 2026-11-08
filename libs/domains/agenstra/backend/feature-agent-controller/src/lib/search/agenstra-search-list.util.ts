@@ -133,6 +133,30 @@ const SEARCH_FIELD_COLUMNS: Partial<
     label: (alias) => `${alias}.label`,
     baseUrl: (alias) => `${alias}.base_url`,
     accountEmail: (alias) => `${alias}.account_email`,
+    oauthClientId: (alias) => `${alias}.oauth_client_id`,
+    id: (alias) => `CAST(${alias}.id AS text)`,
+  },
+  'deployment-connections': {
+    label: (alias) => `${alias}.label`,
+    baseUrl: (alias) => `${alias}.base_url`,
+    provider: (alias) => `${alias}.provider`,
+    id: (alias) => `CAST(${alias}.id AS text)`,
+  },
+  'deployment-workflows': {
+    name: (alias) => `${alias}.name`,
+    description: (alias) => `${alias}.description`,
+    label: (alias) => `${alias}.repository`,
+    workflow: (alias) => `${alias}.workflow`,
+    id: (alias) => `CAST(${alias}.id AS text)`,
+  },
+  'deployment-runs': {
+    title: (alias) => `${alias}.name`,
+    // Workflow name: only through a joined workflow (`extraColumns.name`).
+    name: () => undefined,
+    status: (alias) => `${alias}.status`,
+    label: (alias) => `${alias}.ref`,
+    sha: (alias) => `${alias}.sha`,
+    providerRunId: (alias) => `${alias}.provider_run_id`,
     id: (alias) => `CAST(${alias}.id AS text)`,
   },
   'import-configs': {

@@ -1,5 +1,5 @@
-<div class="section__content-wrapper atlassian-import-admin d-flex flex-column border-top">
-  <fpc-page-header [title]="pageTitle" />
+<div class="section__content-wrapper atlassian-import-admin d-flex flex-column">
+  <fpc-page-header [title]="pageTitle" [subtitle]="pageSubtitle" />
 
   <fpc-tab-group class="flex-shrink-0" [activeId]="selectedLane()" (activeIdChange)="onSelectedLaneTabChange($event)">
     @for (lane of adminLanes; track lane) {
@@ -289,7 +289,37 @@
     [closeOnBackdrop]="false"
     (closed)="onCreateConnectionModalHidden()"
   >
+    @let newErrors = newConnectionErrors();
     <div class="row g-2">
+      <div class="col-12">
+        <fpc-form-check-group
+          inline
+          i18n-label="@@featureAtlassianImportAdmin-authTypeLabel"
+          label="Authentication"
+          legendId="newConnAuthTypeLegend"
+        >
+          @for (option of authTypeOptions; track option.value) {
+            <fpc-form-check
+              type="radio"
+              inline
+              name="newConnAuthType"
+              [checkId]="'newConnAuthType-' + option.value"
+              [value]="option.value"
+              [checked]="newConnection.authType === option.value"
+              (valueSelect)="onNewConnectionAuthTypeSelect($event)"
+              [label]="option.label"
+              data-testid="atlassian-connection-auth-type"
+            />
+          }
+        </fpc-form-check-group>
+        <p class="form-text mt-1 mb-0">
+          @for (option of authTypeOptions; track option.value) {
+            @if (newConnection.authType === option.value) {
+              {{ option.hint }}
+            }
+          }
+        </p>
+      </div>
       <div class="col-md-6">
         <fpc-form-field
           forId="newConnLabel"
@@ -300,7 +330,13 @@
         </fpc-form-field>
       </div>
       <div class="col-md-6">
-        <fpc-form-field forId="newConnBase" i18n-label="@@featureAtlassianImportAdmin-newConnBaseUrl" label="Base URL">
+        <fpc-form-field
+          forId="newConnBase"
+          i18n-label="@@featureAtlassianImportAdmin-newConnBaseUrl"
+          label="Base URL"
+          required
+          [error]="connectionFieldError(newErrors, 'baseUrl')"
+        >
           <fpc-form-control
             controlId="newConnBase"
             [(ngModel)]="newConnection.baseUrl"
@@ -309,29 +345,67 @@
           />
         </fpc-form-field>
       </div>
-      <div class="col-md-6">
-        <fpc-form-field
-          forId="newConnEmail"
-          i18n-label="@@featureAtlassianImportAdmin-newConnAccountEmail"
-          label="Account email"
-        >
-          <fpc-form-control controlId="newConnEmail" [(ngModel)]="newConnection.accountEmail" />
-        </fpc-form-field>
-      </div>
-      <div class="col-md-6">
-        <fpc-form-field
-          forId="newConnToken"
-          i18n-label="@@featureAtlassianImportAdmin-newConnApiToken"
-          label="API token"
-        >
-          <fpc-form-control
-            controlId="newConnToken"
-            inputType="password"
-            [(ngModel)]="newConnection.apiToken"
-            autocomplete="new-password"
-          />
-        </fpc-form-field>
-      </div>
+      @if (newConnection.authType === 'app') {
+        <div class="col-md-6">
+          <fpc-form-field
+            forId="newConnClientId"
+            i18n-label="@@featureAtlassianImportAdmin-oauthClientId"
+            label="Client ID"
+            required
+            [error]="connectionFieldError(newErrors, 'oauthClientId')"
+          >
+            <fpc-form-control
+              controlId="newConnClientId"
+              [(ngModel)]="newConnection.oauthClientId"
+              autocomplete="off"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-md-6">
+          <fpc-form-field
+            forId="newConnClientSecret"
+            i18n-label="@@featureAtlassianImportAdmin-oauthClientSecret"
+            label="Client secret"
+            required
+            [error]="connectionFieldError(newErrors, 'oauthClientSecret')"
+          >
+            <fpc-form-control
+              controlId="newConnClientSecret"
+              inputType="password"
+              [(ngModel)]="newConnection.oauthClientSecret"
+              autocomplete="new-password"
+            />
+          </fpc-form-field>
+        </div>
+      } @else {
+        <div class="col-md-6">
+          <fpc-form-field
+            forId="newConnEmail"
+            i18n-label="@@featureAtlassianImportAdmin-newConnAccountEmail"
+            label="Account email"
+            required
+            [error]="connectionFieldError(newErrors, 'accountEmail')"
+          >
+            <fpc-form-control controlId="newConnEmail" inputType="email" [(ngModel)]="newConnection.accountEmail" />
+          </fpc-form-field>
+        </div>
+        <div class="col-md-6">
+          <fpc-form-field
+            forId="newConnToken"
+            i18n-label="@@featureAtlassianImportAdmin-newConnApiToken"
+            label="API token"
+            required
+            [error]="connectionFieldError(newErrors, 'apiToken')"
+          >
+            <fpc-form-control
+              controlId="newConnToken"
+              inputType="password"
+              [(ngModel)]="newConnection.apiToken"
+              autocomplete="new-password"
+            />
+          </fpc-form-field>
+        </div>
+      }
     </div>
     <div *fpcModalFooter>
       <fpc-button
@@ -615,7 +689,35 @@
     (closed)="onEditConnectionModalHidden()"
   >
     @if (connectionToEdit) {
+      @let editErrors = editConnectionErrors();
+      @let switching = editConnectionSwitchesAuthType();
       <div class="row g-2">
+        <div class="col-12">
+          <fpc-form-check-group
+            inline
+            i18n-label="@@featureAtlassianImportAdmin-authTypeLabel"
+            label="Authentication"
+            legendId="editConnAuthTypeLegend"
+          >
+            @for (option of authTypeOptions; track option.value) {
+              <fpc-form-check
+                type="radio"
+                inline
+                name="editConnAuthType"
+                [checkId]="'editConnAuthType-' + option.value"
+                [value]="option.value"
+                [checked]="editConnection.authType === option.value"
+                (valueSelect)="onEditConnectionAuthTypeSelect($event)"
+                [label]="option.label"
+              />
+            }
+          </fpc-form-check-group>
+          @if (switching) {
+            <p class="form-text mt-1 mb-0" i18n="@@featureAtlassianImportAdmin-authTypeSwitchHint">
+              Switching the authentication replaces the stored credentials; enter the new ones.
+            </p>
+          }
+        </div>
         <div class="col-md-6">
           <fpc-form-field forId="editConnLabel" i18n-label="@@featureAtlassianImportAdmin-editConnLabel" label="Label">
             <fpc-form-control controlId="editConnLabel" [(ngModel)]="editConnection.label" />
@@ -626,33 +728,103 @@
             forId="editConnBase"
             i18n-label="@@featureAtlassianImportAdmin-editConnBaseUrl"
             label="Base URL"
+            required
+            [error]="connectionFieldError(editErrors, 'baseUrl')"
           >
             <fpc-form-control controlId="editConnBase" [(ngModel)]="editConnection.baseUrl" />
           </fpc-form-field>
         </div>
-        <div class="col-md-6">
-          <fpc-form-field
-            forId="editConnEmail"
-            i18n-label="@@featureAtlassianImportAdmin-editConnAccountEmail"
-            label="Account email"
-          >
-            <fpc-form-control controlId="editConnEmail" [(ngModel)]="editConnection.accountEmail" />
-          </fpc-form-field>
-        </div>
-        <div class="col-md-6">
-          <fpc-form-field
-            forId="editConnToken"
-            i18n-label="@@featureAtlassianImportAdmin-editConnNewApiTokenOptional"
-            label="New API token (optional)"
-          >
-            <fpc-form-control
-              controlId="editConnToken"
-              inputType="password"
-              [(ngModel)]="editConnection.apiToken"
-              autocomplete="new-password"
-            />
-          </fpc-form-field>
-        </div>
+        @if (editConnection.authType === 'app') {
+          <div class="col-md-6">
+            <fpc-form-field
+              forId="editConnClientId"
+              i18n-label="@@featureAtlassianImportAdmin-oauthClientId"
+              label="Client ID"
+              required
+              [error]="connectionFieldError(editErrors, 'oauthClientId')"
+            >
+              <fpc-form-control
+                controlId="editConnClientId"
+                [(ngModel)]="editConnection.oauthClientId"
+                autocomplete="off"
+              />
+            </fpc-form-field>
+          </div>
+          <div class="col-md-6">
+            @if (switching) {
+              <fpc-form-field
+                forId="editConnClientSecret"
+                i18n-label="@@featureAtlassianImportAdmin-oauthClientSecret"
+                label="Client secret"
+                required
+                [error]="connectionFieldError(editErrors, 'oauthClientSecret')"
+              >
+                <fpc-form-control
+                  controlId="editConnClientSecret"
+                  inputType="password"
+                  [(ngModel)]="editConnection.oauthClientSecret"
+                  autocomplete="new-password"
+                />
+              </fpc-form-field>
+            } @else {
+              <fpc-form-field
+                forId="editConnClientSecret"
+                i18n-label="@@featureAtlassianImportAdmin-editConnNewClientSecretOptional"
+                label="New client secret (optional)"
+              >
+                <fpc-form-control
+                  controlId="editConnClientSecret"
+                  inputType="password"
+                  [(ngModel)]="editConnection.oauthClientSecret"
+                  autocomplete="new-password"
+                />
+              </fpc-form-field>
+            }
+          </div>
+        } @else {
+          <div class="col-md-6">
+            <fpc-form-field
+              forId="editConnEmail"
+              i18n-label="@@featureAtlassianImportAdmin-editConnAccountEmail"
+              label="Account email"
+              required
+              [error]="connectionFieldError(editErrors, 'accountEmail')"
+            >
+              <fpc-form-control controlId="editConnEmail" inputType="email" [(ngModel)]="editConnection.accountEmail" />
+            </fpc-form-field>
+          </div>
+          <div class="col-md-6">
+            @if (switching) {
+              <fpc-form-field
+                forId="editConnToken"
+                i18n-label="@@featureAtlassianImportAdmin-newConnApiToken"
+                label="API token"
+                required
+                [error]="connectionFieldError(editErrors, 'apiToken')"
+              >
+                <fpc-form-control
+                  controlId="editConnToken"
+                  inputType="password"
+                  [(ngModel)]="editConnection.apiToken"
+                  autocomplete="new-password"
+                />
+              </fpc-form-field>
+            } @else {
+              <fpc-form-field
+                forId="editConnToken"
+                i18n-label="@@featureAtlassianImportAdmin-editConnNewApiTokenOptional"
+                label="New API token (optional)"
+              >
+                <fpc-form-control
+                  controlId="editConnToken"
+                  inputType="password"
+                  [(ngModel)]="editConnection.apiToken"
+                  autocomplete="new-password"
+                />
+              </fpc-form-field>
+            }
+          </div>
+        }
       </div>
     }
     @if (connectionToEdit) {

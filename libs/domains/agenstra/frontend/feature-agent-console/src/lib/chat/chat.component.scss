@@ -1,4 +1,4 @@
-// Chat keeps its own column grammar (conditional editor / deployment / desktop columns with their own
+// Chat keeps its own column grammar (conditional editor / desktop columns with their own
 // dividers); the former shared-local `section.scss` rules live here now.
 .section__row {
   display: flex;
@@ -53,11 +53,9 @@
 }
 
 .section__column {
-  // Tool windows (editor, deployments, desktop) are their own phone view; `mobile-hidden` decides when they yield to
-  // the chat (AG-01: the deployments / desktop columns were hidden on phones unconditionally).
-  &:not(.active-column):not(.section__column--editor):not(.section__column--deployment-manager):not(
-      .section__column--virtual-desktop
-    ) {
+  // Tool windows (editor, desktop) are their own phone view; `mobile-hidden` decides when they yield to the chat
+  // (AG-01: the desktop column was hidden on phones unconditionally).
+  &:not(.active-column):not(.section__column--editor):not(.section__column--virtual-desktop) {
     @media (max-width: 767.98px) {
       display: none !important;
     }
@@ -68,21 +66,6 @@
   flex: 5;
 
   // Hide editor on mobile when chat is open (chat overlays it)
-  @media (max-width: 767.98px) {
-    &.mobile-hidden {
-      display: none !important;
-    }
-  }
-}
-
-.section__column--deployment-manager {
-  flex: 5;
-  min-height: 0; // Critical for flex scrolling
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-
-  // Hide deployment manager on mobile when chat is open (chat overlays it)
   @media (max-width: 767.98px) {
     &.mobile-hidden {
       display: none !important;

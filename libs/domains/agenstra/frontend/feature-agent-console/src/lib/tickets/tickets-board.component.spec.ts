@@ -243,6 +243,30 @@ describe('TicketsBoardComponent (Table | Lanes)', () => {
     expect(facade.update).toHaveBeenCalledWith('a', { status: 'in_progress' });
   });
 
+  it('sends the allowed deployment actions of the ticket automation in canonical order', async () => {
+    await create();
+    const component = fixture.componentInstance;
+
+    expect(component.automationDeploymentOperationOptions.map((option) => option.operation)).toEqual([
+      'deployment.trigger',
+      'deployment.cancel',
+    ]);
+    expect(component['buildTicketAutomationPatchDto']().allowedDeploymentOperations).toEqual([]);
+
+    component.onAutomationDeploymentOperationToggle('deployment.cancel', true);
+    component.onAutomationDeploymentOperationToggle('deployment.trigger', true);
+
+    expect(component.isAutomationDeploymentOperationAllowed('deployment.cancel')).toBe(true);
+    expect(component['buildTicketAutomationPatchDto']().allowedDeploymentOperations).toEqual([
+      'deployment.trigger',
+      'deployment.cancel',
+    ]);
+
+    component.onAutomationDeploymentOperationToggle('deployment.trigger', false);
+
+    expect(component['buildTicketAutomationPatchDto']().allowedDeploymentOperations).toEqual(['deployment.cancel']);
+  });
+
   it('a drag does not open the ticket; a plain click does', async () => {
     await create({ view: 'lanes' });
     const open = jest.spyOn(fixture.componentInstance, 'openTicketDetailFlow').mockImplementation(() => undefined);

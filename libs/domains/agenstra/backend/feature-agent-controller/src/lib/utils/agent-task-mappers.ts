@@ -19,6 +19,7 @@ export function agentTaskEntityToDto(task: AgentTaskEntity): AgentTaskResponseDt
     enabled: task.enabled,
     allowedHandoffAgentIds: [...(task.allowedHandoffAgentIds ?? [])],
     allowedContentWrites: [...(task.allowedContentWrites ?? [])],
+    allowedDeploymentOperations: [...(task.allowedDeploymentOperations ?? [])],
     nextRunAt: iso(task.nextRunAt),
     lastRunAt: iso(task.lastRunAt),
     lastRunStatus: task.lastRunStatus ?? null,

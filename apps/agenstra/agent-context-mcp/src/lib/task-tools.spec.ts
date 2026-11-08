@@ -15,6 +15,7 @@ const TASK: AgentTaskSummary = {
   enabled: true,
   allowedHandoffAgentIds: [],
   allowedContentWrites: [],
+  allowedDeploymentOperations: [],
   nextRunAt: '2026-10-22T09:00:00.000Z',
   lastRunAt: null,
   lastRunStatus: null,
@@ -112,6 +113,28 @@ describe('task tools', () => {
     await call('tasks_update', { taskId: 'task-1', allowedHandoffAgentIds: ['agent-b', 42, null] });
 
     expect(client.updateTask).toHaveBeenCalledWith('task-1', { allowedHandoffAgentIds: ['agent-b'] });
+  });
+
+  it('passes proposed content and deployment opt-ins (known operations only) on to the platform', async () => {
+    client.updateTask.mockResolvedValue(TASK);
+
+    await call('tasks_update', {
+      taskId: 'task-1',
+      allowedContentWrites: ['ticket.comment', 'ticket.drop'],
+      allowedDeploymentOperations: ['deployment.cancel', 'deployment.delete', 'deployment.trigger'],
+    });
+
+    expect(client.updateTask).toHaveBeenCalledWith('task-1', {
+      allowedContentWrites: ['ticket.comment'],
+      allowedDeploymentOperations: ['deployment.trigger', 'deployment.cancel'],
+    });
+
+    const schema = TASK_TOOL_DEFINITIONS.find((tool) => tool.name === 'tasks_create')?.inputSchema.properties as Record<
+      string,
+      { items?: { enum?: string[] } }
+    >;
+
+    expect(schema['allowedDeploymentOperations'].items?.enum).toEqual(['deployment.trigger', 'deployment.cancel']);
   });
 
   it('rejects creation without the required fields', async () => {

@@ -55,6 +55,22 @@ describe('AgentToolCallsService', () => {
     await expect(calls.claim(agentId, ticket, 'agenstra_context_get', isGet, 0)).resolves.toBe(false);
   });
 
+  it('authorizes deployment tool calls (unattended trigger / cancel / status)', async () => {
+    platformTurn();
+    calls.observe(agentId, tool('msg-answer', 'c9', 'agenstra_deployments_trigger', { ticket, workflowId: 'wf-1' }));
+
+    await expect(
+      calls.claim(agentId, ticket, 'agenstra_deployments_trigger', (input) => input['workflowId'] === 'wf-1', 0),
+    ).resolves.toBe(true);
+  });
+
+  it('ignores tool calls outside the platform families', async () => {
+    platformTurn();
+    calls.observe(agentId, tool('msg-answer', 'c10', 'agenstra_tasks_run', { ticket }));
+
+    await expect(calls.claim(agentId, ticket, 'agenstra_tasks_run', () => true, 0)).resolves.toBe(false);
+  });
+
   it('rejects tool calls answering prompts injected later into the same session', async () => {
     platformTurn();
     // A background process read the ticket and posted its own prompt (OpenCode API) into the hidden session.

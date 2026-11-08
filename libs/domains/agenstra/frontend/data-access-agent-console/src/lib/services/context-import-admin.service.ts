@@ -24,7 +24,7 @@ export class ContextImportAdminService {
   private readonly environment = inject<Environment>(ENVIRONMENT);
 
   private get baseUrl(): string {
-    return `${this.environment.console.urls.restApi}/imports/atlassian`;
+    return `${this.environment.console.urls.restApi}/connections/atlassian`;
   }
 
   listConnections(params?: ListAtlassianConnectionsParams): Observable<AtlassianSiteConnectionDto[]> {

@@ -1,4 +1,9 @@
-import { ControllerJobName, RETIRED_CONTROLLER_REPEATABLE_JOBS, getControllerRepeatableJobs } from './job-registry';
+import {
+  ControllerJobName,
+  RETIRED_CONTROLLER_REPEATABLE_JOBS,
+  getControllerRepeatableJobs,
+  getDeploymentRunPollBatchSize,
+} from './job-registry';
 
 describe('controller job-registry', () => {
   it('defines coordinator and unit job names', () => {
@@ -34,6 +39,33 @@ describe('controller job-registry', () => {
     // Must match WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME in feature-agent-controller (enqueued from the library).
     expect(ControllerJobName.WORKSPACE_GRAPH_SNAPSHOT_UNIT).toBe('workspace-graph-snapshot.unit');
     expect(job?.everyMs).toBe(60_000);
+  });
+
+  it('schedules the deployment run poll and history sync coordinators by default', () => {
+    const jobs = getControllerRepeatableJobs();
+    const poll = jobs.find((entry) => entry.name === ControllerJobName.DEPLOYMENT_RUN_POLL_COORDINATOR);
+    const history = jobs.find((entry) => entry.name === ControllerJobName.DEPLOYMENT_HISTORY_SYNC_COORDINATOR);
+
+    expect(poll?.everyMs).toBe(30_000);
+    expect(history?.everyMs).toBe(300_000);
+  });
+
+  it('disables the deployment coordinators with interval 0', () => {
+    process.env.DEPLOYMENT_RUN_POLL_INTERVAL_MS = '0';
+    process.env.DEPLOYMENT_HISTORY_SYNC_INTERVAL_MS = '0';
+    const names = getControllerRepeatableJobs().map((job) => job.name);
+
+    expect(names).not.toContain(ControllerJobName.DEPLOYMENT_RUN_POLL_COORDINATOR);
+    expect(names).not.toContain(ControllerJobName.DEPLOYMENT_HISTORY_SYNC_COORDINATOR);
+    delete process.env.DEPLOYMENT_RUN_POLL_INTERVAL_MS;
+    delete process.env.DEPLOYMENT_HISTORY_SYNC_INTERVAL_MS;
+  });
+
+  it('reads the deployment poll batch size', () => {
+    expect(getDeploymentRunPollBatchSize()).toBe(50);
+    process.env.DEPLOYMENT_RUN_POLL_BATCH = '7';
+    expect(getDeploymentRunPollBatchSize()).toBe(7);
+    delete process.env.DEPLOYMENT_RUN_POLL_BATCH;
   });
 
   it('getControllerRepeatableJobs includes search reindex coordinator', () => {

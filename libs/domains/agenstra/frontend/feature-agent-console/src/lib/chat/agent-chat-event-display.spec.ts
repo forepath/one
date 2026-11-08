@@ -405,6 +405,54 @@ describe('agent-chat-event-display', () => {
     });
   });
 
+  it('classifies Agenstra deployment action prompts as permission replies (once / for this chat / reject)', () => {
+    const options = [
+      { id: 'once', label: 'Allow once' },
+      { id: 'always', label: 'Allow for this chat' },
+      { id: 'reject', label: 'Deny' },
+    ];
+    const row = mapForwardedChatEventToDisplayRow({
+      payload: successEnvelope({
+        eventId: 'ev-dep',
+        agentId: 'a1',
+        correlationId: 'c1',
+        sequence: 1,
+        timestamp: '2026-11-03T12:00:00.000Z',
+        kind: 'question',
+        payload: {
+          questionId: 'ctx_dep_0123456789abcdef01234567',
+          prompt: 'The agent wants to start a run of the deployment workflow "Deploy API" (org/api, branch main).',
+          subtype: 'context_deployment',
+          options,
+        },
+      }),
+      timestamp: 1000,
+    });
+
+    expect(row?.questionInteraction).toMatchObject({
+      questionId: 'ctx_dep_0123456789abcdef01234567',
+      replyKind: 'permission',
+      options,
+      prompt: expect.stringContaining('Deploy API'),
+    });
+
+    // The id prefix alone is enough (older manager builds without the subtype).
+    const withoutSubtype = mapForwardedChatEventToDisplayRow({
+      payload: successEnvelope({
+        eventId: 'ev-dep-2',
+        agentId: 'a1',
+        correlationId: 'c1',
+        sequence: 2,
+        timestamp: '2026-11-03T12:00:01.000Z',
+        kind: 'question',
+        payload: { questionId: 'ctx_dep_abcdef', prompt: 'Cancel run #42?', options },
+      }),
+      timestamp: 1001,
+    });
+
+    expect(withoutSubtype?.questionInteraction?.replyKind).toBe('permission');
+  });
+
   it('mapForwardedChatEventsToDisplayRows merges consecutive toolCall and toolResult with same id', () => {
     const rows = mapForwardedChatEventsToDisplayRows([
       {

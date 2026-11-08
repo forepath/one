@@ -31,7 +31,6 @@ import { ClientAgentAutonomyController } from '../controllers/client-agent-auton
 import { ClientStatisticsController } from '../controllers/client-statistics.controller';
 import { ClientsAgentAutomationProxyController } from '../controllers/clients-agent-automation-proxy.controller';
 import { ClientsConfigurationOverridesController } from '../controllers/clients-configuration-overrides.controller';
-import { ClientsDeploymentsController } from '../controllers/clients-deployments.controller';
 import { ClientsVcsController } from '../controllers/clients-vcs.controller';
 import { ClientsController } from '../controllers/clients.controller';
 import { ClientsGraphController } from '../controllers/clients-graph.controller';
@@ -109,7 +108,6 @@ import { AutoContextResolverService } from '../services/auto-context-resolver.se
 import { AutonomousRunOrchestratorService } from '../services/autonomous-run-orchestrator.service';
 import { ClientAgentAutonomyService } from '../services/client-agent-autonomy.service';
 import { ClientAgentChatsProxyService } from '../services/client-agent-chats-proxy.service';
-import { ClientAgentDeploymentsProxyService } from '../services/client-agent-deployments-proxy.service';
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentGraphProxyService } from '../services/client-agent-graph-proxy.service';
@@ -166,6 +164,22 @@ import { WorkspaceSearchIndexService } from '../search/workspace-search-index.se
 
 import { AgenstraNotificationsModule, AGENSTRA_CONTROLLER_QUEUE_NAME } from './agenstra-notifications.module';
 import { AgenstraUpdatesModule } from './agenstra-updates.module';
+import { ClientDeploymentsController } from '../controllers/client-deployments.controller';
+import { DeploymentConnectionsController } from '../controllers/deployment-connections.controller';
+import { DeploymentConnectionEntity } from '../entities/deployment-connection.entity';
+import { DeploymentRunEntity } from '../entities/deployment-run.entity';
+import { DeploymentWorkflowEntity } from '../entities/deployment-workflow.entity';
+import { DeploymentProviderRegistry } from '../providers/deployment/deployment-provider.registry';
+import { GitHubDeploymentProvider } from '../providers/deployment/github-deployment.provider';
+import { GitLabDeploymentProvider } from '../providers/deployment/gitlab-deployment.provider';
+import { JenkinsDeploymentProvider } from '../providers/deployment/jenkins-deployment.provider';
+import { AgentDeploymentRequestHandlerService } from '../services/agent-deployment-request-handler.service';
+import { AgentDeploymentSourcesService } from '../services/agent-deployment-sources.service';
+import { DeploymentConnectionsService } from '../services/deployment-connections.service';
+import { DeploymentRealtimeRelayService } from '../services/deployment-realtime-relay.service';
+import { DeploymentRealtimeService } from '../services/deployment-realtime.service';
+import { DeploymentRunsService } from '../services/deployment-runs.service';
+import { DeploymentWorkflowsService } from '../services/deployment-workflows.service';
 import { ContextImportModule } from './context-import.module';
 import { StatisticsModule } from './statistics.module';
 
@@ -177,6 +191,9 @@ import { StatisticsModule } from './statistics.module';
   imports: [
     TypeOrmModule.forFeature([
       ClientEntity,
+      DeploymentConnectionEntity,
+      DeploymentWorkflowEntity,
+      DeploymentRunEntity,
       ClientAgentCredentialEntity,
       ProvisioningReferenceEntity,
       ClientUserEntity,
@@ -226,9 +243,10 @@ import { StatisticsModule } from './statistics.module';
   ],
   controllers: [
     ClientsController,
+    DeploymentConnectionsController,
+    ClientDeploymentsController,
     ClientsConfigurationOverridesController,
     ClientsVcsController,
-    ClientsDeploymentsController,
     ClientStatisticsController,
     StatisticsController,
     TicketsController,
@@ -254,6 +272,17 @@ import { StatisticsModule } from './statistics.module';
   ],
   providers: [
     AgenstraMetricsCollectorService,
+    GitHubDeploymentProvider,
+    GitLabDeploymentProvider,
+    JenkinsDeploymentProvider,
+    DeploymentProviderRegistry,
+    DeploymentConnectionsService,
+    DeploymentWorkflowsService,
+    DeploymentRunsService,
+    DeploymentRealtimeService,
+    DeploymentRealtimeRelayService,
+    AgentDeploymentSourcesService,
+    AgentDeploymentRequestHandlerService,
     ClientsService,
     AgenstraAttachmentsService,
     TicketsService,
@@ -291,7 +320,6 @@ import { StatisticsModule } from './statistics.module';
     ClientAgentFileSystemProxyService,
     WorkspaceSearchIndexService,
     ClientAgentVcsProxyService,
-    ClientAgentDeploymentsProxyService,
     ClientAgentEnvironmentVariablesProxyService,
     ClientAgentChatsProxyService,
     ClientAgentVncProxyService,
@@ -366,6 +394,8 @@ import { StatisticsModule } from './statistics.module';
   ],
   exports: [
     ClientsService,
+    DeploymentRunsService,
+    DeploymentConnectionsService,
     ClientsRepository,
     ClientUsersRepository,
     ClientUsersService,
@@ -373,7 +403,6 @@ import { StatisticsModule } from './statistics.module';
     ClientAgentProxyService,
     ClientAgentFileSystemProxyService,
     ClientAgentVcsProxyService,
-    ClientAgentDeploymentsProxyService,
     ClientAgentEnvironmentVariablesProxyService,
     ClientAgentChatsProxyService,
     ClientWorkspaceConfigurationOverridesProxyService,

@@ -103,6 +103,52 @@ describe('ContextApiClient', () => {
     );
   });
 
+  it('maps deployment operations to the deployments routes of the context API', async () => {
+    fetchFn.mockResolvedValue(jsonResponse(200, {}));
+
+    await client.listDeploymentWorkflows();
+    await client.listDeploymentRuns();
+    await client.listDeploymentRuns({ workflowId: 'wf-1', limit: 5 });
+    await client.getDeploymentRun('run/1');
+    await client.getDeploymentRunLogs('run-1');
+    await client.getDeploymentRunLogs('run-1', 'job 7');
+    await client.triggerDeployment('ctx-1', 'wf-1', { ref: 'main', inputs: { env: 'staging' } });
+    await client.cancelDeploymentRun('ctx-1', 'run-1');
+    await client.deploymentActionStatus('ctx-1', 'ctx_dep_1');
+    await client.listDeploymentConnections();
+    await client.createDeploymentWorkflow({ connectionId: 'conn-1', name: 'Deploy', repository: 'acme/app' });
+    await client.updateDeploymentWorkflow('wf/1', { enabled: false });
+    await client.deleteDeploymentWorkflow('wf-1');
+    await client.getDeploymentWorkflow('wf/1');
+    await client.syncDeploymentWorkflow('wf-1');
+
+    expect(fetchFn.mock.calls.map(([url, init]) => [init.method, url])).toEqual([
+      ['GET', 'http://manager:3000/api/agent-context/deployments/workflows'],
+      ['GET', 'http://manager:3000/api/agent-context/deployments/runs'],
+      ['GET', 'http://manager:3000/api/agent-context/deployments/runs?workflowId=wf-1&limit=5'],
+      ['GET', 'http://manager:3000/api/agent-context/deployments/runs/run%2F1'],
+      ['GET', 'http://manager:3000/api/agent-context/deployments/runs/run-1/logs'],
+      ['GET', 'http://manager:3000/api/agent-context/deployments/runs/run-1/logs?jobId=job+7'],
+      ['POST', 'http://manager:3000/api/agent-context/deployments/workflows/wf-1/trigger'],
+      ['POST', 'http://manager:3000/api/agent-context/deployments/runs/run-1/cancel'],
+      ['GET', 'http://manager:3000/api/agent-context/deployments/actions/ctx_dep_1?ticket=ctx-1'],
+      ['GET', 'http://manager:3000/api/agent-context/deployments/connections'],
+      ['POST', 'http://manager:3000/api/agent-context/deployments/workflows'],
+      ['PATCH', 'http://manager:3000/api/agent-context/deployments/workflows/wf%2F1'],
+      ['DELETE', 'http://manager:3000/api/agent-context/deployments/workflows/wf-1'],
+      ['GET', 'http://manager:3000/api/agent-context/deployments/workflows/wf%2F1'],
+      ['POST', 'http://manager:3000/api/agent-context/deployments/workflows/wf-1/sync'],
+    ]);
+    expect(fetchFn.mock.calls[6][1].body).toBe(
+      JSON.stringify({ ticket: 'ctx-1', ref: 'main', inputs: { env: 'staging' } }),
+    );
+    expect(fetchFn.mock.calls[7][1].body).toBe(JSON.stringify({ ticket: 'ctx-1' }));
+    expect(fetchFn.mock.calls[10][1].body).toBe(
+      JSON.stringify({ connectionId: 'conn-1', name: 'Deploy', repository: 'acme/app' }),
+    );
+    expect(fetchFn.mock.calls[11][1].body).toBe(JSON.stringify({ enabled: false }));
+  });
+
   it('maps handoff operations to the handoffs routes of the context API', async () => {
     fetchFn.mockResolvedValue(jsonResponse(200, {}));
 

@@ -20,6 +20,7 @@ This document provides a detailed breakdown of all system components, their resp
 - `ClientAgentProxyService` - Proxies HTTP requests to remote agent-managers
 - `ClientIsolationController` / `ClientIsolationService` - Workspace container isolation summaries (`/api/clients/:id/isolation`), creation validation, capability snapshots and transition notifications
 - `ProvisioningService` - Automated cloud server provisioning
+- `DeploymentConnectionsController` (`/api/connections/deployments`, instance admins) and `ClientDeploymentsController` (`/api/clients/:clientId/deployments`) with `DeploymentConnectionsService`, `DeploymentWorkflowsService`, `DeploymentRunsService`, `DeploymentRealtimeService`, `AgentDeploymentRequestHandlerService` and the GitHub / GitLab / Jenkins providers (`DeploymentProviderRegistry`) - [Workspace deployments](../features/deployment.md)
 - Ticket, automation, statistics, and egress-event ingestion services and repositories (see library source)
 
 **Dependencies**:
@@ -44,7 +45,7 @@ This document provides a detailed breakdown of all system components, their resp
 **Key Components** (via `AgentsModule` from `@forepath/agenstra/backend`):
 
 - `AgentsController` - HTTP REST API for agent management
-- `AgentsDeploymentsController` - Deployment configuration and CI/CD runs
+- `AgentsContextDeploymentsController` - Agent context bridge for the `agenstra_deployments_*` MCP tools (`/api/agent-context/deployments`, forwarded to the controller as `agentDeploymentRequest`)
 - `AgentsService` - Business logic for agents
 - `AgentsGateway` - WebSocket gateway for agent communication
 - `DockerService` - Container management and log streaming
@@ -76,7 +77,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 **Key Components**:
 
-- `AgentConsoleChatComponent` - Main workspace shell (chat, files, Git, env, deployments)
+- `AgentConsoleChatComponent` - Main workspace shell (chat, files, Git, env)
 - `AgentConsoleContainerComponent` - Layout and lazy-loaded routes
 - `TicketsBoardComponent` - Ticket board
 - `AuditComponent` - Admin audit views
@@ -122,6 +123,7 @@ This document provides a detailed breakdown of all system components, their resp
 - `ClientsGateway` - WebSocket `socket/clients` namespace
 - `TicketsBoardGateway` - WebSocket `socket/tickets` namespace
 - `ProvisioningService` - Server provisioning (Hetzner, DigitalOcean)
+- Deployment connection, workflow and run entities (`deployment_connections`, `deployment_workflows`, `deployment_runs`) and the CI/CD deployment providers
 
 **Implementation**: Backend Agent Controller library
 
@@ -134,7 +136,6 @@ This document provides a detailed breakdown of all system components, their resp
 **Key Components**:
 
 - `AgentEntity` - Agent domain model
-- Deployment configuration and deployment run entities
 - `AgentEnvironmentVariableEntity` - Per-agent environment variables
 - `AgentEgressEventEntity` - Aggregated egress guard decisions (agent entity also stores the effective `egressPolicy`, `messageFilters` and guard status)
 - Container isolation level and selection record on `AgentEntity` (`isolation_level`, `isolation_selection`)
@@ -187,7 +188,8 @@ This document provides a detailed breakdown of all system components, their resp
   - `authentication` - Authentication state (identity bundle)
   - `stats` - Container statistics state
   - `statistics` - Controller usage statistics
-  - `deployments` - CI/CD state
+  - `workspaceDeployments` - Workspace deployment workflows and runs (`/deployments/:clientId`)
+  - `deploymentConnections` - Admin CI/CD connections (`/connections/deployments`)
   - `tickets`, `ticketAutomation` - Ticket board and automation
   - `clientAgentAutonomy` - Autonomy configuration
 - **Facades**:
@@ -200,7 +202,7 @@ This document provides a detailed breakdown of all system components, their resp
   - `FilesFacade` - File operations
   - `EnvFacade` - Environment variables
   - `VcsFacade` - Git operations
-  - `StatisticsFacade`, `DeploymentsFacade`, `TicketsFacade`, `TicketAutomationFacade`, `ClientAgentAutonomyFacade`
+  - `StatisticsFacade`, `WorkspaceDeploymentsFacade`, `DeploymentConnectionsFacade`, `TicketsFacade`, `TicketAutomationFacade`, `ClientAgentAutonomyFacade`
 - **Effects**: NgRx effects for side effects
 - **Selectors**: State selectors
 
@@ -280,8 +282,8 @@ graph TB
 
 ### Database
 
-- **Agent Controller**: Clients, credentials, provisioning references, client users, tickets (`tickets`, `ticket_comments`, `ticket_activity`, `ticket_body_generation_sessions`), ticket automation (`client_agent_autonomy`, `ticket_automation`, `ticket_automation_run`, `ticket_automation_lease`, `ticket_automation_run_step`), statistics shadow and event tables (`statistics_users`, `statistics_clients`, `statistics_agents`, `statistics_provisioning_references`, `statistics_client_users`, `statistics_chat_io`, `statistics_chat_filter_drops`, `statistics_chat_filter_flags`, `statistics_entity_events`, `statistics_egress_events`), egress ingest cursors, container isolation snapshots (`client_isolation_snapshots`)
-- **Agent Manager**: Agents, chat messages (`agent_chat_messages`), agent message events (`agent_message_events`), environment variables (`agent_environment_variables`), `deployment_configurations`, `deployment_runs`, egress guard events (`agent_egress_events`); agents carry `isolation_level` and `isolation_selection`
+- **Agent Controller**: Clients, credentials, provisioning references, client users, tickets (`tickets`, `ticket_comments`, `ticket_activity`, `ticket_body_generation_sessions`), ticket automation (`client_agent_autonomy`, `ticket_automation`, `ticket_automation_run`, `ticket_automation_lease`, `ticket_automation_run_step`), statistics shadow and event tables (`statistics_users`, `statistics_clients`, `statistics_agents`, `statistics_provisioning_references`, `statistics_client_users`, `statistics_chat_io`, `statistics_chat_filter_drops`, `statistics_chat_filter_flags`, `statistics_entity_events`, `statistics_egress_events`), egress ingest cursors, container isolation snapshots (`client_isolation_snapshots`), workspace deployments (`deployment_connections`, `deployment_workflows`, `deployment_runs`)
+- **Agent Manager**: Agents, chat messages (`agent_chat_messages`), agent message events (`agent_message_events`), environment variables (`agent_environment_variables`), egress guard events (`agent_egress_events`); agents carry `isolation_level` and `isolation_selection`
 
 ## Related documentation
 

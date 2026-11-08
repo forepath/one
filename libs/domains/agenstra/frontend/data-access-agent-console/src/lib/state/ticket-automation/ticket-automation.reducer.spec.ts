@@ -39,6 +39,7 @@ describe('ticketAutomationReducer', () => {
     contextEnvironmentIds: [],
     autoEnrichmentEnabled: true,
     allowedContentWrites: [],
+    allowedDeploymentOperations: [],
     verifierProfile: null,
     requiresApproval: false,
     approvedAt: null,

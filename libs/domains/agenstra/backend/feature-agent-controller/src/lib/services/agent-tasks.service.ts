@@ -5,11 +5,15 @@ import type {
 } from '@forepath/agenstra/shared/util-opencode-config';
 import {
   AGENT_CONTENT_WRITE_OPERATIONS,
+  AGENT_DEPLOYMENT_OPERATIONS,
   AGENT_TASK_ACTIVE_RUN_STATUSES,
   AGENT_TASK_LIMITS,
   isAgentContentWriteOperation,
+  isAgentDeploymentOperation,
   normalizeAgentContentWriteOperations,
+  normalizeAgentDeploymentOperations,
   type AgentContentWriteOperation,
+  type AgentDeploymentOperation,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import {
   ClientAgentCredentialsRepository,
@@ -286,6 +290,7 @@ export class AgentTasksService {
     const enabled = input.enabled !== false;
     const allowedHandoffAgentIds = await this.requireHandoffAgents(clientId, agentId, input.allowedHandoffAgentIds);
     const allowedContentWrites = this.requireContentWrites(input.allowedContentWrites);
+    const allowedDeploymentOperations = this.requireDeploymentOperations(input.allowedDeploymentOperations);
     const saved = await this.taskRepo.save(
       this.taskRepo.create({
         clientId,
@@ -297,6 +302,7 @@ export class AgentTasksService {
         enabled,
         allowedHandoffAgentIds,
         allowedContentWrites,
+        allowedDeploymentOperations,
         nextRunAt: enabled ? computeNextAgentTaskRunAt(schedule.cronExpression, schedule.timezone, new Date()) : null,
         createdByType: actor.type,
         createdByUserId: actor.userId ?? null,
@@ -389,8 +395,12 @@ export class AgentTasksService {
       task.allowedContentWrites = this.requireContentWrites(input.allowedContentWrites);
     }
 
+    if (input.allowedDeploymentOperations !== undefined) {
+      task.allowedDeploymentOperations = this.requireDeploymentOperations(input.allowedDeploymentOperations);
+    }
+
     // Everything the runs do (title, prompt, model, schedule, the agents they may hand off to, the content changes
-    // they may make) is approved content:
+    // and deployment actions they may make) is approved content:
     // - the agent changing any of it, or switching the task on again, needs a user's approval;
     // - a user approves implicitly only by writing the complete content (the edit form) — partial user updates such
     //   as the enable switch never approve content the user did not submit. Disabling keeps the approval.
@@ -400,6 +410,7 @@ export class AgentTasksService {
       input.model !== undefined ||
       input.allowedHandoffAgentIds !== undefined ||
       input.allowedContentWrites !== undefined ||
+      input.allowedDeploymentOperations !== undefined ||
       scheduleChanged;
 
     if (actor.type === 'agent') {
@@ -413,7 +424,8 @@ export class AgentTasksService {
       input.model !== undefined &&
       input.cronExpression !== undefined &&
       input.allowedHandoffAgentIds !== undefined &&
-      input.allowedContentWrites !== undefined
+      input.allowedContentWrites !== undefined &&
+      input.allowedDeploymentOperations !== undefined
     ) {
       this.markApproved(task, actor);
     }
@@ -579,6 +591,21 @@ export class AgentTasksService {
     }
 
     return normalizeAgentContentWriteOperations(value);
+  }
+
+  /** Deployment run actions the runs may request (known operations only, deduplicated). */
+  private requireDeploymentOperations(value: AgentDeploymentOperation[] | undefined): AgentDeploymentOperation[] {
+    if (value === undefined) {
+      return [];
+    }
+
+    if (!Array.isArray(value) || value.some((operation) => !isAgentDeploymentOperation(operation))) {
+      throw new BadRequestException(
+        `allowedDeploymentOperations must only contain ${AGENT_DEPLOYMENT_OPERATIONS.join(', ')}`,
+      );
+    }
+
+    return normalizeAgentDeploymentOperations(value);
   }
 
   /** The controller only knows agents of a workspace through their stored credentials. */

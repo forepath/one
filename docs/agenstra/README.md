@@ -54,6 +54,7 @@ Feature documentation:
 - [Chat Interface](./features/chat-interface.md) AI chat functionality and message flow
 - [Authentication](./features/authentication.md) Multiple authentication methods with configurable user registration
 - [Atlassian import](./features/atlassian-import.md) Jira and Confluence imports into controller tickets and knowledge (admin)
+- [Deployments](./features/deployment.md) Workspace deployment workflows on CI/CD connections (GitHub Actions, GitLab CI, Jenkins)
 - [Dynamic provider plugins](./features/dynamic-provider-plugins.md) Runtime provider extensions for controller and manager (baked-in or mounted)
 
 ### [Deployment](./deployment/README.md)
@@ -166,6 +167,10 @@ Monitor agent containers, view logs, and manage container lifecycle. Real-time c
 ### Atlassian import
 
 Administrators configure Atlassian site connections and import rules so Jira issues and Confluence pages sync into workspace **tickets** and **knowledge** on the agent controller, with optional scheduling and manual runs. See [Atlassian import](./features/atlassian-import.md).
+
+### Workspace deployments
+
+Administrators connect GitHub Actions, GitLab CI or Jenkins once; workspace admins define deployment workflows on these connections for the whole workspace or selected environments. Runs are triggered from the console or, where allowed, by the environments themselves, and their history, live status and logs stay in Agenstra. See [Deployments](./features/deployment.md).
 
 ## Related documentation
 

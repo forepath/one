@@ -283,6 +283,10 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS: 3600000`,
     `AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS: 60000`,
     `AUTONOMOUS_TICKET_SCHEDULER_BATCH_SIZE: 5`,
+    `DEPLOYMENT_RUN_POLL_INTERVAL_MS: 30000`,
+    `DEPLOYMENT_RUN_POLL_BATCH: 50`,
+    `DEPLOYMENT_HISTORY_SYNC_INTERVAL_MS: 300000`,
+    `DEPLOYMENT_REALTIME_RELAY_INTERVAL_MS: 5000`,
     // Bull Board (disabled by default for provisioned stacks; set to true + credentials if needed)
     `QUEUE_BULL_BOARD_ENABLED: false`,
     `QUEUE_BULL_BOARD_PATH: /admin/queues`,

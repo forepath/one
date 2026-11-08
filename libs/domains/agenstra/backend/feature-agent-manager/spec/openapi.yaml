@@ -281,8 +281,10 @@ paths:
       summary: Reply to an OpenCode permission request
       description: |
         Also answers Agenstra context access prompts (`question` events with subtype `context_access`, ids starting
-        with `ctx_`). Those are decided by the agent-manager (`once` = this request, `always` = this chat, `reject`)
-        and work while the worker container is stopped.
+        with `ctx_`), content change prompts (subtype `context_change`, ids `ctx_chg_*`) and deployment action prompts
+        (subtype `context_deployment`, ids `ctx_dep_*`: trigger / cancel a deployment run). Those are decided by the
+        agent-manager (`once` = this request, `always` = this chat, `reject`) and work while the worker container is
+        stopped.
       operationId: replyAgentPermission
       parameters:
         - in: path
@@ -651,6 +653,484 @@ paths:
                     type: string
         '404':
           description: Unknown task
+  /agent-context/deployments/workflows:
+    get:
+      summary: List the deployment workflows available to the calling agent
+      description: |
+        Agent-facing deployments API used by the worker `agenstra` MCP server (`agenstra_deployments_*` tools). Requests
+        are bound to the authenticated agent and forwarded to the controller (`agentDeploymentRequest`), which only
+        exposes enabled, approved workflows of the workspace bound to the manager connection that are global or assigned
+        to the agent, plus the workflows assigned exclusively to the agent in any state (its own pending or disabled
+        proposals). `agentTriggerEnabled` tells whether the agent may trigger / cancel runs of a workflow.
+      operationId: listAgentDeploymentWorkflows
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+      responses:
+        '200':
+          description: Workflows available to the agent
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [workflows]
+                properties:
+                  workflows:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentDeploymentWorkflowSummary'
+        '401':
+          description: Invalid agent context credentials
+        '503':
+          description: No controller connection is available
+    post:
+      summary: Propose a deployment workflow for the calling agent
+      description: |
+        The controller assigns the workflow to the calling environment only (scope and environments are not part of the
+        input) and keeps it pending until a workspace admin approves it; nobody can start runs before. The connection
+        has to be usable by the workspace. Sent to a single controller connection (never retried).
+      operationId: createAgentDeploymentWorkflow
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentDeploymentWorkflowInput'
+      responses:
+        '201':
+          description: Proposed (pending) workflow
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDeploymentWorkflowSummary'
+        '400':
+          description: Invalid input (bounds, GitHub without workflow, inputs)
+        '401':
+          description: Invalid agent context credentials
+        '404':
+          description: Unknown connection (or a connection the workspace may not use)
+        '409':
+          description: Too many workflows proposed by this environment
+        '503':
+          description: No controller connection is available
+  /agent-context/deployments/workflows/{workflowId}:
+    get:
+      summary: Read one deployment workflow available to the calling agent
+      description: |
+        Same visibility as the list: enabled, approved workflows available to the environment (global or assigned to
+        it), plus its own exclusively assigned workflows in any state (pending / disabled). Everything else answers 404.
+      operationId: getAgentDeploymentWorkflow
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The workflow
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDeploymentWorkflowSummary'
+        '401':
+          description: Invalid agent context credentials
+        '404':
+          description: Unknown workflow (or one not available to the agent)
+        '503':
+          description: No controller connection is available
+    patch:
+      summary: Change a deployment workflow the calling agent manages for itself
+      description: |
+        Only workflows assigned exclusively to the calling environment; others answer 404. Changes of approved content
+        (connection, repository, workflow, default ref / inputs, name, description, `agentTriggerEnabled`) or
+        re-enabling make the workflow pending again; disabling keeps the approval.
+      operationId: updateAgentDeploymentWorkflow
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentDeploymentWorkflowUpdateInput'
+      responses:
+        '200':
+          description: Workflow after the change
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDeploymentWorkflowSummary'
+        '400':
+          description: Invalid input or no field to change
+        '401':
+          description: Invalid agent context credentials
+        '404':
+          description: Unknown workflow (or one not assigned exclusively to the agent)
+        '503':
+          description: No controller connection is available
+    delete:
+      summary: Delete a deployment workflow the calling agent manages for itself
+      description: Only workflows assigned exclusively to the calling environment; others answer 404.
+      operationId: deleteAgentDeploymentWorkflow
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Deleted (with its run history)
+        '401':
+          description: Invalid agent context credentials
+        '404':
+          description: Unknown workflow (or one not assigned exclusively to the agent)
+        '503':
+          description: No controller connection is available
+  /agent-context/deployments/workflows/{workflowId}/sync:
+    post:
+      summary: Import the provider's latest runs of a deployment workflow available to the calling agent
+      description: |
+        Only workflows the environment may use (enabled, approved, global or assigned to it) on a usable connection.
+        Throttled per workflow (once every 30 s, otherwise 409). Read-only towards the provider (no run is started or
+        cancelled), so it needs no context ticket. Sent to a single controller connection.
+      operationId: syncAgentDeploymentWorkflow
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Number of runs imported or refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [synced]
+                properties:
+                  synced:
+                    type: integer
+                    minimum: 0
+        '401':
+          description: Invalid agent context credentials
+        '404':
+          description: Unknown workflow (or one not available to the agent)
+        '403':
+          description: The workflow's connection is disabled or not usable by the workspace
+        '409':
+          description: Workflow pending / disabled, or synced less than 30 seconds ago
+        '503':
+          description: No controller connection is available
+  /agent-context/deployments/connections:
+    get:
+      summary: List the deployment connections the calling agent's workspace may build workflows on
+      operationId: listAgentDeploymentConnections
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+      responses:
+        '200':
+          description: Connection options (no secrets, no repository browsing)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [connections]
+                properties:
+                  connections:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentDeploymentConnectionOption'
+        '401':
+          description: Invalid agent context credentials
+        '503':
+          description: No controller connection is available
+  /agent-context/deployments/actions/{requestId}:
+    get:
+      summary: Keep waiting on a pending deployment action (trigger / cancel)
+      description: |
+        Long-polls (up to 120 s) for the user's decision on a `pending` trigger / cancel of the same context ticket.
+      operationId: getAgentDeploymentActionStatus
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: path
+          name: requestId
+          required: true
+          schema:
+            type: string
+            maxLength: 128
+        - in: query
+          name: ticket
+          required: true
+          description: Context ticket of the prompt that requested the action
+          schema:
+            type: string
+            maxLength: 128
+      responses:
+        '200':
+          description: Decision (still `pending` when nobody decided in time)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDeploymentActionResponse'
+        '400':
+          description: Missing ticket
+        '401':
+          description: Invalid agent context credentials
+        '404':
+          description: Unknown or expired ticket or request
+  /agent-context/deployments/workflows/{workflowId}/trigger:
+    post:
+      summary: Trigger a run of a deployment workflow available to the calling agent
+      description: |
+        Needs the context ticket of the prompt and is decided per session (like content changes): visible chats ask the
+        user (permission-style prompt `ctx_dep_*`, long-polls up to 120 s, then answers `pending`); scheduled task runs
+        and ticket automation are forwarded with their task / automation as source and the controller only allows the
+        operations a workspace user allowed for it; plans and other hidden sessions are denied. The workflow rules apply
+        on top (enabled, approved, available to the agent, `agentTriggerEnabled`, default ref only, defined inputs only).
+        Sent to a single controller connection (never retried on another one), so a slow acknowledgement cannot start a
+        run twice. Refusals are answered as decisions (`denied` / `failed`), not as HTTP errors.
+      operationId: triggerAgentDeployment
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentDeploymentTriggerInput'
+      responses:
+        '200':
+          description: Decision (`applied` carries the started run)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDeploymentActionResponse'
+        '400':
+          description: Invalid input (ticket, ref, inputs)
+        '401':
+          description: Invalid agent context credentials
+        '404':
+          description: Unknown workflow id format, or unknown / expired context ticket
+  /agent-context/deployments/runs:
+    get:
+      summary: List recent runs of the deployment workflows available to the calling agent
+      operationId: listAgentDeploymentRuns
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: query
+          name: workflowId
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+      responses:
+        '200':
+          description: Runs, newest first
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [runs]
+                properties:
+                  runs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentDeploymentRunSummary'
+        '400':
+          description: Invalid query parameters
+        '401':
+          description: Invalid agent context credentials
+        '404':
+          description: Unknown workflow
+        '503':
+          description: No controller connection is available
+  /agent-context/deployments/runs/{runId}:
+    get:
+      summary: Read one deployment run with its jobs
+      description: Active runs are refreshed from the provider first.
+      operationId: getAgentDeploymentRun
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Run and jobs
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [run, jobs]
+                properties:
+                  run:
+                    $ref: '#/components/schemas/AgentDeploymentRunSummary'
+                  jobs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentDeploymentRunJobSummary'
+        '401':
+          description: Invalid agent context credentials
+        '404':
+          description: Unknown run (or a run of a workflow not available to the agent)
+        '503':
+          description: No controller connection is available
+  /agent-context/deployments/runs/{runId}/logs:
+    get:
+      summary: Read the log tail of a deployment run or one of its jobs
+      operationId: getAgentDeploymentRunLogs
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: jobId
+          required: false
+          schema:
+            type: string
+            maxLength: 255
+            pattern: '^[\w.:-]+$'
+      responses:
+        '200':
+          description: Log tail (at most 200 000 bytes for environments)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [logs, truncated]
+                properties:
+                  logs:
+                    type: string
+                  truncated:
+                    type: boolean
+                    description: True when only the tail was returned
+        '400':
+          description: Invalid job id
+        '401':
+          description: Invalid agent context credentials
+        '403':
+          description: The workflow's connection is not available to the workspace
+        '404':
+          description: Unknown run or job
+        '503':
+          description: No controller connection is available
+  /agent-context/deployments/runs/{runId}/cancel:
+    post:
+      summary: Cancel an active run of a deployment workflow available to the calling agent
+      description: |
+        Needs the context ticket of the prompt and is decided per session like triggers. Only possible when the
+        workflow has `agentTriggerEnabled`. Sent to a single controller connection (never retried). Refusals are answered
+        as decisions (`denied` / `failed`), not as HTTP errors.
+      operationId: cancelAgentDeploymentRun
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ticket]
+              properties:
+                ticket:
+                  type: string
+                  maxLength: 128
+                  description: Context ticket of the prompt (starts with `ctx-`)
+      responses:
+        '200':
+          description: Decision (`applied` carries the run after the cancellation request)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDeploymentActionResponse'
+        '400':
+          description: Missing ticket
+        '401':
+          description: Invalid agent context credentials
+        '404':
+          description: Unknown run id format, or unknown / expired context ticket
   /agent-context/handoffs/agents:
     get:
       summary: List the other agents of the calling agent's workspace
@@ -2536,349 +3016,6 @@ paths:
           description: Invalid command or execution failed
         '404':
           description: Agent or container not found
-  /agents/{agentId}/deployments/configuration:
-    get:
-      summary: Get deployment configuration for an agent
-      operationId: getDeploymentConfiguration
-      parameters:
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Deployment configuration
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeploymentConfigurationResponseDto'
-        '404':
-          description: Agent or deployment configuration not found
-    post:
-      summary: Create or update deployment configuration for an agent
-      operationId: upsertDeploymentConfiguration
-      parameters:
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateDeploymentConfigurationDto'
-      responses:
-        '200':
-          description: Deployment configuration created or updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeploymentConfigurationResponseDto'
-        '400':
-          description: Invalid request
-        '404':
-          description: Agent not found
-    delete:
-      summary: Delete deployment configuration for an agent
-      operationId: deleteDeploymentConfiguration
-      parameters:
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: Deployment configuration deleted successfully
-        '404':
-          description: Agent or deployment configuration not found
-  /agents/{agentId}/deployments/repositories:
-    get:
-      summary: List repositories accessible with the agent's deployment configuration
-      operationId: listDeploymentRepositories
-      parameters:
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Array of repositories
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RepositoryResponseDto'
-        '404':
-          description: Agent or deployment configuration not found
-  /agents/{agentId}/deployments/repositories/{repositoryId}/branches:
-    get:
-      summary: List branches for a repository
-      operationId: listDeploymentBranches
-      parameters:
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - in: path
-          name: repositoryId
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Array of branches
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BranchResponseDto'
-        '404':
-          description: Agent or deployment configuration not found
-  /agents/{agentId}/deployments/repositories/{repositoryId}/workflows:
-    get:
-      summary: List workflows for a repository
-      operationId: listDeploymentWorkflows
-      parameters:
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - in: path
-          name: repositoryId
-          required: true
-          schema:
-            type: string
-        - in: query
-          name: branch
-          schema:
-            type: string
-          description: Branch name (optional, defaults to default branch)
-      responses:
-        '200':
-          description: Array of workflows
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/WorkflowResponseDto'
-        '404':
-          description: Agent or deployment configuration not found
-  /agents/{agentId}/deployments/workflows/trigger:
-    post:
-      summary: Trigger a workflow run
-      operationId: triggerDeploymentWorkflow
-      parameters:
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TriggerWorkflowDto'
-      responses:
-        '200':
-          description: Workflow run triggered
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeploymentRunResponseDto'
-        '400':
-          description: Invalid request
-        '404':
-          description: Agent or deployment configuration not found
-  /agents/{agentId}/deployments/runs:
-    get:
-      summary: List deployment runs for an agent
-      operationId: listDeploymentRuns
-      parameters:
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - in: query
-          name: limit
-          schema:
-            type: integer
-            minimum: 0
-          description: Maximum number of runs to return (default 50)
-        - in: query
-          name: offset
-          schema:
-            type: integer
-            minimum: 0
-          description: Number of runs to skip (default 0)
-      responses:
-        '200':
-          description: Array of deployment runs
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/DeploymentRunResponseDto'
-        '404':
-          description: Agent or deployment configuration not found
-  /agents/{agentId}/deployments/runs/{runId}:
-    get:
-      summary: Get the status of a pipeline run
-      operationId: getDeploymentRunStatus
-      parameters:
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - in: path
-          name: runId
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Pipeline run status
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeploymentRunResponseDto'
-        '404':
-          description: Agent, deployment configuration, or run not found
-  /agents/{agentId}/deployments/runs/{runId}/logs:
-    get:
-      summary: Get logs for a pipeline run
-      operationId: getDeploymentRunLogs
-      parameters:
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - in: path
-          name: runId
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Pipeline run logs
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [logs]
-                properties:
-                  logs:
-                    type: string
-                    description: Pipeline run logs as string
-        '404':
-          description: Agent, deployment configuration, or run not found
-  /agents/{agentId}/deployments/runs/{runId}/jobs:
-    get:
-      summary: List jobs/steps for a pipeline run
-      operationId: listDeploymentRunJobs
-      parameters:
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - in: path
-          name: runId
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Array of jobs/steps
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/JobResponseDto'
-        '404':
-          description: Agent, deployment configuration, or run not found
-  /agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs:
-    get:
-      summary: Get logs for a specific job/step
-      operationId: getDeploymentJobLogs
-      parameters:
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - in: path
-          name: runId
-          required: true
-          schema:
-            type: string
-        - in: path
-          name: jobId
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Job logs
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [logs]
-                properties:
-                  logs:
-                    type: string
-                    description: Job logs as string
-        '404':
-          description: Agent, deployment configuration, run, or job not found
-  /agents/{agentId}/deployments/runs/{runId}/cancel:
-    post:
-      summary: Cancel a running pipeline
-      operationId: cancelDeploymentRun
-      parameters:
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - in: path
-          name: runId
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Pipeline cancelled successfully
-        '404':
-          description: Agent, deployment configuration, or run not found
   /agents/{agentId}/vnc/sessions:
     post:
       summary: Create a short-lived VNC desktop session ticket
@@ -3987,6 +4124,21 @@ components:
           description: >-
             Proposed agents of the workspace the runs may hand off work to; take effect only after a user approved the
             task (any change clears the approval)
+        allowedContentWrites:
+          type: array
+          items:
+            type: string
+          description: >-
+            Proposed ticket / knowledge changes the runs may make (`ticket.create`, `ticket.comment`, ...); take effect
+            only after a user approved the task
+        allowedDeploymentOperations:
+          type: array
+          items:
+            type: string
+            enum: [deployment.trigger, deployment.cancel]
+          description: >-
+            Proposed deployment run actions the runs may take (`deployments_trigger` / `deployments_cancel_run`); take
+            effect only after a user approved the task
     AgentHandoffAgentSummary:
       type: object
       required: [id, name]
@@ -4176,6 +4328,17 @@ components:
           description: >-
             Agents of the workspace the runs may hand off work to (approved content: proposing a change clears the
             approval; empty: no handoffs)
+        allowedContentWrites:
+          type: array
+          items:
+            type: string
+          description: Ticket / knowledge changes the runs may make (approved content; empty — none)
+        allowedDeploymentOperations:
+          type: array
+          items:
+            type: string
+            enum: [deployment.trigger, deployment.cancel]
+          description: Deployment run actions the runs may take (approved content; empty — none)
         nextRunAt:
           type: string
           format: date-time
@@ -4240,6 +4403,329 @@ components:
           format: date-time
           nullable: true
           description: Set while the run waits for the response to one of its handoffs
+    AgentDeploymentWorkflowSummary:
+      type: object
+      description: Deployment workflow of the workspace (controller-owned; see the controller API `DeploymentWorkflowSummary`)
+      required:
+        [
+          id,
+          clientId,
+          connectionId,
+          provider,
+          name,
+          repository,
+          scope,
+          agentIds,
+          agentTriggerEnabled,
+          enabled,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        connectionId:
+          type: string
+          format: uuid
+        provider:
+          type: string
+          enum: [github, gitlab, jenkins]
+        connectionLabel:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        repository:
+          type: string
+        workflow:
+          type: string
+          nullable: true
+        defaultRef:
+          type: string
+          nullable: true
+        defaultInputs:
+          type: object
+          additionalProperties:
+            type: string
+        scope:
+          type: string
+          enum: [global, environments]
+        agentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        agentTriggerEnabled:
+          type: boolean
+          description: Whether environments may trigger and cancel runs (otherwise read only)
+        enabled:
+          type: boolean
+        approvalStatus:
+          type: string
+          enum: [approved, pending]
+          description: '`pending`: proposed or changed by an environment, waiting for a workspace admin (no runs)'
+        approvedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdBy:
+          type: string
+          enum: [user, agent]
+        updatedBy:
+          type: string
+          enum: [user, agent]
+        createdByAgentId:
+          type: string
+          format: uuid
+          nullable: true
+        lastRunStatus:
+          type: string
+          enum: [queued, in_progress, completed]
+          nullable: true
+        lastRunConclusion:
+          type: string
+          enum: [success, failure, cancelled, skipped, timed_out, neutral]
+          nullable: true
+        lastRunAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AgentDeploymentRunSummary:
+      type: object
+      required: [id, clientId, workflowId, workflowName, status, triggeredBy]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        workflowId:
+          type: string
+          format: uuid
+        workflowName:
+          type: string
+        agentId:
+          type: string
+          format: uuid
+          nullable: true
+        providerRunId:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [queued, in_progress, completed]
+        conclusion:
+          type: string
+          enum: [success, failure, cancelled, skipped, timed_out, neutral]
+          nullable: true
+        ref:
+          type: string
+          nullable: true
+        sha:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+        inputs:
+          type: object
+          additionalProperties:
+            type: string
+        triggeredBy:
+          type: string
+          enum: [user, agent, external]
+        triggeredByUserId:
+          type: string
+          nullable: true
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AgentDeploymentRunJobSummary:
+      type: object
+      required: [id, name, status]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [queued, in_progress, completed]
+        conclusion:
+          type: string
+          enum: [success, failure, cancelled, skipped, timed_out, neutral]
+          nullable: true
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        url:
+          type: string
+          nullable: true
+    AgentDeploymentTriggerInput:
+      type: object
+      additionalProperties: false
+      required: [ticket]
+      properties:
+        ticket:
+          type: string
+          maxLength: 128
+          description: Context ticket of the prompt (starts with `ctx-`)
+        ref:
+          type: string
+          maxLength: 255
+          description: Branch / tag; defaults to the workflow default ref (or the repository default branch)
+        inputs:
+          type: object
+          maxProperties: 25
+          description: Overrides of the workflow default inputs (names up to 100, values up to 1000 characters)
+          additionalProperties:
+            type: string
+            maxLength: 1000
+    AgentDeploymentActionResponse:
+      type: object
+      required: [requestId, decision, operation]
+      properties:
+        requestId:
+          type: string
+          description: '`ctx_dep_*` id of an action that waited for the user (empty when decided right away)'
+        decision:
+          type: string
+          enum: [applied, pending, denied, failed]
+          description: |
+            `applied`: carried out (`run` describes the run); `pending`: waiting for the user (poll
+            `GET /agent-context/deployments/actions/{requestId}`); `denied`: rejected by the user or not allowed in this
+            session; `failed`: approved but refused by the controller (`message` says why).
+        operation:
+          type: string
+          enum: [deployment.trigger, deployment.cancel]
+        run:
+          $ref: '#/components/schemas/AgentDeploymentRunSummary'
+        message:
+          type: string
+    AgentDeploymentConnectionOption:
+      type: object
+      required: [id, label, provider, lastTestStatus]
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        provider:
+          type: string
+          enum: [github, gitlab, jenkins]
+        lastTestStatus:
+          type: string
+          enum: [ok, failed, untested]
+    AgentDeploymentWorkflowInput:
+      type: object
+      description: |
+        Workflow an environment proposes for itself (always assigned to that environment only, pending until a workspace
+        admin approves it). Unknown fields (e.g. `scope`, `agentIds`) are ignored.
+      required: [connectionId, name, repository]
+      properties:
+        connectionId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+          maxLength: 2000
+        repository:
+          type: string
+          maxLength: 512
+        workflow:
+          type: string
+          nullable: true
+          maxLength: 512
+          description: GitHub workflow file or id (required for GitHub)
+        defaultRef:
+          type: string
+          nullable: true
+          maxLength: 255
+        defaultInputs:
+          type: object
+          maxProperties: 25
+          additionalProperties:
+            type: string
+            maxLength: 1000
+        agentTriggerEnabled:
+          type: boolean
+          default: false
+          description: Requested permission to trigger / cancel runs itself (effective once approved)
+        enabled:
+          type: boolean
+          default: true
+    AgentDeploymentWorkflowUpdateInput:
+      type: object
+      description: Same fields as `AgentDeploymentWorkflowInput`, all optional (at least one).
+      minProperties: 1
+      properties:
+        connectionId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+          maxLength: 2000
+        repository:
+          type: string
+          maxLength: 512
+        workflow:
+          type: string
+          nullable: true
+          maxLength: 512
+        defaultRef:
+          type: string
+          nullable: true
+          maxLength: 255
+        defaultInputs:
+          type: object
+          nullable: true
+          maxProperties: 25
+          additionalProperties:
+            type: string
+            maxLength: 1000
+        agentTriggerEnabled:
+          type: boolean
+        enabled:
+          type: boolean
     EnvironmentProgressDto:
       type: object
       required:
@@ -4362,29 +4848,6 @@ components:
             selectedBy:
               type: string
               maxLength: 255
-        deploymentConfiguration:
-          type: object
-          description: CI/CD deployment configuration (optional). If provided, a deployment configuration will be created for this agent.
-          properties:
-            providerType:
-              type: string
-              description: CI/CD provider type (e.g., 'github')
-            repositoryId:
-              type: string
-              description: Repository identifier (e.g., 'owner/repo' for GitHub)
-            defaultBranch:
-              type: string
-              description: Default branch name
-            workflowId:
-              type: string
-              description: Workflow/pipeline identifier
-            providerToken:
-              type: string
-              description: Provider-specific API token/credentials
-            providerBaseUrl:
-              type: string
-              format: uri
-              description: Optional base URL for self-hosted instances (e.g., GitHub Enterprise Server)
     UpdateAgentDto:
       type: object
       properties:
@@ -4406,29 +4869,6 @@ components:
             Effective egress policy (set by the agent controller from the layered agent configuration).
             When it requires filtering, the egress guard is provisioned and its policy applied before the
             agent container starts.
-        deploymentConfiguration:
-          type: object
-          description: CI/CD deployment configuration (optional). If provided, the deployment configuration for this agent will be updated or created.
-          properties:
-            providerType:
-              type: string
-              description: CI/CD provider type (e.g., 'github')
-            repositoryId:
-              type: string
-              description: Repository identifier (e.g., 'owner/repo' for GitHub)
-            defaultBranch:
-              type: string
-              description: Default branch name
-            workflowId:
-              type: string
-              description: Workflow/pipeline identifier
-            providerToken:
-              type: string
-              description: Provider-specific API token/credentials
-            providerBaseUrl:
-              type: string
-              format: uri
-              description: Optional base URL for self-hosted instances (e.g., GitHub Enterprise Server)
     AgentModelsResponseDto:
       type: object
       additionalProperties:
@@ -4985,241 +5425,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VerifierCommandResultDto'
-    CreateDeploymentConfigurationDto:
-      type: object
-      required: [providerType, repositoryId, providerToken]
-      properties:
-        providerType:
-          type: string
-          description: CI/CD provider type (e.g., 'github')
-        repositoryId:
-          type: string
-          description: Repository identifier (e.g., 'owner/repo' for GitHub)
-        defaultBranch:
-          type: string
-          description: Default branch name
-        workflowId:
-          type: string
-          description: Workflow/pipeline identifier
-        providerToken:
-          type: string
-          description: Provider-specific API token/credentials
-        providerBaseUrl:
-          type: string
-          format: uri
-          description: Optional base URL for self-hosted instances (e.g., GitHub Enterprise Server)
-    UpdateDeploymentConfigurationDto:
-      type: object
-      properties:
-        repositoryId:
-          type: string
-          description: Repository identifier (e.g., 'owner/repo' for GitHub)
-        defaultBranch:
-          type: string
-          description: Default branch name
-        workflowId:
-          type: string
-          description: Workflow/pipeline identifier
-        providerToken:
-          type: string
-          description: Provider-specific API token/credentials
-        providerBaseUrl:
-          type: string
-          format: uri
-          description: Optional base URL for self-hosted instances (e.g., GitHub Enterprise Server)
-    DeploymentConfigurationResponseDto:
-      type: object
-      required: [id, agentId, providerType, repositoryId, createdAt, updatedAt]
-      properties:
-        id:
-          type: string
-          format: uuid
-        agentId:
-          type: string
-          format: uuid
-        providerType:
-          type: string
-          description: CI/CD provider type (e.g., 'github')
-        repositoryId:
-          type: string
-          description: Repository identifier (e.g., 'owner/repo' for GitHub)
-        defaultBranch:
-          type: string
-          description: Default branch name
-        workflowId:
-          type: string
-          description: Workflow/pipeline identifier
-        providerBaseUrl:
-          type: string
-          format: uri
-          description: Optional base URL for self-hosted instances
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    TriggerWorkflowDto:
-      type: object
-      required: [workflowId, ref]
-      properties:
-        workflowId:
-          type: string
-          description: Workflow/pipeline identifier
-        ref:
-          type: string
-          description: Git reference (branch, tag, or commit SHA)
-        inputs:
-          type: object
-          additionalProperties:
-            type: string
-          description: Optional workflow inputs
-    DeploymentRunResponseDto:
-      type: object
-      required:
-        [
-          id,
-          configurationId,
-          providerRunId,
-          runName,
-          status,
-          ref,
-          sha,
-          createdAt,
-          updatedAt,
-        ]
-      properties:
-        id:
-          type: string
-          format: uuid
-        configurationId:
-          type: string
-          format: uuid
-        providerRunId:
-          type: string
-          description: Provider-specific run identifier
-        runName:
-          type: string
-          description: Run name/title
-        status:
-          type: string
-          enum: [queued, in_progress, completed, cancelled, failure]
-          description: Run status
-        conclusion:
-          type: string
-          enum: [success, failure, cancelled, skipped]
-          description: Run conclusion
-        ref:
-          type: string
-          description: Git reference (branch, tag, or commit SHA)
-        sha:
-          type: string
-          description: Commit SHA
-        workflowId:
-          type: string
-          description: Workflow that triggered this run
-        workflowName:
-          type: string
-          description: Workflow name
-        startedAt:
-          type: string
-          format: date-time
-          description: When the run started
-        completedAt:
-          type: string
-          format: date-time
-          description: When the run completed
-        htmlUrl:
-          type: string
-          format: uri
-          description: HTML URL for viewing the run
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    RepositoryResponseDto:
-      type: object
-      required: [id, name, fullName, defaultBranch, url, private]
-      properties:
-        id:
-          type: string
-          description: Repository identifier (e.g., 'owner/repo' for GitHub)
-        name:
-          type: string
-          description: Repository name
-        fullName:
-          type: string
-          description: Repository full name (e.g., 'owner/repo')
-        defaultBranch:
-          type: string
-          description: Default branch name
-        url:
-          type: string
-          format: uri
-          description: Repository URL
-        private:
-          type: boolean
-          description: Whether the repository is private
-    BranchResponseDto:
-      type: object
-      required: [name, sha, default]
-      properties:
-        name:
-          type: string
-          description: Branch name
-        sha:
-          type: string
-          description: Commit SHA
-        default:
-          type: boolean
-          description: Whether this is the default branch
-    WorkflowResponseDto:
-      type: object
-      required: [id, name, path, state, canTrigger]
-      properties:
-        id:
-          type: string
-          description: Workflow identifier
-        name:
-          type: string
-          description: Workflow name
-        path:
-          type: string
-          description: Workflow file path (e.g., '.github/workflows/deploy.yml')
-        state:
-          type: string
-          description: Workflow state (e.g., 'active', 'disabled')
-        canTrigger:
-          type: boolean
-          description: Whether the workflow can be manually triggered
-    JobResponseDto:
-      type: object
-      required: [id, name, status]
-      properties:
-        id:
-          type: string
-          description: Job identifier
-        name:
-          type: string
-          description: Job name
-        status:
-          type: string
-          enum: [queued, in_progress, completed, cancelled, failure]
-          description: Job status
-        conclusion:
-          type: string
-          enum: [success, failure, cancelled, skipped]
-          description: Job conclusion
-        startedAt:
-          type: string
-          format: date-time
-          description: When the job started
-        completedAt:
-          type: string
-          format: date-time
-          description: When the job completed
     CreateEnvironmentVariableDto:
       type: object
       required: [variable, content]

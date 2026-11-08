@@ -36,6 +36,12 @@ export const AGENT_CONTEXT_REQUEST_EVENT = 'agentContextRequest';
 /** Ack timeout per controller socket for {@link AGENT_CONTEXT_REQUEST_EVENT}. */
 export const AGENT_CONTEXT_REQUEST_TIMEOUT_MS = 15_000;
 
+/**
+ * Ack timeout per controller socket for deployment requests (`AGENT_DEPLOYMENT_REQUEST_EVENT`): the controller calls
+ * the CI/CD provider (dispatch, run lookup, log download) before it answers.
+ */
+export const AGENT_DEPLOYMENT_REQUEST_TIMEOUT_MS = 60_000;
+
 /** Cache for "is the platform MCP server connected in this worker" probes. */
 export const AGENT_CONTEXT_MCP_STATUS_CACHE_TTL_MS = 30_000;
 
@@ -48,6 +54,18 @@ export const AGENT_CONTEXT_CHANGE_REQUEST_ID_PREFIX = 'ctx_chg_';
 
 /** `question` event subtype of content change prompts (permission reply contract, like context access). */
 export const AGENT_CONTEXT_CHANGE_QUESTION_SUBTYPE = 'context_change';
+
+/**
+ * Prefix of deployment action request ids (`deployments_trigger` / `deployments_cancel_run` in visible chats; a `ctx_`
+ * id: answered on the permission reply endpoint like access requests and content changes).
+ */
+export const AGENT_CONTEXT_DEPLOYMENT_REQUEST_ID_PREFIX = 'ctx_dep_';
+
+/** `question` event subtype of deployment action prompts (permission reply contract, like content changes). */
+export const AGENT_CONTEXT_DEPLOYMENT_QUESTION_SUBTYPE = 'context_deployment';
+
+/** Deployment actions (trigger / cancel) one context ticket (one turn) may request. */
+export const AGENT_CONTEXT_MAX_DEPLOYMENT_ACTIONS_PER_TICKET = 10;
 
 /** Characters of new content / comments shown in a change prompt. */
 export const AGENT_CONTEXT_CHANGE_PREVIEW_LENGTH = 600;
