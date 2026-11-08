@@ -10647,8 +10647,8 @@
         <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureDeployments-title" datatype="html">
-        <source>Continuous Integration</source>
-        <target>Continuous Integration</target>
+        <source>Pipelines</source>
+        <target>Pipelines</target>
       </trans-unit>
       <trans-unit id="featureDeployments-switchWorkspaceTitle" datatype="html">
         <source>Switch workspace</source>
@@ -11211,8 +11211,8 @@
         <target>Atlassian-Verbindungen :: Agenstra</target>
       </trans-unit>
       <trans-unit id="featureAgentConsole-deploymentsTitle" datatype="html">
-        <source>Continuous Integration :: Agenstra</source>
-        <target>Continuous Integration :: Agenstra</target>
+        <source>Pipelines :: Agenstra</source>
+        <target>Pipelines :: Agenstra</target>
       </trans-unit>
       <trans-unit id="featureContainer-connectionsTitle" datatype="html">
         <source>Connections (CI/CD, Atlassian)</source>
@@ -11223,12 +11223,12 @@
         <target>Verbindungen</target>
       </trans-unit>
       <trans-unit id="featureContainer-deploymentsTitle" datatype="html">
-        <source>CI/CD deployments</source>
-        <target>CI/CD-Deployments</target>
+        <source>CI/CD pipelines</source>
+        <target>CI/CD-Pipelines</target>
       </trans-unit>
       <trans-unit id="featureContainer-deployments" datatype="html">
-        <source>CI</source>
-        <target>CI</target>
+        <source>Pipelines</source>
+        <target>Pipelines</target>
       </trans-unit>
       <trans-unit id="featureAudit-entityTypeDeploymentWorkflow" datatype="html">
         <source>Pipeline</source>

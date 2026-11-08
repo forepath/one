@@ -10,7 +10,7 @@ export function isDeploymentAuditEntityType(entityType: string): boolean {
   return (DEPLOYMENT_AUDIT_ENTITY_TYPES as readonly string[]).includes(entityType);
 }
 
-/** `/deployments/:clientId?workflowId=…` / `?runId=…`; deleted workflows (and rows without a workspace) get no link. */
+/** `/pipelines/:clientId?workflowId=…` / `?runId=…`; deleted workflows (and rows without a workspace) get no link. */
 export function deploymentAuditEntityRoute(row: {
   entityType: string;
   eventType?: string;
@@ -21,7 +21,7 @@ export function deploymentAuditEntityRoute(row: {
     return null;
   }
 
-  const base = `/deployments/${encodeURIComponent(row.clientId)}`;
+  const base = `/pipelines/${encodeURIComponent(row.clientId)}`;
 
   if (row.entityType === 'deployment_workflow') {
     return row.eventType === 'deleted' ? null : `${base}?workflowId=${encodeURIComponent(row.originalEntityId)}`;

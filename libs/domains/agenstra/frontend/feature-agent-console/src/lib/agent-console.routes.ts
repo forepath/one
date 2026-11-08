@@ -378,16 +378,16 @@ export const agentConsoleRoutes: Route[] = [
         title: $localize`:@@featureAgentConsole-tasksTitle:Tasks :: Agenstra`,
       },
       {
-        path: 'deployments/:clientId',
+        path: 'pipelines/:clientId',
         canActivate: [authGuard, ticketsRequireActiveClientGuard],
         component: DeploymentsBoardComponent,
-        title: $localize`:@@featureAgentConsole-deploymentsTitle:Continuous Integration :: Agenstra`,
+        title: $localize`:@@featureAgentConsole-deploymentsTitle:Pipelines :: Agenstra`,
       },
       {
-        path: 'deployments',
+        path: 'pipelines',
         canActivate: [authGuard, ticketsRequireActiveClientGuard],
         component: DeploymentsBoardComponent,
-        title: $localize`:@@featureAgentConsole-deploymentsTitle:Continuous Integration :: Agenstra`,
+        title: $localize`:@@featureAgentConsole-deploymentsTitle:Pipelines :: Agenstra`,
       },
       {
         path: 'graphs/:clientId',

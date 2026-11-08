@@ -153,8 +153,8 @@ export class AgentConsoleContainerComponent implements OnInit {
   );
 
   readonly deploymentsSidebarLink = toSignal(
-    this.clientsFacade.activeClientId$.pipe(map((id): string[] => (id ? ['/deployments', id] : ['/deployments']))),
-    { initialValue: ['/deployments'] },
+    this.clientsFacade.activeClientId$.pipe(map((id): string[] => (id ? ['/pipelines', id] : ['/pipelines']))),
+    { initialValue: ['/pipelines'] },
   );
 
   readonly graphsSidebarLink = toSignal(

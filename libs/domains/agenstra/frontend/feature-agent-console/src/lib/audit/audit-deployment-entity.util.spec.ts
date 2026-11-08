@@ -19,7 +19,7 @@ describe('audit deployment entity helpers', () => {
         originalEntityId: 'w1',
         clientId: 'c1',
       }),
-    ).toBe('/deployments/c1?workflowId=w1');
+    ).toBe('/pipelines/c1?workflowId=w1');
     expect(
       deploymentAuditEntityRoute({
         entityType: 'deployment_run',
@@ -27,7 +27,7 @@ describe('audit deployment entity helpers', () => {
         originalEntityId: 'r1',
         clientId: 'c1',
       }),
-    ).toBe('/deployments/c1?runId=r1');
+    ).toBe('/pipelines/c1?runId=r1');
   });
 
   it('does not link deleted workflows or rows without a workspace', () => {
