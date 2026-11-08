@@ -26,6 +26,7 @@ Clients are entities that represent remote agent-manager services. The controlle
 - ✅ Credential storage for proxied agent operations
 - ✅ **Server Provisioning** - Automated cloud server provisioning with Docker and agent-manager deployment
 - ✅ **Per-Client Permissions** - Fine-grained access control with user roles per client (admin/user)
+- ✅ **Workspace Deployments** - Admin-managed CI/CD connections (GitHub Actions, GitLab CI, Jenkins), workspace deployment workflows (global or assigned to environments), run history, provider polling and live updates; see [Deployments](../../../../docs/agenstra/features/deployment.md)
 - ✅ **Statistics** - Persistent data collection for chat I/O, filter drops, and entity lifecycle events; structure ready for future REST API
 
 ## Architecture
@@ -271,6 +272,47 @@ REST endpoints for querying chat I/O, filter drops, filter flags, and entity lif
 - `GET /api/statistics/entity-events` - Entity events
 - `GET /api/statistics/egress-events` - Egress events
 
+### Deployment Connections (admin)
+
+Instance-wide CI/CD connections (`DeploymentConnectionsController`). Global admins only (in-code admin check; API key mode allowed); PATs additionally need `connections:admin`. Secrets (`token`, `privateKey`) are write-only, stored AES-256-GCM encrypted (`ENCRYPTION_KEY`) and never returned, logged or indexed.
+
+- `GET /api/connections/deployments` - List connections (`limit` default 10, `offset`, `search`, `provider`)
+- `GET /api/connections/deployments/:id` - Get a connection
+- `POST /api/connections/deployments` - Create a connection (`provider` `github` | `gitlab` | `jenkins`; GitHub `authType` `app` (default: `appId`, `installationId`, `privateKey`) or `token`; GitLab `token`; Jenkins `username` + `token`, `baseUrl` required; `workspaceAccess` `all` | `selected` with `allowedClientIds`)
+- `PUT /api/connections/deployments/:id` - Update a connection (provider immutable; omitted secrets are kept, switching `authType` requires the new secrets)
+- `DELETE /api/connections/deployments/:id` - Delete a connection (`409` while deployment workflows use it)
+- `POST /api/connections/deployments/:id/test` - Test the credentials against the provider (persists `lastTestStatus`, `lastTestMessage`, `lastTestedAt`)
+
+Atlassian connections live next to them under `/api/connections/atlassian/*` (same `connections:admin` scope and admin check).
+
+### Workspace Deployments
+
+Deployment workflows and runs of a workspace (`ClientDeploymentsController`). Every lookup is scoped by `clientId` (ids of other workspaces answer `404`); a connection that is not (or no longer) shared with the workspace answers `403`.
+
+| Access                                                                          | Scope               | Endpoints                                              |
+| ------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------ |
+| Workspace access (any member)                                                   | `deployments:read`  | list / get workflows, list / get runs, run logs        |
+| Workspace access (any member)                                                   | `deployments:write` | trigger, sync, cancel                                  |
+| Workspace management (workspace admin / creator, global admin session, API key) | `deployments:write` | workflow create / update / delete, connection browsing |
+
+- `GET /api/clients/:clientId/deployments/connections` - Connections usable by the workspace
+- `GET /api/clients/:clientId/deployments/connections/:connectionId/repositories` - Provider repositories (`search`)
+- `GET /api/clients/:clientId/deployments/connections/:connectionId/branches` - Branches (`repository`)
+- `GET /api/clients/:clientId/deployments/connections/:connectionId/workflows` - Provider workflows (`repository`)
+- `GET /api/clients/:clientId/deployments/workflows` - List workflows (`agentId`: workflows available to that environment, `search`, `limit`, `offset`)
+- `GET /api/clients/:clientId/deployments/workflows/:workflowId` - Get a workflow
+- `POST /api/clients/:clientId/deployments/workflows` - Create a workflow (`connectionId`, `name`, `repository`, `workflow`, `defaultRef`, `defaultInputs`, `scope` `global` | `environments` with `agentIds`, `agentTriggerEnabled`, `enabled`)
+- `PUT /api/clients/:clientId/deployments/workflows/:workflowId` - Update a workflow
+- `DELETE /api/clients/:clientId/deployments/workflows/:workflowId` - Delete a workflow and its runs
+- `POST /api/clients/:clientId/deployments/workflows/:workflowId/trigger` - Trigger a run (`ref`, `inputs`, optional `agentId`; `409` when the workflow is disabled)
+- `POST /api/clients/:clientId/deployments/workflows/:workflowId/sync` - Import recent provider runs as `external` and refresh active ones (`{ synced }`)
+- `GET /api/clients/:clientId/deployments/runs` - Run history (`workflowId`, `agentId`, `status`, `search`, `limit` default 25 / max 100, `offset`; `{ items, total }`)
+- `GET /api/clients/:clientId/deployments/runs/:runId` - Run with jobs (active runs are refreshed from the provider first)
+- `GET /api/clients/:clientId/deployments/runs/:runId/logs` - Log tail of the run or one job (`jobId`; at most 1 MB, `truncated`)
+- `POST /api/clients/:clientId/deployments/runs/:runId/cancel` - Cancel an active run
+
+Environments use the same workflows through the `agenstra_deployments_*` MCP tools: the agent-manager forwards them as `agentDeploymentRequest` (ack) on its controller connection, and `AgentDeploymentRequestHandlerService` only exposes enabled workflows that are global or assigned to the authenticated agent, allowing trigger / cancel only with `agentTriggerEnabled`. Active runs are polled by the `deployment-run-poll.coordinator` job and provider history is imported by `deployment-history-sync.coordinator` (see Environment Variables).
+
 ### Server Provisioning
 
 - `GET /api/clients/provisioning/providers` - List available provisioning providers (e.g., Hetzner Cloud, DigitalOcean)
@@ -495,6 +537,8 @@ The `ClientsGateway` provides WebSocket-based real-time event forwarding to remo
   }
   ```
 
+- `deploymentWorkflowUpsert` (`DeploymentWorkflowSummary`), `deploymentWorkflowRemoved` (`{ clientId, workflowId }`), `deploymentRunUpsert` (`DeploymentRunSummary`) - Workspace deployment changes, broadcast to the workspace room (machine tokens need `deployments:read`)
+
 - All events from the remote agent-manager WebSocket are forwarded back to the client via `onAny()` handler
 
 See the [AsyncAPI specification](./spec/asyncapi.yaml) for complete event documentation.
@@ -505,7 +549,7 @@ The agent-controller collects persistent statistics for analytics and future RES
 
 - **Chat I/O** - Word and character counts for user input and agent output (includes **prompt enhancement** via `forward` event `enhanceChat`; rows use `interaction_kind` to distinguish normal chat from enhancement, **ticket body generation**, and **autonomous ticket runs** via `autonomous_ticket_run` / `autonomous_ticket_run_turn`)
 - **Filter drops** - Messages dropped by content filters (profanity, PII, etc.) with filter type and direction
-- **Entity lifecycle** - Creation, update, and deletion of clients, agents, users, client-user relationships, and provisioning references
+- **Entity lifecycle** - Creation, update, and deletion of clients, agents, users, client-user relationships, and provisioning references, plus deployment workflows (`deployment_workflow`) and deployment runs (`deployment_run`: created = triggered, updated = cancelled)
 
 Data is stored in shadow tables (`statistics_*`) with no secrets. See [Statistics Model](./docs/statistics-architecture.mmd) for the full design, collection points, and REST API. The [HTTP Statistics Sequence Diagram](./docs/sequence-http-statistics.mmd) shows the request flow for statistics endpoints.
 
@@ -722,6 +766,14 @@ nx test agenstra-backend-feature-agent-controller --coverage
 
 - `HETZNER_API_TOKEN` - Hetzner Cloud API token (required for Hetzner provider)
 - `DIGITALOCEAN_API_TOKEN` - DigitalOcean API token (required for DigitalOcean provider)
+
+### Workspace Deployments Environment Variables
+
+- `DEPLOYMENT_RUN_POLL_INTERVAL_MS` - Interval of `deployment-run-poll.coordinator`, which refreshes active runs from the provider (default: `30000`; `0` disables)
+- `DEPLOYMENT_RUN_POLL_BATCH` - Active runs refreshed per poll and enabled workflows synced per history sync (default: `50`)
+- `DEPLOYMENT_HISTORY_SYNC_INTERVAL_MS` - Interval of `deployment-history-sync.coordinator`, which imports runs started on the provider as `external` (default: `300000`; `0` disables)
+- `DEPLOYMENT_REALTIME_RELAY_INTERVAL_MS` - API process only: interval that relays run / workflow changes of the queue worker (poller, history sync) to the console sockets (default: `5000`; `0` disables)
+- `ENCRYPTION_KEY` - Base64 32-byte key that encrypts deployment connection credentials at rest (shared with the other encrypted columns)
 
 ## License
 

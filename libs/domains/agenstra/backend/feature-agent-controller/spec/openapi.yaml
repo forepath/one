@@ -1071,12 +1071,12 @@ paths:
           description: Authenticator removed
         '404':
           description: User not found
-  /imports/atlassian/connections:
+  /connections/atlassian/connections:
     get:
       summary: List Atlassian site connections (admin only)
       operationId: listAtlassianSiteConnections
       security:
-        - bearerAuth: [imports:admin]
+        - bearerAuth: [connections:admin]
       parameters:
         - in: query
           name: limit
@@ -1098,10 +1098,10 @@ paths:
           name: search
           schema:
             type: string
-          description: Case-insensitive search across label, baseUrl, accountEmail, id
+          description: Case-insensitive search across label, baseUrl, accountEmail, oauthClientId, id
       responses:
         '200':
-          description: Connections (API tokens never returned)
+          description: Connections (API tokens and OAuth client secrets never returned)
           content:
             application/json:
               schema:
@@ -1114,7 +1114,7 @@ paths:
       summary: Create Atlassian site connection (admin only)
       operationId: createAtlassianSiteConnection
       security:
-        - bearerAuth: [imports:admin]
+        - bearerAuth: [connections:admin]
       requestBody:
         required: true
         content:
@@ -1132,7 +1132,7 @@ paths:
           description: Validation error
         '403':
           description: Forbidden
-  /imports/atlassian/connections/{id}:
+  /connections/atlassian/connections/{id}:
     parameters:
       - in: path
         name: id
@@ -1144,7 +1144,7 @@ paths:
       summary: Get Atlassian site connection (admin only)
       operationId: getAtlassianSiteConnection
       security:
-        - bearerAuth: [imports:admin]
+        - bearerAuth: [connections:admin]
       responses:
         '200':
           description: Connection
@@ -1160,7 +1160,7 @@ paths:
       summary: Update Atlassian site connection (admin only)
       operationId: updateAtlassianSiteConnection
       security:
-        - bearerAuth: [imports:admin]
+        - bearerAuth: [connections:admin]
       requestBody:
         required: true
         content:
@@ -1182,7 +1182,7 @@ paths:
       summary: Delete Atlassian site connection (admin only)
       operationId: deleteAtlassianSiteConnection
       security:
-        - bearerAuth: [imports:admin]
+        - bearerAuth: [connections:admin]
       responses:
         '204':
           description: Deleted
@@ -1190,12 +1190,16 @@ paths:
           description: Forbidden
         '404':
           description: Not found
-  /imports/atlassian/connections/{id}/test:
+  /connections/atlassian/connections/{id}/test:
     post:
       summary: Test Atlassian connection (admin only)
+      description: >-
+        Resolves credentials (OAuth client credentials token + cloud id for `app`, Basic for `token`) and calls Jira
+        `/rest/api/3/myself`, falling back to Confluence `/rest/api/space`. The result is persisted as
+        `lastTestStatus` / `lastTestMessage` / `lastTestedAt`; messages never contain credentials.
       operationId: testAtlassianSiteConnection
       security:
-        - bearerAuth: [imports:admin]
+        - bearerAuth: [connections:admin]
       parameters:
         - in: path
           name: id
@@ -1212,12 +1216,14 @@ paths:
                 $ref: '#/components/schemas/AtlassianConnectionTestResultDto'
         '403':
           description: Forbidden
-  /imports/atlassian/configs:
+        '404':
+          description: Not found
+  /connections/atlassian/configs:
     get:
       summary: List external import configs (admin only)
       operationId: listExternalImportConfigs
       security:
-        - bearerAuth: [imports:admin]
+        - bearerAuth: [connections:admin]
       parameters:
         - in: query
           name: limit
@@ -1255,7 +1261,7 @@ paths:
       summary: Create import config (admin only)
       operationId: createExternalImportConfig
       security:
-        - bearerAuth: [imports:admin]
+        - bearerAuth: [connections:admin]
       requestBody:
         required: true
         content:
@@ -1273,7 +1279,7 @@ paths:
           description: Validation error
         '403':
           description: Forbidden
-  /imports/atlassian/configs/{id}:
+  /connections/atlassian/configs/{id}:
     parameters:
       - in: path
         name: id
@@ -1285,7 +1291,7 @@ paths:
       summary: Get import config (admin only)
       operationId: getExternalImportConfig
       security:
-        - bearerAuth: [imports:admin]
+        - bearerAuth: [connections:admin]
       responses:
         '200':
           description: Config
@@ -1301,7 +1307,7 @@ paths:
       summary: Update import config (admin only)
       operationId: updateExternalImportConfig
       security:
-        - bearerAuth: [imports:admin]
+        - bearerAuth: [connections:admin]
       requestBody:
         required: true
         content:
@@ -1323,7 +1329,7 @@ paths:
       summary: Delete import config (admin only)
       operationId: deleteExternalImportConfig
       security:
-        - bearerAuth: [imports:admin]
+        - bearerAuth: [connections:admin]
       responses:
         '204':
           description: Deleted
@@ -1331,12 +1337,12 @@ paths:
           description: Forbidden
         '404':
           description: Not found
-  /imports/atlassian/configs/{id}/run:
+  /connections/atlassian/configs/{id}/run:
     post:
       summary: Run import once for config (admin only)
       operationId: runExternalImportConfig
       security:
-        - bearerAuth: [imports:admin]
+        - bearerAuth: [connections:admin]
       parameters:
         - in: path
           name: id
@@ -1349,12 +1355,12 @@ paths:
           description: Accepted
         '403':
           description: Forbidden
-  /imports/atlassian/configs/{id}/markers:
+  /connections/atlassian/configs/{id}/markers:
     delete:
       summary: Clear sync markers for config (admin only)
       operationId: clearExternalImportMarkers
       security:
-        - bearerAuth: [imports:admin]
+        - bearerAuth: [connections:admin]
       parameters:
         - in: path
           name: id
@@ -4865,6 +4871,804 @@ paths:
           description: User does not have access to this client
         '404':
           description: Task not found
+  /connections/deployments:
+    get:
+      summary: List CI/CD deployment connections (admin only)
+      description: >-
+        Instance-wide GitHub / GitLab / Jenkins connections. Secrets (`token`, `privateKey`) are stored encrypted and
+        never returned. Search uses OpenSearch (`deployment-connections`, instance scoped) with an ILIKE fallback on
+        label, baseUrl, provider and id.
+      operationId: listDeploymentConnections
+      security:
+        - bearerAuth: [connections:admin]
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: search
+          schema:
+            type: string
+            maxLength: 200
+        - in: query
+          name: provider
+          schema:
+            $ref: '#/components/schemas/DeploymentProvider'
+      responses:
+        '200':
+          description: Connections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeploymentConnectionSummary'
+        '400':
+          description: Unknown provider
+        '403':
+          description: Forbidden (not an instance admin)
+    post:
+      summary: Create a CI/CD deployment connection (admin only)
+      operationId: createDeploymentConnection
+      security:
+        - bearerAuth: [connections:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeploymentConnectionDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentConnectionSummary'
+        '400':
+          description: Validation error (unsupported auth type, missing credentials, invalid base URL, unknown workspaces)
+        '403':
+          description: Forbidden
+  /connections/deployments/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get a CI/CD deployment connection (admin only)
+      operationId: getDeploymentConnection
+      security:
+        - bearerAuth: [connections:admin]
+      responses:
+        '200':
+          description: Connection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentConnectionSummary'
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+    put:
+      summary: Update a CI/CD deployment connection (admin only)
+      description: >-
+        Provider is immutable. Omitted secrets keep the stored ones; switching `authType` requires the secrets of the
+        new type. Changing base URL or credentials resets `lastTestStatus` to `untested`.
+      operationId: updateDeploymentConnection
+      security:
+        - bearerAuth: [connections:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeploymentConnectionDto'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentConnectionSummary'
+        '400':
+          description: Validation error
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+    delete:
+      summary: Delete a CI/CD deployment connection (admin only)
+      operationId: deleteDeploymentConnection
+      security:
+        - bearerAuth: [connections:admin]
+      responses:
+        '204':
+          description: Deleted
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Connection is used by N deployment workflows
+  /connections/deployments/{id}/test:
+    post:
+      summary: Test a CI/CD deployment connection (admin only)
+      description: >-
+        GitHub: `GET /user` (token) or installation token minting + `GET /installation/repositories` (app); GitLab:
+        `GET /api/v4/user`; Jenkins: `GET /me/api/json`. The result is persisted as `lastTestStatus` /
+        `lastTestMessage` / `lastTestedAt`; messages are sanitized (no credentials) and at most 512 characters.
+      operationId: testDeploymentConnection
+      security:
+        - bearerAuth: [connections:admin]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionTestResult'
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+  /clients/{clientId}/deployments/connections:
+    get:
+      summary: 'Deployment connections usable by this workspace'
+      description: 'Requires workspace management (workspace admin / owner, global admin or API key) and the `deployments:write` scope (PAT).'
+      operationId: listDeploymentConnectionOptions
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:write]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'Connections (workspace access `all` or this workspace allowed)'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeploymentConnectionOption'
+        '403':
+          description: 'No access to the workspace, not a workspace admin / owner, or the connection is not available for this workspace'
+  /clients/{clientId}/deployments/connections/{connectionId}/repositories:
+    get:
+      summary: 'Repositories reachable through a deployment connection'
+      description: 'Requires workspace management (workspace admin / owner, global admin or API key) and the `deployments:write` scope (PAT).'
+      operationId: listDeploymentConnectionRepositories
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:write]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: connectionId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: search
+          description: 'Optional name filter'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Repositories / projects / jobs'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeploymentRepositorySummary'
+        '403':
+          description: 'No access to the workspace, not a workspace admin / owner, or the connection is not available for this workspace'
+        '404':
+          description: 'Connection not found'
+        '502':
+          description: 'Provider request failed'
+  /clients/{clientId}/deployments/connections/{connectionId}/branches:
+    get:
+      summary: 'Branches of a repository'
+      description: 'Requires workspace management (workspace admin / owner, global admin or API key) and the `deployments:write` scope (PAT).'
+      operationId: listDeploymentConnectionBranches
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:write]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: connectionId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: repository
+          required: true
+          description: 'Provider repository id (`owner/repo`, GitLab project id or path, Jenkins job full name)'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Branches'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeploymentBranchSummary'
+        '400':
+          description: 'repository missing'
+        '403':
+          description: 'No access to the workspace, not a workspace admin / owner, or the connection is not available for this workspace'
+        '404':
+          description: 'Connection not found'
+        '502':
+          description: 'Provider request failed'
+  /clients/{clientId}/deployments/connections/{connectionId}/workflows:
+    get:
+      summary: 'Provider workflows of a repository'
+      description: 'Requires workspace management (workspace admin / owner, global admin or API key) and the `deployments:write` scope (PAT).'
+      operationId: listDeploymentConnectionWorkflows
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:write]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: connectionId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: repository
+          required: true
+          description: 'Provider repository id (`owner/repo`, GitLab project id or path, Jenkins job full name)'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Provider workflows (GitHub workflow files; GitLab / Jenkins return the pipeline / job)'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeploymentProviderWorkflowSummary'
+        '400':
+          description: 'repository missing'
+        '403':
+          description: 'No access to the workspace, not a workspace admin / owner, or the connection is not available for this workspace'
+        '404':
+          description: 'Connection not found'
+        '502':
+          description: 'Provider request failed'
+  /clients/{clientId}/deployments/workflows:
+    get:
+      summary: 'List deployment workflows'
+      description: 'Requires workspace access and the `deployments:read` scope (PAT).'
+      operationId: listDeploymentWorkflows
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:read]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: agentId
+          description: 'Only workflows available to this environment (global + assigned)'
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: search
+          description: 'OpenSearch (`deployment-workflows`) with ILIKE fallback on name, description, repository, workflow'
+          schema:
+            type: string
+        - in: query
+          name: limit
+          description: 'Page size (default 50, max 200)'
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: approvalStatus
+          description: 'Only workflows waiting for a workspace admin (`pending`) or approved ones (`approved`)'
+          schema:
+            type: string
+            enum: [pending, approved]
+      responses:
+        '200':
+          description: 'Workflows ordered by name'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeploymentWorkflowSummary'
+        '403':
+          description: 'No access to the workspace, or the connection is not available for this workspace'
+    post:
+      summary: 'Create a deployment workflow'
+      description: 'Requires workspace management (workspace admin / owner, global admin or API key) and the `deployments:write` scope (PAT).'
+      operationId: createDeploymentWorkflow
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:write]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeploymentWorkflowDto'
+      responses:
+        '201':
+          description: 'Created workflow'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentWorkflowSummary'
+        '400':
+          description: 'Invalid fields, environments not in this workspace, scope environments without environments, GitHub without workflow'
+        '403':
+          description: 'No access to the workspace, not a workspace admin / owner, or the connection is not available for this workspace'
+        '404':
+          description: 'Connection not found'
+  /clients/{clientId}/deployments/workflows/{workflowId}:
+    get:
+      summary: 'Get a deployment workflow'
+      description: 'Requires workspace access and the `deployments:read` scope (PAT).'
+      operationId: getDeploymentWorkflow
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:read]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'Workflow'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentWorkflowSummary'
+        '403':
+          description: 'No access to the workspace, or the connection is not available for this workspace'
+        '404':
+          description: 'Workflow not found in this workspace'
+    put:
+      summary: 'Update a deployment workflow'
+      description: >-
+        Requires workspace management (workspace admin / owner, global admin or API key) and the `deployments:write`
+        scope (PAT). Omitted fields stay unchanged. A request carrying the complete editor content (`connectionId`,
+        `name`, `description`, `repository`, `workflow`, `defaultRef`, `defaultInputs`, `scope`, `agentIds`,
+        `agentTriggerEnabled`; `null` counts as submitted) approves a pending workflow; partial updates (e.g. only
+        `enabled`) never approve.
+      operationId: updateDeploymentWorkflow
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:write]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeploymentWorkflowDto'
+      responses:
+        '200':
+          description: 'Updated workflow'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentWorkflowSummary'
+        '400':
+          description: 'Invalid fields'
+        '403':
+          description: 'No access to the workspace, not a workspace admin / owner, or the connection is not available for this workspace'
+        '404':
+          description: 'Workflow not found in this workspace'
+    delete:
+      summary: 'Delete a deployment workflow and its run history'
+      description: 'Requires workspace management (workspace admin / owner, global admin or API key) and the `deployments:write` scope (PAT).'
+      operationId: deleteDeploymentWorkflow
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:write]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: 'Deleted'
+        '403':
+          description: 'No access to the workspace, not a workspace admin / owner, or the connection is not available for this workspace'
+        '404':
+          description: 'Workflow not found in this workspace'
+  /clients/{clientId}/deployments/workflows/{workflowId}/approval:
+    post:
+      summary: 'Approve a pending deployment workflow'
+      description: >-
+        Workflows an environment proposed or changed (or switched on again) are pending until a workspace admin
+        approves them; nobody can start runs before. `updatedAt` is the version the admin reviewed: the check runs
+        under a row lock and a workflow changed since then is not approved (409). Approving an approved workflow is a
+        no-op. Saving the complete editor form with `PUT` approves as well. Requires workspace management access and
+        the `deployments:write` scope (PAT).
+      operationId: approveDeploymentWorkflow
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:write]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveDeploymentWorkflowDto'
+      responses:
+        '200':
+          description: 'Approved workflow'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentWorkflowSummary'
+        '400':
+          description: '`updatedAt` is not an ISO timestamp'
+        '403':
+          description: 'No workspace management access'
+        '404':
+          description: 'Unknown workflow'
+        '409':
+          description: 'The workflow changed since the reviewed `updatedAt`'
+  /clients/{clientId}/deployments/workflows/{workflowId}/trigger:
+    post:
+      summary: 'Trigger a deployment run'
+      description: 'Requires workspace access and the `deployments:write` scope (PAT). `ref` defaults to the workflow default ref, then the repository default branch; `inputs` override the workflow default inputs. With `agentId` the workflow must be global or assigned to that environment.'
+      operationId: triggerDeploymentRun
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:write]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerDeploymentRunDto'
+      responses:
+        '201':
+          description: 'Recorded run (queued until the provider reports it)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentRunSummary'
+        '400':
+          description: 'Invalid inputs / ref, no ref known, or environment not in this workspace'
+        '403':
+          description: 'No access to the workspace, connection not available for this workspace, or workflow not available to the environment'
+        '404':
+          description: 'Workflow not found in this workspace'
+        '409':
+          description: 'Workflow is disabled'
+        '502':
+          description: 'Provider request failed'
+  /clients/{clientId}/deployments/workflows/{workflowId}/sync:
+    post:
+      summary: 'Sync provider run history'
+      description: 'Requires workspace access and the `deployments:write` scope (PAT). Imports recent provider runs as `external` and refreshes the active ones.'
+      operationId: syncDeploymentWorkflowRuns
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:write]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'Number of new or changed runs'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentSyncResult'
+        '403':
+          description: 'No access to the workspace, or the connection is not available for this workspace'
+        '404':
+          description: 'Workflow not found in this workspace'
+        '502':
+          description: 'Provider request failed'
+  /clients/{clientId}/deployments/runs:
+    get:
+      summary: 'List deployment runs'
+      description: 'Requires workspace access and the `deployments:read` scope (PAT).'
+      operationId: listDeploymentRuns
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:read]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: workflowId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: agentId
+          description: 'Runs triggered for / by this environment'
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [queued, in_progress, completed]
+        - in: query
+          name: search
+          description: 'OpenSearch (`deployment-runs`) with ILIKE fallback on name, status, ref, sha, provider run id, workflow name'
+          schema:
+            type: string
+        - in: query
+          name: limit
+          description: 'Page size (default 25, max 100)'
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: 'Runs, newest first'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentRunListResponse'
+        '400':
+          description: 'Invalid status'
+        '403':
+          description: 'No access to the workspace, or the connection is not available for this workspace'
+  /clients/{clientId}/deployments/runs/{runId}:
+    get:
+      summary: 'Deployment run with jobs'
+      description: 'Requires workspace access and the `deployments:read` scope (PAT).'
+      operationId: getDeploymentRun
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:read]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'Run (active runs are refreshed from the provider first) and its jobs'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentRunDetail'
+        '403':
+          description: 'No access to the workspace, or the connection is not available for this workspace'
+        '404':
+          description: 'Run not found in this workspace'
+  /clients/{clientId}/deployments/runs/{runId}/logs:
+    get:
+      summary: 'Deployment run or job logs'
+      description: 'Requires workspace access and the `deployments:read` scope (PAT).'
+      operationId: getDeploymentRunLogs
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:read]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: jobId
+          description: 'Provider job id (from the run detail); omitted: logs of the whole run'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Log tail (at most 1 MB, `truncated` when cut)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentRunLogs'
+        '400':
+          description: 'Invalid job id'
+        '403':
+          description: 'No access to the workspace, or the connection is not available for this workspace'
+        '404':
+          description: 'Run not found in this workspace'
+        '502':
+          description: 'Provider request failed'
+  /clients/{clientId}/deployments/runs/{runId}/cancel:
+    post:
+      summary: 'Cancel a deployment run'
+      description: 'Requires workspace access and the `deployments:write` scope (PAT).'
+      operationId: cancelDeploymentRun
+      tags: [Deployments]
+      security:
+        - bearerAuth: [deployments:write]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'Run after the cancel request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentRunSummary'
+        '403':
+          description: 'No access to the workspace, or the connection is not available for this workspace'
+        '404':
+          description: 'Run not found in this workspace'
+        '409':
+          description: 'Run is not active or has not started on the provider yet'
+        '502':
+          description: 'Provider request failed'
   /clients/{id}/configuration-overrides:
     get:
       summary: List effective workspace configuration overrides (proxied)
@@ -5638,496 +6442,6 @@ paths:
           description: No provisioning reference found for client
         '404':
           description: Client not found
-  /clients/{id}/agents/{agentId}/deployments/configuration:
-    get:
-      summary: Get deployment configuration for an agent (proxied)
-      operationId: getClientAgentDeploymentConfiguration
-      security:
-        - bearerAuth: [agent_deployments:read]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the client
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the agent
-      responses:
-        '200':
-          description: Deployment configuration
-          content:
-            application/json:
-              schema:
-                type: object
-        '404':
-          description: Client, agent, or deployment configuration not found
-    post:
-      summary: Create or update deployment configuration for an agent (proxied)
-      operationId: upsertClientAgentDeploymentConfiguration
-      security:
-        - bearerAuth: [agent_deployments:write]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the client
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the agent
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        '200':
-          description: Deployment configuration created or updated
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Invalid request
-        '404':
-          description: Client or agent not found
-    delete:
-      summary: Delete deployment configuration for an agent (proxied)
-      operationId: deleteClientAgentDeploymentConfiguration
-      security:
-        - bearerAuth: [agent_deployments:write]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the client
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the agent
-      responses:
-        '204':
-          description: Deployment configuration deleted successfully
-        '404':
-          description: Client, agent, or deployment configuration not found
-  /clients/{id}/agents/{agentId}/deployments/repositories:
-    get:
-      summary: List repositories accessible with the agent's deployment configuration (proxied)
-      operationId: listClientAgentDeploymentRepositories
-      security:
-        - bearerAuth: [agent_deployments:read]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the client
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the agent
-      responses:
-        '200':
-          description: Array of repositories
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-        '403':
-          description: User does not have access to this client
-        '404':
-          description: Client, agent, or deployment configuration not found
-  /clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/branches:
-    get:
-      summary: List branches for a repository (proxied)
-      operationId: listClientAgentDeploymentBranches
-      security:
-        - bearerAuth: [agent_deployments:read]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the client
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the agent
-        - in: path
-          name: repositoryId
-          required: true
-          schema:
-            type: string
-          description: Repository identifier (e.g., 'owner/repo' for GitHub)
-      responses:
-        '200':
-          description: Array of branches
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-        '403':
-          description: User does not have access to this client
-        '404':
-          description: Client, agent, or deployment configuration not found
-  /clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/workflows:
-    get:
-      summary: List workflows for a repository (proxied)
-      operationId: listClientAgentDeploymentWorkflows
-      security:
-        - bearerAuth: [agent_deployments:read]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the client
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the agent
-        - in: path
-          name: repositoryId
-          required: true
-          schema:
-            type: string
-          description: Repository identifier (e.g., 'owner/repo' for GitHub)
-        - in: query
-          name: branch
-          schema:
-            type: string
-          description: Branch name (optional, defaults to default branch)
-      responses:
-        '200':
-          description: Array of workflows
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-        '404':
-          description: Client, agent, or deployment configuration not found
-  /clients/{id}/agents/{agentId}/deployments/workflows/trigger:
-    post:
-      summary: Trigger a workflow run (proxied)
-      operationId: triggerClientAgentDeploymentWorkflow
-      security:
-        - bearerAuth: [agent_deployments:write]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the client
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the agent
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        '200':
-          description: Workflow run triggered
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Invalid request
-        '404':
-          description: Client, agent, or deployment configuration not found
-  /clients/{id}/agents/{agentId}/deployments/runs:
-    get:
-      summary: List deployment runs for an agent (proxied)
-      operationId: listClientAgentDeploymentRuns
-      security:
-        - bearerAuth: [agent_deployments:read]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the client
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the agent
-        - in: query
-          name: limit
-          schema:
-            type: integer
-            minimum: 0
-          description: Maximum number of runs to return (default 50)
-        - in: query
-          name: offset
-          schema:
-            type: integer
-            minimum: 0
-          description: Number of runs to skip (default 0)
-        - in: query
-          name: search
-          schema:
-            type: string
-          description: Case-insensitive search (trimmed, first 200 characters) across the agent's runs (name, status, conclusion, branch, commit SHA, workflow name, id); narrows the caller's client / agent scope only, `limit` / `offset` page the matches
-      responses:
-        '200':
-          description: Array of deployment runs
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-        '404':
-          description: Client, agent, or deployment configuration not found
-  /clients/{id}/agents/{agentId}/deployments/runs/{runId}:
-    get:
-      summary: Get the status of a pipeline run (proxied)
-      operationId: getClientAgentDeploymentRunStatus
-      security:
-        - bearerAuth: [agent_deployments:read]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the client
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the agent
-        - in: path
-          name: runId
-          required: true
-          schema:
-            type: string
-          description: Provider-specific run identifier
-      responses:
-        '200':
-          description: Pipeline run status
-          content:
-            application/json:
-              schema:
-                type: object
-        '404':
-          description: Client, agent, deployment configuration, or run not found
-  /clients/{id}/agents/{agentId}/deployments/runs/{runId}/logs:
-    get:
-      summary: Get logs for a pipeline run (proxied)
-      operationId: getClientAgentDeploymentRunLogs
-      security:
-        - bearerAuth: [agent_deployments:read]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the client
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the agent
-        - in: path
-          name: runId
-          required: true
-          schema:
-            type: string
-          description: Provider-specific run identifier
-      responses:
-        '200':
-          description: Pipeline run logs
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [logs]
-                properties:
-                  logs:
-                    type: string
-                    description: Pipeline run logs as string
-        '404':
-          description: Client, agent, deployment configuration, or run not found
-  /clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs:
-    get:
-      summary: List jobs/steps for a pipeline run (proxied)
-      operationId: listClientAgentDeploymentRunJobs
-      security:
-        - bearerAuth: [agent_deployments:read]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the client
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the agent
-        - in: path
-          name: runId
-          required: true
-          schema:
-            type: string
-          description: Provider-specific run identifier
-      responses:
-        '200':
-          description: Array of jobs/steps
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-        '404':
-          description: Client, agent, deployment configuration, or run not found
-  /clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs:
-    get:
-      summary: Get logs for a specific job/step (proxied)
-      operationId: getClientAgentDeploymentJobLogs
-      security:
-        - bearerAuth: [agent_deployments:read]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the client
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the agent
-        - in: path
-          name: runId
-          required: true
-          schema:
-            type: string
-          description: Provider-specific run identifier
-        - in: path
-          name: jobId
-          required: true
-          schema:
-            type: string
-          description: Job identifier
-      responses:
-        '200':
-          description: Job logs
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [logs]
-                properties:
-                  logs:
-                    type: string
-                    description: Job logs as string
-        '404':
-          description: Client, agent, deployment configuration, run, or job not found
-  /clients/{id}/agents/{agentId}/deployments/runs/{runId}/cancel:
-    post:
-      summary: Cancel a running pipeline (proxied)
-      operationId: cancelClientAgentDeploymentRun
-      security:
-        - bearerAuth: [agent_deployments:write]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the client
-        - in: path
-          name: agentId
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: The UUID of the agent
-        - in: path
-          name: runId
-          required: true
-          schema:
-            type: string
-          description: Provider-specific run identifier
-      responses:
-        '204':
-          description: Pipeline cancelled successfully
-        '404':
-          description: Client, agent, deployment configuration, or run not found
   /clients/{id}/agents/{agentId}/vnc/sessions:
     post:
       summary: Create a short-lived VNC desktop session ticket
@@ -6482,7 +6796,16 @@ paths:
           name: entityType
           schema:
             type: string
-            enum: [user, client, agent, client_user, provisioning_reference]
+            enum:
+              [
+                user,
+                client,
+                agent,
+                client_user,
+                provisioning_reference,
+                deployment_workflow,
+                deployment_run,
+              ]
         - in: query
           name: eventType
           schema:
@@ -6833,7 +7156,16 @@ paths:
           name: entityType
           schema:
             type: string
-            enum: [user, client, agent, client_user, provisioning_reference]
+            enum:
+              [
+                user,
+                client,
+                agent,
+                client_user,
+                provisioning_reference,
+                deployment_workflow,
+                deployment_run,
+              ]
         - in: query
           name: eventType
           schema:
@@ -10753,7 +11085,16 @@ components:
           format: uuid
         entityType:
           type: string
-          enum: [user, client, agent, client_user, provisioning_reference]
+          enum:
+            [
+              user,
+              client,
+              agent,
+              client_user,
+              provisioning_reference,
+              deployment_workflow,
+              deployment_run,
+            ]
         eventType:
           type: string
           enum: [created, updated, deleted]
@@ -11127,6 +11468,15 @@ components:
             format: uuid
         autoEnrichmentEnabled:
           type: boolean
+        allowedDeploymentOperations:
+          type: array
+          maxItems: 2
+          items:
+            type: string
+            enum: [deployment.trigger, deployment.cancel]
+          description: >-
+            Deployment run actions autonomous runs may request (`agenstra_deployments_trigger` / `_cancel_run`;
+            empty: none). Approval-relevant like the other settings; the workflow rules apply on top.
         verifierProfile:
           $ref: '#/components/schemas/TicketVerifierProfileDto'
         requiresApproval:
@@ -11185,6 +11535,12 @@ components:
           description: OpenCode provider/model used for autonomous turns on this ticket.
         includeWorkspaceContext:
           type: boolean
+        allowedDeploymentOperations:
+          type: array
+          items:
+            type: string
+            enum: [deployment.trigger, deployment.cancel]
+          description: 'Deployment run actions autonomous runs may request (empty: none).'
         contextEnvironmentIds:
           type: array
           items:
@@ -11655,6 +12011,16 @@ components:
             Other agents of the same workspace the runs may hand off work to (`agenstra_handoff_create`; empty: no
             handoffs). Approved content like the prompt: a change by the agent clears the approval; the edit form
             approves only when it sends title, prompt, model, cronExpression and allowedHandoffAgentIds.
+        allowedDeploymentOperations:
+          type: array
+          maxItems: 2
+          items:
+            type: string
+            enum: [deployment.trigger, deployment.cancel]
+          description: >-
+            Deployment run actions the runs may request without asking (`agenstra_deployments_trigger` /
+            `_cancel_run`; empty: none). Approved content like the prompt: a change by the agent clears the approval;
+            the edit form approves only when it sends the complete content including allowedDeploymentOperations.
     UpdateAgentTaskDto:
       type: object
       properties:
@@ -11688,6 +12054,615 @@ components:
             Other agents of the same workspace the runs may hand off work to (`agenstra_handoff_create`; empty: no
             handoffs). Approved content like the prompt: a change by the agent clears the approval; the edit form
             approves only when it sends title, prompt, model, cronExpression and allowedHandoffAgentIds.
+        allowedDeploymentOperations:
+          type: array
+          maxItems: 2
+          items:
+            type: string
+            enum: [deployment.trigger, deployment.cancel]
+          description: >-
+            Deployment run actions the runs may request without asking (`agenstra_deployments_trigger` /
+            `_cancel_run`; empty: none). Approved content like the prompt: a change by the agent clears the approval;
+            the edit form approves only when it sends the complete content including allowedDeploymentOperations.
+    DeploymentProvider:
+      type: string
+      enum: [github, gitlab, jenkins]
+    ConnectionAuthType:
+      type: string
+      enum: [app, token]
+      description: >-
+        `app`: GitHub App installation tokens (GitHub only, default there). `token`: personal / project access token
+        (GitHub, GitLab) or Jenkins user API token (HTTP Basic with `username`).
+    ConnectionTestStatus:
+      type: string
+      enum: [untested, ok, failed]
+    DeploymentConnectionWorkspaceAccess:
+      type: string
+      enum: [all, selected]
+    DeploymentConnectionSummary:
+      type: object
+      description: Connection metadata only; `token` and `privateKey` are encrypted at rest and never returned.
+      required:
+        - id
+        - label
+        - provider
+        - baseUrl
+        - authType
+        - appId
+        - installationId
+        - username
+        - workspaceAccess
+        - allowedClientIds
+        - lastTestStatus
+        - lastTestMessage
+        - lastTestedAt
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        provider:
+          $ref: '#/components/schemas/DeploymentProvider'
+        baseUrl:
+          type: string
+          nullable: true
+          description: Self-hosted API base URL (GHE `https://host/api/v3`, GitLab root, Jenkins root); null = provider default.
+        authType:
+          $ref: '#/components/schemas/ConnectionAuthType'
+        appId:
+          type: string
+          nullable: true
+        installationId:
+          type: string
+          nullable: true
+        username:
+          type: string
+          nullable: true
+        workspaceAccess:
+          $ref: '#/components/schemas/DeploymentConnectionWorkspaceAccess'
+        allowedClientIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        lastTestStatus:
+          $ref: '#/components/schemas/ConnectionTestStatus'
+        lastTestMessage:
+          type: string
+          nullable: true
+        lastTestedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateDeploymentConnectionDto:
+      type: object
+      description: >-
+        Required per auth type: GitHub `app` → `appId`, `installationId`, `privateKey` (PEM RSA); GitHub / GitLab
+        `token` → `token`; Jenkins → `baseUrl`, `username`, `token`. `workspaceAccess: selected` requires at least one
+        existing workspace in `allowedClientIds`.
+      required: [label, provider]
+      properties:
+        label:
+          type: string
+          maxLength: 200
+        provider:
+          $ref: '#/components/schemas/DeploymentProvider'
+        baseUrl:
+          type: string
+          nullable: true
+          maxLength: 512
+          description: Absolute http(s) URL without credentials, query or fragment.
+        authType:
+          $ref: '#/components/schemas/ConnectionAuthType'
+        token:
+          type: string
+          maxLength: 8192
+          writeOnly: true
+        username:
+          type: string
+          maxLength: 320
+        appId:
+          type: string
+          pattern: '^\d+$'
+          maxLength: 64
+        installationId:
+          type: string
+          pattern: '^\d+$'
+          maxLength: 64
+        privateKey:
+          type: string
+          maxLength: 16384
+          writeOnly: true
+        workspaceAccess:
+          $ref: '#/components/schemas/DeploymentConnectionWorkspaceAccess'
+        allowedClientIds:
+          type: array
+          maxItems: 500
+          items:
+            type: string
+            format: uuid
+    UpdateDeploymentConnectionDto:
+      type: object
+      description: All fields optional; `provider` is immutable. Omitted secrets keep the stored ones.
+      properties:
+        label:
+          type: string
+          maxLength: 200
+        baseUrl:
+          type: string
+          nullable: true
+          maxLength: 512
+          description: null / empty resets to the provider default (rejected for Jenkins).
+        authType:
+          $ref: '#/components/schemas/ConnectionAuthType'
+        token:
+          type: string
+          maxLength: 8192
+          writeOnly: true
+        username:
+          type: string
+          maxLength: 320
+        appId:
+          type: string
+          pattern: '^\d+$'
+          maxLength: 64
+        installationId:
+          type: string
+          pattern: '^\d+$'
+          maxLength: 64
+        privateKey:
+          type: string
+          maxLength: 16384
+          writeOnly: true
+        workspaceAccess:
+          $ref: '#/components/schemas/DeploymentConnectionWorkspaceAccess'
+        allowedClientIds:
+          type: array
+          maxItems: 500
+          items:
+            type: string
+            format: uuid
+    ConnectionTestResult:
+      type: object
+      required: [ok, testedAt]
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+          maxLength: 512
+        testedAt:
+          type: string
+          format: date-time
+    DeploymentConnectionOption:
+      type: object
+      description: What a workspace admin sees of a deployment connection when picking one for a workflow.
+      required: [id, label, provider, lastTestStatus]
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        provider:
+          $ref: '#/components/schemas/DeploymentProvider'
+        lastTestStatus:
+          $ref: '#/components/schemas/ConnectionTestStatus'
+    DeploymentRepositorySummary:
+      type: object
+      required: [id, name, fullName, defaultBranch, url, private]
+      properties:
+        id:
+          type: string
+          description: Provider id used in workflow definitions (`owner/repo`, GitLab project id, Jenkins job full name).
+        name:
+          type: string
+        fullName:
+          type: string
+        defaultBranch:
+          type: [string, 'null']
+        url:
+          type: [string, 'null']
+        private:
+          type: boolean
+    DeploymentBranchSummary:
+      type: object
+      required: [name, sha, default]
+      properties:
+        name:
+          type: string
+        sha:
+          type: [string, 'null']
+        default:
+          type: boolean
+    DeploymentProviderWorkflowSummary:
+      type: object
+      required: [id, name, path, state]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        path:
+          type: [string, 'null']
+        state:
+          type: [string, 'null']
+    DeploymentInputs:
+      type: object
+      description: >-
+        Workflow inputs (GitHub), pipeline variables (GitLab) or build parameters (Jenkins). At most 25 entries; keys
+        match `^[A-Za-z_][A-Za-z0-9_.-]*$` (at most 100 characters), values are strings of at most 1000 characters.
+      maxProperties: 25
+      propertyNames:
+        pattern: '^[A-Za-z_][A-Za-z0-9_.-]*$'
+        maxLength: 100
+      additionalProperties:
+        type: string
+        maxLength: 1000
+    ApproveDeploymentWorkflowDto:
+      type: object
+      required: [updatedAt]
+      properties:
+        updatedAt:
+          type: string
+          format: date-time
+          description: '`updatedAt` of the workflow summary the admin reviewed.'
+    DeploymentWorkflowSummary:
+      type: object
+      required:
+        [
+          id,
+          clientId,
+          connectionId,
+          provider,
+          connectionLabel,
+          name,
+          description,
+          repository,
+          workflow,
+          defaultRef,
+          defaultInputs,
+          scope,
+          agentIds,
+          agentTriggerEnabled,
+          enabled,
+          approvalStatus,
+          approvedAt,
+          createdBy,
+          updatedBy,
+          createdByAgentId,
+          lastRunStatus,
+          lastRunConclusion,
+          lastRunAt,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        connectionId:
+          type: string
+          format: uuid
+        provider:
+          $ref: '#/components/schemas/DeploymentProvider'
+        connectionLabel:
+          type: string
+        name:
+          type: string
+        description:
+          type: [string, 'null']
+        repository:
+          type: string
+          description: Provider repository (`owner/repo`, GitLab project id or path, Jenkins job full name).
+        workflow:
+          type: [string, 'null']
+          description: GitHub workflow file or id; null for GitLab and Jenkins.
+        defaultRef:
+          type: [string, 'null']
+        defaultInputs:
+          $ref: '#/components/schemas/DeploymentInputs'
+        scope:
+          type: string
+          enum: [global, environments]
+          description: '`global`: every environment of the workspace; `environments`: the assigned `agentIds` only.'
+        agentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        agentTriggerEnabled:
+          type: boolean
+          description: Whether available environments may trigger and cancel runs through the `agenstra` MCP server.
+        enabled:
+          type: boolean
+        approvalStatus:
+          type: string
+          enum: [approved, pending]
+          description: >-
+            `pending`: proposed or changed by an environment (MCP), waiting for a workspace admin
+            (`POST .../approval` or saving the complete editor form); nobody can start runs, and only the proposing
+            environment sees it through MCP.
+        approvedAt:
+          type: [string, 'null']
+          format: date-time
+        createdBy:
+          type: string
+          enum: [user, agent]
+        updatedBy:
+          type: string
+          enum: [user, agent]
+        createdByAgentId:
+          type: [string, 'null']
+          format: uuid
+          description: 'Environment that proposed the workflow (`createdBy: agent`).'
+        lastRunStatus:
+          oneOf:
+            - $ref: '#/components/schemas/DeploymentRunStatus'
+            - type: 'null'
+        lastRunConclusion:
+          oneOf:
+            - $ref: '#/components/schemas/DeploymentRunConclusion'
+            - type: 'null'
+        lastRunAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateDeploymentWorkflowDto:
+      type: object
+      required: [connectionId, name, repository]
+      properties:
+        connectionId:
+          type: string
+          format: uuid
+          description: Deployment connection usable by this workspace.
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: [string, 'null']
+          maxLength: 2000
+        repository:
+          type: string
+          maxLength: 512
+        workflow:
+          type: [string, 'null']
+          maxLength: 512
+          description: GitHub workflow file or id (required for GitHub Actions).
+        defaultRef:
+          type: [string, 'null']
+          maxLength: 255
+        defaultInputs:
+          $ref: '#/components/schemas/DeploymentInputs'
+        scope:
+          type: string
+          enum: [global, environments]
+          default: global
+        agentIds:
+          type: array
+          maxItems: 100
+          description: Environments of this workspace; at least one for `scope = environments`, ignored for `global`.
+          items:
+            type: string
+            format: uuid
+        agentTriggerEnabled:
+          type: boolean
+          default: false
+        enabled:
+          type: boolean
+          default: true
+    UpdateDeploymentWorkflowDto:
+      type: object
+      description: All fields optional; omitted fields stay unchanged.
+      properties:
+        connectionId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: [string, 'null']
+          maxLength: 2000
+        repository:
+          type: string
+          maxLength: 512
+        workflow:
+          type: [string, 'null']
+          maxLength: 512
+        defaultRef:
+          type: [string, 'null']
+          maxLength: 255
+        defaultInputs:
+          $ref: '#/components/schemas/DeploymentInputs'
+        scope:
+          type: string
+          enum: [global, environments]
+        agentIds:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+            format: uuid
+        agentTriggerEnabled:
+          type: boolean
+        enabled:
+          type: boolean
+    TriggerDeploymentRunDto:
+      type: object
+      properties:
+        ref:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Branch / tag; defaults to the workflow default ref, then the repository default branch.
+        inputs:
+          $ref: '#/components/schemas/DeploymentInputs'
+        agentId:
+          type: string
+          format: uuid
+          description: Environment the run is triggered for (the workflow must be global or assigned to it).
+    DeploymentRunStatus:
+      type: string
+      enum: [queued, in_progress, completed]
+    DeploymentRunConclusion:
+      type: string
+      enum: [success, failure, cancelled, skipped, timed_out, neutral]
+    DeploymentRunSummary:
+      type: object
+      required:
+        [
+          id,
+          clientId,
+          workflowId,
+          workflowName,
+          agentId,
+          providerRunId,
+          name,
+          status,
+          conclusion,
+          ref,
+          sha,
+          url,
+          inputs,
+          triggeredBy,
+          triggeredByUserId,
+          startedAt,
+          completedAt,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        workflowId:
+          type: string
+          format: uuid
+        workflowName:
+          type: string
+        agentId:
+          type: [string, 'null']
+          format: uuid
+          description: Environment the run was triggered for / by (null for workspace level and external runs).
+        providerRunId:
+          type: [string, 'null']
+          description: GitHub run id, GitLab pipeline id, Jenkins build number (`queue:{id}` until the build starts); null until the provider reports the run.
+        name:
+          type: [string, 'null']
+        status:
+          $ref: '#/components/schemas/DeploymentRunStatus'
+        conclusion:
+          oneOf:
+            - $ref: '#/components/schemas/DeploymentRunConclusion'
+            - type: 'null'
+        ref:
+          type: [string, 'null']
+        sha:
+          type: [string, 'null']
+        url:
+          type: [string, 'null']
+        inputs:
+          $ref: '#/components/schemas/DeploymentInputs'
+        triggeredBy:
+          type: string
+          enum: [user, agent, external]
+        triggeredByUserId:
+          type: [string, 'null']
+          format: uuid
+        startedAt:
+          type: [string, 'null']
+          format: date-time
+        completedAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    DeploymentRunListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeploymentRunSummary'
+        total:
+          type: integer
+          minimum: 0
+    DeploymentRunJobSummary:
+      type: object
+      required: [id, name, status, conclusion, startedAt, completedAt, url]
+      properties:
+        id:
+          type: string
+          description: Provider job id (Jenkins returns the single pseudo job `console`).
+        name:
+          type: string
+        status:
+          $ref: '#/components/schemas/DeploymentRunStatus'
+        conclusion:
+          oneOf:
+            - $ref: '#/components/schemas/DeploymentRunConclusion'
+            - type: 'null'
+        startedAt:
+          type: [string, 'null']
+          format: date-time
+        completedAt:
+          type: [string, 'null']
+          format: date-time
+        url:
+          type: [string, 'null']
+    DeploymentRunDetail:
+      type: object
+      required: [run, jobs]
+      properties:
+        run:
+          $ref: '#/components/schemas/DeploymentRunSummary'
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeploymentRunJobSummary'
+    DeploymentRunLogs:
+      type: object
+      required: [logs, truncated]
+      properties:
+        logs:
+          type: string
+        truncated:
+          type: boolean
+          description: True when only the tail was returned.
+    DeploymentSyncResult:
+      type: object
+      required: [synced]
+      properties:
+        synced:
+          type: integer
+          minimum: 0
+          description: New or changed runs.
     AgentTaskResponseDto:
       type: object
       required:
@@ -11737,6 +12712,12 @@ components:
             type: string
             format: uuid
           description: Approved agents the runs may hand off work to (agents deleted or moved since do not count)
+        allowedDeploymentOperations:
+          type: array
+          items:
+            type: string
+            enum: [deployment.trigger, deployment.cancel]
+          description: 'Approved deployment run actions of the runs (empty: none)'
         nextRunAt:
           type: string
           format: date-time
@@ -11963,19 +12944,55 @@ components:
           format: uuid
         content:
           type: string
+    AtlassianConnectionAuthType:
+      type: string
+      enum: [app, token]
+      description: >-
+        `app`: OAuth 2.0 client credentials of an Atlassian service account (REST via
+        `https://api.atlassian.com/ex/{jira|confluence}/{cloudId}`). `token`: account email + API token (HTTP Basic
+        against the site URL).
+    AtlassianConnectionTestStatus:
+      type: string
+      enum: [untested, ok, failed]
     AtlassianSiteConnectionResponseDto:
       type: object
-      description: Connection metadata only; API tokens are stored encrypted at rest and are never returned.
+      description: >-
+        Connection metadata only; API tokens and OAuth client secrets are stored encrypted at rest and are never
+        returned.
+      required: [id, baseUrl, authType, lastTestStatus, createdAt, updatedAt]
       properties:
         id:
           type: string
           format: uuid
         label:
           type: string
+          nullable: true
         baseUrl:
           type: string
+        authType:
+          $ref: '#/components/schemas/AtlassianConnectionAuthType'
         accountEmail:
           type: string
+          nullable: true
+          description: '`token` connections only.'
+        oauthClientId:
+          type: string
+          nullable: true
+          description: OAuth client id of the service account credential (`app` connections only; not a secret).
+        cloudId:
+          type: string
+          nullable: true
+          description: Atlassian Cloud id resolved from `{baseUrl}/_edge/tenant_info` (`app` connections).
+        lastTestStatus:
+          $ref: '#/components/schemas/AtlassianConnectionTestStatus'
+        lastTestMessage:
+          type: string
+          nullable: true
+          maxLength: 512
+        lastTestedAt:
+          type: string
+          format: date-time
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -11984,40 +13001,78 @@ components:
           format: date-time
     CreateAtlassianSiteConnectionDto:
       type: object
-      required: [baseUrl, accountEmail, apiToken]
+      description: >-
+        `authType` defaults to `app` (requires `oauthClientId` + `oauthClientSecret`); `token` requires `accountEmail`
+        + `apiToken`. Fields of the other auth type are ignored.
+      required: [baseUrl]
       properties:
         label:
           type: string
+          maxLength: 200
         baseUrl:
           type: string
           format: uri
+          maxLength: 512
+        authType:
+          $ref: '#/components/schemas/AtlassianConnectionAuthType'
         accountEmail:
           type: string
           format: email
+          maxLength: 320
         apiToken:
           type: string
-          description: Atlassian API token; persisted with AES-256-GCM encryption (never returned on GET list/get connection).
+          maxLength: 4096
+          description: Atlassian API token; persisted with AES-256-GCM encryption (write-only).
+        oauthClientId:
+          type: string
+          maxLength: 255
+        oauthClientSecret:
+          type: string
+          maxLength: 4096
+          description: OAuth client secret of the service account credential; persisted with AES-256-GCM encryption (write-only).
     UpdateAtlassianSiteConnectionDto:
       type: object
+      description: >-
+        All fields optional. Omitted secrets keep the stored ones; switching `authType` requires the credentials of the
+        new type. Changing site or credentials resets the test status to `untested`.
       properties:
         label:
           type: string
+          maxLength: 200
+          nullable: true
         baseUrl:
           type: string
           format: uri
+          maxLength: 512
+        authType:
+          $ref: '#/components/schemas/AtlassianConnectionAuthType'
         accountEmail:
           type: string
           format: email
+          maxLength: 320
         apiToken:
           type: string
+          maxLength: 4096
           description: When omitted, token is unchanged. If set, stored with AES-256-GCM encryption.
+        oauthClientId:
+          type: string
+          maxLength: 255
+        oauthClientSecret:
+          type: string
+          maxLength: 4096
+          description: When omitted, secret is unchanged. If set, stored with AES-256-GCM encryption.
     AtlassianConnectionTestResultDto:
       type: object
+      required: [ok, testedAt]
       properties:
         ok:
           type: boolean
         message:
           type: string
+          maxLength: 512
+        testedAt:
+          type: string
+          format: date-time
     ExternalImportProviderId:
       type: string
       enum: [atlassian]

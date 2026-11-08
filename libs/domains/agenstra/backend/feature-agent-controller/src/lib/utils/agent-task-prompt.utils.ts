@@ -9,7 +9,13 @@ import type { AgentTaskEntity } from '../entities/agent-task.entity';
 export function buildAgentTaskRunPrompt(
   task: Pick<
     AgentTaskEntity,
-    'title' | 'prompt' | 'cronExpression' | 'timezone' | 'allowedHandoffAgentIds' | 'allowedContentWrites'
+    | 'title'
+    | 'prompt'
+    | 'cronExpression'
+    | 'timezone'
+    | 'allowedHandoffAgentIds'
+    | 'allowedContentWrites'
+    | 'allowedDeploymentOperations'
   >,
   trigger: AgentTaskRunTrigger,
   scheduledFor: Date,
@@ -26,6 +32,7 @@ export function buildAgentTaskRunPrompt(
     'it is posted to the main chat.',
     ...handoffNotice(task.allowedHandoffAgentIds),
     ...contentWritesNotice(task.allowedContentWrites),
+    ...deploymentOperationsNotice(task.allowedDeploymentOperations),
     '',
     '## Task',
     '',
@@ -56,6 +63,24 @@ function contentWritesNotice(operations: string[] | undefined): string[] {
   return [
     `A user approved that this task may make these ticket / knowledge / plan changes with the agenstra_content_* tools: ` +
       `${operations.join(', ')}. Changes of existing elements need access to them (context_get returns the revision).`,
+  ];
+}
+
+/** Approved deployment run actions (platform-controlled operation names); the workflow rules apply on top. */
+function deploymentOperationsNotice(operations: string[] | undefined): string[] {
+  if (!operations?.length) {
+    return [];
+  }
+
+  const tools = [
+    operations.includes('deployment.trigger') ? 'agenstra_deployments_trigger' : null,
+    operations.includes('deployment.cancel') ? 'agenstra_deployments_cancel_run' : null,
+  ].filter(Boolean);
+
+  return [
+    `A user approved that this task may request these deployment actions: ${operations.join(', ')} ` +
+      `(${tools.join(', ')}; only workflows available to you that allow environment triggers, default ref and ` +
+      'defined inputs only).',
   ];
 }
 

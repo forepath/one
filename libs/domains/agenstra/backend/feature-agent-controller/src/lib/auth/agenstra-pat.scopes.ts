@@ -27,9 +27,6 @@ export const AGENSTRA_PAT_SCOPES = [
   // Agent version control and automation command verification
   'agent_vcs:read',
   'agent_vcs:write',
-  // Agent CI/CD deployments
-  'agent_deployments:read',
-  'agent_deployments:write',
   // Agent remote desktop sessions
   'agent_vnc:write',
   'tickets:read',
@@ -42,8 +39,11 @@ export const AGENSTRA_PAT_SCOPES = [
   // (files: code / paths graphs, chats: prompt references, tickets / knowledge / chats: snapshot nodes).
   'graph:read',
   'graph:write',
-  // Atlassian context import (admin console)
-  'imports:admin',
+  // Instance-wide connections (admin console): Atlassian context import + CI/CD deployment connections
+  'connections:admin',
+  // Workspace deployments: workflows, runs, logs (write: trigger / cancel; workflow management: workspace admins)
+  'deployments:read',
+  'deployments:write',
   'statistics:read',
   // WebSockets (connect + subscribe: read; state-changing events: write). Events stay capped by the domain scopes
   // above (see agenstra-websocket.scopes.ts).

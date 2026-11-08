@@ -1,4 +1,5 @@
 import type { AgentContentWriteOperation } from './content-platform';
+import type { AgentDeploymentOperation } from './deployment-platform';
 
 /**
  * Recurring agent tasks. Tasks are stored and scheduled by the agent-controller (BullMQ) and managed
@@ -113,6 +114,11 @@ export interface AgentTaskSummary {
    * none).
    */
   allowedContentWrites: AgentContentWriteOperation[];
+  /**
+   * Deployment run actions the runs may take without asking (`deployment.trigger` / `deployment.cancel`, on workflows
+   * that allow environment triggers; approved content; empty: none).
+   */
+  allowedDeploymentOperations: AgentDeploymentOperation[];
   nextRunAt: string | null;
   lastRunAt: string | null;
   lastRunStatus: AgentTaskRunStatus | null;
@@ -160,6 +166,11 @@ export interface AgentTaskCreateInput {
    * takes effect once a workspace user approved the task. Defaults to none.
    */
   allowedContentWrites?: AgentContentWriteOperation[];
+  /**
+   * Deployment run actions the runs may take (`deployment.trigger`, `deployment.cancel`). Proposed by the agent, it only
+   * takes effect once a workspace user approved the task. Defaults to none.
+   */
+  allowedDeploymentOperations?: AgentDeploymentOperation[];
 }
 
 export type AgentTaskUpdateInput = Partial<AgentTaskCreateInput>;

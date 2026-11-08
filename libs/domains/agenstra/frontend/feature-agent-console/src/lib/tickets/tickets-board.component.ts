@@ -71,8 +71,10 @@ import {
   type ReferenceComboboxLoader,
 } from '@forepath/agenstra/frontend/feature-agent-config';
 import {
+  AGENT_DEPLOYMENT_OPERATIONS,
   TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS,
   type AgentContentWriteOperation,
+  type AgentDeploymentOperation,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import {
   FpcAlertComponent,
@@ -183,6 +185,11 @@ import {
   type TicketStatusFilter,
 } from './ticket-table';
 import { agentContentWriteLabel } from '../shared/agent-content-write-labels';
+import {
+  agentDeploymentOperationLabel,
+  agentDeploymentOperationsHeading,
+  agentDeploymentOperationsHint,
+} from '../shared/agent-deployment-operation-labels';
 import { AttachmentChipsComponent } from '../shared/attachment-chips.component';
 import { agBulkSummary, agCopyIdItem, agOpenItem, AG_DL_CANCEL, AG_DL_DELETE } from '../shared/data-list';
 import { WorkspaceChipComponent } from '../shared/workspace-chip.component';
@@ -219,6 +226,10 @@ function automationDtoMatchesServerConfig(dto: UpdateTicketAutomationDto, cfg: T
   }
 
   if ((dto.allowedContentWrites ?? []).join(',') !== (cfg.allowedContentWrites ?? []).join(',')) {
+    return false;
+  }
+
+  if ((dto.allowedDeploymentOperations ?? []).join(',') !== (cfg.allowedDeploymentOperations ?? []).join(',')) {
     return false;
   }
 
@@ -878,6 +889,14 @@ export class TicketsBoardComponent implements OnInit {
     operation,
     label: agentContentWriteLabel(operation),
   }));
+  /** Deployment run actions autonomous runs may request (canonical order, see {@link AGENT_DEPLOYMENT_OPERATIONS}). */
+  automationDraftAllowedDeploymentOperations = signal<AgentDeploymentOperation[]>([]);
+  readonly automationDeploymentOperationOptions = AGENT_DEPLOYMENT_OPERATIONS.map((operation) => ({
+    operation,
+    label: agentDeploymentOperationLabel(operation),
+  }));
+  readonly automationDeploymentOperationsHeading = agentDeploymentOperationsHeading();
+  readonly automationDeploymentOperationsHint = agentDeploymentOperationsHint();
   automationDraftContextEnvironmentIds = signal<string[]>([]);
   automationDraftDefaultBranch = signal('');
   automationDraftBranchStrategy = signal<TicketAutomationBranchStrategy>('reuse_per_ticket');
@@ -1245,6 +1264,7 @@ export class TicketsBoardComponent implements OnInit {
       this.automationDraftIncludeWorkspaceContext.set(cfg.includeWorkspaceContext !== false);
       this.automationDraftAutoEnrichmentEnabled.set(cfg.autoEnrichmentEnabled !== false);
       this.automationDraftAllowedContentWrites.set([...(cfg.allowedContentWrites ?? [])]);
+      this.automationDraftAllowedDeploymentOperations.set([...(cfg.allowedDeploymentOperations ?? [])]);
       this.automationDraftContextEnvironmentIds.set(normalizeAllowedAgentIdList(cfg.contextEnvironmentIds ?? []));
       this.automationDraftDefaultBranch.set(cfg.defaultBranchOverride ?? '');
       this.automationDraftBranchStrategy.set(cfg.automationBranchStrategy ?? 'reuse_per_ticket');
@@ -2522,6 +2542,9 @@ export class TicketsBoardComponent implements OnInit {
       allowedContentWrites: TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS.filter((operation) =>
         this.automationDraftAllowedContentWrites().includes(operation),
       ),
+      allowedDeploymentOperations: AGENT_DEPLOYMENT_OPERATIONS.filter((operation) =>
+        this.automationDraftAllowedDeploymentOperations().includes(operation),
+      ),
       contextEnvironmentIds: this.automationDraftContextEnvironmentIds(),
       defaultBranchOverride: branch.length > 0 ? branch : null,
       automationBranchStrategy: this.automationDraftBranchStrategy(),
@@ -2538,6 +2561,16 @@ export class TicketsBoardComponent implements OnInit {
     const current = this.automationDraftAllowedContentWrites().filter((entry) => entry !== operation);
 
     this.automationDraftAllowedContentWrites.set(allowed ? [...current, operation] : current);
+  }
+
+  isAutomationDeploymentOperationAllowed(operation: AgentDeploymentOperation): boolean {
+    return this.automationDraftAllowedDeploymentOperations().includes(operation);
+  }
+
+  onAutomationDeploymentOperationToggle(operation: AgentDeploymentOperation, allowed: boolean): void {
+    const current = this.automationDraftAllowedDeploymentOperations().filter((entry) => entry !== operation);
+
+    this.automationDraftAllowedDeploymentOperations.set(allowed ? [...current, operation] : current);
   }
 
   isAutomationContextEnvironmentSelected(agentId: string): boolean {

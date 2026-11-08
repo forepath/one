@@ -55,4 +55,34 @@ describe('OpenSearchService', () => {
       },
     });
   });
+
+  it('ensureIndex_ToleratesConcurrentCreation', async () => {
+    process.env['OPENSEARCH_ENABLED'] = 'true';
+    const service = new OpenSearchService();
+    const alreadyExists = Object.assign(new Error('resource_already_exists_exception'), {
+      meta: { body: { error: { type: 'resource_already_exists_exception' } } },
+    });
+    const create = jest.fn().mockRejectedValue(alreadyExists);
+
+    (service as unknown as { client: unknown }).client = {
+      indices: { exists: jest.fn().mockResolvedValue({ body: false }), create },
+    };
+
+    await expect(service.ensureIndex('idx')).resolves.toBeUndefined();
+    expect(create).toHaveBeenCalledTimes(1);
+  });
+
+  it('ensureIndex_RethrowsOtherCreateErrors', async () => {
+    process.env['OPENSEARCH_ENABLED'] = 'true';
+    const service = new OpenSearchService();
+
+    (service as unknown as { client: unknown }).client = {
+      indices: {
+        exists: jest.fn().mockResolvedValue({ body: false }),
+        create: jest.fn().mockRejectedValue(new Error('cluster_block_exception')),
+      },
+    };
+
+    await expect(service.ensureIndex('idx')).rejects.toThrow('cluster_block_exception');
+  });
 });

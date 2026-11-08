@@ -277,6 +277,34 @@ describe('TicketAutomationService', () => {
       await service.patchAutomation(tid, { allowedContentWrites: ['ticket.update'] }, undefined);
       expect(automationRepo.save).not.toHaveBeenCalled();
     });
+
+    it('treats allowed deployment operations as approval-relevant settings (canonical order, no-op when unchanged)', async () => {
+      automationRepo.findOne.mockResolvedValue(
+        baseAutomation({ requiresApproval: true, approvedAt: new Date('2024-06-01'), approvedByUserId: 'user-1' }),
+      );
+
+      const result = await service.patchAutomation(
+        tid,
+        { allowedDeploymentOperations: ['deployment.cancel', 'deployment.trigger', 'deployment.cancel'] },
+        undefined,
+      );
+      const types = activityRepo.save.mock.calls.map((c) => (c[0] as { actionType: string }).actionType);
+
+      expect(result.allowedDeploymentOperations).toEqual(['deployment.trigger', 'deployment.cancel']);
+      expect(result.approvedAt).toBeNull();
+      expect(types).toEqual([
+        TicketActionType.AUTOMATION_SETTINGS_UPDATED,
+        TicketActionType.AUTOMATION_APPROVAL_INVALIDATED,
+      ]);
+      expect(activityRepo.save.mock.calls[0][0]).toEqual(
+        expect.objectContaining({ payload: { fields: ['allowedDeploymentOperations'] } }),
+      );
+
+      automationRepo.save.mockClear();
+      automationRepo.findOne.mockResolvedValue(baseAutomation({ allowedDeploymentOperations: ['deployment.trigger'] }));
+      await service.patchAutomation(tid, { allowedDeploymentOperations: ['deployment.trigger'] }, undefined);
+      expect(automationRepo.save).not.toHaveBeenCalled();
+    });
   });
 
   describe('cancelRun', () => {

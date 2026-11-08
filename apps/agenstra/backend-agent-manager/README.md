@@ -220,7 +220,6 @@ See the [library documentation](../../libs/domains/agenstra/backend/feature-agen
 **Dynamic provider plugins (optional):**
 
 - `DYNAMIC_AGENT_PROVIDERS` - Comma-separated extra agent backend packages
-- `DYNAMIC_PIPELINE_PROVIDERS` - Comma-separated extra CI/CD provider packages
 - `DYNAMIC_CHAT_FILTERS` - Comma-separated extra chat filter packages
 - `DYNAMIC_PROVIDERS_FAIL_FAST` - When `true`, abort startup if critical dynamic providers fail to load
 - `DYNAMIC_PROVIDER_PLUGIN_PATH` - Plugin root for post-build loading (unset by default; set to `/var/lib/forepath/provider-plugins` when using the compose volume)

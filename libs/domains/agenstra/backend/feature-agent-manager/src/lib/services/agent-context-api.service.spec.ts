@@ -41,6 +41,7 @@ describe('AgentContextApiService', () => {
       requestControllerContext: jest.fn(),
       publishContextAccessQuestion: jest.fn(),
       publishContextChangeQuestion: jest.fn(),
+      publishContextDeploymentQuestion: jest.fn(),
       publishInteractionAnswered: jest.fn(),
     };
     service.registerBridge(bridge);

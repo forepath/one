@@ -1,4 +1,7 @@
-import type { AgentContentWriteOperation } from '@forepath/agenstra/shared/util-opencode-config';
+import type {
+  AgentContentWriteOperation,
+  AgentDeploymentOperation,
+} from '@forepath/agenstra/shared/util-opencode-config';
 
 import type {
   AgentTaskRunResponseDto,
@@ -6,7 +9,13 @@ import type {
   AgentTaskRunTrigger,
 } from '../container-socket/container-socket.types';
 
-export type { AgentContentWriteOperation, AgentTaskRunResponseDto, AgentTaskRunStatus, AgentTaskRunTrigger };
+export type {
+  AgentContentWriteOperation,
+  AgentDeploymentOperation,
+  AgentTaskRunResponseDto,
+  AgentTaskRunStatus,
+  AgentTaskRunTrigger,
+};
 
 /** Upper bound of peer agents a task may hand off to (matches the controller). */
 export const AGENT_TASK_ALLOWED_HANDOFF_AGENTS_MAX = 10;
@@ -34,6 +43,11 @@ export interface AgentTaskResponseDto {
   allowedHandoffAgentIds: string[];
   /** Ticket / knowledge changes the runs may make without asking (approved content; empty: none). */
   allowedContentWrites: AgentContentWriteOperation[];
+  /**
+   * Deployment run actions the runs may request without asking (approved content; empty: none). Only workflows that
+   * allow environment triggers, default branch and defined inputs only.
+   */
+  allowedDeploymentOperations: AgentDeploymentOperation[];
   nextRunAt: string | null;
   lastRunAt: string | null;
   lastRunStatus: AgentTaskRunStatus | null;
@@ -59,6 +73,8 @@ export interface CreateAgentTaskDto {
   allowedHandoffAgentIds?: string[];
   /** Ticket / knowledge changes the runs may make. The edit form always sends it (approved content). */
   allowedContentWrites?: AgentContentWriteOperation[];
+  /** Deployment run actions the runs may request. The edit form always sends it (approved content). */
+  allowedDeploymentOperations?: AgentDeploymentOperation[];
 }
 
 export type UpdateAgentTaskDto = Partial<CreateAgentTaskDto>;

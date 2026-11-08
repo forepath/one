@@ -1,5 +1,13 @@
-import { IsEmail, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
+import {
+  ATLASSIAN_CONNECTION_AUTH_TYPES,
+  type ConnectionAuthType,
+} from '@forepath/agenstra/shared/util-opencode-config';
+import { IsEmail, IsIn, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
 
+/**
+ * All fields optional. Omitted secrets (`apiToken`, `oauthClientSecret`) keep the stored ones; switching `authType`
+ * requires the credentials of the new type.
+ */
 export class UpdateAtlassianSiteConnectionDto {
   @IsOptional()
   @IsString()
@@ -12,6 +20,10 @@ export class UpdateAtlassianSiteConnectionDto {
   baseUrl?: string;
 
   @IsOptional()
+  @IsIn(ATLASSIAN_CONNECTION_AUTH_TYPES)
+  authType?: ConnectionAuthType;
+
+  @IsOptional()
   @IsEmail()
   @MaxLength(320)
   accountEmail?: string;
@@ -21,4 +33,15 @@ export class UpdateAtlassianSiteConnectionDto {
   @IsString()
   @MaxLength(4096)
   apiToken?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  oauthClientId?: string;
+
+  /** When omitted, existing secret is kept. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(4096)
+  oauthClientSecret?: string;
 }

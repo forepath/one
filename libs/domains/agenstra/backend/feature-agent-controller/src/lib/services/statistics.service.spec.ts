@@ -484,4 +484,72 @@ describe('StatisticsService', () => {
       );
     });
   });
+
+  describe('workspace scoped entities (deployments)', () => {
+    it('links created deployment workflows to the workspace shadow', async () => {
+      await service.recordEntityCreated(
+        StatisticsEntityType.DEPLOYMENT_WORKFLOW,
+        'workflow-uuid',
+        { clientId: 'client-uuid' },
+        'user-uuid',
+      );
+
+      expect(statisticsRepository.createStatisticsEntityEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: StatisticsEntityEventType.CREATED,
+          entityType: StatisticsEntityType.DEPLOYMENT_WORKFLOW,
+          originalEntityId: 'workflow-uuid',
+          statisticsUserId: 'stats-user-uuid',
+          statisticsClientsId: 'stats-client-uuid',
+          statisticsAgentsId: undefined,
+        }),
+      );
+    });
+
+    it('links deployment runs to the environment shadow when it exists', async () => {
+      (statisticsRepository as unknown as Record<string, jest.Mock>)['findStatisticsAgentByOriginalId'] = jest
+        .fn()
+        .mockResolvedValue(mockStatisticsAgent);
+
+      await service.recordEntityUpdated(StatisticsEntityType.DEPLOYMENT_RUN, 'run-uuid', {
+        clientId: 'client-uuid',
+        agentId: 'agent-uuid',
+      });
+
+      expect(statisticsRepository.createStatisticsEntityEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: StatisticsEntityEventType.UPDATED,
+          entityType: StatisticsEntityType.DEPLOYMENT_RUN,
+          statisticsClientsId: 'stats-client-uuid',
+          statisticsAgentsId: 'stats-agent-uuid',
+        }),
+      );
+    });
+
+    it('creates the workspace shadow when missing and links deletions', async () => {
+      statisticsRepository.findStatisticsClientByOriginalId.mockResolvedValue(null);
+
+      await service.recordEntityDeleted(StatisticsEntityType.DEPLOYMENT_WORKFLOW, 'workflow-uuid', undefined, {
+        clientId: 'client-uuid',
+      });
+
+      expect(statisticsRepository.upsertStatisticsClient).toHaveBeenCalledWith('client-uuid', expect.anything());
+      expect(statisticsRepository.createStatisticsEntityEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: StatisticsEntityEventType.DELETED,
+          entityType: StatisticsEntityType.DEPLOYMENT_WORKFLOW,
+          statisticsClientsId: 'stats-client-uuid',
+        }),
+      );
+    });
+
+    it('skips the event when the workspace is unknown', async () => {
+      statisticsRepository.findStatisticsClientByOriginalId.mockResolvedValue(null);
+      clientsRepository.findById.mockResolvedValue(null);
+
+      await service.recordEntityCreated(StatisticsEntityType.DEPLOYMENT_RUN, 'run-uuid', { clientId: 'gone' });
+
+      expect(statisticsRepository.createStatisticsEntityEvent).not.toHaveBeenCalled();
+    });
+  });
 });

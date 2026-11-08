@@ -923,9 +923,6 @@
       <trans-unit id="featureAgentConsole-agentConfigTitle" datatype="html">
         <source>Agent configuration :: Agenstra</source>
         </trans-unit>
-      <trans-unit id="featureAgentConsole-atlassianImportTitle" datatype="html">
-        <source>Atlassian import :: Agenstra</source>
-        </trans-unit>
       <trans-unit id="featureAgentConsole-ticketsTitle" datatype="html">
         <source>Tickets :: Agenstra</source>
         </trans-unit>
@@ -1442,8 +1439,62 @@
       <trans-unit id="featureAtlassianImportAdmin-clearMarkersBody" datatype="html">
         <source> Clear all sync markers for this <x id="INTERPOLATION" equiv-text="{{ pending.importKind }}"/> config? External items may be re-imported as duplicates. </source>
         </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-pageTitle" datatype="html">
-        <source>Atlassian import (Jira &amp; Confluence)</source>
+      <trans-unit id="featureAtlassianImportAdmin-pageSubtitle" datatype="html">
+        <source>Atlassian Jira and Confluence sites, and the imports that pull their issues and pages into workspaces.</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-authTypeLabel" datatype="html">
+        <source>Authentication</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-authTypeApp" datatype="html">
+        <source>OAuth (service account)</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-authTypeAppHint" datatype="html">
+        <source>Recommended. OAuth 2.0 client credentials of an Atlassian service account (Atlassian Cloud).</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-authTypeToken" datatype="html">
+        <source>API token</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-authTypeTokenHint" datatype="html">
+        <source>Account email and API token (HTTP Basic). Also works with Jira / Confluence Server and Data Center.</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-authTypeSwitchHint" datatype="html">
+        <source> Switching the authentication replaces the stored credentials; enter the new ones. </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-oauthClientId" datatype="html">
+        <source>Client ID</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-oauthClientSecret" datatype="html">
+        <source>Client secret</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConnNewClientSecretOptional" datatype="html">
+        <source>New client secret (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-colStatus" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-colAuthentication" datatype="html">
+        <source>Authentication</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionStatusOk" datatype="html">
+        <source>Connection OK</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionStatusFailed" datatype="html">
+        <source>Connection test failed</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionStatusUntested" datatype="html">
+        <source>Not tested yet</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionStatusTestedAt" datatype="html">
+        <source>Last tested <x id="when" equiv-text="when"/></source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldRequired" datatype="html">
+        <source>Required</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldInvalidUrl" datatype="html">
+        <source>Enter an absolute http(s) URL</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldInvalidEmail" datatype="html">
+        <source>Enter a valid email address</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-refresh" datatype="html">
         <source>Refresh</source>
@@ -1527,7 +1578,7 @@
         <source>Closed</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-laneConnections" datatype="html">
-        <source>Site connections</source>
+        <source>Connections</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-laneConfigs" datatype="html">
         <source>Import configs</source>
@@ -2263,6 +2314,30 @@
         </trans-unit>
       <trans-unit id="featureChat-toolDisplayTasksRun" datatype="html">
         <source>Run task now</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayDeploymentsListWorkflows" datatype="html">
+        <source>List pipelines</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayDeploymentsGetWorkflow" datatype="html">
+        <source>Read pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayDeploymentsSync" datatype="html">
+        <source>Sync pipeline history</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayDeploymentsListRuns" datatype="html">
+        <source>List pipeline runs</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayDeploymentsGetRun" datatype="html">
+        <source>Read pipeline run</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayDeploymentsGetRunLogs" datatype="html">
+        <source>Read pipeline logs</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayDeploymentsTrigger" datatype="html">
+        <source>Trigger pipeline run</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayDeploymentsCancelRun" datatype="html">
+        <source>Cancel pipeline run</source>
         </trans-unit>
       <trans-unit id="featureChat-toolDisplayHandoffAgents" datatype="html">
         <source>List environments</source>
@@ -3115,9 +3190,6 @@
       <trans-unit id="featureChat-railColEnvironment" datatype="html">
         <source>Environment</source>
         </trans-unit>
-      <trans-unit id="featureChat-railColDeployment" datatype="html">
-        <source>Deployment</source>
-        </trans-unit>
       <trans-unit id="featureChat-contextToolbarWorkspace" datatype="html">
         <source>Workspace</source>
         </trans-unit>
@@ -3234,9 +3306,6 @@
         </trans-unit>
       <trans-unit id="featureChat-openEditorNewWindow" datatype="html">
         <source>Open Editor in New Window</source>
-        </trans-unit>
-      <trans-unit id="featureChat-openDeploymentManagerNewWindow" datatype="html">
-        <source>Open Deployment Manager in New Window</source>
         </trans-unit>
       <trans-unit id="featureChat-workspaceSettingTitleGitSetupMode" datatype="html">
         <source>Git repository setup mode</source>
@@ -3421,371 +3490,11 @@
       <trans-unit id="featureContainer-agentConfig" datatype="html">
         <source>Agent config</source>
         </trans-unit>
-      <trans-unit id="featureContainer-importTitle" datatype="html">
-        <source>Atlassian import (Jira &amp; Confluence)</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-imports" datatype="html">
-        <source>Imports</source>
-        </trans-unit>
       <trans-unit id="featureContainer-logout" datatype="html">
         <source>Logout</source>
         </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-loadingConfig" datatype="html">
-        <source>Loading configuration...</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-loadingMessage" datatype="html">
-        <source> Loading deployment configuration... </source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-configurationLabel" datatype="html">
-        <source>Configuration</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-editConfigTitle" datatype="html">
-        <source>Edit Configuration</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-deleteConfigTitle" datatype="html">
-        <source>Delete Configuration</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-providerLabel" datatype="html">
-        <source>Provider</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-repositoryLabel" datatype="html">
-        <source>Repository</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-defaultBranchLabel" datatype="html">
-        <source>Default branch</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-workflowLabel" datatype="html">
-        <source>Workflow</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-repositoryHeader" datatype="html">
-        <source>Repository</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-noRepositories" datatype="html">
-        <source> No repositories available </source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-selectRepository" datatype="html">
-        <source>Select a repository</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-branchHeader" datatype="html">
-        <source>Branch</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-noBranches" datatype="html">
-        <source> No branches available </source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-selectBranch" datatype="html">
-        <source>Select a branch</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-workflowHeader" datatype="html">
-        <source>Workflow</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-noWorkflows" datatype="html">
-        <source> No workflows available </source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-selectWorkflow" datatype="html">
-        <source>Select a workflow</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-workflowInputsLabel" datatype="html">
-        <source>Workflow inputs (optional)</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-removeInputTitle" datatype="html">
-        <source>Remove input</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-addInputButton" datatype="html">
-        <source>Add input</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-triggerWorkflowButton" datatype="html">
-        <source>Trigger workflow</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-noConfigMessage" datatype="html">
-        <source>No deployment configuration yet</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-createConfigButton" datatype="html">
-        <source> Create configuration </source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-providerTypeLabel" datatype="html">
-        <source>Provider type</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-githubOption" datatype="html">
-        <source>GitHub Actions</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-gitlabOption" datatype="html">
-        <source>GitLab CI/CD</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-repositoryIdLabel" datatype="html">
-        <source>Repository ID</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-repoPlaceholder" datatype="html">
-        <source>owner/repo</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-repositoryIdHint" datatype="html">
-        <source>Format: owner/repository-name</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-defaultBranchFormLabel" datatype="html">
-        <source>Default branch (optional)</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-branchPlaceholder" datatype="html">
-        <source>main</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-workflowIdLabel" datatype="html">
-        <source>Workflow ID (optional)</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-workflowPlaceholder" datatype="html">
-        <source>workflow.yml</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-gitlabBaseUrlLabel" datatype="html">
-        <source>GitLab base URL (optional)</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-gitlabUrlPlaceholder" datatype="html">
-        <source>https://gitlab.com</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-gitlabBaseUrlHint" datatype="html">
-        <source>Leave empty for GitLab.com</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-save" datatype="html">
-        <source>Save</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-create" datatype="html">
-        <source>Create</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-deleteConfirmModalTitle" datatype="html">
-        <source>Delete deployment configuration</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-delete" datatype="html">
-        <source>Delete</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-deleteConfirmModalBody" datatype="html">
-        <source> Are you sure you want to delete this deployment configuration? </source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-deleteConfirmCannotUndo" datatype="html">
-        <source>This action cannot be undone.</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-privateRepository" datatype="html">
-        <source>Private</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-defaultBranchDetail" datatype="html">
-        <source>Default branch</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-noRepositoriesFound" datatype="html">
-        <source>No repositories found.</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-noBranchesFound" datatype="html">
-        <source>No branches found.</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-noWorkflowsFound" datatype="html">
-        <source>No workflows found.</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-editModalTitle" datatype="html">
-        <source>Edit deployment configuration</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-createModalTitle" datatype="html">
-        <source>Create deployment configuration</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-githubTokenLabel" datatype="html">
-        <source>GitHub token</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-gitlabTokenLabel" datatype="html">
-        <source>GitLab token</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-tokenHintKeepCurrent" datatype="html">
-        <source>Leave empty to keep the current token</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-tokenHintRequired" datatype="html">
-        <source>Required for authentication</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-tokenPlaceholderKeepCurrent" datatype="html">
-        <source>Leave empty to keep current token</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-tokenPlaceholderEnter" datatype="html">
-        <source>Enter token</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-queued" datatype="html">
-        <source>Queued</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-pending" datatype="html">
-        <source>Pending</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-waiting" datatype="html">
-        <source>Waiting</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-requested" datatype="html">
-        <source>Requested</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-inProgress" datatype="html">
-        <source>In progress</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-running" datatype="html">
-        <source>Running</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-completed" datatype="html">
-        <source>Completed</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-success" datatype="html">
-        <source>Succeeded</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-failure" datatype="html">
-        <source>Failed</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-cancelled" datatype="html">
-        <source>Cancelled</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-skipped" datatype="html">
-        <source>Skipped</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-neutral" datatype="html">
-        <source>Neutral</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-timedOut" datatype="html">
-        <source>Timed out</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-actionRequired" datatype="html">
-        <source>Action required</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentLabels-stale" datatype="html">
-        <source>Stale</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentManager-noRunsYet" datatype="html">
-        <source>No runs yet</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentManager-noRunsYetHint" datatype="html">
-        <source> Runs appear here once a configuration exists. </source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentManager-selectWorkspaceAgent" datatype="html">
-        <source> Please select a workspace and environment </source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentManager-noRunSelected" datatype="html">
-        <source>No run selected yet</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentManager-configurationHeader" datatype="html">
-        <source>Deployment configuration</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentManager-runsHeader" datatype="html">
-        <source>Deployment runs</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentManager-runDetailsHeader" datatype="html">
-        <source>Run details</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentManager-closeConfigurationTitle" datatype="html">
-        <source>Close Configuration</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentManager-closeRunsTitle" datatype="html">
-        <source>Close Runs List</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentManager-closeRunDetailsTitle" datatype="html">
-        <source>Close run details</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentManager-refreshRunsTitle" datatype="html">
-        <source>Refresh runs</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-loadingRunDetails" datatype="html">
-        <source>Loading run details...</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-branchLabel" datatype="html">
-        <source>Branch</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-commitLabel" datatype="html">
-        <source>Commit</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-startedLabel" datatype="html">
-        <source>Started</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-updatedLabel" datatype="html">
-        <source>Updated</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-cancelRunButton" datatype="html">
-        <source>Cancel run</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-jobsHeader" datatype="html">
-        <source>Jobs</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-viewRunLogsButton" datatype="html">
-        <source>View run logs</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-noJobs" datatype="html">
-        <source>No jobs available</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-loadingLogs" datatype="html">
-        <source>Loading logs...</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-noLogs" datatype="html">
-        <source>No logs available</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-runNotFound" datatype="html">
-        <source>Run not found</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-cancelConfirmTitle" datatype="html">
-        <source>Cancel run</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-cancelRun" datatype="html">
-        <source>Cancel run</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-cancelConfirmBody" datatype="html">
-        <source> Are you sure you want to cancel this run? In-progress jobs may be stopped. </source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-cancelConfirmWarning" datatype="html">
-        <source>This cannot be undone.</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-colState" datatype="html">
-        <source>State</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-colJob" datatype="html">
-        <source>Job</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-colCompleted" datatype="html">
-        <source>Completed</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-untitledRun" datatype="html">
-        <source>Untitled run</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-runLogsHeader" datatype="html">
-        <source>Run logs</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-jobLogsHeader" datatype="html">
-        <source>Job logs</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-noRunsFound" datatype="html">
-        <source>No deployment runs yet</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-bulkCancelTitle" datatype="html">
-        <source>Cancel runs</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-cancelRun" datatype="html">
-        <source>Cancel run</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-bulkCancelBody" datatype="html">
-        <source> Cancel the selected queued or running runs? In-progress jobs may be stopped. This cannot be undone. </source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-title" datatype="html">
-        <source>Deployment runs</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-searchPlaceholder" datatype="html">
-        <source>Search deployment runs</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-openInProvider" datatype="html">
-        <source>Open in provider</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-colState" datatype="html">
-        <source>State</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-colRun" datatype="html">
-        <source>Run</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-colBranch" datatype="html">
-        <source>Branch</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-colCommit" datatype="html">
-        <source>Commit</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-colWorkflow" datatype="html">
-        <source>Workflow</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-colCreated" datatype="html">
-        <source>Created</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentRunsList-untitledRun" datatype="html">
-        <source>Untitled run</source>
         </trans-unit>
       <trans-unit id="featureAgentConsole-notAvailable" datatype="html">
         <source>N/A</source>
@@ -8053,6 +7762,763 @@
       <trans-unit id="featureAgentGraphs-labelsLabel" datatype="html">
         <source>Labels</source>
       </trans-unit>
+      <trans-unit id="featureDeployments-statusQueued" datatype="html">
+        <source>Queued</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-statusInProgress" datatype="html">
+        <source>In progress</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-statusCompleted" datatype="html">
+        <source>Completed</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-statusNeverRun" datatype="html">
+        <source>Not run yet</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-conclusionSuccess" datatype="html">
+        <source>Succeeded</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-conclusionFailure" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-conclusionCancelled" datatype="html">
+        <source>Cancelled</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-conclusionSkipped" datatype="html">
+        <source>Skipped</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-conclusionTimedOut" datatype="html">
+        <source>Timed out</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-conclusionNeutral" datatype="html">
+        <source>Neutral</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-workflowDisabled" datatype="html">
+        <source>Disabled</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-providerGithub" datatype="html">
+        <source>GitHub Actions</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-providerGitlab" datatype="html">
+        <source>GitLab CI/CD</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-providerJenkins" datatype="html">
+        <source>Jenkins</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-triggerAgent" datatype="html">
+        <source>Environment</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-triggerExternal" datatype="html">
+        <source>Provider</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-triggerUser" datatype="html">
+        <source>Console</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-authApp" datatype="html">
+        <source>GitHub App</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-authTokenGitlab" datatype="html">
+        <source>Access token</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-authTokenJenkins" datatype="html">
+        <source>API token</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-authTokenGithub" datatype="html">
+        <source>Personal access token</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-testOk" datatype="html">
+        <source>Connected</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-testFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-testUntested" datatype="html">
+        <source>Not tested</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-inputKey" datatype="html">
+        <source>Input</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-inputValue" datatype="html">
+        <source>Value</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-inputAdd" datatype="html">
+        <source>Add input</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-inputRemove" datatype="html">
+        <source>Remove {key}</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-inputsEmpty" datatype="html">
+        <source>No inputs.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-inputDuplicate" datatype="html">
+        <source>This input is used twice.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-inputRequiredKey" datatype="html">
+        <source>Enter an input name.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-refLabel" datatype="html">
+        <source>Branch or tag</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-triggerEnvironmentLabel" datatype="html">
+        <source>Environment</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-triggerEnvironmentHint" datatype="html">
+        <source>Optional: the environment this run is for (recorded with the run).</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-triggerNoEnvironment" datatype="html">
+        <source>Workspace (no environment)</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-inputsLabel" datatype="html">
+        <source>Inputs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-triggerInputsHint" datatype="html">
+        <source>Prefilled with the pipeline defaults; changes apply to this run only.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-triggerSubmit" datatype="html">
+        <source>Run pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-defaultBranch" datatype="html">
+        <source>default</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-noBranches" datatype="html">
+        <source>No matching branches</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-triggerTitle" datatype="html">
+        <source>Run <x id="name" equiv-text="name"/></source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-refPlaceholder" datatype="html">
+        <source>Repository default branch</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-refHintDefault" datatype="html">
+        <source>Leave empty to use the pipeline default.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-refHintRepository" datatype="html">
+        <source>Leave empty to use the default branch of the repository.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorCreateTitle" datatype="html">
+        <source>Create pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorEditTitle" datatype="html">
+        <source>Edit pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorName" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorDescription" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorConnection" datatype="html">
+        <source>Connection</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorConnectionHint" datatype="html">
+        <source>CI/CD connections are managed by instance admins under Connections.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorRepository" datatype="html">
+        <source>Repository</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorRepositoryPlaceholder" datatype="html">
+        <source>Search repositories or enter one</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorWorkflow" datatype="html">
+        <source>GitHub workflow</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorWorkflowHint" datatype="html">
+        <source>GitHub Actions workflow to dispatch (needs a workflow_dispatch trigger).</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorDefaultRef" datatype="html">
+        <source>Default branch or tag</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorRepositoryDefault" datatype="html">
+        <source>Repository default branch</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorDefaultInputs" datatype="html">
+        <source>Default inputs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorDefaultInputsHint" datatype="html">
+        <source>Inputs, variables or parameters sent with every run (overridable per run).</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorScope" datatype="html">
+        <source>Available to</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-scopeGlobal" datatype="html">
+        <source>All environments</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-scopeEnvironments" datatype="html">
+        <source>Selected environments</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorEnvironments" datatype="html">
+        <source>Environments</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorSearchEnvironments" datatype="html">
+        <source>Search environments</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorRemoveEnvironment" datatype="html">
+        <source>Remove {label}</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorNoEnvironments" datatype="html">
+        <source>No matching environments</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorAgentTrigger" datatype="html">
+        <source>Environments may run this pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorAgentTriggerHint" datatype="html">
+        <source>Lets the agents of the environments trigger and cancel runs through their CI tools. Otherwise they can only read runs and logs.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorEnabled" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorNoRepositories" datatype="html">
+        <source>No matching repositories</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorNoConnections" datatype="html">
+        <source>No connection is available to this workspace yet. Ask an instance admin to add one under Connections.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorCreate" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorSave" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-title" datatype="html">
+        <source>Continuous Integration</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-switchWorkspaceTitle" datatype="html">
+        <source>Switch workspace</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-refreshTitle" datatype="html">
+        <source>Refresh</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-workflowsTable" datatype="html">
+        <source>Pipelines</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-searchWorkflows" datatype="html">
+        <source>Search pipelines</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-environmentFilterLabel" datatype="html">
+        <source>Environment</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-newWorkflowTitle" datatype="html">
+        <source>New pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-triggerAction" datatype="html">
+        <source>Run pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-syncAction" datatype="html">
+        <source>Sync run history</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editAction" datatype="html">
+        <source>Edit pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-deleteAction" datatype="html">
+        <source>Delete pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-moreActions" datatype="html">
+        <source>More actions</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-backToWorkflows" datatype="html">
+        <source>Back to pipelines</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-runsTable" datatype="html">
+        <source>Runs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-searchRuns" datatype="html">
+        <source>Search runs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-statusFilterLabel" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-jobsTable" datatype="html">
+        <source>Jobs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-viewLogs" datatype="html">
+        <source>View logs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-openInProvider" datatype="html">
+        <source>Open in provider</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-cancelRun" datatype="html">
+        <source>Cancel run</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-copyLogs" datatype="html">
+        <source>Copy logs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-downloadLogs" datatype="html">
+        <source>Download logs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-reloadLogs" datatype="html">
+        <source>Reload logs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-enabledLabel" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-bulkEnable" datatype="html">
+        <source>Enable</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-bulkDisable" datatype="html">
+        <source>Disable</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-bulkDeleteTitle" datatype="html">
+        <source>Delete pipelines</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-colState" datatype="html">
+        <source>State</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-colWorkflow" datatype="html">
+        <source>Pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-colRepository" datatype="html">
+        <source>Repository</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-colConnection" datatype="html">
+        <source>Connection</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-colLastRun" datatype="html">
+        <source>Last run</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-colRun" datatype="html">
+        <source>Run</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-colRef" datatype="html">
+        <source>Branch</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-colTrigger" datatype="html">
+        <source>Trigger</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-colEnvironment" datatype="html">
+        <source>Environment</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-colStarted" datatype="html">
+        <source>Started</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-colJob" datatype="html">
+        <source>Job</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-colCompleted" datatype="html">
+        <source>Completed</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-logsTitleJob" datatype="html">
+        <source>Job logs: <x id="job" equiv-text="job.name"/></source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-logsTitleRun" datatype="html">
+        <source>Run logs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-deleteConfirmMessage" datatype="html">
+        <source>Delete &quot;<x id="name" equiv-text="name"/>&quot; and its run history? Runs that are still active keep running at the provider.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-cancelConfirmMessage" datatype="html">
+        <source>Cancel this run at the provider? Jobs in progress are stopped.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-bulkDeleteMessage" datatype="html">
+        <source>Delete <x id="count" equiv-text="this.selectedWorkflows().length"/> pipelines and their run history?</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-noWorkspaces" datatype="html">
+        <source>No workspaces yet</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-noWorkspaceSelected" datatype="html">
+        <source>No workspace selected yet</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-noWorkflows" datatype="html">
+        <source>No pipelines yet</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-noJobs" datatype="html">
+        <source>The provider reports no jobs for this run yet.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-loadingRun" datatype="html">
+        <source>Loading run…</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-runNotFound" datatype="html">
+        <source>Run not found</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-noRuns" datatype="html">
+        <source>This pipeline has not run yet.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-loadingWorkflow" datatype="html">
+        <source>Loading pipeline…</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-workflowNotFound" datatype="html">
+        <source>Pipeline not found</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-selectWorkflow" datatype="html">
+        <source>Select a pipeline to run it and follow its runs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-loadingLogs" datatype="html">
+        <source>Loading logs…</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-switchWorkspaceModalTitle" datatype="html">
+        <source>Switch workspace</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-goToSpaces" datatype="html">
+        <source> Go to workspaces </source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-chooseWorkspace" datatype="html">
+        <source> Choose workspace... </source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-allEnvironments" datatype="html">
+        <source>All environments</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-noWorkflowsHintAdmin" datatype="html">
+        <source> Create a pipeline on top of a CI/CD connection to run and follow it here. </source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-noWorkflowsHint" datatype="html">
+        <source> Workspace admins create the pipelines of this workspace. </source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-runBranch" datatype="html">
+        <source>Branch</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-runCommit" datatype="html">
+        <source>Commit</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-runTrigger" datatype="html">
+        <source>Triggered by</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-runStarted" datatype="html">
+        <source>Started</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-runCompleted" datatype="html">
+        <source>Completed</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-runInputs" datatype="html">
+        <source>Inputs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-disabledBadge" datatype="html">
+        <source>Disabled</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-overviewConnection" datatype="html">
+        <source>Connection</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-overviewRepository" datatype="html">
+        <source>Repository</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-overviewWorkflow" datatype="html">
+        <source>GitHub workflow</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-overviewDefaultRef" datatype="html">
+        <source>Default branch</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-overviewRepositoryDefault" datatype="html">
+        <source>Repository default</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-overviewDefaultInputs" datatype="html">
+        <source>Default inputs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-overviewScope" datatype="html">
+        <source>Available to</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-scopeGlobalBadge" datatype="html">
+        <source>All environments</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-scopeNone" datatype="html">
+        <source>No environment assigned</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-overviewAgentTrigger" datatype="html">
+        <source>Environment runs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-agentTriggerAllowed" datatype="html">
+        <source>Agents may trigger and cancel runs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-agentTriggerReadOnly" datatype="html">
+        <source>Agents may only read runs and logs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-overviewLastRun" datatype="html">
+        <source>Last run</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-runHistoryHeading" datatype="html">
+        <source> Run history </source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-allStatuses" datatype="html">
+        <source>All statuses</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-logsTruncated" datatype="html">
+        <source>Only the end of the logs is shown. Open the run in the provider for the full logs.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-noLogs" datatype="html">
+        <source>No logs available yet.</source>
+        </trans-unit>
+      <trans-unit id="featureConnectionsNav-pageTitle" datatype="html">
+        <source>Connections</source>
+        </trans-unit>
+      <trans-unit id="featureConnectionsNav-ariaLabel" datatype="html">
+        <source>Connection types</source>
+        </trans-unit>
+      <trans-unit id="featureConnectionsNav-deployments" datatype="html">
+        <source>CI/CD</source>
+        </trans-unit>
+      <trans-unit id="featureConnectionsNav-atlassian" datatype="html">
+        <source>Atlassian</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-table" datatype="html">
+        <source>CI/CD connections</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-search" datatype="html">
+        <source>Search connections</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-refresh" datatype="html">
+        <source>Refresh</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-createTitle" datatype="html">
+        <source>Add connection</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-editTitle" datatype="html">
+        <source>Edit connection</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-deleteTitle" datatype="html">
+        <source>Delete connection</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-bulkDeleteTitle" datatype="html">
+        <source>Delete connections</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-providerFilter" datatype="html">
+        <source>Provider</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-provider" datatype="html">
+        <source>Provider</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-label" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-baseUrl" datatype="html">
+        <source>Base URL</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-authType" datatype="html">
+        <source>Authentication</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-appId" datatype="html">
+        <source>App ID</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-installationId" datatype="html">
+        <source>Installation ID</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-privateKey" datatype="html">
+        <source>Private key (PEM)</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-token" datatype="html">
+        <source>Token</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-username" datatype="html">
+        <source>Username</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-invalidBaseUrl" datatype="html">
+        <source>Enter an absolute http(s) URL without credentials, query or fragment.</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-keepSecretHint" datatype="html">
+        <source>Leave empty to keep the stored value.</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-workspaceAccess" datatype="html">
+        <source>Workspace access</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-accessAll" datatype="html">
+        <source>All workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-accessSelected" datatype="html">
+        <source>Selected workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-workspaces" datatype="html">
+        <source>Workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-searchWorkspaces" datatype="html">
+        <source>Search workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-removeWorkspace" datatype="html">
+        <source>Remove {label}</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-noWorkspaces" datatype="html">
+        <source>No matching workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-colState" datatype="html">
+        <source>State</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-colConnection" datatype="html">
+        <source>Connection</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-colProvider" datatype="html">
+        <source>Provider</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-colAuth" datatype="html">
+        <source>Authentication</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-colAccess" datatype="html">
+        <source>Workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-colBaseUrl" datatype="html">
+        <source>Base URL</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-colTested" datatype="html">
+        <source>Connection status</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-baseUrlHintGithub" datatype="html">
+        <source>Leave empty for github.com. GitHub Enterprise Server: https://github.example.com/api/v3</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-baseUrlHintGitlab" datatype="html">
+        <source>Leave empty for gitlab.com. Self-managed: https://gitlab.example.com</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-baseUrlHintJenkins" datatype="html">
+        <source>URL of the Jenkins controller, e.g. https://jenkins.example.com</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-tokenHintGitlab" datatype="html">
+        <source>Personal, group or project access token with the api scope.</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-tokenHintJenkins" datatype="html">
+        <source>API token of the Jenkins user (User › Security › API Token).</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-tokenHintGithub" datatype="html">
+        <source>Fine-grained token with Actions (read and write) and Contents (read) access.</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-appHint" datatype="html">
+        <source>The GitHub App needs Actions (read and write) and Contents (read) permissions and must be installed on the repositories.</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-deleteConfirmMessage" datatype="html">
+        <source>Delete &quot;<x id="label" equiv-text="label"/>&quot;? Connections that pipelines still use cannot be deleted.</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-bulkDeleteMessage" datatype="html">
+        <source>Delete <x id="count" equiv-text="this.selectedConnections().length"/> connections? Connections that pipelines still use are kept.</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-accessCount" datatype="html">
+        <source><x id="count" equiv-text="count"/> selected</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-empty" datatype="html">
+        <source>No CI/CD connections yet</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-testResultOk" datatype="html">
+        <source>Connection works.</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-testResultFailed" datatype="html">
+        <source>Connection test failed.</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-allProviders" datatype="html">
+        <source>All providers</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-emptyHint" datatype="html">
+        <source> Connect GitHub Actions, GitLab CI/CD or Jenkins so workspaces can run their pipelines from Agenstra. </source>
+        </trans-unit>
+      <trans-unit id="featureAgentConsole-deploymentConnectionsTitle" datatype="html">
+        <source>CI/CD connections :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConsole-atlassianConnectionsTitle" datatype="html">
+        <source>Atlassian connections :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConsole-deploymentsTitle" datatype="html">
+        <source>Continuous Integration :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-connectionsTitle" datatype="html">
+        <source>Connections (CI/CD, Atlassian)</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-connections" datatype="html">
+        <source>Connections</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-deploymentsTitle" datatype="html">
+        <source>CI/CD deployments</source></trans-unit>
+      <trans-unit id="featureContainer-deployments" datatype="html">
+        <source>CI</source></trans-unit>
+      <trans-unit id="featureAudit-entityTypeDeploymentWorkflow" datatype="html">
+        <source>Pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-entityTypeDeploymentRun" datatype="html">
+        <source>Pipeline run</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConnections-pageTitle" datatype="html">
+        <source>CI/CD connections</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-pageTitle" datatype="html">
+        <source>Atlassian connections</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-closeRun" datatype="html">
+        <source>Close run</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-backToRuns" datatype="html">
+        <source>Back to run history</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentOperations-trigger" datatype="html">
+        <source>Start pipeline runs</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentOperations-cancel" datatype="html">
+        <source>Cancel pipeline runs</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentOperations-hint" datatype="html">
+        <source>Runs may start or cancel pipeline runs without asking. Only pipelines that allow environment runs, with their default branch and defined inputs only. Leave empty to keep runs from acting on pipelines.</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentOperations-heading" datatype="html">
+        <source>Allowed CI actions</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-pendingApprovalDeploymentOperationsHint" datatype="html">
+        <source>Once approved, this task can request these CI actions without asking: <x id="INTERPOLATION" equiv-text="{{ deploymentOperations.join(&apos;, &apos;) }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-noDeploymentOperations" datatype="html">
+        <source>None</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-approveAction" datatype="html">
+        <source>Approve pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-approve" datatype="html">
+        <source>Approve</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-triggerPendingTitle" datatype="html">
+        <source>Runs can start once a workspace admin approved this pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-workflowPendingApproval" datatype="html">
+        <source>Waiting for approval</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-editorPendingApprovalHint" datatype="html">
+        <source>An environment proposed or changed this pipeline. Saving approves it as shown here, so check the connection, repository, GitHub workflow, default branch, inputs and environment runs first.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-pendingChangedBy" datatype="html">
+        <source>Changed by environment <x id="INTERPOLATION" equiv-text="{{ changedBy }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-pendingProposedBy" datatype="html">
+        <source>Proposed by environment <x id="INTERPOLATION" equiv-text="{{ proposedBy }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-pendingApprovalHintAdmin" datatype="html">
+        <source>Nobody can start runs of this pipeline until you reviewed and approved it. Saving the complete pipeline in the editor approves it as well.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-pendingApprovalHint" datatype="html">
+        <source>Nobody can start runs of this pipeline until a workspace admin approved it.</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-overviewProposedBy" datatype="html">
+        <source>Proposed by</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-overviewProposedByEnvironment" datatype="html">
+        <source>Environment <x id="INTERPOLATION" equiv-text="{{ proposedBy }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-approveConfirmIntro" datatype="html">
+        <source> Approve this pipeline as shown? Runs can be started afterwards, by environments only when environment runs are allowed. </source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-approveNoInputs" datatype="html">
+        <source>None</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayDeploymentsActionStatus" datatype="html">
+        <source>CI action status</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayDeploymentsListConnections" datatype="html">
+        <source>List CI/CD connections</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayDeploymentsCreateWorkflow" datatype="html">
+        <source>Propose pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayDeploymentsUpdateWorkflow" datatype="html">
+        <source>Update pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayDeploymentsDeleteWorkflow" datatype="html">
+        <source>Delete pipeline</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-searchJobs" datatype="html">
+        <source>Search jobs</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-approvalFilter" datatype="html">
+        <source>Approval</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-approvalFilterAll" datatype="html">
+        <source>All pipelines</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-approvalFilterPending" datatype="html">
+        <source>Waiting for approval</source>
+        </trans-unit>
+      <trans-unit id="featureDeployments-approvalFilterApproved" datatype="html">
+        <source>Approved</source>
+        </trans-unit>
     </body>
   </file>
 </xliff>

@@ -1,7 +1,9 @@
 import {
   AGENT_CONTENT_WRITE_OPERATIONS,
+  AGENT_DEPLOYMENT_OPERATIONS,
   AGENT_TASK_LIMITS,
   type AgentContentWriteOperation,
+  type AgentDeploymentOperation,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import {
   ArrayMaxSize,
@@ -64,4 +66,11 @@ export class CreateAgentTaskDto {
   @ArrayMaxSize(AGENT_CONTENT_WRITE_OPERATIONS.length)
   @IsIn(AGENT_CONTENT_WRITE_OPERATIONS, { each: true })
   allowedContentWrites?: AgentContentWriteOperation[];
+
+  /** Deployment run actions (`deployment.trigger`, `deployment.cancel`) the runs may request without asking (empty: none). */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(AGENT_DEPLOYMENT_OPERATIONS.length)
+  @IsIn(AGENT_DEPLOYMENT_OPERATIONS, { each: true })
+  allowedDeploymentOperations?: AgentDeploymentOperation[];
 }

@@ -1054,7 +1054,7 @@
         left: 64px;
         top: 210px;
         width: 1472px;
-        height: 636px;
+        height: 606px;
       }
 
       .arch-phases {
@@ -1640,11 +1640,18 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 10px;
         margin-bottom: 18px;
       }
 
       .level__head h3 {
-        font-size: 20px;
+        font-size: 19px;
+        white-space: nowrap;
+      }
+
+      .level__head .tag {
+        padding: 3px 8px;
+        font-size: 12px;
       }
 
       .stack {
@@ -2110,7 +2117,7 @@
 
       .eff-row {
         display: grid;
-        grid-template-columns: 150px 1fr;
+        grid-template-columns: 136px 1fr;
         gap: 12px;
         align-items: baseline;
         padding: 12px 0;
@@ -2135,6 +2142,10 @@
         color: #fff;
         vertical-align: 1px;
         border-radius: 5px;
+      }
+
+      .src ~ .src {
+        margin-left: 8px;
       }
 
       .src--g {
@@ -2561,6 +2572,9 @@
       }
 
       .stair small {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         margin-top: auto;
         font-size: 13px;
         color: var(--success-text);
@@ -2602,11 +2616,18 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 10px;
         margin-bottom: 18px;
       }
 
       .level__head h3 {
-        font-size: 20px;
+        font-size: 19px;
+        white-space: nowrap;
+      }
+
+      .level__head .tag {
+        padding: 3px 8px;
+        font-size: 12px;
       }
 
       .stack {
@@ -3287,6 +3308,7 @@
 
       /* 08 Selection record */
       .record {
+        margin-top: 12px;
         padding: 6px 20px;
         background: var(--surface);
         border: 1px solid var(--border);
@@ -3545,15 +3567,15 @@
             <span class="caption" style="left: 800px">Agent server</span>
             <span class="caption" style="left: 1264px">Internet</span>
 
-            <div class="frame frame--solid" style="left: 420px; top: 28px; width: 340px; height: 520px">
+            <div class="frame frame--solid" style="left: 420px; top: 28px; width: 340px; height: 504px">
               <span class="frame__label">control plane</span>
             </div>
-            <div class="frame frame--solid" style="left: 800px; top: 28px; width: 440px; height: 520px">
+            <div class="frame frame--solid" style="left: 800px; top: 28px; width: 440px; height: 504px">
               <span class="frame__label"
                 >your server <span class="badge"><i class="bi bi-hdd-stack"></i>Docker</span></span
               >
             </div>
-            <div class="frame frame--primary" style="left: 816px; top: 152px; width: 408px; height: 380px">
+            <div class="frame frame--primary" style="left: 816px; top: 152px; width: 408px; height: 364px">
               <span class="frame__label"
                 >one agent's environment
                 <span class="badge badge--primary"><i class="bi bi-shield-fill-check"></i>Sandboxed</span></span
@@ -3604,7 +3626,9 @@
               />
             </svg>
 
-            <span class="edge-label" style="left: 780px; top: 78px">one way →</span>
+            <span class="edge-label" style="left: 780px; top: 66px; line-height: 1.25; text-align: center"
+              >one way<br />→</span
+            >
 
             <div class="node" data-node="users" style="left: 0; top: 72px; width: 170px; --d: 0">
               <span class="node__icon"><i class="bi bi-people"></i></span>
@@ -3626,7 +3650,7 @@
             <div class="node" data-node="dom" style="left: 436px; top: 168px; width: 308px; --d: 4">
               <span class="node__icon"><i class="bi bi-kanban"></i></span>
               <span class="node__text"
-                ><b>Tickets, knowledge, audit log</b><small>plans, tasks, handoffs, rules</small></span
+                ><b>Tickets, knowledge, deployments</b><small>plans, tasks, handoffs, audit log</small></span
               >
             </div>
             <div class="node" data-node="queue" style="left: 436px; top: 264px; width: 308px; --d: 5">
@@ -4528,7 +4552,11 @@
             <p>Attachments and shared folders can be read, but an agent cannot change them.</p>
           </article>
         </div>
-        <aside class="notes">These limits hold no matter which isolation level the environment runs on.</aside>
+        <aside class="notes">
+          These limits hold no matter which isolation level the environment runs on. Two things never enter the box at
+          all: deployment credentials, because the control plane talks to your CI itself, and graph data, because the
+          agent server builds an environment's code graph outside the container.
+        </aside>
       </section>
 
       <!-- ================================================================== 13 Rules and alerts -->
@@ -4769,7 +4797,7 @@
           });
           const fill = slides[index].querySelector('.timeline__fill');
           if (fill && list.length) {
-            fill.style.setProperty('--fill', `${Math.max(0, (frag - 1) / (list.length - 1)) * 100}%`);
+            fill.style.setProperty('--fill', `${Math.min(1, Math.max(0, (frag - 1) / (list.length - 1))) * 100}%`);
           }
         };
 

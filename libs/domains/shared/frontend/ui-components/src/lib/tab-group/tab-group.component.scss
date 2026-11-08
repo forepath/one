@@ -32,7 +32,7 @@
   isolation: isolate;
 }
 
-:host(.fpc-tab-group--vertical) .fpc-tab-group__bar {
+:host(.fpc-tab-group--vertical) > .fpc-tab-group__bar {
   display: flex;
   flex-direction: column;
   flex: 0 0 14rem;
@@ -49,7 +49,7 @@
   min-height: 0;
 }
 
-:host(.fpc-tab-group--vertical.fpc-tab-group--stretch) .fpc-tab-group__bar {
+:host(.fpc-tab-group--vertical.fpc-tab-group--stretch) > .fpc-tab-group__bar {
   flex: 1 1 auto;
   width: 100%;
   max-width: none;
@@ -58,7 +58,7 @@
 
 // Phones: a fixed 14rem rail leaves almost no room for the panel; cap it at 40% of the group.
 @media (max-width: 575.98px) {
-  :host(.fpc-tab-group--vertical) .fpc-tab-group__bar {
+  :host(.fpc-tab-group--vertical) > .fpc-tab-group__bar {
     flex-basis: min(14rem, 40%);
     width: min(14rem, 40%);
     max-width: min(14rem, 40%);
@@ -97,28 +97,30 @@
   min-width: 0;
 }
 
-:host(.fpc-tab-group--horizontal) .fpc-tab-group__bar {
+:host(.fpc-tab-group--horizontal) > .fpc-tab-group__bar {
   overflow: hidden;
   contain: inline-size;
 }
 
-:host(.fpc-tab-group--horizontal) .fpc-tab-group__item {
+:host(.fpc-tab-group--horizontal) > .fpc-tab-group__bar .fpc-tab-group__item {
   min-width: max-content;
 }
 
-:host(.fpc-tab-group--horizontal) .fpc-tab-group__item--overflow,
-:host(.fpc-tab-group--horizontal) .fpc-tab-group__bar:not(.fpc-tab-group__bar--overflowing) .fpc-tab-group__item--more {
+:host(.fpc-tab-group--horizontal) > .fpc-tab-group__bar .fpc-tab-group__item--overflow,
+:host(.fpc-tab-group--horizontal)
+  > .fpc-tab-group__bar:not(.fpc-tab-group__bar--overflowing)
+  .fpc-tab-group__item--more {
   display: none;
 }
 
 // Measuring pass (synchronous, never painted): every item, the More item included, at its content width.
-:host(.fpc-tab-group--horizontal) .fpc-tab-group__bar--measuring .fpc-tab-group__item {
+:host(.fpc-tab-group--horizontal) > .fpc-tab-group__bar--measuring .fpc-tab-group__item {
   display: flex;
   flex: 0 0 auto;
 }
 
 // "More ▾": a tab item at its content width (same height, right / bottom borders); the dropdown fills it.
-:host(.fpc-tab-group--horizontal) .fpc-tab-group__item--more {
+:host(.fpc-tab-group--horizontal) > .fpc-tab-group__bar .fpc-tab-group__item--more {
   flex: 0 0 auto;
 
   ::ng-deep > fpc-dropdown,
@@ -209,7 +211,7 @@
 // for the label, icon, count badge and pattern lines. Fill: `--fpc-primary-fill`, the primary shifted just enough for
 // that ink to reach 4.5 : 1 (brands/_chrome.scss; unchanged for Agenstra, a touch deeper for Decabill /
 // ForePath green / orange).
-:host(.fpc-tab-group--horizontal) {
+:host(.fpc-tab-group--horizontal) > .fpc-tab-group__bar {
   // A plain selector list (not `:is()` around a `:has()`): Angular's style encapsulation rewrites it reliably.
   .fpc-tab-group__item--active,
   .fpc-tab-group__item:has(> .btn-options:focus-visible),
@@ -292,14 +294,14 @@
 
 // Vertical rail scrolls on its own: keep the current group's title visible; the next title slides
 // over it.
-:host(.fpc-tab-group--vertical) .fpc-tab-group__section-title {
+:host(.fpc-tab-group--vertical) > .fpc-tab-group__bar .fpc-tab-group__section-title {
   position: sticky;
   top: 0;
   z-index: var(--fpc-z-raised, 1);
   flex: 0 0 auto;
 }
 
-:host(.fpc-tab-group--vertical) .btn-group-options {
+:host(.fpc-tab-group--vertical) > .btn-group-options {
   .fpc-tab-group__item {
     flex: 0 0 auto;
     width: 100%;
@@ -332,14 +334,14 @@
   min-width: 0;
 }
 
-:host(.fpc-tab-group--vertical) .fpc-tab-group__panels {
+:host(.fpc-tab-group--vertical) > .fpc-tab-group__panels {
   overflow: auto;
   padding: 0;
 }
 
 // The vertical panel area is the scroll container, so a tab keeps its full content height instead of
 // shrinking to the viewport. Otherwise sticky headings inside it are pushed off after one screen.
-:host(.fpc-tab-group--vertical) ::ng-deep .fpc-tab-group__panels > fpc-tab {
+:host(.fpc-tab-group--vertical) > .fpc-tab-group__panels ::ng-deep > fpc-tab {
   flex-shrink: 0;
 }
 

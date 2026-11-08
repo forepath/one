@@ -13,7 +13,6 @@ Several registries accept a static built-in set plus optional plugins:
 | Agent controller | `DYNAMIC_PROVISIONING_PROVIDERS`   | critical    | Cloud provisioning providers      |
 | Agent controller | `DYNAMIC_CONTEXT_IMPORT_PROVIDERS` | optional    | External context import providers |
 | Agent manager    | `DYNAMIC_AGENT_PROVIDERS`          | optional    | Agent backend implementations     |
-| Agent manager    | `DYNAMIC_PIPELINE_PROVIDERS`       | optional    | CI/CD pipeline providers          |
 | Agent manager    | `DYNAMIC_CHAT_FILTERS`             | optional    | Chat filter plugins               |
 
 Shared tuning:
@@ -60,7 +59,7 @@ DYNAMIC_PROVISIONING_PROVIDERS=acme=@forepath/agenstra/backend/provisioning-acme
 DYNAMIC_AGENT_PROVIDERS=AcmeAgent=@forepath/agenstra/backend/agent-acme
 
 # bare specifier
-DYNAMIC_PIPELINE_PROVIDERS=@forepath/agenstra/backend/pipeline-acme
+DYNAMIC_CHAT_FILTERS=@forepath/agenstra/backend/chat-filter-acme
 
 # file: entry (directory relative to DYNAMIC_PROVIDER_PLUGIN_PATH)
 DYNAMIC_PROVISIONING_PROVIDERS=acme=file:provisioning-acme
@@ -158,7 +157,6 @@ Or inspect startup logs for `DynamicProviderRegistry` / loader errors.
 ### Agent manager
 
 - **Agents** [Agent Management](./agent-management.md); `DYNAMIC_AGENT_PROVIDERS` extends agent types beyond the built-in OpenCode provider.
-- **Pipelines** [Deployment](./deployment.md); `DYNAMIC_PIPELINE_PROVIDERS` adds CI/CD backends.
 - **Chat filters** [Message Filters](./message-filters.md); `DYNAMIC_CHAT_FILTERS` adds filter implementations on the manager.
 
 ## Docker Compose (optional plugins)
@@ -183,6 +181,6 @@ See [Docker Deployment](../deployment/docker-deployment.md) and [Applications](.
 - **[Server Provisioning](./server-provisioning.md)** Built-in provisioning providers
 - **[Agent Management](./agent-management.md)** Agent types and lifecycle
 - **[Atlassian import](./atlassian-import.md)** Built-in context import provider
-- **[Deployment](./deployment.md)** CI/CD providers on the manager
+- **[Deployments](./deployment.md)** Built-in CI/CD providers (GitHub Actions, GitLab CI, Jenkins) on the controller; not extensible through plugins
 - **[Backend Agent Controller](../applications/backend-agent-controller.md)** Controller env and compose
 - **[Backend Agent Manager](../applications/backend-agent-manager.md)** Manager env and compose

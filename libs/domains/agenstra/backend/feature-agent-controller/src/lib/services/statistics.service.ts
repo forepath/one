@@ -515,6 +515,18 @@ export class StatisticsService {
           });
           break;
         }
+
+        case StatisticsEntityType.DEPLOYMENT_WORKFLOW:
+        case StatisticsEntityType.DEPLOYMENT_RUN:
+          await this.recordWorkspaceEntityEvent(
+            StatisticsEntityEventType.CREATED,
+            entityType,
+            originalEntityId,
+            metadata,
+            statisticsUserId,
+            now,
+          );
+          break;
       }
     } catch (error) {
       this.logger.warn(`Failed to record entity created: ${(error as Error).message}`);
@@ -620,6 +632,18 @@ export class StatisticsService {
         case StatisticsEntityType.PROVISIONING_REFERENCE:
           this.logger.debug(`Entity update events not implemented for ${entityType}`);
           break;
+
+        case StatisticsEntityType.DEPLOYMENT_WORKFLOW:
+        case StatisticsEntityType.DEPLOYMENT_RUN:
+          await this.recordWorkspaceEntityEvent(
+            StatisticsEntityEventType.UPDATED,
+            entityType,
+            originalEntityId,
+            metadata,
+            statisticsUserId,
+            now,
+          );
+          break;
       }
     } catch (error) {
       this.logger.warn(`Failed to record entity updated: ${(error as Error).message}`);
@@ -633,6 +657,8 @@ export class StatisticsService {
     entityType: StatisticsEntityType,
     originalEntityId: string,
     userId?: string,
+    /** Workspace scoped entities (deployment workflows / runs): `{ clientId, agentId? }` of the deleted row. */
+    metadata?: Record<string, unknown>,
   ): Promise<void> {
     try {
       const now = new Date();
@@ -662,6 +688,13 @@ export class StatisticsService {
       // For agent, client_user, provisioning_reference - we don't resolve shadow by originalEntityId
       // since the original may already be deleted. The event stores originalEntityId for correlation.
 
+      if (this.isWorkspaceScopedEntityType(entityType) && metadata) {
+        const shadows = await this.resolveWorkspaceShadows(metadata);
+
+        statisticsClientsId = shadows.statisticsClientsId;
+        statisticsAgentsId = shadows.statisticsAgentsId;
+      }
+
       await this.statisticsRepository.createStatisticsEntityEvent({
         eventType: StatisticsEntityEventType.DELETED,
         entityType,
@@ -677,6 +710,77 @@ export class StatisticsService {
     } catch (error) {
       this.logger.warn(`Failed to record entity deleted: ${(error as Error).message}`);
     }
+  }
+
+  private isWorkspaceScopedEntityType(entityType: StatisticsEntityType): boolean {
+    return (
+      entityType === StatisticsEntityType.DEPLOYMENT_WORKFLOW || entityType === StatisticsEntityType.DEPLOYMENT_RUN
+    );
+  }
+
+  /**
+   * Events of workspace scoped entities (deployment workflows / runs) link the workspace shadow (so workspace audit
+   * filters include them) and, when known, the environment shadow. `metadata.clientId` is required.
+   */
+  private async recordWorkspaceEntityEvent(
+    eventType: StatisticsEntityEventType,
+    entityType: StatisticsEntityType,
+    originalEntityId: string,
+    metadata: Record<string, unknown>,
+    statisticsUserId: string | undefined,
+    occurredAt: Date,
+  ): Promise<void> {
+    const shadows = await this.resolveWorkspaceShadows(metadata);
+
+    if (!shadows.statisticsClientsId) {
+      this.logger.warn(`Cannot record ${entityType} ${eventType}: workspace ${String(metadata.clientId)} not found`);
+
+      return;
+    }
+
+    await this.statisticsRepository.createStatisticsEntityEvent({
+      eventType,
+      entityType,
+      originalEntityId,
+      statisticsUserId,
+      statisticsClientsId: shadows.statisticsClientsId,
+      statisticsAgentsId: shadows.statisticsAgentsId,
+      occurredAt,
+    });
+  }
+
+  /** Workspace shadow (created from the live workspace when missing) and the existing environment shadow. */
+  private async resolveWorkspaceShadows(
+    metadata: Record<string, unknown>,
+  ): Promise<{ statisticsClientsId?: string; statisticsAgentsId?: string }> {
+    const clientId = typeof metadata.clientId === 'string' ? metadata.clientId : undefined;
+
+    if (!clientId) {
+      return {};
+    }
+
+    let statisticsClient = await this.statisticsRepository.findStatisticsClientByOriginalId(clientId);
+
+    if (!statisticsClient) {
+      const client = await this.clientsRepository.findById(clientId);
+
+      if (!client) {
+        return {};
+      }
+
+      statisticsClient = await this.statisticsRepository.upsertStatisticsClient(clientId, {
+        name: client.name,
+        endpoint: client.endpoint,
+        authenticationType: client.authenticationType,
+      });
+    }
+
+    const agentId = typeof metadata.agentId === 'string' ? metadata.agentId : undefined;
+    const statisticsAgent = agentId
+      ? await this.statisticsRepository.findStatisticsAgentByOriginalId(agentId, statisticsClient.id)
+      : null;
+
+    return { statisticsClientsId: statisticsClient.id, statisticsAgentsId: statisticsAgent?.id };
   }
 
   /**

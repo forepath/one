@@ -39,7 +39,13 @@ describe('atlassianContextImportReducer', () => {
     id: '11111111-1111-1111-1111-111111111111',
     label: 'L',
     baseUrl: 'https://x.atlassian.net',
+    authType: 'token',
     accountEmail: 'a@b.com',
+    oauthClientId: null,
+    cloudId: null,
+    lastTestStatus: 'untested',
+    lastTestMessage: null,
+    lastTestedAt: null,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
     ...over,
@@ -205,7 +211,10 @@ describe('atlassianContextImportReducer', () => {
 
     s = atlassianContextImportReducer(
       s,
-      testAtlassianConnectionSuccess({ connectionId: 'c1', result: { ok: true, message: 'ok' } }),
+      testAtlassianConnectionSuccess({
+        connectionId: 'c1',
+        result: { ok: true, message: 'ok', testedAt: '2024-02-01T00:00:00Z' },
+      }),
     );
     expect(s.testingConnectionId).toBeNull();
     expect(s.lastConnectionTest?.result.ok).toBe(true);
@@ -217,6 +226,26 @@ describe('atlassianContextImportReducer', () => {
     s = atlassianContextImportReducer(s, runExternalImportConfigFailure({ error: 'r1' }));
     expect(s.runningConfigId).toBeNull();
     expect(s.error).toBe('r1');
+  });
+
+  it('mirrors a connection test result onto the connection row', () => {
+    const other = conn({ id: 'c2' });
+    const s = atlassianContextImportReducer(
+      { ...initialAtlassianContextImportState, connections: [conn({ id: 'c1' }), other] },
+      testAtlassianConnectionSuccess({
+        connectionId: 'c1',
+        result: { ok: false, message: 'Jira HTTP 401', testedAt: '2024-02-01T00:00:00Z' },
+      }),
+    );
+
+    expect(s.connections[0]).toEqual(
+      expect.objectContaining({
+        lastTestStatus: 'failed',
+        lastTestMessage: 'Jira HTTP 401',
+        lastTestedAt: '2024-02-01T00:00:00Z',
+      }),
+    );
+    expect(s.connections[1]).toBe(other);
   });
 
   it('handles clear markers and clear helpers', () => {
@@ -231,7 +260,11 @@ describe('atlassianContextImportReducer', () => {
     expect(s.error).toBe('m1');
 
     s = atlassianContextImportReducer(
-      { ...s, error: 'x', lastConnectionTest: { connectionId: 'c', result: { ok: true } } },
+      {
+        ...s,
+        error: 'x',
+        lastConnectionTest: { connectionId: 'c', result: { ok: true, testedAt: '2024-02-01T00:00:00Z' } },
+      },
       clearAtlassianContextImportError(),
     );
     expect(s.error).toBeNull();

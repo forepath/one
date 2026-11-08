@@ -62,7 +62,6 @@ import { expandProviderPathTildeInContainer } from '../utils/provider-container-
 import { AgentChatSessionsService } from './agent-chat-sessions.service';
 import { AgentEgressService, EGRESS_GUARDED_AGENT_CAP_DROP } from './agent-egress.service';
 import { AgentGitCredentialsService } from './agent-git-credentials.service';
-import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
 import { IsolationCapabilitiesService } from './isolation-capabilities.service';
 import {
@@ -93,8 +92,6 @@ export class AgentsService implements OnApplicationBootstrap {
     private readonly agentChatSessionsService: AgentChatSessionsService,
     private readonly openCodeClientFactory: OpenCodeClientFactory,
     private readonly gitCredentials: AgentGitCredentialsService,
-    @Inject(forwardRef(() => DeploymentsService))
-    private readonly deploymentsService?: DeploymentsService,
     @Inject(forwardRef(() => WorkspaceInotifySupervisor))
     private readonly workspaceInotifySupervisor?: WorkspaceInotifySupervisor,
     @Optional()
@@ -569,25 +566,6 @@ export class AgentsService implements OnApplicationBootstrap {
         this.logger.warn(`Failed to start workspace watcher for agent ${agent.id}: ${(error as Error).message}`);
       });
 
-      // Create deployment configuration if provided
-      if (createAgentDto.deploymentConfiguration && this.deploymentsService) {
-        try {
-          await this.deploymentsService.upsertConfiguration(agent.id, {
-            providerType: createAgentDto.deploymentConfiguration.providerType,
-            repositoryId: createAgentDto.deploymentConfiguration.repositoryId,
-            defaultBranch: createAgentDto.deploymentConfiguration.defaultBranch,
-            workflowId: createAgentDto.deploymentConfiguration.workflowId,
-            providerToken: createAgentDto.deploymentConfiguration.providerToken,
-            providerBaseUrl: createAgentDto.deploymentConfiguration.providerBaseUrl,
-          });
-        } catch (error) {
-          this.logger.warn(
-            `Failed to create deployment configuration for agent ${agent.id}: ${(error as Error).message}`,
-          );
-          // Don't fail agent creation if deployment config fails
-        }
-      }
-
       return {
         ...(await this.mapToResponseDto(agent)),
         password: generatedPassword,
@@ -707,23 +685,6 @@ export class AgentsService implements OnApplicationBootstrap {
     );
 
     const agent = await this.agentsRepository.update(id, updateData);
-
-    // Update deployment configuration if provided
-    if (updateAgentDto.deploymentConfiguration && this.deploymentsService) {
-      try {
-        await this.deploymentsService.upsertConfiguration(id, {
-          providerType: updateAgentDto.deploymentConfiguration.providerType,
-          repositoryId: updateAgentDto.deploymentConfiguration.repositoryId,
-          defaultBranch: updateAgentDto.deploymentConfiguration.defaultBranch,
-          workflowId: updateAgentDto.deploymentConfiguration.workflowId,
-          providerToken: updateAgentDto.deploymentConfiguration.providerToken,
-          providerBaseUrl: updateAgentDto.deploymentConfiguration.providerBaseUrl,
-        });
-      } catch (error) {
-        this.logger.warn(`Failed to update deployment configuration for agent ${id}: ${(error as Error).message}`);
-        // Don't fail agent update if deployment config fails
-      }
-    }
 
     return await this.mapToResponseDto(agent);
   }

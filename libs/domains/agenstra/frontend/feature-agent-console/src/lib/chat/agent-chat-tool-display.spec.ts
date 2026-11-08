@@ -39,6 +39,51 @@ describe('resolveAgentChatToolDisplay', () => {
     expect(resolveAgentChatToolDisplay(' Agenstra-Tasks_Run ').label).toBe('Run task now');
   });
 
+  it('maps the platform deployment tools to readable labels with and without the server prefix', () => {
+    expect(resolveAgentChatToolDisplay('agenstra_deployments_list_workflows')).toEqual({
+      label: 'List pipelines',
+      icon: 'rocket',
+    });
+    expect(resolveAgentChatToolDisplay('agenstra_deployments_get_workflow')).toEqual({
+      label: 'Read pipeline',
+      icon: 'diagram-3',
+    });
+    expect(resolveAgentChatToolDisplay('deployments_sync')).toEqual({
+      label: 'Sync pipeline history',
+      icon: 'arrow-repeat',
+    });
+    expect(resolveAgentChatToolDisplay('agenstra_deployments_trigger')).toEqual({
+      label: 'Trigger pipeline run',
+      icon: 'play-circle',
+    });
+    expect(resolveAgentChatToolDisplay('agenstra_deployments_cancel_run')).toEqual({
+      label: 'Cancel pipeline run',
+      icon: 'stop-circle',
+    });
+    expect(resolveAgentChatToolDisplay('deployments_get_run_logs').label).toBe('Read pipeline logs');
+    expect(resolveAgentChatToolDisplay('agenstra_deployments_action_status')).toEqual({
+      label: 'CI action status',
+      icon: 'hourglass-split',
+    });
+    expect(resolveAgentChatToolDisplay('agenstra_deployments_list_connections')).toEqual({
+      label: 'List CI/CD connections',
+      icon: 'plug',
+    });
+    expect(resolveAgentChatToolDisplay('agenstra_deployments_create_workflow')).toEqual({
+      label: 'Propose pipeline',
+      icon: 'plus-circle',
+    });
+    expect(resolveAgentChatToolDisplay('agenstra_deployments_update_workflow')).toEqual({
+      label: 'Update pipeline',
+      icon: 'pencil-square',
+    });
+    expect(resolveAgentChatToolDisplay('agenstra_deployments_delete_workflow')).toEqual({
+      label: 'Delete pipeline',
+      icon: 'trash',
+    });
+    expect(resolveAgentChatToolDisplay('deployments_action_status').label).toBe('CI action status');
+  });
+
   it('maps the platform handoff tools and their embed kinds to readable labels', () => {
     expect(resolveAgentChatToolDisplay('agenstra_handoff_agents')).toEqual({
       label: 'List environments',

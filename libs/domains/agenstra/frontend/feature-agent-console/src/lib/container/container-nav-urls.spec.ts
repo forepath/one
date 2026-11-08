@@ -1,0 +1,28 @@
+import { isAdminNavUrl, isMainSidebarUrl, isToolWindowUrl } from './container-nav-urls';
+
+describe('container nav urls', () => {
+  it('keeps the main sidebar on workspace pages incl. deployments and on the connections admin pages', () => {
+    for (const url of [
+      '/deployments',
+      '/deployments/c1?workflowId=w1&runId=r1',
+      '/tasks/c1',
+      '/connections/deployments',
+      '/connections/atlassian',
+    ]) {
+      expect(isMainSidebarUrl(url)).toBe(true);
+    }
+
+    expect(isMainSidebarUrl('/clients/c1/agents/a1/editor')).toBe(false);
+  });
+
+  it('marks the admin popover active on connections', () => {
+    expect(isAdminNavUrl('/connections/deployments')).toBe(true);
+    expect(isAdminNavUrl('/connections/atlassian')).toBe(true);
+    expect(isAdminNavUrl('/deployments/c1')).toBe(false);
+  });
+
+  it('detects tool windows', () => {
+    expect(isToolWindowUrl('/clients/c1/agents/a1/vnc?x=1')).toBe(true);
+    expect(isToolWindowUrl('/deployments/c1')).toBe(false);
+  });
+});

@@ -4,7 +4,6 @@ export const AGENSTRA_SEARCH_ENTITY_TYPES = [
   'tickets',
   'knowledge-nodes',
   'egress-events',
-  'deployment-runs',
   'chat-io',
   'filter-drops',
   'filter-flags',
@@ -15,6 +14,9 @@ export const AGENSTRA_SEARCH_ENTITY_TYPES = [
   'users',
   'opencode-providers',
   'opencode-mcp-servers',
+  'deployment-connections',
+  'deployment-workflows',
+  'deployment-runs',
 ] as const;
 
 export type AgenstraSearchEntityType = (typeof AGENSTRA_SEARCH_ENTITY_TYPES)[number];

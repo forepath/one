@@ -1,4 +1,7 @@
-import { normalizeAgentContentWriteOperations } from '@forepath/agenstra/shared/util-opencode-config';
+import {
+  normalizeAgentContentWriteOperations,
+  normalizeAgentDeploymentOperations,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import {
   ClientUsersRepository,
   ensureClientAccess,
@@ -56,6 +59,7 @@ const APPROVAL_RELEVANT_AUTOMATION_FIELDS = new Set([
   'contextEnvironmentIds',
   'autoEnrichmentEnabled',
   'allowedContentWrites',
+  'allowedDeploymentOperations',
   'verifierProfile',
   'requiresApproval',
   'defaultBranchOverride',
@@ -167,6 +171,7 @@ export class TicketAutomationService {
       contextEnvironmentIds: sortUuidList(row.contextEnvironmentIds ?? []),
       autoEnrichmentEnabled: row.autoEnrichmentEnabled !== false,
       allowedContentWrites: normalizeAgentContentWriteOperations(row.allowedContentWrites),
+      allowedDeploymentOperations: normalizeAgentDeploymentOperations(row.allowedDeploymentOperations),
       verifierProfile: row.verifierProfile ?? null,
       requiresApproval: row.requiresApproval,
       approvedAt: row.approvedAt ?? null,
@@ -206,6 +211,7 @@ export class TicketAutomationService {
     const prevContextEnvSorted = sortUuidList(row.contextEnvironmentIds ?? []);
     const prevAutoEnrichmentEnabled = row.autoEnrichmentEnabled !== false;
     const prevContentWrites = normalizeAgentContentWriteOperations(row.allowedContentWrites);
+    const prevDeploymentOperations = normalizeAgentDeploymentOperations(row.allowedDeploymentOperations);
     const prevVerifierJson = JSON.stringify(parseAndValidateVerifierProfile(row.verifierProfile ?? { commands: [] }));
     const prevDefaultBranch = normalizeDefaultBranch(row.defaultBranchOverride);
     const prevStrategy: TicketAutomationBranchStrategy =
@@ -273,6 +279,15 @@ export class TicketAutomationService {
       if (JSON.stringify(nextContentWrites) !== JSON.stringify(prevContentWrites)) {
         row.allowedContentWrites = nextContentWrites;
         actuallyChanged.push('allowedContentWrites');
+      }
+    }
+
+    if (dto.allowedDeploymentOperations !== undefined) {
+      const nextDeploymentOperations = normalizeAgentDeploymentOperations(dto.allowedDeploymentOperations);
+
+      if (JSON.stringify(nextDeploymentOperations) !== JSON.stringify(prevDeploymentOperations)) {
+        row.allowedDeploymentOperations = nextDeploymentOperations;
+        actuallyChanged.push('allowedDeploymentOperations');
       }
     }
 
@@ -350,6 +365,7 @@ export class TicketAutomationService {
         k === 'contextEnvironmentIds' ||
         k === 'autoEnrichmentEnabled' ||
         k === 'allowedContentWrites' ||
+        k === 'allowedDeploymentOperations' ||
         k === 'verifierProfile' ||
         k === 'defaultBranchOverride' ||
         k === 'automationBranchStrategy' ||

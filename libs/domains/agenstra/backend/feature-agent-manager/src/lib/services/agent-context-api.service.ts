@@ -58,6 +58,8 @@ export interface AgentContextGatewayBridge {
   ): void;
   /** Show a permission-style "allow this content change" prompt in the agent's chat. */
   publishContextChangeQuestion(record: AgentContextTicketRecord, requestId: string, prompt: string): void;
+  /** Show a permission-style "allow this deployment action" prompt (trigger / cancel a run) in the agent's chat. */
+  publishContextDeploymentQuestion(record: AgentContextTicketRecord, requestId: string, prompt: string): void;
   /** Mark the prompt answered (persisted status frame). */
   publishInteractionAnswered(agentId: string, questionIds: string[], message?: string): void;
 }
@@ -430,6 +432,15 @@ export class AgentContextApiService {
     }
 
     this.bridge.publishContextChangeQuestion(record, requestId, prompt);
+  }
+
+  /** Prompt for a deployment action (see the deployment actions service). */
+  publishDeploymentQuestion(record: AgentContextTicketRecord, requestId: string, prompt: string): void {
+    if (!this.bridge) {
+      throw new ForbiddenException('Deployments are unavailable');
+    }
+
+    this.bridge.publishContextDeploymentQuestion(record, requestId, prompt);
   }
 
   publishInteractionAnswered(agentId: string, questionIds: string[], message?: string): void {

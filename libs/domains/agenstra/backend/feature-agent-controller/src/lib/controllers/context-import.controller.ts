@@ -1,6 +1,9 @@
 /**
- * Security: all routes are admin-only (or API key) via {@link ContextImportController.assertAdmin}.
- * Encrypted Atlassian tokens are never returned from list/get connection APIs. The scheduler runs only
+ * Atlassian connections and context import configs (`/connections/atlassian`).
+ *
+ * Security: all routes are admin-only (or API key) via {@link ContextImportController.assertAdmin} and require the
+ * `connections:admin` PAT scope. Encrypted Atlassian credentials (API tokens, OAuth client secrets) are never returned
+ * from list/get connection APIs. The scheduler runs only
  * configs loaded from the database and does not accept arbitrary client IDs from HTTP.
  */
 import { RequireScopes, UserRole, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
@@ -21,7 +24,10 @@ import {
   Req,
 } from '@nestjs/common';
 
-import { AtlassianSiteConnectionResponseDto } from '../dto/context-import/atlassian-site-connection-response.dto';
+import {
+  AtlassianConnectionTestResultDto,
+  AtlassianSiteConnectionResponseDto,
+} from '../dto/context-import/atlassian-site-connection-response.dto';
 import { CreateAtlassianSiteConnectionDto } from '../dto/context-import/create-atlassian-site-connection.dto';
 import { CreateExternalImportConfigDto } from '../dto/context-import/create-external-import-config.dto';
 import { ExternalImportConfigResponseDto } from '../dto/context-import/external-import-config-response.dto';
@@ -33,8 +39,8 @@ import { ContextImportOrchestratorService } from '../services/context-import-orc
 import { ExternalImportConfigService } from '../services/external-import-config.service';
 import { ExternalImportSyncMarkerService } from '../services/external-import-sync-marker.service';
 
-@Controller('imports/atlassian')
-@RequireScopes('imports:admin')
+@Controller('connections/atlassian')
+@RequireScopes('connections:admin')
 export class ContextImportController {
   constructor(
     private readonly connections: AtlassianSiteConnectionService,
@@ -115,10 +121,13 @@ export class ContextImportController {
   async testConnection(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() req: RequestWithUser,
-  ): Promise<{ ok: boolean; message?: string }> {
+  ): Promise<AtlassianConnectionTestResultDto> {
     this.assertAdmin(req);
+    await this.connections.findOne(id);
 
-    return await this.atlassianProvider.testConnection(id);
+    const result = await this.atlassianProvider.testConnection(id);
+
+    return await this.connections.recordTestResult(id, result);
   }
 
   @Get('configs')

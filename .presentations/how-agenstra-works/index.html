@@ -1054,7 +1054,7 @@
         left: 64px;
         top: 210px;
         width: 1472px;
-        height: 636px;
+        height: 606px;
       }
 
       .arch-phases {
@@ -1440,6 +1440,10 @@
         gap: 14px;
       }
 
+      .ctx-cards--five {
+        grid-template-columns: repeat(5, 1fr);
+      }
+
       .ctx-cards .card {
         padding: 18px 20px;
       }
@@ -1640,11 +1644,18 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 10px;
         margin-bottom: 18px;
       }
 
       .level__head h3 {
-        font-size: 20px;
+        font-size: 19px;
+        white-space: nowrap;
+      }
+
+      .level__head .tag {
+        padding: 3px 8px;
+        font-size: 12px;
       }
 
       .stack {
@@ -2110,7 +2121,7 @@
 
       .eff-row {
         display: grid;
-        grid-template-columns: 150px 1fr;
+        grid-template-columns: 136px 1fr;
         gap: 12px;
         align-items: baseline;
         padding: 12px 0;
@@ -2135,6 +2146,10 @@
         color: #fff;
         vertical-align: 1px;
         border-radius: 5px;
+      }
+
+      .src ~ .src {
+        margin-left: 8px;
       }
 
       .src--g {
@@ -2493,8 +2508,8 @@
               </div>
             </div>
             <p>
-              Signs people in, works out the rules, keeps tickets, knowledge and the audit log, and sends every request
-              to the right server.
+              Signs people in, works out the rules, keeps tickets, knowledge, deployments and the audit log, and sends
+              every request to the right server.
             </p>
             <div class="tags">
               <span class="tag">sign-in</span><span class="tag">rules</span><span class="tag">tickets</span
@@ -2566,7 +2581,10 @@
               <span class="tile"><i class="bi bi-window"></i></span>
               <h3>Console</h3>
             </div>
-            <p>Where people work with agents: chat, files, Git, a terminal, tickets, deployments and the audit log.</p>
+            <p>
+              Where people work with agents: chat, files, Git, a terminal, tickets, deployments, graphs and the audit
+              log.
+            </p>
             <div class="tags"><span class="tag">in the browser</span><span class="tag">desktop app</span></div>
           </article>
           <article class="card card--accent in" style="--i: 3">
@@ -2575,8 +2593,8 @@
               <h3>Control plane</h3>
             </div>
             <p>
-              The brain. Signs people in, works out the rules, keeps tickets, knowledge and the audit log, and routes
-              every request.
+              The brain. Signs people in, works out the rules, keeps tickets, knowledge, deployments and the audit log,
+              and routes every request.
             </p>
             <div class="tags">
               <span class="tag">database</span><span class="tag">job queue</span><span class="tag">search</span>
@@ -2667,15 +2685,15 @@
             <span class="caption" style="left: 800px">Agent server</span>
             <span class="caption" style="left: 1264px">Internet</span>
 
-            <div class="frame frame--solid" style="left: 420px; top: 28px; width: 340px; height: 520px">
+            <div class="frame frame--solid" style="left: 420px; top: 28px; width: 340px; height: 504px">
               <span class="frame__label">control plane</span>
             </div>
-            <div class="frame frame--solid" style="left: 800px; top: 28px; width: 440px; height: 520px">
+            <div class="frame frame--solid" style="left: 800px; top: 28px; width: 440px; height: 504px">
               <span class="frame__label"
                 >your server <span class="badge"><i class="bi bi-hdd-stack"></i>Docker</span></span
               >
             </div>
-            <div class="frame frame--primary" style="left: 816px; top: 152px; width: 408px; height: 380px">
+            <div class="frame frame--primary" style="left: 816px; top: 152px; width: 408px; height: 364px">
               <span class="frame__label"
                 >one agent's environment
                 <span class="badge badge--primary"><i class="bi bi-shield-fill-check"></i>Sandboxed</span></span
@@ -2726,7 +2744,9 @@
               />
             </svg>
 
-            <span class="edge-label" style="left: 780px; top: 78px">one way →</span>
+            <span class="edge-label" style="left: 780px; top: 66px; line-height: 1.25; text-align: center"
+              >one way<br />→</span
+            >
 
             <div class="node" data-node="users" style="left: 0; top: 72px; width: 170px; --d: 0">
               <span class="node__icon"><i class="bi bi-people"></i></span>
@@ -2748,7 +2768,7 @@
             <div class="node" data-node="dom" style="left: 436px; top: 168px; width: 308px; --d: 4">
               <span class="node__icon"><i class="bi bi-kanban"></i></span>
               <span class="node__text"
-                ><b>Tickets, knowledge, audit log</b><small>plans, tasks, handoffs, rules</small></span
+                ><b>Tickets, knowledge, deployments</b><small>plans, tasks, handoffs, audit log</small></span
               >
             </div>
             <div class="node" data-node="queue" style="left: 436px; top: 264px; width: 308px; --d: 5">
@@ -2865,7 +2885,7 @@
           </div>
           <div class="module in" style="--i: 7">
             <span class="tile tile--sm"><i class="bi bi-cloud-plus"></i></span>
-            <div><b>Server setup</b><span>orders and prepares new agent servers</span></div>
+            <div><b>Server setup</b><span>orders, prepares and watches agent servers</span></div>
           </div>
           <div class="module in" style="--i: 8">
             <span class="tile tile--sm"><i class="bi bi-box-arrow-in-down"></i></span>
@@ -2881,11 +2901,11 @@
           </div>
           <div class="module in" style="--i: 9">
             <span class="tile tile--sm"><i class="bi bi-stack"></i></span>
-            <div><b>Background jobs</b><span>sync, import, indexing, collecting logs</span></div>
+            <div><b>Background jobs</b><span>sync, import, indexing, logs, run status</span></div>
           </div>
           <div class="module in" style="--i: 10">
-            <span class="tile tile--sm"><i class="bi bi-activity"></i></span>
-            <div><b>Health checks</b><span>keeps an eye on every agent server</span></div>
+            <span class="tile tile--sm"><i class="bi bi-rocket-takeoff"></i></span>
+            <div><b>Deployments</b><span>CI/CD workflows and runs per workspace</span></div>
           </div>
           <div class="module in" style="--i: 10">
             <span class="tile tile--sm"><i class="bi bi-paperclip"></i></span>
@@ -2913,6 +2933,7 @@
               <span class="tag tag--neutral">your company login</span
               ><span class="tag tag--neutral">email and webhooks</span
               ><span class="tag tag--neutral">Jira and Confluence</span
+              ><span class="tag tag--neutral">GitHub, GitLab, Jenkins</span
               ><span class="tag tag--neutral">cloud providers</span><span class="tag tag--neutral">monitoring</span>
             </div>
           </div>
@@ -2972,8 +2993,8 @@
                 <div><b>Checkpoint control</b><span>starts checkpoints, collects decisions</span></div>
               </div>
               <div class="module">
-                <span class="tile tile--sm"><i class="bi bi-rocket-takeoff"></i></span>
-                <div><b>Deployments</b><span>runs your existing CI pipelines</span></div>
+                <span class="tile tile--sm"><i class="bi bi-share"></i></span>
+                <div><b>Environment graphs</b><span>maps code, paths and prompt context</span></div>
               </div>
               <div class="module">
                 <span class="tile tile--sm"><i class="bi bi-eye"></i></span>
@@ -2996,7 +3017,7 @@
                 </div>
                 <div class="mini">
                   <b><i class="bi bi-plug"></i>Agent tools</b
-                  ><span>a tool server the agent can call:<br />context, tasks, handoffs</span>
+                  ><span>a tool server for context, tasks,<br />handoffs, graphs and deployments</span>
                 </div>
                 <div class="mini">
                   <b><i class="bi bi-display"></i>Desktop</b><span>a full Linux desktop<br />with a web browser</span>
@@ -3156,7 +3177,7 @@
           <span class="edge-label" style="left: 1157px; top: 112px">search, summary, content</span>
         </div>
 
-        <div class="grid ctx-cards">
+        <div class="grid ctx-cards ctx-cards--five">
           <div class="card in" style="--i: 4">
             <h3>Look things up</h3>
             <ul>
@@ -3181,7 +3202,15 @@
             </ul>
             <p style="margin-top: 8px">Pass part of the work to another agent in the same workspace.</p>
           </div>
-          <div class="card card--accent in" style="--i: 7">
+          <div class="card in" style="--i: 7">
+            <h3>Find its way around</h3>
+            <ul>
+              <li><b>explore</b> code and paths</li>
+              <li><b>trace</b> what prompts used</li>
+            </ul>
+            <p style="margin-top: 8px">Graphs of its own environment and of the ones mounted next to it.</p>
+          </div>
+          <div class="card card--accent in" style="--i: 8">
             <h3>Access, decided per situation</h3>
             <div class="tags">
               <span class="tag">ask you in chat</span><span class="tag tag--success">allow in automations</span
@@ -3195,7 +3224,8 @@
         <aside class="notes">
           The agent's tools never talk to the control plane directly. The agent server checks the agent's pass first and
           then asks the control plane over the connection it already has. In a chat, you are asked before the agent may
-          read a full document.
+          read a full document. Graph questions never leave the agent server: it builds the graphs itself and only
+          answers for the agent's own environment and the ones mounted read-only next to it.
         </aside>
       </section>
 
@@ -3308,6 +3338,97 @@
         <aside class="notes">
           The control plane coordinates tasks and handoffs, the agent servers carry them out. A handoff never leaves the
           workspace, and a scheduled run that waits for a peer carries on once the answer arrives.
+        </aside>
+      </section>
+
+      <!-- ================================================================== 09b Workspace deployments -->
+      <section class="slide" data-glow="-15,20">
+        <p class="eyebrow in">Shipping from a workspace</p>
+        <h2 class="in" style="--i: 1">Agents can deploy, the platform keeps the keys</h2>
+        <p class="lead in" style="--i: 2">
+          Workspaces start their GitHub Actions, GitLab CI and Jenkins pipelines from Agenstra. The control plane keeps
+          connections and run history, your CI does the work.
+        </p>
+
+        <div class="scene ctx-scene" data-scene="deploy">
+          <span class="caption" style="left: 0">Environment</span>
+          <span class="caption" style="left: 302px">Environment</span>
+          <span class="caption" style="left: 604px">Agent server</span>
+          <span class="caption" style="left: 906px">Control plane</span>
+          <span class="caption" style="left: 1208px">Your CI/CD</span>
+          <svg class="edges" width="1408" height="190" viewBox="0 0 1408 190">
+            <path class="edge" id="d1" d="M200 62 H302" pathLength="1" style="--d: 2" />
+            <path class="edge" id="d2" d="M502 62 H604" pathLength="1" style="--d: 3" />
+            <path class="edge" id="d3" d="M804 62 H906" pathLength="1" style="--d: 4" />
+            <path class="edge" id="d4" d="M1106 62 H1208" pathLength="1" style="--d: 5" />
+          </svg>
+          <div class="node" data-node="oc" style="left: 0; top: 30px; width: 200px; --d: 0">
+            <span class="node__icon"><i class="bi bi-terminal"></i></span
+            ><span class="node__text"><b>Coding agent</b><small>wants to ship a fix</small></span>
+          </div>
+          <div class="node" data-node="mcp" style="left: 302px; top: 30px; width: 200px; --d: 1">
+            <span class="node__icon"><i class="bi bi-plug"></i></span
+            ><span class="node__text"><b>Agent tools</b><small>deployment tools</small></span>
+          </div>
+          <div class="node" data-node="api" style="left: 604px; top: 30px; width: 200px; --d: 2">
+            <span class="node__icon"><i class="bi bi-key"></i></span
+            ><span class="node__text"><b>Token check</b><small>is this the agent?</small></span>
+          </div>
+          <div class="node" data-node="wf" style="left: 906px; top: 30px; width: 200px; --d: 3">
+            <span class="node__icon"><i class="bi bi-rocket-takeoff"></i></span
+            ><span class="node__text"><b>Workflow rules</b><small>available? may it run?</small></span>
+          </div>
+          <div class="node" data-node="ci" style="left: 1208px; top: 30px; width: 200px; --d: 4">
+            <span class="node__icon"><i class="bi bi-git"></i></span
+            ><span class="node__text"><b>Pipeline</b><small>GitHub, GitLab, Jenkins</small></span>
+          </div>
+          <span class="edge-label" style="left: 251px; top: 112px">local call</span>
+          <span class="edge-label" style="left: 553px; top: 112px">with the agent's token</span>
+          <span class="edge-label" style="left: 855px; top: 112px">existing connection</span>
+          <span class="edge-label" style="left: 1157px; top: 112px">stored credentials</span>
+        </div>
+
+        <div class="grid ctx-cards">
+          <div class="card in" style="--i: 4">
+            <h3>Connections, set up once</h3>
+            <ul>
+              <li><b>GitHub</b> app or token</li>
+              <li><b>GitLab</b>, <b>Jenkins</b> tokens</li>
+            </ul>
+            <p style="margin-top: 8px">Admins share each one with all workspaces or selected ones.</p>
+          </div>
+          <div class="card in" style="--i: 5">
+            <h3>Workflows per workspace</h3>
+            <ul>
+              <li><b>global</b>: every environment</li>
+              <li><b>assigned</b>: selected ones</li>
+            </ul>
+            <p style="margin-top: 8px">
+              Repository, pipeline, default branch or tag and inputs, set by workspace admins.
+            </p>
+          </div>
+          <div class="card in" style="--i: 6">
+            <h3>Runs, live</h3>
+            <ul>
+              <li><b>trigger</b>, <b>cancel</b>, <b>logs</b></li>
+              <li>runs started on the provider</li>
+            </ul>
+            <p style="margin-top: 8px">Live status in the console, every change in the audit log and webhooks.</p>
+          </div>
+          <div class="card card--accent in" style="--i: 7">
+            <h3>Agents ship within limits</h3>
+            <div class="tags">
+              <span class="tag tag--success">read only by default</span><span class="tag">default ref only</span
+              ><span class="tag">defined inputs only</span>
+            </div>
+            <p style="margin-top: 10px">Environments never talk to the provider and never see its credentials.</p>
+          </div>
+        </div>
+        <aside class="notes">
+          Deployments sit next to tickets, knowledge, plans and tasks in the workspace. An environment only sees enabled
+          workflows that are global or assigned to it. It may start or cancel a run only where the workflow allows
+          agents to, and then always on the workflow's default branch or tag, with only the inputs the workflow defines.
+          The scene alternates between an allowed run and a read-only workflow.
         </aside>
       </section>
 
@@ -3854,7 +3975,7 @@
           How Agenstra works
         </span>
         <span class="hud__dots" id="dots"></span>
-        <span class="hud__count" id="count">1 of 16</span>
+        <span class="hud__count" id="count">1 of 17</span>
       </footer>
     </main>
 
@@ -3922,7 +4043,7 @@
           });
           const fill = slides[index].querySelector('.timeline__fill');
           if (fill && list.length) {
-            fill.style.setProperty('--fill', `${Math.max(0, (frag - 1) / (list.length - 1)) * 100}%`);
+            fill.style.setProperty('--fill', `${Math.min(1, Math.max(0, (frag - 1) / (list.length - 1))) * 100}%`);
           }
         };
 
@@ -4114,6 +4235,40 @@
                 .reverse()
                 .forEach((e, i) => later(3600 + i * 600, () => a.pulse(e, { rev: true, tone: 'success' })));
               later(5900, () => (a.lit('oc'), a.chip('oc', '3 results', 'success')));
+            },
+          },
+
+          deploy: {
+            period: 7000,
+            run: (a, cycle) => {
+              a.clear();
+              const allowed = cycle % 2 === 0;
+              const fwd = ['d1', 'd2', 'd3'];
+              const nodes = ['mcp', 'api', 'wf'];
+              a.lit('oc');
+              a.chip('oc', allowed ? 'start staging deploy' : 'start release deploy', 'primary');
+              fwd.forEach((e, i) =>
+                later(500 + i * 700, () => {
+                  a.pulse(e);
+                  later(650, () => a.lit(nodes[i]));
+                }),
+              );
+              later(1300, () => a.chip('api', 'token valid', 'success', 'bi-check-lg'));
+              if (allowed) {
+                later(2700, () => a.chip('wf', 'default ref', 'success', 'bi-check-lg'));
+                later(2900, () => a.pulse('d4'));
+                later(3550, () => (a.lit('ci', 1600), a.chip('ci', 'Run queued', 'primary', 'bi-arrow-repeat spin')));
+                ['d3', 'd2', 'd1'].forEach((e, i) =>
+                  later(4200 + i * 600, () => a.pulse(e, { rev: true, tone: 'success' })),
+                );
+                later(5900, () => (a.lit('oc'), a.chip('oc', 'run in progress', 'success')));
+              } else {
+                later(2700, () => a.chip('wf', 'read only', 'danger', 'bi-x-lg'));
+                ['d3', 'd2', 'd1'].forEach((e, i) =>
+                  later(3400 + i * 600, () => a.pulse(e, { rev: true, tone: 'danger' })),
+                );
+                later(5200, () => (a.lit('oc'), a.chip('oc', 'not allowed', 'danger')));
+              }
             },
           },
 

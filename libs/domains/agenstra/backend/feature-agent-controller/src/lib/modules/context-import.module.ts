@@ -5,6 +5,7 @@ import {
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { AtlassianAuthService } from '../context-import/atlassian-auth.service';
 import { ContextImportController } from '../controllers/context-import.controller';
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
 import { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
@@ -38,6 +39,7 @@ import { ClientsModule } from './clients.module';
     AtlassianSiteConnectionService,
     ExternalImportConfigService,
     ContextImportOrchestratorService,
+    AtlassianAuthService,
     AtlassianImportProvider,
     DynamicProviderLoaderService,
     {

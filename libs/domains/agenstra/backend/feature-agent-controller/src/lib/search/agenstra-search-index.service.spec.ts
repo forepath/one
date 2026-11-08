@@ -6,6 +6,9 @@ import { ClientEntity } from '@forepath/identity/backend';
 
 import { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
+import { DeploymentConnectionEntity } from '../entities/deployment-connection.entity';
+import { DeploymentRunEntity } from '../entities/deployment-run.entity';
+import { DeploymentWorkflowEntity } from '../entities/deployment-workflow.entity';
 import { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
@@ -53,6 +56,9 @@ describe('AgenstraSearchIndexService', () => {
         { provide: getRepositoryToken(KnowledgeNodeEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(StatisticsEgressEventEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(AtlassianSiteConnectionEntity), useValue: emptyRepo },
+        { provide: getRepositoryToken(DeploymentConnectionEntity), useValue: emptyRepo },
+        { provide: getRepositoryToken(DeploymentWorkflowEntity), useValue: emptyRepo },
+        { provide: getRepositoryToken(DeploymentRunEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(ExternalImportConfigEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(StatisticsAgentEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(StatisticsClientEntity), useValue: emptyRepo },

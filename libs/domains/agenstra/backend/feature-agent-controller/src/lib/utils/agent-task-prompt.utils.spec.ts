@@ -8,6 +8,7 @@ describe('agent task prompt utils', () => {
     timezone: 'UTC',
     allowedHandoffAgentIds: [] as string[],
     allowedContentWrites: [] as Array<'ticket.create' | 'ticket.comment'>,
+    allowedDeploymentOperations: [] as Array<'deployment.trigger' | 'deployment.cancel'>,
   };
   const at = new Date('2026-10-22T09:00:00.000Z');
 
@@ -30,6 +31,27 @@ describe('agent task prompt utils', () => {
     );
 
     expect(prompt).toContain('agenstra_content_* tools: ticket.create, ticket.comment');
+  });
+
+  it('names the approved deployment actions only when there are any', () => {
+    expect(buildAgentTaskRunPrompt(task, 'schedule', at)).not.toContain('agenstra_deployments_');
+
+    const triggerOnly = buildAgentTaskRunPrompt(
+      { ...task, allowedDeploymentOperations: ['deployment.trigger'] },
+      'schedule',
+      at,
+    );
+
+    expect(triggerOnly).toContain('deployment actions: deployment.trigger (agenstra_deployments_trigger;');
+    expect(triggerOnly).not.toContain('agenstra_deployments_cancel_run');
+
+    const both = buildAgentTaskRunPrompt(
+      { ...task, allowedDeploymentOperations: ['deployment.trigger', 'deployment.cancel'] },
+      'schedule',
+      at,
+    );
+
+    expect(both).toContain('agenstra_deployments_trigger, agenstra_deployments_cancel_run');
   });
 
   it('names the approved handoff agents only when there are any', () => {
@@ -60,6 +82,7 @@ describe('agent task prompt utils', () => {
         timezone: 'UTC',
         allowedHandoffAgentIds: [],
         allowedContentWrites: [],
+        allowedDeploymentOperations: [],
       },
       'manual',
       new Date('2026-10-21T09:00:00.000Z'),

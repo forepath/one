@@ -84,6 +84,7 @@ export class AgentContextTicketsService {
       writeGrants: [],
       createdRefs: [],
       changeCount: 0,
+      deploymentActionCount: 0,
       createdAt: now,
       lastUsedAt: now,
     };

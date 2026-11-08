@@ -18,6 +18,7 @@ This application provides:
 - **Message filters and egress policy** Layered `message_filters` and `egress` (web traffic) policy in the agent configuration, resolved and synced to managers; egress events ingested for the audit page
 - **Container isolation levels** Workspace isolation summaries, server-side validation of the isolation level on environment creation, and capability transition notifications; see [Container Isolation Levels](../features/container-isolation.md)
 - **Atlassian import** Admin-managed Atlassian site connections and Jira/Confluence import configurations (scheduled and on-demand)
+- **Workspace deployments** Admin-managed CI/CD connections (GitHub Actions, GitLab CI, Jenkins), workspace deployment workflows (global or per environment), run history with live status, and `agenstra_deployments_*` MCP access for environments; see [Deployments](../features/deployment.md)
 - **Agent configuration** Three-layer OpenCode V2 overlays (`/admin/opencode/config`, client and agent `/opencode/config`) with heredity locks and worker sync; see [Agent configuration](../features/agent-configuration.md)
 - **Per-Client Permissions** Fine-grained access control with user roles per client (users/oidc/saml mode)
 - **Secure Authentication** API key, OIDC, SAML 2.0, or built-in users (JWT) for HTTP and WebSocket
@@ -108,22 +109,6 @@ User-visible chat sessions for an agent environment. See [Chat Interface](../fea
 
 Agent profile responses from the manager include `chats` and `primaryChatId`. Create/update/delete publish `chat_session.*` webhooks.
 
-### Proxied deployments (CI/CD)
-
-The console calls the controller; the controller proxies to each client’s agent-manager. Typical paths:
-
-- `GET/POST .../deployments/configuration` and `DELETE` - Deployment configuration (upsert via POST, not PUT)
-- `GET .../deployments/repositories` - List repositories
-- `GET .../deployments/repositories/:repositoryId/branches` - List branches
-- `GET .../deployments/repositories/:repositoryId/workflows` - List workflows
-- `POST .../deployments/workflows/trigger` - Trigger a workflow
-- `GET .../deployments/runs` - List runs
-- `GET .../deployments/runs/:runId` - Run status
-- `GET .../deployments/runs/:runId/logs` - Run logs
-- `GET .../deployments/runs/:runId/jobs` - Run jobs
-- `GET .../deployments/runs/:runId/jobs/:jobId/logs` - Job logs
-- `POST .../deployments/runs/:runId/cancel` - Cancel a run
-
 ### Tickets and automation (controller-native)
 
 Tickets live on the controller database (not on the remote manager). See [Tickets and Workspaces](../features/tickets-and-workspaces.md).
@@ -172,17 +157,42 @@ Message filters and egress policy are authored in the layered agent configuratio
 - `POST /api/clients/:id/agents/:agentId/egress/evaluate` - Evaluate a destination against the environment's effective egress policy
 - `GET /api/clients/:id/statistics/egress-events` and `GET /api/statistics/egress-events` - Ingested egress decision events
 
-### Atlassian import (controller-native, admin)
+### Atlassian connections and import (controller-native, admin)
 
-See [Atlassian import](../features/atlassian-import.md). All paths are under **`/api/imports/atlassian`** with the same admin authorization model as the admin agent configuration (global admin session, or API key authentication).
+See [Atlassian connections](../features/atlassian-import.md). All paths are under **`/api/connections/atlassian`** with the same admin authorization model as the admin agent configuration (global admin session, or API key authentication; PATs need `connections:admin`).
 
-- `GET/POST /api/imports/atlassian/connections` - List (paginated) and create site connections
-- `GET/PUT/DELETE /api/imports/atlassian/connections/{id}` - Read, update, delete a connection
-- `POST /api/imports/atlassian/connections/{id}/test` - Verify credentials against Atlassian REST
-- `GET/POST /api/imports/atlassian/configs` - List (paginated) and create import configurations
-- `GET/PUT/DELETE /api/imports/atlassian/configs/{id}` - Read, update, delete a configuration
-- `POST /api/imports/atlassian/configs/{id}/run` - Run one import (accepted asynchronously)
-- `DELETE /api/imports/atlassian/configs/{id}/markers` - Clear sync markers for a configuration
+- `GET/POST /api/connections/atlassian/connections` - List (paginated) and create Atlassian connections (`authType` `app`: service account OAuth client credentials, default; `token`: email + API token)
+- `GET/PUT/DELETE /api/connections/atlassian/connections/{id}` - Read, update, delete a connection (secrets are write-only)
+- `POST /api/connections/atlassian/connections/{id}/test` - Verify credentials against Atlassian REST and persist the connection status
+- `GET/POST /api/connections/atlassian/configs` - List (paginated) and create import configurations
+- `GET/PUT/DELETE /api/connections/atlassian/configs/{id}` - Read, update, delete a configuration
+- `POST /api/connections/atlassian/configs/{id}/run` - Run one import (accepted asynchronously)
+- `DELETE /api/connections/atlassian/configs/{id}/markers` - Clear sync markers for a configuration
+
+### Workspace deployments (controller-native)
+
+See [Deployments](../features/deployment.md). Connections are instance-wide and admin-only; workflows and runs belong to a workspace.
+
+Admin (`/api/connections/deployments`, global admin session or API key; PATs need `connections:admin`):
+
+- `GET/POST /api/connections/deployments` - List (paginated: `limit` default 10, `offset`, `search`, `provider`) and create CI/CD connections (`github` with `authType` `app` (default) or `token`, `gitlab` and `jenkins` with `token`)
+- `GET/PUT/DELETE /api/connections/deployments/{id}` - Read, update (provider immutable, omitted secrets are kept), delete (`409` while workflows use the connection)
+- `POST /api/connections/deployments/{id}/test` - Verify credentials against the provider and persist the connection status
+
+Workspace (`/api/clients/{clientId}/deployments`; read: `deployments:read` + workspace access; trigger / cancel / sync: `deployments:write` + workspace access; workflow management and connection browsing: `deployments:write` + workspace admin):
+
+- `GET .../connections` - Connections usable by the workspace (picker)
+- `GET .../connections/{connectionId}/repositories|branches|workflows` - Browse the provider (`search`, `repository`)
+- `GET/POST .../workflows` - List (`agentId`, `search`, `limit`, `offset`) and create deployment workflows
+- `GET/PUT/DELETE .../workflows/{workflowId}` - Read, update, delete (deletes its runs)
+- `POST .../workflows/{workflowId}/trigger` - Trigger a run (`ref`, `inputs`, optional `agentId`)
+- `POST .../workflows/{workflowId}/sync` - Import recent provider runs and refresh active ones
+- `GET .../runs` - Run history (`workflowId`, `agentId`, `status`, `search`, `limit` default 25 / max 100, `offset`; `{ items, total }`)
+- `GET .../runs/{runId}` - Run with jobs (active runs refreshed from the provider)
+- `GET .../runs/{runId}/logs` - Log tail of the run or one job (`jobId`)
+- `POST .../runs/{runId}/cancel` - Cancel an active run
+
+Live updates on `socket/clients` (room of the workspace): `deploymentWorkflowUpsert`, `deploymentWorkflowRemoved`, `deploymentRunUpsert` (machine tokens need `deployments:read`). Environments reach the same data through `agentDeploymentRequest` from their manager (never forwarded to browsers).
 
 ### Agent autonomy (workspace configuration)
 
@@ -268,6 +278,7 @@ Unauthenticated connections are rejected with `connect_error` "Unauthorized". Th
 - **Proxied manager events** Responses are re-emitted using their original event names (for example `chatMessage`, `containerStats`, `terminalOutput`) to the initiating socket only
 - `remoteDisconnected`, `remoteReconnecting`, `remoteReconnected`, `remoteReconnectError`, `remoteReconnectFailed` - Remote agent-manager link state
 - `ticketAutomationRunChatUpsert`, `ticketChatTicketUpsert` - Controller-originated ticket timeline and metadata for chat clients (see AsyncAPI)
+- `deploymentWorkflowUpsert`, `deploymentWorkflowRemoved`, `deploymentRunUpsert` - Workspace deployment workflows and runs (see [Deployments](../features/deployment.md#live-updates))
 - `error` - Error messages
 
 ### Namespace `socket/tickets` (events)
@@ -507,7 +518,7 @@ Before deploying to production, ensure:
 - **[Atlassian import](../features/atlassian-import.md)** Atlassian site connections and Jira/Confluence import configurations
 - **[Agent configuration](../features/agent-configuration.md)** Three-layer runtime overlays and worker sync
 - **[Dynamic provider plugins](../features/dynamic-provider-plugins.md)** Runtime provisioning and import provider extensions
-- **[Deployment Feature](../features/deployment.md)** CI/CD configuration (invoked via controller proxy from the console)
+- **[Deployments](../features/deployment.md)** Workspace deployments on CI/CD connections (GitHub Actions, GitLab CI, Jenkins)
 - **[Deployment Guide](../deployment/production-checklist.md)** Production deployment guide
 
 ## License

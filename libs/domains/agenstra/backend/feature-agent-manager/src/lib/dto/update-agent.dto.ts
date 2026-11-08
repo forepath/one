@@ -27,18 +27,4 @@ export class UpdateAgentDto {
   @IsString({ message: 'Agent type must be a string' })
   @IsIn(['opencode'], { message: 'Agent type must be one of: opencode' })
   agentType?: string;
-
-  /**
-   * CI/CD deployment configuration (optional).
-   * If provided, the deployment configuration for this agent will be updated or created.
-   */
-  @IsOptional()
-  deploymentConfiguration?: {
-    providerType?: string;
-    repositoryId?: string;
-    defaultBranch?: string;
-    workflowId?: string;
-    providerToken?: string;
-    providerBaseUrl?: string;
-  };
 }

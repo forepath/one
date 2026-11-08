@@ -31,7 +31,6 @@ import {
   ClientAgentAutonomyFacade,
   ClientsFacade,
   ContainerSocketFacade,
-  DeploymentsService,
   EnvFacade,
   EnvironmentProgressFacade,
   FilesFacade,
@@ -62,7 +61,6 @@ import {
   type CreateAgentDto,
   type CreateClientDto,
   type CreateEnvironmentVariableDto,
-  type DeploymentRun,
   type EnvironmentProgress,
   type EnvironmentProgressStep,
   type EnvironmentVariableResponseDto,
@@ -118,7 +116,6 @@ import {
   FpcTableCellDirective,
   FpcTypeaheadSelectComponent,
   type FpcBadgeColor,
-  type FpcBadgeTone,
   type FpcMenuItem,
   type FpcProgressSegment,
   type FpcProgressVariant,
@@ -147,8 +144,6 @@ import {
   withLatestFrom,
 } from 'rxjs';
 
-import { deploymentStateLabel, deploymentTableState } from '../deployment-manager/deployment-labels';
-import { DeploymentManagerComponent } from '../deployment-manager/deployment-manager.component';
 import { resolveNamedDisplayLabel } from '../display-name.util';
 import { ContainerStatsStatusBarComponent } from '../file-editor/container-stats-status-bar/container-stats-status-bar.component';
 import { FileEditorComponent } from '../file-editor/file-editor.component';
@@ -272,13 +267,6 @@ type ChatMessageWithFilter = {
 
 type SlashCommandInputTarget = 'chat' | 'planRefine';
 
-/** Latest deployment run of an environment as a readable icon badge (rail table). */
-interface ChatDeploymentStatus {
-  status: string;
-  tone: FpcBadgeTone;
-  badgeIcon: string;
-}
-
 /** Row of the environments rail table: a listed environment or a create still provisioning. */
 interface ChatEnvironmentRailRow {
   id: string;
@@ -307,7 +295,6 @@ const WORKSPACE_PROGRESS_SEGMENT_VARIANTS: FpcProgressVariant[] = [
     FileEditorComponent,
     AgentConfigEditorComponent,
     LayerFileIdeComponent,
-    DeploymentManagerComponent,
     VirtualDesktopComponent,
     ContainerStatsStatusBarComponent,
     AgentChatEventRowComponent,
@@ -402,7 +389,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly knowledgeFacade = inject(KnowledgeFacade);
   private readonly chatPlansService = inject(ChatPlansService);
   private readonly autonomyFacade = inject(ClientAgentAutonomyFacade);
-  private readonly deploymentsService = inject(DeploymentsService);
   private readonly agentsService = inject(AgentsService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly sanitizer = inject(DomSanitizer);
@@ -417,9 +403,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   @ViewChild('fileEditor', { static: false })
   fileEditor!: FileEditorComponent;
-
-  @ViewChild('deploymentManager', { static: false })
-  deploymentManager!: DeploymentManagerComponent;
 
   // Cache for marked instance to avoid repeated async imports
   private markedInstance: Marked | null = null;
@@ -442,9 +425,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       cache.delete(key);
     }
   }
-
-  // Cache for deployment status observables (key: `${clientId}:${agentId}`)
-  private readonly deploymentStatusCache = new Map<string, Observable<ChatDeploymentStatus | null>>();
 
   // Search state
   readonly searchClientQuery = signal<string>('');
@@ -1023,14 +1003,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   editorOpen = signal<boolean>(false);
   /** Workspace file editor root (`/app`). */
   fileManagerContext = signal<FileManagerContext>('app');
-  deploymentManagerOpen = signal<boolean>(false);
   virtualDesktopOpen = signal<boolean>(false);
   chatVisible = signal<boolean>(false);
   private previousAgentId: string | null = null;
   readonly fileOnlyMode = signal<boolean>(false);
   private deepLinkFileLoaded = false;
 
-  /** True on /editor|/deployments|/vnc so workspace lists stay hidden during pop-out boot. */
+  /** True on /editor|/vnc so workspace lists stay hidden during pop-out boot. */
   readonly isToolWindowRoute = toSignal(
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
@@ -1228,12 +1207,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       required: true,
       priority: 1,
       sortable: false,
-    },
-    {
-      id: 'deployment',
-      label: $localize`:@@featureChat-railColDeployment:Deployment`,
-      priority: 1,
-      width: '6rem',
     },
     {
       id: 'isolation',
@@ -1657,18 +1630,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly shouldShowChat$ = combineLatest([
     this.selectedAgent$,
     toObservable(this.editorOpen),
-    toObservable(this.deploymentManagerOpen),
     toObservable(this.virtualDesktopOpen),
     toObservable(this.chatVisible),
   ]).pipe(
-    map(([selectedAgent, editorOpen, deploymentManagerOpen, virtualDesktopOpen, chatVisible]) => {
+    map(([selectedAgent, editorOpen, virtualDesktopOpen, chatVisible]) => {
       if (!selectedAgent) {
         return false;
       }
 
-      const sidePanelOpen = deploymentManagerOpen || virtualDesktopOpen;
-
-      return (!editorOpen && !sidePanelOpen) || chatVisible;
+      return (!editorOpen && !virtualDesktopOpen) || chatVisible;
     }),
   );
 
@@ -2218,7 +2188,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     client: false,
     agent: false,
     editor: false,
-    deployments: false,
   };
   private fileOpenedFromQuery = false;
 
@@ -2478,24 +2447,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         });
       });
 
-    // Preload deployment status for all agents when agents list loads successfully
-    combineLatest([this.activeClientId$, this.agents$])
-      .pipe(
-        filter(([clientId, agents]) => !!clientId && agents.length > 0),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(([clientId, agents]) => {
-        // Trigger status loading for each agent (will be loaded on-demand via getAgentDeploymentStatus$)
-        // The observable will handle caching and will only load once per agent
-        if (clientId) {
-          agents.forEach((agent) => {
-            // Just subscribe to trigger the load, but don't keep the subscription
-            // The template will handle the actual display
-            this.getAgentDeploymentStatus$(clientId, agent.id).pipe(take(1)).subscribe();
-          });
-        }
-      });
-
     this.route.params
       .pipe(
         combineLatestWith(this.clients$, this.agents$),
@@ -2610,22 +2561,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
             this.openFileWhenReady(decodedFilePath);
           }
-        }
-
-        // Select deployment manager from route params
-        if (
-          !this.initialRouting['deployments'] &&
-          agents.length > 0 &&
-          this.router.url.includes('/deployments') &&
-          !this.deploymentManagerOpen()
-        ) {
-          // Note: run query parameter is handled by the deployment manager component itself
-
-          // Open deployment manager if route has /deployments but manager is closed
-          this.deploymentManagerOpen.set(true);
-          this.chatVisible.set(false);
-
-          this.initialRouting['deployments'] = true;
         }
 
         if (
@@ -4404,7 +4339,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private isToolWindowUrl(url: string): boolean {
     const path = url.split(/[?#]/)[0] ?? url;
 
-    return path.includes('/editor') || path.includes('/deployments') || path.includes('/vnc');
+    return path.includes('/editor') || path.includes('/vnc');
   }
 
   onOpenVirtualDesktop(): void {
@@ -4508,10 +4443,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     return $localize`:@@featureChat-openEditorNewWindow:Open Editor in New Window`;
   }
 
-  getOpenDeploymentManagerTitle(): string {
-    return $localize`:@@featureChat-openDeploymentManagerNewWindow:Open Deployment Manager in New Window`;
-  }
-
   /**
    * Open editor in a new window with minimal browser controls.
    */
@@ -4594,14 +4525,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
   }
 
-  onOpenDeploymentManager(): void {
-    this.openDeploymentManagerInNewWindow();
-  }
-
-  onCloseDeploymentManager(): void {
-    this.deploymentManagerOpen.set(false);
-  }
-
   onManageTicketAutonomyClick(agent: AgentResponseDto): void {
     const clientId = this.activeClientId;
 
@@ -4662,79 +4585,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     this.autonomyFacade.clearError();
     this.autonomyFacade.upsert(clientId, agentId, dto);
-  }
-
-  /**
-   * Open deployment manager in a new window.
-   */
-  private openDeploymentManagerInNewWindow(): void {
-    const clientId = this.activeClientId;
-    const agentId = this.selectedAgentId();
-
-    if (!clientId || !agentId) {
-      return;
-    }
-
-    // Get currently selected run ID if deployment manager is open and run is selected
-    let runId: string | undefined;
-
-    if (this.deploymentManager) {
-      // Access the selectedRunId signal from the deployment manager component
-      // Note: We'll need to expose this via a getter or method if needed
-      // For now, we'll check the URL query parameter
-      const urlParams = new URLSearchParams(window.location.search);
-
-      runId = urlParams.get('run') || undefined;
-    }
-
-    // Build the URL
-    const baseUrl = window.location.origin;
-    const deploymentsPath = `/clients/${clientId}/agents/${agentId}/deployments`;
-    const queryParams = new URLSearchParams();
-
-    if (runId) {
-      queryParams.set('run', encodeURIComponent(runId));
-    }
-
-    const query = queryParams.toString();
-    const url = query ? `${baseUrl}${deploymentsPath}?${query}` : `${baseUrl}${deploymentsPath}`;
-    // Open new window with minimal controls and maximize if possible
-    const screenWidth = window.screen.availWidth || window.screen.width;
-    const screenHeight = window.screen.availHeight || window.screen.height;
-    const windowFeatures = [
-      'menubar=no',
-      'toolbar=no',
-      'location=no',
-      'status=no',
-      'resizable=yes',
-      'scrollbars=yes',
-      `width=${screenWidth}`,
-      `height=${screenHeight}`,
-      `left=0`,
-      `top=0`,
-    ].join(',');
-    const newWindow = window.open(url, '_blank', windowFeatures);
-
-    // Try to maximize after window opens
-    if (newWindow) {
-      setTimeout(() => {
-        try {
-          newWindow.moveTo(0, 0);
-          newWindow.resizeTo(screenWidth, screenHeight);
-
-          if (newWindow.screen && 'availWidth' in newWindow.screen) {
-            const availWidth = (newWindow.screen as Screen & { availWidth?: number }).availWidth;
-            const availHeight = (newWindow.screen as Screen & { availHeight?: number }).availHeight;
-
-            if (availWidth && availHeight) {
-              newWindow.resizeTo(availWidth, availHeight);
-            }
-          }
-        } catch (e) {
-          console.warn('Could not maximize window:', e);
-        }
-      }, 100);
-    }
   }
 
   /**
@@ -6408,71 +6258,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   /**
-   * Get deployment status for an agent.
-   * @param clientId - The client ID
-   * @param agentId - The agent ID
-   * @returns Observable of deployment status info or null
-   */
-  /**
    * Get container run status (running/stopped) for an agent from stats.
    */
   getAgentContainerRunning$(clientId: string, agentId: string): Observable<boolean | null> {
     return this.statsFacade.getContainerRunningStatus$(clientId, agentId);
-  }
-
-  getAgentDeploymentStatus$(clientId: string, agentId: string): Observable<ChatDeploymentStatus | null> {
-    const cacheKey = `${clientId}:${agentId}`;
-    // Return cached observable if it exists
-    const cached = this.deploymentStatusCache.get(cacheKey);
-
-    if (cached) {
-      return cached;
-    }
-
-    // Create new observable and cache it
-    const status$ = this.deploymentsService.getConfiguration(clientId, agentId).pipe(
-      switchMap((config) => {
-        if (!config) {
-          return of(null);
-        }
-
-        // Get the latest run (limit=1, sorted by createdAt desc on backend)
-        return this.deploymentsService.listRuns(clientId, agentId, 1, 0).pipe(
-          map((runs): ChatDeploymentStatus | null => {
-            if (!runs || runs.length === 0) {
-              return null;
-            }
-
-            const latestRun = runs[0];
-
-            return this.getDeploymentStatusInfo(latestRun);
-          }),
-          catchError(() => of(null)),
-        );
-      }),
-      catchError(() => of(null)),
-      startWith(null),
-    );
-
-    this.deploymentStatusCache.set(cacheKey, status$);
-
-    return status$;
-  }
-
-  /**
-   * Get deployment status info (icon, color, text) from a deployment run.
-   * @param run - The deployment run
-   * @returns Status info with icon, color, and status text
-   */
-  private getDeploymentStatusInfo(run: DeploymentRun): ChatDeploymentStatus {
-    // Readable status of the latest run (conclusion when completed, status otherwise), shared with the runs table.
-    const state = deploymentTableState(run);
-
-    return {
-      status: deploymentStateLabel(run.conclusion || run.status) || state.label,
-      tone: state.tone,
-      badgeIcon: state.icon ?? 'question-circle',
-    };
   }
 
   onClientGitSetupModeChange(mode: 'clone' | 'empty'): void {

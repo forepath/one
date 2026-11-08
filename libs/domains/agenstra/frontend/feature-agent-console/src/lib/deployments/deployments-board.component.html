@@ -1,0 +1,914 @@
+<div class="section__content-wrapper d-flex flex-column border-top">
+  <fpc-page-header [title]="pageTitle">
+    @if (effectiveWorkspace(); as ew) {
+      <!-- Same context slot as Tickets / Plans / Tasks (one title + chip layout). -->
+      <framework-workspace-chip
+        fpcPageHeaderContext
+        [name]="workspaceDisplayName(ew.name)"
+        [title]="switchWorkspaceTitle"
+        (switch)="openWorkspaceSwitchModal()"
+      />
+    }
+  </fpc-page-header>
+
+  @if (effectiveClientId() === null) {
+    @if (clients().length === 0) {
+      <fpc-empty-state class="flex-grow-1" message="No workspaces yet" i18n-message="@@featureDeployments-noWorkspaces">
+        <fpc-button fpcEmptyStateActions variant="primary" routerLink="/clients" i18n="@@featureDeployments-goToSpaces">
+          Go to workspaces
+        </fpc-button>
+      </fpc-empty-state>
+    } @else {
+      <fpc-empty-state
+        class="flex-grow-1"
+        message="No workspace selected yet"
+        i18n-message="@@featureDeployments-noWorkspaceSelected"
+      >
+        <fpc-button
+          fpcEmptyStateActions
+          variant="primary"
+          (clicked)="openWorkspaceSwitchModal()"
+          i18n="@@featureDeployments-chooseWorkspace"
+        >
+          Choose workspace...
+        </fpc-button>
+      </fpc-empty-state>
+    }
+  } @else {
+    @if (error() && !editorOpen() && !triggerOpen()) {
+      <fpc-alert variant="danger" [flush]="true" [dismissible]="true" [message]="error()" (closed)="onDismissError()" />
+    }
+    @if (bulkResult(); as result) {
+      <fpc-alert
+        [flush]="true"
+        [variant]="result.tone"
+        [message]="result.message"
+        [dismissible]="true"
+        (closed)="bulkResult.set(null)"
+        data-testid="deployments-bulk-result"
+      />
+    }
+
+    <!-- Phones (like tasks / plans): the list runs full width; an open workflow or run replaces it (back = close). -->
+    <fpc-section-row
+      class="flex-grow-1 deployments-row"
+      [class.deployments-row--detail-open]="detailOpen()"
+      [class.deployments-row--run-open]="!!selectedRunId()"
+    >
+      <fpc-section-column class="deployments-sidebar d-flex">
+        <fpc-data-table
+          class="deployments-list flex-grow-1 min-h-0"
+          [ariaLabel]="workflowsLabel"
+          [columns]="workflowColumns"
+          [rows]="workflows()"
+          [activeRowId]="selectedWorkflowId()"
+          paging="server"
+          [(page)]="workflowPage"
+          [(pageSize)]="workflowPageSize"
+          [hasNext]="workflowsHasNext()"
+          persistKey="agenstra-deployment-workflows"
+          [query]="workflowSearch()"
+          (queryChange)="onWorkflowSearchChange($event)"
+          [searchPlaceholder]="workflowSearchPlaceholder"
+          [filtered]="!!workflowSearch().trim() || workflowFiltersActive() > 0"
+          [loading]="workflowsLoading()"
+          selectable
+          [(selected)]="selectedWorkflowIds"
+          [rowMenu]="workflowRowMenu"
+          (rowAction)="onWorkflowRowAction($event.row, $event.item.id)"
+          (rowActivate)="onSelectWorkflow($event)"
+          emptyIcon="rocket-takeoff"
+          showFilterButton
+          [filtersActive]="workflowFiltersActive()"
+          (filtersCleared)="onClearWorkflowFilters()"
+          data-testid="deployment-workflows-table"
+        >
+          <span fpcDataTableToolbar class="d-inline-flex gap-2">
+            <fpc-button
+              variant="dark"
+              iconOnly
+              [ariaLabel]="refreshTitle"
+              [title]="refreshTitle"
+              [disabled]="workflowsLoading()"
+              (clicked)="onRefresh()"
+            >
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            </fpc-button>
+            @if (canManage()) {
+              <fpc-button
+                variant="primary"
+                iconOnly
+                [ariaLabel]="newWorkflowTitle"
+                [title]="newWorkflowTitle"
+                (clicked)="openCreateEditor()"
+                data-testid="deployment-workflow-create"
+              >
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+              </fpc-button>
+            }
+          </span>
+          <!-- Environment filter in the Filters drawer: workflows available to that environment (global + assigned). -->
+          <fpc-form-field fpcDataTableFilters forId="deploymentsAgentFilter" [label]="environmentFilterLabel">
+            <fpc-form-control
+              controlId="deploymentsAgentFilter"
+              controlType="select"
+              [ngModel]="agentFilter() ?? ''"
+              (ngModelChange)="onAgentFilterChange($event)"
+            >
+              <option value="" i18n="@@featureDeployments-allEnvironments">All environments</option>
+              @for (agent of agents(); track agent.id) {
+                <option [value]="agent.id">{{ workspaceDisplayName(agent.name) }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+          <fpc-form-field fpcDataTableFilters forId="deploymentsApprovalFilter" [label]="approvalFilterLabel">
+            <fpc-form-control
+              controlId="deploymentsApprovalFilter"
+              controlType="select"
+              [ngModel]="approvalFilter() ?? ''"
+              (ngModelChange)="onApprovalFilterChange($event)"
+              data-testid="deployment-workflows-approval-filter"
+            >
+              <option value="" i18n="@@featureDeployments-approvalFilterAll">All pipelines</option>
+              <option value="pending" i18n="@@featureDeployments-approvalFilterPending">Waiting for approval</option>
+              <option value="approved" i18n="@@featureDeployments-approvalFilterApproved">Approved</option>
+            </fpc-form-control>
+          </fpc-form-field>
+
+          <fpc-button
+            fpcDataTableBatch
+            variant="dark"
+            [disabled]="bulkBusy()"
+            (clicked)="onBulkSync()"
+            data-testid="deployment-workflows-bulk-sync"
+            iconOnly
+            [ariaLabel]="syncTitle"
+            [title]="syncTitle"
+          >
+            <i class="bi bi-cloud-download" aria-hidden="true"></i>
+          </fpc-button>
+          @if (canManage()) {
+            <fpc-button
+              fpcDataTableBatch
+              variant="secondary"
+              [disabled]="bulkBusy()"
+              (clicked)="onBulkEnabled(false)"
+              data-testid="deployment-workflows-bulk-disable"
+              iconOnly
+              [ariaLabel]="disableLabel"
+              [title]="disableLabel"
+            >
+              <i class="bi bi-toggle-off" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-button
+              fpcDataTableBatch
+              variant="secondary"
+              [disabled]="bulkBusy()"
+              (clicked)="onBulkEnabled(true)"
+              data-testid="deployment-workflows-bulk-enable"
+              iconOnly
+              [ariaLabel]="enableLabel"
+              [title]="enableLabel"
+            >
+              <i class="bi bi-toggle-on" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-button
+              fpcDataTableBatch
+              variant="danger"
+              [disabled]="bulkBusy()"
+              (clicked)="bulkDeleteConfirmOpen.set(true)"
+              data-testid="deployment-workflows-bulk-delete"
+              iconOnly
+              [ariaLabel]="deleteLabel"
+              [title]="deleteLabel"
+            >
+              <i class="bi bi-trash" aria-hidden="true"></i>
+            </fpc-button>
+          }
+
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="rocket-takeoff"
+              message="No pipelines yet"
+              i18n-message="@@featureDeployments-noWorkflows"
+            >
+              @if (canManage()) {
+                <p class="small text-body-secondary mb-0" i18n="@@featureDeployments-noWorkflowsHintAdmin">
+                  Create a pipeline on top of a CI/CD connection to run and follow it here.
+                </p>
+              } @else {
+                <p class="small text-body-secondary mb-0" i18n="@@featureDeployments-noWorkflowsHint">
+                  Workspace admins create the pipelines of this workspace.
+                </p>
+              }
+            </fpc-empty-state>
+          </span>
+
+          <ng-template fpcTableCell="name" let-row>
+            <span class="d-flex align-items-center gap-2 min-w-0">
+              <i
+                class="bi bi-{{ providerIcon(row.provider) }} flex-shrink-0"
+                [title]="providerLabel(row.provider)"
+                aria-hidden="true"
+              ></i>
+              <span class="text-truncate" [title]="row.name">{{ row.name }}</span>
+            </span>
+          </ng-template>
+          <ng-template fpcTableCell="repository" let-row>
+            <span class="d-block text-truncate font-monospace small" [title]="row.repository">{{
+              row.repository
+            }}</span>
+          </ng-template>
+        </fpc-data-table>
+      </fpc-section-column>
+
+      <fpc-section-column class="d-flex flex-grow-1 deployments-detail">
+        @if (openWorkflow(); as workflow) {
+          <fpc-page-header>
+            <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
+              <fpc-button
+                class="d-md-none flex-shrink-0"
+                variant="dark"
+                iconOnly
+                [ariaLabel]="backToWorkflowsTitle"
+                [title]="backToWorkflowsTitle"
+                (clicked)="onCloseWorkflow()"
+                data-testid="deployment-workflow-back"
+              >
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+              </fpc-button>
+              <h2 class="fpc-page-header__title h6 mb-0 fw-semibold text-truncate" [title]="workflow.name">
+                {{ workflow.name }}
+              </h2>
+              @if (isPending(workflow)) {
+                <fpc-badge tone="warning" icon="hourglass-split" data-testid="deployment-workflow-pending-badge">{{
+                  pendingApprovalLabel
+                }}</fpc-badge>
+              }
+              @if (!workflow.enabled) {
+                <fpc-badge color="secondary" i18n="@@featureDeployments-disabledBadge">Disabled</fpc-badge>
+              }
+            </div>
+            <div fpcPageHeaderActions class="d-flex align-items-center gap-2">
+              @if (canManage()) {
+                <fpc-form-switch
+                  switchId="deploymentWorkflowEnabled"
+                  [label]="enabledLabel"
+                  [checked]="workflow.enabled"
+                  [disabled]="saving()"
+                  (checkedChange)="onToggleEnabled(workflow, $event)"
+                  data-testid="deployment-workflow-enabled"
+                />
+              }
+              @if (canManage() && isPending(workflow)) {
+                <fpc-button
+                  variant="warning"
+                  [loading]="isApproving(workflow.id)"
+                  [disabled]="isApproving(workflow.id)"
+                  (clicked)="onRequestApprove(workflow)"
+                  data-testid="deployment-workflow-approve"
+                >
+                  <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>{{ approveLabel }}
+                </fpc-button>
+              }
+              <fpc-button
+                variant="primary"
+                iconOnly
+                [ariaLabel]="isPending(workflow) ? triggerPendingTitle : triggerTitle"
+                [title]="isPending(workflow) ? triggerPendingTitle : triggerTitle"
+                [disabled]="!workflow.enabled || isPending(workflow) || triggering()"
+                (clicked)="openTrigger(workflow)"
+                data-testid="deployment-workflow-trigger"
+              >
+                <i class="bi bi-play-fill" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                variant="dark"
+                iconOnly
+                [ariaLabel]="syncTitle"
+                [title]="syncTitle"
+                [loading]="isSyncing(workflow.id)"
+                [disabled]="isSyncing(workflow.id)"
+                (clicked)="onSync(workflow)"
+                data-testid="deployment-workflow-sync"
+              >
+                <i class="bi bi-cloud-download" aria-hidden="true"></i>
+              </fpc-button>
+              @if (canManage()) {
+                <fpc-button
+                  variant="dark"
+                  iconOnly
+                  [ariaLabel]="editTitle"
+                  [title]="editTitle"
+                  (clicked)="openEditEditor(workflow)"
+                  data-testid="deployment-workflow-edit"
+                >
+                  <i class="bi bi-pencil" aria-hidden="true"></i>
+                </fpc-button>
+                <fpc-dropdown alignment="end" appendTo="body">
+                  <fpc-button
+                    fpcDropdownTrigger
+                    variant="dark"
+                    iconOnly
+                    [ariaLabel]="moreActionsTitle"
+                    [title]="moreActionsTitle"
+                    ariaHaspopup="menu"
+                    data-testid="deployment-workflow-more"
+                  >
+                    <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
+                  </fpc-button>
+                  <fpc-dropdown-item icon="trash" [danger]="true" (selected)="onRequestDelete(workflow)">{{
+                    deleteTitle
+                  }}</fpc-dropdown-item>
+                </fpc-dropdown>
+              }
+            </div>
+          </fpc-page-header>
+
+          @if (isPending(workflow)) {
+            <fpc-alert variant="warning" [flush]="true" data-testid="deployment-workflow-pending">
+              @if (openWorkflowChangedBy(); as changedBy) {
+                <strong class="d-block" i18n="@@featureDeployments-pendingChangedBy"
+                  >Changed by environment {{ changedBy }}</strong
+                >
+              } @else if (openWorkflowProposedBy(); as proposedBy) {
+                <strong class="d-block" i18n="@@featureDeployments-pendingProposedBy"
+                  >Proposed by environment {{ proposedBy }}</strong
+                >
+              }
+              @if (canManage()) {
+                <span i18n="@@featureDeployments-pendingApprovalHintAdmin"
+                  >Nobody can start runs of this pipeline until you reviewed and approved it. Saving the complete
+                  pipeline in the editor approves it as well.</span
+                >
+              } @else {
+                <span i18n="@@featureDeployments-pendingApprovalHint"
+                  >Nobody can start runs of this pipeline until a workspace admin approved it.</span
+                >
+              }
+            </fpc-alert>
+          }
+
+          <div class="deployments-detail__info p-3" data-testid="deployment-workflow-overview">
+            @if (workflow.description) {
+              <p class="small mb-3 deployments-detail__description">{{ workflow.description }}</p>
+            }
+            <dl class="row small mb-0">
+              <dt class="col-sm-3" i18n="@@featureDeployments-overviewConnection">Connection</dt>
+              <dd class="col-sm-9">
+                <span class="d-inline-flex flex-wrap align-items-center gap-2">
+                  <span>{{ workflow.connectionLabel }}</span>
+                  <fpc-badge color="secondary" [icon]="providerIcon(workflow.provider)">{{
+                    providerLabel(workflow.provider)
+                  }}</fpc-badge>
+                </span>
+              </dd>
+              <dt class="col-sm-3" i18n="@@featureDeployments-overviewRepository">Repository</dt>
+              <dd class="col-sm-9 font-monospace text-break">{{ workflow.repository }}</dd>
+              @if (workflow.workflow) {
+                <dt class="col-sm-3" i18n="@@featureDeployments-overviewWorkflow">GitHub workflow</dt>
+                <dd class="col-sm-9 font-monospace text-break">{{ workflow.workflow }}</dd>
+              }
+              <dt class="col-sm-3" i18n="@@featureDeployments-overviewDefaultRef">Default branch</dt>
+              <dd class="col-sm-9">
+                @if (workflow.defaultRef) {
+                  <span class="font-monospace">{{ workflow.defaultRef }}</span>
+                } @else {
+                  <span class="text-body-secondary" i18n="@@featureDeployments-overviewRepositoryDefault"
+                    >Repository default</span
+                  >
+                }
+              </dd>
+              @if (openWorkflowInputs().length > 0) {
+                <dt class="col-sm-3" i18n="@@featureDeployments-overviewDefaultInputs">Default inputs</dt>
+                <dd class="col-sm-9 d-flex flex-wrap gap-1">
+                  @for (entry of openWorkflowInputs(); track entry[0]) {
+                    <code class="deployments-detail__chip">{{ entry[0] }}={{ entry[1] }}</code>
+                  }
+                </dd>
+              }
+              <dt class="col-sm-3" i18n="@@featureDeployments-overviewScope">Available to</dt>
+              <dd class="col-sm-9 d-flex flex-wrap gap-1" data-testid="deployment-workflow-scope">
+                @if (workflow.scope === 'global') {
+                  <fpc-badge color="info" i18n="@@featureDeployments-scopeGlobalBadge">All environments</fpc-badge>
+                } @else {
+                  @for (name of assignedAgentNames(); track $index) {
+                    <fpc-badge color="secondary">{{ name }}</fpc-badge>
+                  } @empty {
+                    <span class="text-body-secondary" i18n="@@featureDeployments-scopeNone"
+                      >No environment assigned</span
+                    >
+                  }
+                }
+              </dd>
+              @if (openWorkflowProposedBy(); as proposedBy) {
+                <dt class="col-sm-3" i18n="@@featureDeployments-overviewProposedBy">Proposed by</dt>
+                <dd class="col-sm-9" data-testid="deployment-workflow-proposed-by">
+                  <span i18n="@@featureDeployments-overviewProposedByEnvironment">Environment {{ proposedBy }}</span>
+                </dd>
+              }
+              <dt class="col-sm-3" i18n="@@featureDeployments-overviewAgentTrigger">Environment runs</dt>
+              <dd class="col-sm-9">
+                @if (workflow.agentTriggerEnabled) {
+                  <span i18n="@@featureDeployments-agentTriggerAllowed">Agents may trigger and cancel runs</span>
+                } @else {
+                  <span class="text-body-secondary" i18n="@@featureDeployments-agentTriggerReadOnly"
+                    >Agents may only read runs and logs</span
+                  >
+                }
+              </dd>
+              @if (workflow.lastRunAt) {
+                <dt class="col-sm-3" i18n="@@featureDeployments-overviewLastRun">Last run</dt>
+                <dd class="col-sm-9 d-flex align-items-center gap-2">
+                  <!-- The last run itself (the pending approval is shown in the header and banner). -->
+                  @if (lastRunState(workflow); as state) {
+                    <fpc-badge [tone]="state.tone" [icon]="state.icon ?? null">{{ state.label }}</fpc-badge>
+                  }
+                  {{ formatDate(workflow.lastRunAt) }}
+                </dd>
+              }
+            </dl>
+          </div>
+
+          <fpc-page-header class="border-top">
+            <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
+              <h3 class="fpc-page-header__title h6 mb-0 fw-semibold" i18n="@@featureDeployments-runHistoryHeading">
+                Run history
+              </h3>
+            </div>
+          </fpc-page-header>
+          <div class="deployments-detail__table">
+            <fpc-data-table
+              [ariaLabel]="runsLabel"
+              [columns]="runColumns"
+              [rows]="sortedRuns()"
+              [activeRowId]="selectedRunId()"
+              paging="server"
+              [(page)]="runPage"
+              [(pageSize)]="runPageSize"
+              [total]="runsTotal()"
+              [hasNext]="runHasNext()"
+              [query]="runSearch()"
+              (queryChange)="onRunSearchChange($event)"
+              [searchPlaceholder]="runSearchPlaceholder"
+              [filtered]="!!runSearch().trim() || !!runStatusFilter()"
+              [loading]="runsLoading()"
+              refreshable
+              (refresh)="onRefreshRuns()"
+              [rowMenu]="runRowMenu"
+              (rowAction)="onRunRowAction($event.row, $event.item.id)"
+              (rowActivate)="onRunRowActivate($event)"
+              persistKey="agenstra-deployment-runs"
+              emptyIcon="clock-history"
+              showFilterButton
+              [filtersActive]="runStatusFilter() ? 1 : 0"
+              (filtersCleared)="onRunStatusFilterChange('')"
+              data-testid="deployment-runs-table"
+            >
+              <fpc-form-field fpcDataTableFilters forId="deploymentRunsStatusFilter" [label]="statusFilterLabel">
+                <fpc-form-control
+                  controlId="deploymentRunsStatusFilter"
+                  controlType="select"
+                  [ngModel]="runStatusFilter() ?? ''"
+                  (ngModelChange)="onRunStatusFilterChange($event)"
+                >
+                  <option value="" i18n="@@featureDeployments-allStatuses">All statuses</option>
+                  @for (status of runStatuses; track status) {
+                    <option [value]="status">{{ runStatusLabel(status) }}</option>
+                  }
+                </fpc-form-control>
+              </fpc-form-field>
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  size="sm"
+                  icon="clock-history"
+                  message="This pipeline has not run yet."
+                  i18n-message="@@featureDeployments-noRuns"
+                />
+              </span>
+              <ng-template fpcTableCell="ref" let-row>
+                <span class="font-monospace small text-truncate d-block" [title]="row.ref ?? ''">{{
+                  row.ref ?? '—'
+                }}</span>
+              </ng-template>
+            </fpc-data-table>
+          </div>
+        } @else if (selectedWorkflowId() && selectedWorkflowLoading()) {
+          <fpc-empty-state
+            class="flex-grow-1"
+            icon="hourglass-split"
+            message="Loading pipeline…"
+            i18n-message="@@featureDeployments-loadingWorkflow"
+          />
+        } @else if (selectedWorkflowId()) {
+          <fpc-empty-state
+            class="flex-grow-1"
+            icon="exclamation-triangle"
+            message="Pipeline not found"
+            i18n-message="@@featureDeployments-workflowNotFound"
+          >
+            <fpc-button fpcEmptyStateActions variant="secondary" (clicked)="onCloseWorkflow()">{{
+              backToWorkflowsTitle
+            }}</fpc-button>
+          </fpc-empty-state>
+        } @else {
+          <fpc-empty-state
+            class="flex-grow-1"
+            icon="rocket-takeoff"
+            message="Select a pipeline to run it and follow its runs"
+            i18n-message="@@featureDeployments-selectWorkflow"
+          />
+        }
+      </fpc-section-column>
+
+      <!-- Run detail: its own column to the right (like the chat at /clients); the other columns shrink. -->
+      @if (selectedRunId()) {
+        <fpc-section-column class="d-flex deployments-run" data-testid="deployment-run-column">
+          <!-- Run detail: jobs, logs, provider link, cancel. -->
+          @if (openRun(); as detail) {
+            <fpc-page-header>
+              <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
+                <!-- Phones only (the run history is hidden there); on wider screens the selected history row closes the run. -->
+                <fpc-button
+                  class="d-md-none flex-shrink-0"
+                  variant="dark"
+                  iconOnly
+                  [ariaLabel]="backToRunsTitle"
+                  [title]="backToRunsTitle"
+                  (clicked)="onCloseRun()"
+                  data-testid="deployment-run-back"
+                >
+                  <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                </fpc-button>
+                @if (runState(detail.run); as state) {
+                  <fpc-badge
+                    class="flex-shrink-0"
+                    [tone]="state.tone"
+                    [icon]="state.icon ?? null"
+                    data-testid="deployment-run-state"
+                    >{{ state.label }}</fpc-badge
+                  >
+                }
+                <h2
+                  class="fpc-page-header__title h6 mb-0 fw-semibold text-truncate"
+                  [title]="runTitle(detail.run) + ' (' + detail.run.workflowName + ')'"
+                >
+                  {{ runTitle(detail.run) }}
+                </h2>
+              </div>
+              <div fpcPageHeaderActions class="d-flex align-items-center gap-2">
+                <fpc-button
+                  variant="dark"
+                  iconOnly
+                  [ariaLabel]="viewLogsTitle"
+                  [title]="viewLogsTitle"
+                  (clicked)="onViewLogs(detail.run.id, null)"
+                  data-testid="deployment-run-logs"
+                >
+                  <i class="bi bi-file-text" aria-hidden="true"></i>
+                </fpc-button>
+                @if (detail.run.url) {
+                  <fpc-button
+                    variant="dark"
+                    iconOnly
+                    [ariaLabel]="openInProviderTitle"
+                    [title]="openInProviderTitle"
+                    (clicked)="openExternal(detail.run.url)"
+                    data-testid="deployment-run-provider"
+                  >
+                    <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                  </fpc-button>
+                }
+                @if (isRunActive(detail.run.status)) {
+                  <fpc-button
+                    variant="danger"
+                    iconOnly
+                    [ariaLabel]="cancelRunTitle"
+                    [title]="cancelRunTitle"
+                    [loading]="isCancelling(detail.run.id)"
+                    [disabled]="isCancelling(detail.run.id)"
+                    (clicked)="onRequestCancel(detail.run)"
+                    data-testid="deployment-run-cancel"
+                  >
+                    <i class="bi bi-stop-circle" aria-hidden="true"></i>
+                  </fpc-button>
+                }
+              </div>
+            </fpc-page-header>
+
+            <div class="deployments-detail__info p-3">
+              <dl class="row small mb-0">
+                <dt class="col-sm-3" i18n="@@featureDeployments-runBranch">Branch</dt>
+                <dd class="col-sm-9 font-monospace text-break">{{ detail.run.ref || '—' }}</dd>
+                @if (detail.run.sha) {
+                  <dt class="col-sm-3" i18n="@@featureDeployments-runCommit">Commit</dt>
+                  <dd class="col-sm-9 font-monospace" [title]="detail.run.sha">{{ detail.run.sha.slice(0, 7) }}</dd>
+                }
+                <dt class="col-sm-3" i18n="@@featureDeployments-runTrigger">Triggered by</dt>
+                <dd class="col-sm-9">
+                  <span class="d-inline-flex flex-wrap align-items-center gap-2">
+                    <span>{{ triggerLabel(detail.run.triggeredBy) }}</span>
+                    @if (detail.run.agentId) {
+                      <fpc-badge color="secondary">{{ agentName(detail.run.agentId) }}</fpc-badge>
+                    }
+                  </span>
+                </dd>
+                <dt class="col-sm-3" i18n="@@featureDeployments-runStarted">Started</dt>
+                <dd class="col-sm-9">{{ formatDate(detail.run.startedAt ?? detail.run.createdAt) }}</dd>
+                @if (detail.run.completedAt) {
+                  <dt class="col-sm-3" i18n="@@featureDeployments-runCompleted">Completed</dt>
+                  <dd class="col-sm-9">{{ formatDate(detail.run.completedAt) }}</dd>
+                }
+                @if (openRunInputs().length > 0) {
+                  <dt class="col-sm-3" i18n="@@featureDeployments-runInputs">Inputs</dt>
+                  <dd class="col-sm-9 d-flex flex-wrap gap-1">
+                    @for (entry of openRunInputs(); track entry[0]) {
+                      <code class="deployments-detail__chip">{{ entry[0] }}={{ entry[1] }}</code>
+                    }
+                  </dd>
+                }
+              </dl>
+            </div>
+
+            <fpc-page-header class="border-top">
+              <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
+                <h3 class="fpc-page-header__title h6 mb-0 fw-semibold">{{ jobsLabel }}</h3>
+              </div>
+            </fpc-page-header>
+            <div class="deployments-detail__table">
+              <fpc-data-table
+                [ariaLabel]="jobsLabel"
+                [columns]="jobColumns"
+                [rows]="searchedJobs()"
+                [(query)]="jobSearch"
+                [searchPlaceholder]="jobSearchPlaceholder"
+                [filtered]="!!jobSearch().trim()"
+                [(sort)]="jobSort"
+                paging="client"
+                persistKey="agenstra-deployment-run-jobs"
+                [loading]="selectedRunLoading() && detail.jobs.length === 0"
+                [rowMenu]="jobRowMenu"
+                (rowAction)="onJobRowAction($event.row, $event.item.id)"
+                (rowActivate)="onJobActivate($event)"
+                emptyIcon="list-task"
+                data-testid="deployment-run-jobs-table"
+              >
+                <ng-template fpcTableCell="started" let-row>{{
+                  row.startedAt ? formatDate(row.startedAt) : ''
+                }}</ng-template>
+                <ng-template fpcTableCell="completed" let-row>{{
+                  row.completedAt ? formatDate(row.completedAt) : ''
+                }}</ng-template>
+                <span fpcDataTableEmpty>
+                  <fpc-empty-state
+                    size="sm"
+                    icon="list-task"
+                    message="The provider reports no jobs for this run yet."
+                    i18n-message="@@featureDeployments-noJobs"
+                  />
+                </span>
+              </fpc-data-table>
+            </div>
+          } @else if (selectedRunLoading()) {
+            <fpc-empty-state
+              class="flex-grow-1"
+              icon="hourglass-split"
+              message="Loading run…"
+              i18n-message="@@featureDeployments-loadingRun"
+            />
+          } @else {
+            <fpc-empty-state
+              class="flex-grow-1"
+              icon="exclamation-triangle"
+              message="Run not found"
+              i18n-message="@@featureDeployments-runNotFound"
+            >
+              <fpc-button fpcEmptyStateActions variant="secondary" (clicked)="onCloseRun()">{{
+                closeRunTitle
+              }}</fpc-button>
+            </fpc-empty-state>
+          }
+        </fpc-section-column>
+      }
+    </fpc-section-row>
+  }
+</div>
+
+<framework-deployment-workflow-editor
+  [(open)]="editorOpen"
+  [clientId]="effectiveClientId()"
+  [workflow]="editorWorkflow()"
+  [agents]="agents()"
+  [busy]="saving()"
+  [error]="editorOpen() ? error() : null"
+  (saved)="onSaveWorkflow($event)"
+/>
+
+<framework-deployment-trigger-modal
+  [(open)]="triggerOpen"
+  [clientId]="effectiveClientId()"
+  [workflow]="triggerWorkflow()"
+  [agents]="agents()"
+  [canManage]="canManage()"
+  [busy]="triggering()"
+  [error]="triggerOpen() ? error() : null"
+  (triggered)="onTrigger($event)"
+/>
+
+<fpc-modal
+  [open]="logsModalOpen()"
+  (openChange)="onLogsModalOpenChange($event)"
+  size="xl"
+  [scrollable]="true"
+  [title]="logsTitle()"
+>
+  <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+    @if (logs()?.truncated) {
+      <small class="text-body-secondary flex-grow-1" i18n="@@featureDeployments-logsTruncated"
+        >Only the end of the logs is shown. Open the run in the provider for the full logs.</small
+      >
+    } @else {
+      <span class="flex-grow-1"></span>
+    }
+    <fpc-button
+      variant="dark"
+      iconOnly
+      [ariaLabel]="reloadLogsTitle"
+      [title]="reloadLogsTitle"
+      [disabled]="logsLoading()"
+      (clicked)="onReloadLogs()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      variant="dark"
+      iconOnly
+      [ariaLabel]="copyLogsTitle"
+      [title]="copyLogsTitle"
+      [disabled]="!logs()?.logs"
+      (clicked)="onCopyLogs()"
+      data-testid="deployment-logs-copy"
+    >
+      <i class="bi bi-copy" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      variant="dark"
+      iconOnly
+      [ariaLabel]="downloadLogsTitle"
+      [title]="downloadLogsTitle"
+      [disabled]="!logs()?.logs"
+      (clicked)="onDownloadLogs()"
+      data-testid="deployment-logs-download"
+    >
+      <i class="bi bi-download" aria-hidden="true"></i>
+    </fpc-button>
+  </div>
+  @if (logsError()) {
+    <fpc-alert variant="danger" [message]="logsError()" />
+  } @else if (logsLoading() && !logs()) {
+    <div class="d-flex justify-content-center p-4">
+      <fpc-spinner size="sm" variant="primary" i18n-label="@@featureDeployments-loadingLogs" label="Loading logs…" />
+    </div>
+  } @else if (logs()?.logs) {
+    <pre class="deployments-logs mb-0" data-testid="deployment-logs">{{ logs()?.logs }}</pre>
+  } @else {
+    <p class="text-body-secondary small mb-0" i18n="@@featureDeployments-noLogs">No logs available yet.</p>
+  }
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="deleteConfirmOpen"
+  [title]="deleteTitle"
+  [message]="deleteConfirmMessage()"
+  [confirmLabel]="deleteLabel"
+  [danger]="true"
+  [busy]="saving()"
+  (confirmed)="onConfirmDelete()"
+  (cancelled)="onCancelDelete()"
+/>
+
+<fpc-confirm-dialog
+  [(open)]="approveConfirmOpen"
+  [title]="approveTitle"
+  [confirmLabel]="approveLabel"
+  [warning]="true"
+  size="lg"
+  (confirmed)="onConfirmApprove()"
+  (cancelled)="workflowPendingApproval.set(null)"
+>
+  @if (workflowPendingApproval(); as workflow) {
+    <div data-testid="deployment-approve-summary">
+      <p class="mb-2" i18n="@@featureDeployments-approveConfirmIntro">
+        Approve this pipeline as shown? Runs can be started afterwards, by environments only when environment runs are
+        allowed.
+      </p>
+      <dl class="row small mb-0">
+        <dt class="col-sm-4" i18n="@@featureDeployments-overviewConnection">Connection</dt>
+        <dd class="col-sm-8">
+          <span class="d-inline-flex flex-wrap align-items-center gap-2">
+            <span>{{ workflow.connectionLabel }}</span>
+            <fpc-badge color="secondary" [icon]="providerIcon(workflow.provider)">{{
+              providerLabel(workflow.provider)
+            }}</fpc-badge>
+          </span>
+        </dd>
+        <dt class="col-sm-4" i18n="@@featureDeployments-overviewRepository">Repository</dt>
+        <dd class="col-sm-8 font-monospace text-break">{{ workflow.repository }}</dd>
+        <dt class="col-sm-4" i18n="@@featureDeployments-overviewWorkflow">GitHub workflow</dt>
+        <dd class="col-sm-8 font-monospace text-break">{{ workflow.workflow || '—' }}</dd>
+        <dt class="col-sm-4" i18n="@@featureDeployments-overviewDefaultRef">Default branch</dt>
+        <dd class="col-sm-8">
+          @if (workflow.defaultRef) {
+            <span class="font-monospace">{{ workflow.defaultRef }}</span>
+          } @else {
+            <span class="text-body-secondary" i18n="@@featureDeployments-overviewRepositoryDefault"
+              >Repository default</span
+            >
+          }
+        </dd>
+        <dt class="col-sm-4" i18n="@@featureDeployments-overviewDefaultInputs">Default inputs</dt>
+        <dd class="col-sm-8 d-flex flex-wrap gap-1">
+          @for (entry of approvalInputs(); track entry[0]) {
+            <code class="deployments-detail__chip">{{ entry[0] }}={{ entry[1] }}</code>
+          } @empty {
+            <span class="text-body-secondary" i18n="@@featureDeployments-approveNoInputs">None</span>
+          }
+        </dd>
+        <dt class="col-sm-4" i18n="@@featureDeployments-overviewScope">Available to</dt>
+        <dd class="col-sm-8 d-flex flex-wrap gap-1">
+          @if (workflow.scope === 'global') {
+            <fpc-badge color="info" i18n="@@featureDeployments-scopeGlobalBadge">All environments</fpc-badge>
+          } @else {
+            @for (name of approvalAssignedAgentNames(); track $index) {
+              <fpc-badge color="secondary">{{ name }}</fpc-badge>
+            } @empty {
+              <span class="text-body-secondary" i18n="@@featureDeployments-scopeNone">No environment assigned</span>
+            }
+          }
+        </dd>
+        <dt class="col-sm-4" i18n="@@featureDeployments-overviewAgentTrigger">Environment runs</dt>
+        <dd class="col-sm-8" data-testid="deployment-approve-agent-trigger">
+          @if (workflow.agentTriggerEnabled) {
+            <strong i18n="@@featureDeployments-agentTriggerAllowed">Agents may trigger and cancel runs</strong>
+          } @else {
+            <span class="text-body-secondary" i18n="@@featureDeployments-agentTriggerReadOnly"
+              >Agents may only read runs and logs</span
+            >
+          }
+        </dd>
+      </dl>
+    </div>
+  }
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [(open)]="cancelConfirmOpen"
+  [title]="cancelRunTitle"
+  [message]="cancelConfirmMessage"
+  [confirmLabel]="cancelRunTitle"
+  [danger]="true"
+  (confirmed)="onConfirmCancel()"
+  (cancelled)="runPendingCancel.set(null)"
+/>
+
+<fpc-confirm-dialog
+  [(open)]="bulkDeleteConfirmOpen"
+  [title]="bulkDeleteTitle"
+  [message]="bulkDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  [danger]="true"
+  (confirmed)="onConfirmBulkDelete()"
+/>
+
+<fpc-modal
+  [(open)]="workspaceSwitchModalOpen"
+  i18n-title="@@featureDeployments-switchWorkspaceModalTitle"
+  title="Switch workspace"
+  [scrollable]="true"
+  [bodyScroll]="false"
+>
+  @if (clients().length === 0 && !workspaceSwitchSearch().trim()) {
+    <fpc-empty-state size="sm" message="No workspaces yet" i18n-message="@@featureDeployments-noWorkspaces">
+      <fpc-button
+        fpcEmptyStateActions
+        variant="primary"
+        i18n="@@featureDeployments-goToSpaces"
+        (clicked)="goToSpaces($event)"
+      >
+        Go to workspaces
+      </fpc-button>
+    </fpc-empty-state>
+  } @else {
+    <framework-workspace-switch-table
+      [clients]="clients()"
+      [currentId]="activeClientId()"
+      [(query)]="workspaceSwitchSearch"
+      [hasMore]="workspaceSwitchHasMore()"
+      [appendLoading]="workspaceSwitchAppendLoading()"
+      [appendError]="workspaceSwitchAppendError()"
+      (loadMore)="onLoadMoreWorkspaces()"
+      (selectWorkspace)="onSelectWorkspace($event)"
+    />
+  }
+</fpc-modal>

@@ -29,7 +29,9 @@ import {
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
   AGENT_CONTENT_WRITE_OPERATIONS,
+  AGENT_DEPLOYMENT_OPERATIONS,
   type AgentContentWriteOperation,
+  type AgentDeploymentOperation,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import {
   FpcAlertComponent,
@@ -82,6 +84,11 @@ import { sanitizeAndTrustMarkdownHtml } from '../chat/chat-markdown-html';
 import { resolveNamedDisplayLabel } from '../display-name.util';
 import { agBulkSummary, agCopyIdItem, agOpenItem, AG_DL_DELETE, AG_DL_EDIT, AG_DL_RUN_NOW } from '../shared/data-list';
 import { agentContentWriteLabel } from '../shared/agent-content-write-labels';
+import {
+  agentDeploymentOperationLabel,
+  agentDeploymentOperationsHeading,
+  agentDeploymentOperationsHint,
+} from '../shared/agent-deployment-operation-labels';
 import { WorkspaceChipComponent } from '../shared/workspace-chip.component';
 import { WorkspaceSwitchTableComponent } from '../shared/workspace-switch-table.component';
 
@@ -160,6 +167,8 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   readonly allowedHandoffAgentsLabel = $localize`:@@featureAgentTasks-allowedHandoffAgentsLabel:Allowed handoff environments`;
   readonly allowedContentWritesLabel = $localize`:@@featureAgentTasks-allowedContentWritesLabel:Allowed ticket / knowledge changes`;
   readonly allowedContentWritesHint = $localize`:@@featureAgentTasks-allowedContentWritesHint:Runs may make these changes without asking. Existing elements are only changed when the run may read them. Leave empty to keep runs from changing tickets and knowledge pages.`;
+  readonly allowedDeploymentOperationsLabel = agentDeploymentOperationsHeading();
+  readonly allowedDeploymentOperationsHint = agentDeploymentOperationsHint();
   readonly allowedHandoffAgentsHint = $localize`:@@featureAgentTasks-allowedHandoffAgentsHint:Runs may hand off work to these environments of the workspace without asking; their responses are processed by the unattended run with all permissions. Leave empty to keep runs from handing off.`;
   readonly openHandoffChatLabel = $localize`:@@featureAgentTasks-openHandoffChat:Open handoff chat`;
   readonly tasksLabel = $localize`:@@featureAgentTasks-tasksTable:Tasks`;
@@ -429,6 +438,12 @@ export class AgentTasksBoardComponent implements AfterViewInit {
     operation,
     label: agentContentWriteLabel(operation),
   }));
+  readonly editorAllowedDeploymentOperations = signal<AgentDeploymentOperation[]>([]);
+  /** Deployment run actions a task may be allowed to request (all operations). */
+  readonly deploymentOperationOptions = AGENT_DEPLOYMENT_OPERATIONS.map((operation) => ({
+    operation,
+    label: agentDeploymentOperationLabel(operation),
+  }));
   /** Other agents of the workspace the task's runs may hand off to. */
   readonly editorHandoffAgentOptions = computed(() =>
     this.agents().filter((agent) => agent.id !== this.editorAgentId()),
@@ -616,6 +631,21 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   /** Labels of the content changes a task may make. */
   contentWriteLabels(task: AgentTaskResponseDto): string[] {
     return (task.allowedContentWrites ?? []).map((operation) => agentContentWriteLabel(operation));
+  }
+
+  /** Labels of the deployment run actions a task may request. */
+  deploymentOperationLabels(task: AgentTaskResponseDto): string[] {
+    return (task.allowedDeploymentOperations ?? []).map((operation) => agentDeploymentOperationLabel(operation));
+  }
+
+  isEditorDeploymentOperationAllowed(operation: AgentDeploymentOperation): boolean {
+    return this.editorAllowedDeploymentOperations().includes(operation);
+  }
+
+  onToggleEditorDeploymentOperation(operation: AgentDeploymentOperation, allowed: boolean): void {
+    const current = this.editorAllowedDeploymentOperations().filter((entry) => entry !== operation);
+
+    this.editorAllowedDeploymentOperations.set(allowed ? [...current, operation] : current);
   }
 
   isEditorContentWriteAllowed(operation: AgentContentWriteOperation): boolean {
@@ -876,6 +906,7 @@ export class AgentTasksBoardComponent implements AfterViewInit {
     this.editorEnabled.set(true);
     this.editorAllowedHandoffAgentIds.set([]);
     this.editorAllowedContentWrites.set([]);
+    this.editorAllowedDeploymentOperations.set([]);
     this.editorOpen.set(true);
   }
 
@@ -891,6 +922,7 @@ export class AgentTasksBoardComponent implements AfterViewInit {
     this.editorEnabled.set(task.enabled);
     this.editorAllowedHandoffAgentIds.set([...(task.allowedHandoffAgentIds ?? [])]);
     this.editorAllowedContentWrites.set([...(task.allowedContentWrites ?? [])]);
+    this.editorAllowedDeploymentOperations.set([...(task.allowedDeploymentOperations ?? [])]);
     this.editorOpen.set(true);
   }
 
@@ -930,6 +962,10 @@ export class AgentTasksBoardComponent implements AfterViewInit {
       // Always sent as well: the content changes runs may make are approved content.
       allowedContentWrites: AGENT_CONTENT_WRITE_OPERATIONS.filter((operation) =>
         this.editorAllowedContentWrites().includes(operation),
+      ),
+      // Always sent as well: the deployment run actions runs may request are approved content.
+      allowedDeploymentOperations: AGENT_DEPLOYMENT_OPERATIONS.filter((operation) =>
+        this.editorAllowedDeploymentOperations().includes(operation),
       ),
     };
     const task = this.selectedTask();

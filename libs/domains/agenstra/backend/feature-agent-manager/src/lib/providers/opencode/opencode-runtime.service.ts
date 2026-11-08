@@ -11,6 +11,7 @@ import {
 import {
   isReadOnlyExploreResumeSessionSuffix,
   isTicketAutomationLoopResumeSessionSuffix,
+  isTicketAutomationResumeSessionSuffix,
   isUnattendedAutomationResumeSessionSuffix,
 } from '../../constants/chat-session.constants';
 import { AgentActiveTurnsService } from '../../services/agent-active-turns.service';
@@ -437,6 +438,14 @@ export class OpenCodeRuntimeService {
   ): AsyncIterable<AgentResponseObject> {
     // A stuck directory instance (interrupted bootstrap) would end the turn at once in `MessageAbortedError`.
     await this.clientFactory.ensureInstanceReady(key.agentId, key.containerId);
+
+    // Ticket automation starts every run in a fresh hidden session (`continue: false` on the first turn); later turns
+    // of the run continue it. Without this the loop session kept every earlier run's transcript, so it grew without
+    // bound and the platform prompt carrying the turn's context ticket could no longer be found in it (tool calls of
+    // the run were then refused).
+    if (options?.continue === false && isTicketAutomationResumeSessionSuffix(key.resumeSessionSuffix)) {
+      await this.sessionService.clearSession(key);
+    }
 
     const sessionId = await this.sessionService.getOrCreateSessionId(key, options);
 

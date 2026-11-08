@@ -248,6 +248,13 @@ See the [library documentation](../../libs/domains/agenstra/backend/feature-agen
 - `DIGITALOCEAN_API_TOKEN` - DigitalOcean API token (for server provisioning)
 - `ENCRYPTION_KEY` - Encryption key for sensitive data
 
+**Workspace deployments:**
+
+- `DEPLOYMENT_RUN_POLL_INTERVAL_MS` - Coordinator interval that refreshes active deployment runs from the CI/CD provider (default: `30000`; `0` disables)
+- `DEPLOYMENT_RUN_POLL_BATCH` - Active runs refreshed per poll and enabled workflows synced per history sync (default: `50`)
+- `DEPLOYMENT_HISTORY_SYNC_INTERVAL_MS` - Coordinator interval that imports runs started on the provider as `external` (default: `300000`; `0` disables)
+- `DEPLOYMENT_REALTIME_RELAY_INTERVAL_MS` - API process only: interval that relays run / workflow changes of the queue worker to the console sockets (default: `5000`; `0` disables)
+
 **Dynamic provider plugins (optional):**
 
 - `DYNAMIC_PROVISIONING_PROVIDERS` - Comma-separated extra provisioning packages (`alias=@forepath/pkg` or `alias=file:dir`)

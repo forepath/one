@@ -11,6 +11,7 @@ import {
   AutonomousRunOrchestratorService,
   ClientIsolationService,
   ContextImportOrchestratorService,
+  DeploymentRunsService,
   EgressEventsIngestService,
   ExternalImportConfigService,
   isAgenstraSearchEntityType,
@@ -47,6 +48,7 @@ import {
   getAutonomousTicketBatchSize,
   getContextImportConfigBatch,
   getContextImportItemBudget,
+  getDeploymentRunPollBatchSize,
   getEgressEventsIngestBatchSize,
   getIsolationCapabilitiesBatchSize,
   getKnowledgeEmbeddingPageBatchSize,
@@ -83,6 +85,7 @@ export class ControllerJobsProcessor extends WorkerHost {
     private readonly agentTaskRunner: AgentTaskRunnerService,
     private readonly agentHandoffRunner: AgentHandoffRunnerService,
     private readonly workspaceGraphSnapshots: WorkspaceGraphSnapshotService,
+    private readonly deploymentRuns: DeploymentRunsService,
   ) {
     super();
   }
@@ -192,6 +195,12 @@ export class ControllerJobsProcessor extends WorkerHost {
         break;
       case ControllerJobName.OPENCODE_MCP_SERVERS_REFRESH:
         await this.opencodeMcpServersCatalog.refreshFromOfficialRegistry();
+        break;
+      case ControllerJobName.DEPLOYMENT_RUN_POLL_COORDINATOR:
+        await this.deploymentRuns.pollActiveRuns(getDeploymentRunPollBatchSize());
+        break;
+      case ControllerJobName.DEPLOYMENT_HISTORY_SYNC_COORDINATOR:
+        await this.deploymentRuns.syncHistory(getDeploymentRunPollBatchSize());
         break;
       default:
         this.logger.warn(`Unknown controller job name: ${job.name}`);

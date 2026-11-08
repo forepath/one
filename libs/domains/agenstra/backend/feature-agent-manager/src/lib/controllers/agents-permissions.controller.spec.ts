@@ -5,6 +5,7 @@ import { OpenCodeRuntimeService } from '../providers/opencode/opencode-runtime.s
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentContextApiService } from '../services/agent-context-api.service';
 import { AgentContextChangesService } from '../services/agent-context-changes.service';
+import { AgentDeploymentActionsService } from '../services/agent-deployment-actions.service';
 
 import { AgentsPermissionsController } from './agents-permissions.controller';
 
@@ -15,6 +16,7 @@ describe('AgentsPermissionsController', () => {
   let gateway: { publishInteractionAnswered: jest.Mock };
   let contextApi: { decideAccess: jest.Mock };
   let contextChanges: { decide: jest.Mock };
+  let deploymentActions: { decide: jest.Mock };
   let controller: AgentsPermissionsController;
 
   beforeEach(() => {
@@ -26,12 +28,14 @@ describe('AgentsPermissionsController', () => {
     gateway = { publishInteractionAnswered: jest.fn() };
     contextApi = { decideAccess: jest.fn().mockReturnValue(['ctx_1']) };
     contextChanges = { decide: jest.fn().mockResolvedValue(['ctx_chg_1']) };
+    deploymentActions = { decide: jest.fn().mockResolvedValue(['ctx_dep_1']) };
     controller = new AgentsPermissionsController(
       agentsRepository as unknown as AgentsRepository,
       runtime as unknown as OpenCodeRuntimeService,
       gateway as unknown as AgentsGateway,
       contextApi as unknown as AgentContextApiService,
       contextChanges as unknown as AgentContextChangesService,
+      deploymentActions as unknown as AgentDeploymentActionsService,
     );
   });
 
@@ -62,6 +66,35 @@ describe('AgentsPermissionsController', () => {
     expect(contextApi.decideAccess).not.toHaveBeenCalled();
     expect(runtime.replyPermission).not.toHaveBeenCalled();
     expect(gateway.publishInteractionAnswered).not.toHaveBeenCalled();
+  });
+
+  it('decides deployment action prompts in the deployment actions service (which marks them answered)', async () => {
+    await controller.replyPermission(agentId, 'ctx_dep_1', { reply: 'once' });
+    await controller.replyQuestion(agentId, 'ctx_dep_2', { answers: ['always'] });
+
+    expect(deploymentActions.decide.mock.calls).toEqual([
+      [agentId, 'ctx_dep_1', 'once'],
+      [agentId, 'ctx_dep_2', 'always'],
+    ]);
+    expect(contextChanges.decide).not.toHaveBeenCalled();
+    expect(contextApi.decideAccess).not.toHaveBeenCalled();
+    expect(runtime.replyPermission).not.toHaveBeenCalled();
+    expect(gateway.publishInteractionAnswered).not.toHaveBeenCalled();
+  });
+
+  it('reports deployment action replies as unknown when the service is not available', async () => {
+    const bare = new AgentsPermissionsController(
+      agentsRepository as unknown as AgentsRepository,
+      runtime as unknown as OpenCodeRuntimeService,
+      gateway as unknown as AgentsGateway,
+      contextApi as unknown as AgentContextApiService,
+      contextChanges as unknown as AgentContextChangesService,
+    );
+
+    await expect(bare.replyPermission(agentId, 'ctx_dep_1', { reply: 'once' })).rejects.toThrow(
+      'Unknown or expired deployment action request',
+    );
+    expect(contextApi.decideAccess).not.toHaveBeenCalled();
   });
 
   it('works for context prompts even when the worker container is stopped', async () => {

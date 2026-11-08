@@ -1,6 +1,9 @@
 import type { ClientEntity } from '@forepath/identity/backend';
 
 import type { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
+import type { DeploymentConnectionEntity } from '../entities/deployment-connection.entity';
+import type { DeploymentRunEntity } from '../entities/deployment-run.entity';
+import type { DeploymentWorkflowEntity } from '../entities/deployment-workflow.entity';
 import type { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
 import type { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import type { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
@@ -97,30 +100,6 @@ export function mapKnowledgeNodeToSearchDocument(node: KnowledgeNodeEntity): Age
     createdAt: toIso(node.createdAt),
     updatedAt: toIso(node.updatedAt),
     searchableText: joinSearchable([node.id, node.title, node.content, node.nodeType, node.longSha]),
-  };
-}
-
-export function mapDeploymentRunToSearchDocument(input: {
-  id: string;
-  clientId: string;
-  agentId?: string | null;
-  status?: string | null;
-  name?: string | null;
-  description?: string | null;
-  createdAt?: Date | string | null;
-  updatedAt?: Date | string | null;
-}): AgenstraSearchDocument {
-  return {
-    id: input.id,
-    entityType: 'deployment-runs',
-    clientId: input.clientId,
-    agentId: input.agentId ?? null,
-    status: input.status ?? null,
-    name: input.name ?? null,
-    description: input.description ?? null,
-    createdAt: toIso(input.createdAt),
-    updatedAt: toIso(input.updatedAt),
-    searchableText: joinSearchable([input.id, input.agentId, input.status, input.name, input.description]),
   };
 }
 
@@ -240,10 +219,44 @@ export function mapAtlassianConnectionToSearchDocument(
     instanceScoped: true,
     label: connection.label ?? null,
     baseUrl: connection.baseUrl,
-    accountEmail: connection.accountEmail,
+    // Non-secret identifiers only: never `apiToken` / `oauthClientSecret`.
+    accountEmail: connection.accountEmail ?? null,
     createdAt: toIso(connection.createdAt),
     updatedAt: toIso(connection.updatedAt),
-    searchableText: joinSearchable([connection.id, connection.label, connection.baseUrl, connection.accountEmail]),
+    searchableText: joinSearchable([
+      connection.id,
+      connection.label,
+      connection.baseUrl,
+      connection.accountEmail,
+      connection.oauthClientId,
+    ]),
+  };
+}
+
+/** Never indexes `credentials` (token / private key); only non-secret identifiers. */
+export function mapDeploymentConnectionToSearchDocument(
+  connection: DeploymentConnectionEntity,
+): AgenstraSearchDocument {
+  return {
+    id: connection.id,
+    entityType: 'deployment-connections',
+    instanceScoped: true,
+    label: connection.label,
+    baseUrl: connection.baseUrl ?? null,
+    provider: connection.provider,
+    status: connection.lastTestStatus,
+    createdAt: toIso(connection.createdAt),
+    updatedAt: toIso(connection.updatedAt),
+    searchableText: joinSearchable([
+      connection.id,
+      connection.label,
+      connection.provider,
+      connection.baseUrl,
+      connection.authType,
+      connection.appId,
+      connection.installationId,
+      connection.username,
+    ]),
   };
 }
 
@@ -371,6 +384,63 @@ export function mapOpencodeMcpServerToSearchDocument(server: {
   };
 }
 
+/** Workflow metadata only; `defaultInputs` are never indexed. `connection` (relation) supplies the provider. */
+export function mapDeploymentWorkflowToSearchDocument(workflow: DeploymentWorkflowEntity): AgenstraSearchDocument {
+  return {
+    id: workflow.id,
+    entityType: 'deployment-workflows',
+    clientId: workflow.clientId,
+    name: workflow.name,
+    description: workflow.description ?? null,
+    provider: workflow.connection?.provider ?? null,
+    label: workflow.repository,
+    status: workflow.enabled ? 'enabled' : 'disabled',
+    kind: workflow.scope,
+    createdAt: toIso(workflow.createdAt),
+    updatedAt: toIso(workflow.updatedAt),
+    searchableText: joinSearchable([
+      workflow.id,
+      workflow.name,
+      workflow.description,
+      workflow.repository,
+      workflow.workflow,
+      workflow.defaultRef,
+      workflow.connection?.label,
+      workflow.connection?.provider,
+    ]),
+  };
+}
+
+/** Run metadata only; run `inputs` and logs are never indexed. `workflowEntity` (relation) supplies the name. */
+export function mapDeploymentRunToSearchDocument(run: DeploymentRunEntity): AgenstraSearchDocument {
+  return {
+    id: run.id,
+    entityType: 'deployment-runs',
+    clientId: run.clientId,
+    agentId: run.agentId ?? null,
+    title: run.name ?? null,
+    name: run.workflowEntity?.name ?? null,
+    status: run.status,
+    decision: run.conclusion ?? null,
+    kind: run.triggeredByType,
+    label: run.ref ?? null,
+    createdAt: toIso(run.createdAt),
+    updatedAt: toIso(run.updatedAt),
+    searchableText: joinSearchable([
+      run.id,
+      run.providerRunId,
+      run.name,
+      run.workflowEntity?.name,
+      run.workflowEntity?.repository,
+      run.status,
+      run.conclusion,
+      run.ref,
+      run.sha,
+      run.triggeredByType,
+    ]),
+  };
+}
+
 export function isAgenstraSearchEntityType(value: string): value is AgenstraSearchEntityType {
   return (
     value === 'clients' ||
@@ -378,7 +448,6 @@ export function isAgenstraSearchEntityType(value: string): value is AgenstraSear
     value === 'tickets' ||
     value === 'knowledge-nodes' ||
     value === 'egress-events' ||
-    value === 'deployment-runs' ||
     value === 'chat-io' ||
     value === 'filter-drops' ||
     value === 'filter-flags' ||
@@ -388,6 +457,9 @@ export function isAgenstraSearchEntityType(value: string): value is AgenstraSear
     value === 'environments' ||
     value === 'users' ||
     value === 'opencode-providers' ||
-    value === 'opencode-mcp-servers'
+    value === 'opencode-mcp-servers' ||
+    value === 'deployment-connections' ||
+    value === 'deployment-workflows' ||
+    value === 'deployment-runs'
   );
 }

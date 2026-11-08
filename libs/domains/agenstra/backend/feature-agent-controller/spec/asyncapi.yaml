@@ -19,6 +19,9 @@ info:
     `chatPlanUpsert` too, so chat cards and the plans page show the saved version live.
     Recurring **agent tasks** emit `agentTaskRunChatUpsert` (run cards for the agent's main chat, also hydrated after
     login), `agentTaskUpsert` and `agentTaskRemoved` (task rows for the `/tasks` page) to the workspace room.
+    Workspace **deployments** emit `deploymentWorkflowUpsert`, `deploymentWorkflowRemoved` and `deploymentRunUpsert`
+    (workflow rows with last-run status, run history / live status) to the workspace room; machine tokens need
+    `deployments:read`.
     For **socket/clients**, all connections require authentication via the `Authorization` header in the handshake
     (same as HTTP API: `Bearer <jwt-token>`, `Bearer <api-key>` / `ApiKey <api-key>`, or in mtls mode
     `Certificate <certificate-assertion>` or a client certificate presented in the TLS handshake).
@@ -190,6 +193,29 @@ channels:
       agentTaskRemovedEvent:
         $ref: '#/components/messages/AgentTaskRemoved'
     description: A task was deleted by a user or by the agent.
+  clients/deploymentWorkflowUpsert:
+    address: clients/deploymentWorkflowUpsert
+    messages:
+      deploymentWorkflowUpsertEvent:
+        $ref: '#/components/messages/DeploymentWorkflowUpsert'
+    description: >-
+      Full `DeploymentWorkflowSummary` after create / update / enable switch / approval (by users or by an environment
+      managing its own workflows; `approvalStatus`, `createdBy`, `updatedBy`) and whenever a run changes the workflow
+      last-run fields (room `client:{clientId}`; machine tokens need `deployments:read`).
+  clients/deploymentWorkflowRemoved:
+    address: clients/deploymentWorkflowRemoved
+    messages:
+      deploymentWorkflowRemovedEvent:
+        $ref: '#/components/messages/DeploymentWorkflowRemoved'
+    description: A deployment workflow (and its run history) was deleted.
+  clients/deploymentRunUpsert:
+    address: clients/deploymentRunUpsert
+    messages:
+      deploymentRunUpsertEvent:
+        $ref: '#/components/messages/DeploymentRunUpsert'
+    description: >-
+      Full `DeploymentRunSummary` when a run is triggered, synced from the provider (`triggeredBy: external`) or
+      changes status / conclusion (provider polling every `DEPLOYMENT_RUN_POLL_INTERVAL_MS`).
   clients/ticketChatTicketUpsert:
     address: clients/ticketChatTicketUpsert
     messages:
@@ -500,6 +526,24 @@ operations:
       $ref: '#/channels/clients~1agentTaskRemoved'
     messages:
       - $ref: '#/channels/clients~1agentTaskRemoved/messages/agentTaskRemovedEvent'
+  serverEmitsDeploymentWorkflowUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/clients~1deploymentWorkflowUpsert'
+    messages:
+      - $ref: '#/channels/clients~1deploymentWorkflowUpsert/messages/deploymentWorkflowUpsertEvent'
+  serverEmitsDeploymentWorkflowRemoved:
+    action: receive
+    channel:
+      $ref: '#/channels/clients~1deploymentWorkflowRemoved'
+    messages:
+      - $ref: '#/channels/clients~1deploymentWorkflowRemoved/messages/deploymentWorkflowRemovedEvent'
+  serverEmitsDeploymentRunUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/clients~1deploymentRunUpsert'
+    messages:
+      - $ref: '#/channels/clients~1deploymentRunUpsert/messages/deploymentRunUpsertEvent'
   serverEmitsTicketChatTicketUpsert:
     action: receive
     channel:
@@ -1061,6 +1105,36 @@ components:
           taskId:
             type: string
             format: uuid
+    DeploymentWorkflowUpsert:
+      name: DeploymentWorkflowUpsert
+      title: Deployment workflow row
+      contentType: application/json
+      description: Same shape as OpenAPI `DeploymentWorkflowSummary`.
+      payload:
+        type: object
+        required: [id, clientId, connectionId, name, scope, enabled]
+    DeploymentWorkflowRemoved:
+      name: DeploymentWorkflowRemoved
+      title: Deployment workflow deleted
+      contentType: application/json
+      payload:
+        type: object
+        required: [clientId, workflowId]
+        properties:
+          clientId:
+            type: string
+            format: uuid
+          workflowId:
+            type: string
+            format: uuid
+    DeploymentRunUpsert:
+      name: DeploymentRunUpsert
+      title: Deployment run
+      contentType: application/json
+      description: Same shape as OpenAPI `DeploymentRunSummary`.
+      payload:
+        type: object
+        required: [id, clientId, workflowId, status, triggeredBy]
     ChatPlanChatEvent:
       name: ChatPlanChatEvent
       title: Chat plan in chat timeline

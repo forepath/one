@@ -204,6 +204,17 @@ export const atlassianContextImportReducer = createReducer(
     ...state,
     testingConnectionId: null,
     lastConnectionTest: { connectionId, result },
+    // The controller persisted the outcome; mirror it on the row so the status column updates without a reload.
+    connections: state.connections.map((c) =>
+      c.id === connectionId
+        ? {
+            ...c,
+            lastTestStatus: result.ok ? 'ok' : 'failed',
+            lastTestMessage: result.message ?? null,
+            lastTestedAt: result.testedAt ?? c.lastTestedAt,
+          }
+        : c,
+    ),
     error: null,
   })),
   on(testAtlassianConnectionFailure, (state, { error }) => ({

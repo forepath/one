@@ -1,3 +1,4 @@
+import { DEPLOYMENT_SOCKET_EVENTS } from '@forepath/agenstra/shared/util-opencode-config';
 import { type SocketEventScopes, websocketScope } from '@forepath/identity/backend';
 
 import { AGENT_TASK_SOCKET_EVENTS } from '../constants/agent-tasks.constants';
@@ -96,6 +97,9 @@ export const CLIENTS_SOCKET_OUTBOUND_SCOPES: SocketEventScopes = {
   [AGENT_TASK_SOCKET_EVENTS.runChatUpsert]: ['agent_chats:read'],
   [AGENT_TASK_SOCKET_EVENTS.taskUpsert]: ['agent_chats:read'],
   [AGENT_TASK_SOCKET_EVENTS.taskRemoved]: ['agent_chats:read'],
+  [DEPLOYMENT_SOCKET_EVENTS.workflowUpsert]: ['deployments:read'],
+  [DEPLOYMENT_SOCKET_EVENTS.workflowRemoved]: ['deployments:read'],
+  [DEPLOYMENT_SOCKET_EVENTS.runUpsert]: ['deployments:read'],
 };
 
 /** `status` namespace: client → server. */

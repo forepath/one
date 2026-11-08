@@ -20,7 +20,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **[Agent tasks](./agent-tasks.md)** Recurring, cron-scheduled agent prompts managed in the console or by the agent itself
 - **[Environment graphs](./environment-graphs.md)** Per-environment code / knowledge, path and prompt reference graphs, workspace and global graph exploration, and `agenstra_graph_*` MCP tools
 - **[Agent handoffs](./agent-handoffs.md)** Agents hand tasks to other agents of the same workspace and always get a response back
-- **Deployment** CI/CD pipeline management and deployment functionality
+- **[Deployments](./deployment.md)** Workspace deployment workflows on admin-managed CI/CD connections (GitHub Actions, GitLab CI, Jenkins), run history, live status and `agenstra_deployments_*` MCP tools
 - **Authentication** Multiple authentication methods with configurable user registration
 - **Tickets and Workspaces** Ticket boards, migration, and automation on the controller
 - **Usage Statistics** Controller-backed usage and filter metrics (distinct from container stats)
@@ -28,7 +28,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Egress Filtering** Per-environment web traffic filtering via an egress guard sidecar
 - **Container Isolation Levels** Per-environment choice between standard Docker (`runc`), a gVisor sandbox, gVisor on KVM and a KVM microVM, validated by runtime probes
 - **Atlassian import** Admin-managed site connections and import configs (Jira and Confluence) into tickets and knowledge
-- **Dynamic provider plugins** Extend provisioning, agents, pipelines, context import, and chat filters via env-configured packages
+- **Dynamic provider plugins** Extend provisioning, agents, context import, and chat filters via env-configured packages
 - **OpenTelemetry** Optional Prometheus metrics and OTLP export (disabled by default)
 
 ## Features
@@ -151,18 +151,17 @@ Explore-only OpenCode planning from the composer: live chat-scoped cards, refine
 - Execute plan into the current chat
 - Plans page: search, edit until executed (read-only afterwards), refine and activity log
 
-### [Deployment](./deployment.md)
+### [Deployments](./deployment.md)
 
-CI/CD pipeline management and deployment functionality. Configure CI/CD providers (GitHub Actions), trigger pipeline runs, monitor their status, and view logs directly from the Agenstra console.
+Workspace deployments on the agent controller. Instance admins manage CI/CD connections (**Connections → Deployments**); workspace admins define deployment workflows on top of them and make each one available to every environment of the workspace or to selected environments. Runs are triggered from the console, the API or, where allowed, by an environment through the `agenstra` MCP server.
 
 **Key Capabilities**:
 
-- Configure CI/CD providers (GitHub Actions)
-- List repositories, branches, and workflows
-- Trigger pipeline runs manually
-- Monitor pipeline run status in real-time
-- View pipeline run logs and individual job logs
-- Track deployment history
+- Connections to GitHub Actions (GitHub App or PAT), GitLab CI (access token) and Jenkins (user + API token), shared with all or selected workspaces
+- Workflows with repository, provider workflow, default ref and inputs; `global` or assigned to environments
+- Optional agent trigger permission (`agentTriggerEnabled`) for `agenstra_deployments_trigger` / `_cancel_run`
+- Run history including runs started on the provider (`external`), live status, jobs and log tails
+- Audit entity events, search indexes and `deployment_workflow.*` / `deployment_run.*` webhooks
 
 ### [Authentication](./authentication.md)
 
@@ -232,13 +231,13 @@ Per-environment container isolation: **standard** (Docker `runc`), **sandboxed**
 - Capability transition and override notifications
 - gVisor host preparation (including KVM detection) in cloud-init and a standalone host script
 
-### [Atlassian import](./atlassian-import.md)
+### [Atlassian connections](./atlassian-import.md)
 
-Admin-only **Atlassian Cloud** integrations: store encrypted site credentials, define Jira or Confluence import scopes per workspace, run on a scheduler or on demand, and manage sync markers for idempotent imports.
+Admin-only **Atlassian Cloud** integrations (**Connections → Atlassian**): store encrypted site credentials (OAuth 2.0 client credentials of an Atlassian service account, or email + API token), define Jira or Confluence import scopes per workspace, run on a scheduler or on demand, and manage sync markers for idempotent imports.
 
 **Key Capabilities**:
 
-- Site connection CRUD and live connection test against Atlassian REST
+- Atlassian connection CRUD with two auth variants (`app` service account OAuth, `token` API token) and a connection test whose result is persisted as connection status
 - Import configuration CRUD with Jira or Confluence parameters and optional parent ticket or folder
 - Scheduled and manual import runs with configurable batching and budgets
 - Marker cleanup and optional marker release on ticket or knowledge delete
@@ -251,7 +250,7 @@ Extend Agenstra backends with extra provider packages **without forking** the co
 **Key Capabilities**:
 
 - Add cloud provisioning providers on the controller (`DYNAMIC_PROVISIONING_PROVIDERS`)
-- Add agent backends, CI/CD providers, and chat filters on the manager
+- Add agent backends and chat filters on the manager
 - Mount `./provider-plugins` or install from registry/tarballs at container startup
 - Tiered fail-fast for critical provisioning registry (`DYNAMIC_PROVIDERS_FAIL_FAST`)
 
@@ -279,7 +278,7 @@ graph TB
     VC[Version Control]
     IDE[Web IDE]
     Chat[Chat Interface]
-    DEP[Deployment]
+    DEP[Deployments]
     AUTH[Authentication]
     TK[Tickets and Workspaces]
     ST[Usage Statistics]
@@ -295,12 +294,12 @@ graph TB
     AM --> VC
     AM --> IDE
     AM --> Chat
-    AM --> DEP
+    CM --> DEP
+    DEP --> AM
     WS --> Chat
     WS --> TK
     FM --> IDE
     VC --> IDE
-    VC --> DEP
     AUTH --> AM
     AUTH --> ST
     TK --> WS
@@ -309,7 +308,6 @@ graph TB
     TK --> AM
     DP --> SP
     DP --> AM
-    DP --> DEP
     SP --> CI
     CI --> AM
     EG --> CI

@@ -75,18 +75,4 @@ export class CreateAgentDto {
   @IsOptional()
   @IsObject({ message: 'Isolation selection must be an object' })
   isolationSelection?: Record<string, unknown>;
-
-  /**
-   * CI/CD deployment configuration (optional).
-   * If provided, a deployment configuration will be created for this agent.
-   */
-  @IsOptional()
-  deploymentConfiguration?: {
-    providerType: string;
-    repositoryId: string;
-    defaultBranch?: string;
-    workflowId?: string;
-    providerToken: string;
-    providerBaseUrl?: string;
-  };
 }

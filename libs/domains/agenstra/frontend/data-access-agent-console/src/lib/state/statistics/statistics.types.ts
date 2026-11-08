@@ -167,7 +167,14 @@ export interface StatisticsFilterFlagListDto {
 }
 
 /** Entity type for statistics events */
-export type StatisticsEntityType = 'user' | 'client' | 'agent' | 'client_user' | 'provisioning_reference';
+export type StatisticsEntityType =
+  | 'user'
+  | 'client'
+  | 'agent'
+  | 'client_user'
+  | 'provisioning_reference'
+  | 'deployment_workflow'
+  | 'deployment_run';
 
 /** Entity event type */
 export type StatisticsEntityEventType = 'created' | 'updated' | 'deleted';

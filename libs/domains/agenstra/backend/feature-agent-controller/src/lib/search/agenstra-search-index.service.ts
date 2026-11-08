@@ -5,6 +5,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
+import { DeploymentConnectionEntity } from '../entities/deployment-connection.entity';
+import { DeploymentRunEntity } from '../entities/deployment-run.entity';
+import { DeploymentWorkflowEntity } from '../entities/deployment-workflow.entity';
 import { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
@@ -23,6 +26,9 @@ import {
   isAgenstraSearchEntityType,
   mapAgentToSearchDocument,
   mapAtlassianConnectionToSearchDocument,
+  mapDeploymentConnectionToSearchDocument,
+  mapDeploymentRunToSearchDocument,
+  mapDeploymentWorkflowToSearchDocument,
   mapChatIoToSearchDocument,
   mapClientToSearchDocument,
   mapEgressEventToSearchDocument,
@@ -84,6 +90,12 @@ export class AgenstraSearchIndexService {
     private readonly opencodeProvidersRepo: Repository<OpencodeProviderEntity>,
     @InjectRepository(OpencodeMcpServerEntity)
     private readonly opencodeMcpServersRepo: Repository<OpencodeMcpServerEntity>,
+    @InjectRepository(DeploymentConnectionEntity)
+    private readonly deploymentConnectionsRepo: Repository<DeploymentConnectionEntity>,
+    @InjectRepository(DeploymentWorkflowEntity)
+    private readonly deploymentWorkflowsRepo: Repository<DeploymentWorkflowEntity>,
+    @InjectRepository(DeploymentRunEntity)
+    private readonly deploymentRunsRepo: Repository<DeploymentRunEntity>,
   ) {}
 
   isEnabled(): boolean {
@@ -238,7 +250,12 @@ export class AgenstraSearchIndexService {
         return await this.reindexOpencodeProviders(offset, limit);
       case 'opencode-mcp-servers':
         return await this.reindexOpencodeMcpServers(offset, limit);
+      case 'deployment-connections':
+        return await this.reindexDeploymentConnections(offset, limit);
+      case 'deployment-workflows':
+        return await this.reindexDeploymentWorkflows(offset, limit);
       case 'deployment-runs':
+        return await this.reindexDeploymentRuns(offset, limit);
       case 'environments':
         // Proxied to agent-manager; live hooks index when available.
         return { indexed: 0, hasMore: false };
@@ -475,6 +492,53 @@ export class AgenstraSearchIndexService {
     await this.bulkIndex(
       'atlassian-connections',
       rows.map((row) => mapAtlassianConnectionToSearchDocument(row)),
+    );
+
+    return { indexed: rows.length, hasMore: rows.length === limit };
+  }
+
+  private async reindexDeploymentConnections(offset: number, limit: number): Promise<AgenstraReindexBatchResult> {
+    const rows = await this.deploymentConnectionsRepo.find({
+      order: { createdAt: 'ASC' },
+      skip: offset,
+      take: limit,
+    });
+
+    await this.bulkIndex(
+      'deployment-connections',
+      rows.map((row) => mapDeploymentConnectionToSearchDocument(row)),
+    );
+
+    return { indexed: rows.length, hasMore: rows.length === limit };
+  }
+
+  private async reindexDeploymentWorkflows(offset: number, limit: number): Promise<AgenstraReindexBatchResult> {
+    const rows = await this.deploymentWorkflowsRepo.find({
+      relations: ['connection'],
+      order: { createdAt: 'ASC', id: 'ASC' },
+      skip: offset,
+      take: limit,
+    });
+
+    await this.bulkIndex(
+      'deployment-workflows',
+      rows.map((row) => mapDeploymentWorkflowToSearchDocument(row)),
+    );
+
+    return { indexed: rows.length, hasMore: rows.length === limit };
+  }
+
+  private async reindexDeploymentRuns(offset: number, limit: number): Promise<AgenstraReindexBatchResult> {
+    const rows = await this.deploymentRunsRepo.find({
+      relations: ['workflowEntity'],
+      order: { createdAt: 'ASC', id: 'ASC' },
+      skip: offset,
+      take: limit,
+    });
+
+    await this.bulkIndex(
+      'deployment-runs',
+      rows.map((row) => mapDeploymentRunToSearchDocument(row)),
     );
 
     return { indexed: rows.length, hasMore: rows.length === limit };

@@ -2,7 +2,7 @@ import { PasswordService } from '@forepath/identity/backend';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
-import { AgentsDeploymentsController } from '../controllers/agents-deployments.controller';
+import { AgentsContextDeploymentsController } from '../controllers/agents-context-deployments.controller';
 import { AgentsMessagesController } from '../controllers/agents-messages.controller';
 import { AgentsController } from '../controllers/agents.controller';
 import { InstanceStatusController } from '../controllers/instance-status.controller';
@@ -12,8 +12,6 @@ import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-va
 import { AgentMessageEventEntity } from '../entities/agent-message-event.entity';
 import { AgentMessageEntity } from '../entities/agent-message.entity';
 import { AgentEntity } from '../entities/agent.entity';
-import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
-import { DeploymentRunEntity } from '../entities/deployment-run.entity';
 import { AgentEgressEventEntity } from '../entities/agent-egress-event.entity';
 import { AgentGraphPromptEntity } from '../entities/agent-graph-prompt.entity';
 import { AgentGraphEntity } from '../entities/agent-graph.entity';
@@ -28,21 +26,17 @@ import { MessageFiltersIncomingChatFilter } from '../providers/filters/message-f
 import { MessageFiltersOutgoingChatFilter } from '../providers/filters/message-filters-outgoing-chat-filter';
 import { NoopChatFilter } from '../providers/filters/noop-chat-filter';
 import { OutgoingChatFilter } from '../providers/filters/outgoing-chat-filter';
-import { PipelineProviderFactory } from '../providers/pipeline-provider.factory';
-import { GitHubProvider } from '../providers/pipelines/github.provider';
-import { GitLabProvider } from '../providers/pipelines/gitlab.provider';
 import { AgentEnvironmentVariablesRepository } from '../repositories/agent-environment-variables.repository';
 import { AgentMessagesRepository } from '../repositories/agent-messages.repository';
 import { AgentsRepository } from '../repositories/agents.repository';
-import { DeploymentConfigurationsRepository } from '../repositories/deployment-configurations.repository';
-import { DeploymentRunsRepository } from '../repositories/deployment-runs.repository';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
+import { AgentDeploymentActionsService } from '../services/agent-deployment-actions.service';
+import { AgentDeploymentsApiService } from '../services/agent-deployments-api.service';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentGitCredentialsService } from '../services/agent-git-credentials.service';
 import { AgentRuntimeRefreshService } from '../services/agent-runtime-refresh.service';
 import { AgentsService } from '../services/agents.service';
-import { DeploymentsService } from '../services/deployments.service';
 import { DockerService } from '../services/docker.service';
 import { InstanceStatusService } from '../services/instance-status.service';
 
@@ -92,10 +86,6 @@ describe('AgentsModule', () => {
       .overrideProvider(getRepositoryToken(AgentEnvironmentVariableEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(AgentMessageEventEntity))
-      .useValue(mockRepository)
-      .overrideProvider(getRepositoryToken(DeploymentConfigurationEntity))
-      .useValue(mockRepository)
-      .overrideProvider(getRepositoryToken(DeploymentRunEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(AgentEgressEventEntity))
       .useValue(mockRepository)
@@ -185,6 +175,12 @@ describe('AgentsModule', () => {
 
     expect(controller).toBeDefined();
     expect(controller).toBeInstanceOf(AgentsMessagesController);
+  });
+
+  it('should provide the agent context deployments API', () => {
+    expect(module.get(AgentsContextDeploymentsController)).toBeInstanceOf(AgentsContextDeploymentsController);
+    expect(module.get(AgentDeploymentsApiService)).toBeInstanceOf(AgentDeploymentsApiService);
+    expect(module.get(AgentDeploymentActionsService)).toBeInstanceOf(AgentDeploymentActionsService);
   });
 
   it('should provide AgentsGateway', () => {
@@ -313,34 +309,6 @@ describe('AgentsModule', () => {
     expect(initValue).toBe(true);
   });
 
-  it('should provide DeploymentsService', () => {
-    const service = module.get<DeploymentsService>(DeploymentsService);
-
-    expect(service).toBeDefined();
-    expect(service).toBeInstanceOf(DeploymentsService);
-  });
-
-  it('should provide DeploymentConfigurationsRepository', () => {
-    const repository = module.get<DeploymentConfigurationsRepository>(DeploymentConfigurationsRepository);
-
-    expect(repository).toBeDefined();
-    expect(repository).toBeInstanceOf(DeploymentConfigurationsRepository);
-  });
-
-  it('should provide DeploymentRunsRepository', () => {
-    const repository = module.get<DeploymentRunsRepository>(DeploymentRunsRepository);
-
-    expect(repository).toBeDefined();
-    expect(repository).toBeInstanceOf(DeploymentRunsRepository);
-  });
-
-  it('should provide PipelineProviderFactory', () => {
-    const factory = module.get<PipelineProviderFactory>(PipelineProviderFactory);
-
-    expect(factory).toBeDefined();
-    expect(factory).toBeInstanceOf(PipelineProviderFactory);
-  });
-
   it('should provide AgentEnvironmentVariablesService', () => {
     const service = module.get<AgentEnvironmentVariablesService>(AgentEnvironmentVariablesService);
 
@@ -374,65 +342,5 @@ describe('AgentsModule', () => {
 
     expect(repository).toBeDefined();
     expect(repository).toBeInstanceOf(AgentMessagesRepository);
-  });
-
-  it('should provide GitHubProvider', () => {
-    const provider = module.get<GitHubProvider>(GitHubProvider);
-
-    expect(provider).toBeDefined();
-    expect(provider).toBeInstanceOf(GitHubProvider);
-  });
-
-  it('should provide GitLabProvider', () => {
-    const provider = module.get<GitLabProvider>(GitLabProvider);
-
-    expect(provider).toBeDefined();
-    expect(provider).toBeInstanceOf(GitLabProvider);
-  });
-
-  it('should register GitHubProvider and GitLabProvider via PIPELINE_PROVIDER_INIT factory', () => {
-    const factory = module.get<PipelineProviderFactory>(PipelineProviderFactory);
-    const githubProvider = module.get<GitHubProvider>(GitHubProvider);
-    const gitlabProvider = module.get<GitLabProvider>(GitLabProvider);
-
-    // Verify the providers are registered
-    expect(factory.hasProvider('github')).toBe(true);
-    expect(factory.getProvider('github')).toBe(githubProvider);
-    expect(githubProvider.getType()).toBe('github');
-
-    expect(factory.hasProvider('gitlab')).toBe(true);
-    expect(factory.getProvider('gitlab')).toBe(gitlabProvider);
-    expect(gitlabProvider.getType()).toBe('gitlab');
-  });
-
-  it('should initialize PIPELINE_PROVIDER_INIT factory', () => {
-    const initValue = module.get<boolean>('PIPELINE_PROVIDER_INIT');
-
-    expect(initValue).toBe(true);
-  });
-
-  it('should provide AgentsDeploymentsController', () => {
-    const controller = module.get<AgentsDeploymentsController>(AgentsDeploymentsController);
-
-    expect(controller).toBeDefined();
-    expect(controller).toBeInstanceOf(AgentsDeploymentsController);
-  });
-
-  it('should export DeploymentsService', () => {
-    const service = module.get<DeploymentsService>(DeploymentsService);
-
-    expect(service).toBeDefined();
-  });
-
-  it('should export DeploymentConfigurationsRepository', () => {
-    const repository = module.get<DeploymentConfigurationsRepository>(DeploymentConfigurationsRepository);
-
-    expect(repository).toBeDefined();
-  });
-
-  it('should export DeploymentRunsRepository', () => {
-    const repository = module.get<DeploymentRunsRepository>(DeploymentRunsRepository);
-
-    expect(repository).toBeDefined();
   });
 });

@@ -1,4 +1,5 @@
 import {
+  AGENT_DEPLOYMENT_REQUEST_EVENT,
   AGENT_HANDOFF_REQUEST_EVENT,
   AGENT_TASK_REQUEST_EVENT,
   isAgentTaskResumeSessionSuffix,
@@ -53,6 +54,9 @@ import { AgenstraAttachmentsService } from '../services/agenstra-attachments.ser
 import { AgentHandoffRequestHandlerService } from '../services/agent-handoff-request-handler.service';
 import { AgentTaskChatSyncService } from '../services/agent-task-chat-sync.service';
 import { AgentTaskRealtimeService } from '../services/agent-task-realtime.service';
+import { AgentDeploymentRequestHandlerService } from '../services/agent-deployment-request-handler.service';
+import { DeploymentRealtimeRelayService } from '../services/deployment-realtime-relay.service';
+import { DeploymentRealtimeService } from '../services/deployment-realtime.service';
 import { AgentTaskRequestHandlerService } from '../services/agent-task-request-handler.service';
 import {
   AGENT_CONTEXT_REQUEST_EVENT,
@@ -242,12 +246,18 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     @Optional() private readonly agentTaskChatSync?: AgentTaskChatSyncService,
     @Optional() private readonly agentHandoffRequests?: AgentHandoffRequestHandlerService,
     @Optional() private readonly agentMembership?: ClientAgentMembershipService,
+    @Optional() private readonly agentDeploymentRequests?: AgentDeploymentRequestHandlerService,
+    @Optional() private readonly deploymentRealtime?: DeploymentRealtimeService,
+    @Optional() private readonly deploymentRealtimeRelay?: DeploymentRealtimeRelayService,
   ) {}
 
   afterInit(server: Server): void {
     this.clientAutomationChatRealtime.attachServer(server);
     this.chatPlanRealtime.attachServer(server);
     this.agentTaskRealtime?.attachServer(server);
+    this.deploymentRealtime?.attachServer(server);
+    // Run updates of the queue worker (poller, history sync) reach the sockets of this process through the relay.
+    this.deploymentRealtimeRelay?.start();
     // When using namespace: 'clients', NestJS passes the namespace (not root Server) to afterInit.
     // Namespaces don't have .of(); use server directly for middleware.
     server.use(async (socket, next) => {
@@ -438,6 +448,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       this.agentTaskRequests?.attach(remote, clientId);
       // Handoffs between agents of this workspace (worker MCP) are answered here too, scoped to this workspace.
       this.agentHandoffRequests?.attach(remote, clientId);
+      this.agentDeploymentRequests?.attach(remote, clientId);
       // Log when remote socket is created for debugging
       this.logger.debug(`Created remote socket for clientId ${clientId}, socket.id ${socket.id}`);
       // Log socket configuration
@@ -470,6 +481,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         AGENT_CONTEXT_REQUEST_EVENT,
         AGENT_TASK_REQUEST_EVENT,
         AGENT_HANDOFF_REQUEST_EVENT,
+        AGENT_DEPLOYMENT_REQUEST_EVENT,
       ]);
 
       // Handle Socket.IO internal error events separately (don't forward to avoid disconnection)

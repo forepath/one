@@ -45,6 +45,51 @@ describe('atlassian-rest.util', () => {
         ),
       ).toBe('https://example.atlassian.net/wiki/rest/api/content/search?cursor=y');
     });
+
+    it('follows absolute next links on the configured origin', () => {
+      expect(
+        resolveConfluencePaginationUrl(
+          'https://example.atlassian.net',
+          'https://example.atlassian.net/wiki',
+          'https://example.atlassian.net/wiki/rest/api/content/search?cursor=z',
+        ),
+      ).toBe('https://example.atlassian.net/wiki/rest/api/content/search?cursor=z');
+    });
+
+    it('re-bases absolute next links of other hosts onto the configured bases', () => {
+      expect(
+        resolveConfluencePaginationUrl(
+          'https://example.atlassian.net',
+          'https://example.atlassian.net/wiki',
+          'https://evil.example/wiki/rest/api/content/search?cursor=z',
+        ),
+      ).toBe('https://example.atlassian.net/wiki/rest/api/content/search?cursor=z');
+      expect(
+        resolveConfluencePaginationUrl(
+          'https://example.atlassian.net',
+          'https://example.atlassian.net/wiki',
+          '//evil.example/rest/api/content/search?cursor=z',
+        ),
+      ).toBe('https://example.atlassian.net/wiki/rest/api/content/search?cursor=z');
+    });
+
+    it('resolves links against the API gateway for OAuth connections', () => {
+      const origin = 'https://api.atlassian.com/ex/confluence/cloud-1';
+
+      expect(resolveConfluencePaginationUrl(origin, `${origin}/wiki`, '/rest/api/content/search?cursor=a')).toBe(
+        `${origin}/wiki/rest/api/content/search?cursor=a`,
+      );
+      expect(resolveConfluencePaginationUrl(origin, `${origin}/wiki`, '/wiki/rest/api/content/search?cursor=b')).toBe(
+        `${origin}/wiki/rest/api/content/search?cursor=b`,
+      );
+      expect(
+        resolveConfluencePaginationUrl(
+          origin,
+          `${origin}/wiki`,
+          'https://example.atlassian.net/wiki/rest/api/content/search?cursor=c',
+        ),
+      ).toBe(`${origin}/wiki/rest/api/content/search?cursor=c`);
+    });
   });
 
   describe('confluenceContentSearchUrlsEquivalent', () => {

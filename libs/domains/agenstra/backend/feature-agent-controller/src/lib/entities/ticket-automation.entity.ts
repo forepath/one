@@ -1,4 +1,7 @@
-import type { AgentContentWriteOperation } from '@forepath/agenstra/shared/util-opencode-config';
+import type {
+  AgentContentWriteOperation,
+  AgentDeploymentOperation,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 import type { TicketAutomationBranchStrategy } from '../utils/ticket-automation-branch.constants';
@@ -61,6 +64,13 @@ export class TicketAutomationEntity {
    */
   @Column({ type: 'jsonb', name: 'allowed_content_writes', default: () => "'[]'::jsonb" })
   allowedContentWrites!: AgentContentWriteOperation[];
+
+  /**
+   * Deployment run actions (`deployment.trigger`, `deployment.cancel`) autonomous runs may request without asking.
+   * Empty (default): none. Approval-relevant like the other settings; the workflow rules apply on top.
+   */
+  @Column({ type: 'jsonb', name: 'allowed_deployment_operations', default: () => "'[]'::jsonb" })
+  allowedDeploymentOperations!: AgentDeploymentOperation[];
 
   @Column({ type: 'jsonb', name: 'verifier_profile', nullable: true })
   verifierProfile?: TicketVerifierProfileJson | null;

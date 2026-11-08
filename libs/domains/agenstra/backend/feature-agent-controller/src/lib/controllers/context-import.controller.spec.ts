@@ -8,7 +8,7 @@ jest.mock('@forepath/identity/backend', () => {
 });
 
 import * as identity from '@forepath/identity/backend';
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 import { CreateAtlassianSiteConnectionDto } from '../dto/context-import/create-atlassian-site-connection.dto';
 import { CreateExternalImportConfigDto } from '../dto/context-import/create-external-import-config.dto';
@@ -32,6 +32,7 @@ describe('ContextImportController', () => {
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
+    recordTestResult: jest.fn(),
   } as unknown as AtlassianSiteConnectionService;
   const configs = {
     findAll: jest.fn(),
@@ -179,13 +180,28 @@ describe('ContextImportController', () => {
       expect(connections.delete).toHaveBeenCalledWith(connectionId);
     });
 
-    it('testConnection delegates to provider', async () => {
-      const result = { ok: true, message: 'ok' };
+    it('testConnection runs the provider test and persists the result', async () => {
+      const result = { ok: false, message: 'Jira HTTP 401, Confluence HTTP 401' };
+      const recorded = { ...result, testedAt: '2026-01-01T00:00:00.000Z' };
 
+      (connections.findOne as jest.Mock).mockResolvedValue({ id: connectionId });
       (atlassianProvider.testConnection as jest.Mock).mockResolvedValue(result);
+      (connections.recordTestResult as jest.Mock).mockResolvedValue(recorded);
 
-      await expect(controller.testConnection(connectionId, adminReq)).resolves.toEqual(result);
+      await expect(controller.testConnection(connectionId, adminReq)).resolves.toEqual(recorded);
       expect(atlassianProvider.testConnection).toHaveBeenCalledWith(connectionId);
+      expect(connections.recordTestResult).toHaveBeenCalledWith(connectionId, result);
+    });
+
+    it('testConnection does not call the provider for unknown connections', async () => {
+      (connections.findOne as jest.Mock).mockRejectedValue(new NotFoundException('Connection not found'));
+
+      await expect(controller.testConnection(connectionId, adminReq)).rejects.toBeInstanceOf(NotFoundException);
+      expect(atlassianProvider.testConnection).not.toHaveBeenCalled();
+    });
+
+    it('is mounted at connections/atlassian', () => {
+      expect(Reflect.getMetadata('path', ContextImportController)).toBe('connections/atlassian');
     });
   });
 

@@ -59,6 +59,7 @@ describe('AgentTasksService', () => {
       enabled: true,
       allowedHandoffAgentIds: [],
       allowedContentWrites: [],
+      allowedDeploymentOperations: [],
       nextRunAt: new Date('2026-10-22T09:00:00.000Z'),
       lastRunAt: null,
       lastRunStatus: null,
@@ -269,6 +270,8 @@ describe('AgentTasksService', () => {
         { allowedHandoffAgentIds: [] },
         // Proposed content changes as well.
         { allowedContentWrites: ['ticket.comment' as const] },
+        // Proposed deployment actions as well.
+        { allowedDeploymentOperations: ['deployment.trigger' as const] },
       ]) {
         taskRepo.findOne.mockResolvedValueOnce(existingTask());
 
@@ -325,12 +328,14 @@ describe('AgentTasksService', () => {
           cronExpression: '0 9 * * *',
           allowedHandoffAgentIds: [peerId],
           allowedContentWrites: ['ticket.create', 'ticket.comment'],
+          allowedDeploymentOperations: ['deployment.cancel'],
         }),
       ).resolves.toEqual(
         expect.objectContaining({
           approvalStatus: 'approved',
           allowedHandoffAgentIds: [peerId],
           allowedContentWrites: ['ticket.create', 'ticket.comment'],
+          allowedDeploymentOperations: ['deployment.cancel'],
         }),
       );
     });
@@ -351,6 +356,16 @@ describe('AgentTasksService', () => {
           cronExpression: '0 9 * * *',
           allowedHandoffAgentIds: [peerId],
         },
+        // ... nor without the deployment actions.
+        {
+          title: 'Report',
+          prompt: 'Reviewed prompt',
+          model: 'openai/gpt-5',
+          cronExpression: '0 9 * * *',
+          allowedHandoffAgentIds: [peerId],
+          allowedContentWrites: [],
+        },
+        { allowedDeploymentOperations: ['deployment.trigger' as const] },
       ]) {
         taskRepo.findOne.mockResolvedValueOnce(existingTask({ approvedAt: null, enabled: false, nextRunAt: null }));
 
@@ -373,6 +388,28 @@ describe('AgentTasksService', () => {
         service.createForAgent(clientId, agentId, {
           ...input,
           allowedContentWrites: ['ticket.archive' as unknown as 'ticket.create'],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('accepts only known deployment operations (deduplicated, canonical order)', async () => {
+      await expect(
+        service.create(
+          clientId,
+          agentId,
+          {
+            ...input,
+            allowedDeploymentOperations: ['deployment.cancel', 'deployment.trigger', 'deployment.cancel'],
+          },
+          {} as never,
+        ),
+      ).resolves.toEqual(
+        expect.objectContaining({ allowedDeploymentOperations: ['deployment.trigger', 'deployment.cancel'] }),
+      );
+      await expect(
+        service.createForAgent(clientId, agentId, {
+          ...input,
+          allowedDeploymentOperations: ['deployment.delete' as unknown as 'deployment.trigger'],
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });

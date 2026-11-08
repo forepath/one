@@ -8,8 +8,6 @@ import {
   AgentGraphPromptEntity,
   AgentMessageEntity,
   AgentMessageEventEntity,
-  DeploymentConfigurationEntity,
-  DeploymentRunEntity,
   WorkspaceConfigurationOverrideEntity,
 } from '@forepath/agenstra/backend/feature-agent-manager';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
@@ -53,8 +51,6 @@ export const typeormConfig: DataSourceOptions = {
     AgentEnvironmentVariableEntity,
     AgentMessageEntity,
     AgentMessageEventEntity,
-    DeploymentConfigurationEntity,
-    DeploymentRunEntity,
     WorkspaceConfigurationOverrideEntity,
   ],
   // Migration paths:

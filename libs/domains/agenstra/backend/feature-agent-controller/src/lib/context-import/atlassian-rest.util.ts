@@ -41,16 +41,37 @@ export function confluenceRestApiRoot(normalizedSiteBase: string): string {
 /**
  * Resolves Confluence CQL search `_links.next` to an absolute URL.
  * Cloud responses often use `/rest/api/...` (relative to `/wiki`) or `/wiki/rest/api/...` (relative to site origin).
+ *
+ * `siteBase` is the base for `/wiki/...` links (site origin, or `https://api.atlassian.com/ex/confluence/{cloudId}` for
+ * OAuth connections) and `confluenceRoot` the Confluence REST root (`.../wiki` on Cloud). Absolute links are followed
+ * only when they point at the origin of `confluenceRoot`; any other host (e.g. the site URL while requests go through
+ * the API gateway) is reduced to its path + query and resolved against our bases, so credentials never leave the
+ * configured origin.
  */
 export function resolveConfluencePaginationUrl(siteBase: string, confluenceRoot: string, relNext: string): string {
-  const r = relNext.trim();
+  let r = relNext.trim();
 
   if (!r) {
     return siteBase;
   }
 
-  if (r.startsWith('http://') || r.startsWith('https://')) {
-    return r;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(r) || r.startsWith('//')) {
+    let parsed: URL;
+
+    try {
+      parsed = new URL(r, confluenceRoot);
+    } catch {
+      return siteBase;
+    }
+
+    if (
+      parsed.origin === new URL(confluenceRoot).origin &&
+      (parsed.protocol === 'https:' || parsed.protocol === 'http:')
+    ) {
+      return parsed.toString();
+    }
+
+    r = `${parsed.pathname}${parsed.search}`;
   }
 
   const originBase = siteBase.replace(/\/+$/, '');

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-07T20:32:29.815Z",
+  "generatedAt": "2026-11-08T13:38:52.441Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -4100,10 +4100,10 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployment-connections.service.ts",
       "type": "service",
       "attrs": {
-        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployment-connections.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-frontend-data-access-agent-console"
       }
@@ -4203,6 +4203,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-config.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-deployments.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-deployments.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-frontend-data-access-agent-console"
       }
@@ -4372,6 +4381,7 @@
           "client-chat-agent-task.constants.ts",
           "client-chat-automation.constants.ts",
           "client-chat-plan.constants.ts",
+          "client-deployments.constants.ts",
           "container-socket.actions.ts",
           "container-socket.effects.ts",
           "container-socket.facade.ts",
@@ -4400,20 +4410,20 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/deployments",
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/deployment-connections",
       "type": "state",
       "attrs": {
-        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/deployments",
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/deployment-connections",
         "languageOrKind": "ts",
         "projectName": "agenstra-frontend-data-access-agent-console",
-        "sliceName": "deployments",
+        "sliceName": "deployment-connections",
         "memberFiles": [
-          "deployments.actions.ts",
-          "deployments.effects.ts",
-          "deployments.facade.ts",
-          "deployments.reducer.ts",
-          "deployments.selectors.ts",
-          "deployments.types.ts"
+          "deployment-connections.actions.ts",
+          "deployment-connections.effects.ts",
+          "deployment-connections.facade.ts",
+          "deployment-connections.reducer.ts",
+          "deployment-connections.selectors.ts",
+          "deployment-connections.types.ts"
         ]
       }
     },
@@ -4676,6 +4686,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/workspace-deployments",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/workspace-deployments",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console",
+        "sliceName": "workspace-deployments",
+        "memberFiles": [
+          "workspace-deployments.actions.ts",
+          "workspace-deployments.effects.ts",
+          "workspace-deployments.facade.ts",
+          "workspace-deployments.reducer.ts",
+          "workspace-deployments.selectors.ts",
+          "workspace-deployments.types.ts"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/workspace-search",
       "type": "state",
       "attrs": {
@@ -4838,15 +4866,6 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-deployment-proxy.mmd",
-      "type": "diagram",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-deployment-proxy.mmd",
-        "languageOrKind": "mmd",
-        "projectName": "agenstra-backend-feature-agent-controller"
-      }
-    },
-    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-http-environment.mmd",
       "type": "diagram",
       "attrs": {
@@ -4973,6 +4992,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/context-import/atlassian-auth.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/context-import/atlassian-auth.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
       "type": "controller",
       "attrs": {
@@ -5045,6 +5073,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-deployments.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-deployments.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-isolation.controller.ts",
       "type": "controller",
       "attrs": {
@@ -5099,15 +5136,6 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-deployments.controller.ts",
-      "type": "controller",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-deployments.controller.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-controller"
-      }
-    },
-    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-graph.controller.ts",
       "type": "controller",
       "attrs": {
@@ -5148,6 +5176,15 @@
       "type": "controller",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/deployment-connections.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/deployment-connections.controller.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5418,6 +5455,33 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/create-client.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/deployments/deployment-connection.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/deployments/deployment-connection.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/deployments/deployment-run.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/deployments/deployment-run.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/deployments/deployment-workflow.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/deployments/deployment-workflow.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5814,6 +5878,33 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/client-opencode-config.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/deployment-connection.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/deployment-connection.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/deployment-run.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/deployment-run.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/deployment-workflow.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/deployment-workflow.entity.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -6260,6 +6351,33 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/deployment/github-deployment.provider.ts",
+      "type": "provider",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/deployment/github-deployment.provider.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/deployment/gitlab-deployment.provider.ts",
+      "type": "provider",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/deployment/gitlab-deployment.provider.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/deployment/jenkins-deployment.provider.ts",
+      "type": "provider",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/deployment/jenkins-deployment.provider.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/import/atlassian-external-import.provider.ts",
       "type": "provider",
       "attrs": {
@@ -6440,6 +6558,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-request-handler.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-request-handler.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-sources.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-sources.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-request-handler.service.ts",
       "type": "service",
       "attrs": {
@@ -6611,15 +6747,6 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-deployments-proxy.service.ts",
-      "type": "service",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-deployments-proxy.service.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-controller"
-      }
-    },
-    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-environment-variables-proxy.service.ts",
       "type": "service",
       "attrs": {
@@ -6750,6 +6877,51 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-vnc-ticket.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-connections.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-connections.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime-relay.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime-relay.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-workflows.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-workflows.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -11224,19 +11396,19 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context-deployments.controller.ts",
       "type": "controller",
       "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context-deployments.controller.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
     },
     {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-deployments.controller.ts",
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
       "type": "controller",
       "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-deployments.controller.ts",
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -11440,6 +11612,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-deployment.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-deployment.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-egress.dto.ts",
       "type": "dto",
       "attrs": {
@@ -11597,24 +11778,6 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/create-vnc-session-response.dto.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/deployment-configuration.dto.ts",
-      "type": "dto",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/deployment-configuration.dto.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/deployment-run.dto.ts",
-      "type": "dto",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/deployment-run.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -11899,24 +12062,6 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/deployment-configuration.entity.ts",
-      "type": "entity",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/deployment-configuration.entity.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/deployment-run.entity.ts",
-      "type": "entity",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/deployment-run.entity.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/workspace-configuration-override.entity.ts",
       "type": "entity",
       "attrs": {
@@ -12007,24 +12152,6 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/pipelines/github.provider.ts",
-      "type": "provider",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/pipelines/github.provider.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/pipelines/gitlab.provider.ts",
-      "type": "provider",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/pipelines/gitlab.provider.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-chat-sessions.repository.ts",
       "type": "repository",
       "attrs": {
@@ -12092,24 +12219,6 @@
       "type": "repository",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/deployment-configurations.repository.ts",
-      "type": "repository",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/deployment-configurations.repository.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/deployment-runs.repository.ts",
-      "type": "repository",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/deployment-runs.repository.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -12191,6 +12300,24 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-tickets.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployment-actions.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployment-actions.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployments-api.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployments-api.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -12398,15 +12525,6 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/config.service.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
-      "type": "service",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -16221,6 +16339,33 @@
       }
     },
     {
+      "id": "api:channel:clients/deploymentWorkflowUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "clients/deploymentWorkflowUpsert",
+        "summary": "Full `DeploymentWorkflowSummary` after create / update / enable switch / approval (by users or by an environment managing its own workflows; `approvalStatus`, `createdBy`, `updatedBy`) and whenever a run changes the workflow last-run fields (room `client:{clientId}`; machine tokens need `deployments:read`).",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:clients/deploymentWorkflowRemoved",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "clients/deploymentWorkflowRemoved",
+        "summary": "A deployment workflow (and its run history) was deleted.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:clients/deploymentRunUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "clients/deploymentRunUpsert",
+        "summary": "Full `DeploymentRunSummary` when a run is triggered, synced from the provider (`triggeredBy: external`) or changes status / conclusion (provider polling every `DEPLOYMENT_RUN_POLL_INTERVAL_MS`).",
+        "specKind": "asyncapi"
+      }
+    },
+    {
       "id": "api:channel:clients/ticketChatTicketUpsert",
       "type": "channel",
       "attrs": {
@@ -17008,143 +17153,143 @@
       }
     },
     {
-      "id": "api:HTTP:GET:/imports/atlassian/connections",
+      "id": "api:HTTP:GET:/connections/atlassian/connections",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/imports/atlassian/connections",
+        "pathOrChannel": "/connections/atlassian/connections",
         "operationId": "listAtlassianSiteConnections",
         "summary": "List Atlassian site connections (admin only)",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:POST:/imports/atlassian/connections",
+      "id": "api:HTTP:POST:/connections/atlassian/connections",
       "type": "endpoint",
       "attrs": {
         "method": "POST",
-        "pathOrChannel": "/imports/atlassian/connections",
+        "pathOrChannel": "/connections/atlassian/connections",
         "operationId": "createAtlassianSiteConnection",
         "summary": "Create Atlassian site connection (admin only)",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/imports/atlassian/connections/{id}",
+      "id": "api:HTTP:GET:/connections/atlassian/connections/{id}",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/imports/atlassian/connections/{id}",
+        "pathOrChannel": "/connections/atlassian/connections/{id}",
         "operationId": "getAtlassianSiteConnection",
         "summary": "Get Atlassian site connection (admin only)",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:PUT:/imports/atlassian/connections/{id}",
+      "id": "api:HTTP:PUT:/connections/atlassian/connections/{id}",
       "type": "endpoint",
       "attrs": {
         "method": "PUT",
-        "pathOrChannel": "/imports/atlassian/connections/{id}",
+        "pathOrChannel": "/connections/atlassian/connections/{id}",
         "operationId": "updateAtlassianSiteConnection",
         "summary": "Update Atlassian site connection (admin only)",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:DELETE:/imports/atlassian/connections/{id}",
+      "id": "api:HTTP:DELETE:/connections/atlassian/connections/{id}",
       "type": "endpoint",
       "attrs": {
         "method": "DELETE",
-        "pathOrChannel": "/imports/atlassian/connections/{id}",
+        "pathOrChannel": "/connections/atlassian/connections/{id}",
         "operationId": "deleteAtlassianSiteConnection",
         "summary": "Delete Atlassian site connection (admin only)",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:POST:/imports/atlassian/connections/{id}/test",
+      "id": "api:HTTP:POST:/connections/atlassian/connections/{id}/test",
       "type": "endpoint",
       "attrs": {
         "method": "POST",
-        "pathOrChannel": "/imports/atlassian/connections/{id}/test",
+        "pathOrChannel": "/connections/atlassian/connections/{id}/test",
         "operationId": "testAtlassianSiteConnection",
         "summary": "Test Atlassian connection (admin only)",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/imports/atlassian/configs",
+      "id": "api:HTTP:GET:/connections/atlassian/configs",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/imports/atlassian/configs",
+        "pathOrChannel": "/connections/atlassian/configs",
         "operationId": "listExternalImportConfigs",
         "summary": "List external import configs (admin only)",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:POST:/imports/atlassian/configs",
+      "id": "api:HTTP:POST:/connections/atlassian/configs",
       "type": "endpoint",
       "attrs": {
         "method": "POST",
-        "pathOrChannel": "/imports/atlassian/configs",
+        "pathOrChannel": "/connections/atlassian/configs",
         "operationId": "createExternalImportConfig",
         "summary": "Create import config (admin only)",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/imports/atlassian/configs/{id}",
+      "id": "api:HTTP:GET:/connections/atlassian/configs/{id}",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/imports/atlassian/configs/{id}",
+        "pathOrChannel": "/connections/atlassian/configs/{id}",
         "operationId": "getExternalImportConfig",
         "summary": "Get import config (admin only)",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:PUT:/imports/atlassian/configs/{id}",
+      "id": "api:HTTP:PUT:/connections/atlassian/configs/{id}",
       "type": "endpoint",
       "attrs": {
         "method": "PUT",
-        "pathOrChannel": "/imports/atlassian/configs/{id}",
+        "pathOrChannel": "/connections/atlassian/configs/{id}",
         "operationId": "updateExternalImportConfig",
         "summary": "Update import config (admin only)",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:DELETE:/imports/atlassian/configs/{id}",
+      "id": "api:HTTP:DELETE:/connections/atlassian/configs/{id}",
       "type": "endpoint",
       "attrs": {
         "method": "DELETE",
-        "pathOrChannel": "/imports/atlassian/configs/{id}",
+        "pathOrChannel": "/connections/atlassian/configs/{id}",
         "operationId": "deleteExternalImportConfig",
         "summary": "Delete import config (admin only)",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:POST:/imports/atlassian/configs/{id}/run",
+      "id": "api:HTTP:POST:/connections/atlassian/configs/{id}/run",
       "type": "endpoint",
       "attrs": {
         "method": "POST",
-        "pathOrChannel": "/imports/atlassian/configs/{id}/run",
+        "pathOrChannel": "/connections/atlassian/configs/{id}/run",
         "operationId": "runExternalImportConfig",
         "summary": "Run import once for config (admin only)",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:DELETE:/imports/atlassian/configs/{id}/markers",
+      "id": "api:HTTP:DELETE:/connections/atlassian/configs/{id}/markers",
       "type": "endpoint",
       "attrs": {
         "method": "DELETE",
-        "pathOrChannel": "/imports/atlassian/configs/{id}/markers",
+        "pathOrChannel": "/connections/atlassian/configs/{id}/markers",
         "operationId": "clearExternalImportMarkers",
         "summary": "Clear sync markers for config (admin only)",
         "specKind": "openapi"
@@ -18306,6 +18451,248 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/connections/deployments",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/connections/deployments",
+        "operationId": "listDeploymentConnections",
+        "summary": "List CI/CD deployment connections (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/connections/deployments",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/connections/deployments",
+        "operationId": "createDeploymentConnection",
+        "summary": "Create a CI/CD deployment connection (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/connections/deployments/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/connections/deployments/{id}",
+        "operationId": "getDeploymentConnection",
+        "summary": "Get a CI/CD deployment connection (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/connections/deployments/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/connections/deployments/{id}",
+        "operationId": "updateDeploymentConnection",
+        "summary": "Update a CI/CD deployment connection (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/connections/deployments/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/connections/deployments/{id}",
+        "operationId": "deleteDeploymentConnection",
+        "summary": "Delete a CI/CD deployment connection (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/connections/deployments/{id}/test",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/connections/deployments/{id}/test",
+        "operationId": "testDeploymentConnection",
+        "summary": "Test a CI/CD deployment connection (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{clientId}/deployments/connections",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{clientId}/deployments/connections",
+        "operationId": "listDeploymentConnectionOptions",
+        "summary": "Deployment connections usable by this workspace",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{clientId}/deployments/connections/{connectionId}/repositories",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{clientId}/deployments/connections/{connectionId}/repositories",
+        "operationId": "listDeploymentConnectionRepositories",
+        "summary": "Repositories reachable through a deployment connection",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{clientId}/deployments/connections/{connectionId}/branches",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{clientId}/deployments/connections/{connectionId}/branches",
+        "operationId": "listDeploymentConnectionBranches",
+        "summary": "Branches of a repository",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{clientId}/deployments/connections/{connectionId}/workflows",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{clientId}/deployments/connections/{connectionId}/workflows",
+        "operationId": "listDeploymentConnectionWorkflows",
+        "summary": "Provider workflows of a repository",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{clientId}/deployments/workflows",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{clientId}/deployments/workflows",
+        "operationId": "listDeploymentWorkflows",
+        "summary": "List deployment workflows",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{clientId}/deployments/workflows",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{clientId}/deployments/workflows",
+        "operationId": "createDeploymentWorkflow",
+        "summary": "Create a deployment workflow",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{clientId}/deployments/workflows/{workflowId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{clientId}/deployments/workflows/{workflowId}",
+        "operationId": "getDeploymentWorkflow",
+        "summary": "Get a deployment workflow",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/clients/{clientId}/deployments/workflows/{workflowId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/clients/{clientId}/deployments/workflows/{workflowId}",
+        "operationId": "updateDeploymentWorkflow",
+        "summary": "Update a deployment workflow",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/clients/{clientId}/deployments/workflows/{workflowId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/clients/{clientId}/deployments/workflows/{workflowId}",
+        "operationId": "deleteDeploymentWorkflow",
+        "summary": "Delete a deployment workflow and its run history",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{clientId}/deployments/workflows/{workflowId}/approval",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{clientId}/deployments/workflows/{workflowId}/approval",
+        "operationId": "approveDeploymentWorkflow",
+        "summary": "Approve a pending deployment workflow",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{clientId}/deployments/workflows/{workflowId}/trigger",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{clientId}/deployments/workflows/{workflowId}/trigger",
+        "operationId": "triggerDeploymentRun",
+        "summary": "Trigger a deployment run",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{clientId}/deployments/workflows/{workflowId}/sync",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{clientId}/deployments/workflows/{workflowId}/sync",
+        "operationId": "syncDeploymentWorkflowRuns",
+        "summary": "Sync provider run history",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{clientId}/deployments/runs",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{clientId}/deployments/runs",
+        "operationId": "listDeploymentRuns",
+        "summary": "List deployment runs",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{clientId}/deployments/runs/{runId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{clientId}/deployments/runs/{runId}",
+        "operationId": "getDeploymentRun",
+        "summary": "Deployment run with jobs",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{clientId}/deployments/runs/{runId}/logs",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{clientId}/deployments/runs/{runId}/logs",
+        "operationId": "getDeploymentRunLogs",
+        "summary": "Deployment run or job logs",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{clientId}/deployments/runs/{runId}/cancel",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{clientId}/deployments/runs/{runId}/cancel",
+        "operationId": "cancelDeploymentRun",
+        "summary": "Cancel a deployment run",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/clients/{id}/configuration-overrides",
       "type": "endpoint",
       "attrs": {
@@ -18577,149 +18964,6 @@
         "pathOrChannel": "/clients/{id}/provisioning",
         "operationId": "deleteProvisionedServer",
         "summary": "Delete a provisioned server and its associated client",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/configuration",
-        "operationId": "getClientAgentDeploymentConfiguration",
-        "summary": "Get deployment configuration for an agent (proxied)",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "endpoint",
-      "attrs": {
-        "method": "POST",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/configuration",
-        "operationId": "upsertClientAgentDeploymentConfiguration",
-        "summary": "Create or update deployment configuration for an agent (proxied)",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "endpoint",
-      "attrs": {
-        "method": "DELETE",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/configuration",
-        "operationId": "deleteClientAgentDeploymentConfiguration",
-        "summary": "Delete deployment configuration for an agent (proxied)",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/repositories",
-        "operationId": "listClientAgentDeploymentRepositories",
-        "summary": "List repositories accessible with the agent's deployment configuration (proxied)",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
-        "operationId": "listClientAgentDeploymentBranches",
-        "summary": "List branches for a repository (proxied)",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
-        "operationId": "listClientAgentDeploymentWorkflows",
-        "summary": "List workflows for a repository (proxied)",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/workflows/trigger",
-      "type": "endpoint",
-      "attrs": {
-        "method": "POST",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/workflows/trigger",
-        "operationId": "triggerClientAgentDeploymentWorkflow",
-        "summary": "Trigger a workflow run (proxied)",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/runs",
-        "operationId": "listClientAgentDeploymentRuns",
-        "summary": "List deployment runs for an agent (proxied)",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/runs/{runId}",
-        "operationId": "getClientAgentDeploymentRunStatus",
-        "summary": "Get the status of a pipeline run (proxied)",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/logs",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/runs/{runId}/logs",
-        "operationId": "getClientAgentDeploymentRunLogs",
-        "summary": "Get logs for a pipeline run (proxied)",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs",
-        "operationId": "listClientAgentDeploymentRunJobs",
-        "summary": "List jobs/steps for a pipeline run (proxied)",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
-        "operationId": "getClientAgentDeploymentJobLogs",
-        "summary": "Get logs for a specific job/step (proxied)",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/cancel",
-      "type": "endpoint",
-      "attrs": {
-        "method": "POST",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/runs/{runId}/cancel",
-        "operationId": "cancelClientAgentDeploymentRun",
-        "summary": "Cancel a running pipeline (proxied)",
         "specKind": "openapi"
       }
     },
@@ -19669,6 +19913,51 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "client.updated",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:deployment_run.completed",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "deployment_run.completed",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:deployment_run.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "deployment_run.created",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:deployment_workflow.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "deployment_workflow.created",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:deployment_workflow.deleted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "deployment_workflow.deleted",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:deployment_workflow.updated",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "deployment_workflow.updated",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
@@ -24336,6 +24625,15 @@
       }
     },
     {
+      "id": "api:channel:agents/agentDeploymentRequest",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/agentDeploymentRequest",
+        "summary": "Server → controller request with Socket.IO acknowledgement, emitted when the worker `agenstra` MCP server reads,\nstarts or manages the deployments of the agent's environment (`/api/agent-context/deployments`). `agentId` is the\nagent authenticated by its context token. Reads (`listWorkflows`, `getWorkflow`, `listRuns`, `getRun`,\n`getRunLogs`, `describeWorkflow`, `listConnections`) try every socket logged into the agent; mutations (`trigger`,\n`cancelRun`, `createWorkflow`, `updateWorkflow`, `deleteWorkflow`, `syncWorkflow`) use one socket only (60 s ack timeout each, the controller\ncalls the CI/CD provider). `trigger` / `cancelRun` carry the `source` the manager determined from the context\nticket of the prompt (`{ kind: chat }` after the user approved it in the visible chat, `{ kind: task, taskId }`\nfor scheduled task runs, `{ kind: automation }` for ticket automation; plans and other hidden sessions are refused\nbefore this event); the controller checks the task / automation opt-ins (`allowedDeploymentOperations`) itself.\nWorkflows created / updated by the agent are assigned to it only and pending until a workspace admin approves\nthem. The controller answers within the workspace bound to the connection, limited to the workflows available to\nthe agent, with `{ ok: true, workflows | runs | run | jobs | logs | cancelled | workflow | connections | deleted |\nsynced }` or `{ ok: false, error, status }`, and never forwards this event to browsers. Approval prompts of run actions in\nvisible chats arrive as `chatEvent` `question` frames with `subtype: context_deployment` and ids starting with\n`ctx_dep_` (answered via the permission reply endpoint).\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
       "id": "api:channel:agents/agentHandoffRequest",
       "type": "channel",
       "attrs": {
@@ -24605,6 +24903,149 @@
         "pathOrChannel": "/agent-context/tasks/{taskId}/runs",
         "operationId": "runAgentTask",
         "summary": "Queue an immediate run of one of the calling agent's tasks",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/deployments/workflows",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/deployments/workflows",
+        "operationId": "listAgentDeploymentWorkflows",
+        "summary": "List the deployment workflows available to the calling agent",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agent-context/deployments/workflows",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agent-context/deployments/workflows",
+        "operationId": "createAgentDeploymentWorkflow",
+        "summary": "Propose a deployment workflow for the calling agent",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/deployments/workflows/{workflowId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/deployments/workflows/{workflowId}",
+        "operationId": "getAgentDeploymentWorkflow",
+        "summary": "Read one deployment workflow available to the calling agent",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PATCH:/agent-context/deployments/workflows/{workflowId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PATCH",
+        "pathOrChannel": "/agent-context/deployments/workflows/{workflowId}",
+        "operationId": "updateAgentDeploymentWorkflow",
+        "summary": "Change a deployment workflow the calling agent manages for itself",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/agent-context/deployments/workflows/{workflowId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/agent-context/deployments/workflows/{workflowId}",
+        "operationId": "deleteAgentDeploymentWorkflow",
+        "summary": "Delete a deployment workflow the calling agent manages for itself",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agent-context/deployments/workflows/{workflowId}/sync",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agent-context/deployments/workflows/{workflowId}/sync",
+        "operationId": "syncAgentDeploymentWorkflow",
+        "summary": "Import the provider's latest runs of a deployment workflow available to the calling agent",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/deployments/connections",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/deployments/connections",
+        "operationId": "listAgentDeploymentConnections",
+        "summary": "List the deployment connections the calling agent's workspace may build workflows on",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/deployments/actions/{requestId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/deployments/actions/{requestId}",
+        "operationId": "getAgentDeploymentActionStatus",
+        "summary": "Keep waiting on a pending deployment action (trigger / cancel)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agent-context/deployments/workflows/{workflowId}/trigger",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agent-context/deployments/workflows/{workflowId}/trigger",
+        "operationId": "triggerAgentDeployment",
+        "summary": "Trigger a run of a deployment workflow available to the calling agent",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/deployments/runs",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/deployments/runs",
+        "operationId": "listAgentDeploymentRuns",
+        "summary": "List recent runs of the deployment workflows available to the calling agent",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/deployments/runs/{runId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/deployments/runs/{runId}",
+        "operationId": "getAgentDeploymentRun",
+        "summary": "Read one deployment run with its jobs",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/deployments/runs/{runId}/logs",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/deployments/runs/{runId}/logs",
+        "operationId": "getAgentDeploymentRunLogs",
+        "summary": "Read the log tail of a deployment run or one of its jobs",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agent-context/deployments/runs/{runId}/cancel",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agent-context/deployments/runs/{runId}/cancel",
+        "operationId": "cancelAgentDeploymentRun",
+        "summary": "Cancel an active run of a deployment workflow available to the calling agent",
         "specKind": "openapi"
       }
     },
@@ -25320,149 +25761,6 @@
         "pathOrChannel": "/agents/{agentId}/automation/verify-commands",
         "operationId": "runVerifierCommands",
         "summary": "Run verifier shell commands in the agent container",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/agents/{agentId}/deployments/configuration",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/agents/{agentId}/deployments/configuration",
-        "operationId": "getDeploymentConfiguration",
-        "summary": "Get deployment configuration for an agent",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:POST:/agents/{agentId}/deployments/configuration",
-      "type": "endpoint",
-      "attrs": {
-        "method": "POST",
-        "pathOrChannel": "/agents/{agentId}/deployments/configuration",
-        "operationId": "upsertDeploymentConfiguration",
-        "summary": "Create or update deployment configuration for an agent",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:DELETE:/agents/{agentId}/deployments/configuration",
-      "type": "endpoint",
-      "attrs": {
-        "method": "DELETE",
-        "pathOrChannel": "/agents/{agentId}/deployments/configuration",
-        "operationId": "deleteDeploymentConfiguration",
-        "summary": "Delete deployment configuration for an agent",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/agents/{agentId}/deployments/repositories",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/agents/{agentId}/deployments/repositories",
-        "operationId": "listDeploymentRepositories",
-        "summary": "List repositories accessible with the agent's deployment configuration",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
-        "operationId": "listDeploymentBranches",
-        "summary": "List branches for a repository",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
-        "operationId": "listDeploymentWorkflows",
-        "summary": "List workflows for a repository",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:POST:/agents/{agentId}/deployments/workflows/trigger",
-      "type": "endpoint",
-      "attrs": {
-        "method": "POST",
-        "pathOrChannel": "/agents/{agentId}/deployments/workflows/trigger",
-        "operationId": "triggerDeploymentWorkflow",
-        "summary": "Trigger a workflow run",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/agents/{agentId}/deployments/runs",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/agents/{agentId}/deployments/runs",
-        "operationId": "listDeploymentRuns",
-        "summary": "List deployment runs for an agent",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/agents/{agentId}/deployments/runs/{runId}",
-        "operationId": "getDeploymentRunStatus",
-        "summary": "Get the status of a pipeline run",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/logs",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/agents/{agentId}/deployments/runs/{runId}/logs",
-        "operationId": "getDeploymentRunLogs",
-        "summary": "Get logs for a pipeline run",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/agents/{agentId}/deployments/runs/{runId}/jobs",
-        "operationId": "listDeploymentRunJobs",
-        "summary": "List jobs/steps for a pipeline run",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
-        "operationId": "getDeploymentJobLogs",
-        "summary": "Get logs for a specific job/step",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:POST:/agents/{agentId}/deployments/runs/{runId}/cancel",
-      "type": "endpoint",
-      "attrs": {
-        "method": "POST",
-        "pathOrChannel": "/agents/{agentId}/deployments/runs/{runId}/cancel",
-        "operationId": "cancelDeploymentRun",
-        "summary": "Cancel a running pipeline",
         "specKind": "openapi"
       }
     },
@@ -27443,6 +27741,16 @@
       }
     },
     {
+      "id": "concept:agenstra-workspace-deployments",
+      "type": "concept",
+      "attrs": {
+        "title": "Workspace deployments",
+        "docPath": "docs/agenstra/deployment/environment-configuration.md",
+        "sectionAnchor": "workspace-deployments",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-agent-handoffs",
       "type": "concept",
       "attrs": {
@@ -28443,12 +28751,22 @@
       }
     },
     {
-      "id": "concept:agenstra-atlassian-import",
+      "id": "concept:agenstra-atlassian-connections",
       "type": "concept",
       "attrs": {
-        "title": "Atlassian import",
+        "title": "Atlassian connections",
         "docPath": "docs/agenstra/features/atlassian-import.md",
-        "sectionAnchor": "atlassian-import",
+        "sectionAnchor": "atlassian-connections",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-authentication-variants",
+      "type": "concept",
+      "attrs": {
+        "title": "Authentication variants",
+        "docPath": "docs/agenstra/features/atlassian-import.md",
+        "sectionAnchor": "authentication-variants",
         "domain": "agenstra"
       }
     },
@@ -28953,52 +29271,62 @@
       }
     },
     {
-      "id": "concept:agenstra-deployment-and-ci-cd-integration",
+      "id": "concept:agenstra-deployments",
       "type": "concept",
       "attrs": {
-        "title": "Deployment and CI/CD Integration",
+        "title": "Deployments",
         "docPath": "docs/agenstra/features/deployment.md",
-        "sectionAnchor": "deployment-and-ci-cd-integration",
+        "sectionAnchor": "deployments",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-supported-providers",
+      "id": "concept:agenstra-concepts",
       "type": "concept",
       "attrs": {
-        "title": "Supported Providers",
+        "title": "Concepts",
         "docPath": "docs/agenstra/features/deployment.md",
-        "sectionAnchor": "supported-providers",
+        "sectionAnchor": "concepts",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-usage-examples",
+      "id": "concept:agenstra-environment-actions-and-approvals",
       "type": "concept",
       "attrs": {
-        "title": "Usage Examples",
+        "title": "Environment actions and approvals",
         "docPath": "docs/agenstra/features/deployment.md",
-        "sectionAnchor": "usage-examples",
+        "sectionAnchor": "environment-actions-and-approvals",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-integration-with-agent-creation-update",
+      "id": "concept:agenstra-provider-setup",
       "type": "concept",
       "attrs": {
-        "title": "Integration with Agent Creation/Update",
+        "title": "Provider setup",
         "docPath": "docs/agenstra/features/deployment.md",
-        "sectionAnchor": "integration-with-agent-creation-update",
+        "sectionAnchor": "provider-setup",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-future-enhancements",
+      "id": "concept:agenstra-console",
       "type": "concept",
       "attrs": {
-        "title": "Future Enhancements",
+        "title": "Console",
         "docPath": "docs/agenstra/features/deployment.md",
-        "sectionAnchor": "future-enhancements",
+        "sectionAnchor": "console",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-audit-search-webhooks-and-live-updates",
+      "type": "concept",
+      "attrs": {
+        "title": "Audit, search, webhooks and live updates",
+        "docPath": "docs/agenstra/features/deployment.md",
+        "sectionAnchor": "audit-search-webhooks-and-live-updates",
         "domain": "agenstra"
       }
     },
@@ -29363,16 +29691,6 @@
       }
     },
     {
-      "id": "concept:agenstra-console",
-      "type": "concept",
-      "attrs": {
-        "title": "Console",
-        "docPath": "docs/agenstra/features/environment-graphs.md",
-        "sectionAnchor": "console",
-        "domain": "agenstra"
-      }
-    },
-    {
       "id": "concept:agenstra-agent-tools-agenstra-graph",
       "type": "concept",
       "attrs": {
@@ -29609,6 +29927,16 @@
         "title": "Server Provisioning",
         "docPath": "docs/agenstra/features/server-provisioning.md",
         "sectionAnchor": "server-provisioning",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-supported-providers",
+      "type": "concept",
+      "attrs": {
+        "title": "Supported Providers",
+        "docPath": "docs/agenstra/features/server-provisioning.md",
+        "sectionAnchor": "supported-providers",
         "domain": "agenstra"
       }
     },
@@ -37675,6 +38003,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:shared-shared-util-release-keys",
+      "to": "project:shared-shared-util-release-signing",
+      "type": "depends_on"
+    },
+    {
       "from": "project:identity-frontend-feature-auth",
       "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
@@ -37980,6 +38313,16 @@
       "type": "depends_on"
     },
     {
+      "from": "project:decabill-native-billing-console",
+      "to": "project:shared-shared-util-release-signing",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-native-billing-console",
+      "to": "project:shared-shared-util-release-keys",
+      "type": "depends_on"
+    },
+    {
       "from": "project:agenstra-backend-agent-manager",
       "to": "project:shared-platform-authentication",
       "type": "depends_on"
@@ -38070,6 +38413,16 @@
       "type": "depends_on"
     },
     {
+      "from": "project:agenstra-native-agent-console",
+      "to": "project:shared-shared-util-release-signing",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-native-agent-console",
+      "to": "project:shared-shared-util-release-keys",
+      "type": "depends_on"
+    },
+    {
       "from": "project:decabill-frontend-landingpage",
       "to": "project:decabill-frontend-util-configuration",
       "type": "depends_on"
@@ -38155,8 +38508,28 @@
       "type": "depends_on"
     },
     {
+      "from": "project:release-integrity",
+      "to": "project:shared-shared-util-release-keys",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:release-integrity",
+      "to": "project:shared-shared-util-release-signing",
+      "type": "depends_on"
+    },
+    {
       "from": "project:shared-mcp-devkit",
       "to": "project:code",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:desktop-release",
+      "to": "project:shared-shared-util-release-keys",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:desktop-release",
+      "to": "project:shared-shared-util-release-signing",
       "type": "depends_on"
     },
     {
@@ -39245,6 +39618,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:decabill-native-billing-console",
+      "to": "package:zod",
+      "type": "depends_on"
+    },
+    {
       "from": "project:agenstra-backend-agent-manager",
       "to": "package:@aws-sdk/client-s3",
       "type": "depends_on"
@@ -39767,6 +40145,11 @@
     {
       "from": "project:agenstra-native-agent-console",
       "to": "package:tslib",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-native-agent-console",
+      "to": "package:zod",
       "type": "depends_on"
     },
     {
@@ -40771,7 +41154,7 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
-      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployment-connections.service.ts",
       "type": "contains"
     },
     {
@@ -40831,6 +41214,11 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-deployments.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-search.service.ts",
       "type": "contains"
     },
@@ -40886,7 +41274,7 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
-      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/deployments",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/deployment-connections",
       "type": "contains"
     },
     {
@@ -40957,6 +41345,11 @@
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/workspace-config",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/workspace-deployments",
       "type": "contains"
     },
     {
@@ -41046,11 +41439,6 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-deployment-proxy.mmd",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-http-environment.mmd",
       "type": "contains"
     },
@@ -41121,6 +41509,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/context-import/atlassian-auth.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
       "type": "contains"
     },
@@ -41161,6 +41554,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-deployments.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-isolation.controller.ts",
       "type": "contains"
     },
@@ -41191,11 +41589,6 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-deployments.controller.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-graph.controller.ts",
       "type": "contains"
     },
@@ -41217,6 +41610,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/deployment-connections.controller.ts",
       "type": "contains"
     },
     {
@@ -41367,6 +41765,21 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/create-client.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/deployments/deployment-connection.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/deployments/deployment-run.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/deployments/deployment-workflow.dto.ts",
       "type": "contains"
     },
     {
@@ -41587,6 +42000,21 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/client-opencode-config.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/deployment-connection.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/deployment-run.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/deployment-workflow.entity.ts",
       "type": "contains"
     },
     {
@@ -41836,6 +42264,21 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/deployment/github-deployment.provider.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/deployment/gitlab-deployment.provider.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/deployment/jenkins-deployment.provider.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/import/atlassian-external-import.provider.ts",
       "type": "contains"
     },
@@ -41936,6 +42379,16 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-request-handler.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-sources.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-request-handler.service.ts",
       "type": "contains"
     },
@@ -42031,11 +42484,6 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-deployments-proxy.service.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-environment-variables-proxy.service.ts",
       "type": "contains"
     },
@@ -42107,6 +42555,31 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-vnc-ticket.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-connections.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime-relay.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-workflows.service.ts",
       "type": "contains"
     },
     {
@@ -44576,12 +45049,12 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context-deployments.controller.ts",
       "type": "contains"
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-deployments.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
       "type": "contains"
     },
     {
@@ -44696,6 +45169,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-deployment.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-egress.dto.ts",
       "type": "contains"
     },
@@ -44782,16 +45260,6 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/create-vnc-session-response.dto.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/deployment-configuration.dto.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/deployment-run.dto.ts",
       "type": "contains"
     },
     {
@@ -44951,16 +45419,6 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/deployment-configuration.entity.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/deployment-run.entity.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/workspace-configuration-override.entity.ts",
       "type": "contains"
     },
@@ -45011,16 +45469,6 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/pipelines/github.provider.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/pipelines/gitlab.provider.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-chat-sessions.repository.ts",
       "type": "contains"
     },
@@ -45057,16 +45505,6 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/deployment-configurations.repository.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/deployment-runs.repository.ts",
       "type": "contains"
     },
     {
@@ -45112,6 +45550,16 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-tickets.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployment-actions.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployments-api.service.ts",
       "type": "contains"
     },
     {
@@ -45227,11 +45675,6 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/config.service.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
       "type": "contains"
     },
     {
@@ -46576,6 +47019,21 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:clients/deploymentWorkflowUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:clients/deploymentWorkflowRemoved",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:clients/deploymentRunUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
       "to": "api:channel:clients/ticketChatTicketUpsert",
       "type": "contains"
     },
@@ -46961,67 +47419,67 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/imports/atlassian/connections",
+      "to": "api:HTTP:GET:/connections/atlassian/connections",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/imports/atlassian/connections",
+      "to": "api:HTTP:POST:/connections/atlassian/connections",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/imports/atlassian/connections/{id}",
+      "to": "api:HTTP:GET:/connections/atlassian/connections/{id}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:PUT:/imports/atlassian/connections/{id}",
+      "to": "api:HTTP:PUT:/connections/atlassian/connections/{id}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:DELETE:/imports/atlassian/connections/{id}",
+      "to": "api:HTTP:DELETE:/connections/atlassian/connections/{id}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/imports/atlassian/connections/{id}/test",
+      "to": "api:HTTP:POST:/connections/atlassian/connections/{id}/test",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/imports/atlassian/configs",
+      "to": "api:HTTP:GET:/connections/atlassian/configs",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/imports/atlassian/configs",
+      "to": "api:HTTP:POST:/connections/atlassian/configs",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:GET:/connections/atlassian/configs/{id}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:PUT:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:PUT:/connections/atlassian/configs/{id}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:DELETE:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:DELETE:/connections/atlassian/configs/{id}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/imports/atlassian/configs/{id}/run",
+      "to": "api:HTTP:POST:/connections/atlassian/configs/{id}/run",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:DELETE:/imports/atlassian/configs/{id}/markers",
+      "to": "api:HTTP:DELETE:/connections/atlassian/configs/{id}/markers",
       "type": "contains"
     },
     {
@@ -47551,6 +48009,116 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/connections/deployments",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/connections/deployments",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/connections/deployments/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/connections/deployments/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/connections/deployments/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/connections/deployments/{id}/test",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/connections",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/connections/{connectionId}/repositories",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/connections/{connectionId}/branches",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/connections/{connectionId}/workflows",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/workflows",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/workflows",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/workflows/{workflowId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/clients/{clientId}/deployments/workflows/{workflowId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/clients/{clientId}/deployments/workflows/{workflowId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/workflows/{workflowId}/approval",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/workflows/{workflowId}/trigger",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/workflows/{workflowId}/sync",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/runs",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/runs/{runId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/runs/{runId}/logs",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/runs/{runId}/cancel",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:GET:/clients/{id}/configuration-overrides",
       "type": "contains"
     },
@@ -47672,71 +48240,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:DELETE:/clients/{id}/provisioning",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/workflows/trigger",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/logs",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/cancel",
       "type": "contains"
     },
     {
@@ -48192,6 +48695,31 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "webhook-event:agenstra-backend-feature-agent-controller:client.updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:deployment_run.completed",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:deployment_run.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:deployment_workflow.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:deployment_workflow.deleted",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:deployment_workflow.updated",
       "type": "contains"
     },
     {
@@ -50736,6 +51264,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/agentDeploymentRequest",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
       "to": "api:channel:agents/agentHandoffRequest",
       "type": "contains"
     },
@@ -50857,6 +51390,71 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/agent-context/tasks/{taskId}/runs",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/deployments/workflows",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agent-context/deployments/workflows",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/deployments/workflows/{workflowId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:PATCH:/agent-context/deployments/workflows/{workflowId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/agent-context/deployments/workflows/{workflowId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agent-context/deployments/workflows/{workflowId}/sync",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/deployments/connections",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/deployments/actions/{requestId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agent-context/deployments/workflows/{workflowId}/trigger",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/deployments/runs",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/deployments/runs/{runId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/deployments/runs/{runId}/logs",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agent-context/deployments/runs/{runId}/cancel",
       "type": "contains"
     },
     {
@@ -51182,71 +51780,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/agents/{agentId}/automation/verify-commands",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/configuration",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/configuration",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:DELETE:/agents/{agentId}/deployments/configuration",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/workflows/trigger",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/logs",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
-      "type": "contains"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/runs/{runId}/cancel",
       "type": "contains"
     },
     {
@@ -52611,6 +53144,11 @@
     },
     {
       "from": "file:docs/agenstra/deployment/environment-configuration.md",
+      "to": "concept:agenstra-workspace-deployments",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/deployment/environment-configuration.md",
       "to": "concept:agenstra-agent-handoffs",
       "type": "contains"
     },
@@ -53276,12 +53814,17 @@
     },
     {
       "from": "file:docs/agenstra/features/atlassian-import.md",
-      "to": "concept:agenstra-atlassian-import",
+      "to": "concept:agenstra-atlassian-connections",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/features/atlassian-import.md",
       "to": "concept:agenstra-overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/atlassian-import.md",
+      "to": "concept:agenstra-authentication-variants",
       "type": "contains"
     },
     {
@@ -53631,37 +54174,47 @@
     },
     {
       "from": "file:docs/agenstra/features/deployment.md",
-      "to": "concept:agenstra-deployment-and-ci-cd-integration",
+      "to": "concept:agenstra-deployments",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/features/deployment.md",
-      "to": "concept:agenstra-overview",
+      "to": "concept:agenstra-prerequisites",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/features/deployment.md",
-      "to": "concept:agenstra-architecture",
+      "to": "concept:agenstra-concepts",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/features/deployment.md",
-      "to": "concept:agenstra-supported-providers",
+      "to": "concept:agenstra-environment-actions-and-approvals",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/features/deployment.md",
-      "to": "concept:agenstra-configuration",
+      "to": "concept:agenstra-flow",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/features/deployment.md",
-      "to": "concept:agenstra-api-endpoints",
+      "to": "concept:agenstra-provider-setup",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/features/deployment.md",
-      "to": "concept:agenstra-usage-examples",
+      "to": "concept:agenstra-console",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/deployment.md",
+      "to": "concept:agenstra-rest-api-controller",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/deployment.md",
+      "to": "concept:agenstra-agent-tools",
       "type": "contains"
     },
     {
@@ -53671,17 +54224,12 @@
     },
     {
       "from": "file:docs/agenstra/features/deployment.md",
-      "to": "concept:agenstra-database-schema",
+      "to": "concept:agenstra-audit-search-webhooks-and-live-updates",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/features/deployment.md",
-      "to": "concept:agenstra-integration-with-agent-creation-update",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/agenstra/features/deployment.md",
-      "to": "concept:agenstra-future-enhancements",
+      "to": "concept:agenstra-configuration",
       "type": "contains"
     },
     {
@@ -59731,6 +60279,166 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/connections",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/connections",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/connections/{connectionId}/repositories",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/connections/{connectionId}/repositories",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/connections/{connectionId}/branches",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/connections/{connectionId}/branches",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/connections/{connectionId}/workflows",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/connections/{connectionId}/workflows",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/workflows",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/workflows",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/workflows",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/workflows",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/workflows/{workflowId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/workflows/{workflowId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:PUT:/clients/{clientId}/deployments/workflows/{workflowId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:PUT:/clients/{clientId}/deployments/workflows/{workflowId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:DELETE:/clients/{clientId}/deployments/workflows/{workflowId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:DELETE:/clients/{clientId}/deployments/workflows/{workflowId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/workflows/{workflowId}/approval",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/workflows/{workflowId}/approval",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/workflows/{workflowId}/trigger",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/workflows/{workflowId}/trigger",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/workflows/{workflowId}/sync",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/workflows/{workflowId}/sync",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/runs",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/runs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/runs/{runId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/runs/{runId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/runs/{runId}/logs",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{clientId}/deployments/runs/{runId}/logs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/runs/{runId}/cancel",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{clientId}/deployments/runs/{runId}/cancel",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
       "to": "api:HTTP:GET:/clients/{id}/configuration-overrides",
       "type": "implements"
     },
@@ -59977,136 +60685,6 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:DELETE:/clients/{id}/provisioning",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/workflows/trigger",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/workflows/trigger",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/logs",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/logs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/cancel",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/cancel",
       "type": "implements"
     },
     {
@@ -60501,132 +61079,192 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
-      "to": "api:HTTP:GET:/imports/atlassian/connections",
+      "to": "api:HTTP:GET:/connections/atlassian/connections",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/imports/atlassian/connections",
+      "to": "api:HTTP:GET:/connections/atlassian/connections",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
-      "to": "api:HTTP:POST:/imports/atlassian/connections",
+      "to": "api:HTTP:POST:/connections/atlassian/connections",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:POST:/imports/atlassian/connections",
+      "to": "api:HTTP:POST:/connections/atlassian/connections",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
-      "to": "api:HTTP:GET:/imports/atlassian/connections/{id}",
+      "to": "api:HTTP:GET:/connections/atlassian/connections/{id}",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/imports/atlassian/connections/{id}",
+      "to": "api:HTTP:GET:/connections/atlassian/connections/{id}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
-      "to": "api:HTTP:PUT:/imports/atlassian/connections/{id}",
+      "to": "api:HTTP:PUT:/connections/atlassian/connections/{id}",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:PUT:/imports/atlassian/connections/{id}",
+      "to": "api:HTTP:PUT:/connections/atlassian/connections/{id}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
-      "to": "api:HTTP:DELETE:/imports/atlassian/connections/{id}",
+      "to": "api:HTTP:DELETE:/connections/atlassian/connections/{id}",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:DELETE:/imports/atlassian/connections/{id}",
+      "to": "api:HTTP:DELETE:/connections/atlassian/connections/{id}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
-      "to": "api:HTTP:POST:/imports/atlassian/connections/{id}/test",
+      "to": "api:HTTP:POST:/connections/atlassian/connections/{id}/test",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:POST:/imports/atlassian/connections/{id}/test",
+      "to": "api:HTTP:POST:/connections/atlassian/connections/{id}/test",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
-      "to": "api:HTTP:GET:/imports/atlassian/configs",
+      "to": "api:HTTP:GET:/connections/atlassian/configs",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/imports/atlassian/configs",
+      "to": "api:HTTP:GET:/connections/atlassian/configs",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
-      "to": "api:HTTP:POST:/imports/atlassian/configs",
+      "to": "api:HTTP:POST:/connections/atlassian/configs",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:POST:/imports/atlassian/configs",
+      "to": "api:HTTP:POST:/connections/atlassian/configs",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
-      "to": "api:HTTP:GET:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:GET:/connections/atlassian/configs/{id}",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:GET:/connections/atlassian/configs/{id}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
-      "to": "api:HTTP:PUT:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:PUT:/connections/atlassian/configs/{id}",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:PUT:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:PUT:/connections/atlassian/configs/{id}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
-      "to": "api:HTTP:DELETE:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:DELETE:/connections/atlassian/configs/{id}",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:DELETE:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:DELETE:/connections/atlassian/configs/{id}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
-      "to": "api:HTTP:POST:/imports/atlassian/configs/{id}/run",
+      "to": "api:HTTP:POST:/connections/atlassian/configs/{id}/run",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:POST:/imports/atlassian/configs/{id}/run",
+      "to": "api:HTTP:POST:/connections/atlassian/configs/{id}/run",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
-      "to": "api:HTTP:DELETE:/imports/atlassian/configs/{id}/markers",
+      "to": "api:HTTP:DELETE:/connections/atlassian/configs/{id}/markers",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:DELETE:/imports/atlassian/configs/{id}/markers",
+      "to": "api:HTTP:DELETE:/connections/atlassian/configs/{id}/markers",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/deployment-connections.controller.ts",
+      "to": "api:HTTP:GET:/connections/deployments",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/connections/deployments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/deployment-connections.controller.ts",
+      "to": "api:HTTP:POST:/connections/deployments",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/connections/deployments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/deployment-connections.controller.ts",
+      "to": "api:HTTP:GET:/connections/deployments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/connections/deployments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/deployment-connections.controller.ts",
+      "to": "api:HTTP:PUT:/connections/deployments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:PUT:/connections/deployments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/deployment-connections.controller.ts",
+      "to": "api:HTTP:DELETE:/connections/deployments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:DELETE:/connections/deployments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/deployment-connections.controller.ts",
+      "to": "api:HTTP:POST:/connections/deployments/{id}/test",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/connections/deployments/{id}/test",
       "type": "implements"
     },
     {
@@ -65556,136 +66194,6 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:DELETE:/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:DELETE:/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/workflows/trigger",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/workflows/trigger",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/logs",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/logs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/runs/{runId}/cancel",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/runs/{runId}/cancel",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
       "to": "api:HTTP:POST:/agents/{agentId}/vnc/sessions",
       "type": "implements"
     },
@@ -66121,71 +66629,6 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:DELETE:/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/workflows/trigger",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/logs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/runs/{runId}/cancel",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
       "to": "api:HTTP:POST:/agents/{agentId}/vnc/sessions",
       "type": "implements"
     },
@@ -66557,71 +67000,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
       "to": "api:HTTP:POST:/agents/{agentId}/automation/verify-commands",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:DELETE:/agents/{agentId}/deployments/configuration",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/workflows/trigger",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/logs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/runs/{runId}/cancel",
       "type": "implements"
     },
     {
@@ -67680,6 +68058,26 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-deployments.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-workflows.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-deployments.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-deployments.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-deployments.controller.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-isolation.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-isolation.service.ts",
       "type": "injects"
@@ -67776,21 +68174,6 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-configuration-overrides.controller.ts",
-      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-deployments.controller.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-deployments-proxy.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-deployments.controller.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-deployments.controller.ts",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
       "type": "injects"
     },
@@ -67960,6 +68343,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/deployment-connections.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-connections.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
       "type": "injects"
@@ -68120,6 +68508,21 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-request-handler.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime-relay.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/knowledge-board.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
       "type": "injects"
@@ -68207,6 +68610,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/import/atlassian-external-import.provider.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/external-import-sync-marker.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/import/atlassian-external-import.provider.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/context-import/atlassian-auth.service.ts",
       "type": "injects"
     },
     {
@@ -68350,6 +68758,16 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-request-handler.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-workflows.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-request-handler.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-request-handler.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoffs.service.ts",
       "type": "injects"
@@ -68432,6 +68850,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/atlassian-site-connection.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/atlassian-site-connection.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/context-import/atlassian-auth.service.ts",
       "type": "injects"
     },
     {
@@ -68567,21 +68990,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-chats-proxy.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-deployments-proxy.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-deployments-proxy.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-deployments-proxy.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search-index.service.ts",
       "type": "injects"
     },
     {
@@ -68757,6 +69165,76 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-vnc-ticket.service.ts",
       "to": "file:libs/domains/shared/backend/util-redis-cache/src/lib/redis-cache.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-connections.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime-relay.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime-relay.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-workflows.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime-relay.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-workflows.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-connections.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/statistics.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-sources.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-workflows.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-connections.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-workflows.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-workflows.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/statistics.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-workflows.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search-index.service.ts",
       "type": "injects"
     },
     {
@@ -68957,6 +69435,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-request-handler.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-request-handler.service.ts",
       "type": "injects"
     },
     {
@@ -72730,6 +73213,31 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context-deployments.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context-deployments.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployments-api.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context-deployments.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-tickets.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context-deployments.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployment-actions.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context-deployments.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tool-calls.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
       "type": "injects"
@@ -72757,11 +73265,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-workspace-mounts.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-deployments.controller.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
       "type": "injects"
     },
     {
@@ -72877,6 +73380,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-changes.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployment-actions.service.ts",
       "type": "injects"
     },
     {
@@ -73060,6 +73568,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployments-api.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
       "type": "injects"
@@ -73187,6 +73700,21 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployment-actions.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-tickets.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployment-actions.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployment-actions.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployments-api.service.ts",
       "type": "injects"
     },
     {
@@ -73476,11 +74004,6 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-inotify-supervisor.service.ts",
       "type": "injects"
     },
@@ -73497,21 +74020,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/isolation-capabilities.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/deployment-configurations.repository.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/deployment-runs.repository.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
       "type": "injects"
     },
     {
@@ -73930,6 +74438,11 @@
       "type": "injects"
     },
     {
+      "from": "file:apps/agenstra/backend-agent-controller/src/queue/processors/controller-jobs.processor.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-tenant.service.ts",
       "type": "injects"
@@ -74121,17 +74634,22 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/deployment-connections.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-deployments.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-configuration-overrides.controller.ts",
       "type": "provides"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-vcs.controller.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-deployments.controller.ts",
       "type": "provides"
     },
     {
@@ -74247,6 +74765,56 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-metrics-collector.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/deployment/github-deployment.provider.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/deployment/gitlab-deployment.provider.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/providers/deployment/jenkins-deployment.provider.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-connections.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-workflows.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-runs.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/deployment-realtime-relay.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-sources.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-request-handler.service.ts",
       "type": "provides"
     },
     {
@@ -74417,11 +74985,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-vcs-proxy.service.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-deployments-proxy.service.ts",
       "type": "provides"
     },
     {
@@ -74672,6 +75235,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/context-import.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/context-import-orchestrator.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/context-import.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/context-import/atlassian-auth.service.ts",
       "type": "provides"
     },
     {
@@ -76141,11 +76709,6 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-deployments.controller.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vnc.controller.ts",
       "type": "provides"
     },
@@ -76172,6 +76735,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-handoffs.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context-deployments.controller.ts",
       "type": "provides"
     },
     {
@@ -76287,6 +76855,16 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-handoffs-api.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployments-api.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-deployment-actions.service.ts",
       "type": "provides"
     },
     {
@@ -76421,11 +76999,6 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
       "type": "provides"
     },
@@ -76447,16 +77020,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-environment-variables.repository.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/deployment-configurations.repository.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/deployment-runs.repository.ts",
       "type": "provides"
     },
     {
@@ -76487,16 +77050,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/opencode-agent.provider.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/pipelines/github.provider.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/pipelines/gitlab.provider.ts",
       "type": "provides"
     },
     {
@@ -77825,66 +78378,6 @@
       "type": "calls"
     },
     {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
-      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/deployments/configuration",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/workflows/trigger",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/logs",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/cancel",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
-      "type": "calls"
-    },
-    {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/env.service.ts",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/environment",
       "type": "calls"
@@ -78785,8 +79278,8 @@
       "type": "contains"
     },
     {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/deployments",
-      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployments.service.ts",
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/deployment-connections",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/deployment-connections.service.ts",
       "type": "contains"
     },
     {
@@ -78827,6 +79320,11 @@
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/workspace-config",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-config.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/workspace-deployments",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-deployments.service.ts",
       "type": "contains"
     },
     {
@@ -78951,22 +79449,12 @@
     },
     {
       "from": "concept:agenstra-flow",
-      "to": "api:HTTP:GET:/agents",
+      "to": "api:HTTP:GET:/agent-context/deployments/workflows",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-flow",
-      "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-flow",
-      "to": "api:HTTP:GET:/agent-context/tasks",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-flow",
-      "to": "api:HTTP:POST:/agent-context/tasks",
+      "to": "api:HTTP:POST:/agent-context/deployments/workflows",
       "type": "documents"
     },
     {
@@ -79241,6 +79729,16 @@
     },
     {
       "from": "concept:agenstra-agent-controller-api",
+      "to": "api:HTTP:GET:/connections/deployments",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-agent-controller-api",
+      "to": "api:HTTP:POST:/connections/deployments",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-agent-controller-api",
       "to": "api:HTTP:GET:/statistics/egress-events",
       "type": "documents"
     },
@@ -79461,6 +79959,16 @@
     },
     {
       "from": "concept:agenstra-state-management-ngrx",
+      "to": "api:HTTP:GET:/connections/deployments",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-state-management-ngrx",
+      "to": "api:HTTP:POST:/connections/deployments",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-state-management-ngrx",
       "to": "api:HTTP:GET:/agents",
       "type": "documents"
     },
@@ -79502,6 +80010,16 @@
     {
       "from": "concept:agenstra-routing",
       "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-routing",
+      "to": "api:HTTP:GET:/connections/deployments",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-routing",
+      "to": "api:HTTP:POST:/connections/deployments",
       "type": "documents"
     },
     {
@@ -79557,6 +80075,16 @@
     {
       "from": "concept:agenstra-backend-applications",
       "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-backend-applications",
+      "to": "api:HTTP:GET:/connections/deployments",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-backend-applications",
+      "to": "api:HTTP:POST:/connections/deployments",
       "type": "documents"
     },
     {
@@ -79622,6 +80150,16 @@
     {
       "from": "concept:agenstra-frontend-libraries",
       "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-frontend-libraries",
+      "to": "api:HTTP:GET:/connections/deployments",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-frontend-libraries",
+      "to": "api:HTTP:POST:/connections/deployments",
       "type": "documents"
     },
     {
@@ -80236,12 +80774,12 @@
     },
     {
       "from": "concept:agenstra-rest-api-controller",
-      "to": "api:HTTP:GET:/agents",
+      "to": "api:HTTP:GET:/connections/deployments",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-rest-api-controller",
-      "to": "api:HTTP:POST:/agents",
+      "to": "api:HTTP:POST:/connections/deployments",
       "type": "documents"
     },
     {
@@ -80295,6 +80833,46 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-atlassian-connections",
+      "to": "api:HTTP:GET:/connections/deployments",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-atlassian-connections",
+      "to": "api:HTTP:POST:/connections/deployments",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-variants",
+      "to": "api:HTTP:GET:/connections/atlassian/connections",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-variants",
+      "to": "api:HTTP:POST:/connections/atlassian/connections",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-variants",
+      "to": "api:HTTP:GET:/connections/atlassian/connections/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-variants",
+      "to": "api:HTTP:PUT:/connections/atlassian/connections/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-variants",
+      "to": "api:HTTP:DELETE:/connections/atlassian/connections/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-variants",
+      "to": "api:HTTP:POST:/connections/atlassian/connections/{id}/test",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-why-controller-native",
       "to": "api:HTTP:GET:/tickets",
       "type": "documents"
@@ -80306,42 +80884,42 @@
     },
     {
       "from": "concept:agenstra-jira-vs-confluence",
-      "to": "api:HTTP:POST:/imports/atlassian/configs",
+      "to": "api:HTTP:POST:/connections/atlassian/configs",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-jira-vs-confluence",
-      "to": "api:HTTP:PUT:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:PUT:/connections/atlassian/configs/{id}",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-queue-jobs-and-manual-runs",
-      "to": "api:HTTP:GET:/imports/atlassian/configs",
+      "to": "api:HTTP:GET:/connections/atlassian/configs",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-queue-jobs-and-manual-runs",
-      "to": "api:HTTP:POST:/imports/atlassian/configs",
+      "to": "api:HTTP:POST:/connections/atlassian/configs",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-queue-jobs-and-manual-runs",
-      "to": "api:HTTP:GET:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:GET:/connections/atlassian/configs/{id}",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-queue-jobs-and-manual-runs",
-      "to": "api:HTTP:PUT:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:PUT:/connections/atlassian/configs/{id}",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-queue-jobs-and-manual-runs",
-      "to": "api:HTTP:DELETE:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:DELETE:/connections/atlassian/configs/{id}",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-queue-jobs-and-manual-runs",
-      "to": "api:HTTP:POST:/imports/atlassian/configs/{id}/run",
+      "to": "api:HTTP:POST:/connections/atlassian/configs/{id}/run",
       "type": "documents"
     },
     {
@@ -80351,32 +80929,32 @@
     },
     {
       "from": "concept:agenstra-sync-markers-and-cleanup",
-      "to": "api:HTTP:GET:/imports/atlassian/configs",
+      "to": "api:HTTP:GET:/connections/atlassian/configs",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-sync-markers-and-cleanup",
-      "to": "api:HTTP:POST:/imports/atlassian/configs",
+      "to": "api:HTTP:POST:/connections/atlassian/configs",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-sync-markers-and-cleanup",
-      "to": "api:HTTP:GET:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:GET:/connections/atlassian/configs/{id}",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-sync-markers-and-cleanup",
-      "to": "api:HTTP:PUT:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:PUT:/connections/atlassian/configs/{id}",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-sync-markers-and-cleanup",
-      "to": "api:HTTP:DELETE:/imports/atlassian/configs/{id}",
+      "to": "api:HTTP:DELETE:/connections/atlassian/configs/{id}",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-sync-markers-and-cleanup",
-      "to": "api:HTTP:DELETE:/imports/atlassian/configs/{id}/markers",
+      "to": "api:HTTP:DELETE:/connections/atlassian/configs/{id}/markers",
       "type": "documents"
     },
     {
@@ -81000,63 +81578,43 @@
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-supported-providers",
-      "to": "api:HTTP:POST:/auth/register",
+      "from": "concept:agenstra-deployments",
+      "to": "api:HTTP:GET:/connections/deployments",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-usage-examples",
-      "to": "api:HTTP:GET:/agents",
+      "from": "concept:agenstra-deployments",
+      "to": "api:HTTP:POST:/connections/deployments",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-usage-examples",
-      "to": "api:HTTP:POST:/agents",
+      "from": "concept:agenstra-concepts",
+      "to": "api:HTTP:GET:/connections/deployments",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-usage-examples",
-      "to": "api:HTTP:GET:/config",
+      "from": "concept:agenstra-concepts",
+      "to": "api:HTTP:POST:/connections/deployments",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-usage-examples",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/configuration",
+      "from": "concept:agenstra-environment-actions-and-approvals",
+      "to": "api:HTTP:GET:/projects",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-usage-examples",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/configuration",
+      "from": "concept:agenstra-audit-search-webhooks-and-live-updates",
+      "to": "api:HTTP:GET:/clients",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-usage-examples",
-      "to": "api:HTTP:DELETE:/agents/{agentId}/deployments/configuration",
+      "from": "concept:agenstra-audit-search-webhooks-and-live-updates",
+      "to": "api:HTTP:POST:/clients",
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-usage-examples",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-usage-examples",
-      "to": "api:HTTP:POST:/agents/{agentId}/deployments/workflows/trigger",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-usage-examples",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-usage-examples",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-usage-examples",
-      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/logs",
+      "from": "concept:agenstra-audit-search-webhooks-and-live-updates",
+      "to": "api:HTTP:GET:/statistics/entity-events",
       "type": "documents"
     },
     {
@@ -81320,6 +81878,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-supported-providers",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-provisioning-process",
       "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
@@ -81372,6 +81935,26 @@
     {
       "from": "concept:agenstra-run-phases-high-level",
       "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-run-phases-high-level",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-run-phases-high-level",
+      "to": "api:HTTP:POST:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-run-phases-high-level",
+      "to": "api:HTTP:GET:/tickets/{ticketId}/automation",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-run-phases-high-level",
+      "to": "api:HTTP:PATCH:/tickets/{ticketId}/automation",
       "type": "documents"
     },
     {
@@ -89095,6 +89678,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-workspace-deployments",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-agent-handoffs",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -89595,7 +90183,12 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-atlassian-import",
+      "from": "concept:agenstra-atlassian-connections",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-authentication-variants",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -89850,27 +90443,32 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-deployment-and-ci-cd-integration",
+      "from": "concept:agenstra-deployments",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-supported-providers",
+      "from": "concept:agenstra-concepts",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-usage-examples",
+      "from": "concept:agenstra-environment-actions-and-approvals",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-integration-with-agent-creation-update",
+      "from": "concept:agenstra-provider-setup",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-future-enhancements",
+      "from": "concept:agenstra-console",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-audit-search-webhooks-and-live-updates",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -90055,11 +90653,6 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-console",
-      "to": "domain:agenstra",
-      "type": "belongs_to"
-    },
-    {
       "from": "concept:agenstra-agent-tools-agenstra-graph",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -90176,6 +90769,11 @@
     },
     {
       "from": "concept:agenstra-server-provisioning",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-supported-providers",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

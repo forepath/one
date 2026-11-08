@@ -8,13 +8,11 @@ import {
   isJiraAdfDocument,
   jiraAdfToMarkdown,
 } from '../../context-import/atlassian-format-to-markdown';
+import { AtlassianAuthError, AtlassianAuthService } from '../../context-import/atlassian-auth.service';
 import {
   atlassianFetchJson,
-  buildBasicAuthHeader,
   confluenceContentSearchUrlsEquivalent,
-  confluenceRestApiRoot,
   contentHashForImport,
-  normalizeAtlassianBaseUrl,
   resolveConfluencePaginationUrl,
 } from '../../context-import/atlassian-rest.util';
 import {
@@ -80,12 +78,18 @@ export class AtlassianImportProvider implements ExternalContextImportProvider {
     @Inject(forwardRef(() => KnowledgeTreeService))
     private readonly knowledgeTreeService: KnowledgeTreeService,
     private readonly syncMarkerService: ExternalImportSyncMarkerService,
+    private readonly atlassianAuth: AtlassianAuthService,
   ) {}
 
   getType(): string {
     return ExternalImportProviderId.ATLASSIAN;
   }
 
+  /**
+   * Verifies credentials against Jira (`/rest/api/3/myself`) and, when Jira is not reachable with them (e.g. a
+   * Confluence-only service account), against Confluence (`/rest/api/space?limit=1`). Messages never contain
+   * credentials or upstream response bodies.
+   */
   async testConnection(connectionId: string): Promise<{ ok: boolean; message?: string }> {
     try {
       const row = await this.connectionRepo.findOne({ where: { id: connectionId } });
@@ -94,20 +98,26 @@ export class AtlassianImportProvider implements ExternalContextImportProvider {
         return { ok: false, message: 'Connection not found' };
       }
 
-      const base = normalizeAtlassianBaseUrl(row.baseUrl);
-      const auth = buildBasicAuthHeader(row.accountEmail, row.apiToken);
-      const url = `${base}/rest/api/3/myself`;
-      const res = await atlassianFetchJson(url, { method: 'GET', headers: { Authorization: auth } });
+      const ctx = await this.atlassianAuth.resolve(row);
+      const headers = { Authorization: ctx.authorizationHeader };
+      const jira = await atlassianFetchJson(`${ctx.jiraApiBase}/rest/api/3/myself`, { method: 'GET', headers });
 
-      if (!res.ok) {
-        return { ok: false, message: `HTTP ${res.status}` };
+      if (jira.ok) {
+        return { ok: true };
       }
 
-      return { ok: true };
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
+      const confluence = await atlassianFetchJson(`${ctx.confluenceApiBase}/rest/api/space?limit=1`, {
+        method: 'GET',
+        headers,
+      });
 
-      return { ok: false, message: msg };
+      if (confluence.ok) {
+        return { ok: true, message: `Confluence reachable; Jira HTTP ${jira.status}` };
+      }
+
+      return { ok: false, message: `Jira HTTP ${jira.status}, Confluence HTTP ${confluence.status}` };
+    } catch (e: unknown) {
+      return { ok: false, message: safeErrorMessage(e) };
     }
   }
 
@@ -139,7 +149,7 @@ export class AtlassianImportProvider implements ExternalContextImportProvider {
 
       return { processedCount: 0, hasMore: false, errorMessage: 'Unknown import kind' };
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
+      const msg = safeErrorMessage(e);
 
       this.logger.warn(`Atlassian import failed for config ${config.id}: ${msg}`);
 
@@ -158,8 +168,9 @@ export class AtlassianImportProvider implements ExternalContextImportProvider {
       return { processedCount: 0, hasMore: false, errorMessage: 'JQL is required for Jira import' };
     }
 
-    const base = normalizeAtlassianBaseUrl(connection.baseUrl);
-    const auth = buildBasicAuthHeader(connection.accountEmail, connection.apiToken);
+    const atlassian = await this.atlassianAuth.resolve(connection);
+    const base = atlassian.jiraApiBase;
+    const auth = atlassian.authorizationHeader;
     const pageSize = 100;
     const issues: JiraIssue[] = [];
     const agileBoardId = resolveJiraBoardIdForAgileApi(config.jiraBoardId);
@@ -359,9 +370,10 @@ export class AtlassianImportProvider implements ExternalContextImportProvider {
       return { processedCount: 0, hasMore: false, errorMessage: 'CQL is required for Confluence import' };
     }
 
-    const siteBase = normalizeAtlassianBaseUrl(connection.baseUrl);
-    const confluenceRoot = confluenceRestApiRoot(siteBase);
-    const auth = buildBasicAuthHeader(connection.accountEmail, connection.apiToken);
+    const atlassian = await this.atlassianAuth.resolve(connection);
+    const siteBase = atlassian.confluenceOriginBase;
+    const confluenceRoot = atlassian.confluenceApiBase;
+    const auth = atlassian.authorizationHeader;
     const cql = buildConfluenceImportSearchCql(cqlRaw, config.confluenceSpaceKey, config.confluenceRootPageId);
     const limit = 100;
     const searchParams = new URLSearchParams();
@@ -632,6 +644,28 @@ export class AtlassianImportProvider implements ExternalContextImportProvider {
       }
     }
   }
+}
+
+/**
+ * Error text that is safe to persist and show: our own auth errors verbatim, timeouts / network failures as a
+ * category (fetch errors can carry request details), anything else bounded.
+ */
+function safeErrorMessage(e: unknown): string {
+  if (e instanceof AtlassianAuthError) {
+    return e.message;
+  }
+
+  if (e instanceof Error && e.name === 'AbortError') {
+    return 'Atlassian request timed out';
+  }
+
+  if (e instanceof TypeError) {
+    return 'Atlassian request failed (network error or invalid URL)';
+  }
+
+  const msg = e instanceof Error ? e.message : String(e);
+
+  return msg.length > 500 ? `${msg.slice(0, 497)}...` : msg;
 }
 
 function extractJiraDescription(desc: unknown): string | null {
