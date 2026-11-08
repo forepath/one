@@ -9570,6 +9570,18 @@
         <source>Arrow keys pan, plus and minus zoom, 0 fits the graph, Escape clears the selection. Use the search and the details panel to pick nodes with the keyboard.</source>
         <target>Pfeiltasten verschieben die Ansicht, Plus und Minus zoomen, 0 passt den Graphen ein, Escape hebt die Auswahl auf. Nutzen Sie die Suche und das Detailfenster, um Knoten per Tastatur auszuwählen.</target>
       </trans-unit>
+      <trans-unit id="featureAgentGraphs-clusterNodes" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ info.count }}"/> nodes</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ info.count }}"/> Knoten</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-clusterMoreTypes" datatype="html">
+        <source>+<x id="INTERPOLATION" equiv-text="{{ info.more }}"/> more types</source>
+        <target>+<x id="INTERPOLATION" equiv-text="{{ info.more }}"/> weitere Typen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-clusterZoomHint" datatype="html">
+        <source>Click to zoom in</source>
+        <target>Zum Vergrößern klicken</target>
+      </trans-unit>
       <trans-unit id="featureAgentGraphs-arranging" datatype="html">
         <source>Arranging graph…</source>
         <target>Graph wird angeordnet…</target>

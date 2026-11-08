@@ -22,6 +22,8 @@ class AgentGraphCanvasStubComponent {
   readonly hiddenTypes = input<ReadonlySet<string>>(new Set());
   readonly highlightIds = input<readonly string[]>([]);
   readonly hops = input(1);
+  readonly showLabels = input(true);
+  readonly loading = input(false);
   readonly ariaLabel = input('');
   readonly nodeSelected = output<string | null>();
   readonly zoomToFit = jest.fn();
