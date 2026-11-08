@@ -59,7 +59,7 @@ Jenkins) available to the agent's environment (`/api/agent-context/deployments`,
 
 ### Deployments
 
-Workspace admins define deployment workflows on top of instance-wide CI/CD connections (console _Deployments_ page,
+Workspace admins define deployment workflows on top of instance-wide CI/CD connections (console _Pipelines_ page,
 connections under _Connections_). A workflow is either available to every environment of the workspace (`global`) or
 assigned to selected environments; `agentTriggerEnabled` decides whether those environments may start and cancel runs
 or only read them. Environments can also propose workflows for themselves (see
@@ -129,7 +129,7 @@ content tools) and are decided per session, like [content changes](#content-chan
   create / update / delete, history sync) are sent to a single connection (60 s acknowledgement timeout, the
   controller calls the provider), so a slow answer can never apply them twice.
 - **Recorded as the agent.** Runs started by an environment carry `triggeredBy: agent` and its `agentId`, appear live
-  on the console _Deployments_ page and in the workspace audit log.
+  on the console _Pipelines_ page and in the workspace audit log.
 - Provider credentials never reach the worker; the tools only see run metadata and logs.
 
 #### Workflows an environment manages for itself
@@ -141,7 +141,7 @@ protects them:
 
 - The workflow is always assigned to the proposing environment only (`scope: environments`, no other environments;
   scope and assignment are not part of the input) and is **pending** until a workspace admin approves it on the console
-  _Deployments_ page. Nobody can start runs of a pending workflow, and other environments do not see it.
+  _Pipelines_ page. Nobody can start runs of a pending workflow, and other environments do not see it.
 - The environment can only change or delete workflows assigned to it alone; anything else answers not found. Changing
   approved content (connection, repository, workflow, default ref / inputs, name, description, `agentTriggerEnabled`)
   or re-enabling makes the workflow pending again; disabling keeps the approval.

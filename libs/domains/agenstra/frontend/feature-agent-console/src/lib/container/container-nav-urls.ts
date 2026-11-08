@@ -25,7 +25,7 @@ export function isMainSidebarUrl(url: string): boolean {
     path.includes('/knowledge') ||
     path.includes('/plans') ||
     path.includes('/tasks') ||
-    path.includes('/deployments') ||
+    path.includes('/pipelines') ||
     path.includes('/graphs') ||
     path.includes('/agent-config') ||
     path.includes('/settings/tokens') ||

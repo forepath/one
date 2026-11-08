@@ -72,8 +72,8 @@ Streaming token deltas are not notified.
 
 ## Worker image requirements
 
-The [worker image](../../../apps/agenstra/backend-agent-manager/Dockerfile.worker) installs OpenCode and starts
-`opencode serve` from its entrypoint, with Basic auth from `OPENCODE_SERVER_PASSWORD`. It also ships the context MCP
+The [worker image](../../../apps/agenstra/backend-agent-manager/Dockerfile.worker) installs a pinned OpenCode 1.x
+CLI (`OPENCODE_VERSION` build arg) and starts `opencode serve` from its entrypoint, with Basic auth from `OPENCODE_SERVER_PASSWORD`. It also ships the context MCP
 server at `/opt/agenstra/mcp/agenstra-context-mcp.cjs`.
 
 ## Troubleshooting

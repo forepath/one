@@ -63,7 +63,7 @@ import type {
   UpdateDeploymentWorkflowDto,
 } from './workspace-deployments.types';
 
-/** Deployment workflows / runs of a workspace (`/deployments/:clientId` page); live updates via the clients socket. */
+/** Deployment workflows / runs of a workspace (`/pipelines/:clientId` page); live updates via the clients socket. */
 @Injectable({
   providedIn: 'root',
 })

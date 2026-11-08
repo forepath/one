@@ -8,8 +8,8 @@ Three building blocks:
 
 - **Connections** (instance admins, console **Connections → CI/CD**, `/connections/deployments`): credentials
   for one GitHub, GitLab or Jenkins account, shared with all workspaces or with selected ones.
-- **Workflows** (workspace admins, console **Continuous Integration** / sidebar **CI**, where they are called
-  **pipelines**, `/deployments/:clientId`): "what to run" on top of a
+- **Workflows** (workspace admins, console **Pipelines** page / sidebar **Pipelines**, where they are called
+  **pipelines**, `/pipelines/:clientId`): "what to run" on top of a
   connection: repository, provider workflow, default ref and inputs. A workflow is available to every environment of
   the workspace (`global`) or assigned to selected environments.
 - **Runs**: every trigger from the console, the API or an environment, plus runs started directly on the provider
@@ -316,17 +316,17 @@ next to **Atlassian** (`/connections/atlassian`).
 Lists connections with provider, auth variant, workspace access and last test result; create, edit, test and delete
 them. Secrets are write-only: leave them empty when editing to keep the stored ones.
 
-### `/deployments/:clientId` (workspace)
+### `/pipelines/:clientId` (workspace)
 
-Page **Continuous Integration**, sidebar **CI** (∞ icon, tooltip "CI/CD deployments", after **Tasks**) with the same
-workspace picker as tickets and tasks (`/deployments` opens the active workspace). The console calls deployment
+Page **Pipelines**, sidebar **Pipelines** (play icon `bi-play-circle`, tooltip "CI/CD pipelines", after **Tasks**) with
+the same workspace picker as tickets and tasks (`/pipelines` opens the active workspace). The console calls deployment
 workflows **pipelines** (the API, scopes and MCP tools keep `deployments` / `workflow`); **GitHub workflow** is the
 GitHub Actions workflow file a pipeline dispatches. Shows the workspace's pipelines with their last run and the run
 history with live status, jobs and log tails. Members can run (**Run pipeline**, ref and input overrides), cancel and
 sync; workspace admins create (**New pipeline**), edit, enable / disable and delete pipelines, picking connection,
 repository, branch and GitHub workflow from the provider. Audit entries are labelled **Pipeline** / **Pipeline run**;
-the task and ticket automation opt-in is **Allowed CI actions** (**Start pipeline runs**, **Cancel pipeline runs**). Query
-parameters `workflowId`, `runId` and `agentId` (environment filter) deep-link into the page.
+the task and ticket automation opt-in is **Allowed CI actions** (**Start pipeline runs**, **Cancel pipeline runs**).
+Query parameters `workflowId`, `runId` and `agentId` (environment filter) deep-link into the page.
 
 ## REST API (controller)
 

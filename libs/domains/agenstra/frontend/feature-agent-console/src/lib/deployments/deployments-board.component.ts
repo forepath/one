@@ -105,7 +105,7 @@ const ACTIVE_RUN_REFRESH_MS = 15_000;
 type BulkTone = 'success' | 'warning' | 'danger';
 
 /**
- * Deployment workflows of a workspace (`/deployments/:clientId`, query `agentId`, `workflowId`, `runId`). Same
+ * Deployment workflows of a workspace (`/pipelines/:clientId`, query `agentId`, `workflowId`, `runId`). Same
  * workspace selection flow as tasks and plans; the list shows the workspace's workflows (environment filter: workflows
  * available to that environment), the detail column the opened workflow with its run history, or one run with its
  * jobs and logs. Every member can trigger, cancel and sync; workspace admins (`canManageWorkspaceConfiguration`)
@@ -144,7 +144,7 @@ type BulkTone = 'success' | 'warning' | 'danger';
   styleUrls: ['./deployments-board.component.scss'],
 })
 export class DeploymentsBoardComponent implements AfterViewInit {
-  readonly pageTitle = $localize`:@@featureDeployments-title:Continuous Integration`;
+  readonly pageTitle = $localize`:@@featureDeployments-title:Pipelines`;
   readonly switchWorkspaceTitle = $localize`:@@featureDeployments-switchWorkspaceTitle:Switch workspace`;
   readonly refreshTitle = $localize`:@@featureDeployments-refreshTitle:Refresh`;
   readonly workflowsLabel = $localize`:@@featureDeployments-workflowsTable:Pipelines`;
@@ -840,7 +840,7 @@ export class DeploymentsBoardComponent implements AfterViewInit {
   onSelectWorkspace(client: ClientResponseDto): void {
     this.workspaceSwitchModalOpen.set(false);
     this.clientsFacade.setActiveClient(client.id);
-    void this.router.navigate(['/deployments', client.id]);
+    void this.router.navigate(['/pipelines', client.id]);
   }
 
   onApprovalFilterChange(approval: string): void {

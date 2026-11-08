@@ -21,6 +21,7 @@ ARG APP_UID=10001
 ARG APP_GID=10001
 ARG VERSION=0.0.0
 ENV VERSION=${VERSION}
+ARG OPENCODE_VERSION=1.19.5
 ENV APP_UID=${APP_UID}
 ENV APP_GID=${APP_GID}
 
@@ -95,8 +96,9 @@ RUN echo "deb http://deb.debian.org/debian bookworm main" > /etc/apt/sources.lis
 
 RUN install -d -o "${APP_UID}" -g "${APP_GID}" /home/agenstra/.opencode/bin /home/agenstra/.config/opencode
 
-# OpenCode's installer reads VERSION as the CLI release tag; unset the image VERSION build-arg.
-RUN env -u VERSION HOME=/home/agenstra bash -c 'curl -fsSL https://opencode.ai/install | bash' && \
+# OpenCode's installer reads VERSION as the CLI release tag; pass the pinned CLI version, not the image VERSION.
+RUN env VERSION="${OPENCODE_VERSION}" HOME=/home/agenstra bash -c 'curl -fsSL https://opencode.ai/install | bash' && \
+    /home/agenstra/.opencode/bin/opencode --version | grep -Fqw "${OPENCODE_VERSION}" && \
     chown -R "${APP_UID}:${APP_GID}" /home/agenstra/.opencode
 
 # Desktop branding + helpers (copied from Nx build context: dist/.../worker-desktop).

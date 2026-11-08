@@ -188,7 +188,7 @@ This document provides a detailed breakdown of all system components, their resp
   - `authentication` - Authentication state (identity bundle)
   - `stats` - Container statistics state
   - `statistics` - Controller usage statistics
-  - `workspaceDeployments` - Workspace deployment workflows and runs (`/deployments/:clientId`)
+  - `workspaceDeployments` - Workspace deployment workflows and runs (`/pipelines/:clientId`)
   - `deploymentConnections` - Admin CI/CD connections (`/connections/deployments`)
   - `tickets`, `ticketAutomation` - Ticket board and automation
   - `clientAgentAutonomy` - Autonomy configuration

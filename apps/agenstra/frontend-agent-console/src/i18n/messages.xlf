@@ -7979,7 +7979,7 @@
         <source>Save</source>
         </trans-unit>
       <trans-unit id="featureDeployments-title" datatype="html">
-        <source>Continuous Integration</source>
+        <source>Pipelines</source>
         </trans-unit>
       <trans-unit id="featureDeployments-switchWorkspaceTitle" datatype="html">
         <source>Switch workspace</source>
@@ -8402,7 +8402,7 @@
         <source>Atlassian connections :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featureAgentConsole-deploymentsTitle" datatype="html">
-        <source>Continuous Integration :: Agenstra</source>
+        <source>Pipelines :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featureContainer-connectionsTitle" datatype="html">
         <source>Connections (CI/CD, Atlassian)</source>
@@ -8411,9 +8411,9 @@
         <source>Connections</source>
         </trans-unit>
       <trans-unit id="featureContainer-deploymentsTitle" datatype="html">
-        <source>CI/CD deployments</source></trans-unit>
+        <source>CI/CD pipelines</source></trans-unit>
       <trans-unit id="featureContainer-deployments" datatype="html">
-        <source>CI</source></trans-unit>
+        <source>Pipelines</source></trans-unit>
       <trans-unit id="featureAudit-entityTypeDeploymentWorkflow" datatype="html">
         <source>Pipeline</source>
         </trans-unit>

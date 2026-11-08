@@ -58,7 +58,7 @@ export const DEPLOYMENT_AGENT_WORKFLOWS_MAX = 25;
 
 /** Answer to anyone starting runs of a pending workflow. */
 export const DEPLOYMENT_WORKFLOW_PENDING_MESSAGE =
-  'This deployment workflow waits for approval by a workspace admin (console, Deployments page) before runs can be ' +
+  'This deployment workflow waits for approval by a workspace admin (console, Pipelines page) before runs can be ' +
   'started.';
 
 /**

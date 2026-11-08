@@ -672,7 +672,7 @@ export const routeForwardedEvents$ = createEffect(
           routed.push(agentTaskRemovedReceived({ event: payload as unknown as AgentTaskRemovedEvent }));
         }
 
-        // Deployments page (`/deployments`): workflows and runs of the workspace room.
+        // Pipelines page (`/pipelines`): workflows and runs of the workspace room.
         if (event === CLIENT_DEPLOYMENT_WORKFLOW_UPSERT_SOCKET_EVENT && payload && typeof payload === 'object') {
           routed.push(deploymentWorkflowUpsertReceived({ workflow: payload as unknown as DeploymentWorkflowSummary }));
         }

@@ -84,7 +84,7 @@ export const DEPLOYMENT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
       'List the CI/CD deployment workflows (GitHub Actions, GitLab CI, Jenkins) available to your environment: ' +
       'enabled workflows of your workspace that are global or assigned to you. Workflows of other environments are ' +
       'not visible. "agentTriggerEnabled" tells whether you may trigger and cancel runs of a workflow; otherwise ' +
-      'you can only read its runs. Workflows are configured by workspace admins in the console (Deployments page); ' +
+      'you can only read its runs. Workflows are configured by workspace admins in the console (Pipelines page); ' +
       'workflows you proposed yourself are listed too, with "approvalStatus" (pending ones cannot run yet).',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
   },
@@ -240,7 +240,7 @@ export const DEPLOYMENT_TOOL_DEFINITIONS: ContextToolDefinition[] = [
     name: AGENSTRA_DEPLOYMENTS_MCP_TOOL_NAMES.createWorkflow,
     description:
       'Propose a deployment workflow for yourself. The workflow is assigned to your environment only and waits for ' +
-      'approval by a workspace admin (console, Deployments page) before it can run; tell the user. Request ' +
+      'approval by a workspace admin (console, Pipelines page) before it can run; tell the user. Request ' +
       '"agentTriggerEnabled" only if you need to run it yourself.',
     inputSchema: {
       type: 'object',
