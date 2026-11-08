@@ -124,8 +124,20 @@ The **Graphs** page (`/graphs/:clientId`, sidebar **Graphs**) has three scopes:
 - **Global:** every workspace you can access.
 
 Every scope offers the layer picker (default **All**) and a node limit (default **All**). The **All** node limit
-loads every page in turn and shows the first page right away. The canvas viewer filters by type, highlights search
-matches, shows the neighbourhood around the selection, and expands neighbours from the server.
+loads every page in turn; the canvas shows the graph once every page has arrived (it is laid out once, not per page).
+The canvas viewer filters by type, highlights search matches, shows the neighbourhood around the selection, and
+expands neighbours from the server.
+
+The viewer stays responsive at any graph size (tested with 1,000,000 nodes and 2,000,000 edges):
+
+- Layout and the spatial index run in a Web Worker; documents are taken into the viewer in small time slices.
+- A frame only draws what is in view. When more nodes are in view than can be drawn individually (about 12,000), the
+  viewer shows an **overview**: nearby nodes are grouped into cells. Each cell shows how many nodes it holds (size),
+  which types they are (slices) and how strongly it is connected to other cells (aggregated edges, darker = more
+  edges). Hover a cell for its exact counts per type, click it to zoom in. The grouping depends only on the zoom.
+- Selection, search matches and the hovered node are always drawn at their real position, also in the overview.
+- On slow devices, edges and labels are thinned while panning and zooming; the complete frame is drawn as soon as the
+  view rests.
 
 The side panel shows:
 

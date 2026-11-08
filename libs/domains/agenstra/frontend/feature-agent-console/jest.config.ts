@@ -13,6 +13,11 @@ export default {
     ],
   },
   transformIgnorePatterns: ['node_modules/(?!.*\\.mjs$)'],
+  // The graph worker factory uses `new URL(…, import.meta.url)` (bundled by the app builder), which CommonJS tests
+  // cannot parse: tests run the graph jobs inline instead.
+  moduleNameMapper: {
+    '^\\./graph-worker\\.factory$': '<rootDir>/jest/graph-worker.factory.ts',
+  },
   snapshotSerializers: [
     'jest-preset-angular/build/serializers/no-ng-attributes',
     'jest-preset-angular/build/serializers/ng-snapshot',
