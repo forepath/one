@@ -49,6 +49,9 @@ export interface RemoteChatSyncParams {
     planShas?: string[];
     planContexts?: string[];
     planContextRefs?: Array<{ sha: string; title?: string }>;
+    /** Initiatives / documents pre-granted to the session (controller-resolved). */
+    initiativeContexts?: string[];
+    initiativeContextRefs?: Array<{ kind: 'initiative' | 'artifact'; sha: string; title?: string }>;
   };
   /**
    * When true, settle only on final `result` frames (ignore intermediate status/question payloads)
@@ -94,6 +97,9 @@ export interface RemoteChatStreamingParams {
     planShas?: string[];
     planContexts?: string[];
     planContextRefs?: Array<{ sha: string; title?: string }>;
+    /** Initiatives / documents pre-granted to the session (controller-resolved). */
+    initiativeContexts?: string[];
+    initiativeContextRefs?: Array<{ kind: 'initiative' | 'artifact'; sha: string; title?: string }>;
   };
   onDeltaText?: (delta: string) => void | Promise<void>;
   onEvent?: (event: unknown) => void | Promise<void>;

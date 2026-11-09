@@ -38,7 +38,13 @@ describe('AgentContextTicketsService', () => {
 
     expect(record.ticket).toMatch(/^ctx-[A-Za-z0-9_-]{20,}$/);
     expect(record.items.map((item) => item.index)).toEqual([1, 2]);
-    expect(record.grants).toEqual({ ticket: ['abcdef1234'], knowledge: ['9999aaaa'], plan: [] });
+    expect(record.grants).toEqual({
+      ticket: ['abcdef1234'],
+      knowledge: ['9999aaaa'],
+      plan: [],
+      initiative: [],
+      artifact: [],
+    });
   });
 
   it('resolves tickets only for the owning agent', () => {

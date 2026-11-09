@@ -7,7 +7,26 @@ import type {
   AgentGraphReferenceKind,
 } from '@forepath/agenstra/shared/util-opencode-config';
 
+import type {
+  InitiativeArtifactStatus,
+  InitiativeArtifactType,
+  InitiativePath,
+  InitiativePhase,
+  InitiativeState,
+  WorkItemKind,
+  WorkItemStatus,
+} from '@forepath/agenstra/shared/util-initiative-method';
+
 import { resolveAgentChatToolDisplay } from '../chat/agent-chat-tool-display';
+import {
+  artifactStatusLabel,
+  initiativeArtifactTypeLabel,
+  initiativePathLabel,
+  initiativePhaseLabel,
+  initiativeStateLabel,
+  workItemKindLabel,
+  workItemStatusLabel,
+} from '../initiatives/initiative-labels';
 
 /**
  * Bootstrap color token per node type. The canvas resolves the tokens with `getComputedStyle`, legends and chips use
@@ -40,6 +59,10 @@ const NODE_TYPE_COLOR_TOKENS: Record<AgentGraphNodeType, string> = {
   'agent-profile': '--bs-purple',
   plugin: '--bs-teal',
   tool: '--bs-blue',
+  task: '--bs-yellow',
+  initiative: '--bs-indigo',
+  artifact: '--bs-cyan',
+  'work-item': '--bs-orange',
 };
 
 /** Used when a token is not defined (or for unknown types). */
@@ -81,6 +104,10 @@ const NODE_TYPE_ICONS: Record<AgentGraphNodeType, string> = {
   'agent-profile': 'person-badge',
   plugin: 'puzzle',
   tool: 'tools',
+  task: 'alarm',
+  initiative: 'signpost-split',
+  artifact: 'file-earmark-richtext',
+  'work-item': 'diagram-3',
 };
 
 /** Bootstrap icon name (without `bi-`). */
@@ -142,6 +169,14 @@ export function agentGraphNodeTypeLabel(type: string): string {
       return $localize`:@@featureAgentGraphs-typePlugin:Plugin`;
     case 'tool':
       return $localize`:@@featureAgentGraphs-typeTool:Tool`;
+    case 'task':
+      return $localize`:@@featureAgentGraphs-typeTask:Scheduled task`;
+    case 'initiative':
+      return $localize`:@@featureAgentGraphs-typeInitiative:Initiative`;
+    case 'artifact':
+      return $localize`:@@featureAgentGraphs-typeArtifact:Initiative document`;
+    case 'work-item':
+      return $localize`:@@featureAgentGraphs-typeWorkItem:Work item`;
     default:
       return type;
   }
@@ -337,6 +372,26 @@ export function agentGraphAttributeLabel(key: string): string {
       return $localize`:@@featureAgentGraphs-attrBuiltat:Graph built`;
     case 'priority':
       return $localize`:@@featureAgentGraphs-attrPriority:Priority`;
+    case 'schedule':
+      return $localize`:@@featureAgentGraphs-attrSchedule:Schedule`;
+    case 'enabled':
+      return $localize`:@@featureAgentGraphs-attrEnabled:Enabled`;
+    case 'planningPath':
+      return $localize`:@@featureAgentGraphs-attrPlanningPath:Planning path`;
+    case 'phase':
+      return $localize`:@@featureAgentGraphs-attrPhase:Phase`;
+    case 'state':
+      return $localize`:@@featureAgentGraphs-attrState:State`;
+    case 'key':
+      return $localize`:@@featureAgentGraphs-attrKey:Key`;
+    case 'workItemKind':
+      return $localize`:@@featureAgentGraphs-attrWorkItemKind:Type`;
+    case 'workItemStatus':
+      return $localize`:@@featureAgentGraphs-attrWorkItemStatus:Status`;
+    case 'documentType':
+      return $localize`:@@featureAgentGraphs-attrDocumentType:Document type`;
+    case 'documentStatus':
+      return $localize`:@@featureAgentGraphs-attrDocumentStatus:Status`;
     case 'count':
       return $localize`:@@featureAgentGraphs-attrCount:Times`;
     case 'ecosystem':
@@ -596,6 +651,21 @@ export function agentGraphAttributeValue(
       return formatDate(value);
     case 'priority':
       return humanizeAgentGraphId(value);
+    // Initiatives: the labels of the Initiatives page.
+    case 'planningPath':
+      return initiativePathLabel(value as InitiativePath);
+    case 'phase':
+      return initiativePhaseLabel(value as InitiativePhase);
+    case 'state':
+      return initiativeStateLabel(value as InitiativeState);
+    case 'workItemKind':
+      return workItemKindLabel(value as WorkItemKind);
+    case 'workItemStatus':
+      return workItemStatusLabel(value as WorkItemStatus);
+    case 'documentType':
+      return initiativeArtifactTypeLabel(value as InitiativeArtifactType);
+    case 'documentStatus':
+      return artifactStatusLabel(value as InitiativeArtifactStatus);
     default:
       return value;
   }

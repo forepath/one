@@ -10,11 +10,11 @@ No third-party graph generator is involved.
 
 There are three scopes:
 
-| Scope       | Held by          | Content                                                                                                                                                                                                 |
-| ----------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Environment | agent-manager    | `code` layer (modules, files, symbols, imports, packages, docs, concepts, instruction files), `paths` layer (directory tree with sizes, mount), `references` layer (prompts → context)                  |
-| Workspace   | agent-manager    | Composed on request from the workspace's environments (never stored); node ids are prefixed with the environment id, environments that used each other's mounts are linked                              |
-| Global      | agent-controller | One persisted metadata snapshot per workspace (environments, top modules, languages, knowledge pages and relations, tickets, plans); the global graph is the union of the snapshots a caller may access |
+| Scope       | Held by          | Content                                                                                                                                                                                                                                                                   |
+| ----------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Environment | agent-manager    | `code` layer (modules, files, symbols, imports, packages, docs, concepts, instruction files), `paths` layer (directory tree with sizes, mount), `references` layer (prompts → context)                                                                                    |
+| Workspace   | agent-manager    | Composed on request from the workspace's environments (never stored); node ids are prefixed with the environment id, environments that used each other's mounts are linked                                                                                                |
+| Global      | agent-controller | One persisted metadata snapshot per workspace (environments, top modules, languages, knowledge pages and relations, tickets, plans, scheduled tasks, initiatives with their documents and work items); the global graph is the union of the snapshots a caller may access |
 
 Graph data never reaches the environment's container. The manager streams files out of the worker read-only and parses
 them in memory, and stores the results in its own database (`agent_graphs`, `agent_graph_prompts`). The controller
@@ -98,6 +98,24 @@ Each prompt (turn) records:
 Only references are recorded: ids, names and paths. Tool arguments such as shell commands, search patterns and URLs
 are dropped, and so are context contents. Paths below `/opt/workspace/<mount id>` link environments to each other.
 
+### Workspace snapshot (controller)
+
+The controller's snapshot holds metadata only (titles, keys, states; never bodies, requirements or document contents):
+
+| Node                                  | Below                     | Edges                                                                       |
+| ------------------------------------- | ------------------------- | --------------------------------------------------------------------------- |
+| `environment`, `module`, `language`   | workspace                 | `contains`, `written_in`, `references` (environments sharing mounts)        |
+| `knowledge-folder`, `knowledge`       | workspace / folder        | `contains`, `relates_to` (knowledge relations)                              |
+| `ticket`                              | workspace / parent ticket | `contains`, `relates_to`                                                    |
+| `plan`, `task`                        | environment               | `contains`                                                                  |
+| `initiative`                          | workspace                 | `contains`                                                                  |
+| `work-item` (epic, story, spike, bug) | initiative / epic         | `contains`, `depends_on` (prerequisites), `relates_to` (transferred ticket) |
+| `artifact` (initiative document)      | initiative / epic         | `contains`                                                                  |
+
+Work items show the status of their ticket once transferred, like the Initiatives page. The snapshot is marked dirty
+by every change of these elements (board events of tickets, pages, initiatives; plan and task upserts) and rebuilt after
+a short debounce.
+
 ## Layers and paging
 
 | Layer        | Environment | Workspace / global | Content                                                                                                             |
@@ -106,7 +124,7 @@ are dropped, and so are context contents. Paths below `/opt/workspace/<mount id>
 | `code`       | yes         | yes                | Code and knowledge structure                                                                                        |
 | `paths`      | yes         | yes                | Directory tree                                                                                                      |
 | `references` | yes         | yes                | Prompts and their context                                                                                           |
-| `knowledge`  | –           | yes                | The controller's metadata snapshots: knowledge pages, tickets, plans, environment summaries                         |
+| `knowledge`  | –           | yes                | The controller's metadata snapshots: knowledge pages, tickets, plans, tasks, initiatives, environment summaries     |
 
 Graph documents are paginated with `offset` / `limit`, like the other paginated lists. Nodes come in a stable rank
 order: workspaces, environments and modules first, then by degree. Every page carries the edges between its nodes and
@@ -179,8 +197,9 @@ The tools are read-only and allowed in plan sessions.
 
 - `agent_files:read` for code and path layers
 - `agent_chats:read` for prompt references
-- In snapshots and the global graph, ticket, knowledge, plan and module nodes are left out without `tickets:read`,
-  `knowledge:read`, `agent_chats:read` or `agent_files:read`.
+- In snapshots and the global graph, ticket, knowledge, plan / task, initiative (incl. documents and work items) and
+  module nodes are left out without `tickets:read`, `knowledge:read`, `agent_chats:read`, `initiatives:read` or
+  `agent_files:read`.
 
 **Agents**
 
@@ -190,7 +209,7 @@ The tools are read-only and allowed in plan sessions.
 - Other environments of the same host that are not workspace peers stay anonymous: they are identified by mount id
   only, and their names are neither shown nor resolvable.
 - Prompt reference graphs are limited to the own environment and controller-verified workspace peers. For peers, prompt
-  excerpts are removed and ticket, page and plan titles are replaced by their refs, which the agent can resolve through
-  `agenstra_context_*` under its own grants.
+  excerpts are removed and ticket, page, plan, initiative and document titles are replaced by their refs, which the
+  agent can resolve through `agenstra_context_*` under its own grants.
 - Graph builds run as the unprivileged workspace user, write nothing into the container, and never follow symbolic
   links.

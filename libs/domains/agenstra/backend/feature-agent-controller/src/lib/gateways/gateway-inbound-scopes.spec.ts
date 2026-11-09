@@ -3,12 +3,14 @@ import { MESSAGE_MAPPING_METADATA, MESSAGE_METADATA } from '@nestjs/websockets/c
 
 import {
   CLIENTS_SOCKET_INBOUND_SCOPES,
+  INITIATIVES_SOCKET_INBOUND_SCOPES,
   PAGES_SOCKET_INBOUND_SCOPES,
   STATUS_SOCKET_INBOUND_SCOPES,
   TICKETS_SOCKET_INBOUND_SCOPES,
 } from '../auth/agenstra-websocket.scopes';
 
 import { ClientsGateway } from './clients.gateway';
+import { InitiativesBoardGateway } from './initiatives-board.gateway';
 import { KnowledgeBoardGateway } from './knowledge-board.gateway';
 import { StatusGateway } from './status.gateway';
 import { TicketsBoardGateway } from './tickets-board.gateway';
@@ -32,6 +34,7 @@ describe('Agenstra gateway inbound scopes', () => {
     ['status', StatusGateway, STATUS_SOCKET_INBOUND_SCOPES],
     ['tickets', TicketsBoardGateway, TICKETS_SOCKET_INBOUND_SCOPES],
     ['pages', KnowledgeBoardGateway, PAGES_SOCKET_INBOUND_SCOPES],
+    ['initiatives', InitiativesBoardGateway, INITIATIVES_SOCKET_INBOUND_SCOPES],
   ])('classifies every %s socket message handler for machine tokens', (_name, gateway, inbound) => {
     const handlers = subscribedMessages(gateway);
 

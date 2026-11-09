@@ -30,6 +30,11 @@ export const WORKSPACE_GRAPH_LIMITS = {
   maxKnowledgeNodes: 2_000,
   maxPlans: 500,
   maxKnowledgeRelations: 10_000,
+  maxTasks: 500,
+  maxInitiatives: 200,
+  maxInitiativeArtifacts: 2_000,
+  maxWorkItems: 2_000,
+  maxWorkItemDependencies: 10_000,
   /** Modules taken from each environment digest (largest first). */
   maxModulesPerEnvironment: 12,
   /** Snapshots older than this are rebuilt lazily. */
@@ -49,6 +54,11 @@ const NODE_TYPE_REQUIRED_SCOPE: Partial<Record<AgentGraphNodeType, string>> = {
   knowledge: 'knowledge:read',
   'knowledge-folder': 'knowledge:read',
   plan: 'agent_chats:read',
+  // Scheduled tasks are managed with the chats scope (like plans).
+  task: 'agent_chats:read',
+  initiative: 'initiatives:read',
+  artifact: 'initiatives:read',
+  'work-item': 'initiatives:read',
   // Chat attachments and prompt / session nodes mirror chats.
   attachment: 'agent_chats:read',
   prompt: 'agent_chats:read',
@@ -92,6 +102,51 @@ export interface WorkspaceGraphPlanInput {
   status: string;
 }
 
+export interface WorkspaceGraphTaskInput {
+  id: string;
+  agentId: string;
+  title: string;
+  cronExpression: string;
+  enabled: boolean;
+}
+
+export interface WorkspaceGraphInitiativeInput {
+  id: string;
+  title: string;
+  longSha?: string | null;
+  path: string;
+  phase: string;
+  state: string;
+}
+
+export interface WorkspaceGraphInitiativeArtifactInput {
+  id: string;
+  initiativeId: string;
+  /** Epic the document belongs to (epic requirements, retrospective); `null` for initiative documents. */
+  workItemId?: string | null;
+  type: string;
+  title: string;
+  longSha?: string | null;
+  status: string;
+}
+
+export interface WorkspaceGraphWorkItemInput {
+  id: string;
+  initiativeId: string;
+  parentId?: string | null;
+  kind: string;
+  key: string;
+  title: string;
+  status: string;
+  /** Ticket the item was transferred to. */
+  ticketId?: string | null;
+}
+
+export interface WorkspaceGraphWorkItemDependencyInput {
+  workItemId: string;
+  prerequisiteId: string;
+}
+
 export interface WorkspaceGraphRelationInput {
   sourceType: string;
   sourceId: string;
@@ -108,6 +163,12 @@ export interface WorkspaceGraphInput {
   tickets: WorkspaceGraphTicketInput[];
   plans: WorkspaceGraphPlanInput[];
   relations: WorkspaceGraphRelationInput[];
+  /** Optional sources (older callers / tests omit them). */
+  tasks?: WorkspaceGraphTaskInput[];
+  initiatives?: WorkspaceGraphInitiativeInput[];
+  initiativeArtifacts?: WorkspaceGraphInitiativeArtifactInput[];
+  workItems?: WorkspaceGraphWorkItemInput[];
+  workItemDependencies?: WorkspaceGraphWorkItemDependencyInput[];
 }
 
 /** Stable, non-reversible key of an agent-manager endpoint (environments of one manager share mounts). */
@@ -122,6 +183,10 @@ export const environmentGraphNodeId = (agentId: string): string => `environment:
 export const knowledgeGraphNodeId = (nodeId: string): string => `knowledge:${nodeId}`;
 export const ticketGraphNodeId = (ticketId: string): string => `ticket:${ticketId}`;
 export const planGraphNodeId = (planId: string): string => `plan:${planId}`;
+export const taskGraphNodeId = (taskId: string): string => `task:${taskId}`;
+export const initiativeGraphNodeId = (initiativeId: string): string => `initiative:${initiativeId}`;
+export const artifactGraphNodeId = (artifactId: string): string => `artifact:${artifactId}`;
+export const workItemGraphNodeId = (workItemId: string): string => `work-item:${workItemId}`;
 export const languageGraphNodeId = (name: string): string => `language:${name}`;
 export const moduleGraphNodeId = (agentId: string, moduleId: string): string => `module:${agentId}:${moduleId}`;
 
@@ -209,6 +274,97 @@ function buildEnvironmentNodes(
 }
 
 /**
+ * Initiatives (planning that follows the BMad Method): workspace → initiative → documents and work items
+ * (epic → story / spike / bug). Work items depend on their prerequisites (`depends_on`) and relate to the ticket they
+ * were transferred to; epic documents (requirements, retrospective) also hang below their epic. Titles, keys and
+ * states only, never document contents or requirements. Call after the tickets were added (ticket links).
+ */
+function buildInitiativeNodes(collector: GraphCollector, workspaceId: string, input: WorkspaceGraphInput): void {
+  for (const initiative of (input.initiatives ?? []).slice(0, WORKSPACE_GRAPH_LIMITS.maxInitiatives)) {
+    collector.addNode({
+      id: initiativeGraphNodeId(initiative.id),
+      type: 'initiative',
+      label: initiative.title,
+      attrs: {
+        sha: initiative.longSha ?? null,
+        planningPath: initiative.path,
+        phase: initiative.phase,
+        state: initiative.state,
+      },
+    });
+    collector.addEdge({
+      from: workspaceId,
+      to: initiativeGraphNodeId(initiative.id),
+      type: 'contains',
+      confidence: 'extracted',
+    });
+  }
+
+  const workItems = (input.workItems ?? [])
+    .filter((item) => collector.nodes.has(initiativeGraphNodeId(item.initiativeId)))
+    .slice(0, WORKSPACE_GRAPH_LIMITS.maxWorkItems);
+
+  for (const item of workItems) {
+    collector.addNode({
+      id: workItemGraphNodeId(item.id),
+      type: 'work-item',
+      label: `${item.key} ${item.title}`,
+      attrs: { key: item.key, workItemKind: item.kind, workItemStatus: item.status },
+    });
+  }
+
+  for (const item of workItems) {
+    const parent = item.parentId ? workItemGraphNodeId(item.parentId) : undefined;
+    const from = parent && collector.nodes.has(parent) ? parent : initiativeGraphNodeId(item.initiativeId);
+
+    collector.addEdge({ from, to: workItemGraphNodeId(item.id), type: 'contains', confidence: 'extracted' });
+
+    if (item.ticketId) {
+      collector.addEdge({
+        from: workItemGraphNodeId(item.id),
+        to: ticketGraphNodeId(item.ticketId),
+        type: 'relates_to',
+        confidence: 'extracted',
+      });
+    }
+  }
+
+  for (const dependency of (input.workItemDependencies ?? []).slice(
+    0,
+    WORKSPACE_GRAPH_LIMITS.maxWorkItemDependencies,
+  )) {
+    collector.addEdge({
+      from: workItemGraphNodeId(dependency.workItemId),
+      to: workItemGraphNodeId(dependency.prerequisiteId),
+      type: 'depends_on',
+      confidence: 'extracted',
+    });
+  }
+
+  const artifacts = (input.initiativeArtifacts ?? [])
+    .filter((artifact) => collector.nodes.has(initiativeGraphNodeId(artifact.initiativeId)))
+    .slice(0, WORKSPACE_GRAPH_LIMITS.maxInitiativeArtifacts);
+
+  for (const artifact of artifacts) {
+    const id = artifactGraphNodeId(artifact.id);
+    const epic = artifact.workItemId ? workItemGraphNodeId(artifact.workItemId) : undefined;
+
+    collector.addNode({
+      id,
+      type: 'artifact',
+      label: artifact.title,
+      attrs: { sha: artifact.longSha ?? null, documentType: artifact.type, documentStatus: artifact.status },
+    });
+    collector.addEdge({
+      from: epic && collector.nodes.has(epic) ? epic : initiativeGraphNodeId(artifact.initiativeId),
+      to: id,
+      type: 'contains',
+      confidence: 'extracted',
+    });
+  }
+}
+
+/**
  * Environment → environment `references` edges: an environment references another one when its digest lists the
  * other's mount id and both run on the same agent-manager (`managerKey`). Returns only edges not present yet.
  */
@@ -267,8 +423,9 @@ export function buildCrossEnvironmentReferenceEdges(
 }
 
 /**
- * Metadata graph of one workspace: environments (digest summaries), knowledge, tickets and plans with their
- * hierarchy and relations. Titles and ids only, never ticket / page / plan bodies.
+ * Metadata graph of one workspace: environments (digest summaries), knowledge, tickets, plans, scheduled tasks and
+ * initiatives (documents, work items) with their hierarchy and relations. Titles and ids only, never ticket / page /
+ * plan / task / document bodies.
  */
 export function buildWorkspaceSnapshotGraph(input: WorkspaceGraphInput, now = new Date()): AgentGraphDocument {
   const collector = new GraphCollector();
@@ -349,6 +506,25 @@ export function buildWorkspaceSnapshotGraph(input: WorkspaceGraphInput, now = ne
     });
     collector.addEdge({ from: envId, to: planGraphNodeId(plan.id), type: 'contains', confidence: 'extracted' });
   }
+
+  // Scheduled tasks of the workspace's environments.
+  for (const task of (input.tasks ?? []).slice(0, WORKSPACE_GRAPH_LIMITS.maxTasks)) {
+    const envId = environmentGraphNodeId(task.agentId);
+
+    if (!collector.nodes.has(envId)) {
+      continue;
+    }
+
+    collector.addNode({
+      id: taskGraphNodeId(task.id),
+      type: 'task',
+      label: task.title,
+      attrs: { agentId: task.agentId, schedule: task.cronExpression, enabled: task.enabled },
+    });
+    collector.addEdge({ from: envId, to: taskGraphNodeId(task.id), type: 'contains', confidence: 'extracted' });
+  }
+
+  buildInitiativeNodes(collector, workspaceId, input);
 
   // Knowledge relations (ticket / page → ticket / folder / page).
   for (const relation of input.relations.slice(0, WORKSPACE_GRAPH_LIMITS.maxKnowledgeRelations)) {

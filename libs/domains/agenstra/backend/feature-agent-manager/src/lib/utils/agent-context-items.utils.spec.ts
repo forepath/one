@@ -24,7 +24,7 @@ function record(overrides: Partial<AgentContextTicketRecord> = {}): AgentContext
     correlationId: 'corr',
     accessMode: 'ask',
     items: [],
-    grants: { ticket: [], knowledge: [], plan: [] },
+    grants: { ticket: [], knowledge: [], plan: [], initiative: [], artifact: [] },
     scopeAnchors: [],
     attachments: [],
     environments: [],
@@ -140,5 +140,30 @@ describe('agent-context-items.utils', () => {
 
     expect(lines).toContain('plans of this environment');
     expect(lines).toContain('update plans that were not executed yet');
+  });
+
+  describe('initiative context', () => {
+    it('derives initiative and document items with their refs', () => {
+      const initiativeSha = '1'.repeat(40);
+      const artifactSha = '2'.repeat(40);
+
+      expect(
+        deriveAgentContextItems({
+          initiativeContexts: ['INITIATIVE OVERVIEW', ' ', 'PRD BODY', 'ORPHAN'],
+          initiativeContextRefs: [
+            { kind: 'initiative', sha: initiativeSha, title: 'Checkout' },
+            { kind: 'artifact', sha: artifactSha, title: 'unused' },
+            { kind: 'artifact', sha: artifactSha, title: 'PRD' },
+          ],
+        }),
+      ).toEqual([
+        { kind: 'initiative', title: 'Checkout', sha: initiativeSha, content: 'INITIATIVE OVERVIEW' },
+        { kind: 'artifact', title: 'PRD', sha: artifactSha, content: 'PRD BODY' },
+      ]);
+    });
+
+    it('mentions the initiative tools in interactive chats', () => {
+      expect(buildAgentContextHintLines(record()).join('\n')).toContain('agenstra_content_initiative_propose');
+    });
   });
 });

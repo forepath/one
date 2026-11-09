@@ -1,4 +1,5 @@
 import {
+  AGENT_CONTENT_FINDING_SEVERITIES,
   AGENT_CONTENT_LIMITS,
   AGENT_CONTENT_TICKET_PRIORITIES,
   AGENT_CONTENT_TICKET_STATUSES,
@@ -20,6 +21,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -37,6 +39,7 @@ import { createAgentContentWriter, type AgentContentWriter } from '../utils/agen
 import { chatPlanContextTitle } from '../utils/chat-plan-mappers';
 
 import { ChatPlanService } from './chat-plan.service';
+import { InitiativeContextService, type InitiativeAgentChange } from './initiative-context.service';
 import { KnowledgeTreeService } from './knowledge-tree.service';
 import { TicketsService } from './tickets.service';
 
@@ -61,6 +64,32 @@ interface ValidatedChange {
   priority?: TicketPriority;
   status?: TicketStatus;
   nodeType?: KnowledgeNodeType;
+  /** Initiative proposals / findings (structured parts are validated by the initiative services). */
+  rationale?: string;
+  artifacts?: unknown[];
+  workItems?: unknown[];
+  decisions?: unknown[];
+  severity?: string;
+  itemKey?: string;
+  evidence?: string[];
+}
+
+function optionalObjectList(input: Record<string, unknown>, field: string): unknown[] | undefined {
+  const value = input[field];
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (
+    !Array.isArray(value) ||
+    value.length > AGENT_CONTENT_LIMITS.initiativeProposalItemsMax ||
+    value.some((entry) => !entry || typeof entry !== 'object' || Array.isArray(entry))
+  ) {
+    throw new BadRequestException(`${field} must be a list of objects`);
+  }
+
+  return value;
 }
 
 function optionalString(input: Record<string, unknown>, field: string, maxLength: number): string | undefined {
@@ -134,6 +163,7 @@ export class AgentContentChangesService {
     @Inject(forwardRef(() => KnowledgeTreeService))
     private readonly knowledgeTreeService: KnowledgeTreeService,
     private readonly chatPlanService: ChatPlanService,
+    @Optional() private readonly initiativeContext?: InitiativeContextService,
   ) {}
 
   async handle(
@@ -202,6 +232,44 @@ export class AgentContentChangesService {
         KnowledgeNodeType.FOLDER,
       ]),
     };
+    if (operation.startsWith('initiative.')) {
+      const evidence = input['evidence'];
+
+      if (
+        evidence !== undefined &&
+        (!Array.isArray(evidence) ||
+          evidence.length > 20 ||
+          evidence.some((e) => typeof e !== 'string' || e.length > 500))
+      ) {
+        throw new BadRequestException('evidence must be a list of at most 20 short strings');
+      }
+
+      Object.assign(change, {
+        rationale: optionalString(input, 'rationale', AGENT_CONTENT_LIMITS.commentMaxLength),
+        artifacts: optionalObjectList(input, 'artifacts'),
+        workItems: optionalObjectList(input, 'workItems'),
+        decisions: optionalObjectList(input, 'decisions'),
+        severity: oneOf<string>(input['severity'], 'severity', AGENT_CONTENT_FINDING_SEVERITIES),
+        itemKey: optionalString(input, 'itemKey', 16)?.trim(),
+        evidence: evidence as string[] | undefined,
+      });
+
+      if (
+        JSON.stringify([change.artifacts, change.workItems, change.decisions]).length >
+        AGENT_CONTENT_LIMITS.initiativeProposalMaxLength
+      ) {
+        throw new BadRequestException('The proposal is too large');
+      }
+
+      if (operation === 'initiative.propose' && !change.title) {
+        throw new BadRequestException('title is required');
+      }
+
+      if (operation === 'initiative.finding' && !change.body) {
+        throw new BadRequestException('body is required');
+      }
+    }
+
     const creates = operation === 'ticket.create' || operation === 'page.create';
 
     if (creates ? change.sha !== undefined : change.sha === undefined) {
@@ -314,6 +382,17 @@ export class AgentContentChangesService {
       );
     }
 
+    // Initiative findings: only on the story the automated ticket is linked to (never proposals).
+    if (change.operation.startsWith('initiative.')) {
+      if (!this.initiativeContext) {
+        throw new ForbiddenException('Initiatives are not available');
+      }
+
+      await this.initiativeContext.assertAutomationFinding(clientId, runs[0].ticketId, change as InitiativeAgentChange);
+
+      return;
+    }
+
     const anchor = await this.ticketRepo.findOne({ where: { clientId, id: runs[0].ticketId } });
     const scopeSha = change.operation === 'ticket.create' ? change.parentSha : change.sha;
     const scoped = scopeSha ? await this.ticketRepo.findOne({ where: { clientId, longSha: scopeSha } }) : null;
@@ -341,6 +420,14 @@ export class AgentContentChangesService {
 
   private async apply(writer: AgentContentWriter, change: ValidatedChange): Promise<AgentContentChangeResult> {
     switch (change.operation) {
+      case 'initiative.propose':
+      case 'initiative.finding': {
+        if (!this.initiativeContext) {
+          throw new ForbiddenException('Initiatives are not available');
+        }
+
+        return await this.initiativeContext.applyAgentChange(writer, change as InitiativeAgentChange);
+      }
       case 'ticket.create': {
         const parent = change.parentSha ? await this.findTicket(writer.clientId, change.parentSha) : undefined;
         const created = await this.ticketsService.create(

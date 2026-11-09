@@ -1,0 +1,512 @@
+@if (skippedReasons().length > 0) {
+  <fpc-alert variant="info" [flush]="true" [dismissible]="true" (closed)="dismissSkipped()">
+    <div class="fw-semibold mb-1" i18n="@@featureInitiatives-skipped">Not everything was done:</div>
+    <ul class="mb-0">
+      @for (entry of skippedReasons(); track entry.workItemId) {
+        <li>{{ keyOf().get(entry.workItemId) ?? entry.workItemId }}: {{ entry.reason }}</li>
+      }
+    </ul>
+  </fpc-alert>
+}
+
+<!-- Build order: one table grouped by epic (epic first in its group); actions in the ⋮ row menu like Tickets. -->
+<fpc-data-table
+  class="flex-grow-1 min-h-0"
+  [ariaLabel]="tableLabel"
+  [columns]="columns"
+  [rows]="rows()"
+  [groupBy]="groupBy"
+  [groupLabel]="groupLabel"
+  paging="client"
+  persistKey="agenstra-initiative-work-items"
+  [query]="search()"
+  (queryChange)="search.set($event)"
+  [searchPlaceholder]="searchPlaceholder"
+  [filtered]="!!search().trim()"
+  [loading]="!workItems()"
+  [rowMenu]="rowMenu"
+  (rowAction)="onRowAction($event.row, $event.item.id)"
+  (rowActivate)="openEdit($event)"
+  emptyIcon="diagram-3"
+  data-testid="initiative-work-items"
+>
+  <span fpcDataTableToolbar class="d-inline-flex gap-2">
+    <fpc-button
+      variant="primary"
+      iconOnly
+      [ariaLabel]="addEpicTitle"
+      [title]="addEpicTitle"
+      (clicked)="openCreate('epic', null)"
+      data-testid="initiative-add-epic"
+    >
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      variant="dark"
+      iconOnly
+      [ariaLabel]="sliceTitle"
+      [title]="sliceTitle"
+      [disabled]="pending()"
+      (clicked)="epicStepAll('slice-epics')"
+    >
+      <i class="bi bi-stars" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      variant="dark"
+      iconOnly
+      [ariaLabel]="questionsTitle()"
+      [title]="questionsTitle()"
+      (clicked)="openQuestionsModal()"
+      data-testid="initiative-open-questions"
+    >
+      <i class="bi bi-question-circle" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      variant="dark"
+      iconOnly
+      [ariaLabel]="transferTitle"
+      [title]="transferTitle"
+      [disabled]="untransferredCount() === 0 || pending()"
+      (clicked)="openTransfer()"
+      data-testid="initiative-transfer"
+    >
+      <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      variant="dark"
+      iconOnly
+      [ariaLabel]="releaseTitle()"
+      [title]="releaseTitle()"
+      [disabled]="readyCount() === 0 || pending()"
+      (clicked)="releaseAll()"
+      data-testid="initiative-release"
+    >
+      <i class="bi bi-play" aria-hidden="true"></i>
+    </fpc-button>
+  </span>
+
+  <span fpcDataTableEmpty>
+    @if (search().trim()) {
+      <fpc-empty-state
+        size="sm"
+        icon="search"
+        message="No matching work items"
+        i18n-message="@@featureInitiatives-wiNoMatches"
+      />
+    } @else {
+      <fpc-empty-state
+        size="sm"
+        icon="diagram-3"
+        message="No epics yet. Slice the initiative with the agent or add epics yourself."
+        i18n-message="@@featureInitiatives-noEpics"
+      />
+    }
+  </span>
+
+  <ng-template fpcTableCell="title" let-row>
+    <span class="d-inline-flex align-items-center gap-2 mw-100" [title]="row.title">
+      @if (row.kind !== 'epic') {
+        <i class="bi bi-arrow-return-right text-body-secondary flex-shrink-0" aria-hidden="true"></i>
+      }
+      <span class="text-truncate" [class.fw-semibold]="row.kind === 'epic'">{{ row.title }}</span>
+      @if (row.kind === 'epic' && !row.refined) {
+        <fpc-badge class="flex-shrink-0" color="warning" size="sm" i18n="@@featureInitiatives-notRefined"
+          >Not refined</fpc-badge
+        >
+      }
+      @if (row.kind === 'epic' && row.retrospectiveVerdict) {
+        <fpc-badge class="flex-shrink-0" [color]="verdictTone(row.retrospectiveVerdict)" size="sm">{{
+          verdictLabel(row.retrospectiveVerdict)
+        }}</fpc-badge>
+      }
+    </span>
+  </ng-template>
+  <ng-template fpcTableCell="waiting" let-row>
+    @if (!row.ready && row.blockedBy.length) {
+      <span class="text-warning-emphasis">{{ row.blockedBy.join(', ') }}</span>
+    }
+  </ng-template>
+  <ng-template fpcTableCell="ticket" let-row>
+    @if (row.ticketId) {
+      <a
+        class="d-inline-flex align-items-center gap-1"
+        [routerLink]="['/tickets', initiative().clientId]"
+        [queryParams]="{ openTicketId: row.ticketId }"
+        (click)="$event.stopPropagation()"
+        [title]="openTicketLabel"
+        ><i class="bi bi-ticket-perforated" aria-hidden="true"></i
+        ><span i18n="@@featureInitiatives-openTicket">Ticket</span></a
+      >
+    }
+  </ng-template>
+</fpc-data-table>
+
+<!-- Questions (initiative level in the questions modal, item level in the item): settle with an answer. -->
+<ng-template #questionsBlock let-unknowns let-itemId="itemId">
+  <div class="d-flex flex-column gap-3">
+    <fpc-data-table
+      nested
+      [ariaLabel]="itemId ? itemQuestionsLabel : questionsLabel"
+      [columns]="questionColumns"
+      [rows]="unknowns"
+      [searchable]="false"
+      [showColumnChooser]="false"
+      [rowMenu]="questionMenu"
+      (rowAction)="onQuestionAction($event.row, $event.item.id)"
+      emptyIcon="question-circle"
+    >
+      <span fpcDataTableEmpty>
+        <fpc-empty-state
+          size="sm"
+          icon="question-circle"
+          message="No open questions"
+          i18n-message="@@featureInitiatives-wiNoQuestions"
+        />
+      </span>
+    </fpc-data-table>
+
+    @if (settleUnknownId() && questionText(settleUnknownId(), unknowns); as question) {
+      <fpc-form-field forId="wiSettleAnswer" [label]="question">
+        <div class="d-flex gap-2">
+          <fpc-form-control
+            class="flex-grow-1"
+            controlId="wiSettleAnswer"
+            placeholder="Answer"
+            i18n-placeholder="@@featureInitiatives-answer"
+            [ngModel]="settleAnswer()"
+            (ngModelChange)="settleAnswer.set($event)"
+          />
+          <fpc-button
+            variant="primary"
+            [disabled]="!settleAnswer().trim() || pending()"
+            (clicked)="settleSelected()"
+            i18n="@@featureInitiatives-settle"
+            >Settle</fpc-button
+          >
+        </div>
+      </fpc-form-field>
+    }
+
+    <div class="row g-2 align-items-end">
+      <div class="col-md-6">
+        <fpc-form-field forId="wiNewQuestion" label="New question" i18n-label="@@featureInitiatives-newQuestion">
+          <fpc-form-control
+            controlId="wiNewQuestion"
+            [ngModel]="unknownQuestion()"
+            (ngModelChange)="unknownQuestion.set($event)"
+          />
+        </fpc-form-field>
+      </div>
+      <div class="col-md-4">
+        <fpc-form-field forId="wiNewResolution" label="Resolution" i18n-label="@@featureInitiatives-wiColResolution">
+          <fpc-form-control
+            controlId="wiNewResolution"
+            controlType="select"
+            [ngModel]="unknownResolution()"
+            (ngModelChange)="unknownResolution.set($event)"
+          >
+            @for (resolution of resolutions; track resolution) {
+              <option [value]="resolution">{{ resolutionLabel(resolution) }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-md-2 d-grid">
+        <fpc-button
+          variant="dark"
+          [disabled]="!unknownQuestion().trim() || pending()"
+          (clicked)="addUnknown(itemId)"
+          i18n="@@featureInitiatives-add"
+          >Add</fpc-button
+        >
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Open questions of the initiative -->
+<fpc-modal [(open)]="questionsOpen" [title]="questionsLabel" size="lg">
+  <ng-container *ngTemplateOutlet="questionsBlock; context: { $implicit: openQuestions(), itemId: '' }"></ng-container>
+</fpc-modal>
+
+<!-- Create / edit item -->
+@if (editDraft(); as draft) {
+  <fpc-modal
+    [open]="true"
+    (openChange)="!$event && editDraft.set(null)"
+    [title]="draft.id ? draft.title : kindLabel(draft.kind)"
+    size="lg"
+  >
+    <div class="d-flex flex-column gap-3">
+      @if (draft.locked) {
+        <fpc-alert
+          variant="info"
+          i18n-message="@@featureInitiatives-lockedHint"
+          message="This item is built or done: its content is never rewritten. Add a new item for further changes."
+        />
+      }
+      <fpc-form-field forId="wiTitle" label="Title" i18n-label="@@featureInitiatives-fieldTitle">
+        <fpc-form-control
+          controlId="wiTitle"
+          maxLength="500"
+          [readOnly]="draft.locked"
+          [ngModel]="draft.title"
+          (ngModelChange)="patchDraft({ title: $event })"
+        />
+      </fpc-form-field>
+      <fpc-form-field forId="wiRequirements" label="Requirements" i18n-label="@@featureInitiatives-fieldRequirements">
+        <fpc-form-control
+          controlId="wiRequirements"
+          controlType="textarea"
+          [rows]="6"
+          [readOnly]="draft.locked"
+          [ngModel]="draft.requirements"
+          (ngModelChange)="patchDraft({ requirements: $event })"
+        />
+      </fpc-form-field>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <fpc-form-field forId="wiVerify" label="Verify" i18n-label="@@featureInitiatives-verify">
+            <fpc-form-control
+              controlId="wiVerify"
+              controlType="textarea"
+              [rows]="3"
+              [readOnly]="draft.locked"
+              [ngModel]="draft.verify"
+              (ngModelChange)="patchDraft({ verify: $event })"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-md-6">
+          <fpc-form-field forId="wiDoneWhen" label="Done when" i18n-label="@@featureInitiatives-fieldDoneWhen">
+            <fpc-form-control
+              controlId="wiDoneWhen"
+              controlType="textarea"
+              [rows]="3"
+              [readOnly]="draft.locked"
+              [ngModel]="draft.doneWhen"
+              (ngModelChange)="patchDraft({ doneWhen: $event })"
+            />
+          </fpc-form-field>
+        </div>
+      </div>
+      @if (draft.kind !== 'epic') {
+        <fpc-form-field forId="wiPriority" label="Priority" i18n-label="@@featureInitiatives-wiColPriority">
+          <fpc-form-control
+            controlId="wiPriority"
+            controlType="select"
+            [disabled]="draft.locked"
+            [ngModel]="draft.priority"
+            (ngModelChange)="patchDraft({ priority: $event })"
+          >
+            @for (priority of priorities; track priority) {
+              <option [value]="priority">{{ priorityLabel(priority) }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      }
+      @if (draft.id) {
+        <div class="d-flex flex-wrap gap-4">
+          @if (draft.kind === 'epic') {
+            <fpc-form-switch
+              switchId="wiRefined"
+              label="Refined"
+              i18n-label="@@featureInitiatives-fieldRefined"
+              [checked]="draft.refined"
+              (checkedChange)="patchDraft({ refined: $event })"
+            />
+          }
+          <fpc-form-switch
+            switchId="wiPlanCheckpoint"
+            label="Plan checkpoint (automation needs approval)"
+            i18n-label="@@featureInitiatives-fieldPlanCheckpoint"
+            [checked]="draft.planCheckpoint"
+            (checkedChange)="patchDraft({ planCheckpoint: $event })"
+          />
+          <fpc-form-switch
+            switchId="wiDoneCheckpoint"
+            label="Done checkpoint (dependents wait for done)"
+            i18n-label="@@featureInitiatives-fieldDoneCheckpoint"
+            [checked]="draft.doneCheckpoint"
+            (checkedChange)="patchDraft({ doneCheckpoint: $event })"
+          />
+        </div>
+        @if (editedItem(); as item) {
+          <section>
+            <h4 class="h6" i18n="@@featureInitiatives-questions">Questions</h4>
+            <ng-container
+              *ngTemplateOutlet="questionsBlock; context: { $implicit: item.unknowns, itemId: item.id }"
+            ></ng-container>
+          </section>
+        }
+      }
+    </div>
+    <div *fpcModalFooter>
+      <fpc-button
+        variant="primary"
+        [disabled]="!draft.title.trim()"
+        (clicked)="saveDraft()"
+        i18n="@@featureInitiatives-save"
+        >Save</fpc-button
+      >
+    </div>
+  </fpc-modal>
+}
+
+<!-- Dependencies -->
+@if (depsItem(); as item) {
+  <fpc-modal [open]="true" (openChange)="!$event && depsItem.set(null)" [title]="dependenciesTitle(item)">
+    <p class="small text-body-secondary" i18n="@@featureInitiatives-dependenciesHint">
+      The item can start once these are satisfied (built or done, per the initiative setting).
+    </p>
+    <div class="d-flex flex-column gap-1">
+      @for (candidate of dependencyCandidates(item); track candidate.id) {
+        <label class="form-check">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            [checked]="depsSelection().includes(candidate.id)"
+            (change)="toggleDependency(candidate.id, $any($event.target).checked)"
+          />
+          <span class="form-check-label"
+            ><code>{{ candidate.key }}</code> {{ candidate.title }}</span
+          >
+        </label>
+      }
+    </div>
+    <div *fpcModalFooter>
+      <fpc-button variant="primary" (clicked)="saveDependencies()" i18n="@@featureInitiatives-save">Save</fpc-button>
+    </div>
+  </fpc-modal>
+}
+
+<!-- Transfer -->
+<fpc-modal [(open)]="transferOpen" title="Transfer to tickets" i18n-title="@@featureInitiatives-transfer" size="lg">
+  <p class="small text-body-secondary" i18n="@@featureInitiatives-transferHint">
+    Epics become tickets, their stories subtasks (as drafts). Stories are released to "todo" in build order once their
+    prerequisites are satisfied; ticket automation never picks a story whose prerequisites are not satisfied.
+  </p>
+  <div class="d-flex flex-column gap-1 mb-3">
+    @for (epic of epics(); track epic.id) {
+      @if (epic.status !== 'dropped') {
+        <label class="form-check">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            [checked]="transferEpicIds().includes(epic.id)"
+            (change)="toggleTransferEpic(epic.id, $any($event.target).checked)"
+          />
+          <span class="form-check-label"
+            ><code>{{ epic.key }}</code> {{ epic.title }}</span
+          >
+        </label>
+      }
+    }
+  </div>
+  <fpc-form-switch
+    switchId="transferAutomation"
+    label="Enable ticket automation for the stories (workspace managers)"
+    i18n-label="@@featureInitiatives-transferAutomation"
+    [checked]="transferAutomation()"
+    (checkedChange)="transferAutomation.set($event)"
+  />
+  @if (transferAutomation()) {
+    <fpc-form-field class="mt-2" forId="transferModel" label="Model" i18n-label="@@featureInitiatives-fieldModelChoice">
+      <framework-initiative-model-select
+        controlId="transferModel"
+        [clientId]="initiative().clientId"
+        [agentId]="initiative().defaultAgentId || agents()[0]?.id || null"
+        [allowDefault]="false"
+        [value]="transferModel()"
+        (valueChange)="transferModel.set($event)"
+      />
+    </fpc-form-field>
+  }
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="success"
+      [disabled]="transferEpicIds().length === 0"
+      (clicked)="submitTransfer()"
+      data-testid="initiative-transfer-submit"
+      i18n="@@featureInitiatives-transferSubmit"
+      >Transfer</fpc-button
+    >
+  </div>
+</fpc-modal>
+
+<!-- Plan story -->
+@if (planItem(); as item) {
+  <fpc-modal [open]="true" (openChange)="!$event && planItem.set(null)" [title]="item.key + ' ' + item.title">
+    <p class="small text-body-secondary" i18n="@@featureInitiatives-planHint">
+      The agent explores the repository and drafts a plan for this story (with the initiative documents as context). The
+      plan appears in the chosen chat, where it can be refined and executed.
+    </p>
+    <div class="d-flex flex-column gap-3">
+      <fpc-form-field forId="planAgent" label="Environment" i18n-label="@@featureInitiatives-fieldEnvironment">
+        <fpc-form-control
+          controlId="planAgent"
+          controlType="select"
+          [ngModel]="planAgentId()"
+          (ngModelChange)="onPlanAgent($event)"
+        >
+          @for (agent of agents(); track agent.id) {
+            <option [value]="agent.id">{{ agentName(agent.id) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+      <fpc-form-field forId="planChat" label="Chat" i18n-label="@@featureInitiatives-fieldChat">
+        <fpc-form-control
+          controlId="planChat"
+          controlType="select"
+          [ngModel]="planChatId()"
+          (ngModelChange)="planChatId.set($event)"
+        >
+          @for (chat of planChats(); track chat.id) {
+            <option [value]="chat.id">{{ chatLabel(chat) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+      <fpc-form-field
+        forId="planInstructions"
+        label="Instructions (optional)"
+        i18n-label="@@featureInitiatives-fieldInstructions"
+      >
+        <fpc-form-control
+          controlId="planInstructions"
+          controlType="textarea"
+          [rows]="3"
+          [ngModel]="planInstructions()"
+          (ngModelChange)="planInstructions.set($event)"
+        />
+      </fpc-form-field>
+    </div>
+    <div *fpcModalFooter>
+      <fpc-button
+        variant="primary"
+        [disabled]="!planChatId()"
+        (clicked)="submitPlan()"
+        i18n="@@featureInitiatives-planSubmit"
+        >Plan</fpc-button
+      >
+    </div>
+  </fpc-modal>
+}
+
+<!-- Delete item -->
+@if (deleteItem(); as item) {
+  <fpc-modal
+    [open]="true"
+    (openChange)="!$event && deleteItem.set(null)"
+    [title]="item.key + ' ' + item.title"
+    accent="danger"
+  >
+    <p class="mb-0" i18n="@@featureInitiatives-deleteItemConfirm">
+      The item (and the items of an epic) are deleted. Items that were transferred to tickets can only be dropped.
+    </p>
+    <div *fpcModalFooter>
+      <fpc-button variant="danger" (clicked)="confirmDelete()" i18n="@@featureInitiatives-deleteSubmit"
+        >Delete</fpc-button
+      >
+    </div>
+  </fpc-modal>
+}

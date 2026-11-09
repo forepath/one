@@ -37,6 +37,7 @@ import {
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
+  FpcBackLinkComponent,
   FpcButtonComponent,
   FpcConfirmDialogComponent,
   FpcDataTableComponent,
@@ -120,6 +121,7 @@ type BulkTone = 'success' | 'warning' | 'danger';
     RouterModule,
     FpcAlertComponent,
     FpcBadgeComponent,
+    FpcBackLinkComponent,
     FpcButtonComponent,
     FpcConfirmDialogComponent,
     FpcDataTableComponent,

@@ -17,6 +17,11 @@ import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
 import { ClientsService } from './clients.service';
 
 jest.mock('axios');
+// No real DNS lookups of the test endpoint (slow / flaky under load or offline).
+jest.mock('../utils/client-endpoint-security', () => ({
+  ...jest.requireActual('../utils/client-endpoint-security'),
+  validateClientEndpointWithDnsOrThrow: jest.fn().mockResolvedValue(undefined),
+}));
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('ClientAgentVcsProxyService', () => {

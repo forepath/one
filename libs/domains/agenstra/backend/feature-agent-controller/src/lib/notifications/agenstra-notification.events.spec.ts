@@ -88,4 +88,18 @@ describe('AGENSTRA_NOTIFICATION_EVENTS', () => {
       ]),
     );
   });
+
+  it('includes the initiative events', () => {
+    expect(AGENSTRA_NOTIFICATION_EVENTS).toEqual(
+      expect.arrayContaining([
+        'initiative.created',
+        'initiative.deleted',
+        'initiative.artifact.accepted',
+        'initiative.run.needs_input',
+        'initiative.proposal.decided',
+        'initiative.work_items.released',
+        'initiative.retrospective.completed',
+      ]),
+    );
+  });
 });

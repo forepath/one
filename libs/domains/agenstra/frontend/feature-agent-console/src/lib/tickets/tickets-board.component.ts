@@ -43,6 +43,7 @@ import {
   TicketAutomationFacade,
   TicketsBoardSocketFacade,
   TicketsFacade,
+  InitiativesService,
   TicketsService,
   unapproveTicketAutomationFailure,
   unapproveTicketAutomationSuccess,
@@ -661,6 +662,31 @@ export class TicketsBoardComponent implements OnInit {
   readonly ticketsSaving = toSignal(this.saving$, { initialValue: false });
 
   readonly detail = toSignal(this.ticketsFacade.detail$, { initialValue: null });
+  private readonly initiativesService = inject(InitiativesService);
+  /** Initiative story of the open ticket (prerequisites; automation waits for them). Reloaded on status changes. */
+  readonly detailInitiativeLink = toSignal(
+    toObservable(
+      computed(() => {
+        const ticket = this.detail();
+
+        return ticket ? `${ticket.id}|${ticket.status}|${ticket.updatedAt}` : '';
+      }),
+    ).pipe(
+      distinctUntilChanged(),
+      debounceTime(150),
+      switchMap((key) => {
+        const ticketId = key.split('|')[0];
+
+        return ticketId
+          ? this.initiativesService.ticketLink(ticketId).pipe(
+              map((response) => response.link),
+              catchError(() => of(null)),
+            )
+          : of(null);
+      }),
+    ),
+    { initialValue: null },
+  );
   readonly detailBreadcrumb = toSignal(this.ticketsFacade.detailBreadcrumb$, { initialValue: [] });
   readonly ticketsList = toSignal(this.ticketsFacade.tickets$, { initialValue: [] });
   readonly knowledgeTree = toSignal(this.knowledgeFacade.tree$, { initialValue: [] as KnowledgeNodeDto[] });

@@ -1,0 +1,242 @@
+<!-- Documents of the initiative: one searchable table (state, title, type, epic, version, updated), ⋮ row
+     actions; a document opens in a modal with the editor and its versions (like the ticket details). -->
+<fpc-data-table
+  class="flex-grow-1 min-h-0"
+  [ariaLabel]="tableLabel"
+  [columns]="columns"
+  [rows]="visibleArtifacts()"
+  [activeRowId]="selectedId()"
+  paging="client"
+  persistKey="agenstra-initiative-documents"
+  [(query)]="query"
+  [searchPlaceholder]="searchPlaceholder"
+  [rowMenu]="rowMenu"
+  (rowAction)="onRowAction($event.row, $event.item.id)"
+  (rowActivate)="select($event)"
+  emptyIcon="file-earmark-text"
+  data-testid="initiative-documents"
+>
+  <span fpcDataTableToolbar class="d-inline-flex gap-2">
+    <fpc-button
+      variant="primary"
+      iconOnly
+      [ariaLabel]="newDocumentLabel"
+      [title]="newDocumentLabel"
+      (clicked)="openCreate()"
+      data-testid="initiative-doc-new"
+    >
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
+    </fpc-button>
+  </span>
+  <span fpcDataTableEmpty>
+    <fpc-empty-state
+      size="sm"
+      icon="file-earmark-text"
+      message="No documents yet"
+      i18n-message="@@featureInitiatives-docsEmpty"
+    >
+      <p class="small text-body-secondary mb-0" i18n="@@featureInitiatives-docsEmptyHint">
+        Start a guided step (for example the PRD) or write a document yourself.
+      </p>
+    </fpc-empty-state>
+  </span>
+  <ng-template fpcTableCell="title" let-row>
+    <span class="d-block text-truncate" [title]="row.title">{{ row.title }}</span>
+  </ng-template>
+  <ng-template fpcTableCell="version" let-row>v{{ row.currentVersion }}</ng-template>
+</fpc-data-table>
+
+<!-- Document: facts, editor, versions. Closing keeps nothing unsaved (the draft follows the document again). -->
+<fpc-modal
+  [open]="!!selectedId()"
+  (openChange)="!$event && close()"
+  [title]="open()?.title ?? documentLabel"
+  size="xl"
+  scrollable
+>
+  @if (open(); as artifact) {
+    <div class="d-flex flex-column gap-3">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <fpc-badge [color]="statusTone(artifact.status)">{{ statusLabel(artifact.status) }}</fpc-badge>
+        <fpc-badge color="light">{{ typeLabel(artifact.type) }}</fpc-badge>
+        <fpc-badge color="secondary" [title]="versionTitle">v{{ artifact.currentVersion }}</fpc-badge>
+        @if (artifact.workItemId) {
+          <fpc-badge color="light"
+            ><span i18n="@@featureInitiatives-docsEpicBadge">Epic</span> {{ epicKey(artifact.workItemId) }}</fpc-badge
+          >
+        }
+        <span class="flex-grow-1"></span>
+        <code class="small" [title]="'artifact:' + artifact.shas.long">artifact:{{ artifact.shas.short }}</code>
+        <fpc-button
+          variant="link"
+          size="sm"
+          iconOnly
+          [ariaLabel]="copyReferenceLabel"
+          [title]="copyReferenceLabel"
+          (clicked)="copyReference(artifact)"
+        >
+          <i class="bi bi-copy" aria-hidden="true"></i>
+        </fpc-button>
+      </div>
+
+      @if (changedMeanwhile()) {
+        <fpc-alert
+          variant="warning"
+          i18n-message="@@featureInitiatives-docChanged"
+          message="This document changed after you started editing. Saving is refused until you discard your changes and continue from the latest version."
+        />
+      }
+
+      <fpc-form-field forId="docTitle" label="Title" i18n-label="@@featureInitiatives-fieldTitle">
+        <fpc-form-control
+          controlId="docTitle"
+          maxLength="500"
+          [ngModel]="draftTitle()"
+          (ngModelChange)="draftTitle.set($event)"
+        />
+      </fpc-form-field>
+
+      <div>
+        <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
+          <h3 class="h6 mb-0" i18n="@@featureInitiatives-docsContentHeading">Content</h3>
+          @if (dirty()) {
+            <small class="text-body-secondary" i18n="@@featureInitiatives-unsaved">Unsaved changes</small>
+          }
+        </div>
+        <div class="docs-editor border rounded" data-testid="initiative-doc-editor">
+          <framework-knowledge-editor
+            [markdown]="draft()"
+            (markdownChange)="draft.set($event)"
+          ></framework-knowledge-editor>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="h6 mb-2" i18n="@@featureInitiatives-versions">Versions</h3>
+        <fpc-data-table
+          nested
+          [ariaLabel]="versionsLabel"
+          [columns]="versionColumns"
+          [rows]="versions()"
+          [activeRowId]="compare()?.id ?? null"
+          paging="client"
+          persistKey="agenstra-initiative-document-versions"
+          [searchable]="false"
+          [rowMenu]="versionRowMenu"
+          (rowAction)="onVersionAction(artifact, $event.row, $event.item.id)"
+          (rowActivate)="viewVersion(artifact, $event)"
+          data-testid="initiative-doc-versions"
+        >
+          <ng-template fpcTableCell="time" let-row>{{ row.createdAt | fpcDate: 'datetime' }}</ng-template>
+          <ng-template fpcTableCell="version" let-row>v{{ row.version }}</ng-template>
+        </fpc-data-table>
+      </div>
+
+      @if (compare(); as version) {
+        <div class="border rounded p-3 bg-body-tertiary" data-testid="initiative-doc-version-view">
+          <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+            <h4 class="h6 mb-0">
+              <span i18n="@@featureInitiatives-docsVersionHeading">Version</span> {{ version.version }}
+            </h4>
+            <fpc-button
+              variant="link"
+              size="sm"
+              iconOnly
+              [ariaLabel]="hideVersionLabel"
+              [title]="hideVersionLabel"
+              (clicked)="viewVersion(artifact, null)"
+            >
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </fpc-button>
+          </div>
+          @if (markdown.render(version.content); as html) {
+            <div class="markdown-content" [innerHTML]="html"></div>
+          } @else {
+            <div class="docs-plain">{{ version.content }}</div>
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <fpc-empty-state loading />
+  }
+  <div *fpcModalFooter class="d-flex flex-wrap justify-content-end gap-2 w-100">
+    @if (open(); as artifact) {
+      <fpc-button
+        variant="secondary"
+        [disabled]="!dirty()"
+        (clicked)="discard()"
+        i18n="@@featureInitiatives-docsDiscard"
+        >Discard changes</fpc-button
+      >
+      <fpc-button
+        variant="primary"
+        [disabled]="!dirty() || pending()"
+        (clicked)="save()"
+        data-testid="initiative-doc-save"
+        i18n="@@featureInitiatives-saveVersion"
+        >Save new version</fpc-button
+      >
+      @if (artifact.status !== 'accepted') {
+        <fpc-button
+          variant="success"
+          [disabled]="dirty() || pending()"
+          (clicked)="accept(artifact)"
+          data-testid="initiative-doc-accept"
+          i18n="@@featureInitiatives-acceptDocument"
+          >Accept version</fpc-button
+        >
+      }
+    }
+  </div>
+</fpc-modal>
+
+<fpc-modal [(open)]="createOpen" title="New document" i18n-title="@@featureInitiatives-newDocument">
+  <div class="d-flex flex-column gap-3">
+    <fpc-form-field forId="newDocType" label="Type" i18n-label="@@featureInitiatives-fieldType">
+      <fpc-form-control
+        controlId="newDocType"
+        controlType="select"
+        [ngModel]="createType()"
+        (ngModelChange)="createType.set($event)"
+      >
+        @for (type of types; track type) {
+          <option [value]="type">{{ typeLabel(type) }}</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+    <fpc-form-field forId="newDocTitle" label="Title (optional)" i18n-label="@@featureInitiatives-fieldTitleOptional">
+      <fpc-form-control
+        controlId="newDocTitle"
+        maxLength="500"
+        [ngModel]="createTitle()"
+        (ngModelChange)="createTitle.set($event)"
+      />
+    </fpc-form-field>
+    <small class="text-body-secondary" i18n="@@featureInitiatives-templateHint"
+      >The document starts from the template of its type.</small
+    >
+  </div>
+  <div *fpcModalFooter>
+    <fpc-button variant="primary" (clicked)="submitCreate()" i18n="@@featureInitiatives-createSubmit"
+      >Create</fpc-button
+    >
+  </div>
+</fpc-modal>
+
+@if (deleteTarget(); as artifact) {
+  <fpc-modal
+    [open]="true"
+    (openChange)="!$event && deleteTarget.set(null)"
+    title="Delete document"
+    i18n-title="@@featureInitiatives-deleteDocument"
+    accent="danger"
+  >
+    <p class="mb-0" i18n="@@featureInitiatives-deleteDocumentConfirm">The document and all its versions are deleted.</p>
+    <div *fpcModalFooter>
+      <fpc-button variant="danger" (clicked)="remove(artifact)" i18n="@@featureInitiatives-deleteSubmit"
+        >Delete</fpc-button
+      >
+    </div>
+  </fpc-modal>
+}

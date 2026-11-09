@@ -1764,13 +1764,13 @@
         <source> Console and desktop app </source>
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-componentConsoleDesc" datatype="html">
-        <source> Where people work with agents: chat, files, Git, a terminal, tickets, deployments and the audit log, in the browser or as a desktop app. </source>
+        <source> Where people work with agents: chat, files, Git, a terminal, initiatives, tickets, deployments and the audit log, in the browser or as a desktop app. </source>
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-componentControllerTitle" datatype="html">
         <source> Agent controller </source>
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-componentControllerDesc" datatype="html">
-        <source> The control plane. It authenticates people, resolves policy, keeps tickets, knowledge and audit events, and routes every request to the host that runs the workspace. </source>
+        <source> The control plane. It authenticates people, resolves policy, keeps initiatives, tickets, knowledge and audit events, and routes every request to the host that runs the workspace. </source>
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-componentManagerTitle" datatype="html">
         <source>Agent manager</source>

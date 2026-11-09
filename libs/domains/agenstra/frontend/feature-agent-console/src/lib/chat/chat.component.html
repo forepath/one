@@ -170,18 +170,14 @@
         [class.active-column]="(activeClientId$ | async) && !(selectedAgent$ | async)"
       >
         <fpc-page-header>
+          <fpc-back-link
+            fpcPageHeaderBack
+            class="d-md-none"
+            [label]="backToWorkspacesTitle"
+            [disabled]="!(activeClientId$ | async)"
+            (activate)="onClientUnselect()"
+          />
           <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
-            <fpc-button
-              class="d-block d-md-none flex-shrink-0"
-              variant="dark"
-              iconOnly
-              [disabled]="!(activeClientId$ | async)"
-              [title]="backToWorkspacesTitle"
-              [ariaLabel]="backToWorkspacesTitle"
-              (clicked)="onClientUnselect()"
-            >
-              <i class="bi bi-arrow-left" aria-hidden="true"></i>
-            </fpc-button>
             <h5 class="mb-0 fw-semibold text-truncate">{{ environmentsHeaderTitle }}</h5>
           </div>
         </fpc-page-header>
@@ -337,18 +333,14 @@
         [class.mobile-overlay]="editorOpen() && chatVisible()"
       >
         <fpc-page-header>
+          <fpc-back-link
+            fpcPageHeaderBack
+            class="d-md-none"
+            [label]="getChatBackTitle()"
+            [disabled]="!(selectedAgent$ | async)"
+            (activate)="onChatBackButton()"
+          />
           <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
-            <fpc-button
-              class="d-block d-md-none flex-shrink-0"
-              variant="dark"
-              iconOnly
-              (clicked)="onChatBackButton()"
-              [disabled]="!(selectedAgent$ | async)"
-              [title]="getChatBackTitle()"
-              [ariaLabel]="getChatBackTitle()"
-            >
-              <i class="bi bi-arrow-left" aria-hidden="true"></i>
-            </fpc-button>
             @if (activeClient$ | async; as activeClient) {
               @if (selectedAgent$ | async; as selectedAgent) {
                 @if ({ running: getAgentContainerRunning$(activeClient.id, selectedAgent.id) | async }; as status) {

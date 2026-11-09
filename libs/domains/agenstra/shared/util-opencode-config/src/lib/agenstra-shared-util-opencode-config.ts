@@ -19,3 +19,4 @@ export * from './handoff-platform';
 export * from './content-platform';
 export * from './graph-platform';
 export * from './deployment-platform';
+export * from './initiative-platform';

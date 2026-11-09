@@ -226,18 +226,14 @@
       <fpc-section-column class="d-flex flex-grow-1 deployments-detail">
         @if (openWorkflow(); as workflow) {
           <fpc-page-header>
+            <fpc-back-link
+              fpcPageHeaderBack
+              class="d-md-none"
+              [label]="backToWorkflowsTitle"
+              (activate)="onCloseWorkflow()"
+              data-testid="deployment-workflow-back"
+            />
             <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
-              <fpc-button
-                class="d-md-none flex-shrink-0"
-                variant="dark"
-                iconOnly
-                [ariaLabel]="backToWorkflowsTitle"
-                [title]="backToWorkflowsTitle"
-                (clicked)="onCloseWorkflow()"
-                data-testid="deployment-workflow-back"
-              >
-                <i class="bi bi-arrow-left" aria-hidden="true"></i>
-              </fpc-button>
               <h2 class="fpc-page-header__title h6 mb-0 fw-semibold text-truncate" [title]="workflow.name">
                 {{ workflow.name }}
               </h2>
@@ -528,19 +524,15 @@
           <!-- Run detail: jobs, logs, provider link, cancel. -->
           @if (openRun(); as detail) {
             <fpc-page-header>
+              <!-- Phones only (the run history is hidden there); on wider screens the selected history row closes the run. -->
+              <fpc-back-link
+                fpcPageHeaderBack
+                class="d-md-none"
+                [label]="backToRunsTitle"
+                (activate)="onCloseRun()"
+                data-testid="deployment-run-back"
+              />
               <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
-                <!-- Phones only (the run history is hidden there); on wider screens the selected history row closes the run. -->
-                <fpc-button
-                  class="d-md-none flex-shrink-0"
-                  variant="dark"
-                  iconOnly
-                  [ariaLabel]="backToRunsTitle"
-                  [title]="backToRunsTitle"
-                  (clicked)="onCloseRun()"
-                  data-testid="deployment-run-back"
-                >
-                  <i class="bi bi-arrow-left" aria-hidden="true"></i>
-                </fpc-button>
                 @if (runState(detail.run); as state) {
                   <fpc-badge
                     class="flex-shrink-0"

@@ -121,6 +121,27 @@ export function deriveAgentContextItems(
     });
   });
 
+  const initiativeRefs = contextInjection.initiativeContextRefs ?? [];
+
+  (contextInjection.initiativeContexts ?? []).forEach((content, i) => {
+    const trimmed = content.trim();
+    const ref = initiativeRefs[i];
+    const sha = ref?.sha?.trim().toLowerCase();
+
+    if (!trimmed || !ref || (ref.kind !== 'initiative' && ref.kind !== 'artifact')) {
+      return;
+    }
+
+    items.push({
+      kind: ref.kind,
+      title:
+        clip(ref.title ?? '') ||
+        `${ref.kind === 'initiative' ? 'Initiative' : 'Document'} ${sha?.slice(0, 8) ?? i + 1}`,
+      ...(sha ? { sha } : {}),
+      content: trimmed,
+    });
+  });
+
   return items;
 }
 
@@ -148,7 +169,7 @@ export function buildAgentContextHintLines(record: AgentContextTicketRecord): st
   const access =
     record.accessMode === 'deny'
       ? 'Only the items listed above are available in this session.'
-      : `Other tickets / knowledge pages / plans of this environment: find metadata with ${tool('search')}; ask for their content with ${tool('request_access')}.`;
+      : `Other tickets / knowledge pages / plans of this environment / initiatives and their documents: find metadata with ${tool('search')}; ask for their content with ${tool('request_access')}.`;
 
   lines.push(`- ${access}`);
   lines.push(
@@ -164,7 +185,9 @@ export function buildAgentContextHintLines(record: AgentContextTicketRecord): st
     lines.push(
       `- To create, change, comment on or delete tickets / knowledge pages, or to update plans that were not executed ` +
         `yet (executed plans are read-only), use the ${content} tools (the user approves each change; pass the ` +
-        `revision ${tool('get')} returned).`,
+        `revision ${tool('get')} returned). To propose changes to an initiative or record a finding on it, use ` +
+        `${AGENSTRA_CONTEXT_MCP_SERVER_KEY}_content_initiative_propose / _finding (a user accepts proposals on the ` +
+        `Initiatives page).`,
     );
   } else if (record.accessMode === 'auto' && isUnattendedAutomationResumeSessionSuffix(suffix)) {
     lines.push(

@@ -11382,6 +11382,1858 @@
         <source>Approved</source>
         <target>Freigegeben</target>
       </trans-unit>
+      <trans-unit id="featureAgentConsole-initiativesTitle" datatype="html">
+        <source>Initiatives :: Agenstra</source>
+        <target>Initiativen :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-initiativesTitle" datatype="html">
+        <source>Initiatives</source>
+        <target>Initiativen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-initiatives" datatype="html">
+        <source>Initiatives</source>
+        <target>Initiativen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-newDocument" datatype="html">
+        <source>New document</source>
+        <target>Neues Dokument</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docAccepted" datatype="html">
+        <source>Accepted</source>
+        <target>Akzeptiert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docDraft" datatype="html">
+        <source>Draft</source>
+        <target>Entwurf</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-acceptDocument" datatype="html">
+        <source>Accept version</source>
+        <target>Version akzeptieren</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-updateWithAgent" datatype="html">
+        <source>Update with the agent</source>
+        <target>Mit dem Agenten aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-validateWithAgent" datatype="html">
+        <source>Validate</source>
+        <target>Prüfen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-copyReference" datatype="html">
+        <source>Copy context reference</source>
+        <target>Kontextreferenz kopieren</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-publish" datatype="html">
+        <source>Publish to Knowledge</source>
+        <target>In Wissen veröffentlichen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-deleteDocument" datatype="html">
+        <source>Delete document</source>
+        <target>Dokument löschen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docChanged" datatype="html">
+        <source>This document changed after you started editing. Saving is refused until you discard your changes and continue from the latest version.</source>
+        <target>Dieses Dokument wurde geändert, nachdem Sie mit der Bearbeitung begonnen haben. Speichern wird abgelehnt, bis Sie Ihre Änderungen verwerfen und von der neuesten Version aus weiterarbeiten.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldTitle" datatype="html">
+        <source>Title</source>
+        <target>Titel</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-unsaved" datatype="html">
+        <source>Unsaved changes</source>
+        <target>Ungespeicherte Änderungen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-saveVersion" datatype="html">
+        <source>Save new version</source>
+        <target>Neue Version speichern</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-versions" datatype="html">
+        <source>Versions</source>
+        <target>Versionen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-colIteration" datatype="html">
+        <source>Iteration</source>
+        <target>Iteration</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-colSource" datatype="html">
+        <source>Source</source>
+        <target>Quelle</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-colTime" datatype="html">
+        <source>Time</source>
+        <target>Zeit</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-view" datatype="html">
+        <source>View</source>
+        <target>Ansehen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldType" datatype="html">
+        <source>Type</source>
+        <target>Typ</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldTitleOptional" datatype="html">
+        <source>Title (optional)</source>
+        <target>Titel (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-templateHint" datatype="html">
+        <source>The document starts from the template of its type.</source>
+        <target>Das Dokument beginnt mit der Vorlage seines Typs.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-createSubmit" datatype="html">
+        <source>Create</source>
+        <target>Erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-deleteDocumentConfirm" datatype="html">
+        <source>The document and all its versions are deleted.</source>
+        <target>Das Dokument und alle seine Versionen werden gelöscht.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-deleteSubmit" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-phaseClarify" datatype="html">
+        <source>Clarify</source>
+        <target>Klären</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-phasePlan" datatype="html">
+        <source>Plan</source>
+        <target>Planen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-phaseBuild" datatype="html">
+        <source>Build &amp; verify</source>
+        <target>Bauen &amp; prüfen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-phaseLearn" datatype="html">
+        <source>Learn &amp; adjust</source>
+        <target>Lernen &amp; anpassen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-pathSession" datatype="html">
+        <source>One session</source>
+        <target>Eine Sitzung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-pathEpic" datatype="html">
+        <source>Epic</source>
+        <target>Epic</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-pathProject" datatype="html">
+        <source>Project</source>
+        <target>Projekt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-pathSessionHint" datatype="html">
+        <source>One coherent change: one epic with a few stories.</source>
+        <target>Eine zusammenhängende Änderung: ein Epic mit wenigen Stories.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-pathEpicHint" datatype="html">
+        <source>One outcome that needs several build sessions.</source>
+        <target>Ein Ergebnis, das mehrere Build-Sitzungen braucht.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-pathProjectHint" datatype="html">
+        <source>Several epics with shared contracts (PRD, UX, architecture).</source>
+        <target>Mehrere Epics mit gemeinsamen Verträgen (PRD, UX, Architektur).</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stateActive" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-statePaused" datatype="html">
+        <source>Paused</source>
+        <target>Pausiert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stateCompleted" datatype="html">
+        <source>Completed</source>
+        <target>Abgeschlossen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stateArchived" datatype="html">
+        <source>Archived</source>
+        <target>Archiviert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-roleAnalyst" datatype="html">
+        <source>Analyst</source>
+        <target>Analyst</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-roleProductManager" datatype="html">
+        <source>Product Manager</source>
+        <target>Product Manager</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-roleUxDesigner" datatype="html">
+        <source>UX Designer</source>
+        <target>UX Designer</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-roleArchitect" datatype="html">
+        <source>Architect</source>
+        <target>Architekt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-roleProductOwner" datatype="html">
+        <source>Product Owner</source>
+        <target>Product Owner</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-roleDeveloper" datatype="html">
+        <source>Developer</source>
+        <target>Entwickler</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepBrainstorm" datatype="html">
+        <source>Brainstorm</source>
+        <target>Brainstorming</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepForgeIdea" datatype="html">
+        <source>Forge the idea</source>
+        <target>Idee schärfen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepResearch" datatype="html">
+        <source>Research a decision</source>
+        <target>Entscheidung recherchieren</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepProductBrief" datatype="html">
+        <source>Product brief</source>
+        <target>Product Brief</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepPrfaq" datatype="html">
+        <source>PRFAQ</source>
+        <target>PRFAQ</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepPrd" datatype="html">
+        <source>PRD</source>
+        <target>PRD</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepUx" datatype="html">
+        <source>UX design</source>
+        <target>UX-Design</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepArchitecture" datatype="html">
+        <source>Architecture</source>
+        <target>Architektur</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepProjectContext" datatype="html">
+        <source>Project context</source>
+        <target>Projektkontext</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepSliceEpics" datatype="html">
+        <source>Slice into epics</source>
+        <target>In Epics schneiden</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepRefineEpic" datatype="html">
+        <source>Refine epic</source>
+        <target>Epic verfeinern</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepInceptStories" datatype="html">
+        <source>Incept stories</source>
+        <target>Stories ableiten</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepReadinessReview" datatype="html">
+        <source>Readiness review</source>
+        <target>Bereitschaftsprüfung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepRetrospective" datatype="html">
+        <source>Epic retrospective</source>
+        <target>Epic-Retrospektive</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-stepCorrectCourse" datatype="html">
+        <source>Correct course</source>
+        <target>Kurs korrigieren</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-artifactBrainstorm" datatype="html">
+        <source>Brainstorm</source>
+        <target>Brainstorming</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-artifactForgeReport" datatype="html">
+        <source>Forge report</source>
+        <target>Schärfungsbericht</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-artifactResearch" datatype="html">
+        <source>Research</source>
+        <target>Recherche</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-artifactProductBrief" datatype="html">
+        <source>Product brief</source>
+        <target>Product Brief</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-artifactPrfaq" datatype="html">
+        <source>PRFAQ</source>
+        <target>PRFAQ</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-artifactPrd" datatype="html">
+        <source>PRD</source>
+        <target>PRD</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-artifactUx" datatype="html">
+        <source>UX design</source>
+        <target>UX-Design</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-artifactArchitecture" datatype="html">
+        <source>Architecture</source>
+        <target>Architektur</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-artifactProjectContext" datatype="html">
+        <source>Project context</source>
+        <target>Projektkontext</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-artifactRetrospective" datatype="html">
+        <source>Retrospective</source>
+        <target>Retrospektive</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-artifactNote" datatype="html">
+        <source>Note</source>
+        <target>Notiz</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-kindEpic" datatype="html">
+        <source>Epic</source>
+        <target>Epic</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-kindStory" datatype="html">
+        <source>Story</source>
+        <target>Story</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-kindSpike" datatype="html">
+        <source>Spike</source>
+        <target>Spike</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-kindBug" datatype="html">
+        <source>Bug</source>
+        <target>Bug</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-itemDraft" datatype="html">
+        <source>Draft</source>
+        <target>Entwurf</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-itemReady" datatype="html">
+        <source>Ready for dev</source>
+        <target>Bereit zur Umsetzung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-itemInProgress" datatype="html">
+        <source>In progress</source>
+        <target>In Arbeit</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-itemBuilt" datatype="html">
+        <source>Built</source>
+        <target>Gebaut</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-itemDone" datatype="html">
+        <source>Done</source>
+        <target>Erledigt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-itemBlocked" datatype="html">
+        <source>Blocked</source>
+        <target>Blockiert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-itemDropped" datatype="html">
+        <source>Dropped</source>
+        <target>Verworfen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runPending" datatype="html">
+        <source>Starting</source>
+        <target>Startet</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runWorking" datatype="html">
+        <source>Agent working</source>
+        <target>Agent arbeitet</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runNeedsInput" datatype="html">
+        <source>Needs your input</source>
+        <target>Braucht Ihre Eingabe</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runReady" datatype="html">
+        <source>Ready to review</source>
+        <target>Bereit zur Prüfung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runAccepted" datatype="html">
+        <source>Accepted</source>
+        <target>Akzeptiert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runDiscarded" datatype="html">
+        <source>Discarded</source>
+        <target>Verworfen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runFailed" datatype="html">
+        <source>Failed</source>
+        <target>Fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runCancelled" datatype="html">
+        <source>Cancelled</source>
+        <target>Abgebrochen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-severityCritical" datatype="html">
+        <source>Critical</source>
+        <target>Kritisch</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-severityMajor" datatype="html">
+        <source>Major</source>
+        <target>Schwer</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-severityMinor" datatype="html">
+        <source>Minor</source>
+        <target>Gering</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-severityInfo" datatype="html">
+        <source>Info</source>
+        <target>Info</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-proposalOpen" datatype="html">
+        <source>Open</source>
+        <target>Offen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-proposalAccepted" datatype="html">
+        <source>Accepted</source>
+        <target>Akzeptiert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-proposalRejected" datatype="html">
+        <source>Rejected</source>
+        <target>Abgelehnt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-proposalStale" datatype="html">
+        <source>Stale</source>
+        <target>Veraltet</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-verdictAccepted" datatype="html">
+        <source>Accepted</source>
+        <target>Akzeptiert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-verdictOpenItems" datatype="html">
+        <source>Accepted with open items</source>
+        <target>Akzeptiert mit offenen Punkten</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-verdictRejected" datatype="html">
+        <source>Rejected</source>
+        <target>Abgelehnt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actCreated" datatype="html">
+        <source>Created</source>
+        <target>Erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actUpdated" datatype="html">
+        <source>Settings changed</source>
+        <target>Einstellungen geändert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actIteration" datatype="html">
+        <source>Iteration started</source>
+        <target>Iteration gestartet</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actArtifactCreated" datatype="html">
+        <source>Document created</source>
+        <target>Dokument erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actArtifactUpdated" datatype="html">
+        <source>Document edited</source>
+        <target>Dokument bearbeitet</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actArtifactAccepted" datatype="html">
+        <source>Document accepted</source>
+        <target>Dokument akzeptiert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actArtifactDeleted" datatype="html">
+        <source>Document deleted</source>
+        <target>Dokument gelöscht</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actArtifactPublished" datatype="html">
+        <source>Published to Knowledge</source>
+        <target>In Wissen veröffentlicht</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actItemCreated" datatype="html">
+        <source>Work item created</source>
+        <target>Arbeitspaket erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actItemUpdated" datatype="html">
+        <source>Work item changed</source>
+        <target>Arbeitspaket geändert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actItemDeleted" datatype="html">
+        <source>Work item deleted</source>
+        <target>Arbeitspaket gelöscht</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actReordered" datatype="html">
+        <source>Build order changed</source>
+        <target>Bau-Reihenfolge geändert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actDependencies" datatype="html">
+        <source>Dependencies changed</source>
+        <target>Abhängigkeiten geändert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actUnknown" datatype="html">
+        <source>Question settled</source>
+        <target>Frage geklärt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actTransferred" datatype="html">
+        <source>Transferred to tickets</source>
+        <target>In Tickets übertragen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actReleased" datatype="html">
+        <source>Stories released</source>
+        <target>Stories freigegeben</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actPlanned" datatype="html">
+        <source>Story planned</source>
+        <target>Story geplant</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actRunStarted" datatype="html">
+        <source>Step started</source>
+        <target>Schritt gestartet</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actRunAccepted" datatype="html">
+        <source>Step result accepted</source>
+        <target>Ergebnis des Schritts akzeptiert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actRunDiscarded" datatype="html">
+        <source>Step result discarded</source>
+        <target>Ergebnis des Schritts verworfen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actRunFailed" datatype="html">
+        <source>Step failed</source>
+        <target>Schritt fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actRunCancelled" datatype="html">
+        <source>Step cancelled</source>
+        <target>Schritt abgebrochen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actProposalCreated" datatype="html">
+        <source>Change proposed</source>
+        <target>Änderung vorgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actProposalAccepted" datatype="html">
+        <source>Change accepted</source>
+        <target>Änderung akzeptiert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actProposalRejected" datatype="html">
+        <source>Change rejected</source>
+        <target>Änderung abgelehnt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actFindingCreated" datatype="html">
+        <source>Finding recorded</source>
+        <target>Befund erfasst</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actFindingUpdated" datatype="html">
+        <source>Finding updated</source>
+        <target>Befund aktualisiert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actDecisionCreated" datatype="html">
+        <source>Decision recorded</source>
+        <target>Entscheidung erfasst</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actDecisionDecided" datatype="html">
+        <source>Decision decided</source>
+        <target>Über Entscheidung entschieden</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actVerdict" datatype="html">
+        <source>Retrospective verdict</source>
+        <target>Urteil der Retrospektive</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-correctCourse" datatype="html">
+        <source>Correct course with the agent</source>
+        <target>Mit dem Agenten Kurs korrigieren</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-noProposals" datatype="html">
+        <source>No open proposals.</source>
+        <target>Keine offenen Vorschläge.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-review" datatype="html">
+        <source>Review</source>
+        <target>Prüfen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-proposeFromFindings" datatype="html">
+        <source>Propose changes for the selection</source>
+        <target>Änderungen für die Auswahl vorschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-addFinding" datatype="html">
+        <source>Add finding</source>
+        <target>Befund hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-noFindings" datatype="html">
+        <source>No open findings.</source>
+        <target>Keine offenen Befunde.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-toItem" datatype="html">
+        <source>New work item</source>
+        <target>Neues Arbeitspaket</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-dismiss" datatype="html">
+        <source>Dismiss</source>
+        <target>Verwerfen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-reopen" datatype="html">
+        <source>Reopen</source>
+        <target>Wieder öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-evidence" datatype="html">
+        <source>Evidence</source>
+        <target>Belege</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-noEpicsYet" datatype="html">
+        <source>No epics yet.</source>
+        <target>Noch keine Epics.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-noRetro" datatype="html">
+        <source>No retrospective yet</source>
+        <target>Noch keine Retrospektive</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runRetro" datatype="html">
+        <source>Run retrospective</source>
+        <target>Retrospektive durchführen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-decisionsHeading" datatype="html">
+        <source>Decisions</source>
+        <target>Entscheidungen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-addDecision" datatype="html">
+        <source>Record decision</source>
+        <target>Entscheidung erfassen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-noDecisions" datatype="html">
+        <source>No decisions yet.</source>
+        <target>Noch keine Entscheidungen.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-iterationShort" datatype="html">
+        <source>Iteration</source>
+        <target>Iteration</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-accept" datatype="html">
+        <source>Accept</source>
+        <target>Akzeptieren</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-reject" datatype="html">
+        <source>Reject</source>
+        <target>Ablehnen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-staleHint" datatype="html">
+        <source> A document of this proposal changed after it was made. It cannot be accepted any more; reject it or start a new correct-course step. </source>
+        <target> Ein Dokument dieses Vorschlags wurde geändert, nachdem er erstellt wurde. Er kann nicht mehr akzeptiert werden; lehnen Sie ihn ab oder starten Sie einen neuen Schritt zur Kurskorrektur. </target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-workItemChanges" datatype="html">
+        <source>Work item changes</source>
+        <target>Änderungen an Arbeitspaketen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-bumpsIteration" datatype="html">
+        <source>Accepting starts the next iteration of the initiative.</source>
+        <target>Das Akzeptieren startet die nächste Iteration der Initiative.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-closeDropped" datatype="html">
+        <source>Close the tickets of dropped stories</source>
+        <target>Tickets verworfener Stories schließen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldNote" datatype="html">
+        <source>Note (optional)</source>
+        <target>Notiz (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-acceptProposal" datatype="html">
+        <source>Accept and apply</source>
+        <target>Akzeptieren und anwenden</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-convertTitle" datatype="html">
+        <source>New work item from a finding</source>
+        <target>Neues Arbeitspaket aus einem Befund</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldEpic" datatype="html">
+        <source>Epic</source>
+        <target>Epic</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldSeverity" datatype="html">
+        <source>Severity</source>
+        <target>Schweregrad</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldFinding" datatype="html">
+        <source>Finding</source>
+        <target>Befund</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldDecision" datatype="html">
+        <source>Decision</source>
+        <target>Entscheidung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldReason" datatype="html">
+        <source>Reason</source>
+        <target>Begründung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-intentHeading" datatype="html">
+        <source>Intent</source>
+        <target>Absicht</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-intentPlaceholder" datatype="html">
+        <source>What should be true when this is done, what must not change, what is out of scope?</source>
+        <target>Was soll am Ende gelten, was darf sich nicht ändern, was ist nicht Teil davon?</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-intentChanged" datatype="html">
+        <source>Someone changed the intent meanwhile; saving is refused until you load the latest version.</source>
+        <target>Jemand hat die Absicht inzwischen geändert; Speichern wird abgelehnt, bis Sie die neueste Version laden.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-nextHeading" datatype="html">
+        <source>What&apos;s next</source>
+        <target>Als Nächstes</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-countEpics" datatype="html">
+        <source>Epics</source>
+        <target>Epics</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-countItems" datatype="html">
+        <source>Stories, spikes and bugs</source>
+        <target>Stories, Spikes und Bugs</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-countRuns" datatype="html">
+        <source>Active steps</source>
+        <target>Aktive Schritte</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-countProposals" datatype="html">
+        <source>Open proposals</source>
+        <target>Offene Vorschläge</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-countFindings" datatype="html">
+        <source>Open findings</source>
+        <target>Offene Befunde</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-countDecisions" datatype="html">
+        <source>Decisions to decide</source>
+        <target>Zu treffende Entscheidungen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-countUnknowns" datatype="html">
+        <source>Open questions</source>
+        <target>Offene Fragen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actionTransfer" datatype="html">
+        <source>Open work items</source>
+        <target>Arbeitspakete öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actionLearn" datatype="html">
+        <source>Open Learn &amp; adjust</source>
+        <target>Lernen &amp; anpassen öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-startHeading" datatype="html">
+        <source>Start a guided step</source>
+        <target>Geführten Schritt starten</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldStep" datatype="html">
+        <source>Step</source>
+        <target>Schritt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-chooseEpic" datatype="html">
+        <source>Choose an epic</source>
+        <target>Epic wählen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldMode" datatype="html">
+        <source>Mode</source>
+        <target>Modus</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-modeAuto" datatype="html">
+        <source>Automatic (create or update)</source>
+        <target>Automatisch (erstellen oder aktualisieren)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldStyle" datatype="html">
+        <source>Style</source>
+        <target>Vorgehen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-styleCoaching" datatype="html">
+        <source>Coaching (section by section)</source>
+        <target>Coaching (Abschnitt für Abschnitt)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-styleFast" datatype="html">
+        <source>Fast path (draft at once)</source>
+        <target>Schnell (sofort entwerfen)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldEnvironment" datatype="html">
+        <source>Environment</source>
+        <target>Umgebung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-findingsSelected" datatype="html">
+        <source>The selected findings are given to the agent as the starting point.</source>
+        <target>Die ausgewählten Befunde erhält der Agent als Ausgangspunkt.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldInstructions" datatype="html">
+        <source>Instructions (optional)</source>
+        <target>Anweisungen (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-startSubmit" datatype="html">
+        <source>Start</source>
+        <target>Starten</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-acceptResult" datatype="html">
+        <source>Accept result</source>
+        <target>Ergebnis akzeptieren</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-retry" datatype="html">
+        <source>Retry</source>
+        <target>Erneut versuchen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-discardRun" datatype="html">
+        <source>Discard</source>
+        <target>Verwerfen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-you" datatype="html">
+        <source>Workspace member</source>
+        <target>Workspace-Mitglied</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-agentWorking" datatype="html">
+        <source>The agent is working…</source>
+        <target>Der Agent arbeitet…</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-answerPlaceholder" datatype="html">
+        <source>Answer the agent or ask for changes… (Ctrl+Enter sends)</source>
+        <target>Antworten Sie dem Agenten oder bitten Sie um Änderungen… (Strg+Enter sendet)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-send" datatype="html">
+        <source>Send</source>
+        <target>Senden</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-verdict" datatype="html">
+        <source>Verdict</source>
+        <target>Urteil</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-epicRequirements" datatype="html">
+        <source>Epic requirements</source>
+        <target>Anforderungen des Epics</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-verify" datatype="html">
+        <source>Verify</source>
+        <target>Prüfung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runsEmpty" datatype="html">
+        <source>Start a guided step: a role of the method works through it with you.</source>
+        <target>Starten Sie einen geführten Schritt: Eine Rolle der Methode arbeitet ihn mit Ihnen durch.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-addEpic" datatype="html">
+        <source>Add epic</source>
+        <target>Epic hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sliceWithAgent" datatype="html">
+        <source>Slice with the agent</source>
+        <target>Mit dem Agenten schneiden</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-transfer" datatype="html">
+        <source>Transfer to tickets</source>
+        <target>In Tickets übertragen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-skipped" datatype="html">
+        <source>Not everything was done:</source>
+        <target>Nicht alles wurde erledigt:</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-openQuestions" datatype="html">
+        <source>Open questions</source>
+        <target>Offene Fragen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-answer" datatype="html">
+        <source>Answer</source>
+        <target>Antwort</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-settle" datatype="html">
+        <source>Settle</source>
+        <target>Klären</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-remove" datatype="html">
+        <source>Remove</source>
+        <target>Entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-noEpics" datatype="html">
+        <source>No epics yet. Slice the initiative with the agent or add epics yourself.</source>
+        <target>Noch keine Epics. Schneiden Sie die Initiative mit dem Agenten oder legen Sie Epics selbst an.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-notRefined" datatype="html">
+        <source>Not refined</source>
+        <target>Nicht verfeinert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-waitingFor" datatype="html">
+        <source>Waiting for</source>
+        <target>Wartet auf</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-moveUp" datatype="html">
+        <source>Move up</source>
+        <target>Nach oben</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-moveDown" datatype="html">
+        <source>Move down</source>
+        <target>Nach unten</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-addStory" datatype="html">
+        <source>Add story</source>
+        <target>Story hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-drop" datatype="html">
+        <source>Drop</source>
+        <target>Verwerfen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-openTicket" datatype="html">
+        <source>Ticket</source>
+        <target>Ticket</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-release" datatype="html">
+        <source>Release</source>
+        <target>Freigeben</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-markDone" datatype="html">
+        <source>Mark done</source>
+        <target>Als erledigt markieren</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-lockedHint" datatype="html">
+        <source>This item is built or done: its content is never rewritten. Add a new item for further changes.</source>
+        <target>Dieses Arbeitspaket ist gebaut oder erledigt: Sein Inhalt wird nie überschrieben. Legen Sie für weitere Änderungen ein neues Arbeitspaket an.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldRequirements" datatype="html">
+        <source>Requirements</source>
+        <target>Anforderungen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldDoneWhen" datatype="html">
+        <source>Done when</source>
+        <target>Erledigt, wenn</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldRefined" datatype="html">
+        <source>Refined</source>
+        <target>Verfeinert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldPlanCheckpoint" datatype="html">
+        <source>Plan checkpoint (automation needs approval)</source>
+        <target>Plan-Checkpoint (Automation braucht Freigabe)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldDoneCheckpoint" datatype="html">
+        <source>Done checkpoint (dependents wait for done)</source>
+        <target>Erledigt-Checkpoint (Abhängige warten auf erledigt)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-questions" datatype="html">
+        <source>Questions</source>
+        <target>Fragen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-newQuestion" datatype="html">
+        <source>New question</source>
+        <target>Neue Frage</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-add" datatype="html">
+        <source>Add</source>
+        <target>Hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-dependenciesHint" datatype="html">
+        <source>The item can start once these are satisfied (built or done, per the initiative setting).</source>
+        <target>Das Arbeitspaket kann starten, sobald diese erfüllt sind (gebaut oder erledigt, je nach Einstellung der Initiative).</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-transferHint" datatype="html">
+        <source> Epics become tickets, their stories subtasks (as drafts). Stories are released to &quot;todo&quot; in build order once their prerequisites are satisfied; ticket automation never picks a story whose prerequisites are not satisfied. </source>
+        <target> Epics werden zu Tickets, ihre Stories zu Unteraufgaben (als Entwürfe). Stories werden in Bau-Reihenfolge auf &quot;todo&quot; freigegeben, sobald ihre Voraussetzungen erfüllt sind; die Ticket-Automation nimmt nie eine Story, deren Voraussetzungen nicht erfüllt sind. </target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-transferAutomation" datatype="html">
+        <source>Enable ticket automation for the stories (workspace managers)</source>
+        <target>Ticket-Automation für die Stories aktivieren (Workspace-Verwalter)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-transferSubmit" datatype="html">
+        <source>Transfer</source>
+        <target>Übertragen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-planHint" datatype="html">
+        <source> The agent explores the repository and drafts a plan for this story (with the initiative documents as context). The plan appears in the chosen chat, where it can be refined and executed. </source>
+        <target> Der Agent erkundet das Repository und entwirft einen Plan für diese Story (mit den Dokumenten der Initiative als Kontext). Der Plan erscheint im gewählten Chat, wo er verfeinert und ausgeführt werden kann. </target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldChat" datatype="html">
+        <source>Chat</source>
+        <target>Chat</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-planSubmit" datatype="html">
+        <source>Plan</source>
+        <target>Planen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-deleteItemConfirm" datatype="html">
+        <source>The item (and the items of an epic) are deleted. Items that were transferred to tickets can only be dropped.</source>
+        <target>Das Arbeitspaket (und die Arbeitspakete eines Epics) werden gelöscht. In Tickets übertragene Arbeitspakete können nur verworfen werden.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-primaryChat" datatype="html">
+        <source>Main chat</source>
+        <target>Hauptchat</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-noWorkspaceSelected" datatype="html">
+        <source>No workspace selected yet</source>
+        <target>Noch kein Workspace ausgewählt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-chooseWorkspace" datatype="html">
+        <source>Choose workspace...</source>
+        <target>Workspace wählen...</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-loadLatest" datatype="html">
+        <source>Load latest version</source>
+        <target>Neueste Version laden</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-empty" datatype="html">
+        <source>No initiatives yet</source>
+        <target>Noch keine Initiativen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-emptyHint" datatype="html">
+        <source> Plan bigger work step by step: clarify the idea, write the shared documents, slice it into epics and stories, build it through tickets and learn from every epic. </source>
+        <target> Planen Sie größere Vorhaben Schritt für Schritt: die Idee klären, die gemeinsamen Dokumente schreiben, in Epics und Stories schneiden, über Tickets bauen und aus jedem Epic lernen. </target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-phaseNav" datatype="html">
+        <source>Phase</source>
+        <target>Phase</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-loading" datatype="html">
+        <source>Loading initiative…</source>
+        <target>Initiative wird geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-selectHint" datatype="html">
+        <source>Select an initiative or start a new one</source>
+        <target>Wählen Sie eine Initiative oder beginnen Sie eine neue</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldIntent" datatype="html">
+        <source>Intent</source>
+        <target>Absicht</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldPath" datatype="html">
+        <source>Planning path</source>
+        <target>Planungspfad</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldState" datatype="html">
+        <source>State</source>
+        <target>Zustand</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldAgent" datatype="html">
+        <source>Facilitator environment</source>
+        <target>Moderierende Umgebung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-noAgent" datatype="html">
+        <source>Choose per step</source>
+        <target>Pro Schritt wählen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldSatisfied" datatype="html">
+        <source>Stories may start when prerequisites are</source>
+        <target>Stories dürfen starten, wenn Voraussetzungen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-satisfiedDone" datatype="html">
+        <source>Done (marked by a person)</source>
+        <target>Erledigt (von einer Person markiert)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-satisfiedBuilt" datatype="html">
+        <source>Built (prototype)</source>
+        <target>Gebaut (Prototyp)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldAutoRelease" datatype="html">
+        <source>Release ready stories automatically</source>
+        <target>Bereite Stories automatisch freigeben</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-deleteConfirm" datatype="html">
+        <source> The initiative, its documents, work items, steps and proposals are deleted. Tickets created from it are kept. </source>
+        <target> Die Initiative, ihre Dokumente, Arbeitspakete, Schritte und Vorschläge werden gelöscht. Daraus erstellte Tickets bleiben erhalten. </target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-switchWorkspaceModalTitle" datatype="html">
+        <source>Switch workspace</source>
+        <target>Workspace wechseln</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-noWorkspaces" datatype="html">
+        <source>No workspaces yet</source>
+        <target>Noch keine Workspaces</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-goToSpaces" datatype="html">
+        <source>Go to workspaces</source>
+        <target>Zu den Workspaces</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-title" datatype="html">
+        <source>Initiatives</source>
+        <target>Initiativen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-switchWorkspaceTitle" datatype="html">
+        <source>Switch workspace</source>
+        <target>Workspace wechseln</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-listLabel" datatype="html">
+        <source>Initiatives</source>
+        <target>Initiativen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-search" datatype="html">
+        <source>Search initiatives</source>
+        <target>Initiativen durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-refresh" datatype="html">
+        <source>Refresh</source>
+        <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-create" datatype="html">
+        <source>New initiative</source>
+        <target>Neue Initiative</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-settings" datatype="html">
+        <source>Settings</source>
+        <target>Einstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-delete" datatype="html">
+        <source>Delete initiative</source>
+        <target>Initiative löschen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-back" datatype="html">
+        <source>Back to initiatives</source>
+        <target>Zurück zu den Initiativen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-tabDocuments" datatype="html">
+        <source>Documents</source>
+        <target>Dokumente</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-tabWork" datatype="html">
+        <source>Work items</source>
+        <target>Arbeitspakete</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-tabRuns" datatype="html">
+        <source>Guided steps</source>
+        <target>Geführte Schritte</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-tabLearn" datatype="html">
+        <source>Learn &amp; adjust</source>
+        <target>Lernen &amp; anpassen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-tabActivity" datatype="html">
+        <source>Activity</source>
+        <target>Aktivität</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-colState" datatype="html">
+        <source>State</source>
+        <target>Zustand</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-colTitle" datatype="html">
+        <source>Initiative</source>
+        <target>Initiative</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-colPhase" datatype="html">
+        <source>Phase</source>
+        <target>Phase</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-colUpdated" datatype="html">
+        <source>Updated</source>
+        <target>Aktualisiert</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-colAction" datatype="html">
+        <source>Action</source>
+        <target>Aktion</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-colActor" datatype="html">
+        <source>Actor</source>
+        <target>Akteur</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-colDetails" datatype="html">
+        <source>Details</source>
+        <target>Details</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actorAgent" datatype="html">
+        <source>Agent</source>
+        <target>Agent</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-actorSystem" datatype="html">
+        <source>System</source>
+        <target>System</target>
+      </trans-unit>
+      <trans-unit id="featureContentWrites-initiativePropose" datatype="html">
+        <source>Propose initiative changes (a user accepts them)</source>
+        <target>Änderungen an Initiativen vorschlagen (eine Person akzeptiert sie)</target>
+      </trans-unit>
+      <trans-unit id="featureContentWrites-initiativeFinding" datatype="html">
+        <source>Record findings on initiatives</source>
+        <target>Befunde zu Initiativen erfassen</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-initiativeWaitingFor" datatype="html">
+        <source>waiting for</source>
+        <target>wartet auf</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsEmpty" datatype="html">
+        <source>No documents yet</source>
+        <target>Noch keine Dokumente</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsEmptyHint" datatype="html">
+        <source> Start a guided step (for example the PRD) or write a document yourself. </source>
+        <target>Starte einen geführten Schritt (zum Beispiel das PRD) oder schreibe selbst ein Dokument.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsEpicBadge" datatype="html">
+        <source>Epic</source>
+        <target>Epic</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsContentHeading" datatype="html">
+        <source>Content</source>
+        <target>Inhalt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsVersionHeading" datatype="html">
+        <source>Version</source>
+        <target>Version</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsDiscard" datatype="html">
+        <source>Discard changes</source>
+        <target>Änderungen verwerfen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsTableLabel" datatype="html">
+        <source>Documents</source>
+        <target>Dokumente</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsSearch" datatype="html">
+        <source>Search documents</source>
+        <target>Dokumente durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsDocument" datatype="html">
+        <source>Document</source>
+        <target>Dokument</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsCurrentVersion" datatype="html">
+        <source>Current version</source>
+        <target>Aktuelle Version</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsHideVersion" datatype="html">
+        <source>Hide this version</source>
+        <target>Diese Version ausblenden</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsColTitle" datatype="html">
+        <source>Title</source>
+        <target>Titel</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsColType" datatype="html">
+        <source>Type</source>
+        <target>Typ</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsColEpic" datatype="html">
+        <source>Epic</source>
+        <target>Epic</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsColVersion" datatype="html">
+        <source>Version</source>
+        <target>Version</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-docsVersionNotAccepted" datatype="html">
+        <source>Not accepted</source>
+        <target>Nicht angenommen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-modeCreate" datatype="html">
+        <source>Write a new version</source>
+        <target>Neue Version schreiben</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-modeUpdate" datatype="html">
+        <source>Update the current version</source>
+        <target>Aktuelle Version überarbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-modeValidate" datatype="html">
+        <source>Check against the method</source>
+        <target>Gegen die Methode prüfen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-styleFastShort" datatype="html">
+        <source>Fast path</source>
+        <target>Schneller Weg</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-styleCoachingShort" datatype="html">
+        <source>Coaching</source>
+        <target>Begleitet</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-versionSourceHuman" datatype="html">
+        <source>Edited by a person</source>
+        <target>Von einer Person bearbeitet</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-versionSourceRun" datatype="html">
+        <source>Guided step</source>
+        <target>Geführter Schritt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-versionSourceProposal" datatype="html">
+        <source>Change proposal</source>
+        <target>Änderungsvorschlag</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sourceRun" datatype="html">
+        <source>Guided step</source>
+        <target>Geführter Schritt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sourceRetrospective" datatype="html">
+        <source>Retrospective</source>
+        <target>Retrospektive</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sourceAutomation" datatype="html">
+        <source>Ticket automation</source>
+        <target>Ticket-Automatisierung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sourceChat" datatype="html">
+        <source>Chat</source>
+        <target>Chat</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sourceTask" datatype="html">
+        <source>Scheduled task</source>
+        <target>Geplante Aufgabe</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sourceHuman" datatype="html">
+        <source>Workspace member</source>
+        <target>Workspace-Mitglied</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-findingOpen" datatype="html">
+        <source>Open</source>
+        <target>Offen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-findingConverted" datatype="html">
+        <source>Turned into work</source>
+        <target>In Arbeit überführt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-findingDismissed" datatype="html">
+        <source>Dismissed</source>
+        <target>Verworfen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-resolutionSettleNow" datatype="html">
+        <source>Settle before building</source>
+        <target>Vor dem Bauen klären</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-resolutionSpike" datatype="html">
+        <source>Explore in a spike</source>
+        <target>In einem Spike untersuchen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-resolutionStories" datatype="html">
+        <source>Leave to the stories</source>
+        <target>Den Stories überlassen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-decisionProposed" datatype="html">
+        <source>Waiting for a decision</source>
+        <target>Wartet auf Entscheidung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-decisionAccepted" datatype="html">
+        <source>Accepted</source>
+        <target>Angenommen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-decisionRejected" datatype="html">
+        <source>Rejected</source>
+        <target>Abgelehnt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-priorityLow" datatype="html">
+        <source>Low</source>
+        <target>Niedrig</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-priorityMedium" datatype="html">
+        <source>Medium</source>
+        <target>Mittel</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-priorityHigh" datatype="html">
+        <source>High</source>
+        <target>Hoch</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-priorityCritical" datatype="html">
+        <source>Critical</source>
+        <target>Kritisch</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-activityIteration" datatype="html">
+        <source>Iteration <x id="iteration" equiv-text="data[&apos;iteration&apos;]"/></source>
+        <target>Iteration <x id="iteration" equiv-text="data[&apos;iteration&apos;]"/></target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-activityCount" datatype="html">
+        <source><x id="count" equiv-text="data[&apos;count&apos;]"/> entries</source>
+        <target><x id="count" equiv-text="data[&apos;count&apos;]"/> Einträge</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnScopeOpenProposals" datatype="html">
+        <source>Open proposals</source>
+        <target>Offene Vorschläge</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnScopeAllProposals" datatype="html">
+        <source>All proposals</source>
+        <target>Alle Vorschläge</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnNoProposalsHint" datatype="html">
+        <source> Correct course with the agent when findings or new insights ask for changes to the plan. </source>
+        <target>Korrigiere den Kurs mit dem Agenten, wenn Befunde oder neue Einsichten Änderungen am Plan verlangen.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnScopeOpenFindings" datatype="html">
+        <source>Open findings</source>
+        <target>Offene Befunde</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnScopeAllFindings" datatype="html">
+        <source>All findings</source>
+        <target>Alle Befunde</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnNoFindingsHint" datatype="html">
+        <source> Retrospectives, reviews, ticket automation and agents record findings here; you can add your own. </source>
+        <target>Retrospektiven, Reviews, Ticket-Automatisierung und Agenten halten hier Befunde fest; du kannst eigene ergänzen.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnNoRetrosHint" datatype="html">
+        <source> Every epic gets a retrospective once its stories are built. </source>
+        <target>Jedes Epic bekommt eine Retrospektive, sobald seine Stories gebaut sind.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnColWorkItem" datatype="html">
+        <source>Work item</source>
+        <target>Arbeitspaket</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnColCreated" datatype="html">
+        <source>Created</source>
+        <target>Erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnColDecided" datatype="html">
+        <source>Decided</source>
+        <target>Entschieden</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnProposedBy" datatype="html">
+        <source>Proposed by</source>
+        <target>Vorgeschlagen von</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnDecisionNote" datatype="html">
+        <source>Decision note</source>
+        <target>Entscheidungsnotiz</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnViewProposals" datatype="html">
+        <source>Change proposals</source>
+        <target>Änderungsvorschläge</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnViewFindings" datatype="html">
+        <source>Findings</source>
+        <target>Befunde</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnViewRetrospectives" datatype="html">
+        <source>Retrospectives</source>
+        <target>Retrospektiven</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnViewDecisions" datatype="html">
+        <source>Decisions</source>
+        <target>Entscheidungen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnViewSwitch" datatype="html">
+        <source>What to show</source>
+        <target>Anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnSearchProposals" datatype="html">
+        <source>Search proposals</source>
+        <target>Vorschläge durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnSearchFindings" datatype="html">
+        <source>Search findings</source>
+        <target>Befunde durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnSearchRetrospectives" datatype="html">
+        <source>Search epics</source>
+        <target>Epics durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnSearchDecisions" datatype="html">
+        <source>Search decisions</source>
+        <target>Entscheidungen durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnFilterShow" datatype="html">
+        <source>Show</source>
+        <target>Anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnColProposal" datatype="html">
+        <source>Proposal</source>
+        <target>Vorschlag</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnColOrigin" datatype="html">
+        <source>Proposed by</source>
+        <target>Vorgeschlagen von</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnColChanges" datatype="html">
+        <source>Changes</source>
+        <target>Änderungen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnColEpic" datatype="html">
+        <source>Epic</source>
+        <target>Epic</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnColVerdictBy" datatype="html">
+        <source>Verdict set by</source>
+        <target>Urteil von</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnVerdictByPerson" datatype="html">
+        <source>A person</source>
+        <target>Einer Person</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnVerdictByAgent" datatype="html">
+        <source>The retrospective</source>
+        <target>Der Retrospektive</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnSetVerdict" datatype="html">
+        <source>Set verdict</source>
+        <target>Urteil setzen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnOneDocument" datatype="html">
+        <source>1 document</source>
+        <target>1 Dokument</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnDocuments" datatype="html">
+        <source><x id="count" equiv-text="artifacts.length"/> documents</source>
+        <target><x id="count" equiv-text="artifacts.length"/> Dokumente</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnOneWorkItem" datatype="html">
+        <source>1 work item</source>
+        <target>1 Arbeitspaket</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnWorkItems" datatype="html">
+        <source><x id="count" equiv-text="workItems.length"/> work items</source>
+        <target><x id="count" equiv-text="workItems.length"/> Arbeitspakete</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnOneDecision" datatype="html">
+        <source>1 decision</source>
+        <target>1 Entscheidung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnDecisions" datatype="html">
+        <source><x id="count" equiv-text="decisions.length"/> decisions</source>
+        <target><x id="count" equiv-text="decisions.length"/> Entscheidungen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnOpAddIn" datatype="html">
+        <source>New <x id="kind" equiv-text="kind"/> &quot;<x id="title" equiv-text="op.item.title"/>&quot; in <x id="parent" equiv-text="op.parentKey"/></source>
+        <target>Neu: <x id="kind" equiv-text="kind"/> „<x id="title" equiv-text="op.item.title"/>“ in <x id="parent" equiv-text="op.parentKey"/></target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnOpAdd" datatype="html">
+        <source>New <x id="kind" equiv-text="kind"/> &quot;<x id="title" equiv-text="op.item.title"/>&quot;</source>
+        <target>Neu: <x id="kind" equiv-text="kind"/> „<x id="title" equiv-text="op.item.title"/>“</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnOpUpdateTitled" datatype="html">
+        <source><x id="key" equiv-text="op.key"/> changes, new title &quot;<x id="title" equiv-text="op.title"/>&quot;</source>
+        <target><x id="key" equiv-text="op.key"/> ändert sich, neuer Titel „<x id="title" equiv-text="op.title"/>“</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnOpUpdate" datatype="html">
+        <source><x id="key" equiv-text="op.key"/> changes</source>
+        <target><x id="key" equiv-text="op.key"/> ändert sich</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnOpDrop" datatype="html">
+        <source><x id="key" equiv-text="op.key"/> is dropped</source>
+        <target><x id="key" equiv-text="op.key"/> entfällt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnOpMoveBefore" datatype="html">
+        <source><x id="key" equiv-text="op.key"/> moves before <x id="before" equiv-text="op.beforeKey"/></source>
+        <target><x id="key" equiv-text="op.key"/> rückt vor <x id="before" equiv-text="op.beforeKey"/></target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnOpMove" datatype="html">
+        <source><x id="key" equiv-text="op.key"/> moves to the end</source>
+        <target><x id="key" equiv-text="op.key"/> rückt ans Ende</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runCancelMenu" datatype="html">
+        <source>Cancel run</source>
+        <target>Schritt abbrechen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runResultHeading" datatype="html">
+        <source>Result</source>
+        <target>Ergebnis</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runResultHint" datatype="html">
+        <source>Nothing is applied until a workspace member accepts the result.</source>
+        <target>Nichts wird übernommen, bevor ein Workspace-Mitglied das Ergebnis annimmt.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runDraftHeading" datatype="html">
+        <source>Draft</source>
+        <target>Entwurf</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runUnknownsHeading" datatype="html">
+        <source>Open questions of the epic</source>
+        <target>Offene Fragen des Epics</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runItemsHeading" datatype="html">
+        <source>Proposed work items</source>
+        <target>Vorgeschlagene Arbeitspakete</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runFindingsHeading" datatype="html">
+        <source>Findings</source>
+        <target>Befunde</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runProposalHeading" datatype="html">
+        <source>Change proposal</source>
+        <target>Änderungsvorschlag</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runDecisionsHeading" datatype="html">
+        <source>Decisions</source>
+        <target>Entscheidungen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runStepUnavailable" datatype="html">
+        <source>Not available yet</source>
+        <target>Noch nicht verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runStepWarnings" datatype="html">
+        <source>Available, with hints</source>
+        <target>Verfügbar, mit Hinweisen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runTableLabel" datatype="html">
+        <source>Guided steps</source>
+        <target>Geführte Schritte</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runSearch" datatype="html">
+        <source>Search guided steps</source>
+        <target>Geführte Schritte durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runBack" datatype="html">
+        <source>Back to guided steps</source>
+        <target>Zurück zu den geführten Schritten</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runColStep" datatype="html">
+        <source>Step</source>
+        <target>Schritt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runColRole" datatype="html">
+        <source>Role</source>
+        <target>Rolle</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runColTarget" datatype="html">
+        <source>Target</source>
+        <target>Ziel</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runColStarted" datatype="html">
+        <source>Started</source>
+        <target>Gestartet</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runProposalDocuments" datatype="html">
+        <source>Documents</source>
+        <target>Dokumente</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runProposalItems" datatype="html">
+        <source>Work item changes</source>
+        <target>Änderungen an Arbeitspaketen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runProposalDecisions" datatype="html">
+        <source>Decisions</source>
+        <target>Entscheidungen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runColKey" datatype="html">
+        <source>Key</source>
+        <target>Schlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runColType" datatype="html">
+        <source>Type</source>
+        <target>Typ</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runColAfter" datatype="html">
+        <source>After</source>
+        <target>Nach</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runColSeverity" datatype="html">
+        <source>Severity</source>
+        <target>Schweregrad</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runColFinding" datatype="html">
+        <source>Finding</source>
+        <target>Befund</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runColWorkItem" datatype="html">
+        <source>Work item</source>
+        <target>Arbeitspaket</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runColDecision" datatype="html">
+        <source>Decision</source>
+        <target>Entscheidung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runColQuestion" datatype="html">
+        <source>Question</source>
+        <target>Frage</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-runColResolution" datatype="html">
+        <source>Resolution</source>
+        <target>Klärung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sidebarNoIntent" datatype="html">
+        <source> No intent yet. Describe what should be true when this is done. </source>
+        <target>Noch keine Absicht. Beschreibe, was wahr sein soll, wenn das erledigt ist.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sidebarNothingNext" datatype="html">
+        <source>Nothing is waiting. Start any guided step or move to the next phase.</source>
+        <target>Nichts wartet. Starte einen beliebigen geführten Schritt oder geh in die nächste Phase.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sidebarProgressHeading" datatype="html">
+        <source>Progress</source>
+        <target>Fortschritt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sidebarNoWork" datatype="html">
+        <source>No work items yet</source>
+        <target>Noch keine Arbeitspakete</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sidebarEditIntent" datatype="html">
+        <source>Edit intent</source>
+        <target>Absicht bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sidebarSearchWork" datatype="html">
+        <source>Search work items</source>
+        <target>Arbeitspakete durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sidebarColNext" datatype="html">
+        <source>Next step</source>
+        <target>Nächster Schritt</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sidebarColKey" datatype="html">
+        <source>Key</source>
+        <target>Schlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sidebarColTitle" datatype="html">
+        <source>Title</source>
+        <target>Titel</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sidebarDocuments" datatype="html">
+        <source>Documents accepted</source>
+        <target>Angenommene Dokumente</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sidebarOfTotal" datatype="html">
+        <source><x id="accepted" equiv-text="counts.acceptedArtifacts"/> of <x id="total" equiv-text="counts.artifacts"/></source>
+        <target><x id="accepted" equiv-text="counts.acceptedArtifacts"/> von <x id="total" equiv-text="counts.artifacts"/></target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-sidebarStartStep" datatype="html">
+        <source>Start the step</source>
+        <target>Schritt starten</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiNoMatches" datatype="html">
+        <source>No matching work items</source>
+        <target>Keine passenden Arbeitspakete</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiNoQuestions" datatype="html">
+        <source>No open questions</source>
+        <target>Keine offenen Fragen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiColResolution" datatype="html">
+        <source>Resolution</source>
+        <target>Klärung</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiColPriority" datatype="html">
+        <source>Priority</source>
+        <target>Priorität</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiTableLabel" datatype="html">
+        <source>Work items</source>
+        <target>Arbeitspakete</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiSearch" datatype="html">
+        <source>Search work items</source>
+        <target>Arbeitspakete durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiOpenTicket" datatype="html">
+        <source>Open ticket</source>
+        <target>Ticket öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiReleaseTitle" datatype="html">
+        <source>Release ready stories (<x id="count" equiv-text="this.readyCount()"/>)</source>
+        <target>Bereite Stories freigeben (<x id="count" equiv-text="this.readyCount()"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiQuestionsTitle" datatype="html">
+        <source>Open questions (<x id="count" equiv-text="this.openQuestions().length"/>)</source>
+        <target>Offene Fragen (<x id="count" equiv-text="this.openQuestions().length"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiColKey" datatype="html">
+        <source>Key</source>
+        <target>Schlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiColTitle" datatype="html">
+        <source>Title</source>
+        <target>Titel</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiColType" datatype="html">
+        <source>Type</source>
+        <target>Typ</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiColTicket" datatype="html">
+        <source>Ticket</source>
+        <target>Ticket</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiColQuestion" datatype="html">
+        <source>Question</source>
+        <target>Frage</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiColAnswer" datatype="html">
+        <source>Answer</source>
+        <target>Antwort</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiMenuSteps" datatype="html">
+        <source>Guided steps</source>
+        <target>Geführte Schritte</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiInceptNeedsRefined" datatype="html">
+        <source>Refine the epic first</source>
+        <target>Verfeinere zuerst das Epic</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiMenuDependencies" datatype="html">
+        <source>Dependencies…</source>
+        <target>Abhängigkeiten…</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiMenuPlan" datatype="html">
+        <source>Plan story</source>
+        <target>Story planen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-wiDependenciesTitle" datatype="html">
+        <source>Dependencies of <x id="key" equiv-text="item.key"/></source>
+        <target>Abhängigkeiten von <x id="key" equiv-text="item.key"/></target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-activityEmpty" datatype="html">
+        <source>No activity yet</source>
+        <target>Noch keine Aktivität</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-activitySearch" datatype="html">
+        <source>Search activity</source>
+        <target>Aktivität durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-learnBadgeWaiting" datatype="html">
+        <source><x id="count" equiv-text="count"/> waiting</source>
+        <target><x id="count" equiv-text="count"/> warten</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-methodGuide" datatype="html">
+        <source>Initiatives follow the BMad Method: open its guide</source>
+        <target>Initiativen folgen der BMad-Methode: Leitfaden öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-needDocument" datatype="html">
+        <source>Accept one of these documents first: <x id="documents" equiv-text="documents"/>.</source>
+        <target>Nimm zuerst eines dieser Dokumente an: <x id="documents" equiv-text="documents"/>.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-needEpic" datatype="html">
+        <source>Choose an epic.</source>
+        <target>Wähle ein Epic.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-needEpics" datatype="html">
+        <source>Slice the initiative into epics first.</source>
+        <target>Teile die Initiative zuerst in Epics auf.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-needIntent" datatype="html">
+        <source>The initiative needs an intent.</source>
+        <target>Die Initiative braucht eine Absicht.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-needOr" datatype="html">
+        <source> or </source>
+        <target> oder </target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-needRefinedEpic" datatype="html">
+        <source>Refine the epic first.</source>
+        <target>Verfeinere zuerst das Epic.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-needStories" datatype="html">
+        <source>The epic needs at least one story.</source>
+        <target>Das Epic braucht mindestens eine Story.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-recommendDocument" datatype="html">
+        <source>Recommended before this step: an accepted <x id="documents" equiv-text="documents"/>.</source>
+        <target>Empfohlen vor diesem Schritt: ein angenommenes <x id="documents" equiv-text="documents"/>.</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-fieldModelChoice" datatype="html">
+        <source>Model</source>
+        <target>Modell</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-modelDefault" datatype="html">
+        <source>Default model</source>
+        <target>Standardmodell</target>
+      </trans-unit>
+      <trans-unit id="featureInitiatives-modelLoading" datatype="html">
+        <source>Loading models…</source>
+        <target>Modelle werden geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrDocumentStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrDocumentType" datatype="html">
+        <source>Document type</source>
+        <target>Dokumenttyp</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrEnabled" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrKey" datatype="html">
+        <source>Key</source>
+        <target>Schlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrPhase" datatype="html">
+        <source>Phase</source>
+        <target>Phase</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrPlanningPath" datatype="html">
+        <source>Planning path</source>
+        <target>Planungspfad</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrSchedule" datatype="html">
+        <source>Schedule</source>
+        <target>Zeitplan</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrState" datatype="html">
+        <source>State</source>
+        <target>Zustand</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrWorkItemKind" datatype="html">
+        <source>Type</source>
+        <target>Typ</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-attrWorkItemStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeArtifact" datatype="html">
+        <source>Initiative document</source>
+        <target>Initiativen-Dokument</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeInitiative" datatype="html">
+        <source>Initiative</source>
+        <target>Initiative</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeTask" datatype="html">
+        <source>Scheduled task</source>
+        <target>Geplante Aufgabe</target>
+      </trans-unit>
+      <trans-unit id="featureAgentGraphs-typeWorkItem" datatype="html">
+        <source>Work item</source>
+        <target>Arbeitspaket</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
