@@ -20,6 +20,7 @@ export function isMainSidebarUrl(url: string): boolean {
     path.includes('/webhooks') ||
     path.includes('/updates') ||
     path.includes('/audit') ||
+    path.includes('/initiatives') ||
     path.includes('/tickets') ||
     path.includes('/connections') ||
     path.includes('/knowledge') ||

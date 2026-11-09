@@ -1,5 +1,5 @@
 import { emitToSocketIfPermitted, socketBroadcastRooms } from '@forepath/identity/backend';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import type { Server, Socket } from 'socket.io';
 
 import { CLIENTS_SOCKET_OUTBOUND_SCOPES } from '../auth/agenstra-websocket.scopes';
@@ -7,6 +7,7 @@ import { AGENT_TASK_SOCKET_EVENTS } from '../constants/agent-tasks.constants';
 import type { AgentTaskRemovedEventDto, AgentTaskResponseDto, AgentTaskRunChatEventDto } from '../dto/agent-tasks';
 
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
+import { WorkspaceGraphChangeNotifierService } from './workspace-graph-change-notifier.service';
 
 /**
  * Emits agent task events on the **clients** Socket.IO namespace, scoped to the workspace room that only
@@ -16,6 +17,8 @@ import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 export class AgentTaskRealtimeService {
   private readonly logger = new Logger(AgentTaskRealtimeService.name);
   private server: Server | null = null;
+
+  constructor(@Optional() private readonly graphChanges?: WorkspaceGraphChangeNotifierService) {}
 
   attachServer(server: Server): void {
     this.server = server;
@@ -38,10 +41,13 @@ export class AgentTaskRealtimeService {
   }
 
   emitTaskUpsert(task: AgentTaskResponseDto): void {
+    // Scheduled tasks are part of the workspace graph (also when emitted by worker / scheduler processes).
+    this.graphChanges?.notify(task.clientId, AGENT_TASK_SOCKET_EVENTS.taskUpsert);
     this.emitToClientRoom(task.clientId, AGENT_TASK_SOCKET_EVENTS.taskUpsert, task);
   }
 
   emitTaskRemoved(payload: AgentTaskRemovedEventDto): void {
+    this.graphChanges?.notify(payload.clientId, AGENT_TASK_SOCKET_EVENTS.taskRemoved);
     this.emitToClientRoom(payload.clientId, AGENT_TASK_SOCKET_EVENTS.taskRemoved, payload);
   }
 

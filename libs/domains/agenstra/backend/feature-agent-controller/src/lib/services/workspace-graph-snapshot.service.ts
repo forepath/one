@@ -24,7 +24,12 @@ import {
   WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_ID_NAMESPACE,
   WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME,
 } from '../constants/workspace-graph-snapshot.constants';
+import { AgentTaskEntity } from '../entities/agent-task.entity';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
+import { InitiativeArtifactEntity } from '../entities/initiative-artifact.entity';
+import { InitiativeWorkItemDependencyEntity } from '../entities/initiative-work-item-dependency.entity';
+import { InitiativeWorkItemEntity } from '../entities/initiative-work-item.entity';
+import { InitiativeEntity } from '../entities/initiative.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
@@ -32,6 +37,7 @@ import { WorkspaceGraphSnapshotEntity } from '../entities/workspace-graph-snapsh
 import { AGENSTRA_CONTROLLER_QUEUE_NAME } from '../modules/agenstra-notifications.module';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { WorkspaceGraphSnapshotsRepository } from '../repositories/workspace-graph-snapshots.repository';
+import { effectiveWorkItemStatus, initiativeArtifactStatus } from '../utils/initiative-mappers';
 import {
   buildWorkspaceSnapshotGraph,
   clampGraphInt,
@@ -99,6 +105,16 @@ export class WorkspaceGraphSnapshotService implements OnModuleInit, OnApplicatio
     private readonly ticketsRepo: Repository<TicketEntity>,
     @InjectRepository(ChatPlanEntity)
     private readonly plansRepo: Repository<ChatPlanEntity>,
+    @InjectRepository(AgentTaskEntity)
+    private readonly tasksRepo: Repository<AgentTaskEntity>,
+    @InjectRepository(InitiativeEntity)
+    private readonly initiativesRepo: Repository<InitiativeEntity>,
+    @InjectRepository(InitiativeArtifactEntity)
+    private readonly initiativeArtifactsRepo: Repository<InitiativeArtifactEntity>,
+    @InjectRepository(InitiativeWorkItemEntity)
+    private readonly workItemsRepo: Repository<InitiativeWorkItemEntity>,
+    @InjectRepository(InitiativeWorkItemDependencyEntity)
+    private readonly workItemDependenciesRepo: Repository<InitiativeWorkItemDependencyEntity>,
     @Optional() private readonly agentProxy?: ClientAgentProxyService,
     @Optional() private readonly graphChanges?: WorkspaceGraphChangeNotifierService,
     @Optional() @InjectQueue(AGENSTRA_CONTROLLER_QUEUE_NAME) private readonly controllerQueue?: Queue,
@@ -492,7 +508,7 @@ export class WorkspaceGraphSnapshotService implements OnModuleInit, OnApplicatio
 
       const managerKey = computeManagerKey(client.endpoint);
       const agentIds = await this.listMemberAgentIds(clientId);
-      const [names, digests, knowledge, tickets, plans, relations] = await Promise.all([
+      const [names, digests, knowledge, tickets, plans, relations, tasks, initiatives] = await Promise.all([
         agentIds.length > 0 ? this.resolveEnvironmentNames(clientId) : Promise.resolve({} as Record<string, string>),
         mapSettledWithConcurrency(agentIds, WORKSPACE_GRAPH_LIMITS.digestConcurrency, (agentId) =>
           this.graphProxy.getDigest(clientId, agentId),
@@ -522,7 +538,55 @@ export class WorkspaceGraphSnapshotService implements OnModuleInit, OnApplicatio
           select: ['sourceType', 'sourceId', 'targetType', 'targetNodeId', 'targetTicketLongSha'],
           take: WORKSPACE_GRAPH_LIMITS.maxKnowledgeRelations,
         }),
+        agentIds.length > 0
+          ? this.tasksRepo.find({
+              where: { clientId, agentId: In(agentIds) },
+              select: ['id', 'agentId', 'title', 'cronExpression', 'enabled'],
+              order: { createdAt: 'ASC' },
+              take: WORKSPACE_GRAPH_LIMITS.maxTasks,
+            })
+          : Promise.resolve([] as AgentTaskEntity[]),
+        this.initiativesRepo.find({
+          where: { clientId },
+          select: ['id', 'title', 'longSha', 'path', 'phase', 'state'],
+          order: { updatedAt: 'DESC' },
+          take: WORKSPACE_GRAPH_LIMITS.maxInitiatives,
+        }),
       ]);
+      const initiativeIds = initiatives.map((initiative) => initiative.id);
+      const [initiativeArtifacts, workItems, workItemDependencies] =
+        initiativeIds.length > 0
+          ? await Promise.all([
+              this.initiativeArtifactsRepo.find({
+                where: { clientId, initiativeId: In(initiativeIds) },
+                select: [
+                  'id',
+                  'initiativeId',
+                  'workItemId',
+                  'type',
+                  'title',
+                  'longSha',
+                  'currentVersion',
+                  'acceptedVersion',
+                ],
+                order: { createdAt: 'ASC' },
+                take: WORKSPACE_GRAPH_LIMITS.maxInitiativeArtifacts,
+              }),
+              this.workItemsRepo.find({
+                where: { clientId, initiativeId: In(initiativeIds) },
+                select: ['id', 'initiativeId', 'parentId', 'kind', 'key', 'title', 'status', 'ticketId'],
+                order: { sortOrder: 'ASC' },
+                take: WORKSPACE_GRAPH_LIMITS.maxWorkItems,
+              }),
+              this.workItemDependenciesRepo.find({
+                where: { initiativeId: In(initiativeIds) },
+                select: ['workItemId', 'prerequisiteId'],
+                take: WORKSPACE_GRAPH_LIMITS.maxWorkItemDependencies,
+              }),
+            ])
+          : [[], [], []];
+      // Transferred items show their ticket's progress, like the Initiatives page (derived, not stored).
+      const ticketStatusById = new Map(tickets.map((ticket) => [ticket.id, ticket.status]));
       const environments: WorkspaceGraphEnvironmentInput[] = agentIds.map((agentId, index) => {
         const result = digests[index];
 
@@ -545,6 +609,17 @@ export class WorkspaceGraphSnapshotService implements OnModuleInit, OnApplicatio
         tickets,
         plans,
         relations,
+        tasks,
+        initiatives,
+        initiativeArtifacts: initiativeArtifacts.map((artifact) => ({
+          ...artifact,
+          status: initiativeArtifactStatus(artifact),
+        })),
+        workItems: workItems.map((item) => ({
+          ...item,
+          status: effectiveWorkItemStatus(item, item.ticketId ? ticketStatusById.get(item.ticketId) : undefined),
+        })),
+        workItemDependencies,
       });
       const saved = await this.snapshots.upsert(clientId, {
         status: 'ready',

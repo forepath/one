@@ -22,15 +22,11 @@
       @if (fileTreeVisible() || !gitManagerVisible()) {
         <div class="d-block d-md-none p-3 border-bottom bg-body-tertiary">
           <div class="d-flex align-items-center gap-2">
-            <fpc-button
-              variant="dark"
-              iconOnly
-              (clicked)="onCloseFileTree()"
-              i18n-title="@@featureFileEditor-closeFileTreeTitle"
-              title="Close File Tree"
-            >
-              <i class="bi bi-arrow-left"></i>
-            </fpc-button>
+            <fpc-back-link
+              label="Close File Tree"
+              i18n-label="@@featureFileEditor-closeFileTreeTitle"
+              (activate)="onCloseFileTree()"
+            />
             <h5 class="mb-0 fw-semibold" i18n="@@featureFileEditor-fileTreeHeader">File Tree</h5>
           </div>
         </div>
@@ -81,15 +77,11 @@
           <!-- Git Manager Header with Back Button (mobile only) -->
           <div class="d-block d-md-none p-3 border-bottom bg-body-tertiary">
             <div class="d-flex align-items-center gap-2">
-              <fpc-button
-                variant="dark"
-                iconOnly
-                (clicked)="onCloseGitManager()"
-                i18n-title="@@featureFileEditor-closeVersionControlTitle"
-                title="Close Version Control"
-              >
-                <i class="bi bi-arrow-left"></i>
-              </fpc-button>
+              <fpc-back-link
+                label="Close Version Control"
+                i18n-label="@@featureFileEditor-closeVersionControlTitle"
+                (activate)="onCloseGitManager()"
+              />
               <h5 class="mb-0 fw-semibold" i18n="@@featureFileEditor-versionControlHeader">Version Control</h5>
             </div>
           </div>
@@ -307,15 +299,11 @@
           <!-- Terminal Header with Back Button (mobile only) -->
           <div class="d-block d-md-none p-3 border-bottom bg-body-tertiary flex-shrink-0">
             <div class="d-flex align-items-center gap-2">
-              <fpc-button
-                variant="dark"
-                iconOnly
-                (clicked)="onCloseTerminal()"
-                i18n-title="@@featureFileEditor-closeTerminalTitle"
-                title="Close Terminal"
-              >
-                <i class="bi bi-arrow-left"></i>
-              </fpc-button>
+              <fpc-back-link
+                label="Close Terminal"
+                i18n-label="@@featureFileEditor-closeTerminalTitle"
+                (activate)="onCloseTerminal()"
+              />
               <h5 class="mb-0 fw-semibold" i18n="@@featureFileEditor-terminalHeader">Terminal</h5>
             </div>
           </div>

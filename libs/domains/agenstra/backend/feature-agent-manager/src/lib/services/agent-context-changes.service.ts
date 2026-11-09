@@ -1,4 +1,5 @@
 import {
+  AGENT_CONTENT_FINDING_SEVERITIES,
   AGENT_CONTENT_LIMITS,
   AGENT_CONTENT_TICKET_PRIORITIES,
   AGENT_CONTENT_TICKET_STATUSES,
@@ -27,7 +28,7 @@ import type { AgentContextAccessReply } from './agent-context-access.service';
 import { AgentContextApiService } from './agent-context-api.service';
 import { AgentContextTicketsService } from './agent-context-tickets.service';
 
-type ContentKind = 'ticket' | 'knowledge' | 'plan';
+type ContentKind = 'ticket' | 'knowledge' | 'plan' | 'initiative';
 
 /** Session key of tickets minted for hidden sessions (see the agents gateway). */
 const AUTO_SESSION_KEY_PREFIX = 'suffix:';
@@ -58,7 +59,32 @@ function kindOf(operation: AgentContentWriteOperation): ContentKind {
     return 'ticket';
   }
 
+  if (operation.startsWith('initiative.')) {
+    return 'initiative';
+  }
+
   return operation.startsWith('plan.') ? 'plan' : 'knowledge';
+}
+
+const WORK_ITEM_KEY = /^E\d{1,4}(?:\.S\d{1,4})?$/;
+
+/** Structured parts of an initiative proposal: arrays of objects, bounded; the controller validates their shape. */
+function optionalObjectList(value: unknown, field: string): unknown[] | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (
+    !Array.isArray(value) ||
+    value.length > AGENT_CONTENT_LIMITS.initiativeProposalItemsMax ||
+    value.some((entry) => !entry || typeof entry !== 'object' || Array.isArray(entry))
+  ) {
+    throw new BadRequestException(
+      `${field} must be a list of at most ${AGENT_CONTENT_LIMITS.initiativeProposalItemsMax} objects`,
+    );
+  }
+
+  return value;
 }
 
 function isCreate(operation: AgentContentWriteOperation): boolean {
@@ -157,7 +183,8 @@ export class AgentContextChangesService {
         throw new BadRequestException(`${field} must be ${kind}:<sha>`);
       }
 
-      return parsed;
+      // Narrowed above: the ref kind equals the operation's content kind.
+      return parsed as { kind: ContentKind; sha: string };
     };
     const revision = (): string => requiredText(input['revision'], 'revision', REVISION_MAX_LENGTH);
     const ticketFields = () => ({
@@ -241,6 +268,82 @@ export class AgentContextChangesService {
           target,
         };
       }
+      case 'initiative.propose': {
+        const target = parseRef('ref');
+
+        if (!target) {
+          throw new BadRequestException('ref is required');
+        }
+
+        const artifacts = optionalObjectList(input['artifacts'], 'artifacts');
+        const workItems = optionalObjectList(input['workItems'], 'workItems');
+        const decisions = optionalObjectList(input['decisions'], 'decisions');
+
+        if (!artifacts?.length && !workItems?.length && !decisions?.length) {
+          throw new BadRequestException('Propose at least one document, work item change or decision');
+        }
+
+        if (
+          JSON.stringify({ artifacts, workItems, decisions }).length > AGENT_CONTENT_LIMITS.initiativeProposalMaxLength
+        ) {
+          throw new BadRequestException(
+            `A proposal must be at most ${AGENT_CONTENT_LIMITS.initiativeProposalMaxLength} characters`,
+          );
+        }
+
+        const rationale = optionalText(input['rationale'], 'rationale', AGENT_CONTENT_LIMITS.commentMaxLength)?.trim();
+
+        return {
+          request: withReason({
+            operation,
+            ref: `${target.kind}:${target.sha}`,
+            title: requiredText(input['title'], 'title', AGENT_CONTENT_LIMITS.titleMaxLength),
+            ...(rationale ? { rationale } : {}),
+            ...(artifacts ? { artifacts } : {}),
+            ...(workItems ? { workItems } : {}),
+            ...(decisions ? { decisions } : {}),
+          }),
+          target,
+        };
+      }
+      case 'initiative.finding': {
+        const target = parseRef('ref');
+
+        if (!target) {
+          throw new BadRequestException('ref is required');
+        }
+
+        const itemKey = optionalText(input['itemKey'], 'itemKey', 16)?.trim();
+
+        if (itemKey && !WORK_ITEM_KEY.test(itemKey)) {
+          throw new BadRequestException('itemKey must be a work item key like E1 or E1.S2');
+        }
+
+        const evidence = input['evidence'];
+
+        if (
+          evidence !== undefined &&
+          (!Array.isArray(evidence) ||
+            evidence.length > 20 ||
+            evidence.some((entry) => typeof entry !== 'string' || entry.length > 500))
+        ) {
+          throw new BadRequestException('evidence must be a list of at most 20 short strings');
+        }
+
+        const severity = oneOf(input['severity'], 'severity', AGENT_CONTENT_FINDING_SEVERITIES);
+
+        return {
+          request: withReason({
+            operation,
+            ref: `${target.kind}:${target.sha}`,
+            body: requiredText(input['body'], 'body', AGENT_CONTENT_LIMITS.initiativeFindingMaxLength),
+            ...(severity ? { severity } : {}),
+            ...(itemKey ? { itemKey } : {}),
+            ...(evidence ? { evidence: evidence as string[] } : {}),
+          }),
+          target,
+        };
+      }
       case 'ticket.comment': {
         const target = parseRef('ref');
 
@@ -257,7 +360,8 @@ export class AgentContextChangesService {
           target,
         };
       }
-      default: {
+      case 'ticket.delete':
+      case 'page.delete': {
         const target = parseRef('ref');
 
         if (!target) {
@@ -445,7 +549,8 @@ export class AgentContextChangesService {
       return undefined;
     }
 
-    return resolved;
+    // Same kind as the readable ref (resolution never changes the kind).
+    return { ...resolved, kind: ref.kind };
   }
 
   private toControllerChange(
@@ -561,6 +666,29 @@ export class AgentContextChangesService {
             'version is what runs when the plan is executed).',
         );
         break;
+      case 'initiative.propose': {
+        const counts = [
+          request.artifacts?.length ? `${request.artifacts.length} document(s)` : undefined,
+          request.workItems?.length ? `${request.workItems.length} work item change(s)` : undefined,
+          request.decisions?.length ? `${request.decisions.length} decision(s)` : undefined,
+        ].filter(Boolean);
+
+        lines.push(
+          `The agent wants to propose a change to ${label(target as NonNullable<typeof target>)}: ` +
+            `${counts.join(', ')}. Nothing changes until a user accepts the proposal on the Initiatives page.`,
+        );
+
+        if (request.rationale) lines.push('Rationale:', preview(request.rationale));
+        break;
+      }
+      case 'initiative.finding':
+        lines.push(
+          `The agent wants to record a ${request.severity ?? 'minor'} finding on ` +
+            `${label(target as NonNullable<typeof target>)}${request.itemKey ? ` (${request.itemKey})` : ''}.`,
+          'Finding:',
+          preview(request.body),
+        );
+        break;
       default:
         lines.push(`The agent wants to change ${label(target as NonNullable<typeof target>)}.`);
     }
@@ -574,7 +702,8 @@ export class AgentContextChangesService {
         preview(fields.content),
       );
     }
-    if (fields.body !== undefined) lines.push('Comment:', preview(fields.body));
+    if (fields.body !== undefined && request.operation === 'ticket.comment')
+      lines.push('Comment:', preview(fields.body));
     if (request.reason) lines.push(`Reason: ${request.reason.replace(/\s+/g, ' ').trim()}`);
 
     return lines.join('\n');

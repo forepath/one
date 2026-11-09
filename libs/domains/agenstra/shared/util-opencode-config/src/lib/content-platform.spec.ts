@@ -3,6 +3,7 @@ import {
   AGENSTRA_CONTENT_MCP_TOOL_PERMISSION,
   AGENT_CONTENT_TOOL_OPERATIONS,
   AGENT_CONTENT_WRITE_OPERATIONS,
+  INITIATIVE_CONTENT_WRITE_OPERATIONS,
   TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS,
   agentContentToolForOperation,
   isAgenstraContentToolPermission,
@@ -26,9 +27,14 @@ describe('content platform', () => {
     expect(AGENT_CONTENT_TOOL_OPERATIONS[AGENSTRA_CONTENT_MCP_TOOL_NAMES.changeStatus]).toBeUndefined();
   });
 
-  it('never lets ticket automation delete or change knowledge', () => {
-    expect(TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS.every((operation) => operation.startsWith('ticket.'))).toBe(true);
+  it('never lets ticket automation delete, change knowledge or re-plan initiatives', () => {
+    expect(
+      TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS.every(
+        (operation) => operation.startsWith('ticket.') || operation === 'initiative.finding',
+      ),
+    ).toBe(true);
     expect(TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS).not.toContain('ticket.delete');
+    expect(TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS as readonly string[]).not.toContain('initiative.propose');
   });
 
   it('normalizes opt-ins to known operations in canonical order', () => {
@@ -67,6 +73,21 @@ describe('content platform', () => {
 
     it('is never available to ticket automation (tickets of its own tree only)', () => {
       expect(TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS as readonly string[]).not.toContain('plan.update');
+    });
+  });
+
+  describe('initiative operations', () => {
+    it('have their own tools under the content prefix (denied in plan and step sessions)', () => {
+      expect(agentContentToolForOperation('initiative.propose')).toBe('content_initiative_propose');
+      expect(agentContentToolForOperation('initiative.finding')).toBe('content_initiative_finding');
+      expect(INITIATIVE_CONTENT_WRITE_OPERATIONS).toEqual(['initiative.propose', 'initiative.finding']);
+      expect(isAgenstraPlanWritePermission('agenstra_content_initiative_propose')).toBe(true);
+    });
+
+    it('are opt-ins like every other operation', () => {
+      expect(normalizeAgentContentWriteOperations(['initiative.finding', 'initiative.accept'])).toEqual([
+        'initiative.finding',
+      ]);
     });
   });
 });

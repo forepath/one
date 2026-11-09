@@ -223,7 +223,7 @@ const READ_TOOLS = new Set(['read', 'view', 'cat']);
 const WRITE_TOOLS = new Set(['edit', 'write', 'multiedit', 'create', 'str_replace', 'str_replace_editor']);
 const PATCH_TOOLS = new Set(['patch', 'apply_patch']);
 const SEARCH_TOOLS = new Set(['glob', 'grep', 'list', 'ls', 'codesearch', 'search']);
-const CONTENT_REF_PATTERN = /^(ticket|knowledge|plan):([0-9a-f]{7,64})$/i;
+const CONTENT_REF_PATTERN = /^(ticket|knowledge|plan|initiative|artifact):([0-9a-f]{7,64})$/i;
 
 function stringArg(args: unknown, ...keys: string[]): string | undefined {
   if (!args || typeof args !== 'object') {

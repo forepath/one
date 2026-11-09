@@ -248,6 +248,7 @@ Socket.IO shares HTTP **`PORT`** (default `3100`) with REST (`/api/`) and VNC (`
 - **`socket/clients`** (default `WEBSOCKET_NAMESPACE`), proxy to the selected workspace’s agent-manager; chat, terminals, stats, and controller-originated ticket hints for the chat UI
 - **`socket/tickets`** (default `TICKETS_WEBSOCKET_NAMESPACE`), ticket board and automation realtime (see [Tickets and Workspaces](../features/tickets-and-workspaces.md))
 - **`socket/pages`** (default `KNOWLEDGE_WEBSOCKET_NAMESPACE`) knowledge board realtime (`knowledgeTreeChanged`, `knowledgeRelationChanged`, `knowledgePageActivityCreated`)
+- **`socket/initiatives`** (default `INITIATIVES_WEBSOCKET_NAMESPACE`) Initiatives board realtime (listen-only; see [Initiatives](../features/initiatives.md#live-collaboration))
 - **`socket/status`** (default `STATUS_WEBSOCKET_NAMESPACE`) per-user notification snapshots/patches (see [WebSocket Communication](../features/websocket-communication.md))
 
 Connect with full namespace paths (e.g. `io('http://localhost:3100/socket/clients', options)`).
@@ -412,6 +413,8 @@ See the application docs and environment configuration for complete environment 
 - `WEBSOCKET_NAMESPACE` - Socket.IO namespace for agent proxying (default: `socket/clients`)
 - `TICKETS_WEBSOCKET_NAMESPACE` - Ticket board namespace (default: `socket/tickets`)
 - `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Knowledge board namespace (default: `socket/pages`)
+- `INITIATIVES_WEBSOCKET_NAMESPACE` - Initiatives board namespace (default: `socket/initiatives`)
+- `INITIATIVE_MAX_ACTIVE_RUNS_PER_CLIENT` - Active guided step runs per workspace (default: `3`)
 - `STATUS_WEBSOCKET_NAMESPACE` - Status notifications namespace (default: `socket/status`)
 - `STATUS_PROVISIONING_POLL_INTERVAL_MS` - Fast status poll while environment provisioning is running (default: `3000`, 1000–30000)
 - `WEBSOCKET_CORS_ORIGIN` - CORS origin(s) for WebSocket; falls back to `CORS_ORIGIN`, then `*` for Socket.IO

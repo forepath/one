@@ -46,6 +46,7 @@ import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/decabill/frontend
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
+  FpcBackLinkComponent,
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcListToolbarComponent,
@@ -154,6 +155,7 @@ function isDashboardUrl(url: string | null | undefined): boolean {
     NgApexchartsModule,
     FpcAlertComponent,
     FpcBadgeComponent,
+    FpcBackLinkComponent,
     FpcButtonComponent,
     FpcButtonGroupComponent,
     FpcListToolbarComponent,
@@ -505,6 +507,13 @@ export class ServiceDetailPageComponent implements OnInit {
     }
 
     return this.backTarget() === 'subscriptions' ? '/subscriptions' : '/dashboard';
+  }
+
+  /** Tooltip / accessible name of the back arrow (where it leads). */
+  backLabel(): string {
+    return this.backTarget() === 'subscriptions'
+      ? $localize`:@@featureServiceDetail-backToSubscriptions:Back to subscriptions`
+      : $localize`:@@featureServiceDetail-backToDashboard:Back to dashboard`;
   }
 
   backLink(): string[] {

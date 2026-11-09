@@ -125,4 +125,17 @@ describe('chat-session.constants', () => {
     expect(isReadOnlyExploreResumeSessionSuffix('')).toBe(false);
     expect(isUnattendedAutomationResumeSessionSuffix(HANDOFF_PROFILE_RESUME_SESSION_SUFFIX)).toBe(false);
   });
+
+  describe('initiative step sessions', () => {
+    const suffix = '-initiative-3f2c6d1e-1111-4222-8333-444455556666';
+
+    it('are reserved, read-only explore sessions and never unattended automation', () => {
+      expect(isReservedChatResumeSessionSuffix(suffix)).toBe(true);
+      expect(isReadOnlyExploreResumeSessionSuffix(suffix)).toBe(true);
+      expect(isUnattendedAutomationResumeSessionSuffix(suffix)).toBe(false);
+      expect(isTicketAutomationResumeSessionSuffix(suffix)).toBe(false);
+      expect(isChatPlanResumeSessionSuffix(suffix)).toBe(false);
+      expect(isReservedChatResumeSessionSuffix('-initiative-')).toBe(false);
+    });
+  });
 });

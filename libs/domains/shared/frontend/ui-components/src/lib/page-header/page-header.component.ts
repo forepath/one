@@ -6,7 +6,8 @@ export type FpcPageHeaderDensity = 'default' | 'compact';
  * Console page / panel title strip (`bg-body-tertiary` + bottom border).
  *
  * Slots:
- * - `[fpcPageHeaderBreadcrumbs]` - back link / crumbs above the title row
+ * - `[fpcPageHeaderBack]` - the `fpc-back-link` ("up one level"), first in the title row
+ * - `[fpcPageHeaderBreadcrumbs]` - crumbs above the title row
  * - `[fpcPageHeaderTitle]` - rich title when the `title` input is not enough
  * - `[fpcPageHeaderContext]` - context chip right of the title (scope / project / workspace: an
  *   `fpc-badge variant="info" size="sm"` or an `fpc-button` wrapping one), like Agenstra's workspace chip
@@ -34,6 +35,7 @@ export type FpcPageHeaderDensity = 'default' | 'compact';
 
     <div class="fpc-page-header__row">
       <div class="fpc-page-header__titles">
+        <ng-content select="[fpcPageHeaderBack]" />
         @if (icon()) {
           <i class="bi bi-{{ icon() }} fpc-page-header__icon" aria-hidden="true"></i>
         }

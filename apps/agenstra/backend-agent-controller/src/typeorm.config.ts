@@ -47,6 +47,7 @@ import {
   OpencodeLayerFileEntity,
   OpencodeLayerFileSyncTargetEntity,
   OpencodeConfigSyncTargetEntity,
+  INITIATIVE_ENTITIES,
 } from '@forepath/agenstra/backend/feature-agent-controller';
 import { WebhookDeliveryEntity, WebhookEndpointEntity, EmailDeliveryEntity } from '@forepath/shared/backend';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
@@ -154,6 +155,7 @@ export const typeormConfig: DataSourceOptions = {
     WebhookEndpointEntity,
     WebhookDeliveryEntity,
     EmailDeliveryEntity,
+    ...INITIATIVE_ENTITIES,
   ],
   migrations: [
     'src/migrations/*.js',

@@ -82,6 +82,14 @@ export const AGENT_GRAPH_NODE_TYPES = [
   'instance',
   'workspace',
   'knowledge-folder',
+  /** Scheduled agent task of an environment. */
+  'task',
+  /** Initiative (planning that follows the BMad Method); also a context ref kind (`initiative:<sha>`). */
+  'initiative',
+  /** Document of an initiative (PRD, architecture, epic requirements, …); context ref kind `artifact:<sha>`. */
+  'artifact',
+  /** Epic, story, spike or bug of an initiative. */
+  'work-item',
 ] as const;
 export type AgentGraphNodeType = (typeof AGENT_GRAPH_NODE_TYPES)[number];
 

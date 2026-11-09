@@ -60,6 +60,8 @@ export interface AutomationContextInjection {
   ticketContexts?: string[];
   ticketContextRefs?: Array<{ sha: string; title?: string }>;
   knowledgeContexts?: string[];
+  initiativeContexts?: string[];
+  initiativeContextRefs?: Array<{ kind: 'initiative' | 'artifact'; sha: string; title?: string }>;
 }
 
 /**

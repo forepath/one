@@ -139,18 +139,14 @@
       <fpc-section-column class="d-flex flex-grow-1 chat-plans-detail">
         @if (openPlan(); as plan) {
           <fpc-page-header>
+            <fpc-back-link
+              fpcPageHeaderBack
+              class="d-md-none"
+              [label]="backToPlansTitle"
+              (activate)="onClosePlan()"
+              data-testid="chat-plan-back"
+            />
             <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
-              <fpc-button
-                class="d-md-none flex-shrink-0"
-                variant="dark"
-                iconOnly
-                [ariaLabel]="backToPlansTitle"
-                [title]="backToPlansTitle"
-                (clicked)="onClosePlan()"
-                data-testid="chat-plan-back"
-              >
-                <i class="bi bi-arrow-left" aria-hidden="true"></i>
-              </fpc-button>
               <fpc-badge class="flex-shrink-0" [color]="stateBadgeColor(plan.status, plan.phase)">{{
                 stateLabel(plan.status, plan.phase)
               }}</fpc-badge>

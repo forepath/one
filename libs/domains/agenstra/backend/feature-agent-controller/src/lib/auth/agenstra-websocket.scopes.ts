@@ -4,6 +4,7 @@ import { type SocketEventScopes, websocketScope } from '@forepath/identity/backe
 import { AGENT_TASK_SOCKET_EVENTS } from '../constants/agent-tasks.constants';
 import { CLIENT_CHAT_AUTOMATION_EVENTS } from '../services/client-chat-automation.constants';
 import { CLIENT_CHAT_PLAN_EVENTS } from '../services/client-chat-plan.constants';
+import { INITIATIVES_BOARD_EVENTS } from '../services/initiative-board-realtime.constants';
 import { KNOWLEDGE_BOARD_EVENTS } from '../services/knowledge-board-realtime.constants';
 import { TICKETS_BOARD_EVENTS } from '../services/ticket-board-realtime.constants';
 
@@ -20,6 +21,7 @@ export const AGENSTRA_WEBSOCKETS = {
   status: 'status',
   tickets: 'tickets',
   pages: 'pages',
+  initiatives: 'initiatives',
   vnc: 'vnc',
 } as const;
 
@@ -28,6 +30,7 @@ const clientsWrite = websocketScope(AGENSTRA_WEBSOCKETS.clients, 'write');
 const statusWrite = websocketScope(AGENSTRA_WEBSOCKETS.status, 'write');
 const ticketsRead = websocketScope(AGENSTRA_WEBSOCKETS.tickets, 'read');
 const pagesRead = websocketScope(AGENSTRA_WEBSOCKETS.pages, 'read');
+const initiativesRead = websocketScope(AGENSTRA_WEBSOCKETS.initiatives, 'read');
 
 /** Scope needed to mint a VNC session ticket for the raw VNC websocket (on top of `agent_vnc:write`). */
 export const AGENSTRA_VNC_WEBSOCKET_SCOPE = websocketScope(AGENSTRA_WEBSOCKETS.vnc, 'write');
@@ -151,4 +154,26 @@ export const PAGES_SOCKET_OUTBOUND_SCOPES: SocketEventScopes = {
   [KNOWLEDGE_BOARD_EVENTS.knowledgeTreeChanged]: ['knowledge:read'],
   [KNOWLEDGE_BOARD_EVENTS.knowledgePageActivityCreated]: ['knowledge:read'],
   [KNOWLEDGE_BOARD_EVENTS.knowledgeRelationChanged]: ['knowledge:read', 'tickets:read'],
+};
+
+/** `initiatives` namespace: client → server (listen-only: every command is REST). */
+export const INITIATIVES_SOCKET_INBOUND_SCOPES: SocketEventScopes = {
+  setClient: [initiativesRead, 'initiatives:read'],
+};
+
+/** `initiatives` namespace: server → client (metadata; document content is fetched over REST). */
+export const INITIATIVES_SOCKET_OUTBOUND_SCOPES: SocketEventScopes = {
+  error: [],
+  setClientSuccess: [],
+  [INITIATIVES_BOARD_EVENTS.initiativeUpsert]: ['initiatives:read'],
+  [INITIATIVES_BOARD_EVENTS.initiativeRemoved]: ['initiatives:read'],
+  [INITIATIVES_BOARD_EVENTS.initiativeArtifactUpsert]: ['initiatives:read'],
+  [INITIATIVES_BOARD_EVENTS.initiativeArtifactRemoved]: ['initiatives:read'],
+  [INITIATIVES_BOARD_EVENTS.initiativeWorkItemsChanged]: ['initiatives:read'],
+  [INITIATIVES_BOARD_EVENTS.initiativeRunUpsert]: ['initiatives:read'],
+  [INITIATIVES_BOARD_EVENTS.initiativeRunTurnAppended]: ['initiatives:read'],
+  [INITIATIVES_BOARD_EVENTS.initiativeProposalUpsert]: ['initiatives:read'],
+  [INITIATIVES_BOARD_EVENTS.initiativeFindingUpsert]: ['initiatives:read'],
+  [INITIATIVES_BOARD_EVENTS.initiativeDecisionUpsert]: ['initiatives:read'],
+  [INITIATIVES_BOARD_EVENTS.initiativeActivityCreated]: ['initiatives:read'],
 };

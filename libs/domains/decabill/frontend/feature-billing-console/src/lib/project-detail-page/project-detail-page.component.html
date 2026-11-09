@@ -2,16 +2,7 @@
   @if (selectedProject$ | async; as project) {
     <!-- One header row like every page (DB-11): back left of the title, assignee / description as context. -->
     <fpc-page-header [title]="project.name">
-      <a
-        fpcPageHeaderTitle
-        [routerLink]="['../..']"
-        [relativeTo]="route"
-        class="project-detail__back btn btn-sm btn-link text-body-secondary order-first px-1"
-        [title]="backToProjectsLabel"
-        [attr.aria-label]="backToProjectsLabel"
-      >
-        <i class="bi bi-arrow-left" aria-hidden="true"></i>
-      </a>
+      <fpc-back-link fpcPageHeaderBack [link]="['../..']" [relativeTo]="route" [label]="backToProjectsLabel" />
       @if (isAdminView() && assigneeEmail(project); as email) {
         <fpc-badge fpcPageHeaderContext color="light" size="sm" [title]="assigneeLabel(email)">
           <i class="bi bi-person me-1" aria-hidden="true"></i>{{ email }}

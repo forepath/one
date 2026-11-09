@@ -1,17 +1,6 @@
 <div class="service-detail-page border-top d-flex flex-column h-100">
   <fpc-page-header>
-    <a
-      fpcPageHeaderBreadcrumbs
-      [routerLink]="backLink()"
-      class="small text-decoration-none d-inline-flex align-items-center"
-    >
-      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
-      @if (backTarget() === 'subscriptions') {
-        <span i18n="@@featureServiceDetail-backToSubscriptions">Back to subscriptions</span>
-      } @else {
-        <span i18n="@@featureServiceDetail-backToDashboard">Back to dashboard</span>
-      }
-    </a>
+    <fpc-back-link fpcPageHeaderBack [link]="backLink()" [label]="backLabel()" />
 
     @if (detail(); as detailValue) {
       <div fpcPageHeaderTitle class="min-w-0 flex-grow-1">

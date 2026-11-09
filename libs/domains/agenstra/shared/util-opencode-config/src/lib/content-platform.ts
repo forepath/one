@@ -1,6 +1,7 @@
 /**
- * Content changes: agents create, update, comment on and delete workspace tickets and knowledge pages, and update chat
- * plans of their own environment that were not executed yet, through the platform `agenstra` MCP server
+ * Content changes: agents create, update, comment on and delete workspace tickets and knowledge pages, update chat
+ * plans of their own environment that were not executed yet, and propose changes / record findings on initiatives,
+ * through the platform `agenstra` MCP server
  * (`agenstra_content_*` tools). Changes use the context ticket of the prompt (like the
  * `agenstra_context_*` read tools) and only target elements the session may read.
  *
@@ -25,6 +26,8 @@ export const AGENSTRA_CONTENT_MCP_TOOL_NAMES = {
   pageUpdate: 'content_page_update',
   pageDelete: 'content_page_delete',
   planUpdate: 'content_plan_update',
+  initiativePropose: 'content_initiative_propose',
+  initiativeFinding: 'content_initiative_finding',
   changeStatus: 'content_change_status',
 } as const;
 
@@ -47,15 +50,27 @@ export const AGENT_CONTENT_WRITE_OPERATIONS = [
   'page.update',
   'page.delete',
   'plan.update',
+  'initiative.propose',
+  'initiative.finding',
 ] as const;
 
 export type AgentContentWriteOperation = (typeof AGENT_CONTENT_WRITE_OPERATIONS)[number];
 
-/** Operations ticket automation may be allowed: tickets of its own ticket tree only, never deletes. */
+/**
+ * Operations ticket automation may be allowed: tickets of its own ticket tree only, never deletes; and findings on the
+ * initiative story its ticket is linked to (never proposals: a run must not re-plan the work it is building).
+ */
 export const TICKET_AUTOMATION_CONTENT_WRITE_OPERATIONS = [
   'ticket.create',
   'ticket.update',
   'ticket.comment',
+  'initiative.finding',
+] as const satisfies readonly AgentContentWriteOperation[];
+
+/** Initiative operations: proposals and findings only; a human accepts proposals on the Initiatives page. */
+export const INITIATIVE_CONTENT_WRITE_OPERATIONS = [
+  'initiative.propose',
+  'initiative.finding',
 ] as const satisfies readonly AgentContentWriteOperation[];
 
 /** Change operation of each content tool (`content_change_status` has none). */
@@ -68,6 +83,8 @@ export const AGENT_CONTENT_TOOL_OPERATIONS: Record<string, AgentContentWriteOper
   [AGENSTRA_CONTENT_MCP_TOOL_NAMES.pageUpdate]: 'page.update',
   [AGENSTRA_CONTENT_MCP_TOOL_NAMES.pageDelete]: 'page.delete',
   [AGENSTRA_CONTENT_MCP_TOOL_NAMES.planUpdate]: 'plan.update',
+  [AGENSTRA_CONTENT_MCP_TOOL_NAMES.initiativePropose]: 'initiative.propose',
+  [AGENSTRA_CONTENT_MCP_TOOL_NAMES.initiativeFinding]: 'initiative.finding',
 };
 
 /** Content tool of each change operation (tool-call matching, display). */
@@ -85,7 +102,16 @@ export const AGENT_CONTENT_LIMITS = {
   reasonMaxLength: 500,
   /** Changes one context ticket (one turn) may request. */
   maxChangesPerTicket: 50,
+  /** Serialized size of the structured parts of an initiative proposal (artifacts, work items, decisions). */
+  initiativeProposalMaxLength: 400_000,
+  /** Work-item operations, artifacts and decisions of one proposal. */
+  initiativeProposalItemsMax: 200,
+  initiativeFindingMaxLength: 8_000,
 } as const;
+
+/** Finding severities (initiative findings). */
+export const AGENT_CONTENT_FINDING_SEVERITIES = ['info', 'minor', 'major', 'critical'] as const;
+export type AgentContentFindingSeverity = (typeof AGENT_CONTENT_FINDING_SEVERITIES)[number];
 
 export const AGENT_CONTENT_TICKET_STATUSES = ['draft', 'todo', 'in_progress', 'prototype', 'done', 'closed'] as const;
 export const AGENT_CONTENT_TICKET_PRIORITIES = ['low', 'medium', 'high', 'critical'] as const;
@@ -134,7 +160,31 @@ export type AgentContentChangeInput =
   | { operation: 'page.update'; ref: string; revision: string; title?: string; content?: string }
   | { operation: 'page.delete'; ref: string; revision: string }
   /** Plans that never entered execution only (executed plans are read-only); `title` empty clears it. */
-  | { operation: 'plan.update'; ref: string; revision: string; title?: string; content?: string };
+  | { operation: 'plan.update'; ref: string; revision: string; title?: string; content?: string }
+  /**
+   * Change proposal on an initiative (`initiative:<sha>`): document versions, work-item operations and decisions.
+   * Never applied by the agent: it waits for a human on the Initiatives page. The structured parts are validated by
+   * the controller (`artifacts`: `{ type, title?, content }`; `workItems`: `{ op: 'add' | 'update' | 'drop' | 'move',
+   * … }`; `decisions`: `{ title, body }`).
+   */
+  | {
+      operation: 'initiative.propose';
+      ref: string;
+      title: string;
+      rationale?: string;
+      artifacts?: unknown[];
+      workItems?: unknown[];
+      decisions?: unknown[];
+    }
+  /** Finding on an initiative (optionally on one work item, `itemKey` like `E1.S2`), with evidence refs. */
+  | {
+      operation: 'initiative.finding';
+      ref: string;
+      body: string;
+      severity?: AgentContentFindingSeverity;
+      itemKey?: string;
+      evidence?: string[];
+    };
 
 export type AgentContentChangeRequest = AgentContentChangeInput & { reason?: string };
 
@@ -174,11 +224,13 @@ export type AgentContentControllerChange =
   | (Omit<Extract<AgentContentChangeInput, { operation: 'page.create' }>, 'parentRef'> & { parentSha?: string })
   | (Omit<Extract<AgentContentChangeInput, { operation: 'page.update' }>, 'ref'> & { sha: string })
   | (Omit<Extract<AgentContentChangeInput, { operation: 'page.delete' }>, 'ref'> & { sha: string })
-  | (Omit<Extract<AgentContentChangeInput, { operation: 'plan.update' }>, 'ref'> & { sha: string });
+  | (Omit<Extract<AgentContentChangeInput, { operation: 'plan.update' }>, 'ref'> & { sha: string })
+  | (Omit<Extract<AgentContentChangeInput, { operation: 'initiative.propose' }>, 'ref'> & { sha: string })
+  | (Omit<Extract<AgentContentChangeInput, { operation: 'initiative.finding' }>, 'ref'> & { sha: string });
 
 /** Element after an applied change (`deleted` for deletes; comments report the ticket). */
 export interface AgentContentChangeResult {
-  kind: 'ticket' | 'knowledge' | 'plan';
+  kind: 'ticket' | 'knowledge' | 'plan' | 'initiative';
   sha: string;
   title: string;
   revision?: string;

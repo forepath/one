@@ -160,6 +160,72 @@ export class TicketsService {
     this.boardEmitTicketUpsert(dto.clientId, dto);
   }
 
+  /**
+   * System status change of a workspace ticket (no user request), e.g. an initiative auto-releasing a story whose
+   * prerequisites are satisfied. Conditional on the current status (`from`): a concurrent user change wins. Activity
+   * (system actor), automation approval invalidation, realtime, webhook and search behave like a user status change.
+   * Returns whether the ticket changed.
+   */
+  async applySystemStatusChange(
+    ticketId: string,
+    clientId: string,
+    from: readonly TicketStatus[],
+    to: TicketStatus,
+    payload: Record<string, unknown> = {},
+  ): Promise<boolean> {
+    const changed = await this.ticketRepo.manager.transaction(async (em) => {
+      const result = await em
+        .createQueryBuilder()
+        .update(TicketEntity)
+        .set({ status: to, updatedAt: () => 'now()' })
+        .where('id = :ticketId AND client_id = :clientId AND status IN (:...from)', {
+          ticketId,
+          clientId,
+          from: [...from],
+        })
+        .execute();
+
+      if (!result.affected) {
+        return null;
+      }
+
+      const before = from.length === 1 ? from[0] : null;
+
+      await em.getRepository(TicketActivityEntity).save(
+        em.getRepository(TicketActivityEntity).create({
+          ticketId,
+          actorType: TicketActorType.SYSTEM,
+          actorUserId: null,
+          actionType: TicketActionType.STATUS_CHANGED,
+          payload: { fields: { status: { old: before, new: to } }, ...payload },
+        }),
+      );
+
+      return true;
+    });
+
+    if (!changed) {
+      return false;
+    }
+
+    await this.ticketAutomationService.invalidateAfterTicketFieldChanges(ticketId, ['status']);
+
+    const refreshed = await this.loadTicketOrThrow(ticketId);
+    const mapped = await this.mapTicketInWorkspace(refreshed);
+
+    this.boardEmitTicketUpsert(mapped.clientId, mapped);
+    this.notificationPublisher.publishTicket('ticket.updated', mapped);
+    void this.searchIndex.upsertSafe('tickets', mapTicketToSearchDocument(refreshed));
+
+    const activityRows = await this.activityRepo.find({ where: { ticketId }, order: { occurredAt: 'DESC' }, take: 1 });
+
+    if (activityRows[0]) {
+      await this.boardEmitTicketActivityMapped(mapped.clientId, activityRows[0]);
+    }
+
+    return true;
+  }
+
   private boardEmitTicketUpsert(clientId: string, dto: TicketResponseDto): void {
     this.ticketBoardRealtime.emitToClient(clientId, TICKETS_BOARD_EVENTS.ticketUpsert, dto);
     this.clientAutomationChatRealtime.emitTicketChatUpsert(clientId, dto);

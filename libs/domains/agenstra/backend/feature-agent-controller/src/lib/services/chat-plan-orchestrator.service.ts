@@ -239,6 +239,16 @@ export class ChatPlanOrchestratorService {
       return;
     }
 
+    // Initiative context of a story plan is platform-resolved (never accepted from a client): a refine from the chat
+    // replaces the user's context selection but keeps it.
+    if (contextInjection && before.contextInjection?.initiativeContexts?.length) {
+      contextInjection = {
+        ...contextInjection,
+        initiativeContexts: before.contextInjection.initiativeContexts,
+        initiativeContextRefs: before.contextInjection.initiativeContextRefs,
+      };
+    }
+
     const started = await this.chatPlanService.updateIfStatus(planId, [ChatPlanStatus.READY], {
       status: ChatPlanStatus.REFINING,
       phase: ChatPlanPhase.REFINE,

@@ -76,6 +76,14 @@ export class AgentContextTicketsService {
           ...(input.grants?.plan ?? []),
           ...input.items.filter((i) => i.kind === 'plan' && i.sha).map((i) => i.sha as string),
         ]),
+        initiative: normalizeShas([
+          ...(input.grants?.initiative ?? []),
+          ...input.items.filter((i) => i.kind === 'initiative' && i.sha).map((i) => i.sha as string),
+        ]),
+        artifact: normalizeShas([
+          ...(input.grants?.artifact ?? []),
+          ...input.items.filter((i) => i.kind === 'artifact' && i.sha).map((i) => i.sha as string),
+        ]),
       },
       attachments: input.attachments ?? [],
       scopeAnchors: [],
@@ -262,7 +270,7 @@ export class AgentContextTicketsService {
     let grants = this.sessionGrants.get(key);
 
     if (!grants) {
-      grants = { ticket: [], knowledge: [], plan: [], lastUsedAt: Date.now() };
+      grants = { ticket: [], knowledge: [], plan: [], initiative: [], artifact: [], lastUsedAt: Date.now() };
       this.sessionGrants.set(key, grants);
     }
 

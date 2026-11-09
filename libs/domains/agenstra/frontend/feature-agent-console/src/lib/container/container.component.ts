@@ -132,6 +132,11 @@ export class AgentConsoleContainerComponent implements OnInit {
   readonly activeClientId$ = this.clientsFacade.activeClientId$;
 
   /** Sidebar Tickets link: `/tickets` until a workspace is chosen, then `/tickets/:clientId`. */
+  readonly initiativesSidebarLink = toSignal(
+    this.clientsFacade.activeClientId$.pipe(map((id): string[] => (id ? ['/initiatives', id] : ['/initiatives']))),
+    { initialValue: ['/initiatives'] },
+  );
+
   readonly ticketsSidebarLink = toSignal(
     this.clientsFacade.activeClientId$.pipe(map((id): string[] => (id ? ['/tickets', id] : ['/tickets']))),
     { initialValue: ['/tickets'] },

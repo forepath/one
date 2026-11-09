@@ -43,6 +43,24 @@ describe('agent graph references', () => {
     expect(JSON.stringify(refs)).not.toContain('secrets');
   });
 
+  it('records attached initiatives and documents by reference only', () => {
+    const refs = attachedAgentGraphReferences({
+      initiativeContexts: ['## Initiative body with secrets', '## PRD body'],
+      initiativeContextRefs: [
+        { kind: 'initiative', sha: SHA, title: 'Checkout' },
+        { kind: 'artifact', sha: SHA.replace(/^./, 'b'), title: 'PRD' },
+      ],
+    });
+
+    expect(refs).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: 'attached', type: 'initiative', ref: `initiative:${SHA}` }),
+        expect.objectContaining({ kind: 'attached', type: 'artifact', ref: `artifact:${SHA.replace(/^./, 'b')}` }),
+      ]),
+    );
+    expect(JSON.stringify(refs)).not.toContain('secrets');
+  });
+
   it('summarizes implicit configuration by names only', () => {
     const implicit = summarizeAgentGraphImplicitContext(
       {
@@ -117,6 +135,15 @@ describe('agent graph references', () => {
     ).toMatchObject({
       kind: 'modified',
     });
+    // Initiatives and their documents are context like tickets: read with context_get, changed with content tools.
+    expect(toolCallAgentGraphReferences('agenstra_context_get', { ref: `artifact:${SHA}` }, options)[1]).toMatchObject({
+      kind: 'used',
+      type: 'artifact',
+      ref: `artifact:${SHA}`,
+    });
+    expect(
+      toolCallAgentGraphReferences('agenstra_content_initiative_propose', { ref: `initiative:${SHA}` }, options)[1],
+    ).toMatchObject({ kind: 'modified', type: 'initiative', ref: `initiative:${SHA}` });
     expect(toolCallAgentGraphReferences('github_create_issue', {}, options)[1]).toMatchObject({
       ref: 'mcp-server:github',
     });

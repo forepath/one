@@ -25,6 +25,9 @@ export type ChatPlanContextInjectionJson = {
   planShas?: string[];
   planContexts?: string[];
   planContextRefs?: Array<{ sha: string; title?: string }>;
+  /** Initiative context of a plan created from an initiative story (pre-granted, read-only). */
+  initiativeContexts?: string[];
+  initiativeContextRefs?: Array<{ kind: 'initiative' | 'artifact'; sha: string; title?: string }>;
 };
 
 @Entity('chat_plan')

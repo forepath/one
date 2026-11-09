@@ -6,6 +6,7 @@ describe('container nav urls', () => {
       '/pipelines',
       '/pipelines/c1?workflowId=w1&runId=r1',
       '/tasks/c1',
+      '/initiatives/c1?initiativeId=i1&tab=work',
       '/connections/deployments',
       '/connections/atlassian',
     ]) {

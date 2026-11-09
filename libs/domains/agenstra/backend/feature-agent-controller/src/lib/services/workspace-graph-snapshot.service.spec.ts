@@ -14,7 +14,12 @@ import {
   WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_ID_NAMESPACE,
   WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME,
 } from '../constants/workspace-graph-snapshot.constants';
+import { AgentTaskEntity } from '../entities/agent-task.entity';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
+import { InitiativeArtifactEntity } from '../entities/initiative-artifact.entity';
+import { InitiativeWorkItemDependencyEntity } from '../entities/initiative-work-item-dependency.entity';
+import { InitiativeWorkItemEntity } from '../entities/initiative-work-item.entity';
+import { InitiativeEntity } from '../entities/initiative.entity';
 import { AGENSTRA_CONTROLLER_QUEUE_NAME } from '../modules/agenstra-notifications.module';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
@@ -133,6 +138,41 @@ describe('workspace graph utils', () => {
           { sourceType: 'page', sourceId: 'k-page', targetType: 'ticket', targetTicketLongSha: 'sha-t1' },
           { sourceType: 'page', sourceId: 'k-page', targetType: 'ticket', targetTicketLongSha: 'unknown' },
         ],
+        tasks: [
+          { id: 'task-1', agentId: ENV_1, title: 'Nightly audit', cronExpression: '0 3 * * *', enabled: true },
+          { id: 'task-foreign', agentId: 'not-a-member', title: 'Hidden', cronExpression: '* * * * *', enabled: true },
+        ],
+        initiatives: [
+          { id: 'ini-1', title: 'Checkout', longSha: 'sha-ini', path: 'epic', phase: 'plan', state: 'active' },
+        ],
+        initiativeArtifacts: [
+          { id: 'doc-prd', initiativeId: 'ini-1', workItemId: null, type: 'prd', title: 'PRD', status: 'accepted' },
+          { id: 'doc-epic', initiativeId: 'ini-1', workItemId: 'wi-e1', type: 'epic', title: 'E1', status: 'draft' },
+          { id: 'doc-foreign', initiativeId: 'other', workItemId: null, type: 'prd', title: 'X', status: 'draft' },
+        ],
+        workItems: [
+          { id: 'wi-e1', initiativeId: 'ini-1', kind: 'epic', key: 'E1', title: 'Guest checkout', status: 'draft' },
+          {
+            id: 'wi-s1',
+            initiativeId: 'ini-1',
+            parentId: 'wi-e1',
+            kind: 'story',
+            key: 'E1.S1',
+            title: 'Address form',
+            status: 'ready-for-dev',
+            ticketId: 't-parent',
+          },
+          {
+            id: 'wi-s2',
+            initiativeId: 'ini-1',
+            parentId: 'wi-e1',
+            kind: 'story',
+            key: 'E1.S2',
+            title: 'Payment',
+            status: 'draft',
+          },
+        ],
+        workItemDependencies: [{ workItemId: 'wi-s2', prerequisiteId: 'wi-s1' }],
       },
       new Date('2026-02-01T00:00:00.000Z'),
     );
@@ -225,10 +265,49 @@ describe('workspace graph utils', () => {
       expect(node('plan:p-foreign')).toBeUndefined();
     });
 
+    it('links scheduled tasks to member environments only', () => {
+      expect(node('task:task-1')).toEqual({
+        id: 'task:task-1',
+        type: 'task',
+        label: 'Nightly audit',
+        attrs: { agentId: ENV_1, schedule: '0 3 * * *', enabled: true },
+      });
+      expect(hasEdge(`environment:${ENV_1}`, 'task:task-1', 'contains')).toBe(true);
+      expect(node('task:task-foreign')).toBeUndefined();
+    });
+
+    it('builds initiatives with work items, dependencies, ticket links and documents (metadata only)', () => {
+      expect(node('initiative:ini-1')).toEqual(
+        expect.objectContaining({
+          type: 'initiative',
+          label: 'Checkout',
+          attrs: { sha: 'sha-ini', planningPath: 'epic', phase: 'plan', state: 'active' },
+        }),
+      );
+      expect(hasEdge(`workspace:${CLIENT_A}`, 'initiative:ini-1', 'contains')).toBe(true);
+      expect(hasEdge('initiative:ini-1', 'work-item:wi-e1', 'contains')).toBe(true);
+      expect(hasEdge('work-item:wi-e1', 'work-item:wi-s1', 'contains')).toBe(true);
+      expect(node('work-item:wi-s1')).toEqual(
+        expect.objectContaining({
+          label: 'E1.S1 Address form',
+          attrs: { key: 'E1.S1', workItemKind: 'story', workItemStatus: 'ready-for-dev' },
+        }),
+      );
+      expect(hasEdge('work-item:wi-s2', 'work-item:wi-s1', 'depends_on')).toBe(true);
+      expect(hasEdge('work-item:wi-s1', 'ticket:t-parent', 'relates_to')).toBe(true);
+      // Initiative documents below the initiative, epic documents below their epic; foreign ones are left out.
+      expect(hasEdge('initiative:ini-1', 'artifact:doc-prd', 'contains')).toBe(true);
+      expect(hasEdge('work-item:wi-e1', 'artifact:doc-epic', 'contains')).toBe(true);
+      expect(node('artifact:doc-prd')?.attrs).toEqual({ sha: null, documentType: 'prd', documentStatus: 'accepted' });
+      expect(node('artifact:doc-foreign')).toBeUndefined();
+    });
+
     it('maps knowledge relations to relates_to edges', () => {
       expect(hasEdge('ticket:t-child', 'knowledge:k-page', 'relates_to')).toBe(true);
       expect(hasEdge('knowledge:k-page', 'ticket:t-parent', 'relates_to')).toBe(true);
-      expect(graph.edges.filter((edge) => edge.type === 'relates_to')).toHaveLength(2);
+      expect(
+        graph.edges.filter((edge) => edge.type === 'relates_to' && !edge.from.startsWith('work-item:')),
+      ).toHaveLength(2);
     });
 
     it('adds cross-environment references within the workspace', () => {
@@ -386,6 +465,21 @@ describe('workspace graph utils', () => {
       expect(keep(['agent_files:read'])).toEqual(['workspace', 'environment', 'module', 'language']);
     });
 
+    it('requires the initiatives scope for initiatives, their documents and work items, and chats for tasks', () => {
+      const typed = (type: string) => ({ id: `${type}:x`, type, label: type }) as AgentGraphDocument['nodes'][number];
+      const withNew: AgentGraphDocument = {
+        ...doc,
+        nodes: [typed('initiative'), typed('artifact'), typed('work-item'), typed('task')],
+        edges: [],
+      };
+      const keep = (scopes: string[]) =>
+        filterGraphByScopes(withNew, (scope) => scopes.includes(scope)).nodes.map((entry) => entry.type);
+
+      expect(keep([])).toEqual([]);
+      expect(keep(['initiatives:read'])).toEqual(['initiative', 'artifact', 'work-item']);
+      expect(keep(['agent_chats:read'])).toEqual(['task']);
+    });
+
     it('only restricts PAT sessions', () => {
       expect(createGraphScopeCheck({ isApiKeyAuth: true })('tickets:read')).toBe(true);
       expect(
@@ -510,6 +604,11 @@ describe('WorkspaceGraphSnapshotService', () => {
   const relationsRepo = { find: jest.fn() };
   const ticketsRepo = { find: jest.fn() };
   const plansRepo = { find: jest.fn() };
+  const tasksRepo = { find: jest.fn(async () => []) };
+  const initiativesRepo = { find: jest.fn(async () => []) };
+  const initiativeArtifactsRepo = { find: jest.fn(async () => []) };
+  const workItemsRepo = { find: jest.fn(async () => []) };
+  const workItemDependenciesRepo = { find: jest.fn(async () => []) };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -527,6 +626,11 @@ describe('WorkspaceGraphSnapshotService', () => {
         { provide: getRepositoryToken(KnowledgeRelationEntity), useValue: relationsRepo },
         { provide: getRepositoryToken(TicketEntity), useValue: ticketsRepo },
         { provide: getRepositoryToken(ChatPlanEntity), useValue: plansRepo },
+        { provide: getRepositoryToken(AgentTaskEntity), useValue: tasksRepo },
+        { provide: getRepositoryToken(InitiativeEntity), useValue: initiativesRepo },
+        { provide: getRepositoryToken(InitiativeArtifactEntity), useValue: initiativeArtifactsRepo },
+        { provide: getRepositoryToken(InitiativeWorkItemEntity), useValue: workItemsRepo },
+        { provide: getRepositoryToken(InitiativeWorkItemDependencyEntity), useValue: workItemDependenciesRepo },
       ],
     }).compile();
 
@@ -584,6 +688,40 @@ describe('WorkspaceGraphSnapshotService', () => {
     expect(result).toEqual(expect.objectContaining({ clientId: CLIENT_A, status: 'ready', error: null }));
     expect(ticketsRepo.find).toHaveBeenCalledWith(
       expect.objectContaining({ select: ['id', 'parentId', 'title', 'longSha', 'status', 'priority'] }),
+    );
+  });
+
+  it('includes tasks and initiatives; transferred work items show their ticket status', async () => {
+    tasksRepo.find.mockResolvedValueOnce([
+      { id: 'task-1', agentId: ENV_1, title: 'Nightly', cronExpression: '0 3 * * *', enabled: true },
+    ] as never);
+    initiativesRepo.find.mockResolvedValueOnce([
+      { id: 'ini-1', title: 'Checkout', longSha: 'sha', path: 'epic', phase: 'plan', state: 'active' },
+    ] as never);
+    workItemsRepo.find.mockResolvedValueOnce([
+      {
+        id: 'wi-s1',
+        initiativeId: 'ini-1',
+        parentId: null,
+        kind: 'story',
+        key: 'E1.S1',
+        title: 'A',
+        status: 'draft',
+        ticketId: 't',
+      },
+    ] as never);
+
+    await service.build(CLIENT_A);
+
+    const saved = snapshots.upsert.mock.calls[1][1] as { graph: AgentGraphDocument };
+    const byId = (id: string) => saved.graph.nodes.find((entry) => entry.id === id);
+
+    expect(byId('task:task-1')?.type).toBe('task');
+    expect(byId('initiative:ini-1')?.type).toBe('initiative');
+    // Ticket `t` of the fixture is `todo`: the story is ready for development, not its stored draft.
+    expect(byId('work-item:wi-s1')?.attrs?.['workItemStatus']).toBe('ready-for-dev');
+    expect(workItemsRepo.find).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ clientId: CLIENT_A }) }),
     );
   });
 
@@ -880,6 +1018,11 @@ describe('WorkspaceGraphSnapshotService', () => {
           { provide: getRepositoryToken(KnowledgeRelationEntity), useValue: relationsRepo },
           { provide: getRepositoryToken(TicketEntity), useValue: ticketsRepo },
           { provide: getRepositoryToken(ChatPlanEntity), useValue: plansRepo },
+          { provide: getRepositoryToken(AgentTaskEntity), useValue: tasksRepo },
+          { provide: getRepositoryToken(InitiativeEntity), useValue: initiativesRepo },
+          { provide: getRepositoryToken(InitiativeArtifactEntity), useValue: initiativeArtifactsRepo },
+          { provide: getRepositoryToken(InitiativeWorkItemEntity), useValue: workItemsRepo },
+          { provide: getRepositoryToken(InitiativeWorkItemDependencyEntity), useValue: workItemDependenciesRepo },
         ],
       }).compile();
 

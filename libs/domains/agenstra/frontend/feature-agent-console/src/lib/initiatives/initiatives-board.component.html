@@ -1,0 +1,514 @@
+<div class="section__content-wrapper d-flex flex-column border-top">
+  <fpc-page-header [title]="pageTitle">
+    @if (effectiveWorkspace(); as ew) {
+      <framework-workspace-chip
+        fpcPageHeaderContext
+        [name]="workspaceDisplayName(ew.name)"
+        [title]="switchWorkspaceTitle"
+        (switch)="openWorkspaceSwitchModal()"
+      />
+    }
+  </fpc-page-header>
+
+  @if (effectiveClientId() === null) {
+    <fpc-empty-state
+      class="flex-grow-1"
+      message="No workspace selected yet"
+      i18n-message="@@featureInitiatives-noWorkspaceSelected"
+    >
+      <fpc-button
+        fpcEmptyStateActions
+        variant="primary"
+        (clicked)="openWorkspaceSwitchModal()"
+        i18n="@@featureInitiatives-chooseWorkspace"
+        >Choose workspace...</fpc-button
+      >
+    </fpc-empty-state>
+  } @else {
+    @if (error() && !conflict()) {
+      <fpc-alert variant="danger" [flush]="true" [dismissible]="true" [message]="error()" (closed)="onDismissError()" />
+    }
+    @if (conflict()) {
+      <div class="alert alert-warning d-flex flex-wrap align-items-center gap-2 mb-0 rounded-0" role="alert">
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+        <span class="flex-grow-1">{{ error() }}</span>
+        <fpc-button variant="warning" (clicked)="onLoadLatest()" data-testid="initiative-load-latest">
+          <span i18n="@@featureInitiatives-loadLatest">Load latest version</span>
+        </fpc-button>
+      </div>
+    }
+
+    <fpc-section-row class="flex-grow-1 initiatives-row" [class.initiatives-row--detail-open]="!!selectedId()">
+      <fpc-section-column class="initiatives-sidebar d-flex">
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="listLabel"
+          [columns]="columns"
+          [rows]="initiatives()"
+          [activeRowId]="selectedId()"
+          paging="client"
+          persistKey="agenstra-initiatives"
+          [query]="search()"
+          (queryChange)="search.set($event)"
+          [searchPlaceholder]="searchPlaceholder"
+          [filtered]="!!search().trim()"
+          [loading]="listLoading()"
+          [rowMenu]="rowMenu"
+          (rowAction)="onRowAction($event.row, $event.item.id)"
+          (rowActivate)="onSelect($event)"
+          emptyIcon="signpost-split"
+          data-testid="initiatives-table"
+        >
+          <span fpcDataTableToolbar class="d-inline-flex gap-2">
+            <fpc-button
+              variant="primary"
+              iconOnly
+              [ariaLabel]="createTitle"
+              [title]="createTitle"
+              (clicked)="openCreate()"
+              data-testid="initiative-create"
+            >
+              <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-button
+              variant="dark"
+              iconOnly
+              [ariaLabel]="refreshTitle"
+              [title]="refreshTitle"
+              (clicked)="onRefresh()"
+            >
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            </fpc-button>
+          </span>
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="signpost-split"
+              message="No initiatives yet"
+              i18n-message="@@featureInitiatives-empty"
+            >
+              <p class="small text-body-secondary mb-0" i18n="@@featureInitiatives-emptyHint">
+                Plan bigger work step by step: clarify the idea, write the shared documents, slice it into epics and
+                stories, build it through tickets and learn from every epic.
+              </p>
+            </fpc-empty-state>
+          </span>
+          <ng-template fpcTableCell="title" let-row>
+            <span class="d-block text-truncate" [title]="row.title">{{ row.title }}</span>
+          </ng-template>
+        </fpc-data-table>
+      </fpc-section-column>
+
+      <fpc-section-column class="d-flex flex-grow-1 initiatives-detail">
+        @if (selected(); as initiative) {
+          <fpc-page-header>
+            <fpc-back-link
+              fpcPageHeaderBack
+              class="d-md-none"
+              [label]="backTitle"
+              (activate)="onClose()"
+              data-testid="initiative-back"
+            />
+            <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
+              <fpc-badge class="flex-shrink-0" [color]="stateTone(initiative.state)">{{
+                stateLabel(initiative.state)
+              }}</fpc-badge>
+              <h2 class="fpc-page-header__title h6 mb-0 fw-semibold text-truncate" [title]="initiative.title">
+                {{ initiative.title }}
+              </h2>
+              <fpc-badge class="flex-shrink-0" color="light">{{ pathLabel(initiative.path) }}</fpc-badge>
+              <fpc-badge class="flex-shrink-0" color="secondary" [title]="'iteration ' + initiative.iteration">
+                <span i18n="@@featureInitiatives-iterationShort">Iteration</span> {{ initiative.iteration }}
+              </fpc-badge>
+            </div>
+            <div fpcPageHeaderActions class="d-flex align-items-center gap-2">
+              <!-- The method's public guide: a quiet header action like its neighbours (explained by its tooltip). -->
+              <fpc-button
+                variant="dark"
+                iconOnly
+                [href]="methodUrl"
+                target="_blank"
+                [ariaLabel]="methodTitle"
+                [title]="methodTitle"
+                data-testid="initiative-method-guide"
+              >
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                variant="dark"
+                iconOnly
+                [ariaLabel]="copyReferenceTitle"
+                [title]="copyReferenceTitle"
+                (clicked)="onCopyReference(initiative.shas.long)"
+              >
+                <i class="bi bi-link-45deg" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                variant="dark"
+                iconOnly
+                [ariaLabel]="settingsTitle"
+                [title]="settingsTitle"
+                (clicked)="openSettings(initiative)"
+                data-testid="initiative-settings"
+              >
+                <i class="bi bi-gear" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                variant="danger"
+                iconOnly
+                [ariaLabel]="deleteTitle"
+                [title]="deleteTitle"
+                (clicked)="deleteOpen.set(true)"
+              >
+                <i class="bi bi-trash" aria-hidden="true"></i>
+              </fpc-button>
+            </div>
+          </fpc-page-header>
+
+          <!-- Content left, sidebar right (like ticket / page / plan details): "What's next", progress and the work
+               items stay in view in every tab; both columns scroll on their own (stacked below xl). -->
+          <div class="row g-0 initiative-detail__columns">
+            <div class="col-xl-8 initiative-detail__main">
+              <!-- Delivery loop: Clarify → Plan → Build & verify → Learn & adjust, in the order stepper style of the billing
+                   console (numbered circles; done = filled, current = outlined). A phase is a button: it moves the initiative. -->
+              <nav
+                class="initiative-phases flex-shrink-0 px-3 py-2 border-bottom"
+                aria-label="Phase"
+                i18n-aria-label="@@featureInitiatives-phaseNav"
+              >
+                <fpc-step-strip>
+                  <ol class="initiative-phases__steps" fpcStepStrip>
+                    @for (phase of phases; track phase; let index = $index) {
+                      <li class="initiative-phases__step">
+                        <button
+                          type="button"
+                          class="initiative-phases__step-button"
+                          [class.initiative-phases__step-button--active]="phase === initiative.phase"
+                          [class.initiative-phases__step-button--complete]="index < phaseIndex(initiative.phase)"
+                          [attr.aria-current]="phase === initiative.phase ? 'step' : null"
+                          [disabled]="pending()"
+                          (click)="onPhase(initiative, phase)"
+                          [attr.data-testid]="'initiative-phase-' + phase"
+                        >
+                          <span class="initiative-phases__step-indicator" aria-hidden="true">
+                            @if (index < phaseIndex(initiative.phase)) {
+                              <i class="bi bi-check-lg"></i>
+                            } @else {
+                              {{ index + 1 }}
+                            }
+                          </span>
+                          <span class="initiative-phases__step-label">{{ phaseLabel(phase) }}</span>
+                        </button>
+                      </li>
+                    }
+                  </ol>
+                </fpc-step-strip>
+              </nav>
+
+              <fpc-tab-group
+                class="flex-shrink-0"
+                [activeId]="tab()"
+                (activeIdChange)="onTabChange($event)"
+                [ariaLabel]="initiative.title"
+              >
+                @for (id of tabs; track id) {
+                  <fpc-tab [id]="id" [label]="tabLabels[id]" [icon]="tabIcons[id]" />
+                }
+              </fpc-tab-group>
+
+              <div class="initiative-tab" [attr.data-tab]="tab()">
+                @switch (tab()) {
+                  @case ('documents') {
+                    <framework-initiative-documents [initiative]="initiative" (startStep)="onStartStep($event)" />
+                  }
+                  @case ('work') {
+                    <framework-initiative-work-items
+                      [initiative]="initiative"
+                      [agents]="agents()"
+                      [focusRequest]="focusRequest()"
+                      [transferRequest]="transferRequest()"
+                      (startStep)="onStartStep($event)"
+                    />
+                  }
+                  @case ('runs') {
+                    <framework-initiative-runs
+                      [initiative]="initiative"
+                      [agents]="agents()"
+                      [startRequest]="startRequest()"
+                    />
+                  }
+                  @case ('learn') {
+                    <framework-initiative-learn
+                      [initiative]="initiative"
+                      [viewRequest]="learnViewRequest()"
+                      (startStep)="onStartStep($event)"
+                    />
+                  }
+                  @case ('activity') {
+                    <fpc-data-table
+                      class="flex-grow-1 min-h-0"
+                      [ariaLabel]="tabLabels.activity"
+                      [columns]="activityColumns"
+                      [rows]="visibleActivity()"
+                      paging="client"
+                      persistKey="agenstra-initiative-activity"
+                      [(query)]="activitySearch"
+                      [searchPlaceholder]="activitySearchPlaceholder"
+                      emptyIcon="clock-history"
+                      data-testid="initiative-activity"
+                    >
+                      <span fpcDataTableEmpty>
+                        <fpc-empty-state
+                          size="sm"
+                          icon="clock-history"
+                          message="No activity yet"
+                          i18n-message="@@featureInitiatives-activityEmpty"
+                        />
+                      </span>
+                      <ng-template fpcTableCell="time" let-row>{{ row.occurredAt | fpcDate: 'datetime' }}</ng-template>
+                      <ng-template fpcTableCell="details" let-row let-value="value">
+                        <span class="initiative-detail__activity-detail" [title]="value">{{ value }}</span>
+                      </ng-template>
+                    </fpc-data-table>
+                  }
+                }
+              </div>
+            </div>
+
+            <aside class="col-xl-4 initiative-detail__sidebar" data-testid="initiative-sidebar">
+              <framework-initiative-sidebar
+                [initiative]="initiative"
+                (startStep)="onStartStep($event)"
+                (navigate)="onNavigateTab($event)"
+                (openLearn)="onOpenLearn($event)"
+                (openTransfer)="onOpenTransfer($event)"
+                (openWorkItem)="onOpenWorkItem($event)"
+              />
+            </aside>
+          </div>
+        } @else if (selectedId() && detailLoading()) {
+          <fpc-empty-state
+            class="flex-grow-1"
+            loading
+            message="Loading initiative…"
+            i18n-message="@@featureInitiatives-loading"
+          />
+        } @else {
+          <fpc-empty-state
+            class="flex-grow-1"
+            icon="signpost-split"
+            message="Select an initiative or start a new one"
+            i18n-message="@@featureInitiatives-selectHint"
+          />
+        }
+      </fpc-section-column>
+    </fpc-section-row>
+  }
+</div>
+
+<!-- New initiative -->
+<fpc-modal [(open)]="createOpen" [title]="createTitle" size="lg">
+  <div class="d-flex flex-column gap-3">
+    <fpc-form-field forId="initiativeTitle" label="Title" i18n-label="@@featureInitiatives-fieldTitle">
+      <fpc-form-control
+        controlId="initiativeTitle"
+        maxLength="500"
+        [ngModel]="createTitleValue()"
+        (ngModelChange)="createTitleValue.set($event)"
+      />
+    </fpc-form-field>
+    <fpc-form-field forId="initiativeIntent" label="Intent" i18n-label="@@featureInitiatives-fieldIntent">
+      <fpc-form-control
+        controlId="initiativeIntent"
+        controlType="textarea"
+        [rows]="5"
+        placeholder="What should be true when this is done, what must not change, what is out of scope?"
+        i18n-placeholder="@@featureInitiatives-intentPlaceholder"
+        [ngModel]="createIntent()"
+        (ngModelChange)="createIntent.set($event)"
+      />
+    </fpc-form-field>
+    <fpc-form-field forId="initiativePath" label="Planning path" i18n-label="@@featureInitiatives-fieldPath">
+      <fpc-form-control
+        controlId="initiativePath"
+        controlType="select"
+        [ngModel]="createPath()"
+        (ngModelChange)="createPath.set($event)"
+      >
+        @for (path of paths; track path) {
+          <option [value]="path">{{ pathLabel(path) }}</option>
+        }
+      </fpc-form-control>
+      <small class="text-body-secondary">{{ pathHint(createPath()) }}</small>
+    </fpc-form-field>
+  </div>
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      [disabled]="!createTitleValue().trim()"
+      (clicked)="submitCreate()"
+      data-testid="initiative-create-submit"
+      i18n="@@featureInitiatives-createSubmit"
+      >Create</fpc-button
+    >
+  </div>
+</fpc-modal>
+
+<!-- Settings -->
+@if (selected(); as initiative) {
+  <fpc-modal [(open)]="settingsOpen" [title]="settingsTitle" size="lg">
+    @if (settingsDraft(); as draft) {
+      <div class="d-flex flex-column gap-3">
+        <fpc-form-field forId="initiativeSettingsTitle" label="Title" i18n-label="@@featureInitiatives-fieldTitle">
+          <fpc-form-control
+            controlId="initiativeSettingsTitle"
+            maxLength="500"
+            [ngModel]="draft.title"
+            (ngModelChange)="patchSettings({ title: $event })"
+          />
+        </fpc-form-field>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <fpc-form-field
+              forId="initiativeSettingsPath"
+              label="Planning path"
+              i18n-label="@@featureInitiatives-fieldPath"
+            >
+              <fpc-form-control
+                controlId="initiativeSettingsPath"
+                controlType="select"
+                [ngModel]="draft.path"
+                (ngModelChange)="patchSettings({ path: $event })"
+              >
+                @for (path of paths; track path) {
+                  <option [value]="path">{{ pathLabel(path) }}</option>
+                }
+              </fpc-form-control>
+            </fpc-form-field>
+          </div>
+          <div class="col-md-6">
+            <fpc-form-field forId="initiativeSettingsState" label="State" i18n-label="@@featureInitiatives-fieldState">
+              <fpc-form-control
+                controlId="initiativeSettingsState"
+                controlType="select"
+                [ngModel]="draft.state"
+                (ngModelChange)="patchSettings({ state: $event })"
+              >
+                @for (state of states; track state) {
+                  <option [value]="state">{{ stateLabel(state) }}</option>
+                }
+              </fpc-form-control>
+            </fpc-form-field>
+          </div>
+          <div class="col-md-6">
+            <fpc-form-field
+              forId="initiativeSettingsAgent"
+              label="Facilitator environment"
+              i18n-label="@@featureInitiatives-fieldAgent"
+            >
+              <fpc-form-control
+                controlId="initiativeSettingsAgent"
+                controlType="select"
+                [ngModel]="draft.defaultAgentId"
+                (ngModelChange)="patchSettings({ defaultAgentId: $event })"
+              >
+                <option value="" i18n="@@featureInitiatives-noAgent">Choose per step</option>
+                @for (agent of agents(); track agent.id) {
+                  <option [value]="agent.id">{{ workspaceDisplayName(agent.name) }}</option>
+                }
+              </fpc-form-control>
+            </fpc-form-field>
+          </div>
+          <div class="col-md-6">
+            <fpc-form-field
+              forId="initiativeSettingsModel"
+              label="Model"
+              i18n-label="@@featureInitiatives-fieldModelChoice"
+            >
+              <framework-initiative-model-select
+                controlId="initiativeSettingsModel"
+                [clientId]="initiative.clientId"
+                [agentId]="draft.defaultAgentId || agents()[0]?.id || null"
+                [value]="draft.defaultModel"
+                (valueChange)="patchSettings({ defaultModel: $event })"
+              />
+            </fpc-form-field>
+          </div>
+          <div class="col-md-6">
+            <fpc-form-field
+              forId="initiativeSettingsSatisfied"
+              label="Stories may start when prerequisites are"
+              i18n-label="@@featureInitiatives-fieldSatisfied"
+            >
+              <fpc-form-control
+                controlId="initiativeSettingsSatisfied"
+                controlType="select"
+                [ngModel]="draft.prerequisiteSatisfiedAt"
+                (ngModelChange)="patchSettings({ prerequisiteSatisfiedAt: $event })"
+              >
+                <option value="done" i18n="@@featureInitiatives-satisfiedDone">Done (marked by a person)</option>
+                <option value="built" i18n="@@featureInitiatives-satisfiedBuilt">Built (prototype)</option>
+              </fpc-form-control>
+            </fpc-form-field>
+          </div>
+          <div class="col-md-6 d-flex align-items-end">
+            <fpc-form-switch
+              switchId="initiativeSettingsAutoRelease"
+              label="Release ready stories automatically"
+              i18n-label="@@featureInitiatives-fieldAutoRelease"
+              [checked]="draft.autoRelease"
+              (checkedChange)="patchSettings({ autoRelease: $event })"
+            />
+          </div>
+        </div>
+      </div>
+    }
+    <div *fpcModalFooter>
+      <fpc-button variant="primary" (clicked)="submitSettings(initiative)" i18n="@@featureInitiatives-save"
+        >Save</fpc-button
+      >
+    </div>
+  </fpc-modal>
+
+  <fpc-modal [(open)]="deleteOpen" [title]="deleteTitle" accent="danger">
+    <p class="mb-0" i18n="@@featureInitiatives-deleteConfirm">
+      The initiative, its documents, work items, steps and proposals are deleted. Tickets created from it are kept.
+    </p>
+    <div *fpcModalFooter>
+      <fpc-button variant="danger" (clicked)="confirmDelete(initiative)" i18n="@@featureInitiatives-deleteSubmit"
+        >Delete</fpc-button
+      >
+    </div>
+  </fpc-modal>
+}
+
+<fpc-modal
+  [(open)]="workspaceSwitchModalOpen"
+  i18n-title="@@featureInitiatives-switchWorkspaceModalTitle"
+  title="Switch workspace"
+  [scrollable]="true"
+  [bodyScroll]="false"
+>
+  @if (clients().length === 0 && !workspaceSwitchSearch().trim()) {
+    <fpc-empty-state size="sm" message="No workspaces yet" i18n-message="@@featureInitiatives-noWorkspaces">
+      <fpc-button
+        fpcEmptyStateActions
+        variant="primary"
+        i18n="@@featureInitiatives-goToSpaces"
+        (clicked)="goToSpaces($event)"
+        >Go to workspaces</fpc-button
+      >
+    </fpc-empty-state>
+  } @else {
+    <framework-workspace-switch-table
+      [clients]="clients()"
+      [currentId]="activeClientId()"
+      [(query)]="workspaceSwitchSearch"
+      [hasMore]="workspaceSwitchHasMore()"
+      [appendLoading]="workspaceSwitchAppendLoading()"
+      [appendError]="workspaceSwitchAppendError()"
+      (loadMore)="onLoadMoreWorkspaces()"
+      (selectWorkspace)="onSelectWorkspace($event)"
+    />
+  }
+</fpc-modal>

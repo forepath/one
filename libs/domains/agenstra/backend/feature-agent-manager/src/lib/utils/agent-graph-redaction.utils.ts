@@ -14,6 +14,8 @@ export const AGENT_GRAPH_CONTROLLER_CONTENT_TYPES: ReadonlySet<string> = new Set
   'knowledge',
   'plan',
   'attachment',
+  'initiative',
+  'artifact',
 ]);
 
 /**
@@ -21,7 +23,7 @@ export const AGENT_GRAPH_CONTROLLER_CONTENT_TYPES: ReadonlySet<string> = new Set
  * - environments outside the caller's workspace stay anonymous in every layer: their name (environment root, and
  *   module labels that fell back to it) becomes the mount id;
  * - in the prompt reference layers, prompt excerpts and titles of controller content (tickets, knowledge, plans,
- *   attachments) are replaced by their refs; the caller resolves them through `agenstra_context_*` under its own
+ *   attachments, initiatives and their documents) are replaced by their refs; the caller resolves them through `agenstra_context_*` under its own
  *   grants.
  */
 export function redactAgentGraphNodeForCaller(

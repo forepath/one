@@ -3,6 +3,7 @@
 // `imports` array. Global styles live in `styles/index.scss`.
 
 // Actions
+export { FpcBackLinkComponent } from './lib/back-link/back-link.component';
 export { FpcButtonComponent } from './lib/button/button.component';
 export type { FpcButtonSize, FpcButtonType, FpcButtonVariant } from './lib/button/button.component';
 export { FpcButtonGroupComponent } from './lib/button-group/button-group.component';

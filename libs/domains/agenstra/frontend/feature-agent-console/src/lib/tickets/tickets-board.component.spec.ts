@@ -7,6 +7,7 @@ import {
   ClientsFacade,
   ClientsService,
   ContainerSocketFacade,
+  InitiativesService,
   KnowledgeFacade,
   KnowledgeService,
   TicketAutomationFacade,
@@ -125,6 +126,7 @@ describe('TicketsBoardComponent (Table | Lanes)', () => {
         { provide: KnowledgeFacade, useValue: autoMock() },
         { provide: KnowledgeService, useValue: autoMock() },
         { provide: TicketsService, useValue: autoMock() },
+        { provide: InitiativesService, useValue: { ticketLink: jest.fn(() => of({ link: null })) } },
         { provide: ContainerSocketFacade, useValue: autoMock() },
         { provide: ChatTimelineFacade, useValue: autoMock() },
         { provide: TicketsBoardSocketFacade, useValue: autoMock() },
@@ -339,6 +341,7 @@ describe('TicketsBoardComponent "and n more"', () => {
         ].map((token) => ({ provide: token, useValue: autoMock() })),
         { provide: AgentsService, useValue: autoMock({ listAgents: jest.fn(() => of([])) }) },
         { provide: Actions, useValue: NEVER },
+        { provide: InitiativesService, useValue: { ticketLink: jest.fn(() => of({ link: null })) } },
         { provide: VcsService, useValue: autoMock() },
       ],
     }).compileComponents();

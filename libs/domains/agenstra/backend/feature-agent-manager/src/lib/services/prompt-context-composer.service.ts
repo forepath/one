@@ -88,6 +88,17 @@ export class PromptContextComposerService {
       }
     }
 
+    const initiativeContexts = (contextInjection.initiativeContexts ?? []).filter((ctx) => ctx.trim().length > 0);
+
+    if (!contextTicket && initiativeContexts.length > 0) {
+      lines.push('- Initiative context (planning documents and work items of this workspace) is provided below:');
+
+      for (const [index, context] of initiativeContexts.entries()) {
+        lines.push(`Initiative context #${index + 1}:`);
+        lines.push(context.trim());
+      }
+    }
+
     if (attachmentContexts.length > 0) {
       lines.push('- Read-only attachment files are mounted in the container at:');
 
