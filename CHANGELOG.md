@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.0.1](https://github.com/forepath/one/compare/v5.0.0...v5.0.1) (2026-11-11)
+
+
+### Bug Fixes
+
+* **shared:** allow re-publishing an existing release tag ([#741](https://github.com/forepath/one/issues/741)) ([f953bdf](https://github.com/forepath/one/commit/f953bdfc09484604f34abacefc1472bb22cab5ef))
+* **shared:** rpm signing with rpm 6 ([#742](https://github.com/forepath/one/issues/742)) ([e0d4259](https://github.com/forepath/one/commit/e0d42590ee29d79071431be4f8e873222eb13623))
+
 ## [5.0.0](https://github.com/forepath/one/compare/v4.3.0...v5.0.0) (2026-11-11)
 
 
