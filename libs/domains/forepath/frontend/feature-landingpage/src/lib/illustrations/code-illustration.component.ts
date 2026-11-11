@@ -136,7 +136,7 @@ function highlight(source: string, keywords: readonly string[]): string[] {
           @for (line of lines(); track $index) {
             <div class="sai-code__line">
               <span class="sai-code__no">{{ $index + 1 }}</span
-              ><span [innerHTML]="line"></span>
+              ><span [innerHTML]="line" [class.sai-motion-caret]="line.includes('>return<')"></span>
             </div>
           }
         </div>

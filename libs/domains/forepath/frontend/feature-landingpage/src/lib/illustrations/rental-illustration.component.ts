@@ -31,7 +31,7 @@ interface RentalItem {
               [class.rental-illustration__step--done]="index < activeStep"
               [class.rental-illustration__step--active]="index === activeStep"
             >
-              <span class="rental-illustration__step-dot">
+              <span class="rental-illustration__step-dot" [class.sai-motion-pulse]="index === activeStep">
                 @if (index < activeStep) {
                   <i class="bi bi-check-lg"></i>
                 } @else {
@@ -47,7 +47,12 @@ interface RentalItem {
           <p class="rental-illustration__label">Your setup</p>
           <ul class="list-unstyled mb-0 rental-illustration__items">
             @for (item of items; track item.name) {
-              <li class="rental-illustration__item" [class.rental-illustration__item--service]="item.service">
+              <li
+                class="rental-illustration__item"
+                [class.rental-illustration__item--service]="item.service"
+                [class.sai-motion-enter]="item.service"
+                [style.--sai-delay]="item.service ? '2s' : null"
+              >
                 <i class="bi" [class]="item.icon"></i>
                 <span class="flex-grow-1">
                   <span class="d-block fw-semibold">{{ item.name }}</span>

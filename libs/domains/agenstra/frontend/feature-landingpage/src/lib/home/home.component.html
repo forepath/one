@@ -1,12 +1,13 @@
 <!-- Hero Section -->
-<section id="hero" class="pt-10 pb-10 pb-md-0 py-lg-6 bg-dark text-white grid-section">
-  <div class="container hero-content grid-section__container grid-section__container--hero-top">
+<section id="hero" class="pt-10 pb-10 pb-md-0 py-lg-6 bg-body text-body-emphasis grid-section grid-section--deep">
+  <shared-mark-stack brand="agenstra" />
+  <div class="container hero-content grid-section__container">
     <div class="row justify-content-center">
-      <div class="col-12 text-center hero-container">
+      <div class="col-12 col-lg-7 text-center text-lg-start hero-container">
         <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featurePortalHome-heroTitle">
           <span class="text-primary">One place</span> to run, govern, and ship with coding agents
         </h1>
-        <p class="hero-lead lead fs-5 mb-4 mx-auto" i18n="@@featurePortalHome-heroLead">
+        <p class="hero-lead lead fs-5 mb-4 mx-auto mx-lg-0" i18n="@@featurePortalHome-heroLead">
           Agenstra brings workspaces, tickets, knowledge, coding, and releases together on infrastructure you own. Your
           team can trust agents from the first experiment through production.
         </p>
@@ -14,41 +15,33 @@
           Keep agent-assisted work on the same bar as the rest of your practice: approvals, audit trails, and controls
           that match how you review changes and release software.
         </p>
-        <div class="d-flex gap-2 justify-content-center flex-wrap hero-feature-badges mb-5">
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge1">Multi-workspace control</span>
-          </fpc-badge>
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge2">Ticket automation</span>
-          </fpc-badge>
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge3">Policy &amp; audit trails</span>
-          </fpc-badge>
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge4">Code &amp; Git in the browser</span>
-          </fpc-badge>
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge5">Deployments</span>
-          </fpc-badge>
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge6">Team knowledge</span>
-          </fpc-badge>
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge7">Roles &amp; single sign-on</span>
-          </fpc-badge>
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge8">Your cloud or ours</span>
-          </fpc-badge>
+        <!--
+          Feature badges as a slow two-row band (rows run in opposite directions, the edges fade), so at
+          most two rows ever show. Each row repeats its badges so the loop is seamless; only the first
+          copy is exposed to assistive technology.
+        -->
+        <div class="landing-badge-band hero-feature-badges mb-5">
+          @for (row of heroBadgeRows; track $index; let odd = $odd) {
+            <div class="landing-badge-band__row" [class.landing-badge-band__row--reverse]="odd">
+              <div class="landing-badge-band__track">
+                @for (copy of heroBadgeCopies; track copy) {
+                  @for (badge of row; track badge) {
+                    <fpc-badge
+                      variant="marketing"
+                      color="primary"
+                      size="xl"
+                      [attr.aria-hidden]="copy > 0 ? 'true' : null"
+                    >
+                      <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+                      <span>{{ badge }}</span>
+                    </fpc-badge>
+                  }
+                }
+              </div>
+            </div>
+          }
         </div>
-        <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
           <fpc-button
             variant="primary"
             size="xl"
@@ -72,15 +65,17 @@
           </fpc-button>
         </div>
       </div>
-    </div>
-  </div>
-  <div class="container grid-section__container grid-section__container--hero-bottom">
-    <div class="row">
-      <div class="col-md-12 hero-illustration d-none d-md-block">
-        <framework-portal-console-illustration
-          label="Agenstra console with workspaces, agents and an agent chat"
-          i18n-label="@@featurePortalHome-heroIllustration"
-        />
+      <!--
+        The product window: under the copy on tablets, in the right column from lg up (out of the flow,
+        sized from the hero's height and running off the bottom and right edges, like the mark stack).
+      -->
+      <div class="col-12 col-lg-5 d-none d-md-block hero-visual">
+        <div class="hero-illustration">
+          <framework-portal-console-illustration
+            label="Agenstra console with workspaces, agents and an agent chat"
+            i18n-label="@@featurePortalHome-heroIllustration"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -1205,7 +1200,7 @@
 </section>
 
 <!-- Final CTA Section -->
-<section id="cta" class="py-10 bg-dark grid-section">
+<section id="cta" class="py-10 bg-body grid-section grid-section--deep">
   <div class="container grid-section__container">
     <div class="row">
       <div class="col-12">

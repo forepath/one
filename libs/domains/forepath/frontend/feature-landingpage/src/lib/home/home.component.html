@@ -1,5 +1,6 @@
 <!-- Hero -->
-<section id="hero" class="py-10 bg-dark text-white grid-section home-hero">
+<section id="hero" class="py-10 bg-body text-body-emphasis grid-section grid-section--deep home-hero">
+  <shared-mark-stack brand="forepath" />
   <div class="container hero-content grid-section__container">
     <div class="row justify-content-center align-items-center gx-lg-5 row-gap-5">
       <div class="col-12 col-lg-7 text-center text-lg-start home-hero__copy">
@@ -35,18 +36,15 @@
           </fpc-button>
         </div>
       </div>
-      <div class="col-lg-5 d-none d-lg-block home-hero__illustration">
-        <div class="home-hero__scene">
-          <framework-forepath-platform-board-illustration
-            label="Shared architecture board where ForePath and your team split a monolith into services, ship them, operate them and extend them with Agenstra agents"
-            i18n-label="@@featureForepathHome-heroIllustration"
-          />
-        </div>
+      <!-- Fact cards, in the hero's bottom-right corner from lg up. -->
+      <div class="col-lg-5 d-none d-lg-block home-hero__visual">
+        <framework-forepath-hero-collage class="home-hero__collage" />
       </div>
     </div>
     @if (latestBlogPost(); as post) {
-      <div class="row justify-content-center home-hero__teaser">
-        <div class="col-12 col-lg-8">
+      <!-- In the copy column from lg up, like the copy above it. -->
+      <div class="row justify-content-center justify-content-lg-start home-hero__teaser">
+        <div class="col-12 col-lg-7">
           <a
             [routerLink]="['/blog', post.slug]"
             class="home-blog-teaser card border rounded-pill shadow-sm bg-body text-decoration-none text-body d-flex flex-row align-items-center gap-3"
@@ -71,7 +69,7 @@
 </section>
 
 <!-- Process -->
-<section id="process" class="py-10 bg-dark text-white grid-section">
+<section id="process" class="py-10 bg-body text-body-emphasis grid-section grid-section--deep">
   <div class="container grid-section__container">
     <div
       class="home-process"
@@ -609,7 +607,7 @@
 </section>
 
 <!-- CTA -->
-<section id="cta" class="py-10 bg-dark grid-section">
+<section id="cta" class="py-10 bg-body grid-section grid-section--deep">
   <div class="container grid-section__container">
     <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
       <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathHome-ctaTitle">Ready to move your platform forward?</h2>

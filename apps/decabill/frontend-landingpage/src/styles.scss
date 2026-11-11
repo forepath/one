@@ -167,7 +167,6 @@ body {
   overflow: hidden;
 
   &.grid-section--navigation {
-    --bs-border-color: rgb(28, 28, 31);
     border-bottom: 1px solid var(--bs-border-color);
     border-top: none;
     overflow: visible;
@@ -181,17 +180,15 @@ body {
     }
   }
 
+  // Dark mode: the sticky navigation keeps its own, slightly firmer divider. Light mode uses the
+  // default border colour. (Deep sections use the dark default border, so they need no rule.)
+  [data-bs-theme='dark'] &.grid-section--navigation {
+    --bs-border-color: rgb(28, 28, 31);
+  }
+
   &.grid-section--footer {
     // Allow footer language dropup to paint outside the section bounds.
     overflow: visible;
-  }
-
-  &.bg-dark {
-    --bs-border-color: rgba(255, 255, 255, 0.08);
-
-    > .grid-section__container {
-      --bs-border-color: rgba(255, 255, 255, 0.08);
-    }
   }
 
   &#hero {
@@ -200,10 +197,6 @@ body {
 
   .grid-section__container {
     position: relative;
-
-    &.grid-section__container--dark {
-      --bs-border-color: rgba(255, 255, 255, 0.08);
-    }
 
     &.grid-section__container--hero-top,
     &.grid-section__container--footer-top {

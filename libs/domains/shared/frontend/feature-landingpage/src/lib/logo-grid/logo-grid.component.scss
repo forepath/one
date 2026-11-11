@@ -80,6 +80,11 @@
   }
 }
 
+// Light page: the same monochrome mark in ink instead of white.
+:host-context([data-bs-theme='light']) .shared-logo-grid__logo {
+  filter: url(#shared-logo-grid-mono-ink);
+}
+
 .shared-logo-grid__logo--compact {
   height: 1.35rem;
   max-width: 4.25rem;

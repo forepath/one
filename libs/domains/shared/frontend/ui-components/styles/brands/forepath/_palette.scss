@@ -35,13 +35,16 @@ $gray-900: #0f0f11;
 // Dark mode maps $light-text-emphasis-dark to $gray-100; pin neutral so it does not pick up the tint above.
 $light-text-emphasis-dark: #f3f4f6;
 
-$border-color: rgba(15, 15, 17, 0.1);
-$border-color-dark: rgba(255, 255, 255, 0.08);
-
-$border-color-translucent: rgba(15, 15, 17, 0.06);
-$border-color-translucent-dark: rgba(255, 255, 255, 0.06);
-
 $body-bg: color.mix($primary, #f5f4f9, 2.5%);
+
+// Borders are solid colours (what the former translucent ink looked like on the page background),
+// not translucent ink: a translucent hairline comes out darker on the grey surfaces (sidebar, top bar,
+// grey sections) than on the page, so lines that meet looked uneven. Dark mode mixes on `$gray-900`,
+// its body background.
+$border-color: color.mix(#0f0f11, $body-bg, 10%);
+$border-color-dark: color.mix(#fff, $gray-900, 8%);
+$border-color-translucent: color.mix(#0f0f11, $body-bg, 6%);
+$border-color-translucent-dark: color.mix(#fff, $gray-900, 6%);
 $body-color: #3c3f45;
 $body-emphasis-color: #24262c;
 

@@ -6,3 +6,6 @@ export * from './lib/contact/shared-contact-details.constants';
 export * from './lib/app-illustration/app-illustration.component';
 export * from './lib/logo-grid/logo-grid.component';
 export * from './lib/contact-person/contact-person.component';
+export * from './lib/theme/landing-theme.service';
+export * from './lib/theme/landing-theme-toggle.component';
+export * from './lib/mark-stack/mark-stack.component';

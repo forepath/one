@@ -31,14 +31,16 @@ interface PipelineStep {
               <span class="evolution-illustration__time"><i class="bi bi-clock"></i> about a day</span>
             </div>
             <div class="evolution-illustration__terminal">
-              @for (line of terminalLines; track line) {
-                <span class="d-block"><span class="evolution-illustration__prompt">$</span> {{ line }}</span>
+              @for (line of terminalLines; track line; let last = $last) {
+                <span class="d-block" [class.sai-motion-caret]="last"
+                  ><span class="evolution-illustration__prompt">$</span> {{ line }}</span
+                >
               }
               <span class="d-block text-body-secondary">... 39 more servers</span>
             </div>
           </article>
 
-          <article class="evolution-illustration__era">
+          <article class="evolution-illustration__era sai-motion-enter" style="--sai-delay: 1.5s">
             <div class="evolution-illustration__era-head">
               <span class="evolution-illustration__year">2023</span>
               <span class="fw-semibold">Automated</span>
@@ -55,7 +57,10 @@ interface PipelineStep {
             </ol>
           </article>
 
-          <article class="evolution-illustration__era evolution-illustration__era--now">
+          <article
+            class="evolution-illustration__era evolution-illustration__era--now sai-motion-enter"
+            style="--sai-delay: 3.5s"
+          >
             <div class="evolution-illustration__era-head">
               <span class="evolution-illustration__year">2025</span>
               <span class="fw-semibold">AI native</span>
@@ -68,7 +73,7 @@ interface PipelineStep {
                 review.
               </p>
             </div>
-            <div class="evolution-illustration__review">
+            <div class="evolution-illustration__review sai-motion-enter" style="--sai-delay: 5.5s">
               <span class="evolution-illustration__avatar evolution-illustration__avatar--human"
                 ><i class="bi bi-person"></i
               ></span>

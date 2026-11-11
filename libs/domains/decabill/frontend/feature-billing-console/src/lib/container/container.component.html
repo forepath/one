@@ -16,13 +16,13 @@
       </fpc-badge>
     }
     <fpc-language-switcher
-      data-bs-theme="dark"
       [locales]="localeService.getAvailableLocales()"
       [locale]="localeService.getCurrentLocale()"
       [ariaLabel]="languageSwitcherAriaLabel"
       (localeChange)="onLocaleChange($event)"
     />
     <fpc-theme-switcher
+      variant="button"
       [dark]="themeService.isDarkMode()"
       [ariaLabel]="toggleDarkModeTitle"
       (darkChange)="themeService.toggleTheme()"
@@ -55,13 +55,13 @@
       </fpc-badge>
     }
     <fpc-language-switcher
-      data-bs-theme="dark"
       [locales]="localeService.getAvailableLocales()"
       [locale]="localeService.getCurrentLocale()"
       [ariaLabel]="languageSwitcherAriaLabel"
       (localeChange)="onLocaleChange($event)"
     />
     <fpc-theme-switcher
+      variant="button"
       [dark]="themeService.isDarkMode()"
       [ariaLabel]="toggleDarkModeTitle"
       (darkChange)="themeService.toggleTheme()"

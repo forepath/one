@@ -47,7 +47,10 @@ interface CodeLine {
                   [class.sai-code__line--removed]="line.diff === 'removed'"
                 >
                   <span class="sai-code__no">{{ line.no }}</span
-                  ><span [innerHTML]="line.html"></span>
+                  ><span
+                    [class.sai-motion-caret]="line.no === 15 && line.diff === 'added'"
+                    [innerHTML]="line.html"
+                  ></span>
                 </div>
               }
             </div>
@@ -56,13 +59,21 @@ interface CodeLine {
           <section class="sai-col ide-illustration__chat">
             <fpc-lane-header flush>
               <span fpcLaneHeaderTitle>builder</span>
-              <fpc-badge fpcLaneHeaderActions color="success" variant="info" size="sm">Running</fpc-badge>
+              <fpc-badge fpcLaneHeaderActions class="sai-motion-pulse" color="success" variant="info" size="sm"
+                >Running</fpc-badge
+              >
             </fpc-lane-header>
             <div class="sai-body d-flex flex-column gap-2 p-3">
               <div class="sai-bubble sai-bubble--user">Apply the discount before rounding.</div>
-              <div class="sai-tool"><i class="bi bi-pencil-square"></i>Edited <code>cart.ts</code></div>
-              <div class="sai-tool"><i class="bi bi-terminal"></i><code>npm test</code>: 42 passed</div>
-              <div class="sai-bubble sai-bubble--agent">Done. Ready to commit on <code>fix/discount</code>.</div>
+              <div class="sai-tool sai-motion-enter" style="--sai-delay: 1.5s">
+                <i class="bi bi-pencil-square"></i>Edited <code>cart.ts</code>
+              </div>
+              <div class="sai-tool sai-motion-enter" style="--sai-delay: 3s">
+                <i class="bi bi-terminal"></i><code>npm test</code>: 42 passed
+              </div>
+              <div class="sai-bubble sai-bubble--agent sai-motion-enter" style="--sai-delay: 4.5s">
+                Done. Ready to commit on <code>fix/discount</code>.
+              </div>
             </div>
           </section>
         </div>

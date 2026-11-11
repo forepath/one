@@ -1,0 +1,89 @@
+// The lead figure across, then a row of two, a fixed gap apart. Each card is the regular card
+// language (body surface, hairline border, soft shadow); the lead figure sits on the brand colour.
+:host {
+  display: block;
+}
+
+.forepath-hero-collage__facts {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
+  width: 26rem;
+}
+
+.forepath-hero-collage__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.25rem;
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: 1rem;
+  box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.1);
+
+  :host-context([data-bs-theme='dark']) & {
+    background-color: var(--bs-tertiary-bg);
+    box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.4);
+  }
+}
+
+.forepath-hero-collage__value {
+  font-size: 2.5rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--bs-emphasis-color);
+}
+
+.forepath-hero-collage__label {
+  font-size: 0.9375rem;
+  line-height: 1.3;
+}
+
+// Lead figure: the largest card, on the brand colour.
+.forepath-hero-collage__card--years {
+  padding: 1.5rem 1.75rem;
+  color: var(--fpc-primary-contrast, #fff);
+  background-color: var(--bs-primary);
+  border-color: transparent;
+
+  :host-context([data-bs-theme='dark']) & {
+    background-color: var(--bs-primary);
+  }
+
+  .forepath-hero-collage__value {
+    font-size: 3.25rem;
+    color: inherit;
+  }
+}
+
+.forepath-hero-collage__row {
+  display: block;
+}
+
+.forepath-hero-collage__pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+
+  > .forepath-hero-collage__card {
+    height: 100%;
+  }
+
+  // Each label on one line.
+  .forepath-hero-collage__label {
+    white-space: nowrap;
+  }
+}
+
+// Open source: icon in place of a figure, like the industries card beside it.
+.forepath-hero-collage__card--oss {
+  // The icon takes the figure's line, so both cards in the row line up.
+  .bi {
+    font-size: 2rem;
+    line-height: 2.5rem;
+    color: var(--bs-emphasis-color);
+  }
+}

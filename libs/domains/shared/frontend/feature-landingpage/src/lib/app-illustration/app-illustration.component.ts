@@ -1,4 +1,15 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  PLATFORM_ID,
+  afterNextRender,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 
 /**
  * Window frame for product illustrations on the landing pages: a drawn version of the console,
@@ -20,6 +31,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     '[style.--shared-app-illustration-width]': 'width() + "px"',
     '[style.--shared-app-illustration-height]': 'height() + "px"',
     '[class.shared-app-illustration--bare]': '!chrome()',
+    '[class.shared-app-illustration--offscreen]': 'offscreen()',
   },
   template: `
     <div class="shared-app-illustration__window" [attr.data-bs-theme]="theme() === 'dark' ? 'dark' : null">
@@ -51,8 +63,8 @@ export class SharedAppIllustrationComponent {
   readonly address = input<string | null>(null);
   /** Window title for desktop-app frames (used when there is no `address`). */
   readonly windowTitle = input<string | null>(null);
-  /** `dark` pins the scene to dark mode (on dark heroes); `auto` follows the page theme. */
-  readonly theme = input<'dark' | 'auto'>('dark');
+  /** `auto` follows the page theme (light / dark switch); `dark` pins the scene to dark mode. */
+  readonly theme = input<'dark' | 'auto'>('auto');
   /**
    * `false` drops the window frame: the scene draws its own windows on a transparent canvas (e.g. a
    * desktop with several apps side by side).
@@ -60,4 +72,24 @@ export class SharedAppIllustrationComponent {
   readonly chrome = input(true);
   readonly width = input(1200);
   readonly height = input(720);
+
+  /** The scene's light motion (`sai-motion-*`, see the stylesheet) pauses while it is off screen. */
+  protected readonly offscreen = signal(false);
+
+  constructor() {
+    const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    const destroyRef = inject(DestroyRef);
+    const isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
+    afterNextRender(() => {
+      if (!isBrowser || typeof IntersectionObserver === 'undefined') {
+        return;
+      }
+
+      const observer = new IntersectionObserver(([entry]) => this.offscreen.set(!entry.isIntersecting));
+
+      observer.observe(host);
+      destroyRef.onDestroy(() => observer.disconnect());
+    });
+  }
 }

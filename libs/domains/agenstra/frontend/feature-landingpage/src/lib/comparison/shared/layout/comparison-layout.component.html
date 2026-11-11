@@ -1,12 +1,12 @@
 <!-- Hero -->
-<section class="py-10 py-lg-6 bg-dark text-white comparison-hero grid-section" id="hero">
+<section class="py-10 py-lg-6 bg-body text-body-emphasis comparison-hero grid-section grid-section--deep" id="hero">
   <div class="container grid-section__container">
     <div class="row justify-content-center">
       <div class="col-lg-10 text-center">
         <h1 class="display-4 fw-semibold mb-4 hero-title">
           <span class="text-primary">{{ page.competitorDisplayName }}</span>
-          <span class="text-white" i18n="@@featurePortalComparison-heroVs"> vs. </span>
-          <span class="text-white">Agenstra</span>
+          <span class="text-body-emphasis" i18n="@@featurePortalComparison-heroVs"> vs. </span>
+          <span class="text-body-emphasis">Agenstra</span>
         </h1>
         <p class="lead hero-lead mx-auto section-lead mb-0">{{ page.heroSubtitle }}</p>
       </div>
@@ -77,11 +77,11 @@
 </section>
 
 <!-- Fit + more comparisons -->
-<section class="py-10 bg-dark text-white comparison-fit grid-section" id="fit">
+<section class="py-10 bg-body text-body-emphasis comparison-fit grid-section grid-section--deep" id="fit">
   <div class="container grid-section__container">
     <div class="row g-4 g-lg-5 align-items-stretch">
       <div class="col-lg-7">
-        <article class="bg-primary border-0 rounded-4 h-100 p-4 p-lg-5 comparison-fit-main">
+        <article class="bg-primary text-white border-0 rounded-4 h-100 p-4 p-lg-5 comparison-fit-main">
           <h2 class="h2 fw-semibold mb-4" i18n="@@featurePortalComparison-technologyFitHeading">
             Build with technology that fits your needs
           </h2>
@@ -110,7 +110,9 @@
       </div>
       <div class="col-lg-5">
         <aside class="border-0 rounded-4 h-100 p-4 p-lg-5 comparison-more-panel">
-          <h2 class="h5 fw-semibold mb-3 text-white" i18n="@@featurePortalComparison-moreHeading">More comparisons</h2>
+          <h2 class="h5 fw-semibold mb-3 text-body-emphasis" i18n="@@featurePortalComparison-moreHeading">
+            More comparisons
+          </h2>
           <ul class="list-unstyled mb-0 comparison-more-list">
             @for (item of otherComparisons; track item.slug) {
               <li class="mb-2">

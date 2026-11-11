@@ -573,7 +573,7 @@ code.hiw-meta {
   }
 }
 
-// White marks, like the logo strips on the dark landing pages.
+// Monochrome marks, like the partner logo strips: white in dark mode, black in light mode.
 .hiw-topology__logo {
   height: 1.5rem;
   max-width: 7rem;
@@ -582,10 +582,14 @@ code.hiw-meta {
   opacity: 0.85;
 }
 
+:host-context([data-bs-theme='light']) .hiw-topology__logo {
+  filter: brightness(0);
+}
+
 .hiw-topology__logo-icon {
   font-size: 1.5rem;
   line-height: 1;
-  color: #fff;
+  color: var(--bs-emphasis-color);
   opacity: 0.85;
 }
 

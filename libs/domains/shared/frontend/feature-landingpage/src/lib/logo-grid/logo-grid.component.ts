@@ -39,7 +39,7 @@ export interface SharedLogoGridLogo {
   },
   template: `
     <!--
-      Monochrome mark for the dark page: every coloured or dark part turns white, white and near-white
+      Monochrome mark (white on the dark page, ink on the light page): every coloured or dark part turns white, white and near-white
       parts (Fedora's "f", Cloudflare's flash, a white image background) turn transparent. Alpha
       becomes alpha x 3 x (1 - luminance), so logos keep their inner structure instead of a solid shape.
       The mask is computed from colour alone and then multiplied by the source alpha (rather than
@@ -51,6 +51,16 @@ export interface SharedLogoGridLogo {
           in="SourceGraphic"
           type="matrix"
           values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -0.6378 -2.1456 -0.2166 0 3"
+          result="mono"
+        />
+        <feComposite in="mono" in2="SourceAlpha" operator="in" />
+      </filter>
+      <!-- Same mask in ink (#24262c, the light-mode emphasis colour) for the light page. -->
+      <filter id="shared-logo-grid-mono-ink" color-interpolation-filters="sRGB">
+        <feColorMatrix
+          in="SourceGraphic"
+          type="matrix"
+          values="0 0 0 0 0.1412  0 0 0 0 0.149  0 0 0 0 0.1725  -0.6378 -2.1456 -0.2166 0 3"
           result="mono"
         />
         <feComposite in="mono" in2="SourceAlpha" operator="in" />

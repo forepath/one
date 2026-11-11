@@ -3322,6 +3322,10 @@
         <source>Blog</source>
         <target>Blog</target>
       </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageTheme-toggleAriaLabel" datatype="html">
+        <source>Toggle dark mode</source>
+        <target>Dunkelmodus ein-/ausschalten</target>
+      </trans-unit>
       <trans-unit id="sharedFeatureLandingpagePortal-footerLink" datatype="html">
         <source>Portal</source>
         <target>Portal</target>

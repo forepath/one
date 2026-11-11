@@ -80,7 +80,7 @@
   opacity: 0.2;
 }
 
-// Drawn product scene below the hero copy.
+// Drawn product scene: below the hero copy on tablets, in the right column from lg up (see below).
 .hero-illustration {
   position: relative;
   z-index: 3;
@@ -131,5 +131,47 @@
   .home-solution-studio .border-end {
     border-right: 0 !important;
     border-top: 1px solid var(--bs-border-color);
+  }
+}
+
+// Wide screens: the hero copy sits in the left columns (like the other brands' home heroes); the
+// right column holds the product window over the brand mark stack (`shared-mark-stack`).
+// The window is taken out of the flow (the copy sets the height) and sized from the column's height:
+// it starts `--hero-scene-top` below the hero's top edge and runs `--hero-scene-overhang` past its
+// bottom edge, its width follows the scene's aspect ratio (1200 x 680 plus the 2.25rem address bar),
+// and whatever does not fit runs off the right edge; the hero's `overflow: hidden` crops both.
+@media (min-width: 992px) {
+  #hero {
+    // The hero's vertical padding (`pt-10`, and `pb-10` again now that the window no longer sits on
+    // the bottom edge): 6rem from md up. The window is positioned from it.
+    --hero-padding: 6rem;
+    padding-bottom: var(--hero-padding) !important;
+  }
+
+  .hero-container,
+  .hero-container .hero-feature-badges {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  // A size container, so the window can be sized from the column's (the copy's) height.
+  .hero-visual {
+    position: relative;
+    align-self: stretch;
+    container-type: size;
+  }
+
+  .hero-illustration {
+    --hero-scene-top: 3rem;
+    --hero-scene-overhang: 4rem;
+    --hero-scene-height: calc(100cqh + 2 * var(--hero-padding) - var(--hero-scene-top) + var(--hero-scene-overhang));
+
+    position: absolute;
+    top: calc(var(--hero-scene-top) - var(--hero-padding));
+    // 6rem (the `*-10` spacing) from the copy: the column's left edge plus half the gutter is the copy edge.
+    left: calc(6rem - var(--bs-gutter-x, 1.5rem) / 2);
+    width: calc((var(--hero-scene-height) - 2.25rem - 2px) * 1200 / 680);
+    max-width: none;
+    margin: 0;
   }
 }

@@ -13,17 +13,17 @@ section {
 }
 
 .hero-title {
-  color: rgb(245 245 245 / 0.85);
+  color: rgba(var(--landing-ink-rgb), 0.85);
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
 .hero-lead,
 .hero-cta-line {
-  color: rgb(245 245 245 / 0.85);
+  color: rgba(var(--landing-ink-rgb), 0.85);
 }
 
-// Shared CTA section styles
+// Shared CTA section styles (text on the `bg-primary` CTA box: white in both modes)
 .cta-lead-light {
   max-width: 700px;
   color: rgba(255, 255, 255, 0.95);
@@ -79,7 +79,7 @@ section {
   font-size: 0.875rem;
 }
 
-// White marks on the dark landing pages, so dark logos stay visible.
+// Monochrome partner marks: white in dark mode, ink in light mode, so dark logos stay visible.
 .logo-partner {
   filter: brightness(0) invert(1);
   opacity: 0.5;
@@ -89,6 +89,10 @@ section {
   &:hover {
     opacity: 0.9;
   }
+}
+
+:host-context([data-bs-theme='light']) .logo-partner {
+  filter: brightness(0);
 }
 
 // Marketing CTA sizing + #cta/#fit/#hero tones live on `fpc-button` (`size="xl"`).
@@ -101,13 +105,19 @@ section {
 }
 
 // Photo panels (home "human meets machine", industry pages). The photos are bright daylight shots, so
-// they are graded towards the dark landing surfaces: dimmed and slightly desaturated, with a faint
+// they are graded down: dimmed and slightly desaturated (in both colour modes), with a faint
 // brand-orange wash and a darker bottom edge. From lg up, where the photo sits flush against the copy
 // column, its copy side also fades into the section colour. The photo is drawn on `::before` (set
 // `--landing-photo` to its `url()`), so the filter never touches the panel's children, like the AI label.
 @mixin landing-photo-grade($fade-into: var(--bs-tertiary-bg)) {
   isolation: isolate;
   background-color: var(--bs-dark);
+
+  // The panel's own borders are the translucent theme border colour. Keep the dark backdrop inside
+  // them in light mode, so the hairline reads against the page like every other divider.
+  :host-context([data-bs-theme='light']) & {
+    background-clip: padding-box;
+  }
 
   &::before,
   &::after {

@@ -9,10 +9,13 @@
         <source> ForePath is the brand of IPvX UG (haftungsbeschränkt) in Herford. Since 2016 we have planned, built, and operated technology for businesses that need it to work every day. </source>
         </trans-unit>
       <trans-unit id="featureForepathAbout-storyStatLabel" datatype="html">
-        <source> the year it all started </source>
+        <source>the year it all started</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-storyPhotoAlt" datatype="html">
+        <source>The Münster church in Herford, where ForePath is based</source>
         </trans-unit>
       <trans-unit id="featureForepathAbout-storyTitle" datatype="html">
-        <source> From a one-person business to ForePath </source>
+        <source> From a one-person business to a team that runs what it builds </source>
         </trans-unit>
       <trans-unit id="featureForepathAbout-storyParagraph1" datatype="html">
         <source> ForePath started in June 2016 with a simple idea. IT systems and software development from one hand, delivered by people who also run what they build. That combination has not changed since. </source>
@@ -646,6 +649,9 @@
       <trans-unit id="featureForepath-navBlog" datatype="html">
         <source>Blog</source>
         </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageTheme-toggleAriaLabel" datatype="html">
+        <source>Toggle dark mode</source>
+        </trans-unit>
       <trans-unit id="sharedFeatureLandingpagePortal-footerLink" datatype="html">
         <source>Portal</source>
         </trans-unit>
@@ -861,6 +867,18 @@
         </trans-unit>
       <trans-unit id="featureForepathHome-humanMeetsPhotoAlt" datatype="html">
         <source>Engineer at work with subtle AI interface elements, representing human judgment guiding technology</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactsLabel" datatype="html">
+        <source>ForePath in numbers</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactYears" datatype="html">
+        <source>years with IT systems</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactIndustries" datatype="html">
+        <source>industries we serve</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactOss" datatype="html">
+        <source>Active in open source</source>
         </trans-unit>
       <trans-unit id="featureForepathHome-rootsSymbolAlt" datatype="html">
         <source>Nordrhein-Westfalen-Zeichen, the citizen emblem of North Rhine-Westphalia</source>

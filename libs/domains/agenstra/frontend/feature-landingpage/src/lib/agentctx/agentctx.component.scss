@@ -53,7 +53,7 @@
 }
 
 .agentctx-audience-lead {
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(var(--bs-emphasis-color-rgb), 0.82);
 }
 
 pre code {

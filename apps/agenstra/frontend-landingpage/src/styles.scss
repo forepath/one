@@ -131,10 +131,14 @@ body {
   overflow: hidden;
 
   &.grid-section--navigation {
-    --bs-border-color: rgb(28, 28, 31);
     border-bottom: 1px solid var(--bs-border-color);
     border-top: none;
     overflow: visible;
+
+    // Header hairline: an opaque tone in dark mode; light mode uses the default border colour.
+    [data-bs-theme='dark'] & {
+      --bs-border-color: rgb(28, 28, 31);
+    }
 
     .grid-section__container {
       &::before,
@@ -150,24 +154,12 @@ body {
     overflow: visible;
   }
 
-  &.bg-dark {
-    --bs-border-color: rgba(255, 255, 255, 0.08);
-
-    > .grid-section__container {
-      --bs-border-color: rgba(255, 255, 255, 0.08);
-    }
-  }
-
   &#hero {
     border-top: 0;
   }
 
   .grid-section__container {
     position: relative;
-
-    &.grid-section__container--dark {
-      --bs-border-color: rgba(255, 255, 255, 0.08);
-    }
 
     &.grid-section__container--hero-top,
     &.grid-section__container--footer-top {

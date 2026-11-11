@@ -8,14 +8,15 @@ import {
   SharedContactPersonComponent,
   SharedLogoGridComponent,
   type SharedLogoGridLogo,
+  SharedMarkStackComponent,
 } from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { catchError, of } from 'rxjs';
 
 import { GhostContentApiService } from '../blog/ghost-content-api.service';
+import { HeroCollageComponent } from './hero-collage.component';
 import type { GhostPost } from '../blog/ghost.types';
-import { PlatformBoardIllustrationComponent } from '../illustrations/platform-board-illustration.component';
 
 const PLATFORM_LOGO_SLOTS: readonly (readonly SharedLogoGridLogo[])[] = [
   [
@@ -48,7 +49,8 @@ const PLATFORM_LOGO_SLOTS: readonly (readonly SharedLogoGridLogo[])[] = [
     RouterModule,
     DatePipe,
     SharedLogoGridComponent,
-    PlatformBoardIllustrationComponent,
+    SharedMarkStackComponent,
+    HeroCollageComponent,
   ],
   styleUrls: ['./home.component.scss'],
   templateUrl: './home.component.html',
