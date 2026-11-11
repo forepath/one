@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.0.0](https://github.com/forepath/one/compare/v4.3.0...v5.0.0) (2026-11-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* **shared:** keycloak authentication is no longer available and needs to be migrated
+
+### Features
+
+* **agenstra:** deployment manager rework ([#734](https://github.com/forepath/one/issues/734)) ([0943f50](https://github.com/forepath/one/commit/0943f50f12e2de59854afcfeb02f4e2a6c2e0bf0))
+* **agenstra:** editable plans with history ([#715](https://github.com/forepath/one/issues/715)) ([4df0bbf](https://github.com/forepath/one/commit/4df0bbf66ab51437fe699b38a910bc55feb1aa5d))
+* **agenstra:** graph tool ([#732](https://github.com/forepath/one/issues/732)) ([80c5d7f](https://github.com/forepath/one/commit/80c5d7f6a2bf431e900de8b3b058450226577550))
+* **shared:** application-based endpoint authentication ([#720](https://github.com/forepath/one/issues/720)) ([2e50fff](https://github.com/forepath/one/commit/2e50ffff17df871bfeb9544d5c5bd55fa9fb235a))
+* **shared:** mtls api authentication ([#725](https://github.com/forepath/one/issues/725)) ([e138592](https://github.com/forepath/one/commit/e1385925bd3030b5067c237ea4d6797db3e27fe9))
+* **shared:** native app signing ([#707](https://github.com/forepath/one/issues/707)) ([37f3c24](https://github.com/forepath/one/commit/37f3c24aa66870c8c98c8ff4e4bc5f1ef077cd6f))
+* **shared:** native oidc and saml support ([#724](https://github.com/forepath/one/issues/724)) ([a393194](https://github.com/forepath/one/commit/a3931947c4b701241e721112afaeebbe56de93ab))
+* **shared:** websocket pat and app token support ([#723](https://github.com/forepath/one/issues/723)) ([85bd474](https://github.com/forepath/one/commit/85bd47403fa071e6e1bb3dcbdf75f573ff8fb9bf))
+
+
+### Bug Fixes
+
+* **agenstra:** graph canvas content rendering ([#736](https://github.com/forepath/one/issues/736)) ([cc79f42](https://github.com/forepath/one/commit/cc79f426ee7eb177cbfceabe7f9b29630185929a))
+* **agenstra:** map environment references to metadata ([#729](https://github.com/forepath/one/issues/729)) ([ebe4841](https://github.com/forepath/one/commit/ebe48413fc2ba0f367d7609f6d518931e54ef410))
+* **agenstra:** opencode bootstrap race condition ([#730](https://github.com/forepath/one/issues/730)) ([040f765](https://github.com/forepath/one/commit/040f765b00efe7a316b89afa244ef5e12d53b509))
+* **agenstra:** workspace switch table items loading ([#728](https://github.com/forepath/one/issues/728)) ([db34459](https://github.com/forepath/one/commit/db34459f78b7dd3d2691eaa009d701beec8e2177))
+* **decabill:** line items card ([#717](https://github.com/forepath/one/issues/717)) ([babe577](https://github.com/forepath/one/commit/babe57725aecc91361ae97ae1ebfdc1f81351611))
+* **shared:** action-less table content placeholders ([#727](https://github.com/forepath/one/issues/727)) ([4a131a1](https://github.com/forepath/one/commit/4a131a169f8607ced45c5b86a91d416fc323aa8a))
+* **shared:** line graphs styling ([#718](https://github.com/forepath/one/issues/718)) ([8c7376d](https://github.com/forepath/one/commit/8c7376d5e01449187b2adc3ef99af7f5226fcdcd))
+
+
+### Chores
+
+* **agenstra:** deployment ui finalization ([#735](https://github.com/forepath/one/issues/735)) ([1495ab5](https://github.com/forepath/one/commit/1495ab5a74838b205e6b25134585fa22459e4ae8))
+* **agenstra:** move graph tool ([#733](https://github.com/forepath/one/issues/733)) ([5b3e27a](https://github.com/forepath/one/commit/5b3e27ad28ce2fe61abc736de0c4d876a7f262ab))
+* **shared:** calmer brand colors ([#739](https://github.com/forepath/one/issues/739)) ([8d88923](https://github.com/forepath/one/commit/8d889239071add0937e8d1db3af1ccc8cff7c7e8))
+* **shared:** map code signing prerequisites ([#740](https://github.com/forepath/one/issues/740)) ([f307a45](https://github.com/forepath/one/commit/f307a45495c3a787a16b09251814b6f9cb0c7262))
+* **shared:** migrate presentations ([#737](https://github.com/forepath/one/issues/737)) ([5f334ff](https://github.com/forepath/one/commit/5f334ff12ae6494af4bc25ac0f623a8741554352))
+* **shared:** uniform form control sizes ([#714](https://github.com/forepath/one/issues/714)) ([d93b552](https://github.com/forepath/one/commit/d93b552914a3dcca8d379d0c695aea5691750684))
+
+
+### Code Refactoring
+
+* **shared:** personal access token scopes ([#719](https://github.com/forepath/one/issues/719)) ([04b3806](https://github.com/forepath/one/commit/04b3806d47cfc93fcef27857407b2c74f7a6c6cd))
+* **shared:** webhook events ([#721](https://github.com/forepath/one/issues/721)) ([08ebd4e](https://github.com/forepath/one/commit/08ebd4e1345564fd506d3792a379922a153397d5))
+
 ## [4.3.0](https://github.com/forepath/one/compare/v4.2.1...v4.3.0) (2026-11-03)
 
 
