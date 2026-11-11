@@ -143,8 +143,13 @@ describe('buildLinuxRepos', () => {
         join(dir, 'make', 'rpm', 'x64', 'agenstra-1.2.3-1.x86_64.rpm'),
       ]),
     );
-    expect(calls.find((c) => c.command === 'rpmsign')?.args.find((a) => a.startsWith('__gpg_sign_cmd '))).toMatch(
-      /^__gpg_sign_cmd %\{__gpg\} gpg --homedir /,
+    const rpmsignArgs = calls.find((c) => c.command === 'rpmsign')?.args ?? [];
+
+    // rpm's default sign command is kept (its argv layout differs between rpm 4.x and 6); only options are injected.
+    expect(rpmsignArgs.some((a) => a.startsWith('__gpg_sign_cmd'))).toBe(false);
+    expect(rpmsignArgs).toEqual(expect.arrayContaining(['_openpgp_sign gpg', '_gpg_digest_algo sha256']));
+    expect(rpmsignArgs.find((a) => a.startsWith('_gpg_sign_cmd_extra_args '))).toMatch(
+      /^_gpg_sign_cmd_extra_args --batch --pinentry-mode loopback --passphrase-file \S+passphrase$/,
     );
     // No secret value ever appears in an argument list.
     expect(calls.flatMap((c) => c.args).some((a) => a.includes('KEY') || a === 'pw')).toBe(false);

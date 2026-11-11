@@ -329,8 +329,13 @@ export function buildLinuxRepos(app: DesktopAppConfig, opts: LinuxRepoOptions, r
         '--define',
         `_gpg_path ${home}`,
         '--define',
-        // rpm execs the first word with the rest as argv: the second word is argv[0] (`gpg`), as in rpm's own macro.
-        `__gpg_sign_cmd %{__gpg} gpg --homedir ${home} --batch --no-verbose --no-armor --pinentry-mode loopback --passphrase-file ${passFile} -u ${fpr} --digest-algo sha256 -sbo %{__signature_filename} %{__plaintext_filename}`,
+        '_openpgp_sign gpg',
+        '--define',
+        '_gpg_digest_algo sha256',
+        // Keep rpm's own `__gpg_sign_cmd` and only add options: its argv layout differs between rpm 4.x (argv[0] as
+        // second word) and rpm 6 (plain argv), so a hand-written command only works on one of them.
+        '--define',
+        `_gpg_sign_cmd_extra_args --batch --pinentry-mode loopback --passphrase-file ${assertSafePath(passFile)}`,
         rpm,
       ]);
     }
