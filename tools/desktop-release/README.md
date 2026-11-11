@@ -94,6 +94,7 @@ All secrets go into the GitHub Actions environment **`production`**. Keep offlin
 2. Export certificate + private key as `.pfx` with a password.
    - `DESKTOP_WINDOWS_CERTIFICATE_PFX` = `base64 -w0 codesign.pfx`
    - `DESKTOP_WINDOWS_CERTIFICATE_PASSWORD` = the PFX password
+3. Only for a **self-signed** certificate: set the environment _variable_ (not a secret) `DESKTOP_WINDOWS_TRUSTED_ROOT_CERT` to the public certificate PEM (`gh variable set DESKTOP_WINDOWS_TRUSTED_ROOT_CERT --env production < codesign.cert.pem`). The installer job adds it to the runner's trusted roots so that `signtool verify /pa` passes. Users' machines don't trust it: `Get-AuthenticodeSignature` reports `UnknownError`, SmartScreen still warns, and the in-app updater of such an install refuses installers (it accepts only `Valid` or `NotSigned` installs). Remove the variable when switching to a CA-issued certificate.
 
 Certificates issued since June 2023 keep their private key in an HSM / cloud signing service and can't be exported as a PFX. For those, replace the body of the two _Sign … (Authenticode)_ steps with the provider's `signtool` integration (e.g. Azure Artifact Signing's `/dlib`, DigiCert KeyLocker, SSL.com eSigner); the rest of the pipeline is unchanged.
 

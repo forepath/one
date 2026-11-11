@@ -479,6 +479,21 @@ jobs:
             echo "::warning title=Windows app not signed (${{ matrix.app }})::DESKTOP_WINDOWS_CERTIFICATE_PFX / DESKTOP_WINDOWS_CERTIFICATE_PASSWORD are not set; the Windows app and installer are published without Authenticode signature."
           fi
 
+      # Only for a self-signed certificate (no CA Windows trusts): trusted as a root on this throw-away runner so that
+      # `signtool verify /pa` after signing accepts it. Public certificate (PEM), hence a variable, not a secret.
+      # Unset for a CA-issued certificate.
+      - name: Trust the self-signed Authenticode certificate
+        if: steps.authenticode.outputs.present == 'true' && vars.DESKTOP_WINDOWS_TRUSTED_ROOT_CERT != ''
+        shell: pwsh
+        env:
+          TRUSTED_ROOT_CERT: ${{ vars.DESKTOP_WINDOWS_TRUSTED_ROOT_CERT }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $file = Join-Path $env:RUNNER_TEMP 'authenticode-trusted-root.cer'
+          Set-Content -LiteralPath $file -Value $env:TRUSTED_ROOT_CERT -NoNewline
+          $cert = Import-Certificate -FilePath $file -CertStoreLocation Cert:\LocalMachine\Root
+          Write-Host "Trusted root: $($cert.Subject) ($($cert.Thumbprint))"
+
       - name: Sign the app binaries (Authenticode)
         if: steps.authenticode.outputs.present == 'true'
         shell: bash
