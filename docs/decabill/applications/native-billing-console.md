@@ -35,7 +35,7 @@ sudo curl -fsSL -o /etc/yum.repos.d/decabill.repo https://downloads.decabill.com
 sudo dnf install decabill
 ```
 
-For the beta channel use `decabill-beta.sources` / `rpm/beta/decabill.repo` instead. Compare the key's fingerprint (`gpg --show-keys forepath-desktop.asc`) with the one published by ForePath before trusting it.
+For the beta channel use `decabill-beta.sources` / `rpm/beta/decabill.repo` instead. Compare the key's fingerprint (`gpg --show-keys forepath-desktop.asc`) with the ForePath desktop key fingerprint `03A2 B840 2D07 34AA 6408  E6D1 286C 65B8 2D78 8747` before trusting it.
 
 ## In-app updates
 
