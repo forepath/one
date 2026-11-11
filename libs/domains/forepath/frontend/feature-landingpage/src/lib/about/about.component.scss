@@ -201,3 +201,79 @@
   border-radius: 50%;
   border: var(--bs-border-width) solid var(--bs-border-color);
 }
+
+// Story: copy on the left, the graded Herford photo on the right, flush to the right grid line from
+// lg up (the same photo panel as the home "human meets machine" section). Below lg the photo sits
+// under the copy as a rounded panel. The founding year sits on the photo as a caption.
+.about-story-copy {
+  padding-left: var(--bs-gutter-x, 0.75rem);
+  padding-right: var(--bs-gutter-x, 0.75rem);
+
+  @media (min-width: 992px) {
+    padding-right: 2.5rem;
+    padding-left: 0;
+  }
+}
+
+.about-story-visual-col {
+  min-height: 18rem;
+
+  @media (min-width: 992px) {
+    min-height: 0;
+  }
+}
+
+.about-story__photo {
+  @include landing-photo-grade(var(--bs-body-bg));
+
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  width: 100%;
+  min-height: 18rem;
+  --landing-photo: url('/assets/images/about-herford-muensterkirche.jpg');
+
+  // Keep the spire in view: anchor the photo to its top and left (the tower stands left).
+  &::before {
+    background-position: 20% top;
+  }
+  border-top: 1px solid var(--bs-border-color);
+  border-bottom: 1px solid var(--bs-border-color);
+  border-left: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin-bottom: 3rem;
+
+  @media (min-width: 768px) {
+    min-height: 24rem;
+    margin-bottom: 6rem;
+  }
+
+  @media (min-width: 992px) {
+    border-top: 0;
+    border-bottom: 0;
+    border-radius: 0;
+    overflow: visible;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    right: var(--grid-section-line-right);
+    width: auto;
+    min-height: 100%;
+    margin-bottom: 0;
+  }
+}
+
+// Founding year on the photo's darker bottom edge: white in both themes (it sits on the photo).
+.about-story__caption {
+  padding: 1.5rem;
+  color: #fff;
+  text-align: end;
+  text-shadow: 0 1px 12px rgb(0 0 0 / 0.35);
+
+  .about-stat {
+    color: #fff;
+  }
+}

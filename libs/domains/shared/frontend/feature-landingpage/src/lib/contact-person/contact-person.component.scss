@@ -19,15 +19,15 @@
   flex-direction: column;
 }
 
-// Mini quote card: a translucent white layer on the brand colour or the dark hero, quote mark in the
-// top left.
+// Mini quote card: a translucent layer in the text colour (white on the brand colour and the dark
+// hero, ink on the light hero), quote mark in the top left.
 .shared-contact-person__card {
   position: relative;
   flex: 1 1 auto;
   margin: 0;
   padding: 1.25rem 1.5rem 1.25rem 3.5rem;
-  background-color: rgb(255 255 255 / 0.1);
-  border: var(--bs-border-width) solid rgb(255 255 255 / 0.22);
+  background-color: color-mix(in srgb, currentColor 10%, transparent);
+  border: var(--bs-border-width) solid color-mix(in srgb, currentColor 22%, transparent);
   border-radius: 0.75rem;
 }
 

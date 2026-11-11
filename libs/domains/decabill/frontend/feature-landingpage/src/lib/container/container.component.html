@@ -1,8 +1,8 @@
 <header
-  class="header sticky-top bg-dark text-white grid-section grid-section--navigation"
+  class="header sticky-top bg-body grid-section--deep landing-ink grid-section grid-section--navigation"
   [class.shadow]="isScrolled()"
 >
-  <nav class="navbar navbar-expand-md navbar-dark p-0">
+  <nav class="navbar navbar-expand-md p-0">
     <div
       class="container grid-section__container grid-section__container--shadow d-flex align-items-center justify-content-between gap-2 navbar-content"
     >
@@ -15,13 +15,13 @@
             class="brand-icon"
           />
         </a>
-        <div class="d-flex align-items-center gap-2 bg-body-tertiary p-3 overflow-hidden border-end made-in-container">
+        <div class="d-flex align-items-center gap-2 p-3 overflow-hidden made-in-container">
           <div class="flag d-flex flex-column overflow-hidden">
             <span class="flag-color"></span>
             <span class="flag-color"></span>
             <span class="flag-color"></span>
           </div>
-          <div class="text-white text-uppercase lh-1 small made-in">
+          <div class="text-body-emphasis text-uppercase lh-1 small made-in">
             <span class="d-block text-body-emphasis" i18n="@@featureDecabillPortal-madeIn">Made in</span>
             <span class="d-block fw-bold text-body-emphasis" i18n="@@featureDecabillPortal-madeInCountry">Germany</span>
           </div>
@@ -44,7 +44,7 @@
             <li class="nav-item">
               <a
                 routerLink="/"
-                class="nav-link text-white"
+                class="nav-link landing-ink"
                 routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }"
                 (click)="closeMobileMenu()"
@@ -55,7 +55,7 @@
             <li class="nav-item">
               <a
                 routerLink="/pricing"
-                class="nav-link text-white"
+                class="nav-link landing-ink"
                 routerLinkActive="active"
                 (click)="closeMobileMenu()"
                 i18n="@@featureDecabillPortal-navPricing"
@@ -66,7 +66,7 @@
               <fpc-dropdown class="w-100" alignment="end" [(open)]="comparisonNavOpen">
                 <a
                   fpcDropdownTrigger
-                  class="nav-link dropdown-toggle text-white portal-nav-dropdown-toggle"
+                  class="nav-link dropdown-toggle landing-ink portal-nav-dropdown-toggle"
                   [class.active]="comparisonDropdownActive()"
                   href="#"
                   id="comparisonNavDropdown"
@@ -89,7 +89,7 @@
             </li>
             <li class="nav-item">
               <a
-                class="nav-link text-white ms-3 d-none d-md-block"
+                class="nav-link landing-ink ms-3 d-none d-md-block"
                 href="https://github.com/forepath/one"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -100,6 +100,9 @@
               >
                 <i class="bi bi-github fs-5"></i>
               </a>
+            </li>
+            <li class="nav-item ms-md-2">
+              <shared-landing-theme-toggle />
             </li>
             <li class="nav-item ms-md-3">
               <fpc-button
@@ -120,7 +123,7 @@
   </nav>
 </header>
 <router-outlet></router-outlet>
-<footer class="footer bg-dark text-white position-relative grid-section grid-section--footer pt-10">
+<footer class="footer bg-body grid-section--deep landing-ink position-relative grid-section grid-section--footer pt-10">
   <div class="container grid-section__container grid-section__container--footer-top">
     <div class="row">
       <div class="col-md-4 mb-3 mb-md-0">
@@ -280,8 +283,8 @@
       </div>
     </div>
   </div>
-  <div class="text-white py-5">
-    <div class="container grid-section__container grid-section__container--dark grid-section__container--footer-bottom">
+  <div class="landing-ink py-5">
+    <div class="container grid-section__container grid-section__container--footer-bottom">
       <div class="row">
         <div class="col-md-12 text-center">
           <p class="mb-0 small" i18n="@@featureDecabillPortal-footerCopyright">

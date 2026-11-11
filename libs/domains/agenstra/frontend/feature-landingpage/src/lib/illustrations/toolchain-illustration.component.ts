@@ -25,8 +25,10 @@ import { FpcBadgeComponent } from '@forepath/shared/frontend/ui-components';
           <div class="sai-code px-3 pb-3">
             <div><span class="sai-tok-str">~/platform-api</span> git pull</div>
             <div class="sai-tok-com">Fast-forward: 2 files changed (fix/discount)</div>
-            <div><span class="sai-tok-str">~/platform-api</span> npm test</div>
-            <div class="sai-tok-com">Tests: 42 passed, 42 total</div>
+            <div class="sai-motion-enter" style="--sai-delay: 1.5s">
+              <span class="sai-tok-str">~/platform-api</span> npm test
+            </div>
+            <div class="sai-tok-com sai-motion-enter" style="--sai-delay: 3s">Tests: 42 passed, 42 total</div>
           </div>
         </div>
       </div>
@@ -36,13 +38,15 @@ import { FpcBadgeComponent } from '@forepath/shared/frontend/ui-components';
         <div class="d-flex flex-column gap-2 p-3 sai-body">
           <div class="d-flex align-items-center justify-content-between">
             <span class="fw-semibold">builder on platform-api</span>
-            <fpc-badge color="success" variant="info" size="sm">Running</fpc-badge>
+            <fpc-badge class="sai-motion-pulse" color="success" variant="info" size="sm">Running</fpc-badge>
           </div>
           <div class="sai-tool"><i class="bi bi-pencil-square"></i>Edited <code>cart.ts</code></div>
           <div class="sai-tool"><i class="bi bi-terminal"></i><code>npm test</code>: 42 passed</div>
           <div class="sai-tool"><i class="bi bi-git"></i>Pushed <code>fix/discount</code></div>
           <div class="sai-bubble sai-bubble--agent">Branch is ready. Pull it locally to try the fix.</div>
-          <div class="sai-bubble sai-bubble--user">Looks good, open the pull request.</div>
+          <div class="sai-bubble sai-bubble--user sai-motion-enter" style="--sai-delay: 4.5s">
+            Looks good, open the pull request.
+          </div>
         </div>
       </div>
     </shared-app-illustration>

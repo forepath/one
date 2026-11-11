@@ -1046,6 +1046,9 @@
       <trans-unit id="sharedFeatureLandingpageBlog-footerLink" datatype="html">
         <source>Blog</source>
         </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageTheme-toggleAriaLabel" datatype="html">
+        <source>Toggle dark mode</source>
+        </trans-unit>
       <trans-unit id="sharedFeatureLandingpagePortal-footerLink" datatype="html">
         <source>Portal</source>
         </trans-unit>

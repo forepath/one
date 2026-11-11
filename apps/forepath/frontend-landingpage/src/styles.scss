@@ -170,14 +170,6 @@ body {
     overflow: visible;
   }
 
-  &.bg-dark {
-    --bs-border-color: rgba(255, 255, 255, 0.08);
-
-    > .grid-section__container {
-      --bs-border-color: rgba(255, 255, 255, 0.08);
-    }
-  }
-
   &#hero {
     border-top: 0;
 
@@ -271,10 +263,6 @@ body {
     @media (min-width: 1512px) {
       --grid-section-line-left: -6rem;
       --grid-section-line-right: -6rem;
-    }
-
-    &.grid-section__container--dark {
-      --bs-border-color: rgba(255, 255, 255, 0.08);
     }
 
     &::before,

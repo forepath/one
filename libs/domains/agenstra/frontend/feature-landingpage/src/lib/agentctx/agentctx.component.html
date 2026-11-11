@@ -1,5 +1,5 @@
 <!-- Hero -->
-<section id="hero" class="py-10 py-lg-6 bg-dark text-white grid-section">
+<section id="hero" class="py-10 py-lg-6 bg-body text-body-emphasis grid-section grid-section--deep">
   <div class="container grid-section__container">
     <div class="text-center">
       <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featurePortalAgentctx-heroTitle">
@@ -141,6 +141,7 @@
           </div>
           <pre
             class="bg-dark text-light font-monospace small p-3 rounded-3 mb-0"
+            data-bs-theme="dark"
           ><code>{{ installCommand }}</code></pre>
         </article>
       </div>
@@ -165,7 +166,10 @@
               Run AgentCTX to generate tool specific config files for the AI coding tools you use.
             </p>
           </div>
-          <pre class="bg-dark text-light font-monospace small p-3 rounded-3 mb-0"><code>{{ runCommand }}</code></pre>
+          <pre
+            class="bg-dark text-light font-monospace small p-3 rounded-3 mb-0"
+            data-bs-theme="dark"
+          ><code>{{ runCommand }}</code></pre>
         </article>
       </div>
       <div class="col">
@@ -299,7 +303,10 @@
 </section>
 
 <!-- Audience: personas + fit checklist -->
-<section id="audience" class="py-10 bg-dark text-white agentctx-audience grid-section overflow-hidden">
+<section
+  id="audience"
+  class="py-10 bg-body text-body-emphasis agentctx-audience grid-section grid-section--deep overflow-hidden"
+>
   <div class="container grid-section__container">
     <div class="row align-items-center g-5">
       <div class="col-lg-5">
@@ -339,12 +346,10 @@
       <div class="col-lg-6 offset-lg-1">
         <div class="row row-cols-2 g-3 mb-4">
           <div class="col">
-            <article
-              class="card border-light border-opacity-10 rounded-3 p-4 h-100 home-governance-card d-flex flex-row gap-3 align-items-center"
-            >
+            <article class="card rounded-3 p-4 h-100 home-governance-card d-flex flex-row gap-3 align-items-center">
               <span class="agentctx-persona-dot rounded-circle d-none d-md-inline-block" aria-hidden="true"></span>
               <div>
-                <h3 class="h6 fw-semibold mb-1 text-white" i18n="@@featurePortalAgentctx-persona1">
+                <h3 class="h6 fw-semibold mb-1 text-body-emphasis" i18n="@@featurePortalAgentctx-persona1">
                   Platform engineers
                 </h3>
                 <p class="small mb-0 home-governance-card-text" i18n="@@featurePortalAgentctx-persona1Desc">
@@ -354,12 +359,12 @@
             </article>
           </div>
           <div class="col">
-            <article
-              class="card border-light border-opacity-10 rounded-3 p-4 h-100 home-governance-card d-flex flex-row gap-3 align-items-center"
-            >
+            <article class="card rounded-3 p-4 h-100 home-governance-card d-flex flex-row gap-3 align-items-center">
               <span class="agentctx-persona-dot rounded-circle d-none d-md-inline-block" aria-hidden="true"></span>
               <div>
-                <h3 class="h6 fw-semibold mb-1 text-white" i18n="@@featurePortalAgentctx-persona2">Dev leads</h3>
+                <h3 class="h6 fw-semibold mb-1 text-body-emphasis" i18n="@@featurePortalAgentctx-persona2">
+                  Dev leads
+                </h3>
                 <p class="small mb-0 home-governance-card-text" i18n="@@featurePortalAgentctx-persona2Desc">
                   Keep teams aligned on standards
                 </p>
@@ -367,12 +372,10 @@
             </article>
           </div>
           <div class="col">
-            <article
-              class="card border-light border-opacity-10 rounded-3 p-4 h-100 home-governance-card d-flex flex-row gap-3 align-items-center"
-            >
+            <article class="card rounded-3 p-4 h-100 home-governance-card d-flex flex-row gap-3 align-items-center">
               <span class="agentctx-persona-dot rounded-circle d-none d-md-inline-block" aria-hidden="true"></span>
               <div>
-                <h3 class="h6 fw-semibold mb-1 text-white" i18n="@@featurePortalAgentctx-persona3">
+                <h3 class="h6 fw-semibold mb-1 text-body-emphasis" i18n="@@featurePortalAgentctx-persona3">
                   Security-conscious teams
                 </h3>
                 <p class="small mb-0 home-governance-card-text" i18n="@@featurePortalAgentctx-persona3Desc">
@@ -382,12 +385,10 @@
             </article>
           </div>
           <div class="col">
-            <article
-              class="card border-light border-opacity-10 rounded-3 p-4 h-100 home-governance-card d-flex flex-row gap-3 align-items-center"
-            >
+            <article class="card rounded-3 p-4 h-100 home-governance-card d-flex flex-row gap-3 align-items-center">
               <span class="agentctx-persona-dot rounded-circle d-none d-md-inline-block" aria-hidden="true"></span>
               <div>
-                <h3 class="h6 fw-semibold mb-1 text-white" i18n="@@featurePortalAgentctx-persona4">
+                <h3 class="h6 fw-semibold mb-1 text-body-emphasis" i18n="@@featurePortalAgentctx-persona4">
                   Open source maintainers
                 </h3>
                 <p class="small mb-0 home-governance-card-text" i18n="@@featurePortalAgentctx-persona4Desc">
@@ -403,7 +404,7 @@
 </section>
 
 <!-- CTA -->
-<section id="cta" class="py-10 bg-dark grid-section">
+<section id="cta" class="py-10 bg-body grid-section grid-section--deep">
   <div class="container grid-section__container">
     <div class="row">
       <div class="col-12">

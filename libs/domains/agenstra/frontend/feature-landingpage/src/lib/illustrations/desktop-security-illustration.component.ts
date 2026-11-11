@@ -23,7 +23,7 @@ import {
   template: `
     <shared-app-illustration [label]="label()" windowTitle="Agenstra Desktop" [width]="820" [height]="620">
       <nav class="sai-rail">
-        <span class="sai-rail__brand"><i class="bi bi-robot"></i></span>
+        <span class="sai-rail__brand"><img src="assets/images/icon_light.svg" alt="" /></span>
         <span class="sai-rail__item sai-rail__item--active"><i class="bi bi-hdd-network"></i></span>
         <span class="sai-rail__item"><i class="bi bi-chat-square-text"></i></span>
         <span class="sai-rail__item mt-auto"><i class="bi bi-gear"></i></span>
@@ -32,8 +32,11 @@ import {
       <section class="sai-col sai-col--grow">
         <fpc-lane-header flush>
           <span fpcLaneHeaderTitle
-            ><i class="bi bi-circle-fill text-success me-2 desktop-security-illustration__dot"></i>Production,
-            connected</span
+            ><i
+              class="bi bi-circle-fill text-success me-2 d-inline-block lh-1 rounded-circle sai-motion-pulse
+                desktop-security-illustration__dot"
+            ></i
+            >Production, connected</span
           >
         </fpc-lane-header>
         <fpc-list [flush]="true">
@@ -47,8 +50,8 @@ import {
 
         <fpc-lane-header title="Permissions for your role" flush />
         <fpc-list [flush]="true" class="sai-body">
-          @for (permission of permissions; track permission.title) {
-            <fpc-list-item>
+          @for (permission of permissions; track permission.title; let index = $index) {
+            <fpc-list-item class="sai-motion-select sai-motion-select--4" [style.--sai-step]="index">
               <span fpcListItemTitle>
                 <i
                   class="bi me-2"

@@ -506,6 +506,22 @@
         <source>Engineer at work with subtle AI interface elements, representing human judgment guiding technology</source>
         <target> Ingenieur bei der Arbeit mit dezenten KI-Oberflächenelementen. Steht für menschliches Urteilsvermögen, das Technologie leitet </target>
       </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactsLabel" datatype="html">
+        <source>ForePath in numbers</source>
+        <target>ForePath in Zahlen</target>
+      </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactYears" datatype="html">
+        <source>years with IT systems</source>
+        <target>Jahre mit IT-Systemen</target>
+      </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactIndustries" datatype="html">
+        <source>industries we serve</source>
+        <target>betreute Branchen</target>
+      </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactOss" datatype="html">
+        <source>Active in open source</source>
+        <target>Aktiv in Open Source</target>
+      </trans-unit>
       <trans-unit id="featureForepathHome-humanMeetsTitle" datatype="html">
         <source>Where human meets machine</source>
         <target>Wo Mensch und Maschine zusammenkommen</target>
@@ -2510,6 +2526,10 @@
         <source>Contact</source>
         <target>Kontakt</target>
       </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageTheme-toggleAriaLabel" datatype="html">
+        <source>Toggle dark mode</source>
+        <target>Dunkelmodus ein-/ausschalten</target>
+      </trans-unit>
       <trans-unit id="sharedFeatureLandingpagePortal-footerLink" datatype="html">
         <source>Portal</source>
         <target>Portal</target>
@@ -3371,12 +3391,16 @@
         <target>ForePath ist die Marke der IPvX UG (haftungsbeschränkt) in Herford. Seit 2016 planen, entwickeln und betreiben wir Technologie für Unternehmen, die jeden Tag darauf angewiesen sind.</target>
       </trans-unit>
       <trans-unit id="featureForepathAbout-storyStatLabel" datatype="html">
-        <source> the year it all started </source>
+        <source>the year it all started</source>
         <target>das Jahr, in dem alles begann</target>
       </trans-unit>
+      <trans-unit id="featureForepathAbout-storyPhotoAlt" datatype="html">
+        <source>The Münster church in Herford, where ForePath is based</source>
+        <target>Das Herforder Münster, wo ForePath zu Hause ist</target>
+      </trans-unit>
       <trans-unit id="featureForepathAbout-storyTitle" datatype="html">
-        <source> From a one-person business to ForePath </source>
-        <target>Vom Einzelunternehmen zu ForePath</target>
+        <source> From a one-person business to a team that runs what it builds </source>
+        <target>Vom Einzelunternehmen zum Team, das betreibt, was es baut</target>
       </trans-unit>
       <trans-unit id="featureForepathAbout-storyParagraph1" datatype="html">
         <source> ForePath started in June 2016 with a simple idea. IT systems and software development from one hand, delivered by people who also run what they build. That combination has not changed since. </source>

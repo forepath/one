@@ -22,7 +22,7 @@ import {
   template: `
     <shared-app-illustration [label]="label()" windowTitle="Agenstra Desktop" [width]="960" [height]="640">
       <nav class="sai-rail">
-        <span class="sai-rail__brand"><i class="bi bi-robot"></i></span>
+        <span class="sai-rail__brand"><img src="assets/images/icon_light.svg" alt="" /></span>
         <span class="sai-rail__item sai-rail__item--active"><i class="bi bi-hdd-network"></i></span>
         <span class="sai-rail__item"><i class="bi bi-chat-square-text"></i></span>
         <span class="sai-rail__item"><i class="bi bi-terminal"></i></span>
@@ -47,13 +47,19 @@ import {
       <section class="sai-col sai-col--grow">
         <fpc-lane-header flush>
           <span fpcLaneHeaderTitle>reviewer on production</span>
-          <fpc-badge fpcLaneHeaderActions color="success" variant="info" size="sm">Running</fpc-badge>
+          <fpc-badge fpcLaneHeaderActions class="sai-motion-pulse" color="success" variant="info" size="sm"
+            >Running</fpc-badge
+          >
         </fpc-lane-header>
         <div class="sai-body d-flex flex-column gap-2 p-3">
           <div class="sai-tool"><i class="bi bi-eye"></i>Reviewing pull request <code>#128</code></div>
-          <div class="sai-tool"><i class="bi bi-file-earmark-diff"></i>Read 3 changed files</div>
-          <div class="sai-tool"><i class="bi bi-chat-left-text"></i>Left 2 review comments</div>
-          <div class="sai-bubble sai-bubble--agent">
+          <div class="sai-tool sai-motion-enter" style="--sai-delay: 1.5s">
+            <i class="bi bi-file-earmark-diff"></i>Read 3 changed files
+          </div>
+          <div class="sai-tool sai-motion-enter" style="--sai-delay: 3s">
+            <i class="bi bi-chat-left-text"></i>Left 2 review comments
+          </div>
+          <div class="sai-bubble sai-bubble--agent sai-motion-enter" style="--sai-delay: 4.5s">
             Looks good. One suggestion: cover the zero discount case in the new test.
           </div>
         </div>

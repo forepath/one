@@ -1,7 +1,7 @@
-// Marketing column (sign-in flow, public forms): a topographic contour map in the brand colour,
+// Marketing column (sign-in flow, public forms): a quiet grain texture in the brand colour,
 // drifting very slowly, layered under the soft corner wash.
 //
-// - The contour tile is a seamless 480px SVG (generated from a periodic height field). It is used
+// - The contour tile is a seamless 240px SVG (soft fractal-noise grain). It is used
 //   as a mask, so the lines take `--bs-primary` and follow every brand and colour mode.
 // - `::before` carries the contours and is oversized by one tile so it can drift with a cheap
 //   transform and loop seamlessly.
@@ -12,6 +12,7 @@
 
 $fpc-marketing-contours: $fpc-contour-tile;
 $fpc-marketing-tile: $fpc-contour-tile-size;
+$fpc-marketing-tile-height: $fpc-contour-tile-height;
 
 .section__column--marketing {
   --fpc-marketing-surface: var(--bs-tertiary-bg);
@@ -31,9 +32,10 @@ $fpc-marketing-tile: $fpc-contour-tile-size;
   }
 
   &::before {
-    inset: (-$fpc-marketing-tile) 0 0 (-$fpc-marketing-tile);
+    inset: (-$fpc-marketing-tile-height) 0 0 (-$fpc-marketing-tile);
     background-color: var(--fpc-marketing-contour);
-    mask: $fpc-marketing-contours 0 0 / #{$fpc-marketing-tile} #{$fpc-marketing-tile} repeat;
+    mask: $fpc-marketing-contours 0 0 / #{$fpc-marketing-tile} #{$fpc-marketing-tile-height} repeat;
+    opacity: $fpc-contour-chrome-opacity;
     animation: fpc-marketing-drift 240s linear infinite;
   }
 
@@ -64,7 +66,7 @@ $fpc-marketing-tile: $fpc-contour-tile-size;
 
 @keyframes fpc-marketing-drift {
   to {
-    transform: translate(#{$fpc-marketing-tile}, #{$fpc-marketing-tile});
+    transform: translate(#{$fpc-marketing-tile}, #{$fpc-marketing-tile-height});
   }
 }
 

@@ -3,7 +3,7 @@
     <a
       fpcTopBarBrand
       [routerLink]="getBasePath()"
-      class="docs-layout__brand text-decoration-none text-white d-flex align-items-center gap-2 gap-md-3 min-w-0"
+      class="docs-layout__brand text-decoration-none d-flex align-items-center gap-2 gap-md-3 min-w-0"
     >
       <span class="docs-layout__brand-mark bg-primary flex-shrink-0">
         <img src="assets/images/icon_light.svg" [attr.alt]="productName" class="docs-layout__brand-icon" />
@@ -16,7 +16,6 @@
     }
 
     <fpc-language-switcher
-      data-bs-theme="dark"
       [locales]="localeService.getAvailableLocales()"
       [locale]="localeService.getCurrentLocale()"
       [ariaLabel]="languageSwitcherAriaLabel"
@@ -38,6 +37,7 @@
     </fpc-button>
 
     <fpc-theme-switcher
+      variant="button"
       [dark]="themeService.isDarkMode()"
       [ariaLabel]="toggleDarkModeTitle"
       (darkChange)="themeService.setTheme($event)"

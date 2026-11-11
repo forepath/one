@@ -36,10 +36,30 @@
 
 .footer {
   margin-top: auto;
+  // Listing chips and the language trigger: a soft dark chip in dark mode, a raised neutral chip
+  // on the light footer.
+  --portal-footer-chip-color: var(--bs-white);
+  --portal-footer-chip-bg: color-mix(in srgb, var(--bs-dark) 55%, #000);
+  --portal-footer-chip-hover-bg: color-mix(in srgb, var(--bs-dark) 42%, #000);
+  --portal-footer-chip-active-bg: color-mix(in srgb, var(--bs-dark) 35%, #000);
+}
+
+:host-context([data-bs-theme='light']) .footer {
+  --portal-footer-chip-color: var(--bs-emphasis-color);
+  --portal-footer-chip-bg: var(--bs-secondary-bg);
+  --portal-footer-chip-hover-bg: color-mix(in srgb, var(--bs-secondary-bg) 88%, var(--bs-emphasis-color));
+  --portal-footer-chip-active-bg: color-mix(in srgb, var(--bs-secondary-bg) 82%, var(--bs-emphasis-color));
+
+  fpc-language-switcher {
+    --fpc-lang-footer-btn-color: var(--portal-footer-chip-color);
+    --fpc-lang-footer-btn-bg: var(--portal-footer-chip-bg);
+    --fpc-lang-footer-btn-hover-bg: var(--portal-footer-chip-hover-bg);
+    --fpc-lang-footer-btn-active-bg: var(--portal-footer-chip-active-bg);
+  }
 }
 
 .footer-link {
-  color: rgba(245, 245, 245, 0.85);
+  color: rgba(var(--landing-ink-rgb), 0.85);
   transition: color 0.15s ease-in-out;
 
   &:hover {
@@ -59,9 +79,9 @@
   font-weight: 400;
   line-height: 1.5;
   text-decoration: none;
-  color: var(--bs-white);
-  background-color: color-mix(in srgb, var(--bs-dark) 55%, #000);
-  border-color: color-mix(in srgb, var(--bs-dark) 55%, #000);
+  color: var(--portal-footer-chip-color);
+  background-color: var(--portal-footer-chip-bg);
+  border-color: var(--portal-footer-chip-bg);
   transition:
     color 0.15s ease-in-out,
     background-color 0.15s ease-in-out,
@@ -73,9 +93,9 @@
   }
 
   &:hover {
-    color: var(--bs-white);
-    background-color: color-mix(in srgb, var(--bs-dark) 42%, #000);
-    border-color: color-mix(in srgb, var(--bs-dark) 42%, #000);
+    color: var(--portal-footer-chip-color);
+    background-color: var(--portal-footer-chip-hover-bg);
+    border-color: var(--portal-footer-chip-hover-bg);
   }
 }
 
@@ -117,7 +137,7 @@
     background-color: transparent;
     box-shadow: none;
     background-color: rgb(0 0 0 / 0.25);
-    color: #fff;
+    color: var(--bs-emphasis-color);
   }
 
   .mobile-navbar {
@@ -213,10 +233,17 @@
   }
 }
 
-// Footer language trigger tones live on `fpc-language-switcher` (`appearance="footer"`).
+// Light header: a faint ink wash for the menu toggle instead of the black overlay.
+:host-context([data-bs-theme='light']) .navbar-content .navbar-toggler {
+  background-color: rgba(var(--bs-emphasis-color-rgb), 0.06);
+}
 
-.text-white {
-  color: rgba(245, 245, 245, 0.85) !important;
+// Footer language trigger tones live on `fpc-language-switcher` (`appearance="footer"`); the light
+// footer overrides its `--fpc-lang-footer-btn-*` tokens above.
+
+// Header and footer text: the emphasis colour (white in dark mode), slightly softened.
+.portal-chrome-text {
+  color: rgba(var(--landing-ink-rgb), 0.85) !important;
 }
 
 .flag {
@@ -273,8 +300,8 @@
 
   &:hover,
   &:focus-visible {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: rgba(245, 245, 245, 0.95) !important;
+    background-color: rgba(var(--bs-emphasis-color-rgb), 0.08);
+    color: rgba(var(--landing-ink-rgb), 0.95) !important;
   }
 
   &.active {

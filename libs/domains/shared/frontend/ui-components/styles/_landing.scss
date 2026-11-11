@@ -1,4 +1,4 @@
-// Landing pages (Agenstra, Decabill, ForePath): one topographic map runs through the page.
+// Landing pages (Agenstra, Decabill, ForePath): one quiet grain texture runs through the page.
 //
 // - Hero: a contour field in the brand colour, cleared around the headline and gathering toward
 //   the edges. Replaces the blurred colour orbs.
@@ -11,6 +11,12 @@
 //
 // Selectors only match landing markup (`grid-section` with `#hero` / `#cta` / `#fit`,
 // `.footer.grid-section--footer`, `.landing-logo-section`).
+//
+// Light and dark mode: the landing pages follow `data-bs-theme` like the portals. Sections use
+// theme-aware surfaces (`bg-body`, `bg-body-tertiary`, `text-body-emphasis`); in dark mode `bg-body`
+// is the same #0f0f11 as `bg-dark`, so the dark design is unchanged. `grid-section--deep` marks the
+// sections that sit on the deepest surface (hero, CTA, footer, former `bg-dark` bands): in dark mode
+// their cards get a translucent lift. Light mode only lowers the contour tints for the pale surface.
 @use 'contours' as *;
 
 // Shared layer: `mask` the contour tile over a coloured fill. The fade is a second mask layer
@@ -23,7 +29,7 @@
   pointer-events: none;
   background-color: $color;
   mask:
-    $fpc-contour-tile 0 0 / #{$fpc-contour-tile-size} #{$fpc-contour-tile-size} repeat,
+    $fpc-contour-tile 0 0 / #{$fpc-contour-tile-size} #{$fpc-contour-tile-height} repeat,
     $fade;
   mask-composite: intersect;
 }
@@ -35,19 +41,21 @@
 // hero every frame.
 
 .grid-section#hero {
-  --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 42%, transparent);
-  --fpc-landing-hero-surface: rgb(var(--bs-dark-rgb));
+  // The same strength as the closing CTA and footer, so the page's top and bottom frame match.
+  --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 34%, transparent);
+  --fpc-landing-hero-surface: var(--bs-body-bg);
   position: relative;
   isolation: isolate;
 
   &::before {
     content: '';
     position: absolute;
-    inset: (-$fpc-contour-tile-size) 0 0 (-$fpc-contour-tile-size);
+    inset: (-$fpc-contour-tile-height) 0 0 (-$fpc-contour-tile-size);
     z-index: -1;
     pointer-events: none;
     background-color: var(--fpc-landing-contour);
-    mask: $fpc-contour-tile left 0 bottom 0 / #{$fpc-contour-tile-size} #{$fpc-contour-tile-size} repeat;
+    mask: $fpc-contour-tile left 0 bottom 0 / #{$fpc-contour-tile-size} #{$fpc-contour-tile-height} repeat;
+    opacity: $fpc-contour-chrome-opacity;
     animation: fpc-landing-hero-drift 240s linear infinite;
     will-change: transform;
   }
@@ -64,14 +72,19 @@
   // Light heroes (ForePath, contact): thinner tint on the pale surface.
   &.bg-body-tertiary {
     --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 20%, transparent);
-    --fpc-landing-hero-surface: var(--bs-tertiary-bg);
+    --fpc-landing-hero-surface: var(--fpc-landing-tertiary-surface);
   }
 }
 
 @keyframes fpc-landing-hero-drift {
   to {
-    transform: translate(#{$fpc-contour-tile-size}, #{$fpc-contour-tile-size});
+    transform: translate(#{$fpc-contour-tile-size}, #{$fpc-contour-tile-height});
   }
+}
+
+// Light mode: a thinner tint, as on the pale tertiary heroes.
+[data-bs-theme='light'] .grid-section#hero {
+  --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 36%, transparent);
 }
 
 // ---- CTA section + footer ------------------------------------------------------------------------
@@ -101,11 +114,54 @@
   @include fpc-landing-contour-layer(var(--fpc-landing-contour), linear-gradient(to bottom, #000 0, transparent 18rem));
 }
 
+// CTA and footer share one field, so both take the same opacity to keep the boundary seamless.
+.grid-section#cta::before,
+.grid-section#fit::before,
+.footer.grid-section--footer::before {
+  opacity: $fpc-contour-chrome-opacity;
+}
+
 // Light sections (ForePath): thinner tint on the pale surface.
 .grid-section#cta.bg-body-tertiary,
 .grid-section#fit.bg-body-tertiary,
 .footer.grid-section--footer.bg-body-tertiary {
   --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 22%, transparent);
+}
+
+[data-bs-theme='light'] {
+  .grid-section#cta,
+  .grid-section#fit,
+  .footer.grid-section--footer {
+    --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 36%, transparent);
+  }
+}
+
+// Text tone for the landing chrome and hero titles, used with an alpha
+// (`rgba(var(--landing-ink-rgb), 0.85)`): the soft off-white of the dark design in dark mode, the
+// emphasis ink in light mode.
+:root,
+[data-bs-theme='light'] {
+  --landing-ink-rgb: var(--bs-emphasis-color-rgb);
+}
+
+[data-bs-theme='dark'] {
+  --landing-ink-rgb: 245, 245, 245;
+}
+
+// Theme-specific artwork (e.g. a white wordmark with an ink twin): render both, show one.
+[data-bs-theme='light'] .landing-dark-only,
+[data-bs-theme='dark'] .landing-light-only {
+  display: none !important;
+}
+
+// ---- Grey sections ---------------------------------------------------------------------------------
+// The tertiary surface sits closer to the body surface on the landing pages, so the alternating grey
+// bands (content, logo strips, tertiary heroes) read as a soft shift rather than a contrasting block.
+// The tertiary hero's clearing wash follows the same colour.
+.grid-section.bg-body-tertiary {
+  --fpc-landing-tertiary-surface: color-mix(in srgb, var(--bs-tertiary-bg) 50%, var(--bs-body-bg));
+  --fpc-landing-hero-surface: var(--fpc-landing-tertiary-surface);
+  background-color: var(--fpc-landing-tertiary-surface) !important;
 }
 
 // ---- Section content ------------------------------------------------------------------------------
@@ -118,7 +174,7 @@
   box-shadow: none !important;
 }
 
-.grid-section.bg-dark .card,
+[data-bs-theme='dark'] .grid-section--deep .card,
 .grid-section.bg-primary .card {
   --bs-card-bg: rgb(255 255 255 / 0.04);
   --bs-card-border-color: rgb(255 255 255 / 0.1);
@@ -146,18 +202,21 @@
     transparent 70%
   ) !important;
 
-  // The landing contour lines, gathering in the tinted corner and washing out across the card.
+  // The landing grain, gathering in the tinted corner and washing out across the card. At the page
+  // chrome's opacity, so the cards echo the hero and footer instead of outweighing them where several
+  // sit together (feature grids).
   &::before {
     @include fpc-landing-contour-layer(
       color-mix(in srgb, var(--bs-primary) 28%, transparent),
       radial-gradient(ellipse 85% 75% at 0% 0%, #000 0%, transparent 100%)
     );
+    opacity: $fpc-contour-chrome-opacity;
   }
 }
 
 // Secondary intro surfaces (stacked feature panels, price asides): the soft brand tint of the main
-// bento cards, mirrored, with a summit of rings instead of the contour field, so the two surfaces
-// belong together without repeating the same graphic.
+// bento cards, mirrored, with a soft patch of the same grain gathering at the right edge, so the two
+// surfaces belong together without repeating the same layout.
 .landing-surface-tint {
   position: relative;
   isolation: isolate;
@@ -168,7 +227,7 @@
     transparent 65%
   ) !important;
 
-  // A summit of concentric rings rising from the right edge and washing out to the left.
+  // A patch of grain at the right edge, washing out to the left.
   &::before {
     content: '';
     position: absolute;
@@ -176,12 +235,13 @@
     z-index: -1;
     pointer-events: none;
     background-color: color-mix(in srgb, var(--bs-primary) 26%, transparent);
-    // The rings image is 44rem x 22rem with its centre 10rem in from the right edge. The radial
-    // fade ends inside that box (like the tint behind it), so no ring is cut by the image edges.
+    // The grain patch is 44rem x 22rem with its centre 10rem in from the right edge. The radial fade
+    // ends inside that box (like the tint behind it), so the patch has no visible edges.
     mask:
       $fpc-contour-summit right -12rem center / 44rem 22rem no-repeat,
       radial-gradient(20rem 10rem at calc(100% - 10rem) 50%, #000 0%, #000 25%, transparent 100%);
     mask-composite: intersect;
+    opacity: $fpc-contour-chrome-opacity;
   }
 }
 
@@ -326,13 +386,13 @@
   }
 }
 
-// Dark "glass" cards: flat on the dark surface.
+// "Glass" cards: flat on the section surface, a faint lift in the emphasis colour (white in dark mode).
 .home-governance-card {
-  background: rgb(255 255 255 / 0.04);
+  background: rgba(var(--bs-emphasis-color-rgb), 0.04);
 }
 
 .home-governance-card-text {
-  color: rgb(255 255 255 / 0.72);
+  color: rgba(var(--bs-emphasis-color-rgb), 0.72);
 }
 
 .problem-box {
@@ -375,7 +435,65 @@
   }
 }
 
+// ---- Badge band ----------------------------------------------------------------------------------
+// Hero feature badges as a slow band of at most two rows that run in opposite directions, with faded
+// edges, instead of a wrapping cloud. Markup: `.landing-badge-band` > `.landing-badge-band__row`
+// (`--reverse` for the second) > `.landing-badge-band__track` holding the row's badges repeated as two
+// identical halves; the track loops by half its width. Pauses on hover; static for reduced motion.
+.landing-badge-band {
+  --landing-badge-band-gap: 0.5rem;
+  --landing-badge-band-fade: 2.5rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--landing-badge-band-gap);
+  max-width: 100%;
+}
+
+// Each row clips its track and fades its ends. The row's box carries room for the badges' soft
+// shadow (0 2px 10px) above and below, and the mask sits on the row (not the band), because a mask
+// clips everything outside its own element's box; the negative margin keeps the rows' visual spacing.
+.landing-badge-band__row {
+  overflow: hidden;
+  padding-block: 0.875rem;
+  margin-block: -0.625rem;
+  mask: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--landing-badge-band-fade),
+    #000 calc(100% - var(--landing-badge-band-fade)),
+    transparent 100%
+  );
+}
+
+.landing-badge-band__track {
+  display: flex;
+  gap: var(--landing-badge-band-gap);
+  width: max-content;
+  animation: landing-badge-band-scroll 70s linear infinite;
+
+  > * {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
+.landing-badge-band__row--reverse .landing-badge-band__track {
+  animation-direction: reverse;
+}
+
+.landing-badge-band:hover .landing-badge-band__track {
+  animation-play-state: paused;
+}
+
+@keyframes landing-badge-band-scroll {
+  to {
+    transform: translateX(calc(-50% - var(--landing-badge-band-gap) / 2));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .landing-badge-band__track,
   .grid-section#hero::before {
     animation: none;
   }

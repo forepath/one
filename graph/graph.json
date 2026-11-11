@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-08T13:38:52.441Z",
+  "generatedAt": "2026-11-11T18:31:56.402Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -12683,15 +12683,6 @@
       }
     },
     {
-      "id": "file:libs/domains/decabill/frontend/feature-landingpage/src/lib/theme.service.ts",
-      "type": "service",
-      "attrs": {
-        "path": "libs/domains/decabill/frontend/feature-landingpage/src/lib/theme.service.ts",
-        "languageOrKind": "ts",
-        "projectName": "decabill-frontend-feature-landingpage"
-      }
-    },
-    {
       "id": "file:libs/domains/forepath/frontend/feature-landingpage/README.md",
       "type": "readme",
       "attrs": {
@@ -13036,6 +13027,15 @@
       "attrs": {
         "path": "libs/domains/shared/frontend/feature-landingpage/README.md",
         "languageOrKind": "md",
+        "projectName": "shared-frontend-feature-landingpage"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/frontend/feature-landingpage/src/lib/theme/landing-theme.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/feature-landingpage/src/lib/theme/landing-theme.service.ts",
+        "languageOrKind": "ts",
         "projectName": "shared-frontend-feature-landingpage"
       }
     },
@@ -37819,12 +37819,12 @@
     },
     {
       "from": "project:decabill-frontend-feature-landingpage",
-      "to": "project:decabill-frontend-data-access-portal",
+      "to": "project:shared-frontend-feature-landingpage",
       "type": "depends_on"
     },
     {
       "from": "project:decabill-frontend-feature-landingpage",
-      "to": "project:shared-frontend-feature-landingpage",
+      "to": "project:decabill-frontend-data-access-portal",
       "type": "depends_on"
     },
     {
@@ -45763,11 +45763,6 @@
       "type": "contains"
     },
     {
-      "from": "project:decabill-frontend-feature-landingpage",
-      "to": "file:libs/domains/decabill/frontend/feature-landingpage/src/lib/theme.service.ts",
-      "type": "contains"
-    },
-    {
       "from": "project:forepath-frontend-feature-landingpage",
       "to": "file:libs/domains/forepath/frontend/feature-landingpage/README.md",
       "type": "contains"
@@ -45945,6 +45940,11 @@
     {
       "from": "project:shared-frontend-feature-landingpage",
       "to": "file:libs/domains/shared/frontend/feature-landingpage/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-feature-landingpage",
+      "to": "file:libs/domains/shared/frontend/feature-landingpage/src/lib/theme/landing-theme.service.ts",
       "type": "contains"
     },
     {

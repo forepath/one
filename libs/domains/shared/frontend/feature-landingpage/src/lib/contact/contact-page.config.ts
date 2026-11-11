@@ -4,7 +4,10 @@ import type { SharedContactDetails } from './shared-contact-details.constants';
 
 export const SHARED_CONTACT_PAGE_DATA_KEY = 'contactPage';
 
-/** Matches inner-page hero styling for each landing app brand. */
+/**
+ * Matches inner-page hero styling for each landing app brand. `dark` is the deep page surface
+ * (dark in dark mode, the plain body surface in light mode); `forepath` is the tertiary surface.
+ */
 export type SharedContactPageHeroTheme = 'forepath' | 'dark';
 
 export interface SharedContactPageConfig {

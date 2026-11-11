@@ -26,7 +26,7 @@ import {
   template: `
     <shared-app-illustration [label]="label()" address="cloud.agenstra.com/overview" [width]="1000" [height]="600">
       <nav class="sai-rail">
-        <span class="sai-rail__brand"><i class="bi bi-cloud"></i></span>
+        <span class="sai-rail__brand"><img src="assets/images/icon_light.svg" alt="" /></span>
         <span class="sai-rail__item sai-rail__item--active"><i class="bi bi-grid-1x2"></i></span>
         <span class="sai-rail__item"><i class="bi bi-hdd-stack"></i></span>
         <span class="sai-rail__item"><i class="bi bi-receipt"></i></span>
@@ -46,11 +46,16 @@ import {
             <fpc-list-item>
               <span fpcListItemTitle>{{ environment.name }}</span>
               <span fpcListItemMeta>{{ environment.meta }}</span>
-              <fpc-badge fpcListItemActions [color]="environment.color" variant="info" size="sm">{{
-                environment.state
-              }}</fpc-badge>
+              <fpc-badge
+                fpcListItemActions
+                [class.sai-motion-pulse]="environment.progress !== null"
+                [color]="environment.color"
+                variant="info"
+                size="sm"
+                >{{ environment.state }}</fpc-badge
+              >
               @if (environment.progress !== null) {
-                <fpc-progress [value]="environment.progress" height="0.375rem" />
+                <fpc-progress class="sai-motion-progress" [value]="environment.progress" height="0.375rem" />
               }
             </fpc-list-item>
           }

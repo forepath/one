@@ -28,7 +28,7 @@ import {
   template: `
     <shared-app-illustration [label]="label()" address="billing.decabill.com/overview" [width]="1200" [height]="680">
       <nav class="sai-rail">
-        <span class="sai-rail__brand"><i class="bi bi-receipt"></i></span>
+        <span class="sai-rail__brand"><img src="assets/images/icon_light.svg" alt="" /></span>
         <span class="sai-rail__item sai-rail__item--active"><i class="bi bi-grid-1x2"></i></span>
         <span class="sai-rail__item"><i class="bi bi-box-seam"></i></span>
         <span class="sai-rail__item"><i class="bi bi-kanban"></i></span>
@@ -52,11 +52,16 @@ import {
                 <fpc-list-item>
                   <span fpcListItemTitle>{{ service.name }}</span>
                   <span fpcListItemMeta>{{ service.meta }}</span>
-                  <fpc-badge fpcListItemActions [color]="service.color" variant="info" size="sm">{{
-                    service.state
-                  }}</fpc-badge>
+                  <fpc-badge
+                    fpcListItemActions
+                    [color]="service.color"
+                    variant="info"
+                    size="sm"
+                    [class.sai-motion-pulse]="service.state === 'Running'"
+                    >{{ service.state }}</fpc-badge
+                  >
                   @if (service.progress !== null) {
-                    <fpc-progress [value]="service.progress" height="0.375rem" />
+                    <fpc-progress class="sai-motion-progress" [value]="service.progress" height="0.375rem" />
                   }
                 </fpc-list-item>
               }
@@ -65,8 +70,8 @@ import {
           <section class="sai-col sai-col--grow">
             <fpc-lane-header title="Invoices" flush />
             <fpc-list [flush]="true" class="sai-body">
-              @for (invoice of invoices; track invoice.number) {
-                <fpc-list-item>
+              @for (invoice of invoices; track invoice.number; let first = $first) {
+                <fpc-list-item [class.sai-motion-enter]="first" [style.--sai-delay]="first ? '2s' : null">
                   <span fpcListItemTitle>{{ invoice.number }}</span>
                   <span fpcListItemMeta>{{ invoice.meta }}</span>
                   <span fpcListItemActions class="d-flex align-items-center gap-2">

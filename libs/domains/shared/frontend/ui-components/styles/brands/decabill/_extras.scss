@@ -1,5 +1,8 @@
 // Decabill-only portal extras (after shared brands/_extras.scss).
 
 :root {
+  // Decabill green reads brighter than Agenstra violet on dark surfaces; this matches the contour
+  // fields' perceived contrast (OKLab) to Agenstra at the 0.5 default.
+  --fpc-contour-chrome-opacity: 0.46;
   --bs-body-bg-alt: #f2f6f6;
 }

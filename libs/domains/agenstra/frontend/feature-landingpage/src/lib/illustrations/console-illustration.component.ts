@@ -22,7 +22,7 @@ import {
   template: `
     <shared-app-illustration [label]="label()" address="app.agenstra.com/clients" [width]="1200" [height]="680">
       <nav class="sai-rail">
-        <span class="sai-rail__brand"><i class="bi bi-robot"></i></span>
+        <span class="sai-rail__brand"><img src="assets/images/icon_light.svg" alt="" /></span>
         <span class="sai-rail__item sai-rail__item--active"><i class="bi bi-chat-square-text"></i></span>
         <span class="sai-rail__item"><i class="bi bi-kanban"></i></span>
         <span class="sai-rail__item"><i class="bi bi-journal-text"></i></span>
@@ -58,7 +58,9 @@ import {
       <section class="sai-col sai-col--grow">
         <fpc-lane-header flush>
           <span fpcLaneHeaderTitle>builder</span>
-          <fpc-badge fpcLaneHeaderActions color="success" variant="info" size="sm">Running</fpc-badge>
+          <fpc-badge fpcLaneHeaderActions class="sai-motion-pulse" color="success" variant="info" size="sm"
+            >Running</fpc-badge
+          >
         </fpc-lane-header>
         <div class="sai-body d-flex flex-column gap-3 p-4">
           <div class="sai-bubble sai-bubble--user">Fix the flaky checkout test and open a pull request.</div>
@@ -66,18 +68,22 @@ import {
             The cart total was rounded before the discount was applied. I will fix the order and add a regression test.
           </div>
           <div class="d-flex flex-column gap-2">
-            <div class="sai-tool"><i class="bi bi-pencil-square"></i>Edited <code>src/checkout/cart.ts</code></div>
-            <div class="sai-tool"><i class="bi bi-terminal"></i>Ran <code>npm test</code>: 42 passed</div>
-            <div class="sai-tool">
+            <div class="sai-tool sai-motion-enter" style="--sai-delay: 1.5s">
+              <i class="bi bi-pencil-square"></i>Edited <code>src/checkout/cart.ts</code>
+            </div>
+            <div class="sai-tool sai-motion-enter" style="--sai-delay: 3s">
+              <i class="bi bi-terminal"></i>Ran <code>npm test</code>: 42 passed
+            </div>
+            <div class="sai-tool sai-motion-enter" style="--sai-delay: 4.5s">
               <i class="bi bi-git"></i>Opened pull request <code>#128 Fix discount rounding</code>
             </div>
           </div>
-          <div class="sai-bubble sai-bubble--agent">
+          <div class="sai-bubble sai-bubble--agent sai-motion-enter" style="--sai-delay: 6s">
             <span class="sai-typing"><i></i><i></i><i></i></span>
           </div>
         </div>
         <div class="sai-input">
-          Message builder or type / for commands
+          <span class="sai-motion-caret">Message builder or type / for commands</span>
           <span class="sai-input__send"><i class="bi bi-send"></i></span>
         </div>
       </section>

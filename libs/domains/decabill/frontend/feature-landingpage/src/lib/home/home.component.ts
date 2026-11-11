@@ -12,7 +12,7 @@ import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend
 import { OverviewIllustrationComponent } from '../illustrations/overview-illustration.component';
 import { BillingTimelineIllustrationComponent } from '../illustrations/billing-timeline-illustration.component';
 import { PlanConfigIllustrationComponent } from '../illustrations/plan-config-illustration.component';
-import { SharedContactPersonComponent } from '@forepath/shared/frontend/feature-landingpage';
+import { SharedContactPersonComponent, SharedMarkStackComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-portal-home',
@@ -25,6 +25,7 @@ import { SharedContactPersonComponent } from '@forepath/shared/frontend/feature-
     OverviewIllustrationComponent,
     PlanConfigIllustrationComponent,
     BillingTimelineIllustrationComponent,
+    SharedMarkStackComponent,
   ],
   styleUrls: ['./home.component.scss'],
   templateUrl: './home.component.html',
@@ -32,6 +33,22 @@ import { SharedContactPersonComponent } from '@forepath/shared/frontend/feature-
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PortalHomeComponent implements OnInit {
+  /** Hero feature badges, in the two rows of the badge band. */
+  protected readonly heroBadgeRows: readonly (readonly string[])[] = [
+    [
+      $localize`:@@featureDecabillHome-heroBadge1:Services & projects`,
+      $localize`:@@featureDecabillHome-heroBadge2:SaaS subscriptions`,
+      $localize`:@@featureDecabillHome-heroBadge3:Automatic provisioning`,
+    ],
+    [
+      $localize`:@@featureDecabillHome-heroBadge4:ZUGFeRD invoicing`,
+      $localize`:@@featureDecabillHome-heroBadge5:Stripe payments`,
+      $localize`:@@featureDecabillHome-heroBadge6:Multi-tenant`,
+    ],
+  ];
+  /** Each band row repeats its badges four times: two identical halves, each wider than the band. */
+  protected readonly heroBadgeCopies = [0, 1, 2, 3] as const;
+
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
   private readonly servicePlansFacade = inject(ServicePlansFacade);

@@ -167,6 +167,13 @@
     color: var(--fpc-primary-contrast, #fff);
     background-color: var(--bs-primary);
     font-size: 1.125rem;
+
+    // The app's own mark (each app's white `icon_light.svg`), as in the real console's top bar.
+    img {
+      display: block;
+      width: 1.375rem;
+      height: 1.375rem;
+    }
   }
 
   .sai-rail__item {
@@ -336,6 +343,173 @@
   }
 }
 
+// ---- Light motion ---------------------------------------------------------------------------------
+// A small, shared vocabulary so every screen scene moves the same quiet way. Scenes add the classes to
+// their own markup; nothing moves by default. Everything loops slowly, pauses while the frame is off
+// screen (`--offscreen`, set by the component), and is static for reduced motion, where every element
+// shows its final state.
+// - `sai-motion-pulse`: a soft breathing glow for live status (a Running badge, a status dot).
+// - `sai-motion-caret`: a blinking text caret after the element (an input, an editor line).
+// - `sai-motion-progress`: a bar that fills to its own width, holds, and starts over (set the width on
+//   the element as usual; `--sai-progress-duration` tunes the loop).
+// - `sai-motion-enter`: an entry that slides in at `--sai-delay` of a `--sai-cycle` loop and stays
+//   until the loop restarts (chat messages, timeline rows, log lines). Give siblings rising delays.
+// - `sai-motion-select`: a row highlight that steps through a list of 3 rows (add `--4` or `--5` for
+//   longer lists): put it on each row with `--sai-step` (0, 1, 2, ...), 2.5s per row.
+:host ::ng-deep {
+  .sai-motion-pulse {
+    animation: sai-motion-pulse 2.8s ease-in-out infinite;
+  }
+
+  .sai-motion-caret::after {
+    content: '';
+    display: inline-block;
+    width: 1px;
+    height: 1em;
+    margin-left: 0.125rem;
+    vertical-align: -0.125em;
+    background-color: currentColor;
+    animation: sai-motion-caret 1.1s steps(1) infinite;
+  }
+
+  // On a plain fill element, or on `fpc-progress`, where the class moves to its inner bar(s) so only
+  // the fill grows, not the track.
+  .sai-motion-progress:not(.fpc-progress),
+  .fpc-progress.sai-motion-progress .progress-bar {
+    transform-origin: left center;
+    animation: sai-motion-progress var(--sai-progress-duration, 6s) ease-in-out infinite;
+  }
+
+  .sai-motion-enter {
+    animation: sai-motion-enter var(--sai-cycle, 12s) ease-out infinite;
+    animation-delay: var(--sai-delay, 0s);
+    animation-fill-mode: backwards;
+  }
+
+  .sai-motion-select {
+    animation: sai-motion-select-3 7.5s steps(1) infinite;
+    animation-delay: calc(var(--sai-step, 0) * 2.5s);
+  }
+
+  .sai-motion-select--4 {
+    animation-name: sai-motion-select-4;
+    animation-duration: 10s;
+  }
+
+  .sai-motion-select--5 {
+    animation-name: sai-motion-select-5;
+    animation-duration: 12.5s;
+  }
+}
+
+:host(.shared-app-illustration--offscreen) ::ng-deep {
+  .sai-motion-pulse,
+  .sai-motion-caret::after,
+  .sai-motion-progress,
+  .sai-motion-progress .progress-bar,
+  .sai-motion-enter,
+  .sai-motion-select,
+  .sai-typing i {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes sai-motion-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 0%, transparent);
+  }
+
+  50% {
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, currentColor 18%, transparent);
+  }
+}
+
+@keyframes sai-motion-caret {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes sai-motion-progress {
+  0% {
+    transform: scaleX(0);
+  }
+
+  55%,
+  90% {
+    transform: scaleX(1);
+  }
+
+  100% {
+    transform: scaleX(1);
+    opacity: 0.4;
+  }
+}
+
+// Hidden until its delay, slides in over a short moment, then holds; fades as the loop restarts.
+@keyframes sai-motion-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+
+  6%,
+  92% {
+    opacity: 1;
+    transform: none;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+// The highlight is on for the first step of each loop (one row's turn).
+@keyframes sai-motion-select-3 {
+  0% {
+    background-color: color-mix(in srgb, var(--bs-primary) 10%, transparent);
+    box-shadow: inset 3px 0 0 var(--bs-primary);
+  }
+
+  33.34%,
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+@keyframes sai-motion-select-4 {
+  0% {
+    background-color: color-mix(in srgb, var(--bs-primary) 10%, transparent);
+    box-shadow: inset 3px 0 0 var(--bs-primary);
+  }
+
+  25%,
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+@keyframes sai-motion-select-5 {
+  0% {
+    background-color: color-mix(in srgb, var(--bs-primary) 10%, transparent);
+    box-shadow: inset 3px 0 0 var(--bs-primary);
+  }
+
+  20%,
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
 @keyframes sai-typing {
   0%,
   60%,
@@ -351,7 +525,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :host ::ng-deep .sai-typing i {
-    animation: none;
+  :host ::ng-deep {
+    .sai-typing i,
+    .sai-motion-pulse,
+    .sai-motion-caret::after,
+    .sai-motion-progress,
+    .sai-motion-progress .progress-bar,
+    .sai-motion-enter,
+    .sai-motion-select {
+      animation: none;
+    }
   }
 }

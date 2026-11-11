@@ -1,0 +1,56 @@
+// Sits above the hero's pattern and clearing wash (its two negative-z pseudo layers) and below the
+// content, which comes later in the DOM. Every filled copy is opaque: the brand colour mixed into the
+// hero surface rather than made transparent, so the copies cover the pattern and the copies behind
+// them instead of washing out. The hero's `overflow: hidden` crops the stack.
+:host {
+  --shared-mark-stack-surface: var(--fpc-landing-hero-surface, var(--bs-body-bg));
+
+  // The stack's width; the front copy is about 52% of it and sits in the top-right corner.
+  --shared-mark-stack-width: 99.7rem;
+
+  position: absolute;
+  z-index: 0;
+  top: -18rem;
+  right: -18.2rem;
+  width: var(--shared-mark-stack-width);
+  pointer-events: none;
+
+  // Below lg the hero copy is centred and full width, so the stack would sit right behind the
+  // headline. There it becomes a corner emblem: sized from the screen width (front copy about 60% of
+  // it, at most about 21rem), about 35% of the front copy off the top and right edges, and fading out
+  // diagonally, so the front outline and the first copy frame the corner while the copies behind
+  // dissolve before they reach the text.
+  @media (max-width: 991.98px) {
+    --shared-mark-stack-width: clamp(26rem, 115vw, 40rem);
+
+    top: calc(-0.18 * var(--shared-mark-stack-width));
+    right: calc(-0.18 * var(--shared-mark-stack-width));
+    mask-image: linear-gradient(to bottom left, #000 30%, transparent 62%);
+  }
+}
+
+.shared-mark-stack__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+// Front copy: outline only, so the copies and the hero behind show through it.
+.shared-mark-stack__mark--front {
+  fill: none;
+  stroke: color-mix(in srgb, var(--bs-primary) 70%, var(--shared-mark-stack-surface));
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+.shared-mark-stack__mark--2 {
+  fill: color-mix(in srgb, var(--bs-primary) 18%, var(--shared-mark-stack-surface));
+}
+
+.shared-mark-stack__mark--3 {
+  fill: color-mix(in srgb, var(--bs-primary) 11%, var(--shared-mark-stack-surface));
+}
+
+.shared-mark-stack__mark--4 {
+  fill: color-mix(in srgb, var(--bs-primary) 6%, var(--shared-mark-stack-surface));
+}

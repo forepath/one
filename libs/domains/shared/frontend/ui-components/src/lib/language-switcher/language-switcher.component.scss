@@ -12,12 +12,13 @@
   font-weight: 400;
 }
 
-// Chip-like trigger on dark chrome (top bar sets `data-bs-theme="dark"` on the host).
-:host([data-bs-theme='dark']) ::ng-deep .fpc-language-switcher__trigger .fpc-button__btn {
-  color: rgba(var(--bs-white-rgb), 0.5);
+// Chip-like trigger in the top bar, drawn from the bar's ink (white on the dark bar, the emphasis
+// colour on the light bar; `--fpc-top-bar-ink-rgb`).
+:host-context(.fpc-top-bar) ::ng-deep .fpc-language-switcher__trigger .fpc-button__btn {
+  color: rgba(var(--fpc-top-bar-ink-rgb, var(--bs-white-rgb)), 0.5);
   background-color: var(--fpc-top-bar-control-bg, transparent);
-  // Neutral white edge on the dark bar (brand secondaries are tinted, e.g. Decabill's green).
-  border: var(--bs-border-width) solid rgba(var(--bs-white-rgb), 0.06);
+  // Neutral ink edge (brand secondaries are tinted, e.g. Decabill's green).
+  border: var(--bs-border-width) solid rgba(var(--fpc-top-bar-ink-rgb, var(--bs-white-rgb)), 0.06);
   text-decoration: none;
   // Steps up with the top bar's control tier (md from 768 px, `_controls.scss`).
   padding-inline: var(--fpc-top-bar-control-padding-x, 0.5rem);
@@ -32,18 +33,18 @@
 
   &:hover,
   &:focus-visible {
-    color: rgba(var(--bs-white-rgb), 0.75);
-    border-color: rgba(var(--bs-white-rgb), 0.15);
+    color: rgba(var(--fpc-top-bar-ink-rgb, var(--bs-white-rgb)), 0.75);
+    border-color: rgba(var(--fpc-top-bar-ink-rgb, var(--bs-white-rgb)), 0.15);
     background-color: var(--fpc-top-bar-control-bg-hover, transparent);
   }
 
   &:active {
-    color: var(--bs-white);
-    border-color: rgba(var(--bs-white-rgb), 0.5);
+    color: rgb(var(--fpc-top-bar-ink-rgb, var(--bs-white-rgb)));
+    border-color: rgba(var(--fpc-top-bar-ink-rgb, var(--bs-white-rgb)), 0.5);
   }
 }
 
-:host([data-bs-theme='dark']) .fpc-language-switcher__code {
+:host-context(.fpc-top-bar) .fpc-language-switcher__code {
   font-weight: 400;
 }
 
@@ -56,6 +57,15 @@
   --fpc-lang-footer-btn-bg: color-mix(in srgb, var(--bs-dark) 55%, #000);
   --fpc-lang-footer-btn-hover-bg: color-mix(in srgb, var(--bs-dark) 42%, #000);
   --fpc-lang-footer-btn-active-bg: color-mix(in srgb, var(--bs-dark) 35%, #000);
+}
+
+// Light landing footer: the same chip in the light surface language (ink on the secondary surface).
+// Only the footer rules below read these variables, so setting them on every host is harmless.
+:host-context([data-bs-theme='light']) {
+  --fpc-lang-footer-btn-color: var(--bs-emphasis-color);
+  --fpc-lang-footer-btn-bg: var(--bs-secondary-bg);
+  --fpc-lang-footer-btn-hover-bg: color-mix(in srgb, var(--bs-secondary-bg) 92%, #000);
+  --fpc-lang-footer-btn-active-bg: color-mix(in srgb, var(--bs-secondary-bg) 86%, #000);
 }
 
 :host(.fpc-language-switcher--footer) ::ng-deep .fpc-language-switcher__trigger .fpc-button__btn {

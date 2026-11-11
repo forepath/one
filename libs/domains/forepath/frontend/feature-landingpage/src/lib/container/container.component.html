@@ -1,5 +1,5 @@
 <header
-  class="header sticky-top bg-dark text-white grid-section grid-section--navigation"
+  class="header sticky-top bg-body text-body-emphasis grid-section grid-section--deep grid-section--navigation"
   [class.shadow]="isScrolled()"
 >
   <div class="header-topbar d-none d-md-block">
@@ -40,7 +40,7 @@
       </div>
     </div>
   </div>
-  <nav class="navbar navbar-expand-md navbar-dark p-0">
+  <nav class="navbar navbar-expand-md p-0">
     <div
       class="container grid-section__container grid-section__container--shadow d-flex align-items-center justify-content-between gap-2 navbar-content position-relative"
     >
@@ -338,6 +338,7 @@
                 >About Us</a
               >
             </li>
+            <li class="nav-item ms-md-2"><shared-landing-theme-toggle /></li>
             <li class="nav-item ms-md-3">
               <fpc-button
                 routerLink="/contact"
@@ -357,7 +358,9 @@
   </nav>
 </header>
 <router-outlet></router-outlet>
-<footer class="footer bg-dark text-white position-relative grid-section grid-section--footer pt-10">
+<footer
+  class="footer bg-body text-body-emphasis position-relative grid-section grid-section--deep grid-section--footer pt-10"
+>
   <div class="container grid-section__container grid-section__container--footer-top">
     <div class="row">
       <div class="col-lg-4 mb-5 mb-lg-0">

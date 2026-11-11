@@ -1,6 +1,9 @@
 // ForePath-only portal extras (after shared brands/_extras.scss).
 
 :root {
+  // ForePath orange reads brighter than Agenstra violet on dark surfaces; this matches the contour
+  // fields' perceived contrast (OKLab) to Agenstra at the 0.5 default.
+  --fpc-contour-chrome-opacity: 0.42;
   --bs-body-bg-alt: #faf9fd;
   // Hero secondary CTAs: soft charcoal from tertiary surface (not --bs-dark-alt).
   --fpc-btn-hero-dark-bg: color-mix(in srgb, var(--bs-tertiary-bg) 72%, #000);

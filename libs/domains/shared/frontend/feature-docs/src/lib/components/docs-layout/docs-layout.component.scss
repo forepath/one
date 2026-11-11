@@ -8,6 +8,12 @@
     z-index: 1020;
   }
 
+  // The brand link takes the top bar's ink (white on the dark bar, the emphasis colour on the light
+  // bar) instead of the link colour.
+  .docs-layout__brand {
+    color: inherit;
+  }
+
   // Mirror `fpc-top-bar__brand-mark` / `__brand-icon` (projected brand keeps docs encapsulation).
   .docs-layout__brand-mark {
     display: flex;

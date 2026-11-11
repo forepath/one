@@ -41,7 +41,7 @@
   letter-spacing: 0.02em;
 
   &:hover {
-    color: rgb(245 245 245 / 0.95) !important;
+    color: rgba(var(--landing-ink-rgb), 0.95) !important;
   }
 }
 

@@ -33,7 +33,7 @@ import {
       [height]="600"
     >
       <nav class="sai-rail">
-        <span class="sai-rail__brand"><i class="bi bi-receipt"></i></span>
+        <span class="sai-rail__brand"><img src="assets/images/icon_light.svg" alt="" /></span>
         <span class="sai-rail__item"><i class="bi bi-grid-1x2"></i></span>
         <span class="sai-rail__item sai-rail__item--active"><i class="bi bi-box-seam"></i></span>
         <span class="sai-rail__item"><i class="bi bi-people"></i></span>
@@ -81,8 +81,8 @@ import {
           </div>
           <div class="plan-config-illustration__meters mt-4">
             <fpc-lane-header title="Usage meters" flush />
-            @for (meter of meters; track meter.name) {
-              <div class="plan-config-illustration__meter">
+            @for (meter of meters; track meter.name; let index = $index) {
+              <div class="plan-config-illustration__meter sai-motion-select" [style.--sai-step]="index">
                 <span>{{ meter.name }}</span>
                 <span class="text-body-secondary">{{ meter.included }}</span>
                 <span class="fw-semibold">{{ meter.price }}</span>

@@ -35,7 +35,7 @@ const STATUS_LABELS: Record<OperationsSceneStatus, string> = {
     <shared-app-illustration [label]="label()" windowTitle="ForePath operations" [width]="760" [height]="600">
       <div class="operations-illustration__shell">
         <nav class="sai-rail">
-          <span class="sai-rail__brand"><i class="bi bi-activity"></i></span>
+          <span class="sai-rail__brand"><img src="assets/images/icon_light.svg" alt="" /></span>
           @for (icon of railIcons(); track icon) {
             <span class="sai-rail__item" [class.sai-rail__item--active]="icon === activeIcon()">
               <i class="bi" [class]="icon"></i>
@@ -47,7 +47,7 @@ const STATUS_LABELS: Record<OperationsSceneStatus, string> = {
           <header class="operations-illustration__header">
             <span class="fw-semibold">{{ scene().title }}</span>
             <span
-              class="operations-illustration__summary"
+              class="operations-illustration__summary sai-motion-pulse"
               [class.operations-illustration__summary--attention]="attentionCount() > 0"
             >
               <i
@@ -61,8 +61,8 @@ const STATUS_LABELS: Record<OperationsSceneStatus, string> = {
           <div class="operations-illustration__body sai-body">
             <p class="operations-illustration__label">Managed by ForePath</p>
             <ul class="list-unstyled mb-0 operations-illustration__items">
-              @for (item of scene().items; track item.name) {
-                <li class="operations-illustration__item">
+              @for (item of scene().items; track item.name; let i = $index) {
+                <li class="operations-illustration__item sai-motion-select sai-motion-select--4" [style.--sai-step]="i">
                   <i class="bi" [class]="item.icon"></i>
                   <span class="flex-grow-1">
                     <span class="d-block fw-semibold">{{ item.name }}</span>
@@ -80,8 +80,13 @@ const STATUS_LABELS: Record<OperationsSceneStatus, string> = {
 
             <p class="operations-illustration__label">Service level, last 30 days</p>
             <div class="operations-illustration__bars">
-              @for (bar of uptimeBars; track $index) {
-                <span class="operations-illustration__bar" [class.operations-illustration__bar--dip]="bar"></span>
+              @for (bar of uptimeBars; track $index; let last = $last) {
+                <span
+                  class="operations-illustration__bar"
+                  [class.operations-illustration__bar--dip]="bar"
+                  [class.sai-motion-enter]="last"
+                  [style.--sai-delay]="last ? '2s' : null"
+                ></span>
               }
             </div>
           </div>

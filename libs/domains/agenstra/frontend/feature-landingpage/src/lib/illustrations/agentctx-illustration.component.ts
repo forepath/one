@@ -47,7 +47,7 @@ import {
             </fpc-list-item>
           }
         </fpc-list>
-        <div class="sai-tool m-3">
+        <div class="sai-tool sai-motion-enter m-3" style="--sai-delay: 2s">
           <i class="bi bi-arrow-repeat"></i>Regenerated 2 configs from <code>.agenstra/</code>
         </div>
       </section>
@@ -68,7 +68,7 @@ import {
           <p class="agentctx-illustration__h2">## Needs a human review</p>
           <ul>
             <li>Major dependency upgrades</li>
-            <li>Changes to access policies</li>
+            <li><span class="sai-motion-caret">Changes to access policies</span></li>
           </ul>
         </div>
       </section>

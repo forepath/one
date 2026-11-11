@@ -9,6 +9,7 @@ import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forep
 import {
   SharedContactPersonComponent,
   SharedLogoGridComponent,
+  SharedMarkStackComponent,
   type SharedLogoGridLogo,
 } from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
@@ -28,6 +29,7 @@ import { IdeIllustrationComponent } from '../illustrations/ide-illustration.comp
     ConsoleIllustrationComponent,
     IdeIllustrationComponent,
     SharedLogoGridComponent,
+    SharedMarkStackComponent,
   ],
   styleUrls: ['./home.component.scss'],
   templateUrl: './home.component.html',
@@ -35,6 +37,24 @@ import { IdeIllustrationComponent } from '../illustrations/ide-illustration.comp
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PortalHomeComponent implements OnInit {
+  /** Hero feature badges, in the two rows of the badge band. */
+  protected readonly heroBadgeRows: readonly (readonly string[])[] = [
+    [
+      $localize`:@@featurePortalHome-heroFeatureBadge1:Multi-workspace control`,
+      $localize`:@@featurePortalHome-heroFeatureBadge2:Ticket automation`,
+      $localize`:@@featurePortalHome-heroFeatureBadge3:Policy & audit trails`,
+      $localize`:@@featurePortalHome-heroFeatureBadge4:Code & Git in the browser`,
+    ],
+    [
+      $localize`:@@featurePortalHome-heroFeatureBadge5:Deployments`,
+      $localize`:@@featurePortalHome-heroFeatureBadge6:Team knowledge`,
+      $localize`:@@featurePortalHome-heroFeatureBadge7:Roles & single sign-on`,
+      $localize`:@@featurePortalHome-heroFeatureBadge8:Your cloud or ours`,
+    ],
+  ];
+  /** Each band row repeats its badges four times: two identical halves, each wider than the band. */
+  protected readonly heroBadgeCopies = [0, 1, 2, 3] as const;
+
   protected readonly agentLogoSlots: readonly (readonly SharedLogoGridLogo[])[] = [
     [{ id: 'opencode', name: 'OpenCode', logoUrl: 'assets/images/logos/opencode.svg' }],
     [{ id: 'docker', name: 'Docker', logoUrl: 'assets/images/logos/docker.png' }],

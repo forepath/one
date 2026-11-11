@@ -40,8 +40,13 @@
   background: rgba(0, 0, 0, 0.5);
 }
 
+// Light page: a faint ink lift instead of the black overlay.
+:host-context([data-bs-theme='light']) .comparison-more-panel {
+  background: rgba(var(--bs-emphasis-color-rgb), 0.04);
+}
+
 .comparison-more-link {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(var(--bs-emphasis-color-rgb), 0.9);
   padding: 0.35rem 0;
   border-radius: 0.25rem;
   transition:
@@ -49,7 +54,7 @@
     padding-left 0.2s ease;
 
   &:hover {
-    color: #fff;
+    color: var(--bs-emphasis-color);
     padding-left: 0.25rem;
   }
 }

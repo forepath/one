@@ -1,42 +1,43 @@
 <!-- Hero -->
-<section id="hero" class="pt-10 pb-10 pb-md-0 py-lg-6 bg-dark text-white grid-section">
-  <div class="container hero-content grid-section__container grid-section__container--hero-top">
+<section id="hero" class="pt-10 pb-10 pb-md-0 py-lg-6 bg-body grid-section--deep text-body-emphasis grid-section">
+  <shared-mark-stack brand="decabill" />
+  <div class="container hero-content grid-section__container">
     <div class="row justify-content-center">
-      <div class="col-12 text-center hero-container">
+      <div class="col-12 col-lg-7 text-center text-lg-start hero-container">
         <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureDecabillHome-heroTitle">
           <span class="text-primary">Billing for agencies</span> and digital products
         </h1>
-        <p class="hero-lead lead fs-5 mb-5 mx-auto" i18n="@@featureDecabillHome-heroLead">
+        <p class="hero-lead lead fs-5 mb-5 mx-auto mx-lg-0" i18n="@@featureDecabillHome-heroLead">
           Decabill is one platform for agencies and digital product teams. Bill client services and projects, SaaS
           subscriptions, and managed hosting without stitching together separate tools.
         </p>
-        <div class="d-flex gap-2 justify-content-center flex-wrap hero-feature-badges mb-5">
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featureDecabillHome-heroBadge1">Services &amp; projects</span>
-          </fpc-badge>
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featureDecabillHome-heroBadge2">SaaS subscriptions</span>
-          </fpc-badge>
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featureDecabillHome-heroBadge3">Automatic provisioning</span>
-          </fpc-badge>
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featureDecabillHome-heroBadge4">ZUGFeRD invoicing</span>
-          </fpc-badge>
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featureDecabillHome-heroBadge5">Stripe payments</span>
-          </fpc-badge>
-          <fpc-badge variant="marketing" color="primary" size="xl">
-            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featureDecabillHome-heroBadge6">Multi-tenant</span>
-          </fpc-badge>
+        <!--
+          Feature badges as a slow two-row band (rows run in opposite directions, the edges fade), so at
+          most two rows ever show. Each row repeats its badges so the loop is seamless; only the first
+          copy is exposed to assistive technology.
+        -->
+        <div class="landing-badge-band hero-feature-badges mb-5">
+          @for (row of heroBadgeRows; track $index; let odd = $odd) {
+            <div class="landing-badge-band__row" [class.landing-badge-band__row--reverse]="odd">
+              <div class="landing-badge-band__track">
+                @for (copy of heroBadgeCopies; track copy) {
+                  @for (badge of row; track badge) {
+                    <fpc-badge
+                      variant="marketing"
+                      color="primary"
+                      size="xl"
+                      [attr.aria-hidden]="copy > 0 ? 'true' : null"
+                    >
+                      <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+                      <span>{{ badge }}</span>
+                    </fpc-badge>
+                  }
+                }
+              </div>
+            </div>
+          }
         </div>
-        <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
           <fpc-button
             variant="primary"
             size="xl"
@@ -60,15 +61,17 @@
           </fpc-button>
         </div>
       </div>
-    </div>
-  </div>
-  <div class="container grid-section__container grid-section__container--hero-bottom">
-    <div class="row">
-      <div class="col-md-12 hero-illustration d-none d-md-block">
-        <framework-portal-overview-illustration
-          label="Decabill overview with plans, services and invoices"
-          i18n-label="@@featureDecabillHome-heroIllustration"
-        />
+      <!--
+        The product window: under the copy on tablets, in the right column from lg up (out of the flow,
+        sized from the hero's height and running off the bottom and right edges, like the mark stack).
+      -->
+      <div class="col-12 col-lg-5 d-none d-md-block hero-visual">
+        <div class="hero-illustration">
+          <framework-portal-overview-illustration
+            label="Decabill overview with plans, services and invoices"
+            i18n-label="@@featureDecabillHome-heroIllustration"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -621,7 +624,7 @@
       <div class="col-md-4">
         <article class="card border rounded-3 shadow-sm p-4 h-100">
           <i class="bi bi-shield-check text-white icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2 text-body-emphasis" i18n="@@featureDecabillHome-compliancePoint1Title">
+          <h3 class="h6 fw-semibold mb-2 text-white" i18n="@@featureDecabillHome-compliancePoint1Title">
             Built in, not bolted on
           </h3>
           <p class="small mb-0" i18n="@@featureDecabillHome-compliancePoint1Desc">
@@ -633,7 +636,7 @@
       <div class="col-md-4">
         <article class="card border rounded-3 shadow-sm p-4 h-100">
           <i class="bi bi-arrow-repeat text-white icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2 text-body-emphasis" i18n="@@featureDecabillHome-compliancePoint2Title">
+          <h3 class="h6 fw-semibold mb-2 text-white" i18n="@@featureDecabillHome-compliancePoint2Title">
             We run what we ship
           </h3>
           <p class="small mb-0" i18n="@@featureDecabillHome-compliancePoint2Desc">
@@ -645,7 +648,7 @@
       <div class="col-md-4">
         <article class="card border rounded-3 shadow-sm p-4 h-100">
           <i class="bi bi-tools text-white icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2 text-body-emphasis" i18n="@@featureDecabillHome-compliancePoint3Title">
+          <h3 class="h6 fw-semibold mb-2 text-white" i18n="@@featureDecabillHome-compliancePoint3Title">
             Maintained where it counts
           </h3>
           <p class="small mb-0" i18n="@@featureDecabillHome-compliancePoint3Desc">
@@ -901,7 +904,7 @@
 </section>
 
 <!-- CTA -->
-<section id="cta" class="py-10 bg-dark grid-section">
+<section id="cta" class="py-10 bg-body grid-section--deep grid-section">
   <div class="container grid-section__container">
     <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
       <h2 class="h2 fw-semibold mb-4" i18n="@@featureDecabillHome-ctaTitle">

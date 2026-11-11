@@ -30,8 +30,12 @@ interface TimelineEvent {
           <fpc-badge fpcLaneHeaderActions color="success" variant="info" size="sm">Active</fpc-badge>
         </fpc-lane-header>
         <ol class="billing-timeline-illustration__events list-unstyled mb-0 sai-body">
-          @for (event of events; track event.title) {
-            <li class="billing-timeline-illustration__event">
+          @for (event of events; track event.title; let index = $index) {
+            <li
+              class="billing-timeline-illustration__event"
+              [class.sai-motion-enter]="index >= 2"
+              [style.--sai-delay]="index >= 2 ? (index - 1) * 1.5 + 's' : null"
+            >
               <span class="billing-timeline-illustration__marker">
                 @if (event.logo) {
                   <img [src]="event.logo" alt="" />
