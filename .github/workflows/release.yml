@@ -2,6 +2,14 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      republish_tag:
+        description: >-
+          Re-run the publishing of an already released tag (e.g. v5.0.0) without running semantic-release. Use this when
+          a release run failed after semantic-release created the tag. Leave empty for a regular release.
+        required: false
+        default: ''
+        type: string
 
 jobs:
   publish:
@@ -12,8 +20,10 @@ jobs:
       actions: read
       packages: write
     outputs:
-      new_release_published: ${{ steps.semantic-release.outputs.new_release_published }}
-      new_release_version: ${{ steps.semantic-release.outputs.new_release_version }}
+      new_release_published: ${{ steps.release.outputs.new_release_published }}
+      new_release_version: ${{ steps.release.outputs.new_release_version }}
+      # Git ref the downstream jobs check out: the re-published tag, or empty (the dispatched commit) for regular releases.
+      release_ref: ${{ steps.release.outputs.ref }}
       # Release candidates (branch `rc`, versions `<x.y.z>-rc.<n>`) never touch what stable consumers follow: moving
       # image tags and npm dist-tags use `rc` instead of `latest`, desktop feeds / repositories their beta channel.
       prerelease: ${{ steps.release-channel.outputs.prerelease }}
@@ -24,6 +34,7 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+          ref: ${{ inputs.republish_tag }}
 
       - name: Set nx shas
         uses: nrwl/nx-set-shas@v5
@@ -41,6 +52,7 @@ jobs:
       - name: Semantic release
         uses: cycjimmy/semantic-release-action@v6
         id: semantic-release
+        if: inputs.republish_tag == ''
         with:
           semantic_version: 22.0.5
           extra_plugins: |
@@ -50,11 +62,42 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
 
+      - name: Resolve the release
+        id: release
+        env:
+          REPUBLISH_TAG: ${{ inputs.republish_tag }}
+          SEMANTIC_RELEASE_PUBLISHED: ${{ steps.semantic-release.outputs.new_release_published }}
+          SEMANTIC_RELEASE_VERSION: ${{ steps.semantic-release.outputs.new_release_version }}
+        run: |
+          set -euo pipefail
+          if [ -z "${REPUBLISH_TAG}" ]; then
+            {
+              echo "new_release_published=${SEMANTIC_RELEASE_PUBLISHED}"
+              echo "new_release_version=${SEMANTIC_RELEASE_VERSION}"
+              echo "ref="
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! [[ "${REPUBLISH_TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]; then
+            echo "::error::republish_tag must look like v<x.y.z> or v<x.y.z>-rc.<n>, got '${REPUBLISH_TAG}'."
+            exit 1
+          fi
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse "refs/tags/${REPUBLISH_TAG}^{commit}")" ]; then
+            echo "::error::Checked out commit does not match tag ${REPUBLISH_TAG}."
+            exit 1
+          fi
+          echo "Re-publishing existing release ${REPUBLISH_TAG}; semantic-release was skipped."
+          {
+            echo "new_release_published=true"
+            echo "new_release_version=${REPUBLISH_TAG#v}"
+            echo "ref=${REPUBLISH_TAG}"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Determine the release channel
         id: release-channel
-        if: steps.semantic-release.outputs.new_release_published == 'true'
+        if: steps.release.outputs.new_release_published == 'true'
         env:
-          VERSION: ${{ steps.semantic-release.outputs.new_release_version }}
+          VERSION: ${{ steps.release.outputs.new_release_version }}
         run: |
           set -euo pipefail
           case "${VERSION}" in
@@ -64,7 +107,7 @@ jobs:
           esac
 
       - name: Run build
-        if: steps.semantic-release.outputs.new_release_published == 'true'
+        if: steps.release.outputs.new_release_published == 'true'
         run: |
           set -euo pipefail
           for attempt in 1 2 3; do
@@ -79,23 +122,23 @@ jobs:
           done
 
       - name: Generate binaries
-        if: steps.semantic-release.outputs.new_release_published == 'true'
+        if: steps.release.outputs.new_release_published == 'true'
         run: npx nx run-many --target=scripts-binary --parallel=3
 
       - name: Run SBOM generation
-        if: steps.semantic-release.outputs.new_release_published == 'true'
+        if: steps.release.outputs.new_release_published == 'true'
         env:
-          VERSION: ${{ steps.semantic-release.outputs.new_release_version }}
+          VERSION: ${{ steps.release.outputs.new_release_version }}
         run: npx nx run-many --target=sbom --parallel=1
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
-        if: steps.semantic-release.outputs.new_release_published == 'true'
+        if: steps.release.outputs.new_release_published == 'true'
         with:
           name: build-artifacts
-          path: |
-            dist/
-            node_modules/
+          # node_modules is not shipped: every consuming job runs `npm ci` (setup-env), which deletes it first.
+          # With a single path the artifact root is dist/ itself, so consumers download it into `dist`.
+          path: dist/
           retention-days: 1
           compression-level: 6
 
@@ -112,6 +155,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
+          ref: ${{ needs.publish.outputs.release_ref }}
           persist-credentials: false
           fetch-depth: 0
 
@@ -122,7 +166,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: build-artifacts
-          path: .
+          path: dist
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
@@ -161,6 +205,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
+          ref: ${{ needs.publish.outputs.release_ref }}
           persist-credentials: false
           fetch-depth: 0
 
@@ -171,7 +216,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: build-artifacts
-          path: .
+          path: dist
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
@@ -212,6 +257,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
+          ref: ${{ needs.publish.outputs.release_ref }}
           persist-credentials: false
           fetch-depth: 0
 
@@ -222,7 +268,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: build-artifacts
-          path: .
+          path: dist
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
@@ -261,6 +307,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
+          ref: ${{ needs.publish.outputs.release_ref }}
           persist-credentials: false
           fetch-depth: 0
 
@@ -271,7 +318,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: build-artifacts
-          path: .
+          path: dist
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
@@ -319,6 +366,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
+          ref: ${{ needs.publish.outputs.release_ref }}
           persist-credentials: false
           fetch-depth: 0
 
@@ -329,7 +377,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: build-artifacts
-          path: .
+          path: dist
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
@@ -389,6 +437,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
+          ref: ${{ needs.publish.outputs.release_ref }}
           persist-credentials: false
           fetch-depth: 0
 
@@ -399,7 +448,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: build-artifacts
-          path: .
+          path: dist
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
@@ -448,6 +497,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
+          ref: ${{ needs.publish.outputs.release_ref }}
           persist-credentials: false
           fetch-depth: 0
 
@@ -568,6 +618,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
+          ref: ${{ needs.publish.outputs.release_ref }}
           persist-credentials: false
           fetch-depth: 0
 
@@ -700,7 +751,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: build-artifacts
-          path: .
+          path: dist
 
       - name: Upload agentctx to Cloudflare R2 bucket
         env:
@@ -770,6 +821,7 @@ jobs:
         if: steps.signing-key.outputs.present == 'true'
         uses: actions/checkout@v7
         with:
+          ref: ${{ needs.publish.outputs.release_ref }}
           persist-credentials: false
           fetch-depth: 0
 
@@ -778,7 +830,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: build-artifacts
-          path: .
+          path: dist
 
       - name: Download desktop binaries
         if: steps.signing-key.outputs.present == 'true' && matrix.desktop
@@ -872,6 +924,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
+          ref: ${{ needs.publish.outputs.release_ref }}
           persist-credentials: false
 
       - name: Download the signed release manifest
@@ -939,12 +992,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.publish.outputs.release_ref }}
 
       - name: Download build artifacts
         uses: actions/download-artifact@v8
         with:
           name: build-artifacts
-          path: .
+          path: dist
 
       - name: Download container image SBOM artifacts
         uses: actions/download-artifact@v8
@@ -1244,6 +1299,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.publish.outputs.release_ref }}
 
       - name: Download container image SBOM artifacts
         uses: actions/download-artifact@v8
