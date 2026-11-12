@@ -34,12 +34,15 @@
 
 // Wide screens: the fact cards sit in the hero's bottom-right corner, out of the flow and positioned
 // on the hero's grid container: their right edge on the content edge (the same line as the
-// navigation's call to action), their bottom on the end of the content.
+// navigation's call to action), their bottom on the end of the content. They stack above the blog
+// teaser row (z-index 2), which spans the full container width at the same height and would
+// otherwise swallow clicks on the lower half of the linked rate card.
 @media (min-width: 992px) {
   .home-hero__collage {
     position: absolute;
     right: 0.75rem;
     bottom: 0;
+    z-index: 3;
   }
 }
 
