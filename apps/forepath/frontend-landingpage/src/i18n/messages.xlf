@@ -880,6 +880,18 @@
       <trans-unit id="featureForepathHome-heroFactOss" datatype="html">
         <source>Active in open source</source>
         </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactRateFrom" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactRate" datatype="html">
+        <source>€30.54</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactRateLabel" datatype="html">
+        <source>per 15 minutes</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactRateNote" datatype="html">
+        <source>Standard rate</source>
+        </trans-unit>
       <trans-unit id="featureForepathHome-rootsSymbolAlt" datatype="html">
         <source>Nordrhein-Westfalen-Zeichen, the citizen emblem of North Rhine-Westphalia</source>
         </trans-unit>

@@ -522,6 +522,22 @@
         <source>Active in open source</source>
         <target>Aktiv in Open Source</target>
       </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactRateFrom" datatype="html">
+        <source>From</source>
+        <target>ab</target>
+      </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactRate" datatype="html">
+        <source>€30.54</source>
+        <target>30,54 €</target>
+      </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactRateLabel" datatype="html">
+        <source>per 15 minutes</source>
+        <target>pro 15 Minuten</target>
+      </trans-unit>
+      <trans-unit id="featureForepathHome-heroFactRateNote" datatype="html">
+        <source>Standard rate</source>
+        <target>Standardtarif</target>
+      </trans-unit>
       <trans-unit id="featureForepathHome-humanMeetsTitle" datatype="html">
         <source>Where human meets machine</source>
         <target>Wo Mensch und Maschine zusammenkommen</target>

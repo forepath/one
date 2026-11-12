@@ -1,14 +1,16 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 /**
- * Home hero facts: the lead figure across, then two cards side by side. Every fact is one the site
- * states elsewhere (proof section, industries, About timeline), so the cards never claim more than
- * the pages behind them. The home hero places the group in its bottom-right corner.
+ * Home hero facts: the lead figure across, two cards side by side, then the starting rate across.
+ * Every fact is one the site states elsewhere (proof section, industries, About timeline, pricing),
+ * so the cards never claim more than the pages behind them. The rate card links to the price list. The home hero places the group in its bottom-right corner.
  */
 @Component({
   selector: 'framework-forepath-hero-collage',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink],
   host: { class: 'forepath-hero-collage' },
   template: `
     <ul
@@ -37,6 +39,21 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
             >
           </li>
         </ul>
+      </li>
+      <li class="forepath-hero-collage__row">
+        <a class="forepath-hero-collage__card forepath-hero-collage__card--rate" routerLink="/pricing">
+          <span class="forepath-hero-collage__rate">
+            <span class="forepath-hero-collage__eyebrow" i18n="@@featureForepathHome-heroFactRateFrom">From</span>
+            <span class="forepath-hero-collage__value" i18n="@@featureForepathHome-heroFactRate">€30.54</span>
+          </span>
+          <span class="forepath-hero-collage__rate-unit">
+            <span class="forepath-hero-collage__label" i18n="@@featureForepathHome-heroFactRateLabel"
+              >per 15 minutes</span
+            >
+            <span class="forepath-hero-collage__note" i18n="@@featureForepathHome-heroFactRateNote">Standard rate</span>
+          </span>
+          <i class="bi bi-arrow-right forepath-hero-collage__arrow" aria-hidden="true"></i>
+        </a>
       </li>
     </ul>
   `,

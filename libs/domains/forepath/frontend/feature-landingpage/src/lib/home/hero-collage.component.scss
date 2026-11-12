@@ -1,4 +1,4 @@
-// The lead figure across, then a row of two, a fixed gap apart. Each card is the regular card
+// The lead figure across, then a row of two, then the starting rate across, a fixed gap apart. Each card is the regular card
 // language (body surface, hairline border, soft shadow); the lead figure sits on the brand colour.
 :host {
   display: block;
@@ -86,4 +86,68 @@
     line-height: 2.5rem;
     color: var(--bs-emphasis-color);
   }
+}
+
+// Starting rate: one line across the full width, the figure and its unit split by a hairline, and the
+// whole card a link to the price list.
+.forepath-hero-collage__card--rate {
+  flex-direction: row;
+  align-items: center;
+  gap: 1.25rem;
+  text-decoration: none;
+
+  // A secondary figure: smaller than the cards above, so the lead figure keeps the weight.
+  .forepath-hero-collage__value {
+    font-size: 1.75rem;
+  }
+
+  .forepath-hero-collage__label {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+  }
+
+  // The arrow alone answers the hover; the card itself stays like its neighbours.
+  &:hover,
+  &:focus-visible {
+    .forepath-hero-collage__arrow {
+      transform: translateX(0.25rem);
+    }
+  }
+}
+
+.forepath-hero-collage__rate {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+// The unit beside the figure: what the rate buys, then which tariff it is.
+.forepath-hero-collage__rate-unit {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+  padding-left: 1.25rem;
+  border-left: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.forepath-hero-collage__note {
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  color: var(--bs-secondary-color);
+}
+
+.forepath-hero-collage__eyebrow {
+  font-size: 0.8125rem;
+  line-height: 1;
+  color: var(--bs-secondary-color);
+}
+
+.forepath-hero-collage__arrow {
+  flex: none;
+  font-size: 1.25rem;
+  color: var(--bs-primary);
+  transition: transform 0.2s ease;
 }
