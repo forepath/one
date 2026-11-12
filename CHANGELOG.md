@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.1.0](https://github.com/forepath/one/compare/v5.0.1...v5.1.0) (2026-11-12)
+
+
+### Features
+
+* **forepath:** hero pricing teaser ([#744](https://github.com/forepath/one/issues/744)) ([8d4cb0b](https://github.com/forepath/one/commit/8d4cb0b257bc3682dd86cf6df21ade4bbe81bf33))
+
+
+### Chores
+
+* **decabill:** made-in germany translations ([#743](https://github.com/forepath/one/issues/743)) ([4900486](https://github.com/forepath/one/commit/4900486588282e9a7ba921f097082e1275a3a258))
+
 ## [5.0.1](https://github.com/forepath/one/compare/v5.0.0...v5.0.1) (2026-11-11)
 
 
