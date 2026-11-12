@@ -626,14 +626,6 @@
         <source>Decabill</source>
         <target state="translated">Decabill</target>
       </trans-unit>
-      <trans-unit id="featureDecabillPortal-madeIn" datatype="html">
-        <source>Made in</source>
-        <target>Entwickelt in</target>
-      </trans-unit>
-      <trans-unit id="featureDecabillPortal-madeInCountry" datatype="html">
-        <source>Germany</source>
-        <target state="translated">Deutschland</target>
-      </trans-unit>
       <trans-unit id="featureDecabillPortal-toggleNavAriaLabel" datatype="html">
         <source>Toggle navigation</source>
         <target state="translated">Navigation umschalten</target>

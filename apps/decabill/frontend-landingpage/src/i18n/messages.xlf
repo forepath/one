@@ -464,12 +464,6 @@
       <trans-unit id="featureDecabillPortal-brandAlt" datatype="html">
         <source>Decabill</source>
         </trans-unit>
-      <trans-unit id="featureDecabillPortal-madeIn" datatype="html">
-        <source>Made in</source>
-        </trans-unit>
-      <trans-unit id="featureDecabillPortal-madeInCountry" datatype="html">
-        <source>Germany</source>
-        </trans-unit>
       <trans-unit id="featureDecabillPortal-toggleNavAriaLabel" datatype="html">
         <source>Toggle navigation</source>
         </trans-unit>
