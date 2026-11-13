@@ -49,6 +49,7 @@ import { StatisticsController } from '../controllers/statistics.controller';
 import { TicketAutomationController } from '../controllers/ticket-automation.controller';
 import { AgentTasksController } from '../controllers/agent-tasks.controller';
 import { ChatPlanController } from '../controllers/chat-plan.controller';
+import { OpenAiCompatibleController } from '../controllers/openai-compatible.controller';
 import { TicketsController } from '../controllers/tickets.controller';
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
 import { ClientOpencodeConfigEntity } from '../entities/client-opencode-config.entity';
@@ -137,6 +138,7 @@ import { KnowledgeBoardRealtimeService } from '../services/knowledge-board-realt
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { ProvisioningService } from '../services/provisioning.service';
 import { RemoteAgentsSessionService } from '../services/remote-agents-session.service';
+import { OpenAiCompatibleService } from '../services/openai-compatible.service';
 import { StatisticsAgentSyncService } from '../services/statistics-agent-sync.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketAutomationService } from '../services/ticket-automation.service';
@@ -254,6 +256,7 @@ import { StatisticsModule } from './statistics.module';
     KnowledgeTreeController,
     TicketAutomationController,
     ChatPlanController,
+    OpenAiCompatibleController,
     AgentTasksController,
     ClientAgentAutonomyController,
     ClientAgentAutonomyDirectoryController,
@@ -309,6 +312,7 @@ import { StatisticsModule } from './statistics.module';
     ChatPlanOrchestratorService,
     ClientAgentAutonomyService,
     RemoteAgentsSessionService,
+    OpenAiCompatibleService,
     AutonomousRunOrchestratorService,
     ClientsRepository,
     ClientUsersRepository,

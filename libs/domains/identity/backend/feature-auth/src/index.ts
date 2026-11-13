@@ -44,6 +44,9 @@ export * from './lib/guards/pat-scopes.guard';
 export * from './lib/guards/pat-bearer-auth.guard';
 export * from './lib/guards/external-identity-auth.guard';
 
+// Middleware
+export * from './lib/middleware/pat-bearer-exchange.middleware';
+
 // Services
 export * from './lib/services/auth.service';
 export * from './lib/services/users.service';

@@ -155,6 +155,7 @@ sequenceDiagram
 - **[Message Filters](./message-filters.md)** Regex policies affecting chat
 - **[Agent Management](./agent-management.md)** Agent authentication
 - **[Agent Runtime](../ai-agents/agent-runtime.md)** OpenCode session suffixes
+- **[OpenAI-compatible API](./openai-compatible-api.md)** Chat turns from OpenAI SDKs and tools
 
 ---
 
