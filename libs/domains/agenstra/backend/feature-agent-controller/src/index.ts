@@ -214,3 +214,8 @@ export * from './lib/constants/workspace-graph-snapshot.constants';
 export * from './lib/services/workspace-graph-snapshot.service';
 export * from './lib/services/workspace-graph-view.service';
 export * from './lib/repositories/workspace-graph-snapshots.repository';
+
+// OpenAI-compatible API
+export * from './lib/constants/openai-compatible.constants';
+export * from './lib/controllers/openai-compatible.controller';
+export * from './lib/services/openai-compatible.service';

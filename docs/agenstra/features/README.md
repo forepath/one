@@ -176,6 +176,16 @@ Multiple authentication methods with configurable user registration. Support for
 - Admin user management
 - Optional signup disable for controlled onboarding
 
+### [OpenAI-compatible API](./openai-compatible-api.md)
+
+Call agents through the OpenAI API standard (Chat Completions, Responses, Conversations, Models) with PATs, app tokens or the instance credentials.
+
+**Key Capabilities**:
+
+- One base URL per agent; `model` selects the agent's LLM, chat sessions via header, `conversation` or `previous_response_id`
+- Streaming (SSE) that respects outgoing message filters
+- Same scopes, workspace access, statistics and webhooks as console chat turns
+
 ### [Webhooks](./webhooks.md)
 
 Instance-scoped outbound webhook endpoints for controller events with optional workspace filters.

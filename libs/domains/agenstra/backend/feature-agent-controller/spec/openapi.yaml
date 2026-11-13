@@ -4281,6 +4281,326 @@ paths:
           description: User does not have access to this client
         '404':
           description: Client, agent, or chat session not found
+  /clients/{id}/agents/{agentId}/openai/v1/models:
+    get:
+      summary: List models (OpenAI-compatible)
+      description: |
+        OpenAI-compatible model list of the agent: `default` (the agent's default model) plus every OpenCode model of
+        the agent (`provider/model`). Use `<controller>/api/clients/{id}/agents/{agentId}/openai/v1` as the base URL of
+        an OpenAI SDK. See the OpenAI-compatible API documentation for authentication (raw `fp_pat_…` PATs are
+        accepted as bearer on these routes) and behavior. Errors use the OpenAI error envelope.
+      operationId: openAiListModels
+      security:
+        - bearerAuth: [agents:read]
+        - mutualTLS: []
+        - certificateAssertion: []
+      parameters:
+        - $ref: '#/components/parameters/openAiClientId'
+        - $ref: '#/components/parameters/openAiAgentId'
+      responses:
+        '200':
+          description: Model list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAiModelList'
+        default:
+          $ref: '#/components/responses/OpenAiError'
+  /clients/{id}/agents/{agentId}/openai/v1/models/{model}:
+    get:
+      summary: Retrieve a model (OpenAI-compatible)
+      description: Model ids may contain a slash (`provider/model`); the remaining path is the model id.
+      operationId: openAiGetModel
+      security:
+        - bearerAuth: [agents:read]
+        - mutualTLS: []
+        - certificateAssertion: []
+      parameters:
+        - $ref: '#/components/parameters/openAiClientId'
+        - $ref: '#/components/parameters/openAiAgentId'
+        - in: path
+          name: model
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Model
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAiModel'
+        default:
+          $ref: '#/components/responses/OpenAiError'
+  /clients/{id}/agents/{agentId}/openai/v1/chat/completions:
+    post:
+      summary: Create a chat completion (OpenAI-compatible)
+      description: |
+        Runs one turn in a visible chat session of the agent (primary session unless `X-Agenstra-Chat-Id` or
+        `chat_id` selects another session of this agent). The agent keeps the transcript, so only the messages after
+        the last `assistant` message are sent (text content only; client-side tools are not supported). With
+        `stream: true` the response is `text/event-stream` with `chat.completion.chunk` events and `data: [DONE]`.
+        Live deltas are streamed only when no enabled outgoing `drop` / `replace` message filter applies to the agent;
+        otherwise the filtered final answer is streamed as one chunk. A filter drop ends with
+        `finish_reason: content_filter`. The chat session is returned in `X-Agenstra-Chat-Id`.
+      operationId: openAiCreateChatCompletion
+      security:
+        - bearerAuth: [agent_chats:write]
+        - mutualTLS: []
+        - certificateAssertion: []
+      parameters:
+        - $ref: '#/components/parameters/openAiClientId'
+        - $ref: '#/components/parameters/openAiAgentId'
+        - $ref: '#/components/parameters/openAiChatIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenAiChatCompletionRequest'
+      responses:
+        '200':
+          description: Chat completion (or SSE stream of chunks)
+          headers:
+            X-Agenstra-Chat-Id:
+              $ref: '#/components/headers/OpenAiChatId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAiChatCompletion'
+            text/event-stream:
+              schema:
+                type: string
+                description: '`data: <chat.completion.chunk JSON>` frames, terminated by `data: [DONE]`'
+        default:
+          $ref: '#/components/responses/OpenAiError'
+  /clients/{id}/agents/{agentId}/openai/v1/responses:
+    post:
+      summary: Create a response (OpenAI Responses API)
+      description: |
+        Runs one turn like chat completions. The chat session is selected by `conversation` (`conv_…` id or chat
+        session UUID), `previous_response_id` (response ids embed their chat session), `X-Agenstra-Chat-Id` or
+        `chat_id`; default is the primary session. `instructions` are prepended to the turn. Response objects are not
+        stored (`store: false`); the turn is stored in the chat session. With `stream: true` the response is a
+        Responses API event stream (`response.created` … `response.completed` / `response.incomplete` /
+        `response.failed`).
+      operationId: openAiCreateResponse
+      security:
+        - bearerAuth: [agent_chats:write]
+        - mutualTLS: []
+        - certificateAssertion: []
+      parameters:
+        - $ref: '#/components/parameters/openAiClientId'
+        - $ref: '#/components/parameters/openAiAgentId'
+        - $ref: '#/components/parameters/openAiChatIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenAiResponseRequest'
+      responses:
+        '200':
+          description: Response object (or SSE event stream)
+          headers:
+            X-Agenstra-Chat-Id:
+              $ref: '#/components/headers/OpenAiChatId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAiResponse'
+            text/event-stream:
+              schema:
+                type: string
+                description: '`event: <type>` + `data: <event JSON>` frames'
+        default:
+          $ref: '#/components/responses/OpenAiError'
+  /clients/{id}/agents/{agentId}/openai/v1/conversations:
+    post:
+      summary: Create a conversation (chat session)
+      description: Creates a visible chat session; `metadata.title` becomes the session title. Initial `items` are not supported.
+      operationId: openAiCreateConversation
+      security:
+        - bearerAuth: [agent_chats:write]
+        - mutualTLS: []
+        - certificateAssertion: []
+      parameters:
+        - $ref: '#/components/parameters/openAiClientId'
+        - $ref: '#/components/parameters/openAiAgentId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenAiConversationRequest'
+      responses:
+        '200':
+          description: Conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAiConversation'
+        default:
+          $ref: '#/components/responses/OpenAiError'
+  /clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}:
+    get:
+      summary: Retrieve a conversation (chat session)
+      operationId: openAiGetConversation
+      security:
+        - bearerAuth: [agent_chats:read]
+        - mutualTLS: []
+        - certificateAssertion: []
+      parameters:
+        - $ref: '#/components/parameters/openAiClientId'
+        - $ref: '#/components/parameters/openAiAgentId'
+        - $ref: '#/components/parameters/openAiConversationId'
+      responses:
+        '200':
+          description: Conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAiConversation'
+        default:
+          $ref: '#/components/responses/OpenAiError'
+    post:
+      summary: Update a conversation (rename the chat session)
+      description: '`metadata.title` renames the chat session; other metadata is not stored.'
+      operationId: openAiUpdateConversation
+      security:
+        - bearerAuth: [agent_chats:write]
+        - mutualTLS: []
+        - certificateAssertion: []
+      parameters:
+        - $ref: '#/components/parameters/openAiClientId'
+        - $ref: '#/components/parameters/openAiAgentId'
+        - $ref: '#/components/parameters/openAiConversationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenAiConversationRequest'
+      responses:
+        '200':
+          description: Conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAiConversation'
+        default:
+          $ref: '#/components/responses/OpenAiError'
+    delete:
+      summary: Delete a conversation (chat session)
+      operationId: openAiDeleteConversation
+      security:
+        - bearerAuth: [agent_chats:write]
+        - mutualTLS: []
+        - certificateAssertion: []
+      parameters:
+        - $ref: '#/components/parameters/openAiClientId'
+        - $ref: '#/components/parameters/openAiAgentId'
+        - $ref: '#/components/parameters/openAiConversationId'
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, object, deleted]
+                properties:
+                  id:
+                    type: string
+                  object:
+                    type: string
+                    enum: [conversation.deleted]
+                  deleted:
+                    type: boolean
+        default:
+          $ref: '#/components/responses/OpenAiError'
+  /clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}/items:
+    get:
+      summary: List conversation items (chat messages)
+      operationId: openAiListConversationItems
+      security:
+        - bearerAuth: [agent_chats:read]
+        - mutualTLS: []
+        - certificateAssertion: []
+      parameters:
+        - $ref: '#/components/parameters/openAiClientId'
+        - $ref: '#/components/parameters/openAiAgentId'
+        - $ref: '#/components/parameters/openAiConversationId'
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - in: query
+          name: after
+          schema:
+            type: string
+          description: Item id to list after
+      responses:
+        '200':
+          description: Items
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [object, data, first_id, last_id, has_more]
+                properties:
+                  object:
+                    type: string
+                    enum: [list]
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OpenAiConversationItem'
+                  first_id:
+                    type: string
+                    nullable: true
+                  last_id:
+                    type: string
+                    nullable: true
+                  has_more:
+                    type: boolean
+        default:
+          $ref: '#/components/responses/OpenAiError'
+  /clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}/items/{itemId}:
+    get:
+      summary: Retrieve a conversation item (chat message)
+      operationId: openAiGetConversationItem
+      security:
+        - bearerAuth: [agent_chats:read]
+        - mutualTLS: []
+        - certificateAssertion: []
+      parameters:
+        - $ref: '#/components/parameters/openAiClientId'
+        - $ref: '#/components/parameters/openAiAgentId'
+        - $ref: '#/components/parameters/openAiConversationId'
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAiConversationItem'
+        default:
+          $ref: '#/components/responses/OpenAiError'
   /clients/{id}/agents/{agentId}/chats/{chatId}/plans:
     get:
       summary: List chat plans for a chat session
@@ -8769,6 +9089,8 @@ components:
         Scopes follow `<resource>:read|write|admin`; `write` implies `read`, and `admin` implies `write` and `read`.
         `:admin` scopes are only grantable to and effective for admin users. Operations without listed scopes
         either do not accept personal access tokens or are public.
+        On the OpenAI-compatible routes (`/clients/{id}/agents/{agentId}/openai/v1/*`) a raw personal access token
+        (`fp_pat_…`) is also accepted as bearer; it is exchanged in-process exactly like `POST /auth/token`.
       bearerFormat: JWT
     basicAuth:
       type: http
@@ -8789,6 +9111,36 @@ components:
         `MTLS_ASSERTION_MAX_LIFETIME`). Used by browsers and behind TLS-terminating proxies. Grants full admin
         access, like the static API key.
   parameters:
+    openAiClientId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The UUID of the client (workspace)
+    openAiAgentId:
+      in: path
+      name: agentId
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The UUID of the agent
+    openAiConversationId:
+      in: path
+      name: conversationId
+      required: true
+      schema:
+        type: string
+      description: '`conv_…` id or chat session UUID'
+    openAiChatIdHeader:
+      in: header
+      name: X-Agenstra-Chat-Id
+      required: false
+      schema:
+        type: string
+      description: Chat session (UUID or `conv_…` id) of this agent; default is the primary session
     fileManagerContext:
       name: context
       in: query
@@ -8873,6 +9225,19 @@ components:
         type: string
         maxLength: 1024
       description: Graph node id (e.g. `file:src/a.ts`, `symbol:src/a.ts#Foo`)
+  headers:
+    OpenAiChatId:
+      description: Chat session the turn ran in
+      schema:
+        type: string
+        format: uuid
+  responses:
+    OpenAiError:
+      description: OpenAI error envelope (400 invalid request, 401, 403 missing scope / access, 404, 429, 5xx)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OpenAiError'
   schemas:
     AppTokenRequestDto:
       type: object
@@ -14741,4 +15106,270 @@ components:
         nodes:
           type: integer
         edges:
+          type: integer
+    OpenAiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [message, type, param, code]
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: invalid_request_error, permission_error, rate_limit_error or server_error
+            param:
+              type: string
+              nullable: true
+            code:
+              type: string
+              nullable: true
+    OpenAiModel:
+      type: object
+      required: [id, object, created, owned_by]
+      properties:
+        id:
+          type: string
+          description: '`default` or an OpenCode `provider/model` id'
+        object:
+          type: string
+          enum: [model]
+        created:
+          type: integer
+        owned_by:
+          type: string
+    OpenAiModelList:
+      type: object
+      required: [object, data]
+      properties:
+        object:
+          type: string
+          enum: [list]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAiModel'
+    OpenAiChatCompletionRequest:
+      type: object
+      required: [model, messages]
+      additionalProperties: true
+      description: |
+        OpenAI Chat Completions request. Fields without an Agenstra equivalent (temperature, top_p, max_tokens,
+        tools with tool_choice auto/none, response_format, …) are accepted and ignored. `n` must be 1.
+      properties:
+        model:
+          type: string
+        messages:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [role]
+            properties:
+              role:
+                type: string
+                enum: [system, developer, user, assistant, tool, function]
+              content:
+                oneOf:
+                  - type: string
+                  - type: array
+                    items:
+                      type: object
+                  - type: 'null'
+        stream:
+          type: boolean
+        stream_options:
+          type: object
+          properties:
+            include_usage:
+              type: boolean
+        chat_id:
+          type: string
+          description: Agenstra extension - chat session UUID or `conv_…` id
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+    OpenAiChatCompletion:
+      type: object
+      required: [id, object, created, model, choices, usage]
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          enum: [chat.completion]
+        created:
+          type: integer
+        model:
+          type: string
+        system_fingerprint:
+          type: string
+          nullable: true
+        choices:
+          type: array
+          items:
+            type: object
+            properties:
+              index:
+                type: integer
+              message:
+                type: object
+                properties:
+                  role:
+                    type: string
+                    enum: [assistant]
+                  content:
+                    type: string
+                  refusal:
+                    type: string
+                    nullable: true
+              finish_reason:
+                type: string
+                enum: [stop, content_filter]
+        usage:
+          $ref: '#/components/schemas/OpenAiUsage'
+    OpenAiUsage:
+      type: object
+      properties:
+        prompt_tokens:
+          type: integer
+        completion_tokens:
+          type: integer
+        total_tokens:
+          type: integer
+        prompt_tokens_details:
+          type: object
+          properties:
+            cached_tokens:
+              type: integer
+        completion_tokens_details:
+          type: object
+          properties:
+            reasoning_tokens:
+              type: integer
+    OpenAiResponseRequest:
+      type: object
+      required: [model, input]
+      additionalProperties: true
+      properties:
+        model:
+          type: string
+        input:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: object
+        instructions:
+          type: string
+        conversation:
+          oneOf:
+            - type: string
+            - type: object
+              properties:
+                id:
+                  type: string
+        previous_response_id:
+          type: string
+        stream:
+          type: boolean
+        chat_id:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+    OpenAiResponse:
+      type: object
+      required: [id, object, created_at, status, model, output]
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          enum: [response]
+        created_at:
+          type: integer
+        status:
+          type: string
+          enum: [in_progress, completed, incomplete, failed]
+        model:
+          type: string
+        output:
+          type: array
+          items:
+            type: object
+        output_text:
+          type: string
+        previous_response_id:
+          type: string
+          nullable: true
+        conversation:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+        incomplete_details:
+          type: object
+          nullable: true
+        error:
+          type: object
+          nullable: true
+        usage:
+          type: object
+          nullable: true
+    OpenAiConversationRequest:
+      type: object
+      properties:
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          description: '`title` names the chat session'
+    OpenAiConversation:
+      type: object
+      required: [id, object, created_at, metadata]
+      properties:
+        id:
+          type: string
+          description: '`conv_<chat session id without dashes>`'
+        object:
+          type: string
+          enum: [conversation]
+        created_at:
+          type: integer
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+    OpenAiConversationItem:
+      type: object
+      required: [type, id, status, role, content]
+      properties:
+        type:
+          type: string
+          enum: [message]
+        id:
+          type: string
+        status:
+          type: string
+          enum: [completed, incomplete]
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [input_text, output_text]
+              text:
+                type: string
+        created_at:
           type: integer

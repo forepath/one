@@ -54,7 +54,7 @@ export class SamlAuthModule {
     return {
       module: SamlAuthModule,
       imports: [
-        PatAuthModule.register({ patScopeCatalog: options.patScopeCatalog }),
+        PatAuthModule.register(options),
         TypeOrmModule.forFeature([
           UserEntity,
           RevokedUserTokenEntity,

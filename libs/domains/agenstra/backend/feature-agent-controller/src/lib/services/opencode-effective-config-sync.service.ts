@@ -65,6 +65,22 @@ export class OpencodeEffectiveConfigSyncService {
     return { effective, secrets: workerSecrets, platformPolicy };
   }
 
+  /**
+   * Effective platform security policy (egress, message filters) of an existing agent: global, workspace and the
+   * agent's environment layer. Same resolution as {@link buildEffectivePayload} without the OpenCode config or secrets.
+   */
+  async buildPlatformPolicy(clientId: string, agentId: string): Promise<EffectivePlatformSecurityPolicy> {
+    const layers = await this.opencodeConfigService.getLayerConfigs(clientId);
+    const agentConfig = await this.agentConfigProxy.get(clientId, agentId);
+    const agentOverlay = this.opencodeConfigService.composeStoredLayer(agentConfig.config, agentConfig.overrides);
+
+    return resolvePlatformSecurityPolicy([
+      { source: 'global', overlay: layers.global },
+      { source: 'workspace', overlay: layers.workspace },
+      { source: 'environment', overlay: agentOverlay },
+    ]);
+  }
+
   /** Effective platform security policy for a new agent (workspace + global; no environment layer yet). */
   async buildCreationPlatformPolicy(clientId: string): Promise<EffectivePlatformSecurityPolicy> {
     const layers = await this.opencodeConfigService.getLayerConfigs(clientId);

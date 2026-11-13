@@ -1,7 +1,17 @@
 import { createCorrelationAwareSocketIoClient } from '@forepath/shared/backend/util-http-context';
 import { AuthenticationType } from '@forepath/identity/backend';
 import { ClientAgentCredentialsRepository } from '@forepath/identity/backend';
-import { BadRequestException, Injectable, Logger, Optional } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  GatewayTimeoutException,
+  HttpException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  Optional,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import type { Socket as ClientSocket } from 'socket.io-client';
 import type { AgenstraAutomationTurnStatus } from '@forepath/agenstra/shared/util-opencode-config';
 
@@ -15,6 +25,8 @@ import {
 import { buildRemoteAgentsSocketUrl } from '../utils/remote-manager-url.utils';
 import { extractAutomationTurnStatus } from '../utils/automation-turn-status';
 import { extractPlanTurnStatus, type AgenstraPlanTurnStatusPayload } from '../utils/chat-plan-turn-status';
+import { type ChatOutputUsage, extractChatOutputUsage } from '../utils/chat-output-usage.utils';
+import { classifyAgentResponse } from '../utils/agent-response-text.utils';
 
 import { AgentContextRequestHandlerService } from './agent-context-request-handler.service';
 import { AgentHandoffRequestHandlerService } from './agent-handoff-request-handler.service';
@@ -102,6 +114,45 @@ export interface RemoteChatStreamingParams {
 export interface RemoteChatStreamingResult {
   text: string;
   planTurnStatus?: AgenstraPlanTurnStatusPayload;
+}
+
+export interface RemoteVisibleChatTurnParams {
+  clientId: string;
+  agentId: string;
+  /** Visible chat session (primary or user session) of the agent; validated by the agent-manager. */
+  chatId: string;
+  message: string;
+  correlationId: string;
+  /** OpenCode `provider/model`; omitted: the agent's default model. */
+  model?: string;
+  /** Acting user for statistics (null for static API key / mTLS principals). */
+  userId?: string | null;
+  chatTimeoutMs?: number;
+  /**
+   * Receives live assistant text deltas. Deltas are emitted by the agent-manager before outgoing message filters run,
+   * so callers must only forward them to untrusted consumers when no rewriting outgoing filter applies.
+   */
+  onDeltaText?: (delta: string) => void | Promise<void>;
+  /** Receives this chat's `messageFilterResult` payloads (`direction`, `status`, `matchedFilter`, …). */
+  onFilterResult?: (result: Record<string, unknown>) => void | Promise<void>;
+  /** Aborts the wait (e.g. the HTTP client disconnected); the agent turn itself keeps running on the manager. */
+  signal?: AbortSignal;
+}
+
+export interface RemoteVisibleChatTurnResult {
+  /** Final agent text after outgoing message filters (empty when dropped). */
+  text: string;
+  /** `content_filter` when an incoming or outgoing message filter dropped the turn. */
+  finishReason: 'stop' | 'content_filter';
+  usage?: ChatOutputUsage;
+}
+
+/** Thrown when the caller aborts {@link RemoteAgentsSessionService.sendVisibleChatTurn}. */
+export class RemoteChatTurnAbortedError extends Error {
+  constructor() {
+    super('Remote chat turn aborted');
+    this.name = 'RemoteChatTurnAbortedError';
+  }
 }
 
 /**
@@ -699,5 +750,284 @@ export class RemoteAgentsSessionService {
         // ignore
       }
     }
+  }
+
+  /**
+   * Runs one persisted turn in a visible chat session on behalf of an API caller (OpenAI-compatible API).
+   *
+   * Unlike {@link sendChatStreaming}, the turn settles on the agent-manager's final, **filtered** `chatMessage`
+   * (outgoing message filters applied, persisted and broadcast to console viewers), on a filter drop
+   * (`content_filter`) or on an agent / manager error - never on unfiltered stream frames. Browser trust markers and
+   * hidden-session suffixes are never sent: the turn runs with the chat's normal interactive permissions.
+   */
+  async sendVisibleChatTurn(params: RemoteVisibleChatTurnParams): Promise<RemoteVisibleChatTurnResult> {
+    if (params.signal?.aborted) {
+      throw new RemoteChatTurnAbortedError();
+    }
+
+    const client = await this.clientsRepository.findByIdOrThrow(params.clientId);
+    const authHeader = await this.getAuthHeader(params.clientId);
+
+    await validateClientEndpointWithDnsOrThrow(client.endpoint);
+    const creds = await this.clientAgentCredentialsRepository.findByClientAndAgent(params.clientId, params.agentId);
+
+    if (!creds?.password) {
+      throw new ServiceUnavailableException('No stored credentials for this agent');
+    }
+
+    const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
+    const remoteUrl = this.buildAgentsWsUrl(client.endpoint);
+    const remote: ClientSocket = createCorrelationAwareSocketIoClient(remoteUrl, {
+      transports: ['websocket'],
+      extraHeaders: { Authorization: authHeader },
+      rejectUnauthorized: tlsPolicy.rejectUnauthorized,
+      // Pin every (re)connect to a validated public address (DNS rebinding).
+      agent: createPinnedSocketAgent(remoteUrl, tlsPolicy.rejectUnauthorized),
+      reconnection: false,
+    });
+
+    // Agent tool calls (context MCP, tasks, handoffs, deployments) arrive on the turn's socket.
+    this.agentContextRequests?.attach(remote, params.clientId);
+    this.agentTaskRequests?.attach(remote, params.clientId);
+    this.agentHandoffRequests?.attach(remote, params.clientId);
+    this.agentDeploymentRequests?.attach(remote, params.clientId);
+
+    const chatTimeoutMs = params.chatTimeoutMs ?? parseInt(process.env.REMOTE_AGENT_CHAT_TIMEOUT_MS || '600000', 10);
+    const userId = params.userId ?? undefined;
+    let onAbort: (() => void) | undefined;
+    let cancelTurnWait: (() => void) | undefined;
+    const aborted = new Promise<never>((_, reject) => {
+      onAbort = () => reject(new RemoteChatTurnAbortedError());
+      params.signal?.addEventListener('abort', onAbort, { once: true });
+    });
+
+    // Never leave the abort promise unhandled when the turn settles first.
+    aborted.catch(() => undefined);
+
+    try {
+      await Promise.race([
+        aborted,
+        new Promise<void>((resolve, reject) => {
+          const t = setTimeout(() => reject(new ServiceUnavailableException('Agent manager connect timeout')), 15000);
+
+          remote.once('connect', () => {
+            clearTimeout(t);
+            resolve();
+          });
+          remote.once('connect_error', () => {
+            clearTimeout(t);
+            reject(new ServiceUnavailableException('Agent manager is not reachable'));
+          });
+        }),
+      ]);
+
+      await Promise.race([
+        aborted,
+        new Promise<void>((resolve, reject) => {
+          const t = setTimeout(() => reject(new ServiceUnavailableException('Agent login timeout')), 10000);
+
+          remote.once('loginSuccess', () => {
+            clearTimeout(t);
+            resolve();
+          });
+          remote.once('loginError', () => {
+            clearTimeout(t);
+            reject(new ServiceUnavailableException('Agent login failed'));
+          });
+          remote.emit('login', { agentId: params.agentId, password: creds.password });
+        }),
+      ]);
+
+      const wordCount = params.message.trim().split(/\s+/).filter(Boolean).length;
+
+      await this.statisticsService.recordChatInput(
+        params.clientId,
+        params.agentId,
+        wordCount,
+        params.message.length,
+        userId,
+        StatisticsInteractionKind.CHAT,
+      );
+
+      const output = await Promise.race([
+        aborted,
+        this.awaitVisibleChatTurn(remote, params, chatTimeoutMs, (cancel) => (cancelTurnWait = cancel)),
+      ]);
+
+      if (output.finishReason === 'stop') {
+        const outWords = output.text.trim().split(/\s+/).filter(Boolean).length;
+
+        await this.statisticsService.recordChatOutput(
+          params.clientId,
+          params.agentId,
+          outWords,
+          output.text.length,
+          userId,
+          StatisticsInteractionKind.CHAT,
+          output.usage,
+        );
+      }
+
+      return output;
+    } catch (error: unknown) {
+      if (error instanceof RemoteChatTurnAbortedError || error instanceof HttpException) {
+        throw error;
+      }
+
+      this.logger.warn(`sendVisibleChatTurn failed: ${(error as Error).message}`);
+      throw new BadGatewayException('Remote chat failed');
+    } finally {
+      // Abort / failures before settling: release the response timer and listeners of the pending wait.
+      cancelTurnWait?.();
+
+      if (onAbort) {
+        params.signal?.removeEventListener('abort', onAbort);
+      }
+
+      try {
+        remote.removeAllListeners();
+        remote.disconnect();
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  private awaitVisibleChatTurn(
+    remote: ClientSocket,
+    params: RemoteVisibleChatTurnParams,
+    chatTimeoutMs: number,
+    registerCancel: (cancel: () => void) => void,
+  ): Promise<RemoteVisibleChatTurnResult> {
+    return new Promise<RemoteVisibleChatTurnResult>((resolve, reject) => {
+      let settled = false;
+      const listeners: Array<[string, (...args: unknown[]) => void]> = [];
+      const finish = (action: () => void) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        clearTimeout(timer);
+
+        for (const [event, listener] of listeners) {
+          remote.off(event, listener);
+        }
+
+        action();
+      };
+      const timer = setTimeout(
+        () => finish(() => reject(new GatewayTimeoutException('Timed out waiting for agent chat response'))),
+        chatTimeoutMs,
+      );
+      registerCancel(() => finish(() => reject(new RemoteChatTurnAbortedError())));
+      const on = (event: string, listener: (...args: unknown[]) => void) => {
+        listeners.push([event, listener]);
+        remote.on(event, listener);
+      };
+      // The manager broadcasts every frame of the agent's visible chats to all of its sockets: only this chat counts.
+      const isOwnChatFrame = (msg: unknown): boolean => {
+        const frameChatId = this.extractFrameChatId(msg);
+        const frameCorrelationId = this.extractFrameCorrelationId(msg);
+
+        if (frameCorrelationId !== undefined && frameCorrelationId !== params.correlationId) {
+          return false;
+        }
+
+        return frameChatId === params.chatId;
+      };
+
+      on('chatEvent', (msg: unknown) => {
+        if (!isOwnChatFrame(msg)) {
+          return;
+        }
+
+        const kind = this.extractChatEventKind(msg);
+
+        if (kind === 'assistantDelta') {
+          const delta = this.extractChatEventDelta(msg);
+
+          if (delta) {
+            void Promise.resolve(params.onDeltaText?.(delta)).catch(() => undefined);
+          }
+
+          return;
+        }
+
+        if (kind === 'error') {
+          finish(() => reject(new BadGatewayException('The agent failed to answer')));
+        }
+      });
+
+      on('messageFilterResult', (msg: unknown) => {
+        if (!isOwnChatFrame(msg)) {
+          return;
+        }
+
+        const data = (msg as { data?: Record<string, unknown> })?.data;
+
+        if (data && (data['status'] === 'dropped' || data['status'] === 'filtered')) {
+          void Promise.resolve(params.onFilterResult?.(data)).catch(() => undefined);
+        }
+
+        if (data?.['status'] === 'dropped') {
+          finish(() => resolve({ text: '', finishReason: 'content_filter' }));
+        }
+      });
+
+      on('chatMessage', (msg: unknown) => {
+        if (!isOwnChatFrame(msg)) {
+          return;
+        }
+
+        const envelope = msg as { success?: boolean; data?: { from?: unknown; response?: unknown } };
+
+        if (!envelope?.success || envelope.data?.from !== 'agent') {
+          return;
+        }
+
+        const response = envelope.data.response;
+        const outcome = classifyAgentResponse(response);
+
+        if (outcome.kind === 'dropped') {
+          finish(() => resolve({ text: '', finishReason: 'content_filter' }));
+        } else if (outcome.kind === 'error') {
+          finish(() => reject(new BadGatewayException(`The agent failed to answer: ${outcome.message.slice(0, 500)}`)));
+        } else {
+          finish(() => resolve({ text: outcome.text, finishReason: 'stop', usage: extractChatOutputUsage(response) }));
+        }
+      });
+
+      on('error', (payload: unknown) => {
+        // Socket.IO transport errors are Error instances; application errors are `{ success: false, error }` frames.
+        if (payload instanceof Error) {
+          return;
+        }
+
+        const code = (payload as { error?: { code?: unknown } })?.error?.code;
+
+        if (code === 'INVALID_CHAT_ID') {
+          finish(() => reject(new NotFoundException('Chat session not found')));
+
+          return;
+        }
+
+        finish(() => reject(new BadGatewayException('The agent failed to answer')));
+      });
+
+      on('disconnect', () => {
+        finish(() => reject(new BadGatewayException('Agent manager connection closed')));
+      });
+
+      remote.emit('chat', {
+        message: params.message,
+        correlationId: params.correlationId,
+        // Same shape as a console chat turn (no trust markers, no hidden-session suffix).
+        responseMode: 'stream',
+        ephemeral: false,
+        chatId: params.chatId,
+        ...(params.model ? { model: params.model } : {}),
+      });
+    });
   }
 }

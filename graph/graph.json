@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-11T18:31:56.402Z",
+  "generatedAt": "2026-11-13T18:35:09.959Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -5208,6 +5208,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/openai-compatible.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/openai-compatible.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-mcp-servers.controller.ts",
       "type": "controller",
       "attrs": {
@@ -6985,6 +6994,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/openai-compatible.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/openai-compatible.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -15351,6 +15369,14 @@
       }
     },
     {
+      "id": "file:docs/agenstra/features/openai-compatible-api.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/openai-compatible-api.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/agenstra/features/opentelemetry.md",
       "type": "doc",
       "attrs": {
@@ -18293,6 +18319,116 @@
         "pathOrChannel": "/clients/{id}/agents/{agentId}/chats/{chatId}/messages",
         "operationId": "listClientAgentChatSessionMessages",
         "summary": "List messages for a chat session (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/models",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/openai/v1/models",
+        "operationId": "openAiListModels",
+        "summary": "List models (OpenAI-compatible)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/models/{model}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/openai/v1/models/{model}",
+        "operationId": "openAiGetModel",
+        "summary": "Retrieve a model (OpenAI-compatible)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/chat/completions",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/openai/v1/chat/completions",
+        "operationId": "openAiCreateChatCompletion",
+        "summary": "Create a chat completion (OpenAI-compatible)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/responses",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/openai/v1/responses",
+        "operationId": "openAiCreateResponse",
+        "summary": "Create a response (OpenAI Responses API)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/conversations",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/openai/v1/conversations",
+        "operationId": "openAiCreateConversation",
+        "summary": "Create a conversation (chat session)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+        "operationId": "openAiGetConversation",
+        "summary": "Retrieve a conversation (chat session)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+        "operationId": "openAiUpdateConversation",
+        "summary": "Update a conversation (rename the chat session)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+        "operationId": "openAiDeleteConversation",
+        "summary": "Delete a conversation (chat session)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}/items",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}/items",
+        "operationId": "openAiListConversationItems",
+        "summary": "List conversation items (chat messages)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}/items/{itemId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}/items/{itemId}",
+        "operationId": "openAiGetConversationItem",
+        "summary": "Retrieve a conversation item (chat message)",
         "specKind": "openapi"
       }
     },
@@ -29837,6 +29973,86 @@
         "title": "Migration from filter rules",
         "docPath": "docs/agenstra/features/message-filters.md",
         "sectionAnchor": "migration-from-filter-rules",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-openai-compatible-api",
+      "type": "concept",
+      "attrs": {
+        "title": "OpenAI-compatible API",
+        "docPath": "docs/agenstra/features/openai-compatible-api.md",
+        "sectionAnchor": "openai-compatible-api",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-base-url",
+      "type": "concept",
+      "attrs": {
+        "title": "Base URL",
+        "docPath": "docs/agenstra/features/openai-compatible-api.md",
+        "sectionAnchor": "base-url",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-models",
+      "type": "concept",
+      "attrs": {
+        "title": "Models",
+        "docPath": "docs/agenstra/features/openai-compatible-api.md",
+        "sectionAnchor": "models",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-streaming",
+      "type": "concept",
+      "attrs": {
+        "title": "Streaming",
+        "docPath": "docs/agenstra/features/openai-compatible-api.md",
+        "sectionAnchor": "streaming",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-side-effects",
+      "type": "concept",
+      "attrs": {
+        "title": "Side effects",
+        "docPath": "docs/agenstra/features/openai-compatible-api.md",
+        "sectionAnchor": "side-effects",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-errors",
+      "type": "concept",
+      "attrs": {
+        "title": "Errors",
+        "docPath": "docs/agenstra/features/openai-compatible-api.md",
+        "sectionAnchor": "errors",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-primary-chat-session-agent-default-model",
+      "type": "concept",
+      "attrs": {
+        "title": "Primary chat session, agent default model",
+        "docPath": "docs/agenstra/features/openai-compatible-api.md",
+        "sectionAnchor": "primary-chat-session-agent-default-model",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-dedicated-session-via-the-conversations-responses-apis",
+      "type": "concept",
+      "attrs": {
+        "title": "Dedicated session via the Conversations + Responses APIs",
+        "docPath": "docs/agenstra/features/openai-compatible-api.md",
+        "sectionAnchor": "dedicated-session-via-the-conversations-responses-apis",
         "domain": "agenstra"
       }
     },
@@ -41629,6 +41845,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/openai-compatible.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-mcp-servers.controller.ts",
       "type": "contains"
     },
@@ -42615,6 +42836,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/openai-compatible.service.ts",
       "type": "contains"
     },
     {
@@ -47935,6 +48161,56 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/chats/{chatId}/messages",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/models",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/models/{model}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/chat/completions",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/responses",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/conversations",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}/items",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}/items/{itemId}",
       "type": "contains"
     },
     {
@@ -54573,6 +54849,81 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-openai-compatible-api",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-base-url",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-authentication",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-models",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-chat-sessions",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-streaming",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-side-effects",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-usage",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-errors",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-examples",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-primary-chat-session-agent-default-model",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-dedicated-session-via-the-conversations-responses-apis",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-configuration",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "concept:agenstra-api-references",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/agenstra/features/opentelemetry.md",
       "to": "concept:agenstra-opentelemetry",
       "type": "contains"
@@ -60135,6 +60486,106 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/chats/{chatId}/messages",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/models",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/models",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/models/{model}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/models/{model}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/chat/completions",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/chat/completions",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/responses",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/responses",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/conversations",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/conversations",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}/items",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}/items",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}/items/{itemId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/openai/v1/conversations/{conversationId}/items/{itemId}",
       "type": "implements"
     },
     {
@@ -68358,6 +68809,26 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/openai-compatible.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/openai-compatible.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/openai-compatible.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-chats-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/openai-compatible.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/openai-compatible.controller.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-mcp-servers.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-catalog.service.ts",
       "type": "injects"
@@ -69323,6 +69794,36 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/openai-compatible.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/openai-compatible.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/openai-compatible.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-chats-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/openai-compatible.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-effective-config-sync.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/openai-compatible.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/statistics.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/openai-compatible.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-console-status.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config-sync-targets.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-effective-config-sync.service.ts",
       "type": "injects"
@@ -69405,41 +69906,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/provisioning.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/statistics.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/statistics.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-request-handler.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-request-handler.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-deployment-request-handler.service.ts",
       "type": "injects"
     },
     {
@@ -74689,6 +75155,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/openai-compatible.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/agent-tasks.controller.ts",
       "type": "provides"
     },
@@ -74935,6 +75406,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/openai-compatible.service.ts",
       "type": "provides"
     },
     {
@@ -79603,6 +80079,26 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-examples",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-examples",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-examples",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-examples",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-api-reference",
       "to": "api:HTTP:GET:/clients",
       "type": "documents"
@@ -81024,67 +81520,12 @@
     },
     {
       "from": "concept:agenstra-api-references",
-      "to": "api:HTTP:GET:/clients/{id}/statistics/filter-drops",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-api-references",
-      "to": "api:HTTP:GET:/clients/{id}/statistics/filter-flags",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-api-references",
-      "to": "api:HTTP:GET:/statistics/filter-drops",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-api-references",
-      "to": "api:HTTP:GET:/statistics/filter-flags",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-api-references",
-      "to": "api:HTTP:GET:/admin/opencode/config",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-api-references",
-      "to": "api:HTTP:PUT:/admin/opencode/config",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-api-references",
-      "to": "api:HTTP:GET:/clients/{id}/opencode/config",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-api-references",
-      "to": "api:HTTP:PUT:/clients/{id}/opencode/config",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-api-references",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-api-references",
-      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode/config",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-api-references",
       "to": "api:HTTP:GET:/agents",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-api-references",
       "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-api-references",
-      "to": "api:HTTP:GET:/config",
       "type": "documents"
     },
     {
@@ -81260,91 +81701,6 @@
     {
       "from": "concept:agenstra-registration-sequence-diagram",
       "to": "api:HTTP:POST:/auth/register",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:POST:/auth/login",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:GET:/clients",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:POST:/clients",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:GET:/clients/{id}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:POST:/clients/{id}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:DELETE:/clients/{id}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:GET:/clients/{id}/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:POST:/clients/{id}/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/chats",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/chats",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:GET:/agents/{agentId}/chats",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-chat-sessions",
-      "to": "api:HTTP:POST:/agents/{agentId}/chats",
       "type": "documents"
     },
     {
@@ -81834,6 +82190,46 @@
     },
     {
       "from": "concept:agenstra-building-environment-graphs",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-base-url",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-base-url",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-base-url",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-base-url",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-dedicated-session-via-the-conversations-responses-apis",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-dedicated-session-via-the-conversations-responses-apis",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-dedicated-session-via-the-conversations-responses-apis",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-dedicated-session-via-the-conversations-responses-apis",
       "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
@@ -88368,6 +88764,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/agenstra/features/openai-compatible-api.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/agenstra/features/opentelemetry.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -90724,6 +91125,46 @@
     },
     {
       "from": "concept:agenstra-migration-from-filter-rules",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-openai-compatible-api",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-base-url",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-models",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-streaming",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-side-effects",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-errors",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-primary-chat-session-agent-default-model",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-dedicated-session-via-the-conversations-responses-apis",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
