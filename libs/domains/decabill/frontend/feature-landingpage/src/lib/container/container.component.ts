@@ -4,17 +4,17 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { LandingThemeToggleComponent, SharedHeroMascotComponent } from '@forepath/shared/frontend/feature-landingpage';
 import {
-  ENVIRONMENT,
-  LocaleService,
-  type EnvironmentWithLandingAndCommunication,
-} from '@forepath/shared/frontend/util-configuration';
-import {
   FpcButtonComponent,
   FpcDropdownComponent,
   FpcDropdownItemComponent,
   FpcLanguageSwitcherComponent,
   type FpcLocaleOption,
 } from '@forepath/shared/frontend/ui-components';
+import {
+  ENVIRONMENT,
+  LocaleService,
+  type EnvironmentWithLandingAndCommunication,
+} from '@forepath/shared/frontend/util-configuration';
 import { filter, map, startWith } from 'rxjs';
 
 import { PORTAL_COMPARISON_NAV_ITEMS } from '../comparison/shared/misc/comparison-nav.items';

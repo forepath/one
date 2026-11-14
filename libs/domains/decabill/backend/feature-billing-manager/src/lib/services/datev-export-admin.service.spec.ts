@@ -26,7 +26,6 @@ describe('DatevExportAdminService', () => {
   const enqueuePort = {
     enqueueUnit: jest.fn(),
   };
-
   const service = new DatevExportAdminService(
     configService as never,
     tenantsGlobalViewsConfig as never,

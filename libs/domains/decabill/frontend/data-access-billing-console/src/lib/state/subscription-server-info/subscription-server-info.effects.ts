@@ -5,8 +5,8 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import { Observable, catchError, forkJoin, from, map, mergeMap, of, switchMap, take } from 'rxjs';
 
-import { SubscriptionItemsService } from '../../services/subscription-items.service';
 import { AdminBillingService } from '../../services/admin-billing.service';
+import { SubscriptionItemsService } from '../../services/subscription-items.service';
 import type {
   ProvisioningServiceKind,
   ProvisioningStatus,
@@ -104,9 +104,11 @@ export function loadOverviewServerInfoEffect(
             serviceBySubscriptionId[sub.id] = tracked.service ?? 'agenstra-controller';
             provisioningStatusBySubscriptionId[sub.id] = tracked.provisioningStatus;
             sshAccessGrantedBySubscriptionId[sub.id] = tracked.sshAccessGranted === true;
+
             if (tracked.serviceTypeName?.trim()) {
               serviceTypeNameBySubscriptionId[sub.id] = tracked.serviceTypeName.trim();
             }
+
             if (tracked.displayName !== undefined) {
               displayNameBySubscriptionId[sub.id] = tracked.displayName;
             }

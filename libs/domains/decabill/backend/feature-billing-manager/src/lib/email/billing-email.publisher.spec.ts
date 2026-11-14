@@ -4,18 +4,15 @@ describe('BillingEmailPublisher', () => {
   const emailDispatcher = { publish: jest.fn() };
   const customerProfilesRepository = { findByUserId: jest.fn() };
   const usersRepository = { findByIdForTenant: jest.fn() };
-
   const publisher = new BillingEmailPublisher(
     emailDispatcher as never,
     customerProfilesRepository as never,
     usersRepository as never,
   );
-
   const profile = {
     email: 'billing@example.com',
     firstName: 'Ada',
   };
-
   const invoice = {
     id: 'inv-1',
     userId: 'user-1',

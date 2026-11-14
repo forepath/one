@@ -31,7 +31,6 @@ describe('ContainerManagerService', () => {
   const summariesRepository = {
     findByItemId: jest.fn().mockResolvedValue(null),
   };
-
   const service = new ContainerManagerService(
     subscriptionsRepository as never,
     subscriptionItemsRepository as never,
@@ -196,6 +195,7 @@ describe('ContainerManagerService', () => {
         networkTxBytes: 8,
       },
     ];
+
     samplesRepository.findLatestPoints.mockResolvedValue(points);
 
     const result = await service.getStatsHistory('sub-1', 'item-1', 'abcdef123456', { userId: 'user-1' });

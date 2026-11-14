@@ -1,28 +1,29 @@
-import { createCorrelationAwareSocketIoClient } from '@forepath/shared/backend/util-http-context';
+import type { AgenstraAutomationTurnStatus } from '@forepath/agenstra/shared/util-opencode-config';
 import { AuthenticationType } from '@forepath/identity/backend';
 import { ClientAgentCredentialsRepository } from '@forepath/identity/backend';
+import { createCorrelationAwareSocketIoClient } from '@forepath/shared/backend/util-http-context';
 import { BadRequestException, Injectable, Logger, Optional } from '@nestjs/common';
 import type { Socket as ClientSocket } from 'socket.io-client';
-import type { AgenstraAutomationTurnStatus } from '@forepath/agenstra/shared/util-opencode-config';
 
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { extractAutomationTurnStatus } from '../utils/automation-turn-status';
+import { extractPlanTurnStatus, type AgenstraPlanTurnStatusPayload } from '../utils/chat-plan-turn-status';
 import {
   createPinnedSocketAgent,
   getClientEndpointTlsPolicy,
   validateClientEndpointWithDnsOrThrow,
 } from '../utils/client-endpoint-security';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 import { buildRemoteAgentsSocketUrl } from '../utils/remote-manager-url.utils';
-import { extractAutomationTurnStatus } from '../utils/automation-turn-status';
-import { extractPlanTurnStatus, type AgenstraPlanTurnStatusPayload } from '../utils/chat-plan-turn-status';
 
 import { AgentContextRequestHandlerService } from './agent-context-request-handler.service';
-import { AgentHandoffRequestHandlerService } from './agent-handoff-request-handler.service';
 import { AgentDeploymentRequestHandlerService } from './agent-deployment-request-handler.service';
+import { AgentHandoffRequestHandlerService } from './agent-handoff-request-handler.service';
 import { AgentTaskRequestHandlerService } from './agent-task-request-handler.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
-import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
+
 
 export interface RemoteChatSyncParams {
   clientId: string;

@@ -2,13 +2,6 @@ import { randomBytes } from 'crypto';
 
 import { buildGvisorHostScript, buildGvisorInstallScript } from '@forepath/shared/backend/util-container-runtime';
 
-import {
-  buildOidcEnvLines,
-  type ManagerAuthenticationMethod,
-  type ProvisionedOidcConfig,
-  readProvisionedOidcConfig,
-  resolveManagerAuthenticationMethod,
-} from '../shared/external-auth-config.utils';
 import { buildCertbotBootstrapScript } from '../../utils/cloud-init/certbot-bootstrap.script';
 import { buildComposeBridgeNetwork, buildComposeNamedVolumes } from '../../utils/cloud-init/compose-service.utils';
 import { formatEnvLines, shellSingleQuote } from '../../utils/cloud-init/env.utils';
@@ -19,6 +12,13 @@ import {
   buildPostgresComposeService,
 } from '../../utils/cloud-init/postgres-compose.utils';
 import { buildSshdHardeningScript } from '../../utils/cloud-init/ssh-hardening.utils';
+import {
+  buildOidcEnvLines,
+  type ManagerAuthenticationMethod,
+  type ProvisionedOidcConfig,
+  readProvisionedOidcConfig,
+  resolveManagerAuthenticationMethod,
+} from '../shared/external-auth-config.utils';
 
 /** Docker bridge shared by the manager and its agent workers (compose `name:` keeps it unprefixed). */
 export const AGENT_MANAGER_NETWORK = 'agent-manager-network';

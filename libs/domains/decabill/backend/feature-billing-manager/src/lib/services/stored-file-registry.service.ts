@@ -18,6 +18,7 @@ import {
   STORED_FILE_SIGNATURE_VERSION,
   verifyStoredFileV1,
 } from '../utils/stored-file-signature.util';
+
 import { StoredFileSigningConfigService } from './stored-file-signing-config.service';
 
 export interface RegisterStoredFileInput {
@@ -104,6 +105,7 @@ export class StoredFileRegistryService {
       row.longSha = deriveStoredFileLongSha(row.id);
     } else {
       row.tenantId = input.tenantId;
+
       if (!row.longSha) {
         row.longSha = deriveStoredFileLongSha(row.id);
       }
@@ -279,7 +281,6 @@ export class StoredFileRegistryService {
       take: limit,
       skip: offset,
     });
-
     let processed = 0;
 
     for (const row of rows) {

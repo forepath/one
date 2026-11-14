@@ -1,7 +1,7 @@
+import { FormsModule } from '@angular/forms';
 import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
 import { action } from 'storybook/actions';
-import { FormsModule } from '@angular/forms';
 
 import { FpcSearchFieldComponent } from './search-field.component';
 

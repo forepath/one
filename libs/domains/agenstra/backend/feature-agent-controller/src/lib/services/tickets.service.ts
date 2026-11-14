@@ -35,16 +35,16 @@ import {
   TicketResponseDto,
   UpdateTicketDto,
 } from '../dto/tickets';
-import { TicketActivityEntity } from '../entities/ticket-activity.entity';
 import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
 import { AgenstraAttachmentOwnerType } from '../entities/attachment.enums';
+import { TicketActivityEntity } from '../entities/ticket-activity.entity';
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActionType, TicketActorType, TicketPriority, TicketStatus } from '../entities/ticket.enums';
-import { ClientsRepository } from '../repositories/clients.repository';
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
+import { ClientsRepository } from '../repositories/clients.repository';
 import { mapTicketToSearchDocument } from '../search/agenstra-search-document.mapper';
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
 import {
@@ -53,7 +53,6 @@ import {
   sanitizeListSearch,
   tryAgenstraSearchIds,
 } from '../search/agenstra-search-list.util';
-import { derivePatchActionType, type FieldChange } from '../utils/ticket-activity-payload.utils';
 import {
   agentContentAttribution,
   assertAgentContentWriterWorkspace,
@@ -63,6 +62,7 @@ import {
   principalUserId,
 } from '../utils/agent-content-writer.utils';
 import { assertValidPreferredModel } from '../utils/preferred-model.utils';
+import { derivePatchActionType, type FieldChange } from '../utils/ticket-activity-payload.utils';
 import {
   buildDescendantCheckboxTaskTotalsByTicketId,
   countMarkdownCheckboxTasks,
@@ -516,6 +516,7 @@ export class TicketsService {
     const actor = { ...this.resolveActor(req), attribution: agentContentAttribution(req) };
     let clientId = dto.clientId;
     const parentId = dto.parentId ?? null;
+
     if (parentId) {
       const parentTicket = await this.loadTicketOrThrow(parentId);
 

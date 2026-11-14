@@ -7,8 +7,6 @@ import { provideMockStore } from '@ngrx/store/testing';
 import { firstValueFrom, of, Subject, throwError, toArray } from 'rxjs';
 
 import { AgentsService } from '../../services/agents.service';
-
-import { agentsReducer, initialAgentsState } from './agents.reducer';
 import { OpencodeConfigService, type OpencodeCommandsListDto } from '../../services/opencode-config.service';
 import { refreshClientIsolation } from '../clients/clients.actions';
 import {
@@ -17,7 +15,7 @@ import {
   setClientSuccess,
 } from '../container-socket/container-socket.actions';
 import { selectSelectedClientId } from '../container-socket/container-socket.selectors';
-import { initialAgentsState } from './agents.reducer';
+
 
 import {
   createClientAgent,
@@ -70,6 +68,8 @@ import {
   stopClientAgent$,
   updateClientAgent$,
 } from './agents.effects';
+import { initialAgentsState } from './agents.reducer';
+import { agentsReducer, initialAgentsState } from './agents.reducer';
 import { selectAgentsEntities, selectAgentsState } from './agents.selectors';
 import type { AgentResponseDto, CreateAgentDto, CreateAgentResponseDto, UpdateAgentDto } from './agents.types';
 
@@ -458,6 +458,7 @@ describe('AgentsEffects', () => {
       const first = new Subject<Record<string, string>>();
       const second = new Subject<Record<string, string>>();
       const replacement = new Subject<Record<string, string>>();
+
       agentsService.listClientAgentModels
         .mockReturnValueOnce(first)
         .mockReturnValueOnce(second)
@@ -846,6 +847,7 @@ describe('AgentsEffects', () => {
       const requests = new Subject<ReturnType<typeof loadClientAgentCommands>>();
       const first = new Subject<OpencodeCommandsListDto>();
       const second = new Subject<OpencodeCommandsListDto>();
+
       opencodeConfigService.listAgentCommands.mockReturnValueOnce(first).mockReturnValueOnce(second);
       const results: unknown[] = [];
       const subscription = loadClientAgentCommandsFromConfig$(requests, opencodeConfigService).subscribe((action) =>

@@ -4,14 +4,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { DeclaredMeterDefinition } from '../dto/declared-meter.dto';
 import { METER_COLLECT_USAGE_SOURCE, type MeterCollectSample } from '../dto/meter-collect.types';
 import type { UsageAttachmentType } from '../entities/usage-record.entity';
-import { AddonsRepository } from '../repositories/addons.repository';
 import { AddonMetersRepository } from '../repositories/addon-meters.repository';
+import { AddonsRepository } from '../repositories/addons.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionAddonsRepository } from '../repositories/subscription-addons.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { UsageRecordsRepository } from '../repositories/usage-records.repository';
-
 import { resolveItemProvider } from '../utils/provider-selection.utils';
 
 import { AddonModuleRegistryService } from './addon-module-registry.service';

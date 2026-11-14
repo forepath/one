@@ -91,13 +91,11 @@ export class VncBridgeService implements OnModuleDestroy {
         this.logger.log(`Opened VNC bridge session ${sessionId} for agent ${agentId}`);
         resolve();
       };
-
       const onError = (error: Error) => {
         cleanup();
         this.sessions.delete(sessionId);
         reject(error);
       };
-
       const cleanup = () => {
         upstream.off('open', onOpen);
         upstream.off('error', onError);

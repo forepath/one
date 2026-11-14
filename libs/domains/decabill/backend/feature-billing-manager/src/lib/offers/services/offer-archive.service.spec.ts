@@ -1,11 +1,11 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
+import { DeliveryTermsCode } from '../../constants/document-terms.constants';
+import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
+import { OfferLineType } from '../constants/offer-line-type.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
 import type { OfferEntity } from '../entities/offer.entity';
 
-import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
-import { DeliveryTermsCode } from '../../constants/document-terms.constants';
-import { OfferLineType } from '../constants/offer-line-type.constants';
 
 import { OfferArchiveService } from './offer-archive.service';
 
@@ -15,7 +15,6 @@ describe('OfferArchiveService.getPdfBuffer', () => {
   const customerProfilesService = { getByUserId: jest.fn() };
   const billingIssuerConfig = { assertConfigured: jest.fn(), getConfig: jest.fn(() => ({ name: 'Issuer' })) };
   const offerPdfService = { readPdf: jest.fn(), generateAndStore: jest.fn() };
-
   const service = new OfferArchiveService(
     offersRepository as never,
     offerLineItemsRepository as never,
@@ -33,7 +32,6 @@ describe('OfferArchiveService.getPdfBuffer', () => {
     {} as never,
     new BillingDocumentTermsConfigService(),
   );
-
   const sent = (pdfStorageKey: string | null): OfferEntity =>
     ({ id: 'offer-1', userId: 'user-1', status: OfferStatus.ARCHIVED, pdfStorageKey }) as OfferEntity;
   const pdf = Buffer.from('%PDF');

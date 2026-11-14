@@ -23,14 +23,14 @@ import {
 import type { AgentEgressStatusDto } from '../dto/agent-egress.dto';
 import { AgentEntity } from '../entities/agent.entity';
 import { AgentsRepository } from '../repositories/agents.repository';
+import { resolveAgentContextEgressAllows } from '../utils/agent-context-egress.utils';
+import { isolationRuntimeOptions } from '../utils/container-isolation.utils';
 import {
   computeEgressPolicyRevision,
   parseEgressUpstreamProxy,
   renderEgressGuardArtifacts,
   type EgressUpstreamProxy,
 } from '../utils/egress-guard-config.utils';
-import { resolveAgentContextEgressAllows } from '../utils/agent-context-egress.utils';
-import { isolationRuntimeOptions } from '../utils/container-isolation.utils';
 
 import { DockerService } from './docker.service';
 

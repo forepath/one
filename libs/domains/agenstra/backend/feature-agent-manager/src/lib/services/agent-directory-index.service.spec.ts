@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { AgentDirectoryIndexEntity } from '../entities/agent-directory-index.entity';
+
 import { AgentDirectoryIndexService } from './agent-directory-index.service';
 import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 
@@ -44,6 +45,7 @@ describe('AgentDirectoryIndexService', () => {
         { provide: getRepositoryToken(AgentDirectoryIndexEntity), useValue: repository },
       ],
     }).compile();
+
     service = module.get(AgentDirectoryIndexService);
     notifier = module.get(WorkspaceChangeNotifierService);
     service.onModuleInit();
@@ -111,10 +113,12 @@ describe('AgentDirectoryIndexService', () => {
         }),
     );
     const first = service.getOrLoad('a', 'container', 'src', slowLoad);
+
     await Promise.resolve();
     await Promise.resolve();
     const invalidation = service.invalidate('a');
     const next = service.getOrLoad('a', 'container', 'src', load);
+
     resolveLoad(nodes);
     await first;
     await invalidation;
@@ -135,6 +139,7 @@ describe('AgentDirectoryIndexService', () => {
     expect(snapshots.size).toBe(0);
     service.onModuleDestroy();
     const count = repository.delete.mock.calls.length;
+
     await jest.advanceTimersByTimeAsync(60_000);
     expect(repository.delete).toHaveBeenCalledTimes(count);
   });

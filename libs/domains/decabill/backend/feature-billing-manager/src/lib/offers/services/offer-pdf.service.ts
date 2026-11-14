@@ -1,25 +1,26 @@
-import { Injectable } from '@nestjs/common';
 import { getTenantIdOrDefault } from '@forepath/shared/backend';
 import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
+import { Injectable } from '@nestjs/common';
 
 import type { CustomerProfileEntity } from '../../entities/customer-profile.entity';
+import type { BillingIssuerConfig } from '../../services/billing-issuer-config.service';
+import { buildOfferDocumentOptions } from '../../services/e-invoice-document-options';
 import { EInvoiceEmbedService } from '../../services/e-invoice-embed.service';
 import { EInvoiceXmlService } from '../../services/e-invoice-xml.service';
 import { InvoicePdfHtmlRendererService } from '../../services/invoice-pdf-html-renderer.service';
-import type { BillingIssuerConfig } from '../../services/billing-issuer-config.service';
-import { buildOfferDocumentOptions } from '../../services/e-invoice-document-options';
-import type { OfferEntity } from '../entities/offer.entity';
-import type { OfferLineItemEntity } from '../entities/offer-line-item.entity';
+import { facturXMetadata } from '../../services/invoice-pdf.service';
 import { StoredFileRegistryService } from '../../services/stored-file-registry.service';
+import type { OfferLineItemEntity } from '../entities/offer-line-item.entity';
+import type { OfferEntity } from '../entities/offer.entity';
 import { buildOfferPdfStorageKey } from '../utils/offer-pdf-storage.util';
 
+import { buildOfferPdfPresentation } from './offer-pdf-presentation.util';
 import {
   mapOfferLinesToInvoiceLineItems,
   mapOfferToInvoiceDocument,
   OfferPdfTemplateService,
 } from './offer-pdf-template.service';
-import { buildOfferPdfPresentation } from './offer-pdf-presentation.util';
-import { facturXMetadata } from '../../services/invoice-pdf.service';
+
 
 @Injectable()
 export class OfferPdfService {
@@ -61,6 +62,7 @@ export class OfferPdfService {
         FileStorageScope.customerOffers,
         storageKey,
       );
+
       authenticityShortSha = reserved.shas.short;
     }
 
@@ -78,8 +80,8 @@ export class OfferPdfService {
       xml,
       facturXMetadata(presentation.documentTitle, presentation.documentNumber, issuer),
     );
-
     const content = Buffer.from(embedded);
+
     await this.fileStorage.writeCustomerOfferFile(storageKey, content);
     await this.storedFileRegistry.registerFromBuffer({
       tenantId: getTenantIdOrDefault(),

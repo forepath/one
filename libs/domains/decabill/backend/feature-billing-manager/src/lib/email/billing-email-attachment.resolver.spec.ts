@@ -16,7 +16,6 @@ describe('BillingEmailAttachmentResolver', () => {
   const creditDocumentsRepository = {
     existsAuthorizedByPdfStorageKey: jest.fn(),
   };
-
   const resolver = new BillingEmailAttachmentResolver(
     invoicePdfService as never,
     timeReportPdfService as never,
@@ -34,6 +33,7 @@ describe('BillingEmailAttachmentResolver', () => {
 
   it('resolves invoice pdf attachments after tenant authorization', async () => {
     const content = Buffer.from('invoice');
+
     invoicesRepository.existsAuthorizedByPdfOrTimeReportStorageKey.mockResolvedValue(true);
     invoicePdfService.readPdf.mockResolvedValue(content);
 
@@ -47,6 +47,7 @@ describe('BillingEmailAttachmentResolver', () => {
 
   it('resolves time report attachments via ProjectTimeReportPdfService', async () => {
     const content = Buffer.from('time');
+
     invoicesRepository.existsAuthorizedByPdfOrTimeReportStorageKey.mockResolvedValue(true);
     timeReportPdfService.readPdf.mockResolvedValue(content);
 

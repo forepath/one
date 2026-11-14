@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
+import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 
 import { SubscriptionTeardownService } from './subscription-teardown.service';
 

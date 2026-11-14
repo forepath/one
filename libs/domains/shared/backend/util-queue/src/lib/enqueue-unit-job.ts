@@ -1,8 +1,8 @@
 import type { JobsOptions, Queue } from 'bullmq';
 
 import { isDuplicateJobEnqueueError } from './is-duplicate-job-enqueue-error';
-import { defaultRemoveOnComplete, defaultRemoveOnFail } from './job-retention';
 import { buildJobId } from './job-id.util';
+import { defaultRemoveOnComplete, defaultRemoveOnFail } from './job-retention';
 
 export interface EnqueueUnitJobOptions<T> {
   queue: Queue;
@@ -30,7 +30,6 @@ export async function enqueueUnitJob<T>(options: EnqueueUnitJobOptions<T>): Prom
     backoff: { type: 'exponential', delay: 5000 },
     ...options.opts,
   };
-
   const existing = typeof options.queue.getJob === 'function' ? await options.queue.getJob(jobId) : undefined;
 
   if (existing) {

@@ -30,11 +30,13 @@ export function resolveServiceRole(
   }
 
   const queueRole = env.QUEUE_ROLE?.trim();
+
   if (queueRole) {
     return queueRole;
   }
 
   const agentManagerRole = env.AGENT_MANAGER_ROLE?.trim();
+
   if (agentManagerRole) {
     return agentManagerRole;
   }

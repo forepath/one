@@ -14,7 +14,6 @@ export function wireMcpOauthForOpenCode(
 ): JsonObject | undefined {
   const includeClientSecret = options.includeClientSecret === true;
   const next: JsonObject = {};
-
   const clientId =
     typeof oauth['clientId'] === 'string'
       ? oauth['clientId']
@@ -72,7 +71,6 @@ export function wireMcpOauthForOpenCode(
 
 /** OpenCode local MCP keys only (`additionalProperties: false`). */
 const MCP_LOCAL_WIRE_KEYS = new Set(['type', 'command', 'cwd', 'environment', 'enabled', 'timeout']);
-
 /** OpenCode remote MCP keys only (`additionalProperties: false`). */
 const MCP_REMOTE_WIRE_KEYS = new Set(['type', 'url', 'enabled', 'headers', 'oauth', 'timeout']);
 

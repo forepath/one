@@ -1,11 +1,12 @@
 import { incrementCounter } from '@forepath/shared/backend/util-otel/metrics';
 import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 
-import { CreateContactRequestDto } from '../dto/create-contact-request.dto';
 import { ContactRequestResponseDto } from '../dto/contact-request-response.dto';
+import { CreateContactRequestDto } from '../dto/create-contact-request.dto';
 import { ChatwootContactListItem } from '../types/chatwoot.types';
 import { resolveContactSourceId } from '../utils/chatwoot-contact-resolver.utils';
 import { formatContactRequestMessage } from '../utils/contact-message-formatter.utils';
+
 import { ChatwootApiError, ChatwootApiService } from './chatwoot-api.service';
 
 @Injectable()
@@ -26,7 +27,6 @@ export class ContactRequestService {
       const contact = await this.findOrCreateContact(dto);
       const inboxId = this.chatwootApiService.getInboxId();
       const sourceId = await this.resolveOrCreateSourceId(contact, inboxId);
-
       const messageContent = formatContactRequestMessage({
         name: dto.name,
         email: dto.email,
@@ -34,7 +34,6 @@ export class ContactRequestService {
         phone: dto.phone,
         company: dto.company,
       });
-
       const conversationId = await this.chatwootApiService.createConversation({
         source_id: sourceId,
         contact_id: contact.id,
@@ -71,6 +70,7 @@ export class ContactRequestService {
 
     if (emailMatch) {
       this.recordContactResolutionPath('existing_email');
+
       return emailMatch;
     }
 
@@ -80,18 +80,19 @@ export class ContactRequestService {
 
       if (phoneMatch) {
         this.recordContactResolutionPath('existing_phone');
+
         return phoneMatch;
       }
     }
 
     const customAttributes = dto.company?.trim() ? { company: dto.company.trim() } : undefined;
-
     const createdContact = await this.chatwootApiService.createContact({
       name: dto.name.trim(),
       email: dto.email.trim(),
       phone_number: dto.phone?.trim() || undefined,
       custom_attributes: customAttributes,
     });
+
     this.recordContactResolutionPath('new_contact');
 
     return createdContact;
@@ -121,12 +122,14 @@ export class ContactRequestService {
 
     if (existingSourceId) {
       this.recordContactResolutionPath('reused_source_id');
+
       return existingSourceId;
     }
 
     this.logger.log(`Linking contact ${contact.id} to inbox ${inboxId} via contact_inboxes API`);
 
     const contactInbox = await this.chatwootApiService.createContactInbox(contact.id);
+
     this.recordContactResolutionPath('created_source_id');
 
     return contactInbox.source_id;

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
 
 import { FpcSectionRowComponent } from '../section-row/section-row.component';
+
 import { FpcSectionColumnComponent } from './section-column.component';
 
 const meta: Meta<FpcSectionColumnComponent> = {

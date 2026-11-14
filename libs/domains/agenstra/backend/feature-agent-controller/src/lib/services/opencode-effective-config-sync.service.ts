@@ -5,6 +5,7 @@ import {
 import { Injectable, Logger } from '@nestjs/common';
 
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientAgentOpencodeConfigProxyService } from './client-agent-opencode-config-proxy.service';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 import { OpencodeConfigService } from './opencode-config.service';
@@ -78,7 +79,6 @@ export class OpencodeEffectiveConfigSyncService {
   /** Sync one agent with the full layered effective config. */
   async syncAgent(clientId: string, agentId: string): Promise<OpencodeAgentSyncResult> {
     const { effective, secrets, platformPolicy } = await this.buildEffectivePayload(clientId, agentId);
-
     const result = await this.agentConfigProxy.syncEffective(clientId, agentId, effective, secrets, platformPolicy);
 
     return { ...result, platformPolicy };

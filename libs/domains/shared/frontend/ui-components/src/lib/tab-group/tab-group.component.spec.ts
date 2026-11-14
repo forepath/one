@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 
 import { FpcTabComponent } from '../tab/tab.component';
+
 import { FpcTabGroupComponent, fpcSplitTabOverflow } from './tab-group.component';
 
 @Component({
@@ -26,6 +27,7 @@ function setWidths(label: HTMLElement, scrollWidth: number, clientWidth: number)
 describe('FpcTabGroupComponent', () => {
   it('shows the full label as a tooltip only while the equal-width tab cuts it off', () => {
     const fixture = TestBed.createComponent(HostComponent);
+
     fixture.detectChanges();
     const buttons = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('button[role="tab"]');
     const [summary, history] = Array.from(buttons);

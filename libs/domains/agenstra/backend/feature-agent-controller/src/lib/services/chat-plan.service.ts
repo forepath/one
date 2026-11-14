@@ -71,7 +71,6 @@ export interface ChatPlanListOptions {
 
 /** Linked plans per prompt (chat context selection). */
 const CHAT_PLAN_CONTEXT_MAX_REFS = 20;
-
 const PLAN_EXECUTED_READ_ONLY_MESSAGE = 'This plan has been executed and is read-only.';
 const PLAN_DRAFTING_MESSAGE = 'The agent is working on this plan; wait until it is ready before editing it.';
 const PLAN_CHANGED_MESSAGE = 'The plan changed since you opened it; reload it before saving.';

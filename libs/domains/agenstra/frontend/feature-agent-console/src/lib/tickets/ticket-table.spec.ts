@@ -68,6 +68,7 @@ describe('ticket table', () => {
     const applied: string[] = [];
     const update = jest.fn(async (id: string) => {
       if (id === 'b') throw { status: 403, error: { message: 'Forbidden' } };
+
       if (id === 'c') throw { status: 500, error: { message: 'Boom' } };
 
       return ticket(id, { status: 'prototype' });
@@ -93,6 +94,7 @@ describe('ticket table', () => {
       [ticket('p'), ticket('k', { parentId: 'p' }), ticket('x')],
       async (id) => {
         calls.push(id);
+
         if (id === 'x') throw { status: 401 };
       },
       (t) => removed.push(t.id),

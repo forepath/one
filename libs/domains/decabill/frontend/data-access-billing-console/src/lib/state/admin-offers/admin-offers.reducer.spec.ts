@@ -46,12 +46,14 @@ describe('adminOffersReducer', () => {
 
   it('tracks create and archive lifecycle', () => {
     const created = adminOffersReducer(initialAdminOffersState, createAdminOfferSuccess({ offer: offer as never }));
+
     expect(created.offers[0]).toEqual(offer);
 
     const archived = adminOffersReducer(
       created,
       archiveAdminOfferSuccess({ offer: { ...offer, status: 'archived' } as never }),
     );
+
     expect(archived.offers[0].status).toBe('archived');
   });
 });

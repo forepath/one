@@ -34,9 +34,10 @@ import {
 } from '@forepath/shared/frontend/ui-components';
 import { firstValueFrom } from 'rxjs';
 
-import { BILLING_COUNTRY_OPTIONS, DEFAULT_BILLING_COUNTRY_CODE, withOptionalCountry } from '../billing-country-options';
-import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/billing-admin-user-select.component';
+import { BILLING_COUNTRY_OPTIONS, DEFAULT_BILLING_COUNTRY_CODE, withOptionalCountry } from '../billing-country-options';
+import { formatBillingDate } from '../billing-format';
+import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import {
   getCustomerTrustLevelIconClass,
   getCustomerTrustLevelLabel,
@@ -58,7 +59,6 @@ import {
 } from '../shared/data-list';
 import { dbServerPaging } from '../shared/server-paging';
 import { trustState } from '../shared/table-states';
-import { formatBillingDate } from '../billing-format';
 
 @Component({
   selector: 'framework-admin-customer-profiles-page',

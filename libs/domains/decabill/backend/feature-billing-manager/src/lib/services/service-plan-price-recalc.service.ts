@@ -1,23 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import type { TaxCategory } from '../constants/tax-category.constants';
 import { getStatutoryWithdrawalPeriodDays } from '../constants/withdrawal-policy.config';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import type { SubscriptionAddonEntity } from '../entities/subscription-addon.entity';
 import type { SubscriptionEntity } from '../entities/subscription.entity';
-import { ServicePlansRepository } from '../repositories/service-plans.repository';
+import type { PlanCommercialPricingSnapshot } from '../queue/plan-price-migrate.payload';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
+import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionAddonsRepository } from '../repositories/subscription-addons.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-import { normalizeStoredProviderDefaults } from '../utils/provider-env-defaults.utils';
-import { resolveServiceTypeAllowedProviders } from '../utils/provider-selection.utils';
-import { roundMoney } from '../utils/promotion-advantage.util';
-import {
-  PRICE_RECALC_ADJUSTMENT_KINDS,
-  PRICE_RECALC_CREDIT_REASON,
-  priceRecalcCarrySourceRef,
-  priceRecalcPrimarySourceRef,
-} from '../utils/price-recalc-billing-source-ref.util';
 import {
   PLAN_PRICE_MIGRATE_ADJUSTMENT_KINDS,
   PLAN_PRICE_MIGRATE_CREDIT_REASON,
@@ -26,15 +19,22 @@ import {
 } from '../utils/plan-price-migrate-billing-source-ref.util';
 import { resolvePlanTaxCategory } from '../utils/plan-tax.utils';
 import {
+  PRICE_RECALC_ADJUSTMENT_KINDS,
+  PRICE_RECALC_CREDIT_REASON,
+  priceRecalcCarrySourceRef,
+  priceRecalcPrimarySourceRef,
+} from '../utils/price-recalc-billing-source-ref.util';
+import { roundMoney } from '../utils/promotion-advantage.util';
+import { normalizeStoredProviderDefaults } from '../utils/provider-env-defaults.utils';
+import { resolveServiceTypeAllowedProviders } from '../utils/provider-selection.utils';
+import {
   BILLING_BASE_PRICE_CONFIG_KEY,
   resolveServerTypePriceMonthly,
   resolveSubscriptionBillingBaseOverride,
 } from '../utils/server-type-billing.utils';
-import type { PlanCommercialPricingSnapshot } from '../queue/plan-price-migrate.payload';
-import type { TaxCategory } from '../constants/tax-category.constants';
 
-import type { PeriodPriceChangeBillingOutcome } from './period-price-change-billing.types';
 import { InvoiceTaxContextService } from './invoice-tax-context.service';
+import type { PeriodPriceChangeBillingOutcome } from './period-price-change-billing.types';
 import { PricingService } from './pricing.service';
 import { ProviderServerTypesService } from './provider-server-types.service';
 import { SubscriptionConfigChangeBillingService } from './subscription-config-change-billing.service';

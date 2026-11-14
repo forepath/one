@@ -35,18 +35,18 @@ import {
 } from '@forepath/shared/frontend/ui-components';
 import { combineLatest, firstValueFrom, map } from 'rxjs';
 
+import { formatBillingDateRange, formatBillingDateTime, formatBillingMoney } from '../billing-format';
+import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
 import {
   getPromotionFreeDaysLabel,
   getPromotionFreePeriodsLabel,
   getPromotionRedemptionContextLabel,
   resolveNamedLabel,
 } from '../billing-status-labels';
-import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
-import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
 import { dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { dbServerPaging } from '../shared/server-paging';
 import { activeState, redemptionState } from '../shared/table-states';
-import { formatBillingDateRange, formatBillingDateTime, formatBillingMoney } from '../billing-format';
 
 @Component({
   selector: 'framework-admin-promotions-page',
@@ -411,6 +411,7 @@ export class AdminPromotionsPageComponent implements OnInit {
 
         return $localize`:@@featureAdminPromotions-advantageAmountNet:${amount} net credit`;
       }
+
       case 'free_days':
         return getPromotionFreeDaysLabel(Number(config['days'] ?? 0));
       case 'free_billing_periods':

@@ -11,6 +11,7 @@ import type {
 } from '../dto/config-change-preview-response.dto';
 import type { ConfigChangeRequestDto } from '../dto/config-change-request.dto';
 import type { ConfigChangeResponseDto } from '../dto/config-change-response.dto';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import type { AddonEntity } from '../entities/addon.entity';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import type { SubscriptionAddonEntity } from '../entities/subscription-addon.entity';
@@ -22,7 +23,6 @@ import type {
 import type { SubscriptionItemEntity } from '../entities/subscription-item.entity';
 import { ProvisioningStatus } from '../entities/subscription-item.entity';
 import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
-import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { AddonsRepository } from '../repositories/addons.repository';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
@@ -32,8 +32,8 @@ import { SubscriptionAddonsRepository } from '../repositories/subscription-addon
 import { SubscriptionConfigChangesRepository } from '../repositories/subscription-config-changes.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-import { convertAddonPriceToPlanPeriod } from '../utils/addon-pricing.util';
 import { isAddonCompatibleWithProvider } from '../utils/addon-compatibility.utils';
+import { convertAddonPriceToPlanPeriod } from '../utils/addon-pricing.util';
 import { parsePlanAllowedAddonIds, parsePlanMandatoryAddonIds } from '../utils/plan-addons.utils';
 import { roundMoney } from '../utils/promotion-advantage.util';
 import { normalizeStoredProviderDefaults } from '../utils/provider-env-defaults.utils';
@@ -43,6 +43,7 @@ import {
   resolveServerTypePriceMonthly,
   resolveSubscriptionBillingBaseOverride,
 } from '../utils/server-type-billing.utils';
+
 import { AddonService } from './addon.service';
 import { PricingService } from './pricing.service';
 import { ProviderCatalogDispatchService } from './provider-catalog-dispatch.service';

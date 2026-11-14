@@ -2,11 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, computed, inject, LOCALE_ID, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import {
-  ENVIRONMENT,
-  LocaleService,
-  type EnvironmentWithLandingAndCommunication,
-} from '@forepath/shared/frontend/util-configuration';
+import { LandingThemeToggleComponent, SharedHeroMascotComponent } from '@forepath/shared/frontend/feature-landingpage';
 import {
   FpcButtonComponent,
   FpcDropdownComponent,
@@ -14,8 +10,13 @@ import {
   FpcLanguageSwitcherComponent,
   type FpcLocaleOption,
 } from '@forepath/shared/frontend/ui-components';
-import { LandingThemeToggleComponent, SharedHeroMascotComponent } from '@forepath/shared/frontend/feature-landingpage';
+import {
+  ENVIRONMENT,
+  LocaleService,
+  type EnvironmentWithLandingAndCommunication,
+} from '@forepath/shared/frontend/util-configuration';
 import { filter, map, startWith } from 'rxjs';
+
 import { FOREPATH_CONTACT, FOREPATH_SOCIAL_LINKS } from '../forepath-contact.config';
 import { FOREPATH_INDUSTRIES } from '../industries/industries';
 import { FOREPATH_DISTRIBUTOR_LOGOS, FOREPATH_IT_SERVICES } from '../it-systems/services/it-systems-services';

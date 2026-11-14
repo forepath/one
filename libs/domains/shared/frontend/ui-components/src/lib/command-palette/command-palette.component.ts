@@ -204,17 +204,24 @@ export class FpcCommandPaletteComponent<T = unknown> {
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
+
         if (count > 0) this.activeIndex.set((this.activeIndex() + 1) % count);
+
         break;
       case 'ArrowUp':
         event.preventDefault();
+
         if (count > 0) this.activeIndex.set((this.activeIndex() - 1 + count) % count);
+
         break;
+
       case 'Enter': {
         event.preventDefault();
         event.stopPropagation();
         const entry = this.activeEntry();
+
         if (entry) this.activate(entry.group, entry.item, event);
+
         break;
       }
     }

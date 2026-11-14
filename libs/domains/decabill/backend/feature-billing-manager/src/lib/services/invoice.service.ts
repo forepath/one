@@ -1,41 +1,42 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
+import { isAutoPaymentBlocking } from '../constants/auto-payment-status.constants';
 import { InvoiceStatus, OPEN_OVERDUE_INVOICE_STATUSES } from '../constants/invoice-status.constants';
 import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
-import { isAutoPaymentBlocking } from '../constants/auto-payment-status.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
-import type { InvoiceDetailResponseDto } from '../dto/invoice-detail-response.dto';
 import { mapDocumentTermsToResponse } from '../dto/document-terms.dto';
+import type { InvoiceDetailResponseDto } from '../dto/invoice-detail-response.dto';
 import type { InvoiceResponseDto } from '../dto/invoice-response.dto';
-import type { InvoiceEntity } from '../entities/invoice.entity';
 import type { InvoicePromotionApplicationDraft } from '../dto/promotion.dto';
-import { InvoicePromotionApplicationsRepository } from '../repositories/invoice-promotion-applications.repository';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
+import type { InvoiceEntity } from '../entities/invoice.entity';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
+import { ProjectTimeReportService } from '../projects/services/project-time-report.service';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoiceLineItemsRepository } from '../repositories/invoice-line-items.repository';
+import { InvoicePromotionApplicationsRepository } from '../repositories/invoice-promotion-applications.repository';
 import { InvoiceVoidDocumentsRepository } from '../repositories/invoice-void-documents.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-import { ProjectTimeReportService } from '../projects/services/project-time-report.service';
+import { mapInvoiceToSearchDocument } from '../search/billing-search-document.mapper';
+import { BillingSearchIndexService } from '../search/billing-search-index.service';
+import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
+import { getRequiredTenantId } from '../utils/tenant-query.utils';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
-import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
-import { mapInvoiceToSearchDocument } from '../search/billing-search-document.mapper';
-import { BillingSearchIndexService } from '../search/billing-search-index.service';
-import { getRequiredTenantId } from '../utils/tenant-query.utils';
 import { buildCreditNoteNumber } from './e-invoice-document-options';
-import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { InvoiceIssuanceService } from './invoice-issuance.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { InvoiceTaxContextService } from './invoice-tax-context.service';
+import { resolveInvoicingPeriod } from './invoicing-period.util';
 import { OssThresholdService } from './oss-threshold.service';
 import { PromotionApplicationService } from './promotion-application.service';
-import { resolveInvoicingPeriod } from './invoicing-period.util';
 import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
 import type { LineItemInput } from './tax-calculation.service';
 import { TaxCalculationService } from './tax-calculation.service';
-import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
+
 
 export interface CreateInvoiceDraftParams {
   subscriptionId?: string;

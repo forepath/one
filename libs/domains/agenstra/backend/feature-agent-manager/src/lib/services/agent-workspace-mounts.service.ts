@@ -20,7 +20,6 @@ import { AgentHandoffsApiService } from './agent-handoffs-api.service';
 
 const DEFAULT_WORKING_DIRECTORY = '/app';
 const MOUNT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
-
 const PEERS_UNAVAILABLE_NOTE =
   'Other environments of the workspace cannot be resolved right now (no controller connection); only your own ' +
   'environment is listed.';

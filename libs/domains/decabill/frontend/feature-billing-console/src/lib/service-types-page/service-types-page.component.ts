@@ -53,12 +53,12 @@ import {
   take,
 } from 'rxjs';
 
-import { getProviderDisplayName } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
+import { getProviderDisplayName } from '../billing-status-labels';
 import { optionalNumberInputValue } from '../optional-number-input.util';
 import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { activeState } from '../shared/table-states';
-import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
 
 type ServiceTypeFormMode = 'create' | 'edit';
 

@@ -4,6 +4,7 @@ describe('fpcRunBulk', () => {
   it('reports every item: succeeded, denied (401 / 403, never counted as success) or failed', async () => {
     const result = await fpcRunBulk(['a', 'b', 'c', 'd'], async (item) => {
       if (item === 'b') throw { status: 403, error: { message: 'Forbidden' } };
+
       if (item === 'c') throw { status: 500, error: { message: 'Boom' } };
 
       return item;

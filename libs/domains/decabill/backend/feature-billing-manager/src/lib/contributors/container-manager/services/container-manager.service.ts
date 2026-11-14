@@ -1,6 +1,24 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { isIP } from 'node:net';
 
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+
+import { ProvisioningStatus, type SubscriptionItemEntity } from '../../../entities/subscription-item.entity';
+import { BillingNotificationPublisher } from '../../../notifications/billing-notification.publisher';
+import { ContainerStatsSamplesRepository } from '../../../repositories/container-stats-samples.repository';
+import { ContainerStatsSummariesRepository } from '../../../repositories/container-stats-summaries.repository';
+import { ServicePlansRepository } from '../../../repositories/service-plans.repository';
+import { SubscriptionAddonsRepository } from '../../../repositories/subscription-addons.repository';
+import { SubscriptionItemsRepository } from '../../../repositories/subscription-items.repository';
+import { SubscriptionsRepository } from '../../../repositories/subscriptions.repository';
+import { AddonModuleRegistryService } from '../../../services/addon-module-registry.service';
+import { SshExecutorService } from '../../../services/ssh-executor.service';
+import {
+  mergeHostNetworkingIntoTopology,
+  parseIpAddrJson,
+  parseIpRouteJson,
+} from '../../../utils/container-manager-host-network.utils';
+import { CONTAINER_MANAGER_MODULE_KEY } from '../../../utils/plan-addons.utils';
+import { isLiveAccessibleSubscriptionStatus } from '../../../utils/subscription-live-access.utils';
 import {
   CONTAINER_MANAGER_HISTORY_MAX_POINTS,
   DOCKER_CONTAINER_ID_PATTERN,
@@ -12,23 +30,6 @@ import type {
   ContainerManagerNetworksResponseDto,
   ContainerManagerStatsHistoryResponseDto,
 } from '../dto/container-manager.dto';
-import { ProvisioningStatus, type SubscriptionItemEntity } from '../../../entities/subscription-item.entity';
-import { ContainerStatsSamplesRepository } from '../../../repositories/container-stats-samples.repository';
-import { ContainerStatsSummariesRepository } from '../../../repositories/container-stats-summaries.repository';
-import {
-  mergeHostNetworkingIntoTopology,
-  parseIpAddrJson,
-  parseIpRouteJson,
-} from '../../../utils/container-manager-host-network.utils';
-import { CONTAINER_MANAGER_MODULE_KEY } from '../../../utils/plan-addons.utils';
-import { isLiveAccessibleSubscriptionStatus } from '../../../utils/subscription-live-access.utils';
-import { AddonModuleRegistryService } from '../../../services/addon-module-registry.service';
-import { SshExecutorService } from '../../../services/ssh-executor.service';
-import { SubscriptionAddonsRepository } from '../../../repositories/subscription-addons.repository';
-import { SubscriptionItemsRepository } from '../../../repositories/subscription-items.repository';
-import { SubscriptionsRepository } from '../../../repositories/subscriptions.repository';
-import { BillingNotificationPublisher } from '../../../notifications/billing-notification.publisher';
-import { ServicePlansRepository } from '../../../repositories/service-plans.repository';
 
 const SSH_USER = 'root';
 const SSH_PORT = 22;
@@ -269,7 +270,6 @@ export class ContainerManagerService {
       const nodes: ContainerManagerNetworksResponseDto['topology']['nodes'] = [];
       const edges: ContainerManagerNetworksResponseDto['topology']['edges'] = [];
       const seenNodes = new Set<string>();
-
       const ensureNode = (
         id: string,
         label: string,
@@ -360,6 +360,7 @@ export class ContainerManagerService {
           hostInterfaces,
           hostRoutes,
         });
+
         topologyNodes = merged.nodes;
         topologyEdges = merged.edges;
       }

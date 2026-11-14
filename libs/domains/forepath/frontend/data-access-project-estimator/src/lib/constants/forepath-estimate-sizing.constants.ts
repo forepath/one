@@ -358,7 +358,6 @@ export function scoreServiceIntent(normalizedPrompt: string): ForepathServiceInt
     containsAnyTerm(prompt, ['script', 'endpoint', 'api', 'tool', 'fix'])
       ? 2
       : 0;
-
   const softwareDevelopment =
     buildIntent +
     mediumScopeIntent +
@@ -366,11 +365,9 @@ export function scoreServiceIntent(normalizedPrompt: string): ForepathServiceInt
     countMatchingTerms(prompt, FOREPATH_SOFTWARE_BUILD_TERMS) +
     countMatchingTerms(prompt, FOREPATH_WEB_PLATFORM_TERMS) +
     countMatchingTerms(prompt, FOREPATH_MOBILE_PLATFORM_TERMS);
-
   const consulting =
     countMatchingTerms(prompt, FOREPATH_CONSULTING_TERMS) +
     countMatchingTerms(prompt, FOREPATH_CONSULTING_MODULE_TERMS);
-
   const itSystems =
     countMatchingTerms(prompt, FOREPATH_IT_SYSTEMS_TERMS) +
     (containsAnyTerm(prompt, FOREPATH_ONGOING_OPS_TERMS) ? 2 : 0);

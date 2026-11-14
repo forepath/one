@@ -31,6 +31,13 @@ import { io, Socket } from 'socket.io-client';
 
 import { ticketAutomationRunChatSummaryToResponseDto } from '../../utils/ticket-automation-chat-run-mapper';
 import {
+  agentTaskRemovedReceived,
+  agentTaskRunReceived,
+  agentTaskUpsertReceived,
+} from '../agent-tasks/agent-tasks.actions';
+import type { AgentTaskRemovedEvent, AgentTaskResponseDto } from '../agent-tasks/agent-tasks.types';
+import { chatPlanUpsertReceived } from '../chat-plans/chat-plans.actions';
+import {
   chatTimelineAutomationUpsert,
   chatTimelineBatchReceived,
   chatTimelineEnhanceResult,
@@ -43,6 +50,7 @@ import {
   chatTimelineTicketBodyResult,
 } from '../chat-timeline/chat-timeline.actions';
 import { fileUpdateNotificationReceived } from '../files/files.actions';
+import { mapContainerStatsTick$ } from '../stats/stats.effects';
 import {
   terminalClosedReceived,
   terminalCreatedReceived,
@@ -51,30 +59,22 @@ import {
 import { ticketBoardAutomationRunUpsert } from '../ticket-automation/ticket-automation.actions';
 import { ticketBoardTicketUpsert } from '../tickets/tickets.actions';
 import type { TicketResponseDto } from '../tickets/tickets.types';
-import { mapContainerStatsTick$ } from '../stats/stats.effects';
-
 import {
-  CLIENT_CHAT_AUTOMATION_SOCKET_EVENT,
-  CLIENT_CHAT_TICKET_UPSERT_SOCKET_EVENT,
-} from './client-chat-automation.constants';
-import { CLIENT_CHAT_PLAN_SOCKET_EVENT } from './client-chat-plan.constants';
+  deploymentRunUpsertReceived,
+  deploymentWorkflowRemovedReceived,
+  deploymentWorkflowUpsertReceived,
+} from '../workspace-deployments/workspace-deployments.actions';
+
 import {
   CLIENT_AGENT_TASK_REMOVED_SOCKET_EVENT,
   CLIENT_AGENT_TASK_UPSERT_SOCKET_EVENT,
   CLIENT_CHAT_AGENT_TASK_SOCKET_EVENT,
 } from './client-chat-agent-task.constants';
 import {
-  agentTaskRemovedReceived,
-  agentTaskRunReceived,
-  agentTaskUpsertReceived,
-} from '../agent-tasks/agent-tasks.actions';
-import type { AgentTaskRemovedEvent, AgentTaskResponseDto } from '../agent-tasks/agent-tasks.types';
-import { chatPlanUpsertReceived } from '../chat-plans/chat-plans.actions';
-import {
-  deploymentRunUpsertReceived,
-  deploymentWorkflowRemovedReceived,
-  deploymentWorkflowUpsertReceived,
-} from '../workspace-deployments/workspace-deployments.actions';
+  CLIENT_CHAT_AUTOMATION_SOCKET_EVENT,
+  CLIENT_CHAT_TICKET_UPSERT_SOCKET_EVENT,
+} from './client-chat-automation.constants';
+import { CLIENT_CHAT_PLAN_SOCKET_EVENT } from './client-chat-plan.constants';
 import {
   CLIENT_DEPLOYMENT_RUN_UPSERT_SOCKET_EVENT,
   CLIENT_DEPLOYMENT_WORKFLOW_REMOVED_SOCKET_EVENT,
@@ -138,7 +138,6 @@ const INTERNAL_EVENTS = new Set([
   'ping',
   'pong',
 ]);
-
 /**
  * Global socket instance - managed by the connect effect
  * This is a shared reference that will be used by the facade for emitting events

@@ -2,13 +2,13 @@ import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { AtlassianAuthError, AtlassianAuthService } from '../../context-import/atlassian-auth.service';
 import {
   confluencePageBodyHtml,
   isConfluencePageTypeAncestor,
   isJiraAdfDocument,
   jiraAdfToMarkdown,
 } from '../../context-import/atlassian-format-to-markdown';
-import { AtlassianAuthError, AtlassianAuthService } from '../../context-import/atlassian-auth.service';
 import {
   atlassianFetchJson,
   confluenceContentSearchUrlsEquivalent,

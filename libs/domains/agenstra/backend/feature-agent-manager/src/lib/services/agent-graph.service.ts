@@ -1,3 +1,5 @@
+import { posix } from 'node:path';
+
 import {
   AGENSTRA_WORKSPACE_MOUNT_ROOT,
   AGENT_GRAPH_LIMITS,
@@ -25,7 +27,6 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import { posix } from 'node:path';
 
 import type { AgentGraphEntity } from '../entities/agent-graph.entity';
 import type { AgentEntity } from '../entities/agent.entity';
@@ -51,6 +52,7 @@ import { WorkspaceChangeNotifierService } from './workspace-change-notifier.serv
 const DIRTY_DEBOUNCE_MS = 45_000;
 /** Minimum time between two builds of the same environment (background rebuilds only). */
 const MIN_REBUILD_INTERVAL_MS = 2 * 60_000;
+
 /** Manual refreshes within this window after a build (or while one runs) return the current status instead. */
 export const AGENT_GRAPH_MANUAL_REFRESH_COOLDOWN_MS = 30_000;
 /** Concurrent builds across all environments (each streams files out of a worker). */
@@ -61,6 +63,7 @@ const REFERENCES_LAYER_PROMPTS = 100;
 const OVERVIEW_HUBS = 15;
 const OVERVIEW_COMMUNITIES = 12;
 const OVERVIEW_MODULES = 40;
+
 /** Set to `false` to skip rebuilding every environment graph when the manager starts. */
 export const AGENT_GRAPH_STARTUP_REBUILD_ENV = 'AGENT_GRAPH_STARTUP_REBUILD';
 /** Delay before the startup rebuild (workers are restarted on startup and need a moment). */

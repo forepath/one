@@ -7,7 +7,6 @@ import { BillingAdminSupplierContractSelectComponent } from './billing-admin-sup
 
 describe('BillingAdminSupplierContractSelectComponent', () => {
   let listContracts: jest.Mock;
-
   const create = (selectedContractNumber = '') => {
     const fixture = TestBed.createComponent(BillingAdminSupplierContractSelectComponent);
 

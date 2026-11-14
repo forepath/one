@@ -12,7 +12,6 @@ describe('PromotionApplicationService', () => {
   const invoicePromotionApplicationsRepository = {
     findByInvoiceId: jest.fn(),
   };
-
   const service = new PromotionApplicationService(
     promotionRedemptionsRepository as never,
     invoicePromotionApplicationsRepository as never,

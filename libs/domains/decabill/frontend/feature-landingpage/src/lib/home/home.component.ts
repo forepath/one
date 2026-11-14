@@ -5,18 +5,19 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import type { PublicServicePlanOffering } from '@forepath/decabill/frontend/data-access-portal';
 import { formatPublicOfferingPrice, ServicePlansFacade } from '@forepath/decabill/frontend/data-access-portal';
-import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
-import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
-import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
-
-import { OverviewIllustrationComponent } from '../illustrations/overview-illustration.component';
-import { BillingTimelineIllustrationComponent } from '../illustrations/billing-timeline-illustration.component';
-import { PlanConfigIllustrationComponent } from '../illustrations/plan-config-illustration.component';
 import {
   SharedContactPersonComponent,
   SharedHeroMascotComponent,
   SharedMarkStackComponent,
 } from '@forepath/shared/frontend/feature-landingpage';
+import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
+import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
+
+import { BillingTimelineIllustrationComponent } from '../illustrations/billing-timeline-illustration.component';
+import { OverviewIllustrationComponent } from '../illustrations/overview-illustration.component';
+import { PlanConfigIllustrationComponent } from '../illustrations/plan-config-illustration.component';
+
 
 @Component({
   selector: 'framework-portal-home',

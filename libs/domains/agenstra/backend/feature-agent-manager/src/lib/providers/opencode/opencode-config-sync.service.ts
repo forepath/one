@@ -40,12 +40,12 @@ import {
   UpsertAgentOpencodeConfigDto,
 } from '../../dto/agent-opencode-config.dto';
 import { AgentsRepository } from '../../repositories/agents.repository';
+import { AgentContextMcpService } from '../../services/agent-context-mcp.service';
 import {
   AgentEgressService,
   EGRESS_GUARDED_AGENT_CAP_DROP,
   type AgentEgressApplyResult,
 } from '../../services/agent-egress.service';
-import { AgentContextMcpService } from '../../services/agent-context-mcp.service';
 import { AgentGraphReferencesService } from '../../services/agent-graph-references.service';
 import { AgentMessageFiltersService } from '../../services/agent-message-filters.service';
 import { AgentRuntimeRefreshService } from '../../services/agent-runtime-refresh.service';
@@ -149,6 +149,7 @@ function stripAllMcpRegistryClaims(overlay: JsonObject | null | undefined): Json
       }
 
       const entry = { ...value };
+
       delete entry['registry'];
       servers[key] = entry;
     }
@@ -169,6 +170,7 @@ function stripAllMcpRegistryClaims(overlay: JsonObject | null | undefined): Json
     }
 
     const entry = { ...value };
+
     delete entry['registry'];
     nextMcp[key] = entry;
   }
@@ -338,7 +340,6 @@ export class OpenCodeConfigSyncService {
     const sanitizedOverrides = enforceAllowDenyOnOverlay(nextOverrides, context, {
       seedMissingInheritedDisables: false,
     });
-
     const patch: Partial<typeof agent> = {
       opencodeUserConfig: sanitizedConfig,
       opencodeUserOverrides: sanitizedOverrides,
@@ -416,7 +417,6 @@ export class OpenCodeConfigSyncService {
     const agentSecrets = parseSecrets(agent.opencodeUserSecrets);
     // Agent-layer secrets win over workspace/global for the same key.
     const secrets = { ...parentSecrets, ...agentSecrets };
-
     // Prepare once and reuse for container Env, auth.set, and OpenCode PATCH so allow/deny
     // filtering applies before any container-side side effects.
     // Strip registry first: manager has no catalog, so catalog identity is fail-closed here.
@@ -970,7 +970,6 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
       `/mcp/${encoded}/auth`,
       { method: 'POST' },
     );
-
     const authorizationUrl = typeof data.authorizationUrl === 'string' ? data.authorizationUrl.trim() : '';
 
     if (!authorizationUrl) {
@@ -1079,6 +1078,7 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
   ): Promise<T> {
     const { baseUrl, authorization } = await this.clientFactory.resolveConnection(agentId, containerId);
     const headers = new Headers(init.headers);
+
     headers.set('Authorization', authorization);
     headers.set('Accept', 'application/json');
 

@@ -7,6 +7,7 @@ import { Observable, of, throwError } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 import { ChatPlansService } from '../../services/chat-plans.service';
+import type { ChatPlanResponse } from '../container-socket/container-socket.types';
 
 import {
   loadChatPlan,
@@ -29,7 +30,6 @@ import {
   updateChatPlan$,
 } from './chat-plans.effects';
 import { initialChatPlansState } from './chat-plans.reducer';
-import type { ChatPlanResponse } from '../container-socket/container-socket.types';
 
 function chatPlanFixture(overrides: Partial<ChatPlanResponse> = {}): ChatPlanResponse {
   return {

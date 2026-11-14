@@ -97,7 +97,6 @@ export class WorkspaceGraphViewService {
     const scopeKey = VIEW_SCOPES.map((scope) => (request.isAllowed(scope) ? '1' : '0')).join('');
     const key = `${request.scope}|${request.layer}|${scopeKey}|${ids.join(',')}`;
     const cached = this.cache.get(key);
-
     // Later pages reuse the view their first page built; a new "first page" request rebuilds unless the view is only
     // seconds old.
     const now = Date.now();
@@ -206,7 +205,6 @@ export class WorkspaceGraphViewService {
             layer: layer === 'all' ? 'all' : layer,
             names,
           });
-
           const allowed = filterGraphPartByScopes(document.nodes, document.edges, isAllowed);
 
           parts.push(
@@ -236,7 +234,6 @@ export class WorkspaceGraphViewService {
 
       if (snapshot) {
         const filtered = filterGraphByScopes(snapshot, isAllowed);
-
         // With a composition, its real modules / languages replace the snapshot's summaries; without one (manager
         // unreachable) a non-knowledge layer still shows the workspace and its environments, nothing else.
         const keep = (node: AgentGraphNode): boolean => {

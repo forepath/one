@@ -29,22 +29,22 @@ import {
 import { map, switchMap } from 'rxjs';
 
 import {
-  getBillingIntervalLabel,
-  getPromotionAdvantageText,
-  getPromotionRedemptionContextLabel,
-  resolveNamedLabel,
-} from '../billing-status-labels';
-import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
-import { BillingSubscriptionSelectComponent } from '../billing-subscription-select/billing-subscription-select.component';
-import { buildPromotionPeriodPricingPreview } from '../promotion-pricing-preview.util';
-import { dbServerPaging } from '../shared/server-paging';
-import { redemptionState } from '../shared/table-states';
-import {
   formatBillingDate,
   formatBillingDateRange,
   formatBillingDateTime,
   formatBillingMoney,
 } from '../billing-format';
+import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import {
+  getBillingIntervalLabel,
+  getPromotionAdvantageText,
+  getPromotionRedemptionContextLabel,
+  resolveNamedLabel,
+} from '../billing-status-labels';
+import { BillingSubscriptionSelectComponent } from '../billing-subscription-select/billing-subscription-select.component';
+import { buildPromotionPeriodPricingPreview } from '../promotion-pricing-preview.util';
+import { dbServerPaging } from '../shared/server-paging';
+import { redemptionState } from '../shared/table-states';
 
 const PROMOTION_ELIGIBLE_SUBSCRIPTION_STATUSES = new Set(['active', 'pending_backorder', 'pending_cancel']);
 
@@ -314,11 +314,13 @@ export class PromotionsPageComponent implements OnInit {
 
     effect(() => {
       this.activeTab();
+
       if (firstTab) {
         firstTab = false;
 
         return;
       }
+
       untracked(() => this.reloadCurrentTab());
     });
   }

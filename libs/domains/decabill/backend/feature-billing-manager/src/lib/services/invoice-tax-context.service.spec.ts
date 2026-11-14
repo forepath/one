@@ -17,7 +17,6 @@ describe('InvoiceTaxContextService', () => {
   const ossThresholdService = {
     getDecision: jest.fn(),
   };
-
   const service = new InvoiceTaxContextService(
     customerProfilesRepository as never,
     billingIssuerConfig as never,

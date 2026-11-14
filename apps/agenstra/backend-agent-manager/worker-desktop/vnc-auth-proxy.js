@@ -9,7 +9,6 @@
 
 const http = require('http');
 const net = require('net');
-
 const listenHost = process.env.VNC_AUTH_PROXY_HOST || '0.0.0.0';
 const listenPort = parseInt(process.env.VNC_WEBSOCKIFY_PORT || '6080', 10);
 const upstreamHost = process.env.VNC_WEBSOCKIFY_UPSTREAM_HOST || '127.0.0.1';

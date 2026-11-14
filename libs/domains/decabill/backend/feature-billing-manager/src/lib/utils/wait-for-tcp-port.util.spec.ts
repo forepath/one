@@ -28,9 +28,11 @@ describe('wait-for-tcp-port.util', () => {
   describe('isTcpPortOpen', () => {
     it('resolves true on connect', async () => {
       const socket = new FakeSocket();
+
       MockSocket.mockImplementation(() => socket);
 
       const promise = isTcpPortOpen('1.2.3.4', 22, 1000);
+
       socket.emit('connect');
 
       await expect(promise).resolves.toBe(true);
@@ -39,9 +41,11 @@ describe('wait-for-tcp-port.util', () => {
 
     it('resolves false on timeout', async () => {
       const socket = new FakeSocket();
+
       MockSocket.mockImplementation(() => socket);
 
       const promise = isTcpPortOpen('1.2.3.4', 22, 1000);
+
       socket.emit('timeout');
 
       await expect(promise).resolves.toBe(false);
@@ -49,9 +53,11 @@ describe('wait-for-tcp-port.util', () => {
 
     it('resolves false on error and ignores a second finish', async () => {
       const socket = new FakeSocket();
+
       MockSocket.mockImplementation(() => socket);
 
       const promise = isTcpPortOpen('1.2.3.4', 22, 1000);
+
       socket.emit('error', new Error('ECONNREFUSED'));
       socket.emit('connect');
 
@@ -63,10 +69,13 @@ describe('wait-for-tcp-port.util', () => {
   describe('waitForTcpPort', () => {
     it('returns once the port accepts a connection', async () => {
       let attempt = 0;
+
       MockSocket.mockImplementation(() => {
         const socket = new FakeSocket();
+
         attempt += 1;
         const current = attempt;
+
         setImmediate(() => {
           if (current === 1) {
             socket.emit('error', new Error('refused'));
@@ -91,6 +100,7 @@ describe('wait-for-tcp-port.util', () => {
     it('throws when the deadline elapses without a connection', async () => {
       MockSocket.mockImplementation(() => {
         const socket = new FakeSocket();
+
         setImmediate(() => socket.emit('timeout'));
 
         return socket;

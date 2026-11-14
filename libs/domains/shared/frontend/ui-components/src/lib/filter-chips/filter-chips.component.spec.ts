@@ -25,10 +25,12 @@ describe('FpcFilterChipsComponent', () => {
     fixture.detectChanges();
     const removed: FpcFilterChip[] = [];
     let cleared = 0;
+
     fixture.componentInstance.removeChip.subscribe((chip) => removed.push(chip));
     fixture.componentInstance.clearAll.subscribe(() => cleared++);
 
     const rendered = host.querySelectorAll('[data-testid="fpc-filter-chip"]');
+
     expect(rendered).toHaveLength(2);
     expect(rendered[1].textContent).toContain('−status:ready');
 

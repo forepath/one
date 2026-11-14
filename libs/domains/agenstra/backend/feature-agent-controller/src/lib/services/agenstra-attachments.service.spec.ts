@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 
 import { AgenstraAttachmentOwnerType } from '../entities/attachment.enums';
 import { KnowledgeNodeType } from '../entities/knowledge-node.enums';
+
 import { AgenstraAttachmentsService } from './agenstra-attachments.service';
 
 describe('AgenstraAttachmentsService', () => {
@@ -20,7 +21,6 @@ describe('AgenstraAttachmentsService', () => {
   const fileStorage = { writeAgenstraAttachmentFile: jest.fn(), readAgenstraAttachmentFile: jest.fn() };
   const fileSystemProxy = { writeSystemFile: jest.fn() };
   const notificationPublisher = { publishAttachment: jest.fn() };
-
   const service = new AgenstraAttachmentsService(
     attachmentRepo as never,
     ticketRepo as never,
@@ -87,6 +87,7 @@ describe('AgenstraAttachmentsService', () => {
       createdByUserId: null,
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
     };
+
     attachmentRepo.find.mockResolvedValue([row]);
     fileStorage.readAgenstraAttachmentFile.mockResolvedValue(Buffer.from('pdf'));
 

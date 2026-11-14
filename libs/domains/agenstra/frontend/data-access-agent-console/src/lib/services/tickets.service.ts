@@ -116,7 +116,9 @@ export class TicketsService {
 
   uploadAttachment(ticketId: string, file: File): Observable<AttachmentResponseDto> {
     const form = new FormData();
+
     form.append('file', file, file.name);
+
     return this.http.post<AttachmentResponseDto>(`${this.apiUrl}/tickets/${ticketId}/attachments`, form);
   }
 
@@ -130,8 +132,10 @@ export class TicketsService {
 
   uploadChatAttachment(clientId: string, file: File): Observable<AttachmentResponseDto> {
     const form = new FormData();
+
     form.append('file', file, file.name);
     const params = new HttpParams().set('clientId', clientId);
+
     return this.http.post<AttachmentResponseDto>(`${this.apiUrl}/attachments/chat`, form, { params });
   }
 

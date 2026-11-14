@@ -1,16 +1,16 @@
-import type { DeploymentRunSummary, DeploymentWorkflowSummary } from '@forepath/agenstra/shared/util-opencode-config';
-import { ClientEntity, IIdentityNotificationPublisher } from '@forepath/identity/backend';
-import { INSTANCE_SCOPE_KEY, NotificationDispatcherService } from '@forepath/shared/backend';
-import { Injectable } from '@nestjs/common';
-
 import type {
   AgentResponseDto,
   ChatSessionResponseDto,
   EnvironmentVariableResponseDto,
 } from '@forepath/agenstra/backend/feature-agent-manager';
+import type { DeploymentRunSummary, DeploymentWorkflowSummary } from '@forepath/agenstra/shared/util-opencode-config';
+import { ClientEntity, IIdentityNotificationPublisher } from '@forepath/identity/backend';
+import { INSTANCE_SCOPE_KEY, NotificationDispatcherService } from '@forepath/shared/backend';
+import { Injectable } from '@nestjs/common';
 
-import type { ClientResponseDto } from '../dto/client-response.dto';
+
 import type { AttachmentResponseDto } from '../dto/attachment.dto';
+import type { ClientResponseDto } from '../dto/client-response.dto';
 import type { TicketCommentResponseDto } from '../dto/tickets/ticket-comment-response.dto';
 import type { TicketResponseDto } from '../dto/tickets/ticket-response.dto';
 

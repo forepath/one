@@ -1,4 +1,5 @@
 import { checkClientAccess, REQUIRE_SCOPES_KEY, UserRole } from '@forepath/identity/backend';
+
 import { ClientsController } from '../controllers/clients.controller';
 
 import { VncGateway } from './vnc.gateway';

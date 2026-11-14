@@ -1,5 +1,5 @@
-import { ForbiddenException } from '@nestjs/common';
 import { UserRole } from '@forepath/identity/backend';
+import { ForbiddenException } from '@nestjs/common';
 
 import { ProjectsService } from './projects.service';
 
@@ -16,7 +16,6 @@ describe('ProjectsService', () => {
   const timeEntriesRepository = {
     sumDurationMinutes: jest.fn().mockResolvedValue(0),
   };
-
   let service: ProjectsService;
 
   beforeEach(() => {

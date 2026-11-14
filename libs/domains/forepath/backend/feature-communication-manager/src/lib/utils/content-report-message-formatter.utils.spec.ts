@@ -1,5 +1,6 @@
-import { formatContentReportMessage } from './content-report-message-formatter.utils';
 import type { CreateContentReportDto } from '../dto/create-content-report.dto';
+
+import { formatContentReportMessage } from './content-report-message-formatter.utils';
 
 describe('formatContentReportMessage', () => {
   it('formats a DSA notice', () => {
@@ -13,7 +14,6 @@ describe('formatContentReportMessage', () => {
       goodFaithConfirmed: true,
       csamAnonymous: false,
     } as CreateContentReportDto;
-
     const message = formatContentReportMessage(dto);
 
     expect(message).toContain('DSA Article 16');
@@ -30,7 +30,6 @@ describe('formatContentReportMessage', () => {
       goodFaithConfirmed: true,
       csamAnonymous: true,
     } as CreateContentReportDto;
-
     const message = formatContentReportMessage(dto);
 
     expect(message).toContain('Waived (CSAM-eligible anonymous notice)');
@@ -55,7 +54,6 @@ describe('formatContentReportMessage', () => {
       emergencyCase: true,
       authorityAttestation: true,
     } as CreateContentReportDto;
-
     const message = formatContentReportMessage(dto);
 
     expect(message).toContain('TCO-VO Article 15');

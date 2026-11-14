@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { UpsertOpencodeConfigDto } from '../dto/opencode-config.dto';
 import { ClientOpencodeConfigEntity } from '../entities/client-opencode-config.entity';
 import { GlobalOpencodeConfigEntity } from '../entities/global-opencode-config.entity';
+
 import { OpencodeConfigService } from './opencode-config.service';
 
 describe('OpencodeConfigService locks', () => {
@@ -55,7 +56,6 @@ describe('OpencodeConfigService locks', () => {
       config: {},
       locks: ['/model', 'skills', '/tabs/mcp'],
     };
-
     const saved = await service.putGlobal(dto);
 
     expect(globalRepo.save).toHaveBeenCalledWith(
@@ -94,7 +94,6 @@ describe('OpencodeConfigService locks', () => {
       config: { username: 'ws' },
       locks: ['/warming'],
     };
-
     const saved = await service.putClient('client-1', dto);
 
     expect(clientRepo.save).toHaveBeenCalledWith(

@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, input, output } from '@angular/core';
-
 import { FpcFormTextDirective } from '@forepath/shared/frontend/ui-components';
 
 let nextSettingsRowId = 0;

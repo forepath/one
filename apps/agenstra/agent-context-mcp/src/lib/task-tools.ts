@@ -13,7 +13,6 @@ import { ContextApiClient, ContextApiError } from './context-api.client';
 import type { ContextToolDefinition, ContextToolResult } from './context-tools';
 
 const TASK_ID_PROPERTY = { type: 'string', description: 'Task id from tasks_list.' };
-
 const TASK_FIELD_PROPERTIES = {
   title: { type: 'string', maxLength: AGENT_TASK_LIMITS.titleMaxLength, description: 'Short task name.' },
   prompt: {
@@ -192,6 +191,7 @@ export async function callTaskTool(
         return json(await client.listTasks());
       case AGENSTRA_TASKS_MCP_TOOL_NAMES.get:
         return json(await client.getTask(taskId));
+
       case AGENSTRA_TASKS_MCP_TOOL_NAMES.create: {
         const fields = taskFields(args);
 
@@ -201,6 +201,7 @@ export async function callTaskTool(
 
         return json(await client.createTask(fields as AgentTaskCreateInput));
       }
+
       case AGENSTRA_TASKS_MCP_TOOL_NAMES.update: {
         const fields = taskFields(args);
 
@@ -210,6 +211,7 @@ export async function callTaskTool(
 
         return json(await client.updateTask(taskId, fields));
       }
+
       case AGENSTRA_TASKS_MCP_TOOL_NAMES.delete:
         await client.deleteTask(taskId);
 

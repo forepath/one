@@ -102,6 +102,7 @@ export function ancestorLayerPaths(path: string): string[] {
 
   for (let i = 1; i < parts.length; i += 1) {
     const joined = parts.slice(0, i).join('/');
+
     ancestors.push(absolute ? `/${joined}` : joined);
   }
 

@@ -114,6 +114,7 @@ export class OpenCodeEventMapper {
         ];
       case 'session.diff':
         return this.mapSessionDiff(event.properties.sessionID, event.properties.diff);
+
       case 'session.error': {
         const error = event.properties.error;
         const message =
@@ -133,6 +134,7 @@ export class OpenCodeEventMapper {
           },
         ];
       }
+
       case 'todo.updated':
         return this.mapTodoUpdated(event.properties.sessionID, event.properties.todos);
       case 'command.executed':
@@ -168,6 +170,7 @@ export class OpenCodeEventMapper {
             },
           ),
         ];
+
       case 'tui.toast.show': {
         const title = event.properties.title?.trim();
         const message = title ? `${title}: ${event.properties.message}` : event.properties.message;
@@ -185,6 +188,7 @@ export class OpenCodeEventMapper {
 
         return [this.statusEvent(message, `toast_${event.properties.variant}`)];
       }
+
       case 'permission.updated':
         return this.mapPermissionQuestion({
           id: event.properties.id,
@@ -201,6 +205,7 @@ export class OpenCodeEventMapper {
           subtype: 'permission',
         });
       case 'permission.asked':
+
       case 'permission.v2.asked': {
         const payload = this.eventPayload(event);
         const id = typeof payload.id === 'string' ? payload.id : '';
@@ -225,7 +230,9 @@ export class OpenCodeEventMapper {
           subtype: event.type === 'permission.v2.asked' ? 'permission.v2' : 'permission',
         });
       }
+
       case 'question.asked':
+
       case 'question.v2.asked': {
         const payload = this.eventPayload(event);
         const requestId =
@@ -255,6 +262,7 @@ export class OpenCodeEventMapper {
           },
         ];
       }
+
       default:
         return [];
     }
@@ -806,6 +814,7 @@ export class OpenCodeEventMapper {
                       }
                     })()
                   : state.output;
+
               return fromOutput ?? enrichedArgs;
             })()
           : undefined;

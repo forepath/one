@@ -5,8 +5,9 @@ import type { editor } from 'monaco-editor';
 import * as monaco from 'monaco-editor';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 
-import { applyDecabillMonacoEditorTheme } from './monaco-decabill-theme';
 import { ThemeService } from '../theme.service';
+
+import { applyDecabillMonacoEditorTheme } from './monaco-decabill-theme';
 
 @Component({
   selector: 'framework-monaco-editor-wrapper',

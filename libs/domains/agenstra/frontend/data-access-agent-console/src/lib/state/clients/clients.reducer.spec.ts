@@ -1,3 +1,5 @@
+import { loadClientAgentsSuccess } from '../agents/agents.actions';
+
 import {
   addClientUserSuccess,
   clearActiveClient,
@@ -38,8 +40,6 @@ import {
   pingClientSuccess,
   pingClients,
 } from './clients.actions';
-import { loadClientAgentsSuccess } from '../agents/agents.actions';
-
 import { clientsReducer, initialClientsState, type ClientsState } from './clients.reducer';
 import { selectClientReachabilityErrors } from './clients.selectors';
 import type { ClientIsolationSummaryDto, ClientResponseDto, ServerInfo } from './clients.types';

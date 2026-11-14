@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 
+import { Injectable, Logger } from '@nestjs/common';
+
 import type { ChatPlanContextInjectionJson } from '../entities/chat-plan.entity';
-import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ChatPlanActionType, ChatPlanFailureCode, ChatPlanPhase, ChatPlanStatus } from '../entities/chat-plan.enums';
+import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import {
   buildExecutePrompt,
   buildExplorePrompt,
@@ -30,7 +31,6 @@ const UPSERT_THROTTLE_MS = 350;
 const PLAN_TURN_REPAIR_ATTEMPTS = 2;
 /** Refine instructions kept in the activity log. */
 const ACTIVITY_INSTRUCTIONS_MAX_LENGTH = 2000;
-
 const STREAMING_STATUSES: readonly ChatPlanStatus[] = [
   ChatPlanStatus.PENDING,
   ChatPlanStatus.EXPLORING,
@@ -491,7 +491,6 @@ export class ChatPlanOrchestratorService {
       effectiveStatus?.summary && effectiveStatus.summary.trim()
         ? effectiveStatus.summary.trim().slice(0, 512)
         : undefined;
-
     let updated: boolean;
     let phase: ChatPlanPhase;
 

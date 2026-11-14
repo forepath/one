@@ -35,8 +35,10 @@ describe('sanitizeLogPayload', () => {
     expect(sanitizeLogPayload(null)).toBeNull();
     expect(sanitizeLogPayload(undefined)).toBeUndefined();
     const sym = Symbol('s');
+
     expect(sanitizeLogPayload(sym)).toBe(sym);
     const fn = (): number => 1;
+
     expect(sanitizeLogPayload(fn)).toBe(fn);
   });
 
@@ -44,14 +46,18 @@ describe('sanitizeLogPayload', () => {
     expect(sanitizeLogPayload([{ ok: 1 }, ['nested']])).toEqual([{ ok: 1 }, ['nested']]);
 
     let deep: unknown = 'leaf';
+
     for (let i = 0; i < 8; i++) {
       deep = [deep];
     }
+
     // Innermost array hits depth > 6 and becomes '[REDACTED]'; outer arrays still normalize children.
     let expected: unknown = '[REDACTED]';
+
     for (let i = 0; i < 7; i++) {
       expected = [expected];
     }
+
     expect(sanitizeLogPayload(deep)).toEqual(expected);
   });
 

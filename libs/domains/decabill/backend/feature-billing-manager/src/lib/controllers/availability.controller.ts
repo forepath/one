@@ -19,7 +19,6 @@ export class AvailabilityController {
   async check(@Body() dto: AvailabilityCheckDto): Promise<AvailabilityResponseDto> {
     const serviceType = await this.serviceTypesRepository.findByIdOrThrow(dto.serviceTypeId);
     const typeAllowed = resolveServiceTypeAllowedProviders(serviceType);
-
     // AvailabilityCheckDto has no planId; treat the service-type allowlist as selectable.
     const provider = resolveEffectiveProvider(
       serviceType,

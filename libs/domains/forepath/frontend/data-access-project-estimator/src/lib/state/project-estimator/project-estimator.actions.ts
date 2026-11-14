@@ -1,7 +1,7 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
-import type { ChatMessage, ProjectEstimate } from '../../types/project-estimator.types';
 import type { ForepathLlmMemoryProfileId } from '../../constants/forepath-llm-memory.constants';
+import type { ChatMessage, ProjectEstimate } from '../../types/project-estimator.types';
 
 import type { ProjectEstimatorDebugPreset } from './project-estimator.debug';
 

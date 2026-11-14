@@ -41,7 +41,6 @@ import { ClientAgentProxyService } from './client-agent-proxy.service';
 
 /** Agents listed by `handoff_agents` (workspaces rarely have more). */
 const HANDOFF_AGENTS_LIST_LIMIT = 100;
-
 const AGENT_NAME_MAX_LENGTH = 255;
 
 /**

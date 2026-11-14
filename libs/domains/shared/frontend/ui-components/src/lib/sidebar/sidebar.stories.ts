@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
 
 import { FpcSidebarNavItemComponent } from '../sidebar-nav-item/sidebar-nav-item.component';
+
 import { FpcSidebarComponent } from './sidebar.component';
 
 const meta: Meta<FpcSidebarComponent> = {

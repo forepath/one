@@ -1,9 +1,9 @@
+import { OpenSearchModule, OpenSearchService } from '@forepath/shared/backend/util-opensearch';
 import { BullModule, getQueueToken } from '@nestjs/bullmq';
 import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { DataSource } from 'typeorm';
 
-import { OpenSearchModule, OpenSearchService } from '@forepath/shared/backend/util-opensearch';
 
 import { UPDATES_MODULE_OPTIONS } from './constants/updates.constants';
 import { createUpdatesController } from './controllers/updates.controller';

@@ -43,7 +43,6 @@ describe('AutoBillingService', () => {
   let processor: jest.Mocked<PaymentProcessor>;
   let factory: PaymentProcessorFactory;
   let service: AutoBillingService;
-
   const completeProfileBase = {
     id: 'p1',
     userId: 'u1',

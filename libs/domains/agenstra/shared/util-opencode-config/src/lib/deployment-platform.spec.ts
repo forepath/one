@@ -1,3 +1,5 @@
+import { AGENSTRA_AUTOMATION_SESSION_PERMISSION_RULESET } from './automation-platform';
+import { AGENSTRA_CONTEXT_MCP_SERVER_KEY, isAgenstraContextToolPermission } from './context-platform';
 import {
   AGENSTRA_DEPLOYMENTS_MCP_TOOL_NAMES,
   AGENSTRA_DEPLOYMENTS_MCP_TOOL_PERMISSION,
@@ -15,8 +17,6 @@ import {
   isDeploymentRunActive,
   normalizeAgentDeploymentOperations,
 } from './deployment-platform';
-import { AGENSTRA_AUTOMATION_SESSION_PERMISSION_RULESET } from './automation-platform';
-import { AGENSTRA_CONTEXT_MCP_SERVER_KEY, isAgenstraContextToolPermission } from './context-platform';
 import {
   AGENSTRA_PLAN_SESSION_PERMISSION_RULESET,
   isAgenstraPlanExplorePermission,

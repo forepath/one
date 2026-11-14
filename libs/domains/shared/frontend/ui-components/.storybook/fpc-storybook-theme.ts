@@ -10,6 +10,7 @@ export const FPC_BRAND_PRIMARY: Record<string, string> = {
 
 export function fpcBrandPrimary(colorSet: unknown): string {
   const key = String(colorSet ?? 'bootstrap');
+
   return FPC_BRAND_PRIMARY[key] ?? FPC_BRAND_PRIMARY['bootstrap'];
 }
 

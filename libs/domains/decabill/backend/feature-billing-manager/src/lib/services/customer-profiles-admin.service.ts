@@ -7,22 +7,23 @@ import type {
   CreateAdminCustomerProfileDto,
   PaginatedAdminCustomerProfilesResponseDto,
 } from '../dto/admin-customer-profile.dto';
-import type { CustomerProfileDto } from '../dto/customer-profile.dto';
 import type { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto';
+import type { CustomerProfileDto } from '../dto/customer-profile.dto';
 import type { CustomerTrustScoreResponseDto } from '../dto/customer-trust-score.dto';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
-import { mapCustomerProfileToSearchDocument } from '../search/billing-search-document.mapper';
-import { BillingSearchIndexService } from '../search/billing-search-index.service';
+import { OfferProfileSummaryService } from '../offers/services/offer-profile-summary.service';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { DatevDebtorAccountsRepository } from '../repositories/datev-debtor-accounts.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+import { mapCustomerProfileToSearchDocument } from '../search/billing-search-document.mapper';
+import { BillingSearchIndexService } from '../search/billing-search-index.service';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 import { getRequiredTenantId } from '../utils/tenant-query.utils';
 
 import { CustomerProfilesService } from './customer-profiles.service';
-import { OfferProfileSummaryService } from '../offers/services/offer-profile-summary.service';
+
 
 @Injectable()
 export class CustomerProfilesAdminService {

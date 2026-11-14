@@ -23,7 +23,6 @@ export const selectAdminDatevExportDisplayItems = createSelector(selectAdminDate
       periodYear: queued.periodYear,
       periodMonth: queued.periodMonth,
     }));
-
   const entries: AdminDatevExportListEntry[] = [...placeholders, ...state.items];
 
   return entries;

@@ -7,6 +7,7 @@ import {
   CustomerProfileFacade,
   OffersFacade,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import { ENVIRONMENT, LocaleService } from '@forepath/decabill/frontend/util-configuration';
 import {
   AuthenticationFacade,
   IDENTITY_AUTH_ENVIRONMENT,
@@ -27,13 +28,12 @@ import {
   FpcSidebarPopoverComponent,
   FpcThemeSwitcherComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { ENVIRONMENT, LocaleService } from '@forepath/decabill/frontend/util-configuration';
 import { combineLatest, distinctUntilChanged, filter, map, startWith } from 'rxjs';
 
-import { ThemeService } from '../theme.service';
 import { collectContributorNavItems } from '../contributors/contributor-ui.registry';
 import type { ContributorNavItem } from '../contributors/contributor-ui.types';
 import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from '../contributors/first-party-contributor-ui.modules';
+import { ThemeService } from '../theme.service';
 
 /** Admin app management (`/apps`), not `/settings/apps` or the `/authorize` grant page. */
 function isAppsAdminUrl(url: string): boolean {
@@ -327,6 +327,7 @@ export class BillingConsoleContainerComponent implements OnInit {
           if (this.isUsersAuth) {
             this.authenticationFacade.loadTwoFactorStatus();
           }
+
           this.offersFacade.loadOffersSummary({ silent: true });
         } else {
           this.customerProfileFacade.clearCustomerProfile();

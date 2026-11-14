@@ -13,9 +13,7 @@ describe('knowledge-tree-clipboard.util', () => {
     nested: 'folder',
     page: null,
   };
-
   const resolveParentId = (id: string): string | null => parentMap[id] ?? null;
-
   const resolveNode = (id: string) => {
     if (id === 'folder') {
       return { id: 'folder', nodeType: 'folder' as const, parentId: null, title: 'Folder' };
@@ -31,7 +29,6 @@ describe('knowledge-tree-clipboard.util', () => {
 
     return null;
   };
-
   const resolveNodeType = (id: string): 'folder' | 'page' | null => {
     const node = resolveNode(id);
 

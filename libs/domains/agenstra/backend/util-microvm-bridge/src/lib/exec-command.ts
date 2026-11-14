@@ -76,7 +76,6 @@ export function toMicrovmExecOptions<T extends DockerExecCreateOptions>(options:
 export function parseExecClientArguments(argv: readonly string[]): ExecClientArguments {
   const result: ExecClientArguments = { user: '', workdir: '', passEnv: [], argv: [] };
   let index = 0;
-
   const value = (flag: string): string => {
     const next = argv[index + 1];
 

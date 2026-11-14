@@ -1,5 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
+import type { CreateAdminProjectDto } from '../../projects/dto/project.dto';
+import { ProjectsAdminService } from '../../projects/services/projects-admin.service';
+import { OpenPositionsRepository } from '../../repositories/open-positions.repository';
+import { BillingAuditLogService } from '../../services/billing-audit-log.service';
+import { InvoiceIssuanceService } from '../../services/invoice-issuance.service';
+import { InvoiceService } from '../../services/invoice.service';
+import { SubscriptionService } from '../../services/subscription.service';
+import { documentTermsLayerFromFields } from '../../utils/document-terms.utils';
 import { OfferFulfillmentStatus } from '../constants/offer-fulfillment-status.constants';
 import { OfferLineType } from '../constants/offer-line-type.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
@@ -7,15 +16,7 @@ import type { OfferLineItemEntity } from '../entities/offer-line-item.entity';
 import type { OfferEntity } from '../entities/offer.entity';
 import { OfferLineItemsRepository } from '../repositories/offer-line-items.repository';
 import { OffersRepository } from '../repositories/offers.repository';
-import { OpenPositionsRepository } from '../../repositories/open-positions.repository';
-import { BillingAuditLogService } from '../../services/billing-audit-log.service';
-import { InvoiceIssuanceService } from '../../services/invoice-issuance.service';
-import { InvoiceService } from '../../services/invoice.service';
-import { SubscriptionService } from '../../services/subscription.service';
-import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
-import { ProjectsAdminService } from '../../projects/services/projects-admin.service';
-import type { CreateAdminProjectDto } from '../../projects/dto/project.dto';
-import { documentTermsLayerFromFields } from '../../utils/document-terms.utils';
+
 import { SubscriptionOrderPreparationService } from './subscription-order-preparation.service';
 
 @Injectable()

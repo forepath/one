@@ -6,11 +6,9 @@ describe('WebhookDeliveryRetentionService', () => {
     countByEndpointId: jest.fn(),
     deleteOldestExcess: jest.fn(),
   };
-
   const endpointsRepository = {
     findAllBatch: jest.fn(),
   };
-
   let service: WebhookDeliveryRetentionService;
 
   beforeEach(() => {

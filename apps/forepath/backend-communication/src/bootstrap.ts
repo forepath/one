@@ -31,7 +31,6 @@ function assertProductionConfigOrExit(logger: Logger): void {
     'CLOUDFLARE_TURNSTILE_SECRET_KEY',
     'CORS_ORIGIN',
   ];
-
   const missing = required.filter((key) => !process.env[key]?.trim());
 
   if (missing.length > 0) {
@@ -47,6 +46,7 @@ export async function bootstrap(): Promise<void> {
   registerAxiosCorrelationIdPropagation(axios);
 
   const otelConfig = resolveOtelRuntimeConfig(process.env, 'forepath-communication');
+
   logOtelStartupStatus(appLogger, otelConfig);
 
   if (isOtelEffectivelyEnabled(otelConfig)) {
@@ -60,7 +60,6 @@ export async function bootstrap(): Promise<void> {
 
   const app = await NestFactory.create(AppModule, { logger: appLogger });
   const httpLogger = new Logger('HTTP');
-
   const isProduction = process.env.NODE_ENV === 'production';
   const corsOrigin = process.env.CORS_ORIGIN;
   let origin: string | string[];

@@ -9,8 +9,8 @@ import {
 } from '../dto/subscription-item-response.dto';
 import { UpdateSubscriptionItemDisplayNameDto } from '../dto/update-subscription-item-display-name.dto';
 import { SubscriptionItemServerService } from '../services/subscription-item-server.service';
-import { toServerInfoResponse } from '../utils/subscription-item-response.utils';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
+import { toServerInfoResponse } from '../utils/subscription-item-response.utils';
 
 @Controller('subscriptions/:subscriptionId/items')
 export class SubscriptionItemsController {

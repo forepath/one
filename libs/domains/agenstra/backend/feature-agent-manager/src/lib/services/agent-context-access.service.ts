@@ -1,9 +1,10 @@
+import { randomBytes } from 'crypto';
+
 import type {
   AgentContextAccessDecision,
   AgentContextElementKind,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { randomBytes } from 'crypto';
 
 import {
   AGENT_CONTEXT_ACCESS_REQUEST_ID_PREFIX,

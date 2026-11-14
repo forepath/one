@@ -43,6 +43,7 @@ describe('BillingQueueRegistrarService', () => {
     await service.onModuleInit();
 
     const datevJob = getBillingRepeatableJobs().find((job) => job.name === BillingJobName.DATEV_EXPORT_COORDINATOR);
+
     expect(datevJob?.pattern).toBeDefined();
     expect(registerRepeatableCoordinatorJob).toHaveBeenCalledWith(
       expect.objectContaining({ name: BillingJobName.DATEV_EXPORT_COORDINATOR, pattern: expect.any(String) }),

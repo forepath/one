@@ -191,7 +191,6 @@ describe('AgentsContextController', () => {
     let toolCalls: AgentToolCallsService;
     let guarded: AgentsContextController;
     let autoTicket: string;
-
     const event = (type: string, payload: Record<string, unknown>) => ({ type, properties: payload });
     const platformTurn = () => {
       toolCalls.observe(agentId, event('message.updated', { info: { id: 'm-root', sessionID: 's', role: 'user' } }));

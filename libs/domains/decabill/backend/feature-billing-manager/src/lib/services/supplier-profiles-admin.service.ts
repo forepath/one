@@ -142,6 +142,7 @@ export class SupplierProfilesAdminService {
     }
 
     const next = { ...customData };
+
     delete next[key];
 
     await this.supplierProfilesRepository.update(id, { customData: next });

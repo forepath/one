@@ -30,12 +30,13 @@ import {
 import { firstValueFrom } from 'rxjs';
 
 import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/billing-admin-user-select.component';
+import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import {
   formatProjectHourlyRate,
   formatProjectMinutes,
   formatProjectOpenBillableAmount,
 } from '../billing-status-labels';
-import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { getCustomerLabel, getCustomerSecondaryLabel, type CustomerLabelSource } from '../named-label.util';
 import {
   DB_DL_DELETE,
   dbBulkSummary,
@@ -46,7 +47,6 @@ import {
 } from '../shared/data-list';
 import { dbServerPaging } from '../shared/server-paging';
 import { projectState } from '../shared/table-states';
-import { getCustomerLabel, getCustomerSecondaryLabel, type CustomerLabelSource } from '../named-label.util';
 
 @Component({
   selector: 'framework-admin-projects-page',

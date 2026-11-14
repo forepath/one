@@ -10,6 +10,7 @@ import {
 import { getMeter } from './otel-sdk';
 
 const JOB_STATES = ['waiting', 'active', 'delayed', 'paused', 'completed', 'failed'] as const;
+
 type JobState = (typeof JOB_STATES)[number];
 
 type QueueJobCounts = Record<JobState, number>;
@@ -33,6 +34,7 @@ export class BullMqOtelMetricsCollector implements OnModuleInit, OnModuleDestroy
     }
 
     const redis = readOtelRedisConnectionConfig();
+
     this.connectionHandle = createOtelBullMqConnection(redis);
     const { connection } = this.connectionHandle;
     const prefix = redis.keyPrefix;

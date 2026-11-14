@@ -1,10 +1,10 @@
+import { recordSharedCounter } from '@forepath/shared/backend/util-otel';
+
 import { assertProductionWebhookEscapeHatchesDisabled, assertSafeWebhookUrlOrThrow } from './webhook-endpoint-security';
 
 jest.mock('@forepath/shared/backend/util-otel', () => ({
   recordSharedCounter: jest.fn(),
 }));
-
-import { recordSharedCounter } from '@forepath/shared/backend/util-otel';
 
 const mockedRecordSharedCounter = recordSharedCounter as jest.MockedFunction<typeof recordSharedCounter>;
 

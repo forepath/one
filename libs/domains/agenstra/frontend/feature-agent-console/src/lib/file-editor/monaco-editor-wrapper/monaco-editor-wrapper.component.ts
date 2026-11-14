@@ -18,16 +18,16 @@ import {
 import { DomSanitizer, SafeHtml, SafeResourceUrl } from '@angular/platform-browser';
 import type { AgentFileType } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { AgentFileBodyStore } from '@forepath/agenstra/frontend/data-access-agent-console';
-import type { editor } from 'monaco-editor';
-import * as monaco from 'monaco-editor';
-import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
-
 import {
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
 } from '@forepath/shared/frontend/ui-components';
+import type { editor } from 'monaco-editor';
+import * as monaco from 'monaco-editor';
+import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
+
 
 import { ThemeService } from '../../theme.service';
 
@@ -156,6 +156,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
     effect(() => {
       const request = this.revealLine();
       const editor = this.editorInstance();
+
       // Re-run when file text arrives so reveal works after async open.
       this.text();
 
@@ -164,6 +165,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
       }
 
       const line = request.line;
+
       void request.nonce;
 
       queueMicrotask(() => {
@@ -182,6 +184,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
       const bodyRef = this.bodyRef();
       const contentType = this.contentType();
       const filePath = this.filePath();
+
       // revision is a dependency so upload/replace reloads media for the same bodyRef key
       this.revision();
       const needsMedia = this.isImage() || this.isPdf() || this.isVideo() || this.isAudio();

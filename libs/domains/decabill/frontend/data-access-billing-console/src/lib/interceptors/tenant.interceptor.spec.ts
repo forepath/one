@@ -1,9 +1,9 @@
 import { HttpRequest, HttpResponse } from '@angular/common/http';
 import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 import { of } from 'rxjs';
 
-import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 
 import {
   BILLING_TENANT_HEADER,
@@ -17,7 +17,6 @@ describe('billingTenantInterceptor', () => {
   const mockNext = jest.fn((req: HttpRequest<unknown>) => {
     return of(new HttpResponse({ body: null, status: 200, url: req.url, headers: req.headers }));
   });
-
   const setupTestBed = (billing: { urls: { restApi: string; frontend: string }; tenantId?: string }): Injector => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({

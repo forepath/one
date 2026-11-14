@@ -3,22 +3,23 @@ import { DataSource } from 'typeorm';
 
 import { getMinCheckoutPaymentAmount } from '../../constants/payment-amount.constants';
 import { TaxCategory } from '../../constants/tax-category.constants';
+import { BillingEmailPublisher } from '../../email/billing-email.publisher';
+import { InvoicesRepository } from '../../repositories/invoices.repository';
+import { SubscriptionsRepository } from '../../repositories/subscriptions.repository';
 import { BillingAuditLogService } from '../../services/billing-audit-log.service';
 import { CustomerProfilesService } from '../../services/customer-profiles.service';
-import { BillingEmailPublisher } from '../../email/billing-email.publisher';
 import { InvoiceIssuanceService } from '../../services/invoice-issuance.service';
-import { InvoiceService } from '../../services/invoice.service';
 import { InvoiceTaxContextService } from '../../services/invoice-tax-context.service';
-import { SubscriptionsRepository } from '../../repositories/subscriptions.repository';
-import { InvoicesRepository } from '../../repositories/invoices.repository';
+import { InvoiceService } from '../../services/invoice.service';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
 import { mapManualInvoiceLineItemsToInputs } from '../../utils/map-manual-invoice-line-items.util';
 import type { BillProjectTimeDto, BillProjectTimeResponseDto, ProjectUnbilledTimeBoundsDto } from '../dto/project.dto';
-import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectTimeEntriesRepository } from '../repositories/project-time-entries.repository';
-import { resolveProjectBillTimeRange } from '../utils/project-bill-time-range.utils';
+import { ProjectsRepository } from '../repositories/projects.repository';
 import { withProjectBillTimeLock } from '../utils/project-bill-time-lock.util';
+import { resolveProjectBillTimeRange } from '../utils/project-bill-time-range.utils';
 import { formatProjectTimeReportRange } from '../utils/project-time-report-format.util';
+
 import { ProjectBoardSummaryService } from './project-board-summary.service';
 import { ProjectTimeReportService } from './project-time-report.service';
 
@@ -134,7 +135,6 @@ export class ProjectBillingService {
       currency: project.currency,
       lineInputs,
     });
-
     const issued = await this.invoiceIssuanceService.issueDraft(draft.id, { skipNotification: true });
     const billedAt = new Date();
     const markedCount = await this.timeEntriesRepository.markBilled(
@@ -165,7 +165,6 @@ export class ProjectBillingService {
       from,
       to,
     );
-
     const issuedWithTimeReport = await this.invoicesRepository.update(issued.id, { timeReportStorageKey });
 
     if (!issuedWithTimeReport.pdfStorageKey) {

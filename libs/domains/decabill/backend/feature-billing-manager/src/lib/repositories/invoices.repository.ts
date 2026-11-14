@@ -13,9 +13,9 @@ import {
 } from '../constants/invoice-status.constants';
 import { InvoiceEntity } from '../entities/invoice.entity';
 import { OpenPositionEntity } from '../entities/open-position.entity';
+import { applyBillingSearchIlike } from '../search/billing-search-ilike.util';
 import { BillingSearchIndexService } from '../search/billing-search-index.service';
 import type { BillingSearchIdsLookup } from '../search/billing-search.types';
-import { applyBillingSearchIlike } from '../search/billing-search-ilike.util';
 import { applyUserTenantFilter, getRequiredTenantId } from '../utils/tenant-query.utils';
 
 export interface OpenOverdueSummary {
@@ -495,7 +495,6 @@ export class InvoicesRepository {
         offset: params.offset,
         extraFilters: params.userId ? { userId: params.userId } : undefined,
       });
-
       const items = await this.hydrateInvoicesBySearchIds(lookup);
 
       if (items !== null) {

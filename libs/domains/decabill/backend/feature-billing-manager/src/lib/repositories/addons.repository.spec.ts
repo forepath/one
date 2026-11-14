@@ -21,7 +21,6 @@ describe('AddonsRepository', () => {
     remove: jest.fn(),
     createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
   };
-
   const repository = new AddonsRepository(typeorm as never);
 
   beforeEach(() => {
@@ -93,6 +92,7 @@ describe('AddonsRepository', () => {
     typeorm.remove.mockResolvedValue(undefined);
 
     const updated = await repository.update('a-1', { name: 'New', tenantId: 'evil' } as never);
+
     expect(updated.name).toBe('New');
     expect(updated.tenantId).toBe('default');
 

@@ -101,6 +101,7 @@ export class FpcFormCheckComponent implements ControlValueAccessor {
   protected readonly isDisabled = computed(() => this.disabled() || this.cvaDisabled());
   protected readonly inputClasses = computed(() => {
     const extra = this.inputClass()?.trim();
+
     return extra ? `form-check-input ${extra}` : 'form-check-input';
   });
 
@@ -130,11 +131,13 @@ export class FpcFormCheckComponent implements ControlValueAccessor {
 
     if (this.type() === 'checkbox') {
       this.onChange(next);
+
       return;
     }
 
     if (next) {
       const option = this.value() ?? inputEl.value;
+
       this.valueSelect.emit(option);
     }
   }

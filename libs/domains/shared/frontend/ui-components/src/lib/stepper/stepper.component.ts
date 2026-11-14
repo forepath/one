@@ -17,6 +17,7 @@ export interface FpcStep {
 /** Whether a stepper at `active` may jump to `target` (back always; forward only over valid, enabled steps when linear). */
 export function fpcStepReachable(steps: readonly FpcStep[], active: number, target: number, linear: boolean): boolean {
   if (target < 0 || target >= steps.length || steps[target].disabled) return false;
+
   if (target <= active || !linear) return true;
 
   return steps.slice(0, target).every((step) => step.disabled || !step.invalid);

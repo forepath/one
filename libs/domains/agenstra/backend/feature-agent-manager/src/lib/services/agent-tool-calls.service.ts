@@ -14,7 +14,6 @@ const TRACKED_TOOL_PREFIXES = ['agenstra_context_', 'agenstra_content_', 'agenst
 const MESSAGE_LOOKUP_INTERVAL_MS = 1_000;
 /** Subagents of subagents: bounded walk up the chain. */
 const MAX_CHAIN_DEPTH = 8;
-
 const CONTEXT_TICKET_PATTERN = /ctx-[A-Za-z0-9_-]{16,}/g;
 
 interface ObservedToolCall {

@@ -1,5 +1,3 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import axios, { AxiosError } from 'axios';
 import {
   buildProviderLocationCatalog,
   fetchHetznerLocations,
@@ -7,6 +5,8 @@ import {
 } from '@forepath/shared/backend/util-provisioning-geography';
 import { readRedisConnectionConfig } from '@forepath/shared/backend/util-queue';
 import { RedisCacheService } from '@forepath/shared/backend/util-redis-cache';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import axios, { AxiosError } from 'axios';
 
 import { ProviderLocationDto } from '../../dto/provider-location.dto';
 import { ServerTypeDto } from '../../dto/server-type.dto';

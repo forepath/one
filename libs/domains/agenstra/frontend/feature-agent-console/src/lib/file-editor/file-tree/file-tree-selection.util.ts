@@ -50,7 +50,6 @@ export function getPathBasename(path: string): string {
  */
 export function flattenVisibleTreeNodes(nodes: FileTreeSelectableNode[]): FileTreeSelectableNode[] {
   const result: FileTreeSelectableNode[] = [];
-
   const walk = (list: FileTreeSelectableNode[]): void => {
     for (const node of list) {
       result.push(node);
@@ -206,7 +205,6 @@ export function suggestCopyBasename(baseName: string, existingNames: Iterable<st
   const hasExt = dot > 0 && baseName.slice(dot + 1).indexOf('/') < 0;
   const stem = hasExt ? baseName.slice(0, dot) : baseName;
   const ext = hasExt ? baseName.slice(dot) : '';
-
   let n = 1;
   let candidate = `${stem} (${n})${ext}`;
 

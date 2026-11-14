@@ -39,6 +39,7 @@ export class CorrelationAwareConsoleLogger extends ConsoleLogger {
     const output = this.stringifyMessage(sanitizeLogPayload(message), logLevel);
     const coloredPid = this.colorize(pidMessage, logLevel);
     const coloredLevel = this.colorize(formattedLogLevel, logLevel);
+
     return `${coloredPid}${this.getTimestamp()} ${coloredLevel} ${correlationPrefix}${contextMessage}${output}${timestampDiff}\n`;
   }
 
@@ -53,9 +54,11 @@ export class CorrelationAwareConsoleLogger extends ConsoleLogger {
   ) {
     const base = super.getJsonLogObject(sanitizeLogPayload(message), options);
     const correlationId = getCorrelationId();
+
     if (correlationId) {
       return { ...base, correlationId };
     }
+
     return base;
   }
 }

@@ -1,9 +1,9 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
-import { ProjectStatus } from './project.enums';
 import { ProjectMilestoneEntity } from './project-milestone.entity';
 import { ProjectTicketEntity } from './project-ticket.entity';
 import { ProjectTimeEntryEntity } from './project-time-entry.entity';
+import { ProjectStatus } from './project.enums';
 
 @Entity('billing_projects')
 export class ProjectEntity {

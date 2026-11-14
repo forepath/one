@@ -9,8 +9,8 @@ import { PaymentAttemptsRepository } from '../repositories/payment-attempts.repo
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { CustomerProfilesService } from '../services/customer-profiles.service';
 
-import { CUSTOMER_TRUST_SCORE_FACTOR_CONFIG } from './trust-score.constants';
 import type { TrustScoreProvider } from './trust-score-provider.interface';
+import { CUSTOMER_TRUST_SCORE_FACTOR_CONFIG } from './trust-score.constants';
 import type { CustomerTrustScoreFactor } from './trust-score.types';
 
 @Injectable()
@@ -36,7 +36,6 @@ export class InternalBillingTrustScoreProvider implements TrustScoreProvider {
       await this.invoicesRepository.countBilledSubscriptionInvoicesByUserId(userId);
     const hasAutoPaymentExhausted = await this.invoicesRepository.hasAutoPaymentExhaustedByUserId(userId);
     const backorderFailureCount = await this.backordersRepository.countFailedByUserId(userId);
-
     const factors: CustomerTrustScoreFactor[] = [];
     const hasSubscriptionHistory = subscriptions.length > 0;
     const hasWithdrawal = subscriptions.some(
@@ -81,6 +80,7 @@ export class InternalBillingTrustScoreProvider implements TrustScoreProvider {
     }
 
     const onTimePaymentsApplied = Math.min(onTimePaymentCount, CUSTOMER_TRUST_SCORE_FACTOR_CONFIG.onTimePayments.cap);
+
     if (onTimePaymentsApplied > 0) {
       factors.push({
         id: CUSTOMER_TRUST_SCORE_FACTOR_CONFIG.onTimePayments.id,
@@ -118,6 +118,7 @@ export class InternalBillingTrustScoreProvider implements TrustScoreProvider {
       openOverdueInvoices.length,
       CUSTOMER_TRUST_SCORE_FACTOR_CONFIG.overdueInvoices.cap,
     );
+
     if (overdueInvoiceCount > 0) {
       factors.push({
         id: CUSTOMER_TRUST_SCORE_FACTOR_CONFIG.overdueInvoices.id,
@@ -135,6 +136,7 @@ export class InternalBillingTrustScoreProvider implements TrustScoreProvider {
     }
 
     const failedPaymentsApplied = Math.min(failedPaymentCount, CUSTOMER_TRUST_SCORE_FACTOR_CONFIG.failedPayments.cap);
+
     if (failedPaymentsApplied > 0) {
       factors.push({
         id: CUSTOMER_TRUST_SCORE_FACTOR_CONFIG.failedPayments.id,
@@ -172,6 +174,7 @@ export class InternalBillingTrustScoreProvider implements TrustScoreProvider {
       backorderFailureCount,
       CUSTOMER_TRUST_SCORE_FACTOR_CONFIG.backorderFailures.cap,
     );
+
     if (backorderFailuresApplied > 0) {
       factors.push({
         id: CUSTOMER_TRUST_SCORE_FACTOR_CONFIG.backorderFailures.id,

@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import {
   SharedContactPersonComponent,
   SharedLogoGridComponent,
@@ -10,9 +9,12 @@ import {
   SharedHeroMascotComponent,
   SharedMarkStackComponent,
 } from '@forepath/shared/frontend/feature-landingpage';
-import { AgentctxIllustrationComponent } from '../illustrations/agentctx-illustration.component';
-import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
+import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
+
+import { AgentctxIllustrationComponent } from '../illustrations/agentctx-illustration.component';
+
 
 @Component({
   selector: 'framework-portal-agentctx',

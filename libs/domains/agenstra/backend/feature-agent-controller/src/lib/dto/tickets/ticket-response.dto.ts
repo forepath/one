@@ -1,7 +1,7 @@
 import { TicketPriority, TicketStatus } from '../../entities/ticket.enums';
+import { AttachmentResponseDto } from '../attachment.dto';
 
 import { TicketActivityResponseDto } from './ticket-activity-response.dto';
-import { AttachmentResponseDto } from '../attachment.dto';
 
 /** Checkbox counts aggregated from all descendant tickets' descriptions (not this ticket). */
 export class TicketTasksChildrenDto {

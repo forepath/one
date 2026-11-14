@@ -1,26 +1,4 @@
-import {
-  createAdminCustomerProfile,
-  createAdminCustomerProfileFailure,
-  createAdminCustomerProfileSuccess,
-  deleteAdminCustomerProfile,
-  deleteAdminCustomerProfileFailure,
-  deleteAdminCustomerProfileSuccess,
-  loadAdminCustomerProfiles,
-  loadAdminCustomerProfileTrustScore,
-  loadAdminCustomerProfileTrustScoreFailure,
-  loadAdminCustomerProfileTrustScoreSuccess,
-  loadAdminCustomerProfilesFailure,
-  loadAdminCustomerProfilesSuccess,
-  recomputeAdminCustomerProfileTrustScore,
-  recomputeAdminCustomerProfileTrustScoreFailure,
-  recomputeAdminCustomerProfileTrustScoreSuccess,
-  saveAdminCustomerProfileCustomData,
-  saveAdminCustomerProfileCustomDataFailure,
-  saveAdminCustomerProfileCustomDataSuccess,
-  updateAdminCustomerProfile,
-  updateAdminCustomerProfileFailure,
-  updateAdminCustomerProfileSuccess,
-} from './admin-customer-profiles.actions';
+import { createAdminCustomerProfile, createAdminCustomerProfileFailure, createAdminCustomerProfileSuccess, deleteAdminCustomerProfileFailure, deleteAdminCustomerProfileSuccess, loadAdminCustomerProfiles, loadAdminCustomerProfileTrustScore, loadAdminCustomerProfileTrustScoreFailure, loadAdminCustomerProfileTrustScoreSuccess, loadAdminCustomerProfilesFailure, loadAdminCustomerProfilesSuccess, recomputeAdminCustomerProfileTrustScore, recomputeAdminCustomerProfileTrustScoreFailure, recomputeAdminCustomerProfileTrustScoreSuccess, saveAdminCustomerProfileCustomData, saveAdminCustomerProfileCustomDataFailure, saveAdminCustomerProfileCustomDataSuccess, updateAdminCustomerProfileFailure, updateAdminCustomerProfileSuccess } from './admin-customer-profiles.actions';
 import { adminCustomerProfilesReducer, initialAdminCustomerProfilesState } from './admin-customer-profiles.reducer';
 
 describe('adminCustomerProfilesReducer', () => {

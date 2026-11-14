@@ -48,6 +48,7 @@ describe('ContainerSocketFacade', () => {
 
   it('should emit setClient when connected', () => {
     const emit = jest.fn();
+
     (getSocketInstance as jest.Mock).mockReturnValue({ connected: true, emit });
     store.setState({
       containerSocket: { ...initialContainerSocketState, connected: true, selectedClientId: null },
@@ -62,6 +63,7 @@ describe('ContainerSocketFacade', () => {
   describe('refineChatPlan', () => {
     it('should emit refineChatPlan without contextInjection when none is given', () => {
       const emit = jest.fn();
+
       (getSocketInstance as jest.Mock).mockReturnValue({ connected: true, emit });
 
       facade.refineChatPlan('a1', 'p1', 'tweak', 'corr-1');
@@ -76,6 +78,7 @@ describe('ContainerSocketFacade', () => {
 
     it('should include contextInjection when given', () => {
       const emit = jest.fn();
+
       (getSocketInstance as jest.Mock).mockReturnValue({ connected: true, emit });
       const contextInjection = { includeWorkspace: true, environmentIds: ['a1'], ticketShas: ['abc'] };
 
@@ -92,6 +95,7 @@ describe('ContainerSocketFacade', () => {
 
     it('should not emit when the socket is disconnected', () => {
       const emit = jest.fn();
+
       (getSocketInstance as jest.Mock).mockReturnValue({ connected: false, emit });
       jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 
@@ -104,6 +108,7 @@ describe('ContainerSocketFacade', () => {
   describe('retryChatPlan', () => {
     it('should emit retryChatPlan when connected', () => {
       const emit = jest.fn();
+
       (getSocketInstance as jest.Mock).mockReturnValue({ connected: true, emit });
 
       facade.retryChatPlan('a1', 'p1', 'corr-retry');
@@ -117,6 +122,7 @@ describe('ContainerSocketFacade', () => {
 
     it('should not emit retryChatPlan when disconnected', () => {
       const emit = jest.fn();
+
       (getSocketInstance as jest.Mock).mockReturnValue({ connected: false, emit });
       jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 

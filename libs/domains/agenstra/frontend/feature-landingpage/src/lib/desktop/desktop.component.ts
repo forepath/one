@@ -2,18 +2,20 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
-import { DesktopSecurityIllustrationComponent } from '../illustrations/desktop-security-illustration.component';
-import { ToolchainIllustrationComponent } from '../illustrations/toolchain-illustration.component';
-import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
-import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
-
-import { DesktopIllustrationComponent } from '../illustrations/desktop-illustration.component';
 import {
   SharedContactPersonComponent,
   SharedHeroMascotComponent,
   SharedMarkStackComponent,
 } from '@forepath/shared/frontend/feature-landingpage';
+import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
+import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
+
+import { DesktopIllustrationComponent } from '../illustrations/desktop-illustration.component';
+import { DesktopSecurityIllustrationComponent } from '../illustrations/desktop-security-illustration.component';
+import { ToolchainIllustrationComponent } from '../illustrations/toolchain-illustration.component';
+
+
 
 @Component({
   selector: 'framework-portal-desktop',

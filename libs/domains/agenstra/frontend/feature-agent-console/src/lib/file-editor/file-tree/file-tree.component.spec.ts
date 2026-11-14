@@ -21,7 +21,6 @@ describe('FileTreeComponent selection', () => {
   let component: FileTreeComponent;
   let fileSelectSpy: jest.Mock;
   let directoryExpandSpy: jest.Mock;
-
   const filesFacadeStub = {
     listDirectory: jest.fn(),
     getDirectoryListing$: jest.fn().mockReturnValue(of([])),
@@ -32,7 +31,6 @@ describe('FileTreeComponent selection', () => {
     moveFileOrDirectory: jest.fn(),
     readFile: jest.fn(),
   };
-
   const workspaceSearchStub = {
     search: jest.fn().mockReturnValue(
       of({
@@ -139,6 +137,7 @@ describe('FileTreeComponent selection', () => {
   it('keeps folder loading state through tree rebuilds and clears it on success', () => {
     const listing = new BehaviorSubject<FileNodeDto[] | null>(null);
     const loading = new BehaviorSubject(true);
+
     filesFacadeStub.getDirectoryListing$.mockReturnValue(listing);
     filesFacadeStub.isListingDirectory$.mockReturnValue(loading);
     component.treeCache.set(new Map([['.', [{ name: 'lib', path: 'lib', type: 'directory' }]]]));
@@ -159,6 +158,7 @@ describe('FileTreeComponent selection', () => {
 
   it('clears the folder spinner when listing fails without producing any data', () => {
     const loading = new BehaviorSubject(true);
+
     filesFacadeStub.getDirectoryListing$.mockReturnValue(of(null));
     filesFacadeStub.isListingDirectory$.mockReturnValue(loading);
     component.treeCache.set(new Map([['.', [{ name: 'lib', path: 'lib', type: 'directory' }]]]));

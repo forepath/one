@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+
 import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import { getTenantIdOrDefault } from '@forepath/shared/backend';
 import {
@@ -16,19 +18,25 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 
+import { fromApiServiceTypeId, isNoneServiceTypeId, toApiServiceTypeId } from '../constants/service-type-id.constants';
+import { TaxCategory } from '../constants/tax-category.constants';
+import { ContainerManagerCatalogService } from '../contributors/container-manager/services/container-manager-catalog.service';
+import { PlanAddonOptionDto } from '../dto/addon-response.dto';
+import { CloudInitConfigOrderFieldDto } from '../dto/cloud-init-config-response.dto';
 import { CreateServicePlanDto } from '../dto/create-service-plan.dto';
 import { mapDocumentTermsToResponse, mapEffectiveDocumentTermsToResponse } from '../dto/document-terms.dto';
-import { CloudInitConfigOrderFieldDto } from '../dto/cloud-init-config-response.dto';
-import { PlanAddonOptionDto } from '../dto/addon-response.dto';
+import { AttachedMeterResponseDto } from '../dto/meter-response.dto';
+import { AttachMeterDto, UpdateAttachedMeterDto } from '../dto/meter.dto';
 import { OrderProvisioningOptionDto } from '../dto/order-provisioning-option.dto';
 import { ServicePlanResponseDto } from '../dto/service-plan-response.dto';
 import { UpdateServicePlanDto } from '../dto/update-service-plan.dto';
 import { ServicePlanEntity } from '../entities/service-plan.entity';
-import { fromApiServiceTypeId, isNoneServiceTypeId, toApiServiceTypeId } from '../constants/service-type-id.constants';
-import { TaxCategory } from '../constants/tax-category.constants';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
+import {
+  PLAN_PRICE_MIGRATE_ENQUEUE,
+  type PlanPriceMigrateEnqueuePort,
+} from '../queue/plan-price-migrate-enqueue.token';
 import { AddonsRepository } from '../repositories/addons.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
@@ -36,18 +44,11 @@ import { SubscriptionsRepository } from '../repositories/subscriptions.repositor
 import { AddonService } from '../services/addon.service';
 import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
 import { CloudInitConfigService } from '../services/cloud-init-config.service';
-import { ContainerManagerCatalogService } from '../contributors/container-manager/services/container-manager-catalog.service';
 import { MeterService } from '../services/meter.service';
 import { ProviderRegistryService } from '../services/provider-registry.service';
 import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
-import { AttachMeterDto, UpdateAttachedMeterDto } from '../dto/meter.dto';
-import { AttachedMeterResponseDto } from '../dto/meter-response.dto';
-import {
-  PLAN_PRICE_MIGRATE_ENQUEUE,
-  type PlanPriceMigrateEnqueuePort,
-} from '../queue/plan-price-migrate-enqueue.token';
-import { convertAddonPriceToPlanPeriod } from '../utils/addon-pricing.util';
 import { isAddonCompatibleWithProvider } from '../utils/addon-compatibility.utils';
+import { convertAddonPriceToPlanPeriod } from '../utils/addon-pricing.util';
 import { normalizePlanProviderConfigDefaults } from '../utils/cloud-init/plan-provisioning-options.utils';
 import {
   documentTermsLayerFromFields,
@@ -201,7 +202,6 @@ export class ServicePlansController {
     }
 
     const addons = await this.addonsRepository.findByIds(allowedIds);
-
     const compatible = addons
       .filter((addon) => addon.isActive)
       .filter((addon) => isAddonCompatibleWithProvider(addon, filterProvider));
@@ -409,7 +409,6 @@ export class ServicePlansController {
 
     const shouldMigrate = dto.migrateExistingSubscriptions === true && commercialPricingFieldsChanged(existing, dto);
     const previousPricing = shouldMigrate ? snapshotCommercialPricing(existing) : null;
-
     // Only assign defined DTO fields — Object.assign + TypeORM save would otherwise persist `undefined` as NULL
     // and wipe commercial pricing on partial admin updates (e.g. marginFixed-only + migrateExistingSubscriptions).
     let providerConfigDefaultsUpdate: Record<string, unknown> | undefined;
@@ -471,7 +470,6 @@ export class ServicePlansController {
       ...deliveryTermsUpdate,
       ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
     });
-
     const previousAllowCustomerProviderSelection = existing.allowCustomerProviderSelection === true;
     const previousAllowedProviders = normalizeAllowedProviders(existing.allowedProviders);
     const selectionFieldsTouched =

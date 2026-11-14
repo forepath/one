@@ -4,6 +4,7 @@ import type { MigrationInterface } from 'typeorm';
 import { DataSource } from 'typeorm';
 
 import type { ContributorJobSource } from '../utils/contributor-job.types';
+
 import { AddonModuleRegistryService } from './addon-module-registry.service';
 import { CloudInitModuleRegistryService } from './cloud-init-module-registry.service';
 import { IntegratedStackRegistryService } from './integrated-stack-registry.service';

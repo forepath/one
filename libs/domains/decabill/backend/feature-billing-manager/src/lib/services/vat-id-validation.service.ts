@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger, Optional, OnModuleInit } from '@nestjs/common';
 
-import { VatIdValidationSource, VatIdValidationStatus } from '../constants/vat-id-validation.constants';
 import { normalizeVatCountryCode } from '../constants/eu-member-states.constants';
+import { VatIdValidationSource, VatIdValidationStatus } from '../constants/vat-id-validation.constants';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { VAT_ID_VALIDATION_ENQUEUE, type VatIdValidationEnqueuePort } from '../queue/vat-id-validation-enqueue.token';
 import { extractVatIdCountryCode, isValidEuVatIdFormat, maskVatId, normalizeVatId } from '../utils/vat-id.utils';
@@ -47,6 +47,7 @@ export class VatIdValidationService implements OnModuleInit {
         body: JSON.stringify({ countryCode: 'DE', vatNumber: '000000000' }),
         signal: controller.signal,
       });
+
       clearTimeout(timer);
 
       // Any HTTP response (including 4xx for invalid VAT) means the endpoint is reachable.
@@ -116,8 +117,8 @@ export class VatIdValidationService implements OnModuleInit {
 
     try {
       const valid = await this.callVies(normalized);
-
       const status = valid ? VatIdValidationStatus.VALID : VatIdValidationStatus.INVALID;
+
       this.publishStatus(params.userId, params.profileId, status, normalized);
 
       return {
@@ -192,6 +193,7 @@ export class VatIdValidationService implements OnModuleInit {
     try {
       const valid = await this.callVies(normalized);
       const status = valid ? VatIdValidationStatus.VALID : VatIdValidationStatus.INVALID;
+
       this.publishStatus(params.userId, params.profileId, status, normalized);
 
       return {

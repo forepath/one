@@ -1,8 +1,8 @@
 import { RequireScopes } from '@forepath/identity/backend';
-import { Body, Controller, Get, Param, ParseIntPipe, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, ParseIntPipe, Post, Query, Req } from '@nestjs/common';
 import { IsEnum, IsISO8601, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from 'class-validator';
 
-import { PromotionRedemptionContext, PromotionSubscriptionEligibility } from '../constants/promotion.constants';
+import { PromotionRedemptionContext } from '../constants/promotion.constants';
 import type {
   PaginatedPromotionRedemptionsResponseDto,
   PromotionValidationResponseDto,

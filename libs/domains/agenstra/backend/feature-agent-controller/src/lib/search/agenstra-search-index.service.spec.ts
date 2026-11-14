@@ -1,10 +1,9 @@
-import { OpenSearchService } from '@forepath/shared/backend/util-opensearch';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { ClientEntity } from '@forepath/identity/backend';
+import { OpenSearchService } from '@forepath/shared/backend/util-opensearch';
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 
-import { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
 import { DeploymentConnectionEntity } from '../entities/deployment-connection.entity';
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
@@ -18,6 +17,7 @@ import { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filt
 import { StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsChatIoEntity } from '../entities/statistics-chat-io.entity';
 import { StatisticsClientEntity } from '../entities/statistics-client.entity';
+import { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
 import { StatisticsEntityEventEntity } from '../entities/statistics-entity-event.entity';
 import { StatisticsUserEntity } from '../entities/statistics-user.entity';
 import { TicketEntity } from '../entities/ticket.entity';

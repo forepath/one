@@ -1,9 +1,9 @@
 import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 
 import type { AgentEgressStatusDto } from './agent-egress.dto';
-import type { AgentIsolationDto } from './container-isolation.dto';
 import type { AgentChatSessionSummaryDto } from './chat-session-response.dto';
 import type { AgentTypeCapabilities } from './config-response.dto';
+import type { AgentIsolationDto } from './container-isolation.dto';
 
 /**
  * DTO for agent API responses.

@@ -13,7 +13,6 @@ import {
 import { connectBillingDashboardSocketSuccess } from '../billing-dashboard-socket/billing-dashboard-socket.actions';
 import { setSubscriptionItemDisplayName } from '../subscription-server-info/subscription-server-info.actions';
 
-import { DEFAULT_METER_HISTORY_FILTERS } from './service-detail.constants';
 import {
   applyFilters,
   clearServiceDetail,
@@ -29,6 +28,7 @@ import {
   updateDisplayNameFailure,
   updateDisplayNameSuccess,
 } from './service-detail.actions';
+import { DEFAULT_METER_HISTORY_FILTERS } from './service-detail.constants';
 import {
   selectServiceDetailAdminMode,
   selectServiceDetailFilters,
@@ -37,7 +37,9 @@ import {
 
 function normalizeError(error: unknown): string {
   if (error instanceof Error) return error.message;
+
   if (typeof error === 'string') return error;
+
   if (error && typeof error === 'object' && 'message' in error) return String(error.message);
 
   return 'An unexpected error occurred';

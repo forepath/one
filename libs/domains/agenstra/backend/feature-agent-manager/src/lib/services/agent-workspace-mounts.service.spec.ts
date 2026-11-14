@@ -25,7 +25,6 @@ describe('AgentWorkspaceMountsService', () => {
   let handoffs: { peers: jest.Mock };
   let providerFactory: { getProvider: jest.Mock };
   let service: AgentWorkspaceMountsService;
-
   const record = (environmentIds: string[] = []): AgentContextTicketRecord =>
     ({
       agentId: SELF_ID,

@@ -1,5 +1,5 @@
-import type { Meter } from '@opentelemetry/api';
 import type { Provider, Type } from '@nestjs/common';
+import type { Meter } from '@opentelemetry/api';
 
 export const OTEL_MODULE_OPTIONS = Symbol('OTEL_MODULE_OPTIONS');
 

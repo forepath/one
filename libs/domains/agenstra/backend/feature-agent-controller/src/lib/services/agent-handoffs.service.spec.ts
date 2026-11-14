@@ -41,7 +41,6 @@ describe('AgentHandoffsService', () => {
   let chatsProxy: { create: jest.Mock };
   let queue: { add: jest.Mock; getJob: jest.Mock };
   let service: AgentHandoffsService;
-
   const handoff = (overrides: Partial<AgentHandoffEntity> = {}): AgentHandoffEntity =>
     ({
       id: handoffId,
@@ -59,7 +58,6 @@ describe('AgentHandoffsService', () => {
       createdAt: new Date('2026-10-21T09:00:00.000Z'),
       ...overrides,
     }) as AgentHandoffEntity;
-
   const build = (withQueue = true) =>
     new AgentHandoffsService(
       handoffRepo as unknown as Repository<AgentHandoffEntity>,

@@ -22,6 +22,7 @@ import {
   type ContentReportType,
   ContentReportFacade,
 } from '@forepath/shared/frontend/data-access-communication';
+import { SharedHeroMascotComponent, SharedMarkStackComponent } from '@forepath/shared/frontend/feature-landingpage';
 import {
   FpcAlertComponent,
   FpcButtonComponent,
@@ -33,7 +34,6 @@ import {
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { NgxTurnstileComponent, NgxTurnstileModule } from 'ngx-turnstile';
-import { SharedHeroMascotComponent, SharedMarkStackComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-forepath-legal-content-report',
@@ -208,18 +208,21 @@ export class ForepathLegalContentReportComponent implements OnInit {
 
     if (!file) {
       this.clearPdf();
+
       return;
     }
 
     if (file.type !== 'application/pdf' || !file.name.toLowerCase().endsWith('.pdf')) {
       this.selectedPdfError.set('Only PDF files are allowed.');
       this.clearPdf();
+
       return;
     }
 
     if (file.size <= 0 || file.size > CONTENT_REPORT_PDF_MAX_BYTES) {
       this.selectedPdfError.set('PDF must be at most 10 MiB.');
       this.clearPdf();
+
       return;
     }
 
@@ -232,11 +235,13 @@ export class ForepathLegalContentReportComponent implements OnInit {
 
     if (this.form.invalid || !this.turnstileToken()) {
       this.form.markAllAsTouched();
+
       return;
     }
 
     if (this.isTco && !this.selectedPdf) {
       this.selectedPdfError.set('A signed removal-order PDF is required.');
+
       return;
     }
 
@@ -300,7 +305,6 @@ export class ForepathLegalContentReportComponent implements OnInit {
       csamAnonymous,
       reportType,
     } = this.form.controls;
-
     const requireIdentity = reportType.value === 'tco' || !csamAnonymous.value;
     const waiveIdentity = reportType.value === 'dsa' && csamAnonymous.value;
 
@@ -326,6 +330,7 @@ export class ForepathLegalContentReportComponent implements OnInit {
       email.markAsUntouched();
     } else {
       const wasDisabled = name.disabled || email.disabled;
+
       name.enable({ emitEvent: false });
       email.enable({ emitEvent: false });
 

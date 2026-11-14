@@ -18,6 +18,7 @@ export function getEstimatorPersistenceStorage(): Storage | null {
   for (const storage of [window.sessionStorage, window.localStorage]) {
     try {
       const probeKey = '__forepath_storage_probe__';
+
       storage.setItem(probeKey, '1');
       storage.removeItem(probeKey);
 
@@ -49,6 +50,7 @@ export function writeGpuAccessGranted(granted: boolean): void {
 
   if (granted) {
     storage.setItem(FOREPATH_ESTIMATOR_STORAGE_GPU_ACCESS_KEY, 'true');
+
     return;
   }
 

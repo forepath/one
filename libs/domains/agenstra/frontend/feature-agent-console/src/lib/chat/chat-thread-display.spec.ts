@@ -279,7 +279,6 @@ describe('buildAgentTurnView', () => {
         10,
       ),
     ]);
-
     const kinds = view.segments.map((s) => (s.kind === 'row' ? s.row.kind : 'markdown'));
 
     expect(kinds).toContain('status');
@@ -326,7 +325,6 @@ describe('buildAgentTurnView', () => {
         10,
       ),
     ]);
-
     const markdown = view.segments
       .filter((s): s is Extract<(typeof view.segments)[number], { kind: 'markdown' }> => s.kind === 'markdown')
       .map((s) => s.markdown)

@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 
 import type { RequestWithUser } from '../../utils/billing-access.utils';
-import { getAuthenticatedUserFromRequest, getUserFromRequest } from '../../utils/billing-access.utils';
+import { getAuthenticatedUserFromRequest } from '../../utils/billing-access.utils';
 import type {
   CreateProjectTimeEntryDto,
   PaginatedProjectTimeEntriesResponseDto,

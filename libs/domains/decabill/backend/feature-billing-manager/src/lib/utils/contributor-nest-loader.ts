@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import {
   handleDynamicProviderError,
   loadProviderModule,
@@ -7,6 +6,7 @@ import {
   type LoadProviderModuleOptions,
   type ProviderPackageEntry,
 } from '@forepath/shared/backend/util-dynamic-provider-registry';
+import { Logger } from '@nestjs/common';
 
 import type { ContributorNestSource, RegisteredContributorNestModule } from './contributor-nest.types';
 import {

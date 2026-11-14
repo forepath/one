@@ -1,11 +1,11 @@
 import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 
-import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
-import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
 import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import { mapTicketToSearchDocument } from '../../search/billing-search-document.mapper';
 import { BillingSearchIndexService } from '../../search/billing-search-index.service';
+import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
+import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
 import { getRequiredTenantId } from '../../utils/tenant-query.utils';
 import type { ProjectTicketAttachmentResponseDto } from '../dto/project-ticket-attachment.dto';
 import type {
@@ -39,8 +39,9 @@ import {
   buildDescendantCheckboxTaskTotalsByTicketId,
   countMarkdownCheckboxTasks,
 } from '../utils/ticket-content-checkbox-tasks.utils';
-import { ProjectBoardRealtimeService } from './project-board-realtime.service';
+
 import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
+import { ProjectBoardRealtimeService } from './project-board-realtime.service';
 import { ProjectBoardSummaryService } from './project-board-summary.service';
 import { ProjectTicketAttachmentsService } from './project-ticket-attachments.service';
 
@@ -77,7 +78,6 @@ export class ProjectTicketsService {
 
     const all = await this.ticketsRepository.findAllByProject(projectId);
     const descMap = buildDescendantCheckboxTaskTotalsByTicketId(all);
-
     const attachmentMap = await this.ticketAttachmentsService.listForTicketIds(
       rows.map((row) => row.id),
       projectId,
@@ -156,7 +156,6 @@ export class ProjectTicketsService {
       createdByUserId: userInfo.userId ?? null,
       locked: false,
     });
-
     const longSha = deriveProjectTicketLongSha(ticket.id);
     const saved = await this.ticketsRepository.update(ticket.id, { longSha });
 

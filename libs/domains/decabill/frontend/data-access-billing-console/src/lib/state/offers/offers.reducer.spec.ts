@@ -60,7 +60,6 @@ describe('offersReducer', () => {
 
   it('stores accepted offer detail', () => {
     const detail = { ...offer, subtotalNet: 84, taxTotal: 16, lineItems: [], billToOpenPositions: false };
-
     const state = offersReducer(initialOffersState, acceptOfferSuccess({ offer: detail as never }));
 
     expect(state.offerDetails['offer-1']).toEqual(detail);

@@ -40,7 +40,6 @@ const SHARED_MARKS: Record<SharedMarkStackBrand, SharedMark> = {
     d: 'M157.00,0.00L254.04,30.00L314.00,108.50L314.00,205.50L254.04,284.00L157.00,314.00L59.96,284.00L0.00,205.50L0.00,108.50L59.96,30.00L157.00,0.00ZM157.00,53.26L95.08,72.40L56.82,122.52L56.82,184.47L95.08,234.59L157.00,253.73L218.92,234.59L257.21,184.47L257.21,122.52L218.92,72.40L157.00,53.26Z',
   },
 };
-
 /**
  * Front to back: scale of each copy (around its own centre), its fill class, and how far it follows the
  * pointer (the front copy furthest, the copies behind less, so the pull reads as depth).
@@ -51,10 +50,8 @@ const LAYERS = [
   { scale: 0.7, cls: 'shared-mark-stack__mark--3', depth: 0.62 },
   { scale: 0.58, cls: 'shared-mark-stack__mark--4', depth: 0.46 },
 ] as const;
-
 /** Diagonal step between copies, as a share of the mark size. */
 const STEP = 96 / 314;
-
 let nextMarkStackId = 0;
 
 /**
@@ -142,7 +139,6 @@ export class SharedMarkStackComponent {
 
       let frame = 0;
       let pointer: { x: number; y: number } | null = null;
-
       // The pull is the pointer's position in the hero, -1 to 1 from its centre on each axis; the CSS
       // turns it into a few pixels per copy and eases there.
       const apply = () => {
@@ -160,7 +156,6 @@ export class SharedMarkStackComponent {
         host.style.setProperty('--shared-mark-stack-pull-x', clampUnit(x).toFixed(3));
         host.style.setProperty('--shared-mark-stack-pull-y', clampUnit(y).toFixed(3));
       };
-
       const onMove = (event: PointerEvent) => {
         if (event.pointerType !== 'mouse') {
           return;
@@ -169,7 +164,6 @@ export class SharedMarkStackComponent {
         pointer = { x: event.clientX, y: event.clientY };
         frame ||= requestAnimationFrame(apply);
       };
-
       const onLeave = () => {
         pointer = null;
         cancelAnimationFrame(frame);

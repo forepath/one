@@ -1,9 +1,10 @@
 import type { Queue } from 'bullmq';
 
-import { UpdateCheckService } from './update-check.service';
 import type { UpdatesModuleOptions } from '../interfaces/updates-module.options';
 import type { ReleaseSnapshot, ServiceInstanceRecord } from '../interfaces/updates.interfaces';
+
 import { GitHubReleasesClient } from './github-releases.client';
+import { UpdateCheckService } from './update-check.service';
 import { UpdatesRedisStore } from './updates-redis.store';
 
 describe('UpdateCheckService', () => {
@@ -18,7 +19,6 @@ describe('UpdateCheckService', () => {
     publishNotification: jest.fn(),
     github: { owner: 'forepath', repo: 'one' },
   };
-
   const store = {
     getCheckJobMeta: jest.fn(),
     setCheckJobMeta: jest.fn(),
@@ -27,16 +27,13 @@ describe('UpdateCheckService', () => {
     listInstances: jest.fn(),
     upsertInstance: jest.fn(),
   };
-
   const githubReleasesClient = {
     fetchLatestRelease: jest.fn(),
     fetchReleasesNewerThan: jest.fn(),
   };
-
   const queue = {
     add: jest.fn().mockResolvedValue(undefined),
   } as unknown as Queue;
-
   let service: UpdateCheckService;
 
   beforeEach(() => {
@@ -72,6 +69,7 @@ describe('UpdateCheckService', () => {
     ]);
 
     const previousVersion = process.env.VERSION;
+
     process.env.VERSION = '2.21.0';
 
     await service.runCheck();
@@ -126,6 +124,7 @@ describe('UpdateCheckService', () => {
     ]);
 
     const previousVersion = process.env.VERSION;
+
     process.env.VERSION = '2.20.0';
 
     await service.runCheck();
@@ -197,6 +196,7 @@ describe('UpdateCheckService', () => {
     store.listInstances.mockResolvedValue([instance]);
 
     const previousVersion = process.env.VERSION;
+
     process.env.VERSION = '2.22.0';
 
     await service.runCheck();

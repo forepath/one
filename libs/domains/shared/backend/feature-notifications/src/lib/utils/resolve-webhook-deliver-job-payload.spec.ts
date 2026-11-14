@@ -25,7 +25,6 @@ describe('resolveWebhookDeliverJobPayload', () => {
       },
       attempt: 1,
     };
-
     const resolved = resolveWebhookDeliverJobPayload({
       data: payload,
       attemptsMade: 1,

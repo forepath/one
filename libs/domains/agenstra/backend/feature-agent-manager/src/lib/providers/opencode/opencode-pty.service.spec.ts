@@ -179,6 +179,7 @@ describe('OpenCodePtyService', () => {
     global.WebSocket = class extends MockWebSocket {
       override emit(type: string, event: unknown): void {
         super.emit(type, event);
+
         if (type === 'open') {
           super.emit('message', { data: 'agenstra@worker:/app$ ' });
         }

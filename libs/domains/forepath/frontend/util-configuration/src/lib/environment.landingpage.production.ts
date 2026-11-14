@@ -1,7 +1,7 @@
 import { CLOUDFLARE_TURNSTILE_TEST_SITE_KEY } from '@forepath/shared/frontend/util-configuration';
 
-import { createForepathShell } from './shell';
 import type { ForepathLandingEnvironment } from './environment.interface';
+import { createForepathShell } from './shell';
 
 export const environment: ForepathLandingEnvironment = {
   ...createForepathShell({

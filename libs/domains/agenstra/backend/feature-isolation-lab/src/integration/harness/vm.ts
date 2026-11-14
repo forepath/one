@@ -181,7 +181,6 @@ export async function startLabVm(name: string, options: IsolationLabVmOptions = 
 
   const ssh = (remote: string, input?: string | Buffer, timeoutMs = 10 * 60_000) =>
     runProcess('docker', sshViaContainer(container, remote), { input, timeoutMs, env: hostDockerEnv() });
-
   const vm: LabVm = {
     name,
     async exec(body, execOptions = {}) {

@@ -12,16 +12,17 @@ import {
 } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
-import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
-import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
-
-import { ArchitectureIllustrationComponent } from '../illustrations/architecture-illustration.component';
 import {
   SharedContactPersonComponent,
   SharedHeroMascotComponent,
   SharedMarkStackComponent,
 } from '@forepath/shared/frontend/feature-landingpage';
+import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
+import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
+
+import { ArchitectureIllustrationComponent } from '../illustrations/architecture-illustration.component';
+
 
 /** Isolation levels compared in the limits section, weakest first (the order of the tabs). */
 const ISOLATION_LEVELS = ['standard', 'sandboxed', 'sandboxed-kvm', 'microvm'] as const;

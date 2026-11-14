@@ -11,7 +11,6 @@ describe('pricing-tax.utils', () => {
         lines: [{ taxRate: 19 }],
       }),
     };
-
     const result = enrichPricingWithTax(
       { basePrice: 19.49, marginPercent: 0, marginFixed: 0, totalPrice: 19.49 },
       TaxCategory.STANDARD,

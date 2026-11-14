@@ -3,6 +3,7 @@ import { moduleMetadata } from '@storybook/angular';
 
 import { FpcBadgeComponent } from '../badge/badge.component';
 import { FpcButtonComponent } from '../button/button.component';
+
 import { FpcTopBarComponent } from './top-bar.component';
 
 /** Storybook Color set -> console light mark (white glyph on `bg-primary`). */
@@ -15,6 +16,7 @@ const BRAND_MARKS: Record<string, { src: string; alt: string }> = {
 
 function brandMarkForColorSet(colorSet: unknown): { src: string; alt: string } {
   const key = String(colorSet ?? 'bootstrap');
+
   return BRAND_MARKS[key] ?? BRAND_MARKS['bootstrap'];
 }
 

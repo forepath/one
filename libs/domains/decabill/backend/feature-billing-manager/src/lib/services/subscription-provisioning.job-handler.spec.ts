@@ -7,7 +7,6 @@ describe('SubscriptionProvisioningJobHandler', () => {
   const subscriptionService = {
     provisionSubscriptionItem: jest.fn(),
   };
-
   const handler = new SubscriptionProvisioningJobHandler(
     subscriptionItemsRepository as never,
     subscriptionService as never,

@@ -316,7 +316,6 @@ export class AgentGraphsPageComponent {
   /** The loaded document with readable labels (languages, tools) for the canvas, header, search and filter. */
   readonly document = computed(() => {
     const document = this.rawDocument();
-
     const relabel = (type: string) => type === 'language' || type === 'tool' || type === 'instance';
     // Environments referenced by prompts carry only their id (`environment:<id>`): show the environment's name.
     const environmentLabel = (node: AgentGraphNode) =>

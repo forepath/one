@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { provideMockActions } from '@ngrx/effects/testing';
 import { Actions } from '@ngrx/effects';
+import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
 
 import { PromotionsService } from '../../services/promotions.service';
@@ -71,6 +71,7 @@ describe('PromotionsEffects', () => {
   it('validates promotion codes', (done) => {
     const request = { code: 'SAVE10', redemptionContext: 'new' as const, planId: 'plan-1' };
     const preview = { valid: true, code: 'SAVE10' };
+
     actions$ = of(validatePromotion({ request }));
     promotionsService.validate.mockReturnValue(of(preview));
 
@@ -82,6 +83,7 @@ describe('PromotionsEffects', () => {
 
   it('maps validate failures', (done) => {
     const request = { code: 'BAD', redemptionContext: 'new' as const, planId: 'plan-1' };
+
     actions$ = of(validatePromotion({ request }));
     promotionsService.validate.mockReturnValue(throwError(() => new Error('Invalid code')));
 
@@ -99,6 +101,7 @@ describe('PromotionsEffects', () => {
       benefitStartsAt: '2026-01-01T00:00:00.000Z',
     };
     const redemption = { id: 'red-1', code: 'SAVE10' } as never;
+
     actions$ = of(redeemPromotion({ request }));
     promotionsService.redeem.mockReturnValue(of(redemption));
 
@@ -120,6 +123,7 @@ describe('PromotionsEffects', () => {
 
   it('maps redeem failures', (done) => {
     const request = { code: 'SAVE10', redemptionContext: 'existing' as const, subscriptionId: 'sub-1' };
+
     actions$ = of(redeemPromotion({ request }));
     promotionsService.redeem.mockReturnValue(throwError(() => new Error('Redeem failed')));
 

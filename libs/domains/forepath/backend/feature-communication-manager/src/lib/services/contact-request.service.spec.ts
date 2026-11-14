@@ -1,6 +1,7 @@
 import { BadGatewayException } from '@nestjs/common';
 
 import { CreateContactRequestDto } from '../dto/create-contact-request.dto';
+
 import { ChatwootApiError, ChatwootApiService } from './chatwoot-api.service';
 import { ContactRequestService } from './contact-request.service';
 
@@ -11,7 +12,6 @@ describe('ContactRequestService', () => {
     message: 'Need help',
     turnstileToken: 'token',
   };
-
   let chatwootApiService: jest.Mocked<
     Pick<
       ChatwootApiService,

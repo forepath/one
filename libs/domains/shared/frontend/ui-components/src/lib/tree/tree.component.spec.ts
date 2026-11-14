@@ -53,6 +53,7 @@ describe('FpcTreeComponent', () => {
   it('renders roots with status, badge and ARIA attributes', () => {
     expect(rows()).toHaveLength(1);
     const row = rows()[0];
+
     expect(row.getAttribute('aria-level')).toBe('1');
     expect(row.getAttribute('aria-expanded')).toBe('false');
     expect(row.querySelector('.fpc-tree__status--success')).not.toBeNull();
@@ -65,6 +66,7 @@ describe('FpcTreeComponent', () => {
 
   it('expands via the twisty, selects on click and emits the activation', () => {
     const activated: string[] = [];
+
     tree.nodeActivate.subscribe((node) => activated.push(node.id));
 
     (rows()[0].querySelector('.fpc-tree__twisty') as HTMLElement).click();
@@ -82,6 +84,7 @@ describe('FpcTreeComponent', () => {
 
   it('requests lazy children when a lazy node expands', () => {
     const requested: string[] = [];
+
     tree.expandRequest.subscribe((node) => requested.push(node.id));
     fixture.componentRef.setInput('expanded', ['cluster']);
     fixture.detectChanges();
@@ -92,6 +95,7 @@ describe('FpcTreeComponent', () => {
 
   it('navigates with the keyboard', () => {
     const activated: string[] = [];
+
     tree.nodeActivate.subscribe((node) => activated.push(node.id));
     host.querySelector<HTMLElement>('[role="tree"]')!.dispatchEvent(new FocusEvent('focus'));
 
@@ -109,6 +113,7 @@ describe('FpcTreeComponent', () => {
 
   it('emits context-menu requests on right click', () => {
     const events: FpcTreeContextMenuEvent[] = [];
+
     tree.nodeContextMenu.subscribe((event) => events.push(event));
 
     rows()[0].dispatchEvent(new MouseEvent('contextmenu', { clientX: 5, clientY: 6, bubbles: true, cancelable: true }));
@@ -128,6 +133,7 @@ describe('FpcTreeComponent', () => {
       id: `n${index}`,
       label: `Node ${index}`,
     }));
+
     fixture.componentRef.setInput('nodes', many);
     fixture.detectChanges();
 

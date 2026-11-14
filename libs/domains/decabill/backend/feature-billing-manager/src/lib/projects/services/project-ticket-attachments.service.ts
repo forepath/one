@@ -8,6 +8,8 @@ import { Repository } from 'typeorm';
 
 import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import { StoredFileRegistryService } from '../../services/stored-file-registry.service';
+import type { RequestWithUser } from '../../utils/billing-access.utils';
+import { getUserFromRequest } from '../../utils/billing-access.utils';
 import { getRequiredTenantId } from '../../utils/tenant-query.utils';
 import { ProjectTicketAttachmentResponseDto } from '../dto/project-ticket-attachment.dto';
 import { ProjectTicketAttachmentEntity } from '../entities/project-ticket-attachment.entity';
@@ -16,8 +18,6 @@ import { ProjectTicketActivitiesRepository } from '../repositories/project-ticke
 import { ProjectTicketsRepository } from '../repositories/project-tickets.repository';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ensureProjectAdmin, ensureProjectReadable, ensureTicketUnlocked } from '../utils/project-access.utils';
-import type { RequestWithUser } from '../../utils/billing-access.utils';
-import { getUserFromRequest } from '../../utils/billing-access.utils';
 
 export type UploadedProjectTicketAttachment = {
   buffer: Buffer;
@@ -47,6 +47,7 @@ export class ProjectTicketAttachmentsService {
   async list(projectId: string, ticketId: string, req: RequestWithUser): Promise<ProjectTicketAttachmentResponseDto[]> {
     await this.assertReadable(projectId, ticketId, req);
     const rows = await this.attachmentsRepo.find({ where: { ticketId }, order: { createdAt: 'ASC' } });
+
     return rows.map((row) => this.toDto(row, projectId));
   }
 
@@ -57,12 +58,17 @@ export class ProjectTicketAttachmentsService {
     req: RequestWithUser,
   ) {
     const { project, ticket, userInfo } = await this.assertWritable(projectId, ticketId, req);
+
     if (!file?.buffer?.length) throw new BadRequestException('Attachment file is required');
+
     const size = file.size ?? file.buffer.byteLength;
+
     if (size > MAX_ATTACHMENT_BYTES) throw new PayloadTooLargeException('Attachment exceeds maximum size');
+
     const fileName = this.sanitizeFileName(file.originalname || 'attachment');
     const id = randomUUID();
     const storageKey = `${project.userId}/${projectId}/${ticketId}/${id}/${fileName}`;
+
     await this.fileStorage.writeProjectTicketAttachmentFile(storageKey, file.buffer);
     const stored = await this.storedFileRegistry.registerFromBuffer({
       tenantId: getRequiredTenantId(),
@@ -82,6 +88,7 @@ export class ProjectTicketAttachmentsService {
         createdByUserId: userInfo.userId ?? null,
       }),
     );
+
     await this.activitiesRepository.create({
       ticketId,
       actorType: ProjectTicketActorType.HUMAN,
@@ -90,18 +97,22 @@ export class ProjectTicketAttachmentsService {
       payload: { attachmentId: row.id, fileName: row.fileName, byteSize: Number(row.byteSize) },
     });
     const dto = this.toDto(row, projectId);
+
     this.notificationPublisher.publish(
       'attachment.created',
       this.toNotificationPayload(dto, projectId),
       project.userId,
     );
+
     return dto;
   }
 
   async delete(projectId: string, ticketId: string, attachmentId: string, req: RequestWithUser): Promise<void> {
     const { project, userInfo } = await this.assertWritable(projectId, ticketId, req);
     const row = await this.attachmentsRepo.findOne({ where: { id: attachmentId, ticketId } });
+
     if (!row) throw new NotFoundException('Attachment not found');
+
     await this.attachmentsRepo.remove(row);
     await this.activitiesRepository.create({
       ticketId,
@@ -120,7 +131,9 @@ export class ProjectTicketAttachmentsService {
   async download(projectId: string, ticketId: string, attachmentId: string, req: RequestWithUser) {
     await this.assertReadable(projectId, ticketId, req);
     const row = await this.attachmentsRepo.findOne({ where: { id: attachmentId, ticketId } });
+
     if (!row) throw new NotFoundException('Attachment not found');
+
     return {
       meta: this.toDto(row, projectId),
       buffer: await this.fileStorage.readProjectTicketAttachmentFile(row.storageKey),
@@ -132,17 +145,22 @@ export class ProjectTicketAttachmentsService {
     projectId: string,
   ): Promise<Map<string, ProjectTicketAttachmentResponseDto[]>> {
     const map = new Map<string, ProjectTicketAttachmentResponseDto[]>();
+
     if (!ticketIds.length) return map;
+
     const rows = await this.attachmentsRepo
       .createQueryBuilder('a')
       .where('a.ticket_id IN (:...ticketIds)', { ticketIds })
       .orderBy('a.created_at', 'ASC')
       .getMany();
+
     for (const row of rows) {
       const current = map.get(row.ticketId) ?? [];
+
       current.push(this.toDto(row, projectId));
       map.set(row.ticketId, current);
     }
+
     return map;
   }
 
@@ -150,15 +168,20 @@ export class ProjectTicketAttachmentsService {
     const project = await this.projectsRepository.findByIdOrThrow(projectId);
     const userInfo = getUserFromRequest(req);
     const ticket = await this.ticketsRepository.findByIdOrThrow(ticketId);
+
     if (ticket.projectId !== projectId) throw new NotFoundException('Attachment not found');
+
     ensureProjectReadable(userInfo, project, 'attachments:admin');
+
     return { project, ticket, userInfo };
   }
 
   private async assertWritable(projectId: string, ticketId: string, req: RequestWithUser) {
     const ctx = await this.assertReadable(projectId, ticketId, req);
+
     ensureProjectAdmin(ctx.userInfo);
     ensureTicketUnlocked(ctx.ticket);
+
     return ctx;
   }
 
@@ -167,6 +190,7 @@ export class ProjectTicketAttachmentsService {
       .basename(name.replace(/\\/g, '/'))
       .replace(/[\0\r\n]/g, '')
       .trim();
+
     return (base || 'attachment').slice(0, 255);
   }
 

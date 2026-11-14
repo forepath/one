@@ -116,6 +116,7 @@ export const knowledgeReducer = createReducer(
   on(KnowledgeActions.knowledgeAttachmentAdded, (state, { pageId, attachment }) => {
     const append = (attachments: NonNullable<KnowledgeNodeDto['attachments']>) => {
       const withoutDup = attachments.filter((a) => a.id !== attachment.id);
+
       return [...withoutDup, attachment];
     };
 

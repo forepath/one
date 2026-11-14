@@ -174,7 +174,9 @@ export function fpcFormatDateRange(
 
     return ranged.formatRange ? ranged.formatRange(from, to) : `${format.format(from)} – ${format.format(to)}`;
   }
+
   if (from) return (options.labels?.from ?? 'from {date}').replace('{date}', format.format(from));
+
   if (to) return (options.labels?.until ?? 'until {date}').replace('{date}', format.format(to));
 
   return options.fallback ?? '';
@@ -213,6 +215,7 @@ export function fpcFormatRelative(
 
   for (const [unit, size] of RELATIVE_STEPS) {
     if (Math.abs(delta) < size) return format.format(Math.round(delta), unit);
+
     delta /= size;
   }
 

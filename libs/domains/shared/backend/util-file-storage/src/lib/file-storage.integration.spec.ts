@@ -39,6 +39,7 @@ describe('file-storage integration smoke', () => {
 
     const factory = new FileStorageProviderFactory();
     const local = new LocalFileStorageProvider();
+
     factory.registerProvider(local);
 
     await new FileStorageLegacyMigrationService().migrateAllScopes();
@@ -74,6 +75,7 @@ describe('file-storage integration smoke', () => {
     };
 
     const factory = new FileStorageProviderFactory();
+
     factory.registerProvider(new LocalFileStorageProvider());
     await new FileStorageLegacyMigrationService().migrateAllScopes();
 
@@ -90,6 +92,7 @@ describe('file-storage integration smoke', () => {
     };
 
     const factory = new FileStorageProviderFactory();
+
     factory.registerProvider(new LocalFileStorageProvider());
     const service = new FileStorageService(factory);
 

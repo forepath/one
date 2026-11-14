@@ -270,6 +270,7 @@ export class AgentConfigPathListComponent {
     }
 
     const nextIndex = this.entries().filter((entry) => !entry.inherited).length;
+
     this.add.emit(value);
     this.draft.set('');
     this.expandedIndex.set(nextIndex);

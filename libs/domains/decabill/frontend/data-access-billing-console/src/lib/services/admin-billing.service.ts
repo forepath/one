@@ -316,6 +316,7 @@ export class AdminBillingService {
 
   verifyAdminFile(file: File): Observable<AdminFileVerifyResponse> {
     const formData = new FormData();
+
     formData.append('document', file, file.name);
 
     return this.http.post<AdminFileVerifyResponse>(`${this.apiUrl}/admin/billing/files/verify`, formData);

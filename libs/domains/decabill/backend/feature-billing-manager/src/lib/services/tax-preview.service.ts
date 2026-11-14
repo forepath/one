@@ -20,13 +20,11 @@ export class TaxPreviewService {
     const context = dto.userId
       ? await this.invoiceTaxContextService.resolveForUser(dto.userId)
       : await this.invoiceTaxContextService.resolveIssuerDefault();
-
     const rateParams = {
       countryCode: context.treatment.taxCountryCode,
       taxMode: context.treatment.taxMode,
       forceChargeNonEuIssuerEuB2b: context.forceChargeNonEuIssuerEuB2b,
     };
-
     const rates = {
       standard: context.treatment.chargeVat
         ? this.taxRateConfig.resolveRate({ ...rateParams, taxCategory: TaxCategory.STANDARD })
@@ -35,7 +33,6 @@ export class TaxPreviewService {
         ? this.taxRateConfig.resolveRate({ ...rateParams, taxCategory: TaxCategory.REDUCED })
         : 0,
     };
-
     const response: TaxPreviewResponseDto = {
       taxMode: context.treatment.taxMode,
       taxCountryCode: context.treatment.taxCountryCode,
@@ -55,7 +52,6 @@ export class TaxPreviewService {
       unitPriceNet: line.unitPriceNet,
       taxCategory: line.taxCategory ?? TaxCategory.STANDARD,
     }));
-
     const totals = this.taxCalculationService.computeLines(lineInputs, {
       taxTreatment: context.treatment,
       forceChargeNonEuIssuerEuB2b: context.forceChargeNonEuIssuerEuB2b,

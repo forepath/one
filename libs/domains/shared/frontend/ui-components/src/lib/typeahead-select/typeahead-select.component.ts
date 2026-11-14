@@ -175,6 +175,7 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
       if (!this.open() || !this.isMenuVariant()) {
         this.restoreMenuToHost();
         this.detachScrollListeners();
+
         return;
       }
 
@@ -249,6 +250,7 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
 
   protected onFocus(): void {
     this.keyboardFocus.set(fpcFocusFromKeyboard());
+
     if (this.openOnFocus() && !this.disabled()) {
       this.open.set(true);
     }
@@ -353,7 +355,6 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
     const available = Math.max(0, openBelow ? spaceBelow : spaceAbove);
     const maxHeight = Math.min(softMax, available);
     const usedHeight = Math.min(naturalHeight, maxHeight);
-
     let top = openBelow ? anchorRect.bottom + gap : anchorRect.top - gap - usedHeight;
     let left = anchorRect.left;
     const width = anchorRect.width;

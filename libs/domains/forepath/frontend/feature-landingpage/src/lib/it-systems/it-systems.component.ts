@@ -2,9 +2,6 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { ForepathOneTeaserComponent } from '../forepath-one-teaser/forepath-one-teaser.component';
-import { RentalIllustrationComponent } from '../illustrations/rental-illustration.component';
-import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import {
   SharedContactPersonComponent,
   SharedLogoGridComponent,
@@ -12,8 +9,12 @@ import {
   SharedHeroMascotComponent,
   SharedMarkStackComponent,
 } from '@forepath/shared/frontend/feature-landingpage';
-import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
+import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
+
+import { ForepathOneTeaserComponent } from '../forepath-one-teaser/forepath-one-teaser.component';
+import { RentalIllustrationComponent } from '../illustrations/rental-illustration.component';
 
 import { FOREPATH_DISTRIBUTOR_LOGOS } from './services/it-systems-services';
 

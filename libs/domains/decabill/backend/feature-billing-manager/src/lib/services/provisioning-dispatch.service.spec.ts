@@ -1,5 +1,5 @@
-import { ProvisioningDispatchService } from './provisioning-dispatch.service';
 import { ProviderModuleRegistryService } from './provider-module-registry.service';
+import { ProvisioningDispatchService } from './provisioning-dispatch.service';
 
 describe('ProvisioningDispatchService', () => {
   const credentials = { apiToken: 'token' };
@@ -32,7 +32,6 @@ describe('ProvisioningDispatchService', () => {
     restartServer: jest.fn().mockResolvedValue(undefined),
     changeServerType: jest.fn().mockResolvedValue(undefined),
   };
-
   const digitalOceanModule = {
     id: 'digital-ocean',
     collectMeters: async () => [],

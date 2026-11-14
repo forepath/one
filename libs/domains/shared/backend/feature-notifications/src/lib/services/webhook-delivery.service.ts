@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { httpStatusClass, recordSharedCounter, recordSharedHistogram } from '@forepath/shared/backend/util-otel';
 import {
   WebhookHttpClient,
   WebhookSignatureService,
   type WebhookAuthConfig,
 } from '@forepath/shared/backend/util-webhook';
-import { httpStatusClass, recordSharedCounter, recordSharedHistogram } from '@forepath/shared/backend/util-otel';
+import { Injectable, Logger } from '@nestjs/common';
 
 import {
   WEBHOOK_CONSECUTIVE_FAILURE_DISABLE_THRESHOLD,
@@ -18,6 +18,7 @@ import type {
 } from '../interfaces/notification.interfaces';
 import { WebhookDeliveriesRepository } from '../repositories/webhook-deliveries.repository';
 import { WebhookEndpointsRepository } from '../repositories/webhook-endpoints.repository';
+
 import { WebhookDeliveryRetentionService } from './webhook-delivery-retention.service';
 
 @Injectable()
@@ -40,7 +41,6 @@ export class WebhookDeliveryService {
     const trackConsecutiveFailures = options.trackConsecutiveFailures ?? true;
     const maxAttempts = payload.maxAttempts ?? WEBHOOK_DELIVER_MAX_ATTEMPTS;
     const isFinalAttempt = payload.attempt >= maxAttempts;
-
     const endpoint = await this.endpointsRepository.findByIdAndScope(payload.endpointId, payload.scopeKey);
 
     if (!endpoint) {
@@ -65,7 +65,6 @@ export class WebhookDeliveryService {
       authValue: endpoint.authValue,
       authHeaderName: endpoint.authHeaderName,
     };
-
     const startedAt = Date.now();
     const result = await this.httpClient.deliver({
       url: endpoint.url,

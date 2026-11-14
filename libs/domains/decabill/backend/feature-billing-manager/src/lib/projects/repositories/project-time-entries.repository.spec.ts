@@ -1,5 +1,5 @@
-import { NotFoundException } from '@nestjs/common';
 import { runWithTenantId } from '@forepath/shared/backend';
+import { NotFoundException } from '@nestjs/common';
 
 import { ProjectTimeEntryEntity } from '../entities/project-time-entry.entity';
 
@@ -15,7 +15,6 @@ describe('ProjectTimeEntriesRepository', () => {
   const mockWhere = jest.fn();
   const mockSet = jest.fn();
   const mockUpdate = jest.fn();
-
   const mockQueryBuilder = {
     innerJoin: jest.fn().mockReturnThis(),
     leftJoin: jest.fn().mockReturnThis(),
@@ -33,14 +32,12 @@ describe('ProjectTimeEntriesRepository', () => {
     getRawOne: mockGetRawOne,
     update: mockUpdate,
   };
-
   const mockRepository = {
     createQueryBuilder: jest.fn(() => mockQueryBuilder),
     create: jest.fn((dto) => dto),
     save: jest.fn(async (entity) => entity),
     delete: jest.fn(),
   };
-
   const mockManager = {
     getRepository: jest.fn(() => mockRepository),
   };
@@ -61,9 +58,11 @@ describe('ProjectTimeEntriesRepository', () => {
   describe('findByIdOrThrow', () => {
     it('returns entry', async () => {
       const entry = { id: 'e1' } as ProjectTimeEntryEntity;
+
       mockGetOne.mockResolvedValue(entry);
 
       const repository = new ProjectTimeEntriesRepository(mockRepository as never);
+
       await expect(runWithTenantId('default', () => repository.findByIdOrThrow('e1'))).resolves.toEqual(entry);
     });
 
@@ -71,6 +70,7 @@ describe('ProjectTimeEntriesRepository', () => {
       mockGetOne.mockResolvedValue(null);
 
       const repository = new ProjectTimeEntriesRepository(mockRepository as never);
+
       await expect(runWithTenantId('default', () => repository.findByIdOrThrow('missing'))).rejects.toThrow(
         NotFoundException,
       );
@@ -80,6 +80,7 @@ describe('ProjectTimeEntriesRepository', () => {
   describe('findAllByProject', () => {
     it('returns paginated entries with optional ticket filter', async () => {
       const entries = [{ id: 'e1' }] as ProjectTimeEntryEntity[];
+
       mockGetCount.mockResolvedValue(1);
       mockGetMany.mockResolvedValue(entries);
 
@@ -121,6 +122,7 @@ describe('ProjectTimeEntriesRepository', () => {
   describe('range and invoice queries', () => {
     it('findUnbilledByProject returns unbilled entries', async () => {
       const entries = [{ id: 'e1' }] as ProjectTimeEntryEntity[];
+
       mockGetMany.mockResolvedValue(entries);
 
       const repository = new ProjectTimeEntriesRepository(mockRepository as never);
@@ -133,6 +135,7 @@ describe('ProjectTimeEntriesRepository', () => {
       mockGetMany.mockResolvedValue([]);
 
       const repository = new ProjectTimeEntriesRepository(mockRepository as never);
+
       await runWithTenantId('default', () =>
         repository.findByProjectInRange('p1', new Date('2026-06-01'), new Date('2026-06-02'), { unbilledOnly: true }),
       );
@@ -142,6 +145,7 @@ describe('ProjectTimeEntriesRepository', () => {
 
     it('findByInvoiceId returns invoice entries', async () => {
       const entries = [{ id: 'e1' }] as ProjectTimeEntryEntity[];
+
       mockGetMany.mockResolvedValue(entries);
 
       const repository = new ProjectTimeEntriesRepository(mockRepository as never);
@@ -181,7 +185,6 @@ describe('ProjectTimeEntriesRepository', () => {
 
   describe('create update delete', () => {
     it('creates and updates entries', async () => {
-      const entry = { id: 'e1', billedAt: null, description: 'Work' } as ProjectTimeEntryEntity;
       mockGetOne.mockResolvedValue({ id: 'e1', billedAt: null });
 
       const repository = new ProjectTimeEntriesRepository(mockRepository as never);
@@ -196,6 +199,7 @@ describe('ProjectTimeEntriesRepository', () => {
       mockGetOne.mockResolvedValue({ id: 'e1', billedAt: new Date() } as ProjectTimeEntryEntity);
 
       const repository = new ProjectTimeEntriesRepository(mockRepository as never);
+
       await expect(runWithTenantId('default', () => repository.delete('e1'))).rejects.toThrow(NotFoundException);
       expect(mockRepository.delete).not.toHaveBeenCalled();
     });
@@ -204,6 +208,7 @@ describe('ProjectTimeEntriesRepository', () => {
       mockGetOne.mockResolvedValue({ id: 'e1', billedAt: null } as ProjectTimeEntryEntity);
 
       const repository = new ProjectTimeEntriesRepository(mockRepository as never);
+
       await runWithTenantId('default', () => repository.delete('e1'));
 
       expect(mockRepository.delete).toHaveBeenCalledWith('e1');
@@ -259,6 +264,7 @@ describe('ProjectTimeEntriesRepository', () => {
       mockExecute.mockResolvedValue({ affected: 1 });
 
       const repository = new ProjectTimeEntriesRepository(mockRepository as never);
+
       await repository.markBilled('p1', ['e1'], 'inv-1', new Date(), mockManager as never);
 
       expect(mockManager.getRepository).toHaveBeenCalledWith(ProjectTimeEntryEntity);

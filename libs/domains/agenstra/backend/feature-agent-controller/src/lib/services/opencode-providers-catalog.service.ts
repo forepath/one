@@ -1,6 +1,6 @@
-import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { In, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 import { OPENCODE_PROVIDERS_MODELS_DEV_URL } from '../constants/opencode-providers.constants';
 import { OpencodeProviderDto, OpencodeProviderModelDto, OpencodeProvidersListDto } from '../dto/opencode-providers.dto';
@@ -188,13 +188,11 @@ export class OpencodeProvidersCatalogService {
       .where('p.id NOT IN (:...keepIds)', { keepIds })
       .getMany();
     const removedIds = staleRows.map((row) => row.id);
-
     const deleteResult = await this.providersRepository
       .createQueryBuilder()
       .delete()
       .where('id NOT IN (:...keepIds)', { keepIds })
       .execute();
-
     const removed = deleteResult.affected ?? 0;
 
     void this.searchIndex.bulkUpsertSafe(

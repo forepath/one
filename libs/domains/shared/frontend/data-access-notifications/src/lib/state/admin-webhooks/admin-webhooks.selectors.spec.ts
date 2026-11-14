@@ -1,3 +1,5 @@
+import { WebhookAuthType, WebhookHttpMethod } from '../../types/webhook-endpoint.types';
+
 import { initialAdminWebhooksState, type AdminWebhooksState } from './admin-webhooks.reducer';
 import {
   selectAdminWebhookDeliveries,
@@ -10,7 +12,6 @@ import {
   selectAdminWebhooksSaving,
   selectAdminWebhooksTesting,
 } from './admin-webhooks.selectors';
-import { WebhookAuthType, WebhookHttpMethod } from '../../types/webhook-endpoint.types';
 
 describe('adminWebhooksSelectors', () => {
   const state: AdminWebhooksState = {

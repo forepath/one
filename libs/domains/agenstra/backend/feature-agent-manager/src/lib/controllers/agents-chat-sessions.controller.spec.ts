@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { CreateChatSessionDto } from '../dto/create-chat-session.dto';
 import { ChatSessionResponseDto } from '../dto/chat-session-response.dto';
+import { CreateChatSessionDto } from '../dto/create-chat-session.dto';
 import { UpdateChatSessionDto } from '../dto/update-chat-session.dto';
 import { AgentChatSessionEntity } from '../entities/agent-chat-session.entity';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';

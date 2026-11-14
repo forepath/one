@@ -13,8 +13,8 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { CreateCloudInitConfigDto } from '../dto/create-cloud-init-config.dto';
 import { CloudInitConfigResponseDto } from '../dto/cloud-init-config-response.dto';
+import { CreateCloudInitConfigDto } from '../dto/create-cloud-init-config.dto';
 import { UpdateCloudInitConfigDto } from '../dto/update-cloud-init-config.dto';
 import { CloudInitConfigEntity } from '../entities/cloud-init-config.entity';
 import { CloudInitConfigsRepository } from '../repositories/cloud-init-configs.repository';
@@ -64,7 +64,6 @@ export class CloudInitConfigsController {
       })),
       dto.defaultValues,
     );
-
     const provisioningMode = dto.provisioningMode ?? 'simple';
 
     this.cloudInitConfigService.validateProvisioningPayload({
@@ -153,7 +152,6 @@ export class CloudInitConfigsController {
 
     if (dto.environmentVariables !== undefined || dto.defaultValues !== undefined) {
       const mergedDefaults = dto.defaultValues !== undefined ? dto.defaultValues : (existing.envDefaultValues ?? {});
-
       const { environmentVariables, envDefaultValues } = this.cloudInitConfigService.sanitizeEnvironmentVariables(
         (dto.environmentVariables ?? existing.environmentVariables)?.map((v) => ({
           key: v.key,

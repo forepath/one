@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 
 import type { MeterAttachmentSource } from '../constants/meter-attachment.constants';
+
 import { AddonEntity } from './addon.entity';
 import { MeterEntity } from './meter.entity';
 

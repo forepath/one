@@ -30,6 +30,7 @@ export class UserEnvironmentReadStateRepository {
 
     if (existing) {
       const existingAt = existing.lastReadAt;
+
       existing.lastReadAt =
         existingAt && existingAt.getTime() > params.lastReadAt.getTime() ? existingAt : params.lastReadAt;
 

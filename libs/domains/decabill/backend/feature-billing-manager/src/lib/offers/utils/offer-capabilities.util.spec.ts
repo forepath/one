@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 
 import { OfferStatus } from '../constants/offer-status.constants';
+
 import { assertOfferHasPdf, offerCapabilityFlags } from './offer-capabilities.util';
 
 describe('offer-capabilities.util', () => {

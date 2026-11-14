@@ -8,13 +8,14 @@ import { AuthenticationType } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
-import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientsService } from './clients.service';
-import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
+
 
 export type ChatSessionMessageResponse = {
   id: string;

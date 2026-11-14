@@ -21,7 +21,6 @@ describe('EInvoiceInboundParseService', () => {
     </ram:IncludedSupplyChainTradeLineItem>
   </rsm:SupplyChainTradeTransaction>
 </rsm:CrossIndustryInvoice>`;
-
     const result = await service.parseDocument(Buffer.from(xml, 'utf8'), 'application/xml');
 
     expect(result.issueDate).toBe('2026-01-15');

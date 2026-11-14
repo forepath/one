@@ -8,7 +8,6 @@ import {
 
 describe('contributor-job.types', () => {
   const run = jest.fn().mockResolvedValue(undefined);
-
   const valid = (overrides: Partial<ContributorJobDefinition> = {}): ContributorJobDefinition => ({
     key: 'collect-stats',
     intervalMs: 60_000,

@@ -1,7 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
+
 import type { UserRole } from '@forepath/identity/backend';
 import { RedisCacheService } from '@forepath/shared/backend/util-redis-cache';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 
 import { CONTROLLER_VNC_TICKET_TTL_MS } from '../constants/vnc.constants';
 
@@ -65,7 +66,6 @@ export class ControllerVncTicketService {
       expiresAt: Date.now() + expiresIn * 1000,
       consumed: false,
     };
-
     const redisStored = await this.redisCache.setJson(`${REDIS_KEY_PREFIX}${ticket}`, record, expiresIn);
 
     // Only keep a process-local copy when Redis did not store the ticket (dev / Redis down).

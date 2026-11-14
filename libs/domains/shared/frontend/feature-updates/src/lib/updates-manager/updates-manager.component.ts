@@ -300,6 +300,7 @@ export class UpdatesManagerComponent implements OnInit {
 
     return entries.filter((entry) => {
       const haystack = `${entry.category ?? ''} ${entry.text}`.toLowerCase();
+
       return haystack.includes(term);
     });
   }
@@ -467,8 +468,11 @@ export class UpdatesManagerComponent implements OnInit {
     const label = this.changelogCategoryLabel(category as string);
 
     if (key.startsWith('breaking')) return { label, tone: 'danger', icon: 'exclamation-octagon' };
+
     if (key.startsWith('feat')) return { label, tone: 'primary', icon: 'stars' };
+
     if (key.includes('fix')) return { label, tone: 'success', icon: 'bug' };
+
     if (key.startsWith('perf')) return { label, tone: 'info', icon: 'speedometer2' };
 
     return { label, tone: 'neutral', icon: 'dot' };

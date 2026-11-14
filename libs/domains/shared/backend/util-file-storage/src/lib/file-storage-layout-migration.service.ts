@@ -12,8 +12,8 @@ import {
   resolvePreviousSegmentRoot,
 } from './file-storage-path.config';
 import { applyS3KeyPrefix, readFileStorageS3Config } from './file-storage-s3.config';
-import { FILE_STORAGE_LOCAL_PROVIDER, FILE_STORAGE_S3_PROVIDER } from './file-storage.constants';
 import { FILE_STORAGE_PREVIOUS_SCOPE_SEGMENTS, FileStorageScope } from './file-storage-scope.constants';
+import { FILE_STORAGE_LOCAL_PROVIDER, FILE_STORAGE_S3_PROVIDER } from './file-storage.constants';
 import { createFileStorageS3Client } from './providers/s3-file-storage.provider';
 
 interface LayoutMigrationSummary {
@@ -229,7 +229,6 @@ export class FileStorageLayoutMigrationService {
           const relativeKey = withoutGlobalPrefix.startsWith(`${move.previousSegment}/`)
             ? withoutGlobalPrefix.slice(move.previousSegment.length + 1)
             : withoutGlobalPrefix;
-
           const target = move.classify(relativeKey);
 
           if (!target) {

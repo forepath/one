@@ -37,6 +37,7 @@ import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/ut
 import { firstValueFrom, map } from 'rxjs';
 
 import { FOREPATH_CONTACT } from '../../forepath-contact.config';
+
 import { ForepathProjectEstimateDebugPanelComponent } from './project-estimate-debug-panel.component';
 import { ForepathProjectEstimateLoadingPanelComponent } from './project-estimate-loading-panel.component';
 

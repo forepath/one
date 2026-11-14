@@ -5,6 +5,7 @@ import { Queue } from 'bullmq';
 
 import { OPENCODE_PROVIDERS_REFRESH_JOB_NAME } from '../constants/opencode-providers.constants';
 import { AGENSTRA_CONTROLLER_QUEUE_NAME } from '../modules/agenstra-notifications.module';
+
 import { OpencodeProvidersCatalogService } from './opencode-providers-catalog.service';
 
 /**

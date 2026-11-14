@@ -1,8 +1,8 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 
 import { UPDATE_CHECK_GITHUB_TOKEN_ENV, UPDATES_MODULE_OPTIONS } from '../constants/updates.constants';
-import type { GitHubLatestRelease } from '../interfaces/updates.interfaces';
 import type { UpdatesModuleOptions } from '../interfaces/updates-module.options';
+import type { GitHubLatestRelease } from '../interfaces/updates.interfaces';
 import { compareVersions } from '../utils/version.utils';
 
 interface GitHubReleaseApiResponse {

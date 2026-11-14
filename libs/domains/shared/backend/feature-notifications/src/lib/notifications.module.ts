@@ -1,13 +1,13 @@
-import { BullModule, getQueueToken } from '@nestjs/bullmq';
-import { DynamicModule, Module, Provider } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Queue } from 'bullmq';
 import { EmailService, EmailTemplateRendererService } from '@forepath/shared/backend/util-email';
 import {
   WebhookHttpClient,
   WebhookSignatureService,
   assertWebhookEventCatalog,
 } from '@forepath/shared/backend/util-webhook';
+import { BullModule, getQueueToken } from '@nestjs/bullmq';
+import { DynamicModule, Module, Provider } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Queue } from 'bullmq';
 
 import { NOTIFICATIONS_MODULE_OPTIONS } from './constants/notification.constants';
 import { createWebhookEndpointsController } from './controllers/webhook-endpoints.controller';
@@ -35,7 +35,6 @@ export class NotificationsModule {
       provide: NOTIFICATIONS_MODULE_OPTIONS,
       useValue: options,
     };
-
     const emailProviders: Provider[] = options.email
       ? [
           EmailService,

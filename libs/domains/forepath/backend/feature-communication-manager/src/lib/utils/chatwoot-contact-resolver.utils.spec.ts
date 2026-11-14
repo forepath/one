@@ -1,4 +1,5 @@
 import { ChatwootContactListItem } from '../types/chatwoot.types';
+
 import { resolveContactSourceId, resolveCreatedContact } from './chatwoot-contact-resolver.utils';
 
 describe('resolveContactSourceId', () => {

@@ -17,6 +17,7 @@ import {
 } from '@nestjs/common';
 
 import type { PaginatedBillingAuditLogsResponseDto } from '../../dto/admin-billing.dto';
+import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
 import type {
   AdminOfferDetailResponseDto,
   CreateAdminOfferDto,
@@ -24,9 +25,8 @@ import type {
   PaginatedAdminOffersResponseDto,
   UpdateAdminOfferDto,
 } from '../dto/offer.dto';
-import { OffersAdminService } from '../services/offers-admin.service';
 import { OfferStatisticsQueryService } from '../services/offer-statistics-query.service';
-import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
+import { OffersAdminService } from '../services/offers-admin.service';
 
 type AdminRequest = RequestWithUser;
 

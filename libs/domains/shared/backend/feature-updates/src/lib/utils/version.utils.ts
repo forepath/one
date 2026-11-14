@@ -3,7 +3,6 @@ import { compare, coerce } from 'semver';
 import type { UpdateState } from '../interfaces/updates.interfaces';
 
 const DEFAULT_VERSION_ENVS = ['VERSION', 'APP_VERSION'] as const;
-
 /** Unresolved shell/Nx placeholders such as `$VERSION` or `${APP_VERSION}`. */
 const UNRESOLVED_ENV_PLACEHOLDER_RE = /^\$\{?[A-Za-z_][A-Za-z0-9_]*\}?$/;
 

@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { OfferFulfillmentService } from './offer-fulfillment.service';
 import { OfferLineItemsRepository } from '../repositories/offer-line-items.repository';
+
+import { OfferFulfillmentService } from './offer-fulfillment.service';
 
 @Injectable()
 export class OfferFulfillmentJobHandler {

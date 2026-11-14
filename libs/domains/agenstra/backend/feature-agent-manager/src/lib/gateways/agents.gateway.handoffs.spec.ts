@@ -5,9 +5,9 @@ import type { AgentProviderFactory } from '../providers/agent-provider.factory';
 import type { ChatFilterFactory } from '../providers/chat-filter.factory';
 import type { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
 import type { AgentsRepository } from '../repositories/agents.repository';
+import { AgentActiveTurnsService } from '../services/agent-active-turns.service';
 import type { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import type { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
-import { AgentActiveTurnsService } from '../services/agent-active-turns.service';
 import { AgentHandoffsApiService } from '../services/agent-handoffs-api.service';
 import type { AgentMessageEventsService } from '../services/agent-message-events.service';
 import type { AgentMessagesService } from '../services/agent-messages.service';
@@ -34,7 +34,6 @@ describe('AgentsGateway agent handoffs bridge', () => {
   let handoffsApi: AgentHandoffsApiService;
   let turns: AgentActiveTurnsService;
   let provider: { sendMessage: jest.Mock; getCapabilities: jest.Mock; toParseableStrings: jest.Mock };
-
   const socket = (id: string, ack: jest.Mock = jest.fn()): Socket & { emitWithAckMock: jest.Mock } => {
     const timeout = jest.fn().mockReturnValue({ emitWithAck: ack });
 
@@ -42,7 +41,6 @@ describe('AgentsGateway agent handoffs bridge', () => {
       emitWithAckMock: jest.Mock;
     };
   };
-
   const login = (s: Socket, id = agentId) => {
     (gateway as any).socketById.set(s.id, s);
     (gateway as any).authenticatedClients.set(s.id, id);

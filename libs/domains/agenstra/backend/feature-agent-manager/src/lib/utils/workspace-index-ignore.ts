@@ -1,6 +1,5 @@
 /** Paths that should not trigger index notifications (relative to workspace root). */
 const IGNORED_PATH_SEGMENTS = new Set(['.git', 'node_modules', '.svn', '.hg']);
-
 const SECRET_FILE_PATTERNS = [/^\.env(\.|$)/i, /\.pem$/i, /\.key$/i, /^id_rsa/i, /^id_ed25519/i, /\.p12$/i, /\.pfx$/i];
 
 /**

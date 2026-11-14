@@ -1,7 +1,9 @@
-import { TestBed } from '@angular/core/testing';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { runInNewContext } from 'node:vm';
+
+import { TestBed } from '@angular/core/testing';
+
 import { ThemeService } from './theme.service';
 
 describe('Agent console startup theme', () => {
@@ -28,6 +30,7 @@ describe('Agent console startup theme', () => {
     if (!startupScript) {
       throw new Error('Agent console startup theme script is missing');
     }
+
     runInNewContext(startupScript, {
       document,
       localStorage,
@@ -43,6 +46,7 @@ describe('Agent console startup theme', () => {
     expect(document.documentElement.style.getPropertyValue('--bs-body-bg')).toBe('');
 
     const service = TestBed.inject(ThemeService);
+
     for (const isDark of [false, true, false]) {
       service.setTheme(isDark);
       TestBed.tick();

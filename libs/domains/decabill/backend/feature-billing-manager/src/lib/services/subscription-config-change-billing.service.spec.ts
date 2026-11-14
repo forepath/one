@@ -91,7 +91,6 @@ describe('SubscriptionConfigChangeBillingService', () => {
   const dataSource = {
     transaction: jest.fn(async (callback: (manager: typeof managerMock) => Promise<unknown>) => callback(managerMock)),
   };
-
   const service = new SubscriptionConfigChangeBillingService(
     openPositionsRepository as never,
     subscriptionsRepository as never,
@@ -108,7 +107,6 @@ describe('SubscriptionConfigChangeBillingService', () => {
     dataSource as never,
     billingNotificationPublisher as never,
   );
-
   const subscription = {
     id: 'sub-1',
     number: 'SUB-1',

@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 
+import { ContainerManagerService } from '../contributors/container-manager/services/container-manager.service';
 import {
   SubscriptionItemDetailResponseDto,
   SubscriptionItemResponseDto,
@@ -39,15 +40,15 @@ import {
   enrichServerInfoWithConfigGeography,
   serverInfoHasGeography,
 } from '../utils/subscription-item-response.utils';
+import { isLiveAccessibleSubscriptionStatus } from '../utils/subscription-live-access.utils';
 
 import { AddonModuleRegistryService } from './addon-module-registry.service';
-import { CloudflareDnsService } from './cloudflare-dns.service';
 import { CloudInitModuleRegistryService } from './cloud-init-module-registry.service';
-import { ContainerManagerService } from '../contributors/container-manager/services/container-manager.service';
+import { CloudflareDnsService } from './cloudflare-dns.service';
 import { IntegratedStackRegistryService } from './integrated-stack-registry.service';
 import { ProvisioningDispatchService } from './provisioning-dispatch.service';
 import { SubscriptionService } from './subscription.service';
-import { isLiveAccessibleSubscriptionStatus } from '../utils/subscription-live-access.utils';
+
 
 const CLOUD_INIT_CONFIG_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -357,7 +358,6 @@ export class SubscriptionItemServerService {
         moduleKey: row.addon?.moduleKey ?? null,
         status: row.status,
       }));
-
     const tabs: ResolvedServiceDetailTab[] = [createDetailsTab()];
     const tabCtx = { subscriptionId, itemId };
 
@@ -373,6 +373,7 @@ export class SubscriptionItemServerService {
       }
 
       const module = this.addonModuleRegistry.get(moduleKey);
+
       appendServiceTabs(tabs, module?.serviceTabs, 'addon', moduleKey, tabCtx);
     }
 
@@ -419,6 +420,7 @@ export class SubscriptionItemServerService {
     }
 
     const normalized = this.normalizeDisplayName(displayName);
+
     await this.subscriptionItemsRepository.updateDisplayName(itemId, normalized);
 
     this.billingNotificationPublisher.publish(
@@ -596,6 +598,7 @@ export class SubscriptionItemServerService {
         declarativeTabs = sanitizeCloudInitServiceTabs(declarativeTabs);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
+
         this.logger.warn(
           `Ignoring invalid CloudInit serviceTabs on config ${config.id} while building item detail: ${message}`,
         );
@@ -605,14 +608,15 @@ export class SubscriptionItemServerService {
       appendServiceTabs(tabs, declarativeTabs, 'cloud-init', config.key, ctx);
 
       const codeModule = this.cloudInitModuleRegistry.get(config.key);
+
       appendServiceTabs(tabs, codeModule?.serviceTabs, 'cloud-init', config.key, ctx);
 
       return;
     }
 
     const integratedKey = canonicalizeIntegratedProvisioningService(service) ?? (service as string);
-
     const stackModule = this.integratedStackRegistry.get(integratedKey);
+
     appendServiceTabs(tabs, stackModule?.serviceTabs, 'integrated', integratedKey, ctx);
   }
 }

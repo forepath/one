@@ -11,8 +11,8 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import {
   AvailabilityService,
   ServicePlansFacade,
@@ -36,13 +36,6 @@ import {
   type ServerType,
   isNoneServiceTypeId,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { combineLatest, filter, take } from 'rxjs';
-
-import {
-  getBillingIntervalDurationLabel,
-  getMeterAggregatorLabel,
-  getProviderDisplayName,
-} from '../billing-status-labels';
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
@@ -51,13 +44,21 @@ import {
   FpcFormFieldComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
+import { combineLatest, filter, take } from 'rxjs';
 
 import type { OfferFormLineItem } from '../admin-offers-page/admin-offer-form.util';
+import { formatBillingMoney } from '../billing-format';
+import {
+  getBillingIntervalDurationLabel,
+  getMeterAggregatorLabel,
+  getProviderDisplayName,
+} from '../billing-status-labels';
 import {
   buildPricingTotalsSummary,
   type PricingTotalsLeadingRow,
   type PricingTotalsSummary,
 } from '../pricing-totals-summary/pricing-totals.util';
+
 import {
   buildPlanOrderAddonConfigs,
   buildPlanOrderRequestedConfig,
@@ -65,7 +66,7 @@ import {
   isOrderAuthMethodSupported,
   type IntegratedOrderFormConfig,
 } from './plan-order-requested-config.util';
-import { formatBillingMoney } from '../billing-format';
+
 
 @Component({
   selector: 'framework-plan-order-configurator',
@@ -658,6 +659,7 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
 
   private syncAddons(): void {
     const planId = this.line.planId.trim();
+
     this.addons = [];
 
     if (!planId) {
@@ -1101,7 +1103,7 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
     return primary ? [primary] : [];
   }
 
-  private resolveOrderProviderId(plan: ServicePlanResponse, serviceTypes: ServiceTypeResponse[]): string | null {
+  private resolveOrderProviderId(plan: ServicePlanResponse, _serviceTypes: ServiceTypeResponse[]): string | null {
     const allowed = this.resolvePlanAllowedProviders(plan);
 
     if (plan.allowCustomerProviderSelection === true && allowed.length > 0) {

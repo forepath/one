@@ -26,9 +26,6 @@ import {
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
-import { GIT_STATE_CHANGED_EVENT, toolMayMutateGitWorkspace } from '../constants/agent-git-state.constants';
-import { ENVIRONMENT_PROGRESS_EVENT } from '../constants/environment-progress.constants';
-import type { EnvironmentProgressDto } from '../dto/environment-progress.dto';
 import {
   AGENT_CONTEXT_ACCESS_QUESTION_SUBTYPE,
   AGENT_CONTEXT_CHANGE_QUESTION_SUBTYPE,
@@ -37,15 +34,18 @@ import {
   AGENT_CONTEXT_REQUEST_TIMEOUT_MS,
   AGENT_DEPLOYMENT_REQUEST_TIMEOUT_MS,
 } from '../constants/agent-context.constants';
+import { GIT_STATE_CHANGED_EVENT, toolMayMutateGitWorkspace } from '../constants/agent-git-state.constants';
 import {
   isChatPlanResumeSessionSuffix,
   isReservedChatResumeSessionSuffix,
   isUnattendedAutomationResumeSessionSuffix,
 } from '../constants/chat-session.constants';
+import { ENVIRONMENT_PROGRESS_EVENT } from '../constants/environment-progress.constants';
+import type { EnvironmentProgressDto } from '../dto/environment-progress.dto';
+import type { AgentMessageAttachmentJson } from '../entities/agent-message.entity';
 import { AgentEventEnvelope, AgentInteractionQueryPayload, AgentResponseMode } from '../providers/agent-events.types';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentResponseObject } from '../providers/agent-provider.interface';
-import type { AgentMessageAttachmentJson } from '../entities/agent-message.entity';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import {
   AppliedFilterInfo,
@@ -53,27 +53,27 @@ import {
   FilterContext,
   FilterDirection,
 } from '../providers/chat-filter.interface';
-import { AgentsRepository } from '../repositories/agents.repository';
-import { AgentEgressService } from '../services/agent-egress.service';
-import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
-import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
-import { AgentGraphReferencesService } from '../services/agent-graph-references.service';
-import { AgentMessageEventsService } from '../services/agent-message-events.service';
-import { AgentMessagesService } from '../services/agent-messages.service';
-import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
 import { OpenCodeConfigSyncService } from '../providers/opencode/opencode-config-sync.service';
 import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
+import { AgentsRepository } from '../repositories/agents.repository';
+import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import { AgentContextApiService } from '../services/agent-context-api.service';
 import { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
 import { AgentDeploymentsApiService } from '../services/agent-deployments-api.service';
+import { AgentEgressService } from '../services/agent-egress.service';
+import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
+import { AgentGraphReferencesService } from '../services/agent-graph-references.service';
 import { AgentHandoffsApiService } from '../services/agent-handoffs-api.service';
+import { AgentMessageEventsService } from '../services/agent-message-events.service';
+import { AgentMessagesService } from '../services/agent-messages.service';
+import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
 import { AgentTasksApiService } from '../services/agent-tasks-api.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
+import { EnvironmentProgressService } from '../services/environment-progress.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 import { WorkspaceChangeNotifierService } from '../services/workspace-change-notifier.service';
-import { EnvironmentProgressService } from '../services/environment-progress.service';
 import type {
   AgentContextAccessMode,
   AgentContextControllerRequest,
@@ -82,8 +82,8 @@ import type {
   AgentContextTicketRecord,
 } from '../types/agent-context.types';
 import { ContextInjectionPayload } from '../types/context-injection.types';
-import { DEFAULT_AGENT_WORKSPACE_ROOT, normalizeWorkspaceRoot } from '../utils/agent-file-path.utils';
 import { deriveAgentContextItems } from '../utils/agent-context-items.utils';
+import { DEFAULT_AGENT_WORKSPACE_ROOT, normalizeWorkspaceRoot } from '../utils/agent-file-path.utils';
 import { PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX } from '../utils/chat-enhancement-prompt.utils';
 import { finalizeStreamingTranscriptParts } from '../utils/materialize-streaming-deltas-for-transcript';
 import { PROMPT_TICKET_BODY_RESUME_SESSION_SUFFIX } from '../utils/ticket-body-prompt.utils';
@@ -303,12 +303,10 @@ interface RestoreChatHistoryResult {
 
 const DEFAULT_RESTORE_CHAT_LIMIT = 20;
 const MAX_RESTORE_CHAT_LIMIT = 50;
-
 /** Deployment controller ops that change something (sent to one controller socket only, never retried). */
 const DEPLOYMENT_MUTATION_OPS: ReadonlySet<AgentDeploymentControllerRequest['op']> = new Set<
   AgentDeploymentControllerRequest['op']
 >(['trigger', 'cancelRun', 'createWorkflow', 'updateWorkflow', 'deleteWorkflow', 'syncWorkflow']);
-
 // Helper functions to create standardized responses
 const createSuccessResponse = <T>(data: T): SuccessResponse<T> => ({
   success: true,
@@ -1702,6 +1700,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       // Check if socket was already authenticated (e.g., double login on same connection)
       const wasAlreadyAuthenticated = this.authenticatedClients.has(socket.id);
       const wasRecovered = Boolean(socket.recovered);
+
       // Store authenticated session
       this.authenticatedClients.set(socket.id, agentUuid);
 
@@ -1875,7 +1874,6 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
               until: lastCreatedAt,
             })
           : [];
-
       const oldestMessageId = chatHistory[0]?.id ?? null;
 
       socket.emit(
@@ -3249,7 +3247,6 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       }
 
       const sessionId = data.sessionId || `${socket.id}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-
       let sessions = this.terminalSessionsBySocket.get(socket.id);
 
       if (!sessions) {
@@ -3301,9 +3298,11 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
       socket.emit('terminalCreated', createSuccessResponse({ sessionId }));
       terminalCreated = true;
+
       for (const output of pendingOutput) {
         emitOutput(output);
       }
+
       this.logger.log(`Created terminal session ${sessionId} for agent ${agentUuid} on socket ${socket.id}`);
     } catch (error) {
       socket.emit('error', createErrorResponse('Error creating terminal session', 'TERMINAL_ERROR'));

@@ -134,6 +134,7 @@ export class FpcContextMenuComponent {
       if (rect.width !== width || rect.height !== height) {
         this.size.set({ width: rect.width, height: rect.height });
       }
+
       if (!element.contains(element.ownerDocument.activeElement)) {
         this.focusItem(0);
       }
@@ -213,6 +214,7 @@ export class FpcContextMenuComponent {
 
       return;
     }
+
     buttons[((index % buttons.length) + buttons.length) % buttons.length].focus();
   }
 }

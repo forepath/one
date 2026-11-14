@@ -46,8 +46,11 @@ export function fpcSeparatorKeySize(
   shrinkKeys: readonly string[],
 ): number | null {
   if (growKeys.includes(key)) return fpcClampSize(size + step, min, max);
+
   if (shrinkKeys.includes(key)) return fpcClampSize(size - step, min, max);
+
   if (key === 'Home') return min;
+
   if (key === 'End') return max;
 
   return null;

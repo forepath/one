@@ -17,6 +17,7 @@ import {
 import { classifyAgentFile } from '../utils/agent-file-type';
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
 
+import { AgentDirectoryIndexService } from './agent-directory-index.service';
 import {
   AGENT_PATH_CONTAINMENT_SCRIPT,
   AGENT_PATH_INSIDE_MARKER,
@@ -24,7 +25,6 @@ import {
   AGENT_SYSTEM_FS_SCRIPT,
 } from './agent-file-system.scripts';
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
-import { AgentDirectoryIndexService } from './agent-directory-index.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
 import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';

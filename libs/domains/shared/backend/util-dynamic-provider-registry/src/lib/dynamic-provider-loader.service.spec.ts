@@ -1,8 +1,9 @@
-import { Test } from '@nestjs/testing';
 import { join } from 'node:path';
 
-import { ProviderLoadTargetError } from './resolve-provider-load-target';
+import { Test } from '@nestjs/testing';
+
 import { DynamicProviderLoaderService } from './dynamic-provider-loader.service';
+import { ProviderLoadTargetError } from './resolve-provider-load-target';
 import { DYNAMIC_PROVIDERS_FAIL_FAST_ENV } from './types';
 
 const runtimeFixtureAppRoot = join(__dirname, '../test-fixtures/app-root-fixture');
@@ -26,7 +27,6 @@ describe('DynamicProviderLoaderService', () => {
       providers: [DynamicProviderLoaderService],
     }).compile();
     const loader = moduleRef.get(DynamicProviderLoaderService);
-
     const instances = await loader.loadInstances<{ getType(): string }>('DYNAMIC_TEST_PROVIDERS', 'optional', {
       appRoot: runtimeFixtureAppRoot,
     });
@@ -42,7 +42,6 @@ describe('DynamicProviderLoaderService', () => {
       providers: [DynamicProviderLoaderService],
     }).compile();
     const loader = moduleRef.get(DynamicProviderLoaderService);
-
     const instances = await loader.loadInstances<{ getType(): string }>('DYNAMIC_TEST_PROVIDERS', 'optional', {
       appRoot: runtimeFixtureAppRoot,
       pluginPath: pluginFixtureRoot,
@@ -59,7 +58,6 @@ describe('DynamicProviderLoaderService', () => {
       providers: [DynamicProviderLoaderService],
     }).compile();
     const loader = moduleRef.get(DynamicProviderLoaderService);
-
     const instances = await loader.loadInstances<{ getType(): string }>('DYNAMIC_TEST_PROVIDERS', 'optional', {
       appRoot: runtimeFixtureAppRoot,
       pluginPath: pluginFixtureRoot,
@@ -76,7 +74,6 @@ describe('DynamicProviderLoaderService', () => {
       providers: [DynamicProviderLoaderService],
     }).compile();
     const loader = moduleRef.get(DynamicProviderLoaderService);
-
     const instances = await loader.loadInstances('DYNAMIC_TEST_PROVIDERS', 'optional', {
       appRoot: runtimeFixtureAppRoot,
       pluginPath: pluginFixtureRoot,
@@ -109,7 +106,6 @@ describe('DynamicProviderLoaderService', () => {
       providers: [DynamicProviderLoaderService],
     }).compile();
     const loader = moduleRef.get(DynamicProviderLoaderService);
-
     const metadata = await loader.loadMetadata('DYNAMIC_TEST_METADATA', 'optional', {
       appRoot: runtimeFixtureAppRoot,
     });

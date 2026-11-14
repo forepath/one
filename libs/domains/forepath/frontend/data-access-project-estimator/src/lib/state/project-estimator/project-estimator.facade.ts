@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 
-import type { ProjectEstimatorDebugPreset } from './project-estimator.debug';
-import { ProjectEstimatorActions } from './project-estimator.actions';
 import type { ForepathLlmMemoryProfileId } from '../../constants/forepath-llm-memory.constants';
+
+import { ProjectEstimatorActions } from './project-estimator.actions';
+import type { ProjectEstimatorDebugPreset } from './project-estimator.debug';
 import {
   selectCanSubmit,
   selectCurrentEstimate,

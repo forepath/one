@@ -1,5 +1,6 @@
-import { quoteYamlScalar } from './env.utils';
 import type { CloudInitProvisioningMode } from '../../entities/cloud-init-config.entity';
+
+import { quoteYamlScalar } from './env.utils';
 
 export type { CloudInitProvisioningMode };
 
@@ -23,7 +24,6 @@ const BUILTIN_PLACEHOLDERS: Record<string, (context: CloudInitTemplateContext) =
   CONTAINER_PORT: (context) => String(context.containerPort),
   HOST_PORT: (context) => String(context.hostPort),
 };
-
 const PLACEHOLDER_PATTERN = /\{\{([A-Z][A-Z0-9_]*)\}\}/g;
 const ENV_PLACEHOLDER_PATTERN = /\{\{env\.([A-Z][A-Z0-9_]*)\}\}/g;
 const UNRESOLVED_PLACEHOLDER_PATTERN = /\{\{[^}]+\}\}/;
@@ -61,7 +61,6 @@ export function interpolateCloudInitTemplate(
   envValueFormat: 'yaml' | 'shell' = 'yaml',
 ): string {
   const allowedEnvKeySet = new Set(allowedEnvKeys);
-
   let rendered = template.replace(PLACEHOLDER_PATTERN, (_match, name: string) => {
     const resolver = BUILTIN_PLACEHOLDERS[name];
 

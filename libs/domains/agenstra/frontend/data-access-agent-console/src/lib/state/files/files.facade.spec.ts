@@ -151,6 +151,7 @@ describe('FilesFacade', () => {
 
     it('should return active mutation paths observable', (done) => {
       const paths = new Set([filePath]);
+
       store.select.mockReturnValue(of(paths));
 
       facade.getActiveMutationPaths$(clientId, agentId).subscribe((result) => {

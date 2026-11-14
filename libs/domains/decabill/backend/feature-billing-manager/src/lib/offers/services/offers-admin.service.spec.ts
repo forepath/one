@@ -1,10 +1,11 @@
+import { BadRequestException } from '@nestjs/common';
+
+import { DeliveryTermsCode } from '../../constants/document-terms.constants';
+import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
 import { OfferLineType } from '../constants/offer-line-type.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
 
-import { BadRequestException } from '@nestjs/common';
 
-import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
-import { DeliveryTermsCode } from '../../constants/document-terms.constants';
 
 import { OffersAdminService } from './offers-admin.service';
 
@@ -68,7 +69,6 @@ describe('OffersAdminService', () => {
   const offerArchiveService = { archive: jest.fn(), getPdfBuffer: jest.fn() };
   const billingNotificationPublisher = { publishOffer: jest.fn() };
   const billingSearchIndexService = { scheduleUpsert: jest.fn() };
-
   const service = new OffersAdminService(
     offersRepository as never,
     offerLineItemsRepository as never,

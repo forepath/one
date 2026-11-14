@@ -1,6 +1,6 @@
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { readRedisConnectionConfig, readConnectionEnv } from '@forepath/shared/backend/util-queue';
 import { createKeyValueClient, type KeyValueClient } from '@forepath/shared/backend/util-redis-cache';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 
 import {
   buildUpdatesCheckJobKey,
@@ -134,6 +134,7 @@ export class UpdatesRedisStore implements OnModuleDestroy {
     try {
       do {
         const [nextCursor, keys] = await client.scan(cursor, buildUpdatesInstanceScanPattern(this.keyPrefix), 100);
+
         cursor = nextCursor;
 
         if (keys.length === 0) {

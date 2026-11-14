@@ -5,6 +5,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 
 import { FpcButtonComponent } from '../button/button.component';
 import { FpcFormControlComponent } from '../form-control/form-control.component';
+
 import { provideFpcControlSize } from './control-size';
 
 @Component({

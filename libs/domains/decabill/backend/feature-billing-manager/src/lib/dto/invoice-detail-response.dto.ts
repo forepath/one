@@ -1,5 +1,5 @@
-import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { DeliveryTermsCode } from '../constants/document-terms.constants';
+import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 
 export class InvoiceLineItemResponseDto {

@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 
-import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
 import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
+import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
 import type {
   CreateProjectMilestoneDto,
   ProjectMilestoneResponseDto,
@@ -12,10 +12,12 @@ import { ProjectMilestonesRepository } from '../repositories/project-milestones.
 import { ProjectTicketsRepository } from '../repositories/project-tickets.repository';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ensureProjectAdmin, ensureProjectReadable } from '../utils/project-access.utils';
-import { ProjectBoardRealtimeService } from './project-board-realtime.service';
-import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
-import { ProjectBoardSummaryService } from './project-board-summary.service';
 import { computeMilestoneProgressPercent } from '../utils/project-milestone-progress.utils';
+
+import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
+import { ProjectBoardRealtimeService } from './project-board-realtime.service';
+import { ProjectBoardSummaryService } from './project-board-summary.service';
+
 
 @Injectable()
 export class ProjectMilestonesService {
@@ -59,7 +61,6 @@ export class ProjectMilestonesService {
       targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
       sortOrder: dto.sortOrder ?? 0,
     });
-
     const mapped = await this.mapMilestone(milestone);
 
     this.billingNotificationPublisher.publishMilestone('milestone.created', project.userId, mapped);
@@ -95,7 +96,6 @@ export class ProjectMilestonesService {
       targetDate: dto.targetDate === undefined ? undefined : dto.targetDate ? new Date(dto.targetDate) : null,
       sortOrder: dto.sortOrder,
     });
-
     const mapped = await this.mapMilestone(updated);
 
     this.billingNotificationPublisher.publishMilestone('milestone.updated', project.userId, mapped);
@@ -123,7 +123,6 @@ export class ProjectMilestonesService {
     const updated = await this.milestonesRepository.update(milestoneId, {
       lockedAt: milestone.lockedAt ?? new Date(),
     });
-
     const mapped = await this.mapMilestone(updated);
 
     this.billingNotificationPublisher.publishMilestone('milestone.updated', project.userId, mapped);

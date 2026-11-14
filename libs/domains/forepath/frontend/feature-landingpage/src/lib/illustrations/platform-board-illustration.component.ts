@@ -64,9 +64,7 @@ interface Point {
 const NODE_HEIGHT = 64;
 const BOARD_WIDTH = 1200;
 const BOARD_HEIGHT = 664;
-
 const PHASES = ['Advise', 'Build', 'Operate', 'Extend'];
-
 // Everything the cursors touch sits in the left half: in the hero the board runs off the right edge.
 const NODES: readonly BoardNode[] = [
   {
@@ -196,7 +194,6 @@ const NODES: readonly BoardNode[] = [
     muted: true,
   },
 ];
-
 const EDGES: readonly BoardEdge[] = [
   { from: 'users', to: 'gateway', show: 'always', traffic: true },
   { from: 'gateway', to: 'monolith', show: 'monolith' },
@@ -214,7 +211,6 @@ const EDGES: readonly BoardEdge[] = [
   { from: 'backups', to: 'region', show: 'always', dashed: true },
   { from: 'database', to: 'oncall', show: 'always', dashed: true },
 ];
-
 /** Cursor tip positions on the board. */
 const TARGETS: Record<CursorTarget | 'teamRest', Point> = {
   rest: { x: 300, y: 590 },
@@ -226,7 +222,6 @@ const TARGETS: Record<CursorTarget | 'teamRest', Point> = {
   observability: { x: 640, y: 184 },
   agents: { x: 640, y: 484 },
 };
-
 const INITIAL: BoardState = {
   phase: 0,
   approved: false,
@@ -238,7 +233,6 @@ const INITIAL: BoardState = {
   click: null,
   durationMs: 1500,
 };
-
 /**
  * The loop: ForePath proposes splitting the monolith and your team approves it (Advise), the
  * services are built and go live (Build), traffic flows and is observed (Operate), and Agenstra
@@ -258,7 +252,6 @@ const FRAMES: readonly BoardState[] = buildFrames([
   { extend: true, click: 'forepath', durationMs: 1400 },
   { cursors: { forepath: 'rest', team: 'rest' }, durationMs: 2800 },
 ]);
-
 /** Shown without animation (reduced motion): the finished, operated and extended platform. */
 const STATIC_FRAME = FRAMES.length - 1;
 

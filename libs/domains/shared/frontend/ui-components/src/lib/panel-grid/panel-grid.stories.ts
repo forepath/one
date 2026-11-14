@@ -4,11 +4,11 @@ import { moduleMetadata } from '@storybook/angular';
 import { FpcPagerComponent } from '../pager/pager.component';
 import { FpcPanelComponent } from '../panel/panel.component';
 import { FpcSearchFieldComponent } from '../search-field/search-field.component';
+
 import { FpcPanelGridComponent } from './panel-grid.component';
 
 const chartPlaceholder = (label: string) =>
   `<div class="d-flex align-items-center justify-content-center text-body-secondary bg-body-tertiary" style="height: 240px">${label}</div>`;
-
 const meta: Meta<FpcPanelGridComponent> = {
   parameters: {
     docs: {

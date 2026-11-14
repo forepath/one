@@ -15,10 +15,10 @@ import {
   WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME,
 } from '../constants/workspace-graph-snapshot.constants';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
-import { AGENSTRA_CONTROLLER_QUEUE_NAME } from '../modules/agenstra-notifications.module';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
+import { AGENSTRA_CONTROLLER_QUEUE_NAME } from '../modules/agenstra-notifications.module';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { WorkspaceGraphSnapshotsRepository } from '../repositories/workspace-graph-snapshots.repository';
 import {

@@ -24,13 +24,13 @@ import {
 import { Router } from '@angular/router';
 
 import { FpcAlertComponent } from '../alert/alert.component';
-import { FpcButtonComponent } from '../button/button.component';
 import { FpcBadgeComponent } from '../badge/badge.component';
+import { FpcButtonComponent } from '../button/button.component';
 import { FpcContextMenuComponent, FpcContextMenuPosition } from '../context-menu/context-menu.component';
 import { FpcDensity, FpcDensityService } from '../density/density.service';
 import { FpcDropdownComponent } from '../dropdown/dropdown.component';
-import { FpcFilterChip } from '../filter-chips/filter-chips.component';
 import { FpcEmptyStateComponent } from '../empty-state/empty-state.component';
+import { FpcFilterChip } from '../filter-chips/filter-chips.component';
 import { FpcListToolbarComponent } from '../list-toolbar/list-toolbar.component';
 import { FpcMenuItem } from '../menu/menu.types';
 import { FPC_DEFAULT_PAGE_SIZE, FPC_PAGE_SIZES, FpcPagerComponent } from '../pager/pager.component';
@@ -42,6 +42,15 @@ import {
 } from '../scroll-overflow/scroll-overflow';
 import { FpcSearchFieldComponent } from '../search-field/search-field.component';
 import { fpcVirtualWindow } from '../tree/tree.model';
+
+import {
+  FpcTableDropPredicate,
+  FpcTableRowDropEvent,
+  fpcActiveTableDrag,
+  fpcDefaultDropPredicate,
+  fpcDropIndex,
+  fpcSetActiveTableDrag,
+} from './data-table.drag';
 import {
   FPC_DATA_TABLE_DEFAULT_LABELS,
   FPC_DATA_TABLE_LABELS,
@@ -59,14 +68,6 @@ import {
   fpcSortRows,
   fpcVisibleColumns,
 } from './data-table.model';
-import {
-  FpcTableDropPredicate,
-  FpcTableRowDropEvent,
-  fpcActiveTableDrag,
-  fpcDefaultDropPredicate,
-  fpcDropIndex,
-  fpcSetActiveTableDrag,
-} from './data-table.drag';
 
 /** Rich cell: `<ng-template fpcTableCell="status" let-row let-value="value">…</ng-template>`. */
 @Directive({ selector: 'ng-template[fpcTableCell]', standalone: true })
@@ -365,7 +366,9 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
     if (this.page() <= 1 && this.rows().length === 0) return false;
 
     if (this.page() > 1) return paging === 'client' || paging === 'server';
+
     if (paging === 'client') return this.sortedRows().length > threshold;
+
     if (paging === 'server') {
       if (this.hasNext()) return true;
 
@@ -476,6 +479,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
       const closed = collapsed.has(key);
 
       entries.push({ kind: 'group', key, label: label ? label(key) : key, count: list.length, collapsed: closed });
+
       if (!closed) for (const row of list) entries.push({ kind: 'row', row });
     }
 
@@ -530,9 +534,12 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
 
       if (this.lastNarrowKey === null || key === this.lastNarrowKey) {
         this.lastNarrowKey = key;
+
         return;
       }
+
       this.lastNarrowKey = key;
+
       if (untracked(this.page) !== 1) this.page.set(1);
     });
 
@@ -555,6 +562,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
       };
 
       if (!key || !this.persistLoaded) return;
+
       try {
         localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(state));
       } catch {
@@ -568,6 +576,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
       const loading = this.loading();
 
       if (length < this.lastLoadMoreLength) this.lastLoadMoreLength = -1;
+
       if (!loading) untracked(() => this.maybeLoadMore());
     });
 
@@ -580,12 +589,14 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
 
       observer?.disconnect();
       observer = null;
+
       if (!sentinel || !root || typeof IntersectionObserver === 'undefined') return;
 
       this.zone.runOutsideAngular(() => {
         observer = new IntersectionObserver(
           (entries) => {
             this.sentinelVisible = entries.some((entry) => entry.isIntersecting);
+
             if (this.sentinelVisible) this.zone.run(() => this.maybeLoadMore());
           },
           { root, rootMargin: '0px 0px 200px 0px' },
@@ -639,6 +650,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
 
     if (!key) {
       this.persistLoaded = true;
+
       return;
     }
 
@@ -654,8 +666,11 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
         const saved = raw ? (JSON.parse(raw) as FpcTablePersisted) : null;
 
         if (saved?.columns !== undefined && this.visibleColumns() === null) this.visibleColumns.set(saved.columns);
+
         if (saved?.sort !== undefined) this.sort.set(saved.sort);
+
         if (saved?.pageSize && this.pageSizes().includes(saved.pageSize)) this.pageSize.set(saved.pageSize);
+
         // Restored preferences are not a user change: keep the page (e.g. from the URL).
         this.lastNarrowKey = untracked(this.narrowKey);
       } catch {
@@ -691,7 +706,9 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
     const classes = [`text-${column.align ?? 'start'}`, `fpc-data-table__cell--p${column.priority ?? 2}`];
 
     if (column.type === 'state') classes.push('fpc-data-table__cell--state');
+
     if (column.type === 'state' && column.iconOnly !== false) classes.push('fpc-data-table__cell--state-icon');
+
     if (column.id === this.leadColumnId()) classes.push('fpc-data-table__cell--lead');
 
     return classes.join(' ');
@@ -718,6 +735,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
 
     if (next.has(key)) next.delete(key);
     else next.add(key);
+
     this.collapsedGroups.set(next);
   }
 
@@ -729,6 +747,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
     const sort = this.sort();
 
     if (!this.isSortable(column)) return null;
+
     if (sort?.column !== column.id) return 'none';
 
     return sort.direction === 'asc' ? 'ascending' : 'descending';
@@ -781,6 +800,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
     const sticky = new Set<HTMLElement>();
 
     if (table.classList.contains('fpc-table--sticky-first') && cells[0]) sticky.add(cells[0]);
+
     const lastCell = cells[cells.length - 1];
 
     if (lastCell?.classList.contains('fpc-data-table__more')) sticky.add(lastCell);
@@ -819,6 +839,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
     const target = event.target as HTMLElement;
 
     if (target.closest('input, button, a, [fpcTableStop]')) return;
+
     if (fpcNow() < this.suppressClickUntil) return;
 
     // Single selection: a click picks the row (Enter / double click pick and activate).
@@ -833,6 +854,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
 
   protected onRowDblClick(row: T, event: MouseEvent): void {
     if (!this.single()) return;
+
     if ((event.target as HTMLElement).closest('button, a, [fpcTableStop]')) return;
 
     this.toggleRow(row);
@@ -851,6 +873,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
     const link = this.linkOf(row);
 
     if (link && this.router) void this.router.navigateByUrl(link);
+
     this.rowActivate.emit(row);
   }
 
@@ -882,13 +905,16 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
       this.focusRow(event.currentTarget as HTMLElement, keys[event.key]);
     } else if (event.key === 'Enter') {
       event.preventDefault();
+
       if (this.single()) this.toggleRow(row);
+
       this.activate(row);
     } else if (event.key === ' ' && this.selectable()) {
       event.preventDefault();
       this.toggleRow(row);
     } else if (event.key === 'ContextMenu' || (event.key === 'F10' && event.shiftKey)) {
       const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+
       event.preventDefault();
       this.openMenu(row, rect.left + 24, rect.bottom);
     }
@@ -903,6 +929,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
 
   protected onMoreClick(row: T, event: MouseEvent): void {
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+
     this.openMenu(row, rect.right - 192, rect.bottom);
   }
 
@@ -938,21 +965,25 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
       source: this,
       end: () => this.endDrag(),
     });
+
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
       event.dataTransfer.setData('text/plain', id);
     }
+
     // The browser snapshots the row after this handler as the drag image: an opaque stacked card for that moment, then
     // the row in place becomes the dimmed placeholder.
     element?.classList.add('fpc-data-table__row--drag-preview');
     setTimeout(() => {
       element?.classList.remove('fpc-data-table__row--drag-preview');
+
       if (fpcActiveTableDrag()?.source === this) this.dragRowId.set(id);
     }, 0);
   }
 
   protected onRowDragEnd(): void {
     if (fpcActiveTableDrag()?.source === this) fpcSetActiveTableDrag(null);
+
     this.endDrag();
   }
 
@@ -978,7 +1009,9 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
 
     // Accepting: the default (no drop) is cancelled.
     event.preventDefault();
+
     if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+
     if (!this.dropOver()) this.dropOver.set(true);
   }
 
@@ -987,6 +1020,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
     const zone = event.currentTarget as HTMLElement | null;
 
     if (related && zone?.contains(related)) return;
+
     if (this.dropOver()) this.dropOver.set(false);
   }
 
@@ -994,6 +1028,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
     const drag = this.acceptedDrag();
 
     this.dropOver.set(false);
+
     if (!drag) return;
 
     event.preventDefault();
@@ -1066,7 +1101,9 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
     this.columnObserver.disconnect();
     this.columnObserver.observe(scroller);
     this.columnObserver.observe(body);
+
     for (const cell of cells) this.columnObserver.observe(cell);
+
     this.observedCells = cells;
     this.observedScroller = scroller;
   }
@@ -1203,6 +1240,7 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
 
     for (const row of Array.from(foot.rows)) {
       if (!row.hasAttribute('role')) row.setAttribute('role', 'row');
+
       for (const cell of Array.from(row.cells)) {
         if (!cell.hasAttribute('role')) cell.setAttribute('role', cell.tagName === 'TH' ? 'rowheader' : 'cell');
       }

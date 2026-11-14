@@ -1,5 +1,5 @@
-import type { ServiceDetailTabComponent } from '../contributors/contributor-ui.types';
 import { collectContributorTabComponents } from '../contributors/contributor-ui.registry';
+import type { ServiceDetailTabComponent } from '../contributors/contributor-ui.types';
 import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from '../contributors/first-party-contributor-ui.modules';
 
 export type { ServiceDetailTabComponent } from '../contributors/contributor-ui.types';

@@ -20,7 +20,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import {
   CreateKnowledgeNodeDto,
   KnowledgePageActivityResponseDto,
@@ -34,9 +33,9 @@ import {
   UploadKnowledgeTextDto,
   UploadKnowledgeTextResultDto,
 } from '../dto/knowledge';
-import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
 import { AgenstraAttachmentOwnerType } from '../entities/attachment.enums';
+import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import {
   KnowledgeActionType,
   KnowledgeActorType,
@@ -46,6 +45,7 @@ import {
 } from '../entities/knowledge-node.enums';
 import { KnowledgePageActivityEntity } from '../entities/knowledge-page-activity.entity';
 import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { mapKnowledgeNodeToSearchDocument } from '../search/agenstra-search-document.mapper';
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
@@ -55,7 +55,6 @@ import {
   sanitizeListSearch,
   tryAgenstraSearchIds,
 } from '../search/agenstra-search-list.util';
-
 import {
   agentContentAttribution,
   assertAgentContentWriterWorkspace,
@@ -998,7 +997,6 @@ export class KnowledgeTreeService {
 
     const siblingTitles = (byParent.get(seed.parentId ?? null) ?? []).map((row) => row.title);
     const rootTitle = this.suggestNumberedTitle(seed.title, siblingTitles);
-
     const cloneRecursively = async (
       source: KnowledgeNodeEntity,
       parentId: string | null,
@@ -1017,6 +1015,7 @@ export class KnowledgeTreeService {
 
       cloned.longSha = KnowledgeNodeEntity.deriveLongSha(cloned.id);
       const saved = await this.knowledgeNodeRepo.save(cloned);
+
       this.publishNodeEvent('knowledge_node.created', saved);
       const children = byParent.get(source.id) ?? [];
 

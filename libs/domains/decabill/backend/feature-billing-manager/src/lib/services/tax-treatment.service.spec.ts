@@ -1,6 +1,7 @@
 import { CustomerType } from '../constants/customer-type.constants';
-import { VatIdValidationStatus } from '../constants/vat-id-validation.constants';
 import { TaxMode, EinvoiceTaxCategoryCode } from '../constants/tax-mode.constants';
+import { VatIdValidationStatus } from '../constants/vat-id-validation.constants';
+
 import { TaxTreatmentService } from './tax-treatment.service';
 
 describe('TaxTreatmentService', () => {

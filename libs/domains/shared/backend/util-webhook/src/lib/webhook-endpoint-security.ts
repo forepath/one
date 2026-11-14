@@ -1,12 +1,12 @@
 import { promises as dnsPromises } from 'node:dns';
 import * as net from 'node:net';
 
+import { recordSharedCounter } from '@forepath/shared/backend/util-otel';
 import {
   isDevSelfHost,
   isPrivateOrLoopbackHost,
   isPrivateOrLoopbackIp,
 } from '@forepath/shared/shared/util-network-address';
-import { recordSharedCounter } from '@forepath/shared/backend/util-otel';
 
 export interface WebhookProductionSafetyLogger {
   error(message: string): void;

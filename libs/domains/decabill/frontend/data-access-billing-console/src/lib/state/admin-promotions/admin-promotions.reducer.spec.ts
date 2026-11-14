@@ -55,9 +55,11 @@ describe('adminPromotionsReducer', () => {
 
   it('tracks create/update/deactivate lifecycle', () => {
     const creating = adminPromotionsReducer(initialAdminPromotionsState, createAdminPromotion({ dto: {} as never }));
+
     expect(creating.creating).toBe(true);
 
     const created = adminPromotionsReducer(creating, createAdminPromotionSuccess({ promotion }));
+
     expect(created.creating).toBe(false);
     expect(created.promotions[0]).toEqual(promotion);
 
@@ -65,12 +67,14 @@ describe('adminPromotionsReducer', () => {
       created,
       updateAdminPromotionSuccess({ promotion: { ...promotion, name: 'Updated' } as never }),
     );
+
     expect(updated.promotions[0].name).toBe('Updated');
 
     const deactivated = adminPromotionsReducer(
       updated,
       deactivateAdminPromotionSuccess({ promotion: { ...promotion, isActive: false } as never }),
     );
+
     expect(deactivated.promotions[0].isActive).toBe(false);
   });
 });

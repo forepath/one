@@ -8,6 +8,12 @@ import type {
   PublicWithdrawalAddressee,
   PublicWithdrawalStep,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
+import {
+  IdentityAuthLegalLinksComponent,
+  IdentityAuthMarkStackComponent,
+  IdentityAuthMascotComponent,
+} from '@forepath/identity/frontend';
 import {
   FpcAlertComponent,
   FpcButtonComponent,
@@ -21,12 +27,6 @@ import {
   FpcSectionColumnComponent,
   FpcFormTextDirective,
 } from '@forepath/shared/frontend/ui-components';
-import {
-  IdentityAuthLegalLinksComponent,
-  IdentityAuthMarkStackComponent,
-  IdentityAuthMascotComponent,
-} from '@forepath/identity/frontend';
-import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 import type { Observable } from 'rxjs';
 
 type DetailsForm = {
@@ -36,14 +36,6 @@ type DetailsForm = {
   company: string;
   orderedOn: string;
   receivedOn: string;
-};
-
-type CodeForm = {
-  code: string;
-};
-
-type AcknowledgeForm = {
-  acknowledgeWithdrawal: boolean;
 };
 
 @Component({
@@ -129,6 +121,7 @@ export class PublicWithdrawalComponent implements OnInit {
 
     if (this.detailsForm.invalid) {
       this.markAllTouched(this.detailsForm);
+
       return;
     }
 
@@ -149,6 +142,7 @@ export class PublicWithdrawalComponent implements OnInit {
 
     if (this.codeForm.invalid) {
       this.markAllTouched(this.codeForm);
+
       return;
     }
 
@@ -168,6 +162,7 @@ export class PublicWithdrawalComponent implements OnInit {
 
     if (this.acknowledgeForm.invalid) {
       this.markAllTouched(this.acknowledgeForm);
+
       return;
     }
 

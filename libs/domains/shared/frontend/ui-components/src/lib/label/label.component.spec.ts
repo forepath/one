@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { provideFpcControlSize } from '../control-size/control-size';
 import { FpcFormFieldComponent } from '../form-field/form-field.component';
+
 import { FpcLabelComponent } from './label.component';
 
 @Component({

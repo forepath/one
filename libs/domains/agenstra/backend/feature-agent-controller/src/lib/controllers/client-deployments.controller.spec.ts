@@ -14,7 +14,6 @@ describe('ClientDeploymentsController', () => {
   let clientsRepository: { findById: jest.Mock };
   let clientUsersRepository: { findUserClientAccess: jest.Mock };
   let controller: ClientDeploymentsController;
-
   const apiKey = { apiKeyAuthenticated: true } as never;
   const member = { apiKeyAuthenticated: false, user: { id: 'user-1', roles: ['user'] } } as never;
 

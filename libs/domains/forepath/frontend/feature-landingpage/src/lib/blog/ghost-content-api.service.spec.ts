@@ -46,6 +46,7 @@ describe('GhostContentApiService', () => {
         { provide: PendingTasks, useValue: { add: pendingTasksAdd } },
       ],
     });
+
     return TestBed.inject(GhostContentApiService);
   }
 
@@ -71,6 +72,7 @@ describe('GhostContentApiService', () => {
     const meta = {
       pagination: { page: 1, limit: 12, pages: 1, total: 1, next: null, prev: null },
     };
+
     Object.assign(posts, { meta });
     browseMock.mockResolvedValue(posts);
 
@@ -94,6 +96,7 @@ describe('GhostContentApiService', () => {
 
   it('getPostBySlug reads by slug', async () => {
     const post = { id: '1', slug: 'welcome', title: 'Welcome' };
+
     readMock.mockResolvedValue(post);
 
     const service = configureService({
@@ -110,6 +113,7 @@ describe('GhostContentApiService', () => {
 
   it('registers and clears PendingTasks around browsePosts', async () => {
     const posts = [{ id: '1', slug: 'hello', title: 'Hello' }];
+
     Object.assign(posts, {
       meta: { pagination: { page: 1, limit: 12, pages: 1, total: 1, next: null, prev: null } },
     });
@@ -169,6 +173,7 @@ describe('GhostContentApiService', () => {
 
   it('falls back to null api when GhostContentAPI construction throws', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
     GhostContentAPIMock.mockImplementation(() => {
       throw new Error('invalid key');
     });

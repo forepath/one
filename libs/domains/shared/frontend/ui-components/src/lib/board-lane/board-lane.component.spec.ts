@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { FpcPanelComponent } from '../panel/panel.component';
+
 import { FpcBoardLaneComponent } from './board-lane.component';
 
 @Component({
@@ -19,6 +20,7 @@ class HostComponent {
 describe('scroll-both bodies (board lane / panel)', () => {
   it('makes the lane / panel body the scroll container in both axes on request', () => {
     const fixture = TestBed.createComponent(HostComponent);
+
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
     const laneBody = el.querySelector('.fpc-board-lane__body') as HTMLElement;
@@ -55,6 +57,7 @@ class SlotsHostComponent {
 describe('board lane slots', () => {
   it('pins the toolbar above and the footer below the body and pads the body on request', () => {
     const fixture = TestBed.createComponent(SlotsHostComponent);
+
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
     const body = el.querySelector('.fpc-board-lane__body') as HTMLElement;

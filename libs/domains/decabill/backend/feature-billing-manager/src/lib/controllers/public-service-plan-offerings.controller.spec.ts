@@ -1,14 +1,14 @@
-import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
 import { NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
 import { BillingIntervalType, ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
+import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
+import { InvoiceTaxContextService } from '../services/invoice-tax-context.service';
 import { PricingService } from '../services/pricing.service';
 import { ProviderServerTypesService } from '../services/provider-server-types.service';
 import { TaxCalculationService } from '../services/tax-calculation.service';
 import { TaxRateConfigService } from '../services/tax-rate-config.service';
-import { InvoiceTaxContextService } from '../services/invoice-tax-context.service';
 import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
 
 import { PublicServicePlanOfferingsController } from './public-service-plan-offerings.controller';
@@ -173,7 +173,6 @@ describe('PublicServicePlanOfferingsController', () => {
       ],
     }).compile();
     const localController = moduleRef.get(PublicServicePlanOfferingsController);
-
     const result = await localController.list(undefined, undefined, undefined);
 
     expect(getServerTypes).toHaveBeenCalledWith('hetzner', {});
@@ -300,7 +299,6 @@ describe('PublicServicePlanOfferingsController', () => {
         ],
       }).compile();
       const localController = moduleRef.get(PublicServicePlanOfferingsController);
-
       const result = await localController.getCheapest(undefined);
 
       expect(result.id).toBe(cheaperFrom.id);

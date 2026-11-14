@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
 
 import { FpcAccordionItemComponent } from '../accordion-item/accordion-item.component';
+
 import { FpcAccordionComponent } from './accordion.component';
 
 const meta: Meta<FpcAccordionComponent> = {

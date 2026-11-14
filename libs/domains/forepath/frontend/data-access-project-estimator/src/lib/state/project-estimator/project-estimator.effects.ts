@@ -4,18 +4,18 @@ import { Store } from '@ngrx/store';
 import { catchError, filter, from, map, of, switchMap, withLatestFrom } from 'rxjs';
 
 import { ForepathDeviceCapabilityService } from '../../services/forepath-device-capability.service';
-import { ForepathLocalLlmService } from '../../services/forepath-local-llm.service';
 import { ForepathLlmMemoryProfileService } from '../../services/forepath-llm-memory-profile.service';
-import { ForepathPricingCalculatorService } from '../../services/forepath-pricing-calculator.service';
+import { ForepathLocalLlmService } from '../../services/forepath-local-llm.service';
 import type { LocalLlmProgress } from '../../services/forepath-local-llm.service';
-import { toModelLoadErrorMessage } from '../../utils/forepath-model-assets.utils';
+import { ForepathPricingCalculatorService } from '../../services/forepath-pricing-calculator.service';
+import type { ChatMessage } from '../../types/project-estimator.types';
 import {
   buildCapabilityCheckSuccessAction,
   persistMemoryProfileSelection,
   shouldAutoRequestGpuAccess,
 } from '../../utils/forepath-estimator-capability.utils';
 import { canSwitchToMemoryProfile, getMemoryProfileById } from '../../utils/forepath-memory-profile.utils';
-import type { ChatMessage } from '../../types/project-estimator.types';
+import { toModelLoadErrorMessage } from '../../utils/forepath-model-assets.utils';
 
 import { ProjectEstimatorActions } from './project-estimator.actions';
 import { selectActiveMemoryProfileId, selectDeviceMaxMemoryProfileId } from './project-estimator.selectors';

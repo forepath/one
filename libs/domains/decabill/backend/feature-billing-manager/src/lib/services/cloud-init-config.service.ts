@@ -11,6 +11,12 @@ import { CloudInitConfigsRepository } from '../repositories/cloud-init-configs.r
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import {
+  integratedProvisioningServiceDescription,
+  integratedProvisioningServiceLabel,
+  noProvisioningOptionDescription,
+  noProvisioningOptionLabel,
+} from '../utils/cloud-init/integrated-provisioning-service';
+import {
   collectCustomCloudInitConfigIdsFromPlanDefaults,
   encodeProvisioningOptionKey,
   parsePlanProvisioningOptions,
@@ -18,28 +24,21 @@ import {
   type PlanProvisioningOption,
 } from '../utils/cloud-init/plan-provisioning-options.utils';
 import {
-  integratedProvisioningServiceDescription,
-  integratedProvisioningServiceLabel,
-  noProvisioningOptionDescription,
-  noProvisioningOptionLabel,
-} from '../utils/cloud-init/integrated-provisioning-service';
-import {
   CloudInitTemplateContext,
   interpolateCloudInitTemplate,
 } from '../utils/cloud-init/template-interpolation.utils';
-import { quoteShellLiteral, validateCloudInitWorkDir } from '../utils/cloud-init/work-dir.utils';
+import { validateCloudInitWorkDir } from '../utils/cloud-init/work-dir.utils';
 import { generateSecureRandomString, normalizeRandomDefaultLength } from '../utils/generate-secure-random.utils';
+import { resolveServiceTypeAllowedProviders } from '../utils/provider-selection.utils';
 import {
   sanitizeCloudInitServiceTabs,
   type CloudInitConfigServiceTabDefinition,
 } from '../utils/service-detail-tabs.utils';
-import { resolveServiceTypeAllowedProviders } from '../utils/provider-selection.utils';
 
 import { ProviderCatalogDispatchService } from './provider-catalog-dispatch.service';
 
 const ENV_KEY_PATTERN = /^[A-Z][A-Z0-9_]*$/;
 const SERVICE_PLAN_REFERENCE_BATCH_SIZE = 100;
-
 const SAMPLE_TEMPLATE_CONTEXT: CloudInitTemplateContext = {
   hostname: 'sample-host',
   fqdn: 'sample-host.example.com',
@@ -143,7 +142,6 @@ export class CloudInitConfigService {
   validateProvisioningPayload(payload: CloudInitProvisioningPayload): void {
     const mode = payload.provisioningMode ?? 'simple';
     const envKeys = payload.environmentVariables.map((variable) => variable.key);
-
     let workDir: string;
 
     try {

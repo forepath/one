@@ -1,3 +1,4 @@
+import { initialMetersState } from './meters.reducer';
 import {
   selectActiveMeters,
   selectMeterById,
@@ -11,7 +12,6 @@ import {
   selectMetersUpdating,
   selectSelectedMeter,
 } from './meters.selectors';
-import { initialMetersState } from './meters.reducer';
 
 describe('metersSelectors', () => {
   const activeMeter = {

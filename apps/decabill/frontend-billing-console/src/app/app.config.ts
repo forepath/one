@@ -1,13 +1,12 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withRouterConfig } from '@angular/router';
-import { getAuthInterceptor, getUsersSessionInvalidationInterceptor } from '@forepath/identity/frontend';
 import { getBillingTenantInterceptor } from '@forepath/decabill/frontend/data-access-billing-console';
 import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/decabill/frontend/util-configuration';
-import { createCookieConsentConfig } from '@forepath/shared/frontend/util-cookie-consent';
+import { getAuthInterceptor, getUsersSessionInvalidationInterceptor } from '@forepath/identity/frontend';
+import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideOidc } from '@forepath/identity/frontend';
 import { NOTIFICATION_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-notifications';
 import { UPDATES_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-updates';
-import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideOidc } from '@forepath/identity/frontend';
 import {
   provideFpcDataTableLabels,
   provideFpcListToolbarLabels,
@@ -17,6 +16,7 @@ import {
   provideFpcDensity,
   provideFpcOverlayPortal,
 } from '@forepath/shared/frontend/ui-components';
+import { createCookieConsentConfig } from '@forepath/shared/frontend/util-cookie-consent';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideNgcCookieConsent } from 'ngx-cookieconsent';

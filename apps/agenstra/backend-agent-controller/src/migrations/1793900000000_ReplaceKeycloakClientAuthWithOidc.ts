@@ -95,6 +95,7 @@ export class ReplaceKeycloakClientAuthWithOidc1793900000000 implements Migration
         [controllerRealm],
       );
     }
+
     await queryRunner.query(`ALTER TABLE "clients" DROP COLUMN "oidc_scope"`);
     await queryRunner.query(`ALTER TABLE "clients" DROP COLUMN "oidc_issuer"`);
     await queryRunner.query(`ALTER TABLE "clients" RENAME COLUMN "oidc_client_secret" TO "keycloak_client_secret"`);

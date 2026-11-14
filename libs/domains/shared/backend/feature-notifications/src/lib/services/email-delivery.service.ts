@@ -1,6 +1,6 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { EmailService, EmailTemplateRendererService, resolveEmailSubject } from '@forepath/shared/backend/util-email';
 import { recordSharedCounter, recordSharedHistogram } from '@forepath/shared/backend/util-otel';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 
 import {
   EMAIL_ATTACHMENT_RESOLVER,
@@ -47,7 +47,6 @@ export class EmailDeliveryService {
       ...(companyName ? { companyName } : {}),
       ...(companyFrom ? { companyFrom } : {}),
     };
-
     const startedAt = Date.now();
 
     try {

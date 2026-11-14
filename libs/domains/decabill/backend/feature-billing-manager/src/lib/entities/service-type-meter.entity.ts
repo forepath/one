@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 
 import type { MeterAttachmentSource } from '../constants/meter-attachment.constants';
+
 import { MeterEntity } from './meter.entity';
 import { ServiceTypeEntity } from './service-type.entity';
 

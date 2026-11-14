@@ -1,7 +1,7 @@
 import * as path from 'path';
 
-import { FILE_STORAGE_INVALID_PATH_ERROR } from './file-storage.constants';
 import { readFileStorageRoot } from './file-storage-path.config';
+import { FILE_STORAGE_INVALID_PATH_ERROR } from './file-storage.constants';
 
 /**
  * Builds a posix object key / relative path from a scope root and storage key.

@@ -200,6 +200,7 @@ export class FpcButtonComponent {
     if (this.disabled() || this.loading()) {
       event.preventDefault();
       event.stopPropagation();
+
       return;
     }
 
@@ -208,12 +209,14 @@ export class FpcButtonComponent {
     if (url) {
       this.navigateHref(url, event);
       this.clicked.emit(event);
+
       return;
     }
 
     // Host `RouterLink` listens on the host; the interactive target is the inner <button>.
     if (this.activateHostRouterLink(event)) {
       this.clicked.emit(event);
+
       return;
     }
 
@@ -263,6 +266,7 @@ export class FpcButtonComponent {
     // Prevent the host RouterLink listener from handling the bubbled click a second time.
     event.preventDefault();
     event.stopPropagation();
+
     return true;
   }
 
@@ -272,6 +276,7 @@ export class FpcButtonComponent {
     if (openInNewTab) {
       event.preventDefault();
       window.open(url, '_blank', 'noopener,noreferrer');
+
       return;
     }
 

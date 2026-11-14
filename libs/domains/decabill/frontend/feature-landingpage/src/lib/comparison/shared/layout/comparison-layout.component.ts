@@ -2,14 +2,15 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, Input, LOCALE_ID, OnInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
+import { SharedHeroMascotComponent, SharedMarkStackComponent } from '@forepath/shared/frontend/feature-landingpage';
+import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
-import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 import { PortalComparisonMatrixComponent } from '../matrix/comparison-matrix.component';
 import { PORTAL_COMPARISON_NAV_ITEMS } from '../misc/comparison-nav.items';
 import type { ComparisonPageConfig } from '../misc/comparison-page.model';
-import { SharedHeroMascotComponent, SharedMarkStackComponent } from '@forepath/shared/frontend/feature-landingpage';
+
 
 @Component({
   selector: 'framework-portal-comparison-layout',
@@ -41,6 +42,7 @@ export class PortalComparisonLayoutComponent implements OnInit {
 
   ngOnInit(): void {
     const metaTitle = formatProductMetaTitle(this.page.metaTitle, this.environment.application.productName);
+
     this.titleService.setTitle(metaTitle);
     this.destroyRef.onDestroy(
       addPageMetaTags(

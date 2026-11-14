@@ -1,8 +1,8 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { UserRole } from '@forepath/identity/backend';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
-import { ProjectMilestonesService } from './project-milestones.service';
 import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
+import { ProjectMilestonesService } from './project-milestones.service';
 
 describe('ProjectMilestonesService', () => {
   const projectsRepository = { findByIdOrThrow: jest.fn() };
@@ -19,7 +19,6 @@ describe('ProjectMilestonesService', () => {
   const billingNotificationPublisher = {
     publishMilestone: jest.fn(),
   };
-
   const adminInfo = {
     userId: 'admin-1',
     userRole: UserRole.ADMIN,
@@ -37,7 +36,6 @@ describe('ProjectMilestonesService', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
   let service: ProjectMilestonesService;
 
   beforeEach(() => {

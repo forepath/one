@@ -1,5 +1,5 @@
-import type { AgentChatHandoffLink } from './agent-chat-handoff-view';
 import { AgentChatHandoffNavigationService } from './agent-chat-handoff-navigation.service';
+import type { AgentChatHandoffLink } from './agent-chat-handoff-view';
 
 describe('AgentChatHandoffNavigationService', () => {
   it('emits normalized jump requests and drops requests without an agent', () => {

@@ -1,5 +1,7 @@
 import { spawnSync } from 'child_process';
 
+import { SSHD_HARDENING_DROP_IN_PATH } from '../../utils/cloud-init/ssh-hardening.utils';
+
 import {
   buildAgentControllerUpdateCommand,
   buildBillingCloudInitUserData,
@@ -7,7 +9,6 @@ import {
   buildMergedClientEndpointAllowedHosts,
   CloudInitConfig,
 } from './agent-controller.utils';
-import { SSHD_HARDENING_DROP_IN_PATH } from '../../utils/cloud-init/ssh-hardening.utils';
 
 describe('cloud-init.utils', () => {
   describe('buildMergedClientEndpointAllowedHosts', () => {

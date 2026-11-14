@@ -292,6 +292,7 @@ export class LayerFileTreeComponent implements OnInit {
     }
 
     const path = this.joinPath(creating.parentPath, name);
+
     this.busy.set(true);
     this.treeError.emit(null);
     this.createEntry(path, creating.type)
@@ -330,6 +331,7 @@ export class LayerFileTreeComponent implements OnInit {
 
   confirmDelete(): void {
     const paths = [...this.pendingDeletePaths()];
+
     this.deleteModalOpen.set(false);
     this.pendingDeletePaths.set([]);
 
@@ -466,6 +468,7 @@ export class LayerFileTreeComponent implements OnInit {
 
     try {
       const children = await this.listChildren(path);
+
       node.children = children.map((entry) => this.toNode(entry));
       node.expanded = true;
       node.loading = false;
@@ -497,6 +500,7 @@ export class LayerFileTreeComponent implements OnInit {
 
     try {
       const children = await this.listChildren(this.treeRoot());
+
       this.treeNodes.set(children.map((entry) => this.toNode(entry)));
     } catch (error: unknown) {
       this.treeNodes.set([]);
@@ -532,6 +536,7 @@ export class LayerFileTreeComponent implements OnInit {
 
     try {
       const children = await this.listChildren(node.path);
+
       node.children = children.map((entry) => this.toNode(entry));
     } catch (error: unknown) {
       node.expanded = false;
@@ -555,6 +560,7 @@ export class LayerFileTreeComponent implements OnInit {
 
       for (const child of children) {
         const childDest = this.joinPath(destinationPath, child.name);
+
         await this.copyPathRecursive(child.path, child.entryKind, childDest);
       }
 
@@ -577,6 +583,7 @@ export class LayerFileTreeComponent implements OnInit {
 
     for (const path of paths) {
       const parent = getParentPath(path);
+
       parents.add(parent === '.' ? this.treeRoot() : parent);
     }
 

@@ -76,7 +76,6 @@ describe('RemoteAgentsSessionService.sendChatStreaming', () => {
       await new Promise((resolve) => setImmediate(resolve));
     }
   };
-
   const assistantMessage = (chatId: string, text: string) => ({
     success: true,
     data: { kind: 'assistantMessage', chatId, payload: { text } },

@@ -14,7 +14,6 @@ describe('agenstra-search-list.util', () => {
         { id: 'a', name: 'Alpha' },
       ]),
     };
-
     const result = await hydrateEntitiesBySearchIds(repository as never, { ids: ['a', 'b'], total: 2 });
 
     expect(result?.items.map((item) => item.id)).toEqual(['a', 'b']);
@@ -22,7 +21,6 @@ describe('agenstra-search-list.util', () => {
 
   it('hydrateEntitiesBySearchIds_EmptyHitsFallsThroughToNull', async () => {
     const repository = { findBy: jest.fn() };
-
     const result = await hydrateEntitiesBySearchIds(repository as never, { ids: [], total: 0 });
 
     expect(result).toBeNull();

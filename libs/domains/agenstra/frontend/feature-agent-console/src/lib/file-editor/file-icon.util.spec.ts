@@ -1,5 +1,6 @@
-import { fileIconClassForName, fileIconNameForName } from './file-icon.util';
 import * as bootstrapIcons from 'bootstrap-icons/font/bootstrap-icons.json';
+
+import { fileIconClassForName, fileIconNameForName } from './file-icon.util';
 
 describe('fileIconClassForName', () => {
   it('maps known extensions to filetype icons', () => {

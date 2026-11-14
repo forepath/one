@@ -1,5 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
 
+import type { ForepathLlmMemoryProfileId } from '../../constants/forepath-llm-memory.constants';
 import type {
   ChatMessage,
   DeviceCapabilityStatus,
@@ -7,10 +8,9 @@ import type {
   ModelStatus,
   ProjectEstimate,
 } from '../../types/project-estimator.types';
-import type { ForepathLlmMemoryProfileId } from '../../constants/forepath-llm-memory.constants';
 
-import { buildProjectEstimatorDebugState } from './project-estimator.debug';
 import { ProjectEstimatorActions } from './project-estimator.actions';
+import { buildProjectEstimatorDebugState } from './project-estimator.debug';
 
 export interface ProjectEstimatorState {
   deviceCapability: DeviceCapabilityStatus;

@@ -1,36 +1,37 @@
 import { Injectable } from '@nestjs/common';
 
+import { isEuMemberState } from '../constants/eu-member-states.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
+import { TaxMode } from '../constants/tax-mode.constants';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoiceLineItemsRepository } from '../repositories/invoice-line-items.repository';
 import { InvoiceNumberSequencesRepository } from '../repositories/invoice-number-sequences.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-
-import { AutoBillingService } from './auto-billing.service';
-import { BillingAuditLogService } from './billing-audit-log.service';
-import { BillingDocumentTermsConfigService } from './billing-document-terms-config.service';
-import { BillingIssuerConfigService } from './billing-issuer-config.service';
-import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { mapInvoiceToSearchDocument } from '../search/billing-search-document.mapper';
 import { BillingSearchIndexService } from '../search/billing-search-index.service';
-import { getRequiredTenantId } from '../utils/tenant-query.utils';
-import { BillingEmailPublisher } from '../email/billing-email.publisher';
-import { InvoicePdfService } from './invoice-pdf.service';
-import { InvoiceTaxContextService } from './invoice-tax-context.service';
-import { OssThresholdService } from './oss-threshold.service';
-import { resolveInvoicingPeriod } from './invoicing-period.util';
-import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
-import { isEuMemberState } from '../constants/eu-member-states.constants';
-import { TaxMode } from '../constants/tax-mode.constants';
 import {
   documentTermsLayerFromFields,
   type DocumentTermsLayer,
   toDocumentTermsColumns,
 } from '../utils/document-terms.utils';
+import { getRequiredTenantId } from '../utils/tenant-query.utils';
+
+import { AutoBillingService } from './auto-billing.service';
+import { BillingAuditLogService } from './billing-audit-log.service';
+import { BillingDocumentTermsConfigService } from './billing-document-terms-config.service';
+import { BillingIssuerConfigService } from './billing-issuer-config.service';
+import { InvoicePdfService } from './invoice-pdf.service';
+import { InvoiceTaxContextService } from './invoice-tax-context.service';
+import { resolveInvoicingPeriod } from './invoicing-period.util';
+import { OssThresholdService } from './oss-threshold.service';
+import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
+
 
 export interface IssueDraftOptions {
   skipNotification?: boolean;
@@ -151,6 +152,7 @@ export class InvoiceIssuanceService {
       // Issued directly as paid (promotion covers the full amount).
       this.billingNotificationPublisher.publishInvoice('invoice.paid', issued);
     }
+
     this.billingSearchIndexService.scheduleUpsert(
       'invoices',
       mapInvoiceToSearchDocument(issued, getRequiredTenantId(), {

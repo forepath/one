@@ -1,8 +1,6 @@
 /** Allowed in BullMQ custom job IDs: `.` `-` `_` `~` (and alphanumeric). */
 const JOB_ID_SEPARATOR = '.';
-
 const ALLOWED_JOB_ID_PATTERN = /^[a-zA-Z0-9._~-]+$/;
-
 /** Replaces characters outside BullMQ's allowed jobId set. */
 const DISALLOWED_JOB_ID_CHAR = /[^a-zA-Z0-9._~-]/g;
 
@@ -48,7 +46,6 @@ export function buildJobId(namespace: string, ...parts: Array<string | number | 
       .filter((part) => part !== undefined && part !== null && String(part).length > 0)
       .map((part) => sanitizeJobIdSegment(String(part))),
   ].filter((segment) => segment.length > 0);
-
   const jobId = segments.join(JOB_ID_SEPARATOR);
 
   assertValidBullMqJobId(jobId);

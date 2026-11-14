@@ -10,7 +10,6 @@ describe('BackorderService cancel', () => {
     findByIdOrThrow: jest.fn(),
     update: jest.fn(),
   } as unknown as BackordersRepository;
-
   const service = new BackorderService(
     backordersRepository,
     {} as never,
@@ -66,7 +65,6 @@ describe('BackorderService retry guard', () => {
   const provisioningService = {
     provision: jest.fn(),
   } as unknown as never;
-
   const service = new BackorderService(
     backordersRepository,
     {} as never,
@@ -117,7 +115,6 @@ describe('BackorderService server type validation', () => {
   const serviceTypesRepository = {
     findByIdOrThrow: jest.fn(),
   } as unknown as never;
-
   const service = new BackorderService(
     backordersRepository,
     {} as never,

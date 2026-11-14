@@ -28,10 +28,8 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 import type { ClientPingResponseDto } from '../dto/client-ping-response.dto';
 import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
-import { ClientsRepository } from '../repositories/clients.repository';
-import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
-import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
+import { ClientsRepository } from '../repositories/clients.repository';
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
 import {
   matchesInMemoryListSearch,
@@ -39,12 +37,15 @@ import {
   sanitizeListSearch,
   tryAgenstraSearchIds,
 } from '../search/agenstra-search-list.util';
+import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
+import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
 import { ClientAgentMembershipService } from './client-agent-membership.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
 import { WorkspaceGraphChangeNotifierService } from './workspace-graph-change-notifier.service';
-import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
+
 
 /**
  * Service for proxying agent management requests to client endpoints.
@@ -317,7 +318,6 @@ export class ClientAgentProxyService {
    */
   async getClientAgents(clientId: string, limit = 10, offset = 0, search?: string): Promise<AgentResponseDto[]> {
     const sanitized = sanitizeListSearch(search);
-
     // Pages are cut after filtering to the workspace's agents (manager pages would mix in other workspaces' agents).
     const allOwnAgents = async () =>
       this.ownAgents(

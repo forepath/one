@@ -1,5 +1,5 @@
-import { NotFoundException } from '@nestjs/common';
 import { runWithTenantId } from '@forepath/shared/backend';
+import { NotFoundException } from '@nestjs/common';
 
 import { ProjectsRepository } from './projects.repository';
 

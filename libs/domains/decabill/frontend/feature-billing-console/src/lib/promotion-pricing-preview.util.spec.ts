@@ -160,7 +160,6 @@ describe('buildPromotionAdjustedOrderPricing', () => {
     amountNet: 10,
     currency: 'EUR',
   };
-
   const pricing: PricingPreviewResponse = {
     basePrice: 20,
     marginPercent: 0,

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
+
 import { FpcContextMenuComponent } from './context-menu.component';
 
 const meta: Meta = {

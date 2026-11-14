@@ -1,7 +1,7 @@
+import type { RequestWithUser } from '@forepath/identity/backend';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import type { RequestWithUser } from '@forepath/identity/backend';
 
 import { KnowledgeNodeEmbeddingEntity } from '../entities/knowledge-node-embedding.entity';
 import { KnowledgeRelationSourceType } from '../entities/knowledge-node.enums';

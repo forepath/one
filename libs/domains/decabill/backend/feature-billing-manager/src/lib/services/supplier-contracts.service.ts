@@ -21,7 +21,6 @@ export class SupplierContractsService {
   async getOrCreateByNumber(supplierId: string, contractNumber: string): Promise<SupplierContractResponseDto> {
     await this.supplierProfilesRepository.findByIdOrThrow(supplierId);
     const normalized = contractNumber.trim();
-
     const existing = await this.supplierContractsRepository.findBySupplierAndNumber(supplierId, normalized);
 
     if (existing) {

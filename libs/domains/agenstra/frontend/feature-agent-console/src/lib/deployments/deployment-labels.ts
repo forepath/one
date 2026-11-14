@@ -58,6 +58,7 @@ export function deploymentRunState(item: {
       return { label: deploymentRunStatusLabel('queued'), tone: 'info', icon: 'clock' };
     case 'in_progress':
       return { label: deploymentRunStatusLabel('in_progress'), tone: 'primary', icon: 'arrow-repeat' };
+
     case 'completed': {
       const label = deploymentRunConclusionLabel(item.conclusion);
 
@@ -73,6 +74,7 @@ export function deploymentRunState(item: {
           return { label, tone: 'neutral', icon: 'dash-circle' };
       }
     }
+
     default:
       return { label: deploymentRunStatusLabel(null), tone: 'neutral', icon: 'dash-circle', severity: 6 };
   }

@@ -1,3 +1,5 @@
+import { scanAgentGraphFile } from '../services/agent-graph-collector.service';
+
 import {
   anchorAgentGraphLayerAtEnvironment,
   buildAgentGraphLayers,
@@ -13,7 +15,6 @@ import {
   parseAgentGraphListing,
 } from './agent-graph-collect.utils';
 import { AgentGraphIndex } from './agent-graph-index.utils';
-import { scanAgentGraphFile } from '../services/agent-graph-collector.service';
 
 function files(contents: Record<string, string>): {
   listing: AgentGraphListedEntry[];

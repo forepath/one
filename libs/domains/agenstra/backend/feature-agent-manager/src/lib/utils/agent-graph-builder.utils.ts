@@ -64,7 +64,6 @@ const MAX_SYMBOLS_ALL = 25_000;
 const MAX_CONCEPT_LEVEL = 2;
 const MAX_FANOUT_PER_IMPORT = 5;
 const LABEL_PROPAGATION_ROUNDS = 12;
-
 const JS_EXTENSIONS = [
   '.ts',
   '.tsx',
@@ -419,6 +418,7 @@ function buildCodeLayer(
         case 'typescript':
         case 'javascript':
         case 'vue':
+
         case 'svelte': {
           if (specifier.startsWith('.')) {
             link(resolveCandidates(posix.join(directory || '.', specifier), JS_EXTENSIONS));
@@ -497,6 +497,7 @@ function buildCodeLayer(
         case 'kotlin':
         case 'scala':
         case 'php':
+
         case 'csharp': {
           const normalized = specifier.replace(/\\/g, '.');
           const exact = qualifiedSymbols.get(normalized);
@@ -580,6 +581,7 @@ function buildCodeLayer(
         case 'ruby':
         case 'c':
         case 'cpp':
+
         case 'shell': {
           if (specifier.startsWith('.')) {
             link(resolveCandidates(posix.join(directory || '.', specifier), ['.rb', '.h', '.hpp', '.sh', '.bash']));

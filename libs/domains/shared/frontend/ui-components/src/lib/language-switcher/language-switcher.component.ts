@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, model } from '@angular/core';
 
 import { FpcButtonComponent, FpcButtonSize, FpcButtonVariant } from '../button/button.component';
-import { FpcDropdownItemComponent } from '../dropdown-item/dropdown-item.component';
 import { FpcDropdownComponent, FpcDropdownDirection } from '../dropdown/dropdown.component';
+import { FpcDropdownItemComponent } from '../dropdown-item/dropdown-item.component';
 
 export interface FpcLocaleOption {
   code: string;

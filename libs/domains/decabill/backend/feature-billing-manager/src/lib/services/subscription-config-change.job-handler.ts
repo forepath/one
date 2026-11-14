@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { CONFIG_CHANGE_ERROR_CODES } from '../constants/config-change-error.constants';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import type { SubscriptionConfigChangeEntity } from '../entities/subscription-config-change.entity';
 import type { SubscriptionItemEntity } from '../entities/subscription-item.entity';
 import { SubscriptionStatus, type SubscriptionEntity } from '../entities/subscription.entity';
-import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionConfigChangesRepository } from '../repositories/subscription-config-changes.repository';
@@ -24,10 +24,8 @@ import { SubscriptionConfigChangeBillingService } from './subscription-config-ch
 const SERVER_TYPE_STEP = 'serverType';
 const ADDON_ADD_STEP_PREFIX = 'addonAdd:';
 const ADDON_REMOVE_STEP_PREFIX = 'addonRemove:';
-
 const DEFAULT_PROCESSING_TIMEOUT_MS = 15 * 60 * 1000;
 const DEFAULT_BATCH_SIZE = 100;
-
 /** Customer-facing failure text; the cause only ever reaches the log. */
 const CONFIG_CHANGE_FAILED_MESSAGE = 'Configuration change failed';
 

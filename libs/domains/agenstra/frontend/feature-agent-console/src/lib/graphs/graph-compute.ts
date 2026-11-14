@@ -234,10 +234,12 @@ export class GraphJobSlot {
       const worker = this.factory();
 
       worker.onmessage = (event: MessageEvent<GraphJobResponse>) => this.handle(event.data);
+
       worker.onerror = (event) => {
         event.preventDefault?.();
         this.handle({ kind: 'error', job: this.job, message: event.message || 'Graph worker failed' });
       };
+
       this.worker = worker;
     } catch {
       this.worker = null;

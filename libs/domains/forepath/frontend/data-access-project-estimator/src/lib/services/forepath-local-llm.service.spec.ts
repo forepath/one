@@ -2,21 +2,21 @@ import { PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import {
+  FOREPATH_ESTIMATE_LLM_TEMPERATURE,
+  FOREPATH_ESTIMATE_LLM_TOP_P,
+} from '../constants/forepath-estimate-llm.constants';
+import {
   FOREPATH_LLM_MEMORY_PROFILE_BALANCED,
   FOREPATH_LLM_MEMORY_PROFILE_LITE,
   FOREPATH_LOCAL_LLM_MODEL_ID_STANDARD,
 } from '../constants/forepath-llm-memory.constants';
-import {
-  FOREPATH_ESTIMATE_LLM_TEMPERATURE,
-  FOREPATH_ESTIMATE_LLM_TOP_P,
-} from '../constants/forepath-estimate-llm.constants';
 import { FOREPATH_PROJECT_BREAKDOWN_JSON_SCHEMA } from '../constants/forepath-project-breakdown.schema';
 import { FOREPATH_LOCAL_LLM_WORKER_FACTORY } from '../tokens/forepath-local-llm-worker.token';
 import { hashStringToSeed, normalizeProjectDescription } from '../utils/forepath-prompt-hash.utils';
 
 import { ForepathEstimateParserService } from './forepath-estimate-parser.service';
-import { ForepathLocalLlmService } from './forepath-local-llm.service';
 import { ForepathLlmMemoryProfileService } from './forepath-llm-memory-profile.service';
+import { ForepathLocalLlmService } from './forepath-local-llm.service';
 import { ForepathPricingCalculatorService } from './forepath-pricing-calculator.service';
 
 describe('ForepathLocalLlmService', () => {
@@ -29,7 +29,6 @@ describe('ForepathLocalLlmService', () => {
   let unloadMock: jest.Mock;
   const originalFetch = globalThis.fetch;
   const originalPerformance = globalThis.performance;
-
   const prebuiltRecord = {
     model: 'https://example.test/original-model',
     model_id: FOREPATH_LOCAL_LLM_MODEL_ID_STANDARD,
@@ -149,6 +148,7 @@ describe('ForepathLocalLlmService', () => {
     parser.parseModelOutput.mockReturnValue(breakdown);
 
     const longPrompt = 'scope '.repeat(5_000);
+
     await service.generateBreakdown(longPrompt);
 
     const createCall = chatCreate.mock.calls[0]?.[0] as {

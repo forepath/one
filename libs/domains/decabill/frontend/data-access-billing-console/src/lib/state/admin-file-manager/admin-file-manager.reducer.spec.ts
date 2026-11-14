@@ -24,7 +24,6 @@ describe('adminFileManagerReducer', () => {
       directoriesByPath: { 'tenant||invoices': [] },
       expandedPaths: ['', 'invoices'],
     };
-
     const next = adminFileManagerReducer(seeded, setAdminFileManagerView({ view: 'unified' }));
 
     expect(next.directoriesByPath).toEqual({});
@@ -58,7 +57,6 @@ describe('adminFileManagerReducer', () => {
       directoriesByPath: { 'tenant|default|': [], 'tenant|default|customer': [] },
       expandedPaths: ['', 'customer', 'customer/invoices'],
     };
-
     const next = adminFileManagerReducer(seeded, refreshAdminFileManager());
 
     expect(next.directoriesByPath).toEqual({});
