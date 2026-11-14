@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, forwardRef, input, model, output, signal } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { fpcFocusFromKeyboard } from '../focus-origin/focus-origin';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 export type FpcSearchFieldSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -140,6 +140,7 @@ export class FpcSearchFieldComponent implements ControlValueAccessor {
 
   protected onInput(event: Event): void {
     const next = (event.target as HTMLInputElement).value;
+
     this.value.set(next);
     this.onChange(next);
   }

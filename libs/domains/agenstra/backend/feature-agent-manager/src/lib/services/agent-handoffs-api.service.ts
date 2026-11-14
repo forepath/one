@@ -203,7 +203,6 @@ export class AgentHandoffsApiService {
         ...(model ? { model } : {}),
         resumeSessionSuffix: HANDOFF_PROFILE_RESUME_SESSION_SUFFIX,
       });
-
       // The profile is the agent's final answer: its last text part after its last tool activity. The turn's final
       // result concatenates every text of the turn (narration between explore steps included), so it is a fallback.
       let segment = '';
@@ -326,6 +325,7 @@ export class AgentHandoffsApiService {
             'ask the user to hand it off from a chat.',
         );
       }
+
       case 'ambiguous':
         throw new ConflictException(
           'Another session of yours is working at the same time, so the chat that should receive the response is ' +

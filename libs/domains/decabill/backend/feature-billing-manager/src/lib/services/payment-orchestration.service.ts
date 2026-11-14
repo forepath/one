@@ -1,26 +1,26 @@
 import { createHash } from 'crypto';
 
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { getTenantIdOrDefault, runWithTenantId } from '@forepath/shared/backend/util-http-context';
 import { incrementCounter } from '@forepath/shared/backend/util-otel/metrics';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
 import { AutoPaymentStatus, isAutoPaymentBlocking } from '../constants/auto-payment-status.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { PaymentAttemptStatus } from '../entities/payment-attempt.entity';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { PaymentAttemptsRepository } from '../repositories/payment-attempts.repository';
 import { PaymentWebhookEventsRepository } from '../repositories/payment-webhook-events.repository';
+import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 import { buildStripeCheckoutReturnUrl } from '../utils/tenant-frontend-url.utils';
 
 import { AutoBillingService } from './auto-billing.service';
 import { BillingAuditLogService } from './billing-audit-log.service';
-import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
-import { BillingEmailPublisher } from '../email/billing-email.publisher';
-import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 
 @Injectable()
 export class PaymentOrchestrationService {

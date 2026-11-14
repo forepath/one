@@ -1,11 +1,7 @@
-import { Injectable } from '@nestjs/common';
 import { isIP } from 'node:net';
 
-import {
-  CONTAINER_MANAGER_HISTORY_MAX_POINTS,
-  DOCKER_CONTAINER_ID_PATTERN,
-} from '../constants/container-manager.constants';
-import type { ContainerManagerContainersResponseDto } from '../dto/container-manager.dto';
+import { Injectable } from '@nestjs/common';
+
 import type { SubscriptionItemEntity } from '../../../entities/subscription-item.entity';
 import { ContainerStatsSamplesRepository } from '../../../repositories/container-stats-samples.repository';
 import { ContainerStatsSummariesRepository } from '../../../repositories/container-stats-summaries.repository';
@@ -13,6 +9,12 @@ import { SubscriptionAddonsRepository } from '../../../repositories/subscription
 import { SubscriptionItemsRepository } from '../../../repositories/subscription-items.repository';
 import type { ContributorJobContext } from '../../../utils/contributor-job.types';
 import { CONTAINER_MANAGER_MODULE_KEY } from '../../../utils/plan-addons.utils';
+import {
+  CONTAINER_MANAGER_HISTORY_MAX_POINTS,
+  DOCKER_CONTAINER_ID_PATTERN,
+} from '../constants/container-manager.constants';
+import type { ContainerManagerContainersResponseDto } from '../dto/container-manager.dto';
+
 import { ContainerManagerService } from './container-manager.service';
 
 const DEFAULT_SSH_CONCURRENCY = 3;
@@ -36,6 +38,7 @@ export class ContainerManagerCollectService {
     await mapWithConcurrency(eligible, parseSshConcurrency(), async (item) => {
       try {
         const snapshot = await this.containerManagerService.collectLiveContainersForItem(item);
+
         await this.persistSnapshot(item, snapshot);
       } catch (error: unknown) {
         await this.containerManagerService.notifyCollectionFailed(item.subscriptionId, item.id, error);
@@ -164,6 +167,7 @@ async function mapWithConcurrency<T>(items: T[], limit: number, worker: (item: T
     Array.from({ length: n }, async () => {
       while (next < items.length) {
         const current = next;
+
         next += 1;
         await worker(items[current]);
       }

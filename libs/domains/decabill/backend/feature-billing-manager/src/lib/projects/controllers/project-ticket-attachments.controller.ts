@@ -27,6 +27,7 @@ import {
 function contentDispositionAttachment(filename: string): string {
   const fallback = filename.replace(/[^A-Za-z0-9._-]/g, '_') || 'attachment';
   const encoded = encodeURIComponent(filename).replace(/['()]/g, escape).replace(/\*/g, '%2A');
+
   return `attachment; filename="${fallback}"; filename*=UTF-8''${encoded}`;
 }
 
@@ -78,9 +79,11 @@ export class ProjectTicketAttachmentsController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
     const result = await this.attachments.download(projectId, ticketId, attachmentId, req);
+
     res.setHeader('Content-Type', result.meta.contentType);
     res.setHeader('Content-Length', String(result.buffer.length));
     res.setHeader('Content-Disposition', contentDispositionAttachment(result.meta.fileName));
+
     return new StreamableFile(result.buffer);
   }
 }

@@ -109,7 +109,6 @@ describe('environment.token', () => {
           },
         },
       };
-
       const billingMerged = mergeEnvironmentOverrides(billingBase, billingRemoteConfig as Partial<BillingEnv>);
       const landingMerged = mergeEnvironmentOverrides(landingBase, landingRemoteConfig as Partial<LandingEnv>);
 

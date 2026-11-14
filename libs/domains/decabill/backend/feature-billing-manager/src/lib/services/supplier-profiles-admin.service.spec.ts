@@ -26,7 +26,6 @@ describe('SupplierProfilesAdminService', () => {
     publishSupplierProfileCustomDataDeleted: jest.fn(),
   };
   const datevCreditorAccountsRepository = { findByTenantAndSupplierId: jest.fn() };
-
   const service = new SupplierProfilesAdminService(
     supplierProfilesRepository as never,
     supplierProfilesService as never,
@@ -34,7 +33,6 @@ describe('SupplierProfilesAdminService', () => {
     billingNotificationPublisher as never,
     datevCreditorAccountsRepository as never,
   );
-
   const profile = {
     id: 'supplier-1',
     supplierNumber: 'SUP-000001',

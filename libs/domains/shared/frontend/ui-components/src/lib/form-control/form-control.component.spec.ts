@@ -7,6 +7,7 @@ describe('FpcFormControlComponent', () => {
     const fixture = TestBed.createComponent(FpcFormControlComponent);
 
     for (const [name, value] of Object.entries(inputs)) fixture.componentRef.setInput(name, value);
+
     fixture.detectChanges();
 
     return (fixture.nativeElement as HTMLElement).querySelector('input') as HTMLInputElement;

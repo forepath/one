@@ -20,8 +20,9 @@ import {
   viewChild,
 } from '@angular/core';
 
-import { FpcModalFooterDirective } from './modal-footer.directive';
 import { FPC_OVERLAY_PORTAL, FpcBodyPortal } from '../overlay/body-portal';
+
+import { FpcModalFooterDirective } from './modal-footer.directive';
 
 export type FpcModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'fullscreen';
 
@@ -240,10 +241,12 @@ export class FpcModalComponent implements OnDestroy {
 
       if (!el || !view || typeof view.ResizeObserver === 'undefined') {
         this.capped.set(false);
+
         return;
       }
 
       const observer = new view.ResizeObserver(() => this.capped.set(fpcModalContentAtCap(el, view)));
+
       observer.observe(el);
       onCleanup(() => observer.disconnect());
     });
@@ -308,7 +311,9 @@ export class FpcModalComponent implements OnDestroy {
   private beginOpen(): void {
     this.clearTransitionWork();
     this.rendered.set(true);
+
     if (this.portalEnabled) this.portal.attach(this.host.nativeElement);
+
     this.document.body.classList.add('modal-open');
 
     afterNextRender(
@@ -331,6 +336,7 @@ export class FpcModalComponent implements OnDestroy {
     if (!this.rendered()) {
       this.portal.restore();
       this.document.body.classList.remove('modal-open');
+
       return;
     }
 

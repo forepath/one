@@ -1,19 +1,13 @@
+import { enqueueUnitJob, buildJobId } from '@forepath/shared/backend/util-queue';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bullmq';
-import { enqueueUnitJob, buildJobId } from '@forepath/shared/backend/util-queue';
 
 import { UPDATE_CHECK_JOB_NAME, UPDATES_MODULE_OPTIONS } from '../constants/updates.constants';
-import type {
-  ApplicationNotificationEventType,
-  ReleaseSnapshot,
-  ServiceInstanceRecord,
-  UpdateCheckJobMeta,
-  UpdateCheckJobPayload,
-  UpdateCheckTriggerResult,
-} from '../interfaces/updates.interfaces';
 import type { UpdatesModuleOptions } from '../interfaces/updates-module.options';
+import type { ApplicationNotificationEventType, ReleaseSnapshot, ServiceInstanceRecord, UpdateCheckJobPayload, UpdateCheckTriggerResult } from '../interfaces/updates.interfaces';
 import { parseChangelogMarkdown, scopeChangelogEntries } from '../utils/changelog-scope.parser';
 import { getInstalledVersion, normalizeVersion, resolveUpdateState } from '../utils/version.utils';
+
 import { GitHubReleasesClient } from './github-releases.client';
 import { UpdatesRedisStore } from './updates-redis.store';
 
@@ -62,7 +56,6 @@ export class UpdateCheckService {
           : releasesNewerThanInstalled.length > 0
             ? releasesNewerThanInstalled
             : [];
-
       const changelog = changelogSourceReleases.flatMap((release) => parseChangelogMarkdown(release.body));
       const scopedChangelog = scopeChangelogEntries(changelog, this.options.productScope);
       const releaseSnapshot: ReleaseSnapshot = {

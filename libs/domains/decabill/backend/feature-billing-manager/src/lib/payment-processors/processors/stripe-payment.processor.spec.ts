@@ -21,6 +21,7 @@ jest.mock('stripe', () => ({
 }));
 
 import { STRIPE_CHECKOUT_FRAUD_PROTECTION_ENV } from '../stripe-checkout.config';
+
 import { StripePaymentProcessor } from './stripe-payment.processor';
 
 describe('StripePaymentProcessor', () => {
@@ -60,7 +61,6 @@ describe('StripePaymentProcessor', () => {
       metadata: { tenantId: 'forepath', invoiceId: 'inv-1' },
     },
   };
-
   const checkoutParams = {
     invoiceId: 'inv-1',
     amount: 99.5,

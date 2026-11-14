@@ -1,3 +1,4 @@
+import { initialSubscriptionMetersState } from './subscription-meters.reducer';
 import {
   selectSubscriptionMeterEntries,
   selectSubscriptionMeterSummaries,
@@ -10,7 +11,6 @@ import {
   selectSubscriptionMetersSubscriptionId,
   selectSubscriptionMetersUpdating,
 } from './subscription-meters.selectors';
-import { initialSubscriptionMetersState } from './subscription-meters.reducer';
 
 describe('subscriptionMetersSelectors', () => {
   const state = {

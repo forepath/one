@@ -66,14 +66,12 @@ const MOCK_ESTIMATE: ProjectEstimate = {
   confidence: 'medium',
   disclaimer: FOREPATH_ESTIMATE_DISCLAIMER,
 };
-
 const MOCK_USER_MESSAGE: ChatMessage = {
   id: 'debug-user-1',
   role: 'user',
   content: 'We need a customer portal, API integration, and managed hosting support for 3 months.',
   timestamp: '2026-07-02T10:00:00.000Z',
 };
-
 const MOCK_ASSISTANT_MESSAGE: ChatMessage = {
   id: 'debug-assistant-1',
   role: 'assistant',

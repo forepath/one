@@ -1,7 +1,7 @@
 import { DATEV_BOOKING_ROW_FIELD_COUNT } from '../constants/datev-export.constants';
 
-import { DatevExtfCsvService } from './datev-extf-csv.service';
 import type { DatevTenantExportConfig } from './datev-export-config.service';
+import { DatevExtfCsvService } from './datev-extf-csv.service';
 
 describe('DatevExtfCsvService', () => {
   const service = new DatevExtfCsvService();
@@ -38,6 +38,7 @@ describe('DatevExtfCsvService', () => {
 
   it('builds Buchungsstapel CSV starting with EXTF header', () => {
     const bookingRow = Array.from({ length: DATEV_BOOKING_ROW_FIELD_COUNT }, () => '');
+
     bookingRow[0] = '119,00';
     bookingRow[1] = 'S';
 
@@ -48,7 +49,6 @@ describe('DatevExtfCsvService', () => {
       batchLabel: '2026-01',
       bookingRows: [bookingRow],
     });
-
     const text = csv.toString('latin1');
 
     expect(text.startsWith('EXTF;700;21;Buchungsstapel')).toBe(true);
@@ -58,6 +58,7 @@ describe('DatevExtfCsvService', () => {
 
   it('builds debtor batch CSV with format 16 header', () => {
     const debtorRow = Array.from({ length: 243 }, () => '');
+
     debtorRow[0] = '10001';
     debtorRow[1] = 'Acme GmbH';
 
@@ -65,7 +66,6 @@ describe('DatevExtfCsvService', () => {
       config,
       debtorRows: [debtorRow],
     });
-
     const text = csv.toString('latin1');
 
     expect(text.startsWith('EXTF;700;16;Debitoren/Kreditoren')).toBe(true);

@@ -21,6 +21,7 @@ describe('auto-payment-status.constants', () => {
 
   it('defaults pending safety delay to 15 minutes', () => {
     const previous = process.env.BILLING_AUTO_PAYMENT_PENDING_SAFETY_DELAY_MS;
+
     delete process.env.BILLING_AUTO_PAYMENT_PENDING_SAFETY_DELAY_MS;
 
     expect(getAutoPaymentPendingSafetyDelayMs()).toBe(900_000);

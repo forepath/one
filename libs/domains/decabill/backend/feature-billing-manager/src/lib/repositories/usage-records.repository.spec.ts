@@ -50,7 +50,6 @@ describe('UsageRecordsRepository', () => {
   it('create saves a usage record', async () => {
     const dto = { subscriptionId: 'sub-1', usageSource: 'meter' };
     const created = { id: 'usage-1', ...dto };
-
     const mockRepository = {
       create: jest.fn().mockReturnValue(created),
       save: jest.fn().mockResolvedValue(created),
@@ -66,6 +65,7 @@ describe('UsageRecordsRepository', () => {
   it('findLatestCollectorForMeter filters by collector source and attachment', async () => {
     const usage = { id: 'usage-1', usageSource: 'collector' };
     const mockAddOrderBy = jest.fn().mockReturnThis();
+
     mockGetOne.mockResolvedValue(usage);
 
     const mockRepository = {
@@ -98,7 +98,6 @@ describe('UsageRecordsRepository', () => {
     const mockGetMany = jest.fn().mockResolvedValue([]);
     const from = new Date('2026-01-01T00:00:00.000Z');
     const to = new Date('2026-01-31T23:59:59.999Z');
-
     const mockRepository = {
       create: jest.fn(),
       save: jest.fn(),
@@ -131,7 +130,6 @@ describe('UsageRecordsRepository', () => {
       }),
     };
     const repository = new UsageRecordsRepository(mockRepository as never);
-
     const result = await runWithTenantId('default', () => repository.findMeteredForSubscriptionPage('sub-1', 25, 50));
 
     expect(mockWhere).toHaveBeenCalledWith('usage.subscription_id = :subscriptionId', { subscriptionId: 'sub-1' });

@@ -43,7 +43,6 @@ describe('SubscriptionTeardownService', () => {
   const addonLifecycleService = {
     teardownForSubscription: jest.fn().mockResolvedValue(undefined),
   };
-
   const service = new SubscriptionTeardownService(
     subscriptionsRepository as never,
     subscriptionItemsRepository as never,

@@ -22,7 +22,6 @@ describe('KnowledgeTreeClipboardService', () => {
     duplicateNode: jest.Mock;
     updateNode: jest.Mock;
   };
-
   const sampleNode = (overrides: Partial<KnowledgeNodeDto> = {}): KnowledgeNodeDto => ({
     id: 'node-1',
     shas: { short: 'abc1234', long: 'abc1234long' },

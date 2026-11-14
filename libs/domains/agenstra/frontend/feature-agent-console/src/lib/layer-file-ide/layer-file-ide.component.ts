@@ -25,6 +25,7 @@ import { Observable, Subject, of } from 'rxjs';
 import { catchError, debounceTime, take } from 'rxjs/operators';
 
 import { MonacoEditorWrapperComponent } from '../file-editor/monaco-editor-wrapper/monaco-editor-wrapper.component';
+
 import { LayerFileTreeComponent } from './layer-file-tree.component';
 
 /**
@@ -267,6 +268,7 @@ export class LayerFileIdeComponent implements OnInit {
 
   private bootstrap(): void {
     const raw = this.path().trim() || '.';
+
     this.bootstrapping.set(true);
     this.error.set(null);
 

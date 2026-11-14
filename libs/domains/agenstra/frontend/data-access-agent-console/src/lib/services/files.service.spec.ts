@@ -77,6 +77,7 @@ describe('FilesService', () => {
   it('forwards explicit directory refresh without bypassing the controller', () => {
     service.listDirectory(clientId, agentId, { path: 'src', refresh: true }).subscribe();
     const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files?path=src&refresh=true`);
+
     expect(req.request.method).toBe('GET');
     req.flush([]);
   });
@@ -279,7 +280,6 @@ describe('FilesService', () => {
           })
           .subscribe({ next: () => resolve(), error: reject });
       });
-
       // Drain chunk requests as they appear
       const drain = async (): Promise<void> => {
         for (let i = 0; i < 20; i++) {
@@ -329,7 +329,6 @@ describe('FilesService', () => {
       const done = new Promise<void>((resolve, reject) => {
         service.downloadFile(clientId, agentId, filePath).subscribe({ next: () => resolve(), error: reject });
       });
-
       const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/${filePath}?download=true`);
 
       expect(req.request.headers.get('Range')).toBe('bytes=0-');

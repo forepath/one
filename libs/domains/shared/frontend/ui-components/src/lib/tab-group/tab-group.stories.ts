@@ -3,6 +3,7 @@ import { moduleMetadata } from '@storybook/angular';
 import { action } from 'storybook/actions';
 
 import { FpcTabComponent } from '../tab/tab.component';
+
 import { FpcTabGroupComponent } from './tab-group.component';
 
 /** Storybook does not derive the implicit `Change` output of `model()` inputs, so it is declared here. */

@@ -2,12 +2,12 @@ import { readFileSync, statSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { resolve } from 'node:path';
 
-import type { Response } from 'express';
-
 import {
   type FetchRuntimeConfigEnv,
   fetchRuntimeConfigFromEnv,
 } from '@forepath/shared/frontend/util-runtime-config-server';
+import type { Response } from 'express';
+
 
 import {
   type CachedStaticFile,
@@ -44,7 +44,6 @@ export function injectRuntimeConfigIntoHtml(html: string, configValue: unknown):
 
   const json = escapeJsonForHtmlScript(JSON.stringify(configValue ?? {}));
   const tag = `<script type="application/json" id="${RUNTIME_CONFIG_ELEMENT_ID}">${json}</script>`;
-
   const headClose = html.match(/<\/head>/i);
 
   if (headClose && headClose.index !== undefined) {

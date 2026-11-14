@@ -45,7 +45,6 @@ describe('AgentTasksService', () => {
   let realtime: { emitTaskUpsert: jest.Mock; emitTaskRemoved: jest.Mock };
   let queue: { getJob: jest.Mock; add: jest.Mock };
   let service: AgentTasksService;
-
   const existingTask = (overrides: Partial<AgentTaskEntity> = {}): AgentTaskEntity =>
     ({
       id: taskId,
@@ -72,7 +71,6 @@ describe('AgentTasksService', () => {
       updatedAt: new Date('2026-10-21T08:00:00.000Z'),
       ...overrides,
     }) as AgentTaskEntity;
-
   const build = (withQueue = true) =>
     new AgentTasksService(
       taskRepo as unknown as Repository<AgentTaskEntity>,

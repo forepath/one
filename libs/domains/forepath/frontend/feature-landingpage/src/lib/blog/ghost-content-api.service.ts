@@ -1,6 +1,6 @@
 import { Injectable, PendingTasks, inject } from '@angular/core';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import type { ForepathLandingEnvironment } from '@forepath/forepath/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import GhostContentAPI from '@tryghost/content-api';
 import { Observable, defer, finalize, from, throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -15,11 +15,13 @@ const POST_INCLUDE = 'tags,authors';
  */
 export function buildGhostTitleSearchFilter(query: string): string | undefined {
   const trimmed = query.trim();
+
   if (!trimmed) {
     return undefined;
   }
 
   const escaped = trimmed.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
   return `title:~'${escaped}'`;
 }
 
@@ -63,6 +65,7 @@ export class GhostContentApiService {
     }
 
     const normalizedSlug = slug.trim();
+
     if (!normalizedSlug) {
       return throwError(() => new Error('Post slug is required.'));
     }
@@ -81,12 +84,14 @@ export class GhostContentApiService {
   private trackPendingTask<T>(source$: Observable<T>): Observable<T> {
     return defer(() => {
       const removeTask = this.pendingTasks.add();
+
       return source$.pipe(finalize(removeTask));
     });
   }
 
   private createApi(): ReturnType<typeof GhostContentAPI> | null {
     const blog = this.environment.blog;
+
     if (!blog?.urls.contentApi || !blog.contentApiKey) {
       return null;
     }
@@ -99,6 +104,7 @@ export class GhostContentApiService {
       });
     } catch (error) {
       console.error('Failed to create Ghost Content API instance:', error);
+
       return null;
     }
   }

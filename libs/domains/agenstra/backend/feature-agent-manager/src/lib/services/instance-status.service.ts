@@ -1,8 +1,9 @@
+import { hostname } from 'os';
+
 import type { InstanceDependencyHealth } from '@forepath/shared/backend';
 import { getInstalledVersion, resolveInstanceId, resolveServiceRole } from '@forepath/shared/backend';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { hostname } from 'os';
 import { DataSource } from 'typeorm';
 
 import { InstanceStatusResponseDto } from '../dto/instance-status-response.dto';

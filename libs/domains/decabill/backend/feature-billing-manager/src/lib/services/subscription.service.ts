@@ -1,60 +1,61 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
+import { PromotionRedemptionContext } from '../constants/promotion.constants';
 import type { SubscriptionResponseDto } from '../dto/subscription-response.dto';
 import type { WithdrawalEligibilityDto, WithdrawalResultDto } from '../dto/withdrawal-policy.dto';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { BillingIntervalType, type ServicePlanEntity } from '../entities/service-plan.entity';
 import { ProvisioningStatus } from '../entities/subscription-item.entity';
 import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
-import { PromotionRedemptionContext } from '../constants/promotion.constants';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
+import {
+  SubscriptionOrderPreparationService,
+  type PreparedPlanOrderContext,
+} from '../offers/services/subscription-order-preparation.service';
 import { BackordersRepository } from '../repositories/backorders.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionNumberSequencesRepository } from '../repositories/subscription-number-sequences.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-import { CloudInitDispatchService } from './cloud-init-dispatch.service';
+import { mapSubscriptionToSearchDocument } from '../search/billing-search-document.mapper';
+import { BillingSearchIndexService } from '../search/billing-search-index.service';
+import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
+import { convertAddonPriceToPlanPeriod } from '../utils/addon-pricing.util';
 import { normalizeCloudInitService } from '../utils/cloud-init/cloud-init-dispatch.utils';
+import { getProvisioningCredentials } from '../utils/provider-env-defaults.utils';
 import { mirrorGeographyInConfig, resolveProvisioningRegion } from '../utils/provider-location.utils';
 import { resolveItemProvider } from '../utils/provider-selection.utils';
 import { buildBackorderRequestedConfigSnapshot, resolvePeriodTotalPrice } from '../utils/server-type-billing.utils';
-import { getProvisioningCredentials } from '../utils/provider-env-defaults.utils';
 import { generateSshKeyPair } from '../utils/ssh-key.utils';
 import { mapSubscriptionItemToResponse } from '../utils/subscription-item-response.utils';
+import { getRequiredTenantId } from '../utils/tenant-query.utils';
 
-import { AddonService } from './addon.service';
 import { AddonLifecycleService } from './addon-lifecycle.service';
+import { AddonService } from './addon.service';
 import { AvailabilityService } from './availability.service';
 import { BackorderService } from './backorder.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { CancellationPolicyService } from './cancellation-policy.service';
-import { WithdrawalPolicyService } from './withdrawal-policy.service';
-import { WithdrawalRefundService } from './withdrawal-refund.service';
-import { CloudflareDnsService } from './cloudflare-dns.service';
 import { CloudInitConfigService } from './cloud-init-config.service';
+import { CloudInitDispatchService } from './cloud-init-dispatch.service';
+import { CloudflareDnsService } from './cloudflare-dns.service';
 import { CustomerProfilesService } from './customer-profiles.service';
 import { HostnameReservationService } from './hostname-reservation.service';
-import { ProviderServerTypesService } from './provider-server-types.service';
+import { InvoiceTaxContextService } from './invoice-tax-context.service';
+import { MeterBillingService } from './meter-billing.service';
 import { PricingService } from './pricing.service';
+import { PromotionRedemptionService } from './promotion-redemption.service';
 import { ProviderCatalogDispatchService } from './provider-catalog-dispatch.service';
 import { ProviderRegistryService } from './provider-registry.service';
+import { ProviderServerTypesService } from './provider-server-types.service';
 import { ProvisioningDispatchService } from './provisioning-dispatch.service';
-import { PromotionRedemptionService } from './promotion-redemption.service';
 import { SshExecutorService } from './ssh-executor.service';
-import { TaxCalculationService } from './tax-calculation.service';
-import { InvoiceTaxContextService } from './invoice-tax-context.service';
-import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
-import { mapSubscriptionToSearchDocument } from '../search/billing-search-document.mapper';
-import { BillingSearchIndexService } from '../search/billing-search-index.service';
-import { getRequiredTenantId } from '../utils/tenant-query.utils';
-import { BillingEmailPublisher } from '../email/billing-email.publisher';
-import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 import { SubscriptionPeriodChargeService } from './subscription-period-charge.service';
-import { convertAddonPriceToPlanPeriod } from '../utils/addon-pricing.util';
-import { MeterBillingService } from './meter-billing.service';
-import {
-  SubscriptionOrderPreparationService,
-  type PreparedPlanOrderContext,
-} from '../offers/services/subscription-order-preparation.service';
+import { TaxCalculationService } from './tax-calculation.service';
+import { WithdrawalPolicyService } from './withdrawal-policy.service';
+import { WithdrawalRefundService } from './withdrawal-refund.service';
+
 
 const PROVISIONING_SSH_USER = 'root';
 const PROVISIONING_SSH_PORT = 22;
@@ -176,7 +177,6 @@ export class SubscriptionService {
     const selectedAddons = prepared.selectedAddons;
     const filteredAddonConfigs = prepared.addonConfigs;
     const effectiveConfig = prepared.effectiveConfig;
-
     const schedule = this.billingScheduleService.calculateSchedule(
       plan.billingIntervalType as BillingIntervalType,
       plan.billingIntervalValue,
@@ -270,7 +270,6 @@ export class SubscriptionService {
     promotionBenefitStartsAt?: string,
   ) {
     const plan = prepared.plan;
-
     const schedule = this.billingScheduleService.calculateSchedule(
       plan.billingIntervalType as BillingIntervalType,
       plan.billingIntervalValue,
@@ -288,7 +287,6 @@ export class SubscriptionService {
       currentPeriodEnd: schedule.currentPeriodEnd,
       nextBillingAt: schedule.nextBillingAt,
     });
-
     const item = await this.subscriptionItemsRepository.create({
       subscriptionId: subscription.id,
       serviceTypeId: null,
@@ -386,7 +384,6 @@ export class SubscriptionService {
 
     const serverType = effectiveConfig.serverType as string;
     const service = normalizeCloudInitService(effectiveConfig.service as string | undefined);
-
     let customTemplate;
     let resolvedCustomEnv: Record<string, string> | undefined;
 
@@ -418,7 +415,6 @@ export class SubscriptionService {
         customTemplate,
         resolvedCustomEnv,
       });
-
       const subscriptionAddons = await this.addonLifecycleService.listForSubscription(subscription.id);
       const scripts = this.addonLifecycleService.collectInterpolatedCloudInitScripts(subscriptionAddons);
 
@@ -578,6 +574,7 @@ export class SubscriptionService {
 
       try {
         const remainingMs = Math.max(1_000, deadline - Date.now());
+
         await this.sshExecutor.waitUntilReachable(publicIp, PROVISIONING_SSH_PORT, {
           timeoutMs: Math.min(PROVISIONING_SSH_RETRY_INTERVAL_MS - 1_000, remainingMs),
         });
@@ -827,6 +824,7 @@ export class SubscriptionService {
 
     if (plan) {
       const taxContext = await this.invoiceTaxContextService.resolveForUser(subscription.userId);
+
       periodTotalPrice = await resolvePeriodTotalPrice(
         plan,
         this.pricingService,

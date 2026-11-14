@@ -8,8 +8,8 @@ import type { ContainerStatsPayload, SuccessResponse } from '../container-socket
 import { containerStatsReceived } from './stats.actions';
 import { mapContainerStatsTick$ } from './stats.effects';
 import { selectStatsByContainer } from './stats.selectors';
-import { buildContainerStatsEntry, isRedundantContainerStats } from './stats.utils';
 import type { ContainerStatsEntry } from './stats.types';
+import { buildContainerStatsEntry, isRedundantContainerStats } from './stats.utils';
 
 describe('StatsEffects / stats utils', () => {
   let store: MockStore;
@@ -49,7 +49,6 @@ describe('StatsEffects / stats utils', () => {
     },
     networks: {},
   };
-
   const createContainerStatsPayload = (
     overrides: Partial<ContainerStatsPayload> = {},
   ): SuccessResponse<ContainerStatsPayload> => ({
@@ -113,7 +112,6 @@ describe('StatsEffects / stats utils', () => {
         'agent-1',
         1,
       );
-
     const stoppedEntry = (): ContainerStatsEntry =>
       buildContainerStatsEntry(
         {

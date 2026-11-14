@@ -182,8 +182,10 @@ export async function callHandoffTool(
             : { hint: 'Your own handoff profile is empty: describe yourself with handoff_profile_update.' }),
         });
       }
+
       case AGENSTRA_HANDOFF_MCP_TOOL_NAMES.profileGet:
         return json(await client.getHandoffProfile(stringArg(args, 'targetAgentId')));
+
       case AGENSTRA_HANDOFF_MCP_TOOL_NAMES.profileUpdate: {
         if (typeof args['profile'] !== 'string') {
           return text('Provide "profile" (an empty string clears it).', true);
@@ -191,6 +193,7 @@ export async function callHandoffTool(
 
         return json(await client.updateHandoffProfile({ profile: args['profile'] }));
       }
+
       case AGENSTRA_HANDOFF_MCP_TOOL_NAMES.create: {
         const targetAgentId = stringArg(args, 'targetAgentId');
         const title = stringArg(args, 'title');
@@ -205,8 +208,10 @@ export async function callHandoffTool(
 
         return createdResult(handoff);
       }
+
       case AGENSTRA_HANDOFF_MCP_TOOL_NAMES.get:
         return json(await client.getHandoff(handoffId));
+
       case AGENSTRA_HANDOFF_MCP_TOOL_NAMES.respond: {
         const status = args['status'];
         const response = stringArg(args, 'response');
@@ -219,6 +224,7 @@ export async function callHandoffTool(
 
         return text('Response recorded. It is delivered to the requesting agent when your turn ends.');
       }
+
       default:
         return text(`Unknown tool: ${name}`, true);
     }

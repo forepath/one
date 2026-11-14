@@ -1,5 +1,5 @@
-import { getTenantIdOrDefault } from '@forepath/shared/backend';
 import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { getTenantIdOrDefault } from '@forepath/shared/backend';
 import {
   BadRequestException,
   Body,
@@ -21,10 +21,7 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 
-import { CancelSubscriptionDto } from '../dto/cancel-subscription.dto';
-import { InstantCancelSubscriptionDto } from '../dto/instant-cancel-subscription.dto';
-import { ResumeSubscriptionDto } from '../dto/resume-subscription.dto';
-import { WithdrawSubscriptionDto } from '../dto/withdraw-subscription.dto';
+import { MarkInvoicePaymentStatusDto } from '../dto/admin-billing.dto';
 import type {
   AdminBillNowDto,
   AdminBillNowResponseDto,
@@ -37,19 +34,26 @@ import type {
   PaginatedBillingAuditLogsResponseDto,
   PaginatedAdminSubscriptionsResponseDto,
 } from '../dto/admin-billing.dto';
-import { MarkInvoicePaymentStatusDto } from '../dto/admin-billing.dto';
-import type { BillingCapabilitiesResponseDto } from '../dto/admin-datev-export.dto';
 import type { AdminInvoiceListItemDto } from '../dto/admin-billing.dto';
+import type { BillingCapabilitiesResponseDto } from '../dto/admin-datev-export.dto';
+import { CancelSubscriptionDto } from '../dto/cancel-subscription.dto';
+import { type EffectiveDocumentTermsResponseDto, mapEffectiveDocumentTermsToResponse } from '../dto/document-terms.dto';
+import { InstantCancelSubscriptionDto } from '../dto/instant-cancel-subscription.dto';
 import type {
   CreateManualInvoiceDto,
   IssueManualInvoiceDto,
   ManualInvoiceDetailResponseDto,
   UpdateManualInvoiceDto,
 } from '../dto/manual-invoice.dto';
+import { ResumeSubscriptionDto } from '../dto/resume-subscription.dto';
 import { SubscriptionResponseDto } from '../dto/subscription-response.dto';
+import { TaxPreviewRequestDto } from '../dto/tax-preview.dto';
+import { WithdrawSubscriptionDto } from '../dto/withdraw-subscription.dto';
+import { InvoicesRepository } from '../repositories/invoices.repository';
 import { AdminBillNowService } from '../services/admin-bill-now.service';
 import { BillingAdminService } from '../services/billing-admin.service';
 import { BillingAuditLogService } from '../services/billing-audit-log.service';
+import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
 import { BillingStatisticsQueryService } from '../services/billing-statistics-query.service';
 import { BillingTenantService } from '../services/billing-tenant.service';
 import { DatevExportConfigService } from '../services/datev-export-config.service';
@@ -58,12 +62,8 @@ import { InvoiceService } from '../services/invoice.service';
 import { ManualInvoiceService } from '../services/manual-invoice.service';
 import { StoredFileSigningConfigService } from '../services/stored-file-signing-config.service';
 import { TaxPreviewService } from '../services/tax-preview.service';
-import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
 import { TenantsGlobalViewsConfigService } from '../services/tenants-global-views-config.service';
-import { InvoicesRepository } from '../repositories/invoices.repository';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
-import { TaxPreviewRequestDto } from '../dto/tax-preview.dto';
-import { type EffectiveDocumentTermsResponseDto, mapEffectiveDocumentTermsToResponse } from '../dto/document-terms.dto';
 
 @Controller('admin/billing')
 @UsersRoles(UserRole.ADMIN)

@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 
 import { TaxCategory } from '../constants/tax-category.constants';
 import { TaxMode } from '../constants/tax-mode.constants';
-import type { TaxTreatmentResult } from './tax-treatment.service';
 
 import { TaxRateConfigService } from './tax-rate-config.service';
+import type { TaxTreatmentResult } from './tax-treatment.service';
+
 
 export interface LineItemInput {
   description: string;
@@ -50,7 +51,6 @@ export class TaxCalculationService {
     const taxMode = treatment?.taxMode ?? TaxMode.DOMESTIC_VAT;
     const taxCountryCode = treatment?.taxCountryCode;
     const forceCharge = options?.forceChargeNonEuIssuerEuB2b === true;
-
     const lines: ComputedLineItem[] = inputs.map((input) => {
       const taxCategory = input.taxCategory ?? TaxCategory.STANDARD;
       const taxRate =

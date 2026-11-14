@@ -6,13 +6,11 @@ import { ProviderModuleRegistryService, type BillingProviderModule } from './pro
 
 describe('ContributorJobRegistryService', () => {
   const run = jest.fn().mockResolvedValue(undefined);
-
   const createProvider = (id: string, jobs?: BillingProviderModule['jobs']): BillingProviderModule => ({
     id,
     collectMeters: jest.fn().mockResolvedValue([]),
     jobs,
   });
-
   const createAddon = (key: string, jobs?: BillingAddonModule['jobs']): BillingAddonModule => ({
     key,
     displayName: key,

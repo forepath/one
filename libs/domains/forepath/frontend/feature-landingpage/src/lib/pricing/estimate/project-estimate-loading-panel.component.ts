@@ -151,6 +151,7 @@ export class ForepathProjectEstimateLoadingPanelComponent {
       if (mode === 'checking') {
         this.stopMessageRotation();
         this.rotatingMessage.set('');
+
         return;
       }
 

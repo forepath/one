@@ -55,27 +55,27 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 
-import { ClientResponseDto } from '../dto/client-response.dto';
 import { ClientPingResponseDto } from '../dto/client-ping-response.dto';
+import { ClientResponseDto } from '../dto/client-response.dto';
 import { CreateClientResponseDto } from '../dto/create-client-response.dto';
-import { CreateClientDto } from '../dto/create-client.dto';
 import { CreateClientVncSessionResponseDto } from '../dto/create-client-vnc-session-response.dto';
+import { CreateClientDto } from '../dto/create-client.dto';
 import { ProvisionServerDto } from '../dto/provision-server.dto';
 import { ProvisionedServerResponseDto } from '../dto/provisioned-server-response.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { ChatSessionMessageResponse, ClientAgentChatsProxyService } from '../services/client-agent-chats-proxy.service';
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientAgentVncProxyService } from '../services/client-agent-vnc-proxy.service';
 import { ClientIsolationService } from '../services/client-isolation.service';
-import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { ClientsService } from '../services/clients.service';
-import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
 import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
 import { OpencodeEffectiveConfigSyncService } from '../services/opencode-effective-config-sync.service';
+import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
 import { ProvisioningService } from '../services/provisioning.service';
 
 /**

@@ -34,7 +34,6 @@ import { STATUS_SOCKET_EVENTS } from './status-socket.constants';
 export { resolveStatusWebsocketUrl } from './notifications-websocket-url';
 
 const NOTIFICATION_SOUND_URL = '/audio/notification-pling.wav';
-
 let statusSocketInstance: Socket | null = null;
 let notificationAudio: HTMLAudioElement | null = null;
 let pendingActiveEnvironment: {

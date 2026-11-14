@@ -1,7 +1,7 @@
 import type { Queue } from 'bullmq';
 
-import { defaultRemoveOnComplete, defaultRemoveOnFail } from './job-retention';
 import { enqueueUnitJob } from './enqueue-unit-job';
+import { defaultRemoveOnComplete, defaultRemoveOnFail } from './job-retention';
 
 describe('enqueueUnitJob', () => {
   it('adds a unit job with a stable job id', async () => {

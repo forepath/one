@@ -1,7 +1,7 @@
 import { CLOUDFLARE_TURNSTILE_TEST_SITE_KEY } from '@forepath/shared/frontend/util-configuration';
 
-import { createAgenstraShell } from './shell';
 import type { AgenstraLandingEnvironment } from './environment.interface';
+import { createAgenstraShell } from './shell';
 
 export const environment: AgenstraLandingEnvironment = {
   ...createAgenstraShell({

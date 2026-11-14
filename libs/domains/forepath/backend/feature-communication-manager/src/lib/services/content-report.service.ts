@@ -12,6 +12,7 @@ import { ChatwootContactListItem } from '../types/chatwoot.types';
 import { resolveContactSourceId } from '../utils/chatwoot-contact-resolver.utils';
 import { formatContentReportMessage } from '../utils/content-report-message-formatter.utils';
 import { assertValidPdfFile, mapPdfValidationError, type UploadedPdfFile } from '../utils/pdf-file.utils';
+
 import { ChatwootApiError, ChatwootApiService } from './chatwoot-api.service';
 
 @Injectable()
@@ -39,7 +40,6 @@ export class ContentReportService {
       const sourceId = await this.resolveOrCreateSourceId(contact, inboxId);
       const messageContent = formatContentReportMessage(dto);
       const attachPdfToIncomingMessage = dto.reportType === 'tco' && Boolean(removalOrderPdf);
-
       const conversationId = await this.chatwootApiService.createConversation({
         source_id: sourceId,
         contact_id: contact.id,
@@ -106,6 +106,7 @@ export class ContentReportService {
       assertValidPdfFile(removalOrderPdf);
     } catch (error) {
       const code = error instanceof Error ? error.message : 'PDF_REQUIRED';
+
       throw new BadRequestException(mapPdfValidationError(code));
     }
   }
@@ -114,12 +115,12 @@ export class ContentReportService {
     const anonymous = dto.reportType === 'dsa' && Boolean(dto.csamAnonymous);
     const email = anonymous ? CONTENT_REPORT_ANONYMOUS_CONTACT_EMAIL : (dto.email ?? '').trim().toLowerCase();
     const name = anonymous ? CONTENT_REPORT_ANONYMOUS_CONTACT_NAME : (dto.name ?? '').trim();
-
     const byEmail = await this.chatwootApiService.searchContacts(email);
     const emailMatch = this.pickExactEmailMatch(byEmail, email);
 
     if (emailMatch) {
       this.recordContactResolutionPath('existing_email');
+
       return emailMatch;
     }
 
@@ -131,6 +132,7 @@ export class ContentReportService {
         channel: 'content_report',
       },
     });
+
     this.recordContactResolutionPath('new_contact');
 
     return createdContact;
@@ -147,12 +149,14 @@ export class ContentReportService {
 
     if (existingSourceId) {
       this.recordContactResolutionPath('reused_source_id');
+
       return existingSourceId;
     }
 
     this.logger.log(`Linking contact ${contact.id} to inbox ${inboxId} via contact_inboxes API`);
 
     const contactInbox = await this.chatwootApiService.createContactInbox(contact.id);
+
     this.recordContactResolutionPath('created_source_id');
 
     return contactInbox.source_id;

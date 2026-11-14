@@ -1,5 +1,5 @@
-import { workspaceSearchReducer, initialWorkspaceSearchState } from './workspace-search.reducer';
 import * as WorkspaceSearchActions from './workspace-search.actions';
+import { workspaceSearchReducer, initialWorkspaceSearchState } from './workspace-search.reducer';
 
 describe('workspaceSearchReducer', () => {
   it('stores search success hits and status', () => {

@@ -1,5 +1,11 @@
 import { createReducer, on } from '@ngrx/store';
 
+import type {
+  WebhookDeliveryResponseDto,
+  WebhookEndpointResponseDto,
+  WebhookEventTypeResponseDto,
+} from '../../types/webhook-endpoint.types';
+
 import {
   clearAdminWebhookCreatedSigningSecret,
   clearAdminWebhookDeliveries,
@@ -29,11 +35,6 @@ import {
   updateAdminWebhookFailure,
   updateAdminWebhookSuccess,
 } from './admin-webhooks.actions';
-import type {
-  WebhookDeliveryResponseDto,
-  WebhookEndpointResponseDto,
-  WebhookEventTypeResponseDto,
-} from '../../types/webhook-endpoint.types';
 
 function sortEndpoints(endpoints: WebhookEndpointResponseDto[]): WebhookEndpointResponseDto[] {
   return [...endpoints].sort((a, b) => a.name.localeCompare(b.name) || a.createdAt.localeCompare(b.createdAt));

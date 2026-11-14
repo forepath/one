@@ -250,7 +250,6 @@ describe('DockerService', () => {
         env: { OPENCODE_SERVER_PASSWORD: 'secret', EMPTY: undefined },
         volumes: [{ hostPath: '/host/a', containerPath: '/app' }],
       });
-
       const volumeName = (mockDocker as any).createVolume.mock.calls[0][0].Name;
       const createArgs = (mockDocker as any).createContainer.mock.calls[0][0];
 
@@ -1763,6 +1762,7 @@ describe('DockerService', () => {
               10,
             );
           }
+
           return mockStream;
         });
 
@@ -1779,6 +1779,7 @@ describe('DockerService', () => {
         } else if (event === 'end' || event === 'close') {
           setTimeout(() => callback(), 10);
         }
+
         return mockStream;
       });
 
@@ -1790,12 +1791,14 @@ describe('DockerService', () => {
     it('rejects a truncated frame rather than returning corrupt filesystem output', async () => {
       mockContainer.inspect.mockResolvedValue({});
       const bytes = frame(1, 'apps\n');
+
       mockStream.on = jest.fn((event: string, callback: (chunk?: Buffer) => void) => {
         if (event === 'data') {
           setTimeout(() => callback(bytes.subarray(0, bytes.length - 1)), 5);
         } else if (event === 'end') {
           setTimeout(() => callback(), 10);
         }
+
         return mockStream;
       });
 
@@ -2998,7 +3001,6 @@ describe('DockerService', () => {
         sharedNetworkContainerId: 'guard-1',
         capDrop: ['NET_ADMIN', 'NET_RAW'],
       });
-
       const args = (mockDocker as any).createContainer.mock.calls[0][0];
 
       expect(result).toBe('created-id');

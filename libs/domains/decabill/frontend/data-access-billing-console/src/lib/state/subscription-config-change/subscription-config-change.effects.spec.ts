@@ -31,7 +31,6 @@ import {
 describe('SubscriptionConfigChangeEffects', () => {
   let actions$: Actions;
   let subscriptionsService: jest.Mocked<SubscriptionsService>;
-
   const subscriptionId = 'sub-1';
   const mockEligibility: ConfigChangeEligibility = {
     canRequestChange: true,

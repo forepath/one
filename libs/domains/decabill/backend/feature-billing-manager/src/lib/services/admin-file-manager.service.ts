@@ -1,4 +1,3 @@
-import { ZipArchive } from 'archiver';
 import { PassThrough } from 'stream';
 
 import { getTenantIdOrDefault, runWithTenantId } from '@forepath/shared/backend';
@@ -17,6 +16,7 @@ import {
   PayloadTooLargeException,
 } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
+import { ZipArchive } from 'archiver';
 import { DataSource } from 'typeorm';
 
 import {
@@ -34,7 +34,6 @@ import type {
   AdminFileVerifyResponseDto,
 } from '../dto/admin-file-manager.dto';
 import type { StoredFileEntity } from '../entities/stored-file.entity';
-import { resolveAdminViewTenant } from '../utils/admin-view-tenant.util';
 import {
   buildTenantVirtualPath,
   buildUnifiedVirtualPath,
@@ -44,7 +43,9 @@ import {
   resolveScopeFromPathParts,
   structuralChildrenForPath,
 } from '../utils/admin-file-manager-path.util';
+import { resolveAdminViewTenant } from '../utils/admin-view-tenant.util';
 import { computeStoredFileContentHashes } from '../utils/stored-file-hash.util';
+
 import { BillingTenantService } from './billing-tenant.service';
 import { StoredFileRegistryService } from './stored-file-registry.service';
 import { StoredFileSigningConfigService } from './stored-file-signing-config.service';
@@ -345,7 +346,6 @@ export class AdminFileManagerService {
     const supplierSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.supplierInvoices];
     const datevSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.datevExports];
     const ticketAttachmentSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.projectTicketAttachments];
-
     const invoiceRows: Array<{
       pdf_storage_key: string | null;
       time_report_storage_key: string | null;
@@ -598,6 +598,7 @@ export class AdminFileManagerService {
       for (const name of structuralChildren) {
         const childPath = path.length > 0 ? `${path}/${name}` : name;
         const childParts = [...parts, name];
+
         directories.set(name, {
           name,
           path: childPath,
@@ -648,9 +649,11 @@ export class AdminFileManagerService {
 
       if (rest.length === 0) {
         const row = registryMap.get(this.storedFileRegistry.cacheKey(file.scope, file.storageKey));
+
         fileEntries.push(this.toFileEntryDto(file, name, row));
       } else if (!directories.has(name)) {
         const childParts = [...parts, name];
+
         directories.set(name, {
           name,
           path: path.length > 0 ? `${path}/${name}` : name,
@@ -686,6 +689,7 @@ export class AdminFileManagerService {
     }
 
     const shas = this.storedFileRegistry.toShas(row);
+
     entry.id = row.id;
     entry.shas = shas;
     entry.byteSize = row.byteSize != null ? Number(row.byteSize) : undefined;
@@ -742,7 +746,6 @@ export class AdminFileManagerService {
     const archive = new ZipArchive({ zlib: { level: 9 } });
     const stream = new PassThrough();
     const chunks: Buffer[] = [];
-
     const done = new Promise<Buffer>((resolve, reject) => {
       stream.on('data', (chunk: Buffer) => chunks.push(chunk));
       stream.on('end', () => resolve(Buffer.concat(chunks)));

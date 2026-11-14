@@ -16,7 +16,6 @@ import { publicWithdrawalAccessGuard } from './public-withdrawal-access.guard';
 describe('publicWithdrawalAccessGuard', () => {
   const subscriptionsUrl = {} as UrlTree;
   let router: { createUrlTree: jest.Mock };
-
   const run = (authentication: AuthenticationConfig) => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({

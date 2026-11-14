@@ -19,7 +19,6 @@ describe('TriggerDatevExportDto', () => {
 
   it('rejects missing year and month', async () => {
     const dto = plainToInstance(TriggerDatevExportDto, { scope: DatevExportScope.TENANT });
-
     const errors = await validate(dto);
 
     expect(errors.map((error) => error.property)).toEqual(expect.arrayContaining(['year', 'month']));
@@ -31,7 +30,6 @@ describe('TriggerDatevExportDto', () => {
       month: 13,
       scope: 'invalid',
     });
-
     const errors = await validate(dto);
 
     expect(errors.map((error) => error.property)).toEqual(expect.arrayContaining(['month', 'scope']));

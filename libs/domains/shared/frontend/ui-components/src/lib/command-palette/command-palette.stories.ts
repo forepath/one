@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
+
 import { FpcCommandPaletteComponent } from './command-palette.component';
 
 const meta: Meta = {

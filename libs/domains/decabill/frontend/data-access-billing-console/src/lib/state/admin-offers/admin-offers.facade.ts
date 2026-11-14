@@ -3,7 +3,6 @@ import { Store } from '@ngrx/store';
 import { take } from 'rxjs';
 
 import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
-
 import type { AdminOfferStatisticsParams, CreateAdminOfferDto, UpdateAdminOfferDto } from '../../types/offers.types';
 
 import {

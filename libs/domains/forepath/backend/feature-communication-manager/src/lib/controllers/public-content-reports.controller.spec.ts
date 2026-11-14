@@ -1,5 +1,6 @@
-import { PublicContentReportsController } from './public-content-reports.controller';
 import { ContentReportService } from '../services/content-report.service';
+
+import { PublicContentReportsController } from './public-content-reports.controller';
 
 describe('PublicContentReportsController', () => {
   let controller: PublicContentReportsController;

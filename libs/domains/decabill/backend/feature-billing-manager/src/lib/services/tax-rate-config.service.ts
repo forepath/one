@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
+import { normalizeVatCountryCode } from '../constants/eu-member-states.constants';
+import { EU_VAT_RATES } from '../constants/eu-vat-rates.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 import { TaxMode } from '../constants/tax-mode.constants';
-import { EU_VAT_RATES } from '../constants/eu-vat-rates.constants';
-import { normalizeVatCountryCode } from '../constants/eu-member-states.constants';
 
 export interface ResolveTaxRateParams {
   countryCode?: string | null;

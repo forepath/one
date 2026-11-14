@@ -64,6 +64,7 @@ export class CorrelationAwareSocketIoAdapter extends IoAdapter {
 
       socket.use((packet, next) => {
         const correlationId = getOrInitSocketCorrelationId(socket);
+
         runWithCorrelationId(correlationId, () => next());
       });
     });

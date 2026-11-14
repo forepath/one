@@ -54,7 +54,6 @@ export class SshExecutorService {
       const errChunks: Buffer[] = [];
       let settled = false;
       let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
-
       const settle = (fn: () => void): void => {
         if (settled) {
           return;

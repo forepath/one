@@ -46,7 +46,6 @@ describe('PromotionRedemptionService', () => {
   const auditLog = {
     log: jest.fn(),
   };
-
   const basePromotion = {
     id: 'promo-1',
     code: 'SAVE10',
@@ -56,7 +55,6 @@ describe('PromotionRedemptionService', () => {
     subscriptionEligibility: 'both',
     applicablePlanIds: null,
   };
-
   let service: PromotionRedemptionService;
 
   beforeEach(() => {
@@ -181,6 +179,7 @@ describe('PromotionRedemptionService', () => {
       benefitStartsAt: new Date('2026-01-01T00:00:00Z'),
       promotion: basePromotion,
     };
+
     promotionRedemptionsRepository.findActiveByUser.mockResolvedValue({ items: [redemption], total: 1 });
     promotionRedemptionsRepository.findByUser.mockResolvedValue({ items: [redemption], total: 1 });
 

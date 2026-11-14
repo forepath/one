@@ -5,8 +5,8 @@ import {
   type DeploymentRunSummary,
 } from '@forepath/agenstra/shared/util-opencode-config';
 
-import { ContextApiClient, ContextApiError } from './context-api.client';
 import { CONTENT_TOOL_DEFINITIONS } from './content-tools';
+import { ContextApiClient, ContextApiError } from './context-api.client';
 import { CONTEXT_TOOL_DEFINITIONS } from './context-tools';
 import { callDeploymentTool, DEPLOYMENT_TOOL_DEFINITIONS, isDeploymentToolName } from './deployment-tools';
 import { GRAPH_TOOL_DEFINITIONS } from './graph-tools';
@@ -34,7 +34,6 @@ const RUN: DeploymentRunSummary = {
   createdAt: '2026-11-08T09:00:00.000Z',
   updatedAt: '2026-11-08T09:00:00.000Z',
 };
-
 const APPLIED: AgentDeploymentActionResponse = {
   requestId: '',
   decision: 'applied',

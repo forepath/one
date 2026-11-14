@@ -2,6 +2,18 @@ import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 
 import { TaxCategory } from '../../constants/tax-category.constants';
+import type { PaginatedBillingAuditLogsResponseDto } from '../../dto/admin-billing.dto';
+import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
+import { CustomerProfilesRepository } from '../../repositories/customer-profiles.repository';
+import { mapOfferToSearchDocument } from '../../search/billing-search-document.mapper';
+import { BillingSearchIndexService } from '../../search/billing-search-index.service';
+import { BillingAuditLogService } from '../../services/billing-audit-log.service';
+import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
+import { InvoiceTaxContextService } from '../../services/invoice-tax-context.service';
+import { TaxCalculationService } from '../../services/tax-calculation.service';
+import { resolveCustomerNamesByUserId } from '../../utils/customer-display-name.util';
+import { resolvePlanTaxCategory } from '../../utils/plan-tax.utils';
+import { getRequiredTenantId } from '../../utils/tenant-query.utils';
 import { OfferFulfillmentStatus } from '../constants/offer-fulfillment-status.constants';
 import { OfferLineType } from '../constants/offer-line-type.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
@@ -16,28 +28,10 @@ import type {
   PaginatedAdminOffersResponseDto,
   UpdateAdminOfferDto,
 } from '../dto/offer.dto';
-import type { OfferEntity } from '../entities/offer.entity';
 import type { OfferLineItemEntity } from '../entities/offer-line-item.entity';
+import type { OfferEntity } from '../entities/offer.entity';
 import { OfferLineItemsRepository } from '../repositories/offer-line-items.repository';
 import { OffersRepository } from '../repositories/offers.repository';
-import type { PaginatedBillingAuditLogsResponseDto } from '../../dto/admin-billing.dto';
-import { BillingAuditLogService } from '../../services/billing-audit-log.service';
-import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
-import { mapOfferToSearchDocument } from '../../search/billing-search-document.mapper';
-import { BillingSearchIndexService } from '../../search/billing-search-index.service';
-import { getRequiredTenantId } from '../../utils/tenant-query.utils';
-import { offerCapabilityFlags } from '../utils/offer-capabilities.util';
-import { assertOfferRevocable } from '../utils/offer-mutability.util';
-
-import { OfferArchiveService } from './offer-archive.service';
-import { InvoiceTaxContextService } from '../../services/invoice-tax-context.service';
-import { TaxCalculationService } from '../../services/tax-calculation.service';
-import { CustomerProfilesRepository } from '../../repositories/customer-profiles.repository';
-import { resolveCustomerNamesByUserId } from '../../utils/customer-display-name.util';
-import { resolvePlanTaxCategory } from '../../utils/plan-tax.utils';
-import { assertOfferDeletable, assertOfferDraftEditable } from '../utils/offer-mutability.util';
-import { buildOfferDraftDocumentTerms, mapAdminOfferDocumentTerms } from '../utils/offer-document-terms.util';
-import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
 import {
   buildOfferProjectTemplatePayload,
   mapOfferLineItemToResponse,
@@ -45,7 +39,12 @@ import {
   mapOfferProjectTemplateLineToTaxInput,
   mapOfferStandardLineToTaxInput,
 } from '../utils/map-offer-line-items.util';
+import { offerCapabilityFlags } from '../utils/offer-capabilities.util';
+import { buildOfferDraftDocumentTerms, mapAdminOfferDocumentTerms } from '../utils/offer-document-terms.util';
+import { assertOfferRevocable } from '../utils/offer-mutability.util';
+import { assertOfferDeletable, assertOfferDraftEditable } from '../utils/offer-mutability.util';
 
+import { OfferArchiveService } from './offer-archive.service';
 import {
   SubscriptionOrderPreparationService,
   type PreparedPlanOrderContext,
@@ -102,6 +101,7 @@ export class OffersAdminService {
 
     const { offerData, lineEntities, preparedLines } = await this.buildDraftOffer(dto);
     const offer = await this.offersRepository.create(offerData);
+
     await this.offerLineItemsRepository.createMany(
       lineEntities.map((line) => ({
         ...line,
@@ -232,6 +232,7 @@ export class OffersAdminService {
       ...dto,
       currency: dto.currency ?? existing.currency,
     });
+
     await this.offerLineItemsRepository.deleteByOfferId(id);
     await this.offersRepository.update(id, offerData);
     await this.offerLineItemsRepository.createMany(
@@ -298,7 +299,6 @@ export class OffersAdminService {
         forceChargeNonEuIssuerEuB2b: taxContext.forceChargeNonEuIssuerEuB2b,
       },
     );
-
     const lineEntities = builtLines.map((built, index) => {
       const computed = totals.lines[index]!;
 
@@ -466,7 +466,6 @@ export class OffersAdminService {
   }
 
   private async mapDetail(offer: OfferEntity): Promise<AdminOfferDetailResponseDto> {
-    const user = await this.usersRepository.findByIdForTenant(offer.userId);
     const lines = offer.lineItems ?? (await this.offerLineItemsRepository.findByOfferId(offer.id));
 
     return {

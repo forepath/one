@@ -2,8 +2,8 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { OpenTelemetryModule as NestOtelModule } from 'nestjs-otel';
 
 import { OtelDomainMetricsBootstrap, OtelSdkBootstrap } from './otel-domain-metrics.bootstrap';
-import { OTEL_MODULE_OPTIONS, OTEL_RUNTIME_CONFIG, type OpenTelemetryModuleOptions } from './otel-module.options';
 import { OtelMetricsHttpRegistrar } from './otel-metrics-http.registrar';
+import { OTEL_MODULE_OPTIONS, OTEL_RUNTIME_CONFIG, type OpenTelemetryModuleOptions } from './otel-module.options';
 import { resolveOtelRuntimeConfig } from './otel-runtime.config';
 
 @Module({})

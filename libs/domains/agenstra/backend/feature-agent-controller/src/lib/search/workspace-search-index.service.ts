@@ -242,7 +242,6 @@ export class WorkspaceSearchIndexService {
     };
     const searchMode: WorkspaceSearchMode = mode === 'files' ? 'files' : 'full';
     const fields = searchMode === 'files' ? WORKSPACE_SEARCH_PATH_FIELDS : WORKSPACE_SEARCH_TEXT_FIELDS;
-
     const result = await this.openSearch.search({
       index: this.indexName(),
       query: query.trim(),
@@ -251,7 +250,6 @@ export class WorkspaceSearchIndexService {
       from,
       size,
     });
-
     let hits: WorkspaceSearchHitDto[] = result.hits.map((hit) => {
       const source = hit.source;
       const path = String(source['path'] ?? '');

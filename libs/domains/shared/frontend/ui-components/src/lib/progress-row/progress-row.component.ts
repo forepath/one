@@ -16,7 +16,6 @@ const STATE_VARIANT: Record<FpcProgressRowState, FpcProgressVariant> = {
   paused: 'warning',
   idle: 'secondary',
 };
-
 const STATE_TONE: Record<FpcProgressRowState, FpcBadgeTone> = {
   running: 'info',
   success: 'success',

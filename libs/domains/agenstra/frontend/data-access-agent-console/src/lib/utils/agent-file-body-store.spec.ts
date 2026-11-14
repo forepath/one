@@ -14,7 +14,6 @@ describe('AgentFileBodyStoreImpl', () => {
   it('stores and retrieves blobs', async () => {
     const key = store.buildKey('c', 'a', 'app', 'note.txt');
     const blob = new Blob(['hello'], { type: 'text/plain' });
-
     const result = await store.put(key, blob);
 
     expect(['opfs', 'cache', 'idb', 'ram']).toContain(result.backend);

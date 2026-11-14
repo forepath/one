@@ -32,6 +32,7 @@ export class PublicContentReportsController {
       fileFilter: (_req, file, callback) => {
         if (file.mimetype !== CONTENT_REPORT_PDF_MIME) {
           callback(new BadRequestException('Only application/pdf uploads are allowed') as unknown as Error, false);
+
           return;
         }
 

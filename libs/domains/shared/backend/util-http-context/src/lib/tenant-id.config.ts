@@ -11,7 +11,6 @@ export const TENANTS_SHARED_NUMBERS_ENV = 'TENANTS_SHARED_NUMBERS';
 export const SHARED_NUMBER_SCOPE = '__shared__';
 
 const MAX_TENANT_ID_LENGTH = 64;
-
 const TENANT_ID_PATTERN = /^[a-z0-9][a-z0-9_-]*$/i;
 
 /**

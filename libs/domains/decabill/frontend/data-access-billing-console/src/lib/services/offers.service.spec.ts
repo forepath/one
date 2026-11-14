@@ -10,7 +10,6 @@ describe('OffersService', () => {
   let service: OffersService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3200/api';
-
   const mockListItem: CustomerOfferListItem = {
     id: 'offer-1',
     offerNumber: 'OFF-2026-00001',
@@ -54,6 +53,7 @@ describe('OffersService', () => {
     });
 
     const req = httpMock.expectOne(`${apiUrl}/offers/summary`);
+
     expect(req.request.method).toBe('GET');
     req.flush(summary);
   });
@@ -67,6 +67,7 @@ describe('OffersService', () => {
     });
 
     const req = httpMock.expectOne(`${apiUrl}/offers/pending`);
+
     expect(req.request.params.has('search')).toBe(false);
     req.flush(page);
   });
@@ -80,6 +81,7 @@ describe('OffersService', () => {
     });
 
     const req = httpMock.expectOne((request) => request.url === `${apiUrl}/offers/pending`);
+
     expect(req.request.params.get('search')).toBe('OFF-2026');
     expect(req.request.params.get('limit')).toBe('25');
     expect(req.request.params.get('offset')).toBe('25');
@@ -88,7 +90,6 @@ describe('OffersService', () => {
 
   it('gets history offers with search param', (done) => {
     const historyItem = { ...mockListItem, status: 'accepted' as const };
-
     const page = { items: [historyItem], total: 1, limit: 25, offset: 0 };
 
     service.getHistoryOffers({ search: 'customer@example.com' }).subscribe((res) => {
@@ -97,6 +98,7 @@ describe('OffersService', () => {
     });
 
     const req = httpMock.expectOne((request) => request.url === `${apiUrl}/offers/history`);
+
     expect(req.request.params.get('search')).toBe('customer@example.com');
     req.flush(page);
   });
@@ -116,6 +118,7 @@ describe('OffersService', () => {
     });
 
     const req = httpMock.expectOne(`${apiUrl}/offers/offer-1`);
+
     req.flush(detail);
   });
 
@@ -128,6 +131,7 @@ describe('OffersService', () => {
     });
 
     const req = httpMock.expectOne(`${apiUrl}/offers/offer-1/pdf`);
+
     expect(req.request.responseType).toBe('blob');
     req.flush(blob);
   });
@@ -141,6 +145,7 @@ describe('OffersService', () => {
     });
 
     const req = httpMock.expectOne(`${apiUrl}/offers/offer-1/accept`);
+
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({});
     req.flush(accepted);
@@ -155,6 +160,7 @@ describe('OffersService', () => {
     });
 
     const req = httpMock.expectOne(`${apiUrl}/offers/offer-1/decline`);
+
     expect(req.request.method).toBe('POST');
     req.flush(declined);
   });

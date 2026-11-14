@@ -5,7 +5,6 @@ describe('MeterBillingService buildSubscriptionMeterHistory', () => {
   const planId = '22222222-2222-4222-8222-222222222222';
   const subscriptionId = '33333333-3333-4333-8333-333333333333';
   const addonId = '44444444-4444-4444-8444-444444444444';
-
   const meter = {
     id: meterId,
     key: 'api_calls',
@@ -16,14 +15,12 @@ describe('MeterBillingService buildSubscriptionMeterHistory', () => {
     defaultIncludedUsage: '0',
     isActive: true,
   };
-
   const servicePlansRepository = { findById: jest.fn() };
   const servicePlanMetersRepository = { findByPlanId: jest.fn() };
   const serviceTypeMetersRepository = { findByServiceTypeId: jest.fn() };
   const addonMetersRepository = { findByAddonIds: jest.fn() };
   const subscriptionAddonsRepository = { findBillableBySubscriptionId: jest.fn() };
   const usageRecordsRepository = { findMeteredForSubscriptionInRange: jest.fn() };
-
   const service = new MeterBillingService(
     servicePlansRepository as never,
     servicePlanMetersRepository as never,
@@ -32,7 +29,6 @@ describe('MeterBillingService buildSubscriptionMeterHistory', () => {
     subscriptionAddonsRepository as never,
     usageRecordsRepository as never,
   );
-
   const subscription = {
     id: subscriptionId,
     planId,
@@ -242,7 +238,6 @@ describe('MeterBillingService charges and summaries', () => {
   const meterId = '11111111-1111-4111-8111-111111111111';
   const planId = '22222222-2222-4222-8222-222222222222';
   const subscriptionId = '33333333-3333-4333-8333-333333333333';
-
   const meter = {
     id: meterId,
     key: 'api_calls',
@@ -253,7 +248,6 @@ describe('MeterBillingService charges and summaries', () => {
     defaultIncludedUsage: '100',
     isActive: true,
   };
-
   const servicePlansRepository = { findById: jest.fn() };
   const servicePlanMetersRepository = { findByPlanId: jest.fn() };
   const serviceTypeMetersRepository = { findByServiceTypeId: jest.fn() };
@@ -263,7 +257,6 @@ describe('MeterBillingService charges and summaries', () => {
     findMeteredForSubscription: jest.fn(),
     findMeteredForSubscriptionInRange: jest.fn(),
   };
-
   const service = new MeterBillingService(
     servicePlansRepository as never,
     servicePlanMetersRepository as never,
@@ -272,7 +265,6 @@ describe('MeterBillingService charges and summaries', () => {
     subscriptionAddonsRepository as never,
     usageRecordsRepository as never,
   );
-
   const subscription = {
     id: subscriptionId,
     planId,
@@ -280,13 +272,11 @@ describe('MeterBillingService charges and summaries', () => {
     currentPeriodStart: new Date('2026-01-01T00:00:00Z'),
     currentPeriodEnd: new Date('2026-01-31T00:00:00Z'),
   };
-
   const plan = {
     id: planId,
     serviceTypeId: null,
     billInAdvance: false,
   };
-
   const periodStart = new Date('2026-01-01T00:00:00Z');
   const periodEnd = new Date('2026-01-31T00:00:00Z');
 
@@ -359,6 +349,7 @@ describe('MeterBillingService charges and summaries', () => {
 
   it('buildMeterChargeLines bills full usage when included usage is zero', async () => {
     const zeroIncludedMeter = { ...meter, defaultIncludedUsage: '0' };
+
     servicePlanMetersRepository.findByPlanId.mockResolvedValue([
       { meterId, meter: zeroIncludedMeter, unitPriceNet: null, includedUsage: null },
     ]);

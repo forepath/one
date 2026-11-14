@@ -102,10 +102,12 @@ export class FpcModalSwap {
 
       this.stopRestore?.();
       restoreScroll(root, snapshot);
+
       if (snapshot.focus?.isConnected) snapshot.focus.focus({ preventScroll: true });
     };
 
     root.addEventListener('focusin', onFocusIn);
+
     this.stopRestore = () => {
       root.removeEventListener('focusin', onFocusIn);
       this.stopRestore = null;

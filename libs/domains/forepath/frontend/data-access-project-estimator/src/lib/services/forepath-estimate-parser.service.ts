@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 
 import { FOREPATH_SERVICE_IDS } from '../constants/forepath-service-catalog.constants';
-import { normalizeProjectBreakdown } from '../utils/forepath-breakdown-normalizer.utils';
 import type {
   ForepathRateTier,
   ForepathServiceId,
   ProjectBreakdown,
   ProjectBreakdownLineItem,
 } from '../types/project-estimator.types';
+import { normalizeProjectBreakdown } from '../utils/forepath-breakdown-normalizer.utils';
 
 const RATE_TIERS: readonly ForepathRateTier[] = ['standard', 'emergency-week', 'emergency-sunday'] as const;
 const CONFIDENCE_LEVELS = ['low', 'medium', 'high'] as const;
@@ -97,7 +97,6 @@ export class ForepathEstimateParserService {
     const parsedBillingUnits =
       billingUnits === undefined ? undefined : this.parsePositiveNumber(billingUnits, 'billingUnits');
     const parsedQuantity = quantity === undefined ? undefined : this.parsePositiveNumber(quantity, 'quantity');
-
     let parsedRateTier: ForepathRateTier | undefined;
 
     if (rateTier !== undefined) {

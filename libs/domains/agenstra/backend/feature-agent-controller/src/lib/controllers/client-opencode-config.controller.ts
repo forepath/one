@@ -1,16 +1,16 @@
 import {
+  assertNoV1RootKeys,
+  assertOverlayRespectsHeredity,
+  assertSecretsRespectLocks,
+  OpencodeConfigValidationError,
+} from '@forepath/agenstra/shared/util-opencode-config';
+import {
   ClientUsersRepository,
   RequireScopes,
   ensureWorkspaceManagementAccess,
   getUserFromRequest,
   type RequestWithUser,
 } from '@forepath/identity/backend';
-import {
-  assertNoV1RootKeys,
-  assertOverlayRespectsHeredity,
-  assertSecretsRespectLocks,
-  OpencodeConfigValidationError,
-} from '@forepath/agenstra/shared/util-opencode-config';
 import {
   BadRequestException,
   Body,
@@ -40,19 +40,19 @@ import {
 import { AgenstraNotificationPublisher, type AgentConfigLayer } from '../notifications/agenstra-notification.publisher';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentOpencodeConfigProxyService } from '../services/client-agent-opencode-config-proxy.service';
-import { OpencodeConfigService } from '../services/opencode-config.service';
 import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
+import { OpencodeConfigService } from '../services/opencode-config.service';
 import {
   hasAgentConfigChanges,
   summarizeAgentConfigChange,
   type AgentConfigLayerSnapshot,
 } from '../utils/agent-config-change.utils';
-import { assertNoCredentialKeysInConfig } from '../utils/opencode-config-credentials.utils';
 import {
   buildMcpOAuthCallbackUrl,
   readMcpOAuthCallbackSecret,
   resolveMcpOAuthPublicBaseUrl,
 } from '../utils/mcp-oauth-callback.util';
+import { assertNoCredentialKeysInConfig } from '../utils/opencode-config-credentials.utils';
 
 @Controller('clients/:id')
 export class ClientOpencodeConfigController {

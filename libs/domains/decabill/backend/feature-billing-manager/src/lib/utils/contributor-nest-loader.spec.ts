@@ -11,7 +11,6 @@ describe('loadContributorNestModulesFromEnv', () => {
       nestModule: NestOnlyModule,
       contributorKey: 'acme-ops',
     });
-
     const modules = await loadContributorNestModulesFromEnv({
       env: { DYNAMIC_ADDON_MODULES: 'acme-ops=@forepath/decabill/backend/addon-acme' } as NodeJS.ProcessEnv,
       loadModule,
@@ -25,7 +24,6 @@ describe('loadContributorNestModulesFromEnv', () => {
     const loadModule = jest.fn().mockResolvedValue({
       createProvider: () => ({ key: 'acme-ops' }),
     });
-
     const modules = await loadContributorNestModulesFromEnv({
       env: { DYNAMIC_ADDON_MODULES: 'acme-ops=@forepath/decabill/backend/addon-acme' } as NodeJS.ProcessEnv,
       loadModule,
@@ -37,7 +35,6 @@ describe('loadContributorNestModulesFromEnv', () => {
   it('skips optional package load failures', async () => {
     const loadModule = jest.fn().mockRejectedValue(new Error('missing package'));
     const logger = { warn: jest.fn() };
-
     const modules = await loadContributorNestModulesFromEnv({
       env: { DYNAMIC_ADDON_MODULES: '@forepath/decabill/backend/addon-missing' } as NodeJS.ProcessEnv,
       loadModule,

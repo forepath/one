@@ -275,47 +275,47 @@ import {
   validatePromotion$,
   redeemPromotion$,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import { buildPageTitle } from '@forepath/decabill/frontend/util-configuration';
 import { authGuard, adminGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/identity/frontend';
 import {
   createNotificationAdminRoutes,
   notificationAdminProviders,
 } from '@forepath/shared/frontend/feature-notifications';
 import { createUpdatesAdminRoutes, updatesAdminProviders } from '@forepath/shared/frontend/feature-updates';
-import { buildPageTitle } from '@forepath/decabill/frontend/util-configuration';
+import { provideFpcControlSize } from '@forepath/shared/frontend/ui-components';
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 
-import { AdminPromotionsPageComponent } from './admin-promotions-page/admin-promotions-page.component';
-import { AdminOffersPageComponent } from './admin-offers-page/admin-offers-page.component';
-import { OffersPageComponent } from './offers-page/offers-page.component';
-import { PromotionsPageComponent } from './promotions-page/promotions-page.component';
+import { AddonsPageComponent } from './addons-page/addons-page.component';
 import { AdminBillingPageComponent } from './admin-billing-page/admin-billing-page.component';
 import { AdminCustomerProfilesPageComponent } from './admin-customer-profiles-page/admin-customer-profiles-page.component';
-import { AdminSupplierProfilesPageComponent } from './admin-supplier-profiles-page/admin-supplier-profiles-page.component';
-import { AdminSubscriptionsPageComponent } from './admin-subscriptions-page/admin-subscriptions-page.component';
 import { AdminDatevExportsPageComponent } from './admin-datev-exports-page/admin-datev-exports-page.component';
 import { AdminFileManagerPageComponent } from './admin-file-manager-page/admin-file-manager-page.component';
+import { AdminOffersPageComponent } from './admin-offers-page/admin-offers-page.component';
+import { AdminProjectsPageComponent } from './admin-projects-page/admin-projects-page.component';
+import { AdminPromotionsPageComponent } from './admin-promotions-page/admin-promotions-page.component';
+import { AdminSubscriptionsPageComponent } from './admin-subscriptions-page/admin-subscriptions-page.component';
+import { AdminSupplierProfilesPageComponent } from './admin-supplier-profiles-page/admin-supplier-profiles-page.component';
+import { CloudInitConfigsPageComponent } from './cloud-init-configs-page/cloud-init-configs-page.component';
 import { BillingConsoleContainerComponent } from './container/container.component';
+import { collectContributorNgrx, collectContributorRoutes } from './contributors/contributor-ui.registry';
+import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from './contributors/first-party-contributor-ui.modules';
 import { billingAdminGuard } from './guards/billing-admin.guard';
 import { datevExportEnabledGuard } from './guards/datev-export-enabled.guard';
 import { publicWithdrawalAccessGuard } from './guards/public-withdrawal-access.guard';
 import { InvoicesComponent } from './invoices/invoices.component';
-import { OverviewComponent } from './overview/overview.component';
-import { CloudInitConfigsPageComponent } from './cloud-init-configs-page/cloud-init-configs-page.component';
-import { AddonsPageComponent } from './addons-page/addons-page.component';
 import { MetersPageComponent } from './meters-page/meters-page.component';
+import { OffersPageComponent } from './offers-page/offers-page.component';
+import { OverviewComponent } from './overview/overview.component';
+import { ProjectDetailPageComponent } from './project-detail-page/project-detail-page.component';
+import { ProjectsPageComponent } from './projects-page/projects-page.component';
+import { PromotionsPageComponent } from './promotions-page/promotions-page.component';
+import { PublicWithdrawalComponent } from './public-withdrawal/public-withdrawal.component';
+import { ServiceDetailPageComponent } from './service-detail-page/service-detail-page.component';
 import { ServicePlansPageComponent } from './service-plans-page/service-plans-page.component';
 import { ServiceTypesPageComponent } from './service-types-page/service-types-page.component';
 import { SubscriptionsComponent } from './subscriptions/subscriptions.component';
-import { AdminProjectsPageComponent } from './admin-projects-page/admin-projects-page.component';
-import { ProjectsPageComponent } from './projects-page/projects-page.component';
-import { ProjectDetailPageComponent } from './project-detail-page/project-detail-page.component';
-import { ServiceDetailPageComponent } from './service-detail-page/service-detail-page.component';
-import { PublicWithdrawalComponent } from './public-withdrawal/public-withdrawal.component';
-import { provideFpcControlSize } from '@forepath/shared/frontend/ui-components';
-import { collectContributorNgrx, collectContributorRoutes } from './contributors/contributor-ui.registry';
-import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from './contributors/first-party-contributor-ui.modules';
 
 const contributorNgrx = collectContributorNgrx(FIRST_PARTY_CONTRIBUTOR_UI_MODULES);
 const contributorRoutes = collectContributorRoutes(FIRST_PARTY_CONTRIBUTOR_UI_MODULES);

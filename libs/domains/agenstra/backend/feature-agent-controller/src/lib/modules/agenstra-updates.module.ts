@@ -3,9 +3,9 @@ import { INSTANCE_SCOPE_KEY, UpdatesModule } from '@forepath/shared/backend';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { assertUpdatesAdmin } from '../notifications/assert-updates-admin.util';
-import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import type { AgenstraNotificationEventType } from '../notifications/agenstra-notification.events';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
+import { assertUpdatesAdmin } from '../notifications/assert-updates-admin.util';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { AgentManagerInstanceScrapeService } from '../services/agent-manager-instance-scrape.service';
 
@@ -13,7 +13,6 @@ import { AGENSTRA_CONTROLLER_QUEUE_NAME, AgenstraNotificationsModule } from './a
 
 let notificationPublisherRef: AgenstraNotificationPublisher | null = null;
 let instanceScrapeRef: AgentManagerInstanceScrapeService | null = null;
-
 const updatesModule = UpdatesModule.register({
   applicationId: 'agenstra',
   productScope: 'agenstra',

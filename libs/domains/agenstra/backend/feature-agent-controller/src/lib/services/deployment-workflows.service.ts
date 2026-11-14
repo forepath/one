@@ -49,7 +49,6 @@ import { DeploymentRealtimeService } from './deployment-realtime.service';
 import { StatisticsService } from './statistics.service';
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
 /** Upper bound of OpenSearch ids considered for one workflow list search (workspaces have few workflows). */
 const WORKFLOW_SEARCH_ID_LIMIT = 1_000;
 
@@ -269,7 +268,6 @@ export class DeploymentWorkflowsService {
 
       return complete && !wasApproved;
     });
-
     const saved = await this.findOrThrow(clientId, workflowId);
     const summary = this.toSummary(saved);
 
@@ -320,7 +318,6 @@ export class DeploymentWorkflowsService {
 
       return true;
     });
-
     const saved = await this.findOrThrow(clientId, workflowId);
     const summary = this.toSummary(saved);
 

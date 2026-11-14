@@ -8,6 +8,7 @@ jest.mock('archiver', () => ({
 }));
 
 import { DatevExportScope, DatevExportStatus } from '../constants/datev-export.constants';
+
 import { DatevExportJobHandler } from './datev-export.job-handler';
 
 describe('DatevExportJobHandler', () => {
@@ -26,7 +27,6 @@ describe('DatevExportJobHandler', () => {
   const auditLog = {
     log: jest.fn(),
   };
-
   const handler = new DatevExportJobHandler(
     configService as never,
     exportRepository as never,

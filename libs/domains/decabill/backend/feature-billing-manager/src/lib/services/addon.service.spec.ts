@@ -1,9 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 
-import { AddonService } from './addon.service';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import { convertAddonPriceToPlanPeriod, assertNonNegativeAddonPrice } from '../utils/addon-pricing.util';
 import { parsePlanAllowedAddonIds, planReferencesAddonId, withPlanAllowedAddonIds } from '../utils/plan-addons.utils';
+
+import { AddonService } from './addon.service';
 
 describe('addon-pricing.util', () => {
   it('converts monthly addon price to yearly plan period', () => {
@@ -103,7 +104,6 @@ describe('AddonService', () => {
   const subscriptionAddonsRepository = {
     countByAddonId: jest.fn(),
   };
-
   const service = new AddonService(
     addonsRepository as never,
     servicePlansRepository as never,
@@ -182,6 +182,7 @@ describe('AddonService', () => {
 
   it('returns ordered addons when valid', async () => {
     const addon = { id: 'addon-1', key: 'av', isActive: true, compatibleProviders: [] };
+
     serviceTypesRepository.findByIdOrThrow.mockResolvedValue({ id: 'st-1', provider: 'hetzner' });
     providerRegistry.getProviders.mockReturnValue([{ id: 'hetzner', displayName: 'Hetzner', supportsAddons: true }]);
     addonsRepository.findByIds.mockResolvedValue([addon]);
@@ -229,6 +230,7 @@ describe('AddonService', () => {
   it('partitions incompatible addons in resolveOrderAddonSelection without throwing', async () => {
     const compatibleAddon = { id: 'addon-1', key: 'av', isActive: true, compatibleProviders: ['hetzner'] };
     const incompatibleAddon = { id: 'addon-2', key: 'do-only', isActive: true, compatibleProviders: ['digital-ocean'] };
+
     serviceTypesRepository.findByIdOrThrow.mockResolvedValue({
       id: 'st-1',
       provider: 'hetzner',
@@ -256,6 +258,7 @@ describe('AddonService', () => {
 
   it('uses pinned plan provider for order addon checks when customer selection is off', async () => {
     const addon = { id: 'addon-1', key: 'av', isActive: true, compatibleProviders: ['digital-ocean'] };
+
     serviceTypesRepository.findByIdOrThrow.mockResolvedValue({
       id: 'st-1',
       provider: 'hetzner',
@@ -411,7 +414,6 @@ describe('AddonService', () => {
       },
       configDefaultValues: { REGION: 'eu' },
     } as never;
-
     const result = service.resolveConfigForWrite({
       implementationType: 'cloud_init_script',
       existing,
@@ -463,6 +465,7 @@ describe('AddonService', () => {
       isActive: false,
       providerConfigDefaults: {},
     }));
+
     servicePlansRepository.findAll
       .mockResolvedValueOnce(firstBatch)
       .mockResolvedValueOnce([

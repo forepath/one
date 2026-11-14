@@ -274,6 +274,7 @@ export function stripUnverifiedMcpRegistryClaims(
     }
 
     const next = { ...value };
+
     delete next['registry'];
     servers[key] = next;
     changed = true;
@@ -518,7 +519,6 @@ export function selectPreferredPackage(packages: OpencodeBuiltinMcpPackage[]): O
   const ranked = packages
     .map((pkg, index) => ({ pkg, index, score: scorePackage(pkg) }))
     .sort((a, b) => b.score - a.score || a.index - b.index);
-
   const best = ranked[0];
 
   return best && best.score > 0 ? best.pkg : packages[0];
@@ -533,7 +533,6 @@ function seedFromPackage(pkg: OpencodeBuiltinMcpPackage): OpencodeMcpServerSeed 
 
   const envSplit = collectKeyValueSplit(pkg.environmentVariables);
   const headerSplit = collectKeyValueSplit(pkg.transport?.headers);
-
   const seed: OpencodeMcpServerSeed = {
     type: 'local',
     command,
@@ -556,7 +555,6 @@ function seedFromRemote(remote: OpencodeBuiltinMcpRemote): OpencodeMcpServerSeed
   }
 
   const headerSplit = collectKeyValueSplit(remote.headers);
-
   const seed: OpencodeMcpServerSeed = {
     type: 'remote',
     url,
@@ -580,7 +578,6 @@ export function seedMcpServerFromCatalog(entry: OpencodeBuiltinMcpServer): Openc
     ...seed,
     registry: entry.name,
   });
-
   const preferred = selectPreferredPackage(entry.packages ?? []);
 
   if (preferred) {

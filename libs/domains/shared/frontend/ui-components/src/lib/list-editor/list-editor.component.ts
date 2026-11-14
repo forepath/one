@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -15,7 +16,6 @@ import {
   signal,
   TemplateRef,
 } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
 
 import { FPC_CONTROL_SIZE } from '../control-size/control-size';
 import { FpcFormTextDirective } from '../truncate-title/form-text.directive';

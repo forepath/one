@@ -102,7 +102,9 @@ export class KnowledgeService {
 
   uploadAttachment(pageId: string, file: File): Observable<AttachmentResponseDto> {
     const form = new FormData();
+
     form.append('file', file, file.name);
+
     return this.http.post<AttachmentResponseDto>(`${this.apiUrl}/knowledge/${pageId}/attachments`, form);
   }
 

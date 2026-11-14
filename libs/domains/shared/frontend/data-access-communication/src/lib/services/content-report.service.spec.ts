@@ -48,6 +48,7 @@ describe('ContentReportService', () => {
       .subscribe();
 
     const req = httpMock.expectOne('https://api.example.com/api/public/content-reports');
+
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toBeInstanceOf(FormData);
     expect((req.request.body as FormData).get('reportType')).toBe('dsa');

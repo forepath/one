@@ -16,8 +16,8 @@ import {
 
 import { AddonResponseDto } from '../dto/addon-response.dto';
 import { CreateAddonDto } from '../dto/create-addon.dto';
-import { AttachMeterDto, UpdateAttachedMeterDto } from '../dto/meter.dto';
 import { AttachedMeterResponseDto } from '../dto/meter-response.dto';
+import { AttachMeterDto, UpdateAttachedMeterDto } from '../dto/meter.dto';
 import { UpdateAddonDto } from '../dto/update-addon.dto';
 import { AddonEntity } from '../entities/addon.entity';
 import { BillingIntervalType } from '../entities/service-plan.entity';
@@ -130,7 +130,6 @@ export class AddonsController {
       configSchema: dto.configSchema,
       defaultValues: dto.defaultValues,
     });
-
     const envKeys = sanitized.configSchema.environmentVariables.map((field) => field.key);
 
     this.assertScriptTemplateInterpolable(dto.implementationType, dto.scriptTemplate, envKeys);

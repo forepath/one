@@ -1,6 +1,7 @@
 import { runWithTenantId } from '@forepath/shared/backend';
 
 import type { RegisteredContributorJob } from '../utils/contributor-job.types';
+
 import { ContributorCollectJobHandler } from './contributor-collect.job-handler';
 
 describe('ContributorCollectJobHandler', () => {
@@ -12,7 +13,6 @@ describe('ContributorCollectJobHandler', () => {
   const jobRegistry = {
     list: jest.fn(),
   };
-
   const registered = (overrides: Partial<RegisteredContributorJob['definition']> = {}): RegisteredContributorJob => ({
     source: 'addon',
     sourceKey: 'container-manager',
@@ -23,7 +23,6 @@ describe('ContributorCollectJobHandler', () => {
       ...overrides,
     },
   });
-
   const handler = new ContributorCollectJobHandler(jobRegistry as never, jobRunsRepository as never);
 
   beforeEach(() => {
@@ -67,6 +66,7 @@ describe('ContributorCollectJobHandler', () => {
 
   it('isolates a failing job and continues', async () => {
     const otherRun = jest.fn().mockResolvedValue(undefined);
+
     jobRegistry.list.mockReturnValue([
       registered({ run: jest.fn().mockRejectedValue(new Error('ssh boom')) }),
       {

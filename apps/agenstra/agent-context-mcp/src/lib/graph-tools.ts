@@ -224,6 +224,7 @@ export async function callGraphTool(
         return json(await get('environments', {}));
       case AGENSTRA_GRAPH_MCP_TOOL_NAMES.overview:
         return json(await get('overview', { environment }));
+
       case AGENSTRA_GRAPH_MCP_TOOL_NAMES.search: {
         const query = stringArg(args, 'query');
 
@@ -241,6 +242,7 @@ export async function callGraphTool(
           }),
         );
       }
+
       case AGENSTRA_GRAPH_MCP_TOOL_NAMES.node: {
         const id = stringArg(args, 'id');
 
@@ -248,6 +250,7 @@ export async function callGraphTool(
           ? json(await get('nodes', { id, environment, layer }))
           : text('Provide "id" (from graph_search).', true);
       }
+
       case AGENSTRA_GRAPH_MCP_TOOL_NAMES.neighbors: {
         const id = stringArg(args, 'id');
 
@@ -266,6 +269,7 @@ export async function callGraphTool(
           }),
         );
       }
+
       case AGENSTRA_GRAPH_MCP_TOOL_NAMES.path: {
         const from = stringArg(args, 'from');
         const to = stringArg(args, 'to');
@@ -274,11 +278,13 @@ export async function callGraphTool(
           ? json(await get('path', { from, to, environment, layer }))
           : text('Provide "from" and "to".', true);
       }
+
       case AGENSTRA_GRAPH_MCP_TOOL_NAMES.file: {
         const path = stringArg(args, 'path');
 
         return path ? json(await get('file', { path, environment })) : text('Provide "path".', true);
       }
+
       case AGENSTRA_GRAPH_MCP_TOOL_NAMES.references:
         return json(
           await get('references', { environment, promptId: stringArg(args, 'promptId'), limit: intArg(args, 'limit') }),

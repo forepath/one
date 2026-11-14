@@ -91,7 +91,6 @@ describe('AgentHandoffRunnerService', () => {
   let chatsProxy: { get: jest.Mock };
   let taskRunner: { continueWithHandoffResponse: jest.Mock; onHandoffUndeliverable: jest.Mock };
   let runner: AgentHandoffRunnerService;
-
   const baseHandoff = (overrides: Partial<AgentHandoffEntity> = {}): AgentHandoffEntity =>
     ({
       id: handoffId,
@@ -118,18 +117,15 @@ describe('AgentHandoffRunnerService', () => {
       updatedAt: new Date(),
       ...overrides,
     }) as AgentHandoffEntity;
-
   const respond = (status: 'completed' | 'failed', response: string) => {
     repo.state.row = { ...repo.state.row, status, response, finishedAt: new Date() };
   };
-
   /** Delivery turns report the accepted user message like the manager does. */
   const acceptDelivery = async (params: RemoteChatStreamingParams) => {
     await params.onEvent?.({ success: true, data: { kind: 'userMessage', correlationId: params.correlationId } });
 
     return { text: 'Thanks, continuing.' };
   };
-
   const targetCalls = () =>
     remoteChat.sendChatStreaming.mock.calls
       .map(([params]) => params as RemoteChatStreamingParams)
@@ -138,7 +134,6 @@ describe('AgentHandoffRunnerService', () => {
     remoteChat.sendChatStreaming.mock.calls
       .map(([params]) => params as RemoteChatStreamingParams)
       .filter((params) => params.agentId === sourceAgentId);
-
   const setup = (handoff: AgentHandoffEntity) => {
     repo = createRepo(handoff);
     runner = new AgentHandoffRunnerService(

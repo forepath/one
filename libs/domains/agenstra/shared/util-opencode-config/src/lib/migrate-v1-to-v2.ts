@@ -10,10 +10,12 @@ function renameRootKey(config: JsonObject, from: string, to: string): void {
   }
 
   const incoming = config[from];
+
   delete config[from];
 
   if (!(to in config)) {
     config[to] = incoming;
+
     return;
   }
 
@@ -21,6 +23,7 @@ function renameRootKey(config: JsonObject, from: string, to: string): void {
 
   if (isPlainObject(existing) && isPlainObject(incoming)) {
     config[to] = { ...incoming, ...existing };
+
     return;
   }
 
@@ -39,6 +42,7 @@ function migrateMcp(config: JsonObject): void {
   if (isPlainObject(mcp['servers'])) {
     migrateMcpServers(mcp['servers']);
     migrateMcpTimeout(mcp);
+
     return;
   }
 
@@ -219,6 +223,7 @@ function migrateCompaction(config: JsonObject): void {
 function migrateMedia(config: JsonObject): void {
   if ('attachment' in config && !('media' in config)) {
     const attachment = config['attachment'];
+
     delete config['attachment'];
 
     if (isPlainObject(attachment)) {

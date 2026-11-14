@@ -16,8 +16,8 @@ import {
 } from '@nestjs/common';
 
 import { CreateServiceTypeDto } from '../dto/create-service-type.dto';
-import { AttachMeterDto, UpdateAttachedMeterDto } from '../dto/meter.dto';
 import { AttachedMeterResponseDto } from '../dto/meter-response.dto';
+import { AttachMeterDto, UpdateAttachedMeterDto } from '../dto/meter.dto';
 import { ProviderDetailDto } from '../dto/provider-detail.dto';
 import { ProviderLocationDto } from '../dto/provider-location.dto';
 import { ServerTypeDto } from '../dto/server-type.dto';
@@ -27,8 +27,8 @@ import { ServiceTypeEntity } from '../entities/service-type.entity';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { MeterService } from '../services/meter.service';
-import { ProviderRegistryService } from '../services/provider-registry.service';
 import { ProviderLocationsService } from '../services/provider-locations.service';
+import { ProviderRegistryService } from '../services/provider-registry.service';
 import { ProviderServerTypesService } from '../services/provider-server-types.service';
 import {
   getProvidersEnvDefaultFieldKeys,
@@ -174,6 +174,7 @@ export class ServiceTypesController {
   @Get(':id/meters')
   async listMeters(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AttachedMeterResponseDto[]> {
     const row = await this.serviceTypesRepository.findByIdOrThrow(id);
+
     await this.meterService.syncServiceTypeProviderMeters(row);
 
     return await this.meterService.listServiceTypeMeters(id);

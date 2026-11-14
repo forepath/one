@@ -96,7 +96,6 @@ describe('projectEstimatorReducer', () => {
       timestamp: '2026-01-01T00:00:01.000Z',
       estimate,
     };
-
     const state = projectEstimatorReducer(
       { ...initialProjectEstimatorState, estimating: true },
       ProjectEstimatorActions.estimateProjectSuccess({

@@ -4,8 +4,8 @@ import { ServiceTypeEntity } from '../entities/service-type.entity';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { MeterService } from '../services/meter.service';
-import { ProviderRegistryService } from '../services/provider-registry.service';
 import { ProviderLocationsService } from '../services/provider-locations.service';
+import { ProviderRegistryService } from '../services/provider-registry.service';
 import { ProviderServerTypesService } from '../services/provider-server-types.service';
 
 import { ServiceTypesController } from './service-types.controller';
@@ -31,7 +31,6 @@ describe('ServiceTypesController', () => {
     getProviders: jest.fn().mockReturnValue([]),
     getProvider: jest.fn((id: string) => ({ id, compatibilityGroup: 'host-cloud-init' })),
   };
-
   const mockServiceTypeRow: ServiceTypeEntity = {
     id: '11111111-1111-4111-8111-111111111111',
     key: 'hetzner-default',
@@ -46,7 +45,6 @@ describe('ServiceTypesController', () => {
     createdAt: new Date('2024-01-01T00:00:00Z'),
     updatedAt: new Date('2024-01-01T00:00:00Z'),
   };
-
   const meterProvider = { provide: MeterService, useValue: mockMeterService };
   const notificationProvider = {
     provide: BillingNotificationPublisher,

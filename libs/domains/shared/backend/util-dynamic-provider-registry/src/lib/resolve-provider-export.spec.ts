@@ -8,7 +8,6 @@ import {
 describe('resolveProviderExport', () => {
   it('prefers createProvider for plugin packages', () => {
     const createProvider = jest.fn();
-
     const resolved = resolveProviderExport<{ getType(): string }>(
       { createProvider },
       { entry: { specifier: '@forepath/foo' } },
@@ -81,7 +80,6 @@ describe('instantiateResolvedProvider', () => {
     const instance = { getType: () => 'factory' };
     const createProvider = jest.fn().mockResolvedValue(instance);
     const moduleRef = { create: jest.fn() } as never;
-
     const result = await instantiateResolvedProvider({ kind: 'createProvider', createProvider }, moduleRef);
 
     expect(result).toBe(instance);

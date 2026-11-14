@@ -3,13 +3,12 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { AgentMessageEntity } from '../entities/agent-message.entity';
 import { AgentEgressEventEntity } from '../entities/agent-egress-event.entity';
+import { AgentMessageEntity } from '../entities/agent-message.entity';
 import { AgentEntity } from '../entities/agent.entity';
 
 const METER_NAME = 'forepath.agenstra';
 const POLL_INTERVAL_MS = 60_000;
-
 const EGRESS_STATUSES = ['inactive', 'active', 'failed'] as const;
 const EGRESS_KINDS = ['web', 'dns', 'network', 'guard'] as const;
 const EGRESS_DECISIONS = ['allowed', 'blocked', 'observed', 'error'] as const;
@@ -66,7 +65,6 @@ export class AgenstraManagerMetricsCollectorService implements OnModuleInit, OnM
       .addSelect('COUNT(*)', 'count')
       .groupBy('agent.agentType')
       .getRawMany<{ agentType: string; count: string }>();
-
     const byAgentType = new Map(agentRows.map((row) => [row.agentType, parseInt(row.count, 10)]));
     const agentTypes = new Set<string>([...agentRows.map((row) => row.agentType), 'opencode']);
 
@@ -102,7 +100,6 @@ export class AgenstraManagerMetricsCollectorService implements OnModuleInit, OnM
       .groupBy('message.actor')
       .addGroupBy('message.filtered')
       .getRawMany<{ actor: string; filtered: boolean | string; count: string; charCount: string; wordCount: string }>();
-
     const byKey = new Map(
       messageRows.map((row) => {
         const filtered = row.filtered === true || row.filtered === 'true' || row.filtered === '1';

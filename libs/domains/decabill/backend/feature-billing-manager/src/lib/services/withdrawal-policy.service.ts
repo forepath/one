@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
 import { getStatutoryWithdrawalPeriodDays } from '../constants/withdrawal-policy.config';
+import type { ServiceTypeEntity } from '../entities/service-type.entity';
 import { ProvisioningStatus } from '../entities/subscription-item.entity';
 import type { SubscriptionItemEntity } from '../entities/subscription-item.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
-import type { ServiceTypeEntity } from '../entities/service-type.entity';
 
 export type WithdrawalPhase =
   | 'unprovisioned'

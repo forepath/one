@@ -45,10 +45,6 @@ import {
   type FpcTableState,
   FpcDatePipe,
 } from '@forepath/shared/frontend/ui-components';
-
-import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../../../billing-chart';
-import { formatBillingTime } from '../../../billing-format';
-
 import type {
   ApexAxisChartSeries,
   ApexChart,
@@ -60,6 +56,10 @@ import type {
   ApexXAxis,
 } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
+
+import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../../../billing-chart';
+import { formatBillingTime } from '../../../billing-format';
+
 
 /** Pixels from bottom still treated as "pinned" for auto-scroll. */
 const LOGS_STICK_BOTTOM_THRESHOLD_PX = 32;
@@ -331,6 +331,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
 
     canvas.setPointerCapture(event.pointerId);
     const point = this.topologyPointerPos(event);
+
     this.topologyDownPointer = point;
     this.topologyLastPointer = point;
     this.topologyPointerMoved = false;
@@ -354,6 +355,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       this.topologyLastPointer = point;
       this.hideTopologyPopover();
       this.scheduleTopologyDraw(this.topologyLayout(), this.topologyLayoutEdges());
+
       return;
     }
 
@@ -363,6 +365,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
 
   onTopologyPointerUp(event: PointerEvent): void {
     const canvas = this.topologyCanvas()?.nativeElement;
+
     this.topologyPanning = false;
     canvas?.classList.remove('is-panning');
 
@@ -406,6 +409,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
     }
 
     const distanceFromBottom = target.scrollHeight - target.scrollTop - target.clientHeight;
+
     this.stickLogsToBottom = distanceFromBottom <= LOGS_STICK_BOTTOM_THRESHOLD_PX;
   }
 
@@ -642,36 +646,42 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
 
       if (from.kind === 'container' && to.kind === 'network') {
         const list = containersByNetwork.get(to.id) ?? [];
+
         list.push(from.id);
         containersByNetwork.set(to.id, list);
       }
 
       if (from.kind === 'network' && (to.kind === 'exit' || to.kind === 'route')) {
         const list = dependentsByNetwork.get(from.id) ?? [];
+
         list.push(to.id);
         dependentsByNetwork.set(from.id, list);
       }
 
       if (from.kind === 'exit' && to.kind === 'host_iface') {
         const list = hostIfacesByExit.get(from.id) ?? [];
+
         list.push(to.id);
         hostIfacesByExit.set(from.id, list);
       }
 
       if (from.kind === 'host_iface' && to.kind === 'host_iface') {
         const list = uplinkIfacesByDockerIface.get(from.id) ?? [];
+
         list.push(to.id);
         uplinkIfacesByDockerIface.set(from.id, list);
       }
 
       if (from.kind === 'host_iface' && to.kind === 'host_gateway') {
         const list = hostGwsByIface.get(from.id) ?? [];
+
         list.push(to.id);
         hostGwsByIface.set(from.id, list);
       }
 
       if ((from.kind === 'host_gateway' || from.kind === 'host_iface') && to.kind === 'internet') {
         const list = internetByParent.get(from.id) ?? [];
+
         list.push(to.id);
         internetByParent.set(from.id, list);
       }
@@ -684,7 +694,6 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
     const forestGapX = 96;
     const placed = new Map<string, TopologyLayoutNode>();
     let cursorX = paddingX;
-
     const placeRow = (ids: string[], centerX: number, y: number): { left: number; right: number } => {
       const uniqueIds = [...new Set(ids)].filter((id) => byId.has(id) && !placed.has(id));
 
@@ -713,7 +722,6 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
 
       return { left: startX, right: startX + span };
     };
-
     const placeAt = (id: string, x: number, y: number): void => {
       if (placed.has(id)) {
         return;
@@ -733,7 +741,6 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
         y,
       });
     };
-
     const yContainers = paddingY;
     const yNetwork = paddingY + layerGapY;
     const yDependents = paddingY + layerGapY * 2;
@@ -748,12 +755,11 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       const linkedHostIfaces = dependents.flatMap((dependentId) => hostIfacesByExit.get(dependentId) ?? []);
       const branchWidth = Math.max(containers.length, dependents.length, linkedHostIfaces.length, 1) * nodeGapX;
       const centerX = cursorX + branchWidth / 2;
-
       const topBounds = placeRow(containers, centerX, yContainers);
+
       placeAt(network.id, centerX, yNetwork);
       const bottomBounds = placeRow(dependents, centerX, yDependents);
       const ifaceBounds = placeRow(linkedHostIfaces, centerX, yHostIface);
-
       const rightEdge = Math.max(
         topBounds.right,
         centerX,
@@ -761,6 +767,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
         ifaceBounds.right,
         cursorX + branchWidth,
       );
+
       cursorX = rightEdge + forestGapX;
     }
 
@@ -811,6 +818,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       const anchors = [...placed.values()].filter((node) => node.kind === 'host_iface');
       const centerX =
         anchors.length > 0 ? anchors.reduce((sum, node) => sum + node.x, 0) / anchors.length : egressCenterX;
+
       placeRow(gatewayIds, centerX, yHostGateway);
       placeRow(internetIds, centerX, yInternet);
     }
@@ -819,6 +827,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
 
     if (orphans.length > 0) {
       const y = networks.length > 0 ? yInternet + layerGapY : paddingY;
+
       placeRow(
         orphans.map((node) => node.id),
         paddingX + ((orphans.length - 1) * nodeGapX) / 2,
@@ -930,6 +939,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
 
     if (!hit || !canvas || !wrap) {
       this.hideTopologyPopover();
+
       return;
     }
 
@@ -1033,6 +1043,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
         const otherId = edge.from === node.id ? edge.to : edge.from;
         const other = this.topologyLayout().find((item) => item.id === otherId);
         const otherLabel = other?.label ?? otherId;
+
         return edge.label ? `${otherLabel} (${edge.label})` : otherLabel;
       });
 
@@ -1146,6 +1157,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       ctx.stroke();
 
       const label = node.label.length > 28 ? `${node.label.slice(0, 26)}...` : node.label;
+
       ctx.font = `${11 / this.topologyTransform.k}px ${fontFamily}`;
       ctx.fillStyle = bodyColor;
       ctx.textAlign = 'center';

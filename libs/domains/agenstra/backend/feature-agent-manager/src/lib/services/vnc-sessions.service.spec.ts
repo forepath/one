@@ -12,7 +12,6 @@ describe('VncSessionsService', () => {
   const vncTicketService = {
     mint: jest.fn(),
   };
-
   let service: VncSessionsService;
 
   beforeEach(() => {

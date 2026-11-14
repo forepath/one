@@ -1,20 +1,21 @@
 import { hostname } from 'os';
 
+import { OpenSearchService } from '@forepath/shared/backend/util-opensearch';
 import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit, Optional } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { DataSource } from 'typeorm';
 
-import { OpenSearchService } from '@forepath/shared/backend/util-opensearch';
 
 import { DEFAULT_HEARTBEAT_INTERVAL_MS, UPDATES_MODULE_OPTIONS } from '../constants/updates.constants';
+import type { UpdatesModuleOptions } from '../interfaces/updates-module.options';
 import type {
   DependencyHealthStatus,
   InstanceDependencyHealth,
   ServiceInstanceRecord,
 } from '../interfaces/updates.interfaces';
-import type { UpdatesModuleOptions } from '../interfaces/updates-module.options';
 import { resolveInstanceId, resolveServiceRole } from '../utils/instance-id.utils';
 import { getInstalledVersion, resolveUpdateState } from '../utils/version.utils';
+
 import { UpdatesRedisStore } from './updates-redis.store';
 
 @Injectable()

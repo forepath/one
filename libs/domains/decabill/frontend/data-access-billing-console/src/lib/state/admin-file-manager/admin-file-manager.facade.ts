@@ -16,6 +16,7 @@ import {
   setAdminFileManagerView,
   verifyAdminFileManagerFile,
 } from './admin-file-manager.actions';
+import { buildAdminFileManagerCacheKey } from './admin-file-manager.reducer';
 import {
   selectAdminFileManagerDocumentIdLookupError,
   selectAdminFileManagerDocumentIdLookupLoading,
@@ -32,7 +33,6 @@ import {
   selectAdminFileManagerView,
   selectAdminFileManagerViewTenantId,
 } from './admin-file-manager.selectors';
-import { buildAdminFileManagerCacheKey } from './admin-file-manager.reducer';
 
 @Injectable()
 export class AdminFileManagerFacade {

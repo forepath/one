@@ -34,7 +34,6 @@ describe('OtelMetricsHttpRegistrar', () => {
       username: 'user',
       password: 'pass',
     };
-
     const registrar = new OtelMetricsHttpRegistrar(httpAdapterHost as never, config as never);
 
     registrar.onModuleInit();

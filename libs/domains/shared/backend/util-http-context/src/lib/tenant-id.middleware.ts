@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from 'express';
 
 import './express-request-augmentation';
-import { runWithTenantId } from './tenant-id.storage';
 import { TENANT_ID_HEADER, parseConfiguredTenants, resolveTenantIdFromHeader } from './tenant-id.config';
+import { runWithTenantId } from './tenant-id.storage';
 import { isTenantMiddlewareExcludedPath } from './tenant-middleware-excluded-path';
 
 function readIncomingTenantId(req: Request): string | undefined {
@@ -24,6 +24,7 @@ export function createTenantIdMiddleware() {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (req.method === 'OPTIONS') {
       next();
+
       return;
     }
 
@@ -31,6 +32,7 @@ export function createTenantIdMiddleware() {
 
     if (isTenantMiddlewareExcludedPath(requestPath)) {
       next();
+
       return;
     }
 
@@ -38,6 +40,7 @@ export function createTenantIdMiddleware() {
 
     if (!tenantId) {
       res.status(400).json({ message: 'Invalid or unknown tenant' });
+
       return;
     }
 

@@ -18,7 +18,6 @@ import type {
 export class ForepathPricingCalculatorService {
   calculateEstimate(breakdown: ProjectBreakdown): ProjectEstimate {
     const lineItems = breakdown.lineItems.map((item) => this.toEstimateLineItem(item));
-
     const subtotalNet = lineItems.reduce((total, item) => total + item.lineTotal, 0);
 
     return {

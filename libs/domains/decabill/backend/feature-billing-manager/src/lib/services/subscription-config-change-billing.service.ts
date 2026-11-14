@@ -1,8 +1,8 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 
-import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import type { InvoiceCreditDocumentEntity } from '../entities/invoice-credit-document.entity';
 import { InvoiceEntity } from '../entities/invoice.entity';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
@@ -11,16 +11,12 @@ import type {
   SubscriptionConfigChangeEntity,
 } from '../entities/subscription-config-change.entity';
 import type { SubscriptionEntity } from '../entities/subscription.entity';
-import { BillingEmailPublisher } from '../email/billing-email.publisher';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoiceCreditDocumentsRepository } from '../repositories/invoice-credit-documents.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-import type {
-  PeriodPriceChangeBillingOutcome,
-  PeriodPriceChangeSettlementParams,
-} from './period-price-change-billing.types';
 import {
   configChangeCarrySourceRef,
   configChangePrimarySourceRef,
@@ -33,6 +29,10 @@ import { BillingIssuerConfigService } from './billing-issuer-config.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { InvoiceTaxContextService } from './invoice-tax-context.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
+import type {
+  PeriodPriceChangeBillingOutcome,
+  PeriodPriceChangeSettlementParams,
+} from './period-price-change-billing.types';
 import { PromotionApplicationService } from './promotion-application.service';
 import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
 import { TaxCalculationService } from './tax-calculation.service';
@@ -293,7 +293,6 @@ export class SubscriptionConfigChangeBillingService {
       changedAt.getTime().toString(36),
       taxCategory,
     );
-
     const { created, entity: credit } = await this.invoiceCreditDocumentsRepository.createUniqueBySourceRef({
       invoiceId: invoice.id,
       documentNumber,
@@ -315,7 +314,7 @@ export class SubscriptionConfigChangeBillingService {
 
     await this.billingEmailPublisher.publishPartialCreditDocument(invoice, storageKey, documentNumber, creditGross);
 
-    const { appliedGross, carriedGross } = await this.finalizePartialCreditSettlement(params, credit);
+    const { carriedGross } = await this.finalizePartialCreditSettlement(params, credit);
 
     await this.logOutcome(params, 'credited', {
       creditNet,

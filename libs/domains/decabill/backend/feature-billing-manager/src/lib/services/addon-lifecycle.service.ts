@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { AddonEntity } from '../entities/addon.entity';
+import { ServicePlanEntity } from '../entities/service-plan.entity';
 import { SubscriptionAddonEntity } from '../entities/subscription-addon.entity';
 import { SubscriptionItemEntity } from '../entities/subscription-item.entity';
-import { ServicePlanEntity } from '../entities/service-plan.entity';
 import { SubscriptionEntity } from '../entities/subscription.entity';
-import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { AddonsRepository } from '../repositories/addons.repository';
 import { SubscriptionAddonsRepository } from '../repositories/subscription-addons.repository';
@@ -15,17 +15,16 @@ import {
   resolveAddonConfigValues,
 } from '../utils/addon-config.utils';
 import { convertAddonPriceToPlanPeriod } from '../utils/addon-pricing.util';
+import { resolvePlainTextUserData } from '../utils/cloud-init/user-data.utils';
 import { getProvisioningCredentials } from '../utils/provider-env-defaults.utils';
 
 import { AddonModuleRegistryService, type AddonLifecycleContext } from './addon-module-registry.service';
 import { ProvisioningDispatchService } from './provisioning-dispatch.service';
 import { SshExecutorService } from './ssh-executor.service';
-import { resolvePlainTextUserData } from '../utils/cloud-init/user-data.utils';
 
 const SSH_USER = 'root';
 const SSH_PORT = 22;
 const DEFAULT_SSH_COMMAND_TIMEOUT_MS = 120000;
-
 /** Customer-facing messages stay generic; details (never scripts or config) go to the log only. */
 const PROVISION_FAILED_MESSAGE = 'Addon provision failed';
 const TEARDOWN_FAILED_MESSAGE = 'Addon teardown failed';

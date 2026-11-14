@@ -19,8 +19,6 @@ import {
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
-import { AGENT_ID_LABEL, AGENT_WORKER_LABEL, agentWorkerContainerName } from '../constants/container-naming.constants';
-import { egressGuardContainerName } from '../constants/egress-guard.constants';
 import {
   type GvisorIsolationLevel,
   GVISOR_ISOLATION_LEVEL_DESCRIPTION,
@@ -31,9 +29,12 @@ import {
   resolveMicrovmImage,
   STANDARD_ISOLATION_RUNTIME,
 } from '../constants/container-isolation.constants';
+import { AGENT_ID_LABEL, AGENT_WORKER_LABEL, agentWorkerContainerName } from '../constants/container-naming.constants';
+import { egressGuardContainerName } from '../constants/egress-guard.constants';
 import { GitRepositorySetupMode, resolveGitRepositorySetupMode } from '../constants/git-repository-setup-mode';
-import type { AgentIsolationSelectionDto } from '../dto/container-isolation.dto';
+import { VNC_WEBSOCKIFY_PORT } from '../constants/vnc.constants';
 import { AgentResponseDto } from '../dto/agent-response.dto';
+import type { AgentIsolationSelectionDto } from '../dto/container-isolation.dto';
 import { CreateAgentResponseDto } from '../dto/create-agent-response.dto';
 import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
@@ -43,7 +44,6 @@ import { AgentProvider } from '../providers/agent-provider.interface';
 import { AgentProviderModels } from '../providers/agent-provider.interface';
 import { OpenCodeClientFactory } from '../providers/opencode/opencode-client.factory';
 import { OPENCODE_SERVER_PORT, OPENCODE_SERVER_USERNAME_DEFAULT } from '../providers/opencode/opencode-provider.config';
-import { VNC_WEBSOCKIFY_PORT } from '../constants/vnc.constants';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { serializeAgentEnvironmentBaseline } from '../utils/agent-environment-baseline.utils';
 import {
@@ -63,12 +63,12 @@ import { AgentChatSessionsService } from './agent-chat-sessions.service';
 import { AgentEgressService, EGRESS_GUARDED_AGENT_CAP_DROP } from './agent-egress.service';
 import { AgentGitCredentialsService } from './agent-git-credentials.service';
 import { DockerService } from './docker.service';
-import { IsolationCapabilitiesService } from './isolation-capabilities.service';
 import {
   CREATE_ENVIRONMENT_PROGRESS_STEPS,
   EnvironmentProgressService,
   EnvironmentProgressTracker,
 } from './environment-progress.service';
+import { IsolationCapabilitiesService } from './isolation-capabilities.service';
 import { WorkspaceInotifySupervisor } from './workspace-inotify-supervisor.service';
 
 /**
@@ -415,7 +415,6 @@ export class AgentsService implements OnApplicationBootstrap {
           ),
         )
       : {};
-
     // Create a docker container
     let containerId: string;
 
@@ -1066,7 +1065,6 @@ export class AgentsService implements OnApplicationBootstrap {
   private async listOpenCodeModelsViaHttp(agentId: string, containerId: string): Promise<AgentProviderModels> {
     const client = await this.openCodeClientFactory.getClient(agentId, containerId);
     const models: AgentProviderModels = {};
-
     const fromConfig = client.config?.providers ? await client.config.providers() : null;
     const configProviders = fromConfig?.data?.providers;
 

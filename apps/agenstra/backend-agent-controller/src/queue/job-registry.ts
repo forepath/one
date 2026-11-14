@@ -13,19 +13,15 @@ export const CONTROLLER_QUEUE_NAME = 'agent-controller';
 /** Keep in sync with OPENCODE_PROVIDERS_REFRESH_JOB_NAME in feature-agent-controller. */
 const OPENCODE_PROVIDERS_REFRESH_JOB_NAME = 'opencode-providers.refresh';
 const OPENCODE_PROVIDERS_REFRESH_INTERVAL_MS_DEFAULT = 86_400_000;
-
 /** Keep in sync with OPENCODE_MCP_SERVERS_REFRESH_JOB_NAME in feature-agent-controller. */
 const OPENCODE_MCP_SERVERS_REFRESH_JOB_NAME = 'opencode-mcp-servers.refresh';
 const OPENCODE_MCP_SERVERS_REFRESH_INTERVAL_MS_DEFAULT = 86_400_000;
-
 /** Keep in sync with AGENT_TASK_COORDINATOR_JOB_NAME / AGENT_TASK_UNIT_JOB_NAME in feature-agent-controller. */
 const AGENT_TASK_COORDINATOR_JOB_NAME = 'agent-task.coordinator';
 const AGENT_TASK_UNIT_JOB_NAME = 'agent-task.unit';
-
 /** Keep in sync with AGENT_HANDOFF_*_JOB_NAME in feature-agent-controller. */
 const AGENT_HANDOFF_COORDINATOR_JOB_NAME = 'agent-handoff.coordinator';
 const AGENT_HANDOFF_UNIT_JOB_NAME = 'agent-handoff.unit';
-
 /** Keep in sync with WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME in feature-agent-controller. */
 const WORKSPACE_GRAPH_SNAPSHOT_UNIT_JOB_NAME = 'workspace-graph-snapshot.unit';
 
@@ -151,7 +147,6 @@ export function getControllerRepeatableJobs(): ControllerRepeatableJobDefinition
       everyMs: getWebhookDeliveryRetentionCoordinatorIntervalMs(),
     },
   ];
-
   const egressIngestInterval = parseIntervalMs('EGRESS_EVENTS_INGEST_INTERVAL_MS', 30_000);
 
   if (egressIngestInterval > 0) {

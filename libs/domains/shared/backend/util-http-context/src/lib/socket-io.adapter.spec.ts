@@ -1,9 +1,9 @@
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import type { Socket } from 'socket.io';
 
+import * as correlationStorage from './correlation-id.storage';
 import { getOrInitSocketCorrelationId, readIncomingCorrelationIdFromHeaders } from './socket-io.adapter';
 import { CorrelationAwareSocketIoAdapter } from './socket-io.adapter';
-import * as correlationStorage from './correlation-id.storage';
 
 describe('socket-io.adapter helpers', () => {
   describe('readIncomingCorrelationIdFromHeaders', () => {
@@ -23,6 +23,7 @@ describe('socket-io.adapter helpers', () => {
     it('trims and truncates overly long ids', () => {
       const long = `  ${'a'.repeat(200)}  `;
       const out = readIncomingCorrelationIdFromHeaders({ 'x-correlation-id': long });
+
       expect(out?.length).toBe(128);
     });
 
@@ -43,12 +44,14 @@ describe('socket-io.adapter helpers', () => {
 
     it('uses existing socket.data correlationId when present', () => {
       const socket = mockSocket({ data: { correlationId: 'existing' } as unknown as Socket['data'] });
+
       expect(getOrInitSocketCorrelationId(socket)).toBe('existing');
       expect((socket as unknown as { data: Record<string, unknown> }).data['correlationId']).toBe('existing');
     });
 
     it('initializes correlationId from handshake headers', () => {
       const socket = mockSocket({ handshake: { headers: { 'x-request-id': 'req-9' } } as never });
+
       expect(getOrInitSocketCorrelationId(socket)).toBe('req-9');
       expect((socket as unknown as { data: Record<string, unknown> }).data['correlationId']).toBe('req-9');
     });
@@ -56,6 +59,7 @@ describe('socket-io.adapter helpers', () => {
     it('generates an id when neither data nor headers provide one', () => {
       const socket = mockSocket();
       const id = getOrInitSocketCorrelationId(socket);
+
       expect(typeof id).toBe('string');
       expect(id.length).toBeGreaterThan(10);
       expect((socket as unknown as { data: Record<string, unknown> }).data['correlationId']).toBe(id);
@@ -65,18 +69,17 @@ describe('socket-io.adapter helpers', () => {
   describe('CorrelationAwareSocketIoAdapter', () => {
     it('wraps inbound socket packets in runWithCorrelationId', () => {
       const runSpy = jest.spyOn(correlationStorage, 'runWithCorrelationId');
-
       const serverHandlers: Record<string, (socket: Socket) => void> = {};
       const fakeServer = {
         on: (event: string, handler: (socket: Socket) => void) => {
           serverHandlers[event] = handler;
+
           return fakeServer;
         },
       } as unknown as { on: (event: string, handler: (socket: Socket) => void) => unknown };
-
       const ioSpy = jest.spyOn(IoAdapter.prototype, 'createIOServer').mockReturnValue(fakeServer as never);
-
       const adapter = new CorrelationAwareSocketIoAdapter(undefined);
+
       adapter.createIOServer(0);
 
       expect(typeof serverHandlers['connection']).toBe('function');
@@ -95,6 +98,7 @@ describe('socket-io.adapter helpers', () => {
       expect(packetMiddleware).toBeDefined();
 
       const next = jest.fn();
+
       packetMiddleware?.(['event', { a: 1 }], next);
 
       expect(runSpy).toHaveBeenCalled();

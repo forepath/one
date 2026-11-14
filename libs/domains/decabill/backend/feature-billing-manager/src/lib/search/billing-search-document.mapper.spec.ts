@@ -1,7 +1,8 @@
-import { mapCustomerProfileToSearchDocument, mapSubscriptionToSearchDocument } from './billing-search-document.mapper';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { SubscriptionEntity } from '../entities/subscription.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
+
+import { mapCustomerProfileToSearchDocument, mapSubscriptionToSearchDocument } from './billing-search-document.mapper';
 
 describe('billing-search-document.mapper', () => {
   it('mapSubscriptionToSearchDocument_IncludesTenantAndAllowlistedFields', () => {
@@ -12,7 +13,6 @@ describe('billing-search-document.mapper', () => {
       userId: 'user-1',
       planId: 'plan-1',
     } as SubscriptionEntity;
-
     const doc = mapSubscriptionToSearchDocument(subscription, 'tenant-a', {
       planName: 'Starter',
       userEmail: 'a@example.com',
@@ -43,7 +43,6 @@ describe('billing-search-document.mapper', () => {
       customData: { externalId: 'should-not-index' },
       defaultPaymentMethodExternalId: 'pm_secret',
     } as unknown as CustomerProfileEntity;
-
     const doc = mapCustomerProfileToSearchDocument(profile, 'tenant-a');
 
     expect(doc.id).toBe('cp-1');

@@ -24,7 +24,6 @@ describe('InternalBillingTrustScoreProvider', () => {
   const backordersRepository = {
     countFailedByUserId: jest.fn(),
   };
-
   const provider = new InternalBillingTrustScoreProvider(
     customerProfilesRepository as never,
     customerProfilesService as never,

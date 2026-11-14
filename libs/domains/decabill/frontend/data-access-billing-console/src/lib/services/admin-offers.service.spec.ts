@@ -10,7 +10,6 @@ describe('AdminOffersService', () => {
   let service: AdminOffersService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3200/api';
-
   const mockListItem: AdminOfferListItem = {
     id: 'offer-1',
     userId: 'user-1',
@@ -59,6 +58,7 @@ describe('AdminOffersService', () => {
     });
 
     const req = httpMock.expectOne((request) => request.url === `${apiUrl}/admin/billing/offers`);
+
     expect(req.request.params.get('limit')).toBe('10');
     expect(req.request.params.get('offset')).toBe('0');
     expect(req.request.params.get('search')).toBe('OFF-2026');
@@ -81,6 +81,7 @@ describe('AdminOffersService', () => {
     });
 
     const req = httpMock.expectOne(`${apiUrl}/admin/billing/offers/offer-1`);
+
     req.flush(detail);
   });
 
@@ -98,6 +99,7 @@ describe('AdminOffersService', () => {
     });
 
     const req = httpMock.expectOne(`${apiUrl}/admin/billing/offers`);
+
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(dto);
     req.flush({ ...mockListItem, subtotalNet: 0, taxTotal: 0, billToOpenPositions: false, lineItems: [] });
@@ -112,6 +114,7 @@ describe('AdminOffersService', () => {
     });
 
     const req = httpMock.expectOne(`${apiUrl}/admin/billing/offers/offer-1`);
+
     expect(req.request.method).toBe('PUT');
     req.flush({ ...mockListItem, subtotalNet: 0, taxTotal: 0, billToOpenPositions: true, lineItems: [] });
   });
@@ -120,6 +123,7 @@ describe('AdminOffersService', () => {
     service.delete('offer-1').subscribe(() => done());
 
     const req = httpMock.expectOne(`${apiUrl}/admin/billing/offers/offer-1`);
+
     expect(req.request.method).toBe('DELETE');
     req.flush(null);
   });
@@ -131,6 +135,7 @@ describe('AdminOffersService', () => {
     });
 
     const req = httpMock.expectOne(`${apiUrl}/admin/billing/offers/offer-1/archive`);
+
     expect(req.request.method).toBe('POST');
     req.flush({
       ...mockListItem,
@@ -149,6 +154,7 @@ describe('AdminOffersService', () => {
     });
 
     const req = httpMock.expectOne(`${apiUrl}/admin/billing/offers/offer-1/revoke`);
+
     req.flush({
       ...mockListItem,
       status: 'revoked',
@@ -198,6 +204,7 @@ describe('AdminOffersService', () => {
       });
 
     const req = httpMock.expectOne((request) => request.url === `${apiUrl}/admin/billing/offers/statistics`);
+
     expect(req.request.params.get('from')).toBe('2026-01-01');
     expect(req.request.params.get('to')).toBe('2026-12-31');
     expect(req.request.params.get('groupBy')).toBe('month');
@@ -214,6 +221,7 @@ describe('AdminOffersService', () => {
     });
 
     const req = httpMock.expectOne((request) => request.url === `${apiUrl}/admin/billing/offers/offer-1/audit-logs`);
+
     expect(req.request.params.get('limit')).toBe('20');
     expect(req.request.params.get('offset')).toBe('0');
     req.flush(response);

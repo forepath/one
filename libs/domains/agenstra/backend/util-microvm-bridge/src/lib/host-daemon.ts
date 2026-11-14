@@ -366,6 +366,7 @@ export class HostDaemon {
         }
 
         break;
+
       case FrameType.WorkloadExit: {
         const message = safeJson(frame.payload) as { code?: unknown } | null;
         const code = typeof message?.code === 'number' && Number.isInteger(message.code) ? message.code : 1;

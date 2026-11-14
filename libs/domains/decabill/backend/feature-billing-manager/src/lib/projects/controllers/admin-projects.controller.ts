@@ -21,7 +21,6 @@ import type { Response } from 'express';
 
 import type { RequestWithUser } from '../../utils/billing-access.utils';
 import { getUserFromRequest } from '../../utils/billing-access.utils';
-
 import type {
   BillProjectTimeDto,
   BillProjectTimeResponseDto,

@@ -3,8 +3,6 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, IsNull, LessThan, Repository } from 'typeorm';
 
-import { getAgentTaskHandoffWaitTimeoutMs } from '../constants/agent-tasks.constants';
-
 import {
   AGENT_HANDOFF_FAILURE_MESSAGE_MAX_LENGTH,
   AGENT_HANDOFF_MAX_DELIVERY_ATTEMPTS,
@@ -13,6 +11,7 @@ import {
   AGENT_HANDOFF_STALE_GRACE_MS,
   getAgentHandoffTurnTimeoutMs,
 } from '../constants/agent-handoffs.constants';
+import { getAgentTaskHandoffWaitTimeoutMs } from '../constants/agent-tasks.constants';
 import { AgentHandoffEntity } from '../entities/agent-handoff.entity';
 import { AgentTaskRunEntity } from '../entities/agent-task-run.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
@@ -209,7 +208,6 @@ export class AgentHandoffRunnerService {
         }
 
         const message = error instanceof Error ? error.message : String(error);
-
         const targetGone = !(await this.chatExists(handoff.clientId, handoff.targetAgentId, handoff.targetChatId).catch(
           () => true,
         ));

@@ -192,7 +192,6 @@ describe('selectAdminDatevExportDisplayItems', () => {
         },
       ],
     };
-
     const items = selectAdminDatevExportDisplayItems.projector(state);
 
     expect(items[0]).toEqual(

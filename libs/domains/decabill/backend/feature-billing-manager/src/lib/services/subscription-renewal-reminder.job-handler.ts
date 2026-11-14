@@ -1,11 +1,11 @@
 import { EmailService } from '@forepath/shared/backend';
 import { Injectable, Logger } from '@nestjs/common';
 
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 
-import { BillingEmailPublisher } from '../email/billing-email.publisher';
 
 export interface RenewalReminderUnitPayload {
   subscriptionId: string;

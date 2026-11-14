@@ -1,11 +1,11 @@
 import { randomBytes } from 'crypto';
 
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   assertWebhookAuthCompatible,
   assertWebhookEndpointDeliveryPolicy,
   validateWebhookUrlWithDnsOrThrow,
 } from '@forepath/shared/backend/util-webhook';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { NOTIFICATIONS_MODULE_OPTIONS } from '../constants/notification.constants';
 import type {
@@ -15,8 +15,9 @@ import type {
 } from '../dto/webhook-endpoint.dto';
 import { WebhookAuthType, WebhookEndpointEntity } from '../entities/webhook-endpoint.entity';
 import type { NotificationsModuleOptions } from '../interfaces/notifications-module.options';
-import { WebhookEndpointsRepository } from '../repositories/webhook-endpoints.repository';
 import { WebhookDeliveriesRepository } from '../repositories/webhook-deliveries.repository';
+import { WebhookEndpointsRepository } from '../repositories/webhook-endpoints.repository';
+
 import { WebhookDeliveryRetentionService } from './webhook-delivery-retention.service';
 
 @Injectable()

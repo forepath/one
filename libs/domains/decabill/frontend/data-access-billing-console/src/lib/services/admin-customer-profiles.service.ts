@@ -4,18 +4,7 @@ import type { Environment } from '@forepath/decabill/frontend/util-configuration
 import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 import { Observable } from 'rxjs';
 
-import type {
-  AdminCustomerProfileDetail,
-  AdminCustomerProfileListItem,
-  CustomerTrustScoreDetail,
-  CreateAdminCustomerProfileDto,
-  CustomerProfileDto,
-  CustomerProfileResponse,
-  ListParams,
-  PaginatedAdminCustomerProfilesResponse,
-  AddCustomerProfileCustomDataDto,
-  UpdateCustomerProfileCustomDataDto,
-} from '../types/billing.types';
+import type { AdminCustomerProfileDetail, CustomerTrustScoreDetail, CreateAdminCustomerProfileDto, CustomerProfileDto, CustomerProfileResponse, ListParams, PaginatedAdminCustomerProfilesResponse, AddCustomerProfileCustomDataDto, UpdateCustomerProfileCustomDataDto } from '../types/billing.types';
 
 @Injectable({
   providedIn: 'root',

@@ -41,7 +41,6 @@ const CONFIG_FIELD_LABEL_OVERRIDES: Record<string, string> = {
   commitAuthorEmail: 'Commit author email',
   privateKey: 'Private key',
 };
-
 const LEGACY_INTEGRATED_SERVICE_ALIASES: Record<string, IntegratedProductService> = {
   controller: 'agenstra-controller',
   manager: 'agenstra-manager',

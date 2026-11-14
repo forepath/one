@@ -14,8 +14,8 @@ import axios, { AxiosError } from 'axios';
 // Test-only PKI builder of the identity domain.
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { createTestPki } from '../../../../../../identity/backend/util-auth/src/lib/mtls/testing/mtls-test-pki';
-import { ClientsRepository } from '../repositories/clients.repository';
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
+import { ClientsRepository } from '../repositories/clients.repository';
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
 
 import { ClientAgentProxyService } from './client-agent-proxy.service';

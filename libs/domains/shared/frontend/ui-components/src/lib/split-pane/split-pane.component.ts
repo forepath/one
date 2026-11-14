@@ -145,8 +145,10 @@ export class FpcSplitPaneComponent {
     const view = this.document.defaultView;
 
     this.dragging.set(true);
+
     const move = (moveEvent: PointerEvent): void => {
       const delta = (horizontal ? moveEvent.clientX : moveEvent.clientY) - origin;
+
       this.size.set(fpcClampSize(startSize + sign * delta, this.min(), this.max()));
     };
     const stop = (): void => {

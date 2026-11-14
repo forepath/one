@@ -244,7 +244,6 @@ describe('util-opencode-mcp-servers', () => {
     const key = mcpServerConfigKey(catalogServer.name);
     const seed = seedMcpServerFromCatalog(catalogServer)!;
     const catalogByName = { [catalogServer.name]: catalogServer };
-
     const stripped = stripUnverifiedMcpRegistryClaims(
       {
         mcp: {
@@ -264,7 +263,6 @@ describe('util-opencode-mcp-servers', () => {
       },
       catalogByName,
     );
-
     const servers = (stripped['mcp'] as { servers: Record<string, Record<string, unknown>> }).servers;
 
     expect(servers[key]).not.toHaveProperty('registry');

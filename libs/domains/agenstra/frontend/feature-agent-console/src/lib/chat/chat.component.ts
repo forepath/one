@@ -21,65 +21,7 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
-import {
-  AgentsFacade,
-  AgentsService,
-  AuthenticationFacade,
-  ChatPlansService,
-  ChatSessionsFacade,
-  ChatTimelineFacade,
-  ClientAgentAutonomyFacade,
-  ClientsFacade,
-  ContainerSocketFacade,
-  EnvFacade,
-  EnvironmentProgressFacade,
-  FilesFacade,
-  filterTicketsForTicketContextSuggestions,
-  KnowledgeFacade,
-  NotificationsFacade,
-  StatsFacade,
-  TicketAutomationFacade,
-  TicketsFacade,
-  TicketsService,
-  WorkspaceConfigFacade,
-  type AddClientUserDto,
-  type AgentModelsMap,
-  type AgentResponseDto,
-  type AgentResponseObject,
-  type AgentSlashCommand,
-  type ChatMessageData,
-  type ChatAttachmentDto,
-  type ChatPlanChatEventPayload,
-  type ChatPlanResponse,
-  type ChatSessionResponseDto,
-  type ClientAgentAutonomyResponseDto,
-  type ClientAuthenticationType,
-  type ClientResponseDto,
-  type ClientUserResponseDto,
-  type ClientUserRole,
-  type ConfigResponseDto,
-  type CreateAgentDto,
-  type CreateClientDto,
-  type CreateEnvironmentVariableDto,
-  type EnvironmentProgress,
-  type EnvironmentProgressStep,
-  type EnvironmentVariableResponseDto,
-  type FileManagerContext,
-  type ForwardedEventPayload,
-  type IsolationLevel,
-  type KnowledgeNodeDto,
-  type ProvisionServerDto,
-  type TicketAutomationRunChatEventPayload,
-  type AgentTaskRunChatEventPayload,
-  type TicketResponseDto,
-  type AttachmentResponseDto,
-  type UpdateAgentDto,
-  type UpdateClientDto,
-  type UpdateEnvironmentVariableDto,
-  type UpsertClientAgentAutonomyDto,
-  type WorkspaceConfigurationSettingKey,
-  type WorkspaceConfigurationSettingResponseDto,
-} from '@forepath/agenstra/frontend/data-access-agent-console';
+import { AgentsFacade, AgentsService, AuthenticationFacade, ChatPlansService, ChatSessionsFacade, ChatTimelineFacade, ClientAgentAutonomyFacade, ClientsFacade, ContainerSocketFacade, EnvFacade, EnvironmentProgressFacade, FilesFacade, filterTicketsForTicketContextSuggestions, KnowledgeFacade, NotificationsFacade, StatsFacade, TicketAutomationFacade, TicketsFacade, TicketsService, WorkspaceConfigFacade, type AddClientUserDto, type AgentModelsMap, type AgentResponseDto, type AgentResponseObject, type AgentSlashCommand, type ChatMessageData, type ChatAttachmentDto, type ChatPlanChatEventPayload, type ChatPlanResponse, type ChatSessionResponseDto, type ClientAgentAutonomyResponseDto, type ClientAuthenticationType, type ClientResponseDto, type ClientUserResponseDto, type ClientUserRole, type ConfigResponseDto, type CreateAgentDto, type CreateClientDto, type CreateEnvironmentVariableDto, type EnvironmentProgress, type EnvironmentProgressStep, type EnvironmentVariableResponseDto, type FileManagerContext, type ForwardedEventPayload, type IsolationLevel, type KnowledgeNodeDto, type ProvisionServerDto, type TicketAutomationRunChatEventPayload, type AgentTaskRunChatEventPayload, type TicketResponseDto, type UpdateAgentDto, type UpdateClientDto, type UpdateEnvironmentVariableDto, type UpsertClientAgentAutonomyDto, type WorkspaceConfigurationSettingKey, type WorkspaceConfigurationSettingResponseDto } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { AgentConfigEditorComponent } from '@forepath/agenstra/frontend/feature-agent-config';
 import { ENVIRONMENT, type Environment } from '@forepath/agenstra/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
@@ -144,10 +86,24 @@ import {
   withLatestFrom,
 } from 'rxjs';
 
+
+import {
+  hideAgentModal,
+  restoreUnderlyingAgentModal,
+  showAgentModal,
+  swapToOverlayAgentModal,
+  watchAgentMutationModalClose,
+  type AgentModalSwapState,
+} from '../agent-modal';
+import {
+  agentTaskRunStatusBadgeColor as agentTaskRunStatusBadgeColorFn,
+  agentTaskRunStatusLabel as agentTaskRunStatusLabelFn,
+  agentTaskRunTriggerLabel as agentTaskRunTriggerLabelFn,
+  describeAgentTaskSchedule as describeAgentTaskScheduleFn,
+} from '../agent-tasks/agent-task-labels';
 import { resolveNamedDisplayLabel } from '../display-name.util';
 import { ContainerStatsStatusBarComponent } from '../file-editor/container-stats-status-bar/container-stats-status-bar.component';
 import { FileEditorComponent } from '../file-editor/file-editor.component';
-import { WorkspaceUserSelectComponent } from '../workspace-user-select/workspace-user-select.component';
 import {
   getGitRepositoryDisplayLabel,
   isLocalGitRepository as isLocalGitRepositoryMode,
@@ -173,26 +129,7 @@ import {
   reconcileIsolationSelection,
   resolveIsolationSubmission,
 } from '../isolation/isolation-level.util';
-import {
-  agentTaskRunStatusBadgeColor as agentTaskRunStatusBadgeColorFn,
-  agentTaskRunStatusLabel as agentTaskRunStatusLabelFn,
-  agentTaskRunTriggerLabel as agentTaskRunTriggerLabelFn,
-  describeAgentTaskSchedule as describeAgentTaskScheduleFn,
-} from '../agent-tasks/agent-task-labels';
-import { AgentChatHandoffNavigationService } from './agent-chat-handoff-navigation.service';
-import { formatUserChatMessageHtml } from './chat-message-html';
-import {
-  buildAgentChatHandoffCard,
-  type AgentChatHandoffCardView,
-  type AgentChatHandoffLink,
-} from './agent-chat-handoff-view';
 import { LayerFileIdeComponent } from '../layer-file-ide/layer-file-ide.component';
-import { readAndClearAgentConsoleChatDraft } from '../tickets/chat-draft-storage';
-import {
-  ticketAutomationRunPhaseLabel as ticketAutomationRunPhaseLabelFn,
-  ticketAutomationRunStatusLabel as ticketAutomationRunStatusLabelFn,
-} from '../tickets/ticket-automation-run-labels';
-import { ticketLaneStatusLabel } from '../tickets/ticket-lane-status-label';
 import {
   AG_DL_AGENT_CONFIGURATION,
   AG_DL_AUTONOMY,
@@ -204,16 +141,15 @@ import {
   agCopyIdItem,
   agOpenItem,
 } from '../shared/data-list';
-import { VirtualDesktopComponent } from '../virtual-desktop/virtual-desktop.component';
-
+import { readAndClearAgentConsoleChatDraft } from '../tickets/chat-draft-storage';
 import {
-  hideAgentModal,
-  restoreUnderlyingAgentModal,
-  showAgentModal,
-  swapToOverlayAgentModal,
-  watchAgentMutationModalClose,
-  type AgentModalSwapState,
-} from '../agent-modal';
+  ticketAutomationRunPhaseLabel as ticketAutomationRunPhaseLabelFn,
+  ticketAutomationRunStatusLabel as ticketAutomationRunStatusLabelFn,
+} from '../tickets/ticket-automation-run-labels';
+import { ticketLaneStatusLabel } from '../tickets/ticket-lane-status-label';
+import { VirtualDesktopComponent } from '../virtual-desktop/virtual-desktop.component';
+import { WorkspaceUserSelectComponent } from '../workspace-user-select/workspace-user-select.component';
+
 import {
   collectAnsweredQuestionIdsFromChatEvents,
   collectAnsweredQuestionIdsFromChatMessages,
@@ -221,6 +157,12 @@ import {
   type AgentChatEventDisplayRow,
 } from './agent-chat-event-display';
 import { AgentChatEventRowComponent, type AgentChatQuestionReplyRequest } from './agent-chat-event-row.component';
+import { AgentChatHandoffNavigationService } from './agent-chat-handoff-navigation.service';
+import {
+  buildAgentChatHandoffCard,
+  type AgentChatHandoffCardView,
+  type AgentChatHandoffLink,
+} from './agent-chat-handoff-view';
 import {
   formatAgentResponseForChatMarkdown,
   formatUnknownAsMarkdown,
@@ -230,6 +172,7 @@ import { accumulateStreamingTurnFromEvents } from './agent-chat-streaming-aggreg
 import { AgentChatTodosExpandCoordinator } from './agent-chat-todos-expand.coordinator';
 import { mergeTicketAutomationChatCardPayload } from './chat-automation-card-merge';
 import { sanitizeAndTrustMarkdownHtml } from './chat-markdown-html';
+import { formatUserChatMessageHtml } from './chat-message-html';
 import {
   chatPlanStateBadgeColor as chatPlanStateBadgeColorFn,
   chatPlanStateLabel as chatPlanStateLabelFn,
@@ -2764,6 +2707,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         if (this.stickToBottom()) {
           this.shouldScrollToBottom = true;
         }
+
         this.previousMessageCount = currentMessageCount;
         // Trigger change detection to ensure DOM is updated
         this.cdr.detectChanges();
@@ -2802,6 +2746,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         if (this.stickToBottom()) {
           this.shouldScrollToBottom = true;
         }
+
         this.previousDisplayThreadLength = len;
         this.cdr.detectChanges();
       } else if (len < this.previousDisplayThreadLength) {
@@ -3666,6 +3611,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onChatAttachmentSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
+
     this.uploadChatAttachments(Array.from(input.files ?? []));
     input.value = '';
   }
@@ -3689,6 +3635,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (!event.dataTransfer?.types.includes('Files')) return;
 
     this.chatAttachmentDragDepth = Math.max(0, this.chatAttachmentDragDepth - 1);
+
     if (this.chatAttachmentDragDepth === 0) {
       this.chatAttachmentDragActive.set(false);
     }
@@ -4634,6 +4581,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       })
       .catch((err) => {
         console.error('Failed to copy file link to clipboard:', err);
+
         // Fallback: try using the older clipboard API
         if (this.fallbackCopyToClipboard(url)) {
           this.flashShareFileLinkCopied();

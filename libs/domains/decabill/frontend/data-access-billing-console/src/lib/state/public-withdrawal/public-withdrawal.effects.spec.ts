@@ -30,7 +30,6 @@ import {
 describe('PublicWithdrawalEffects', () => {
   let actions$: Actions;
   let publicWithdrawalService: jest.Mocked<PublicWithdrawalService>;
-
   const mockAddressee: PublicWithdrawalAddressee = {
     name: 'Acme GmbH',
     lines: ['Example Street 1'],

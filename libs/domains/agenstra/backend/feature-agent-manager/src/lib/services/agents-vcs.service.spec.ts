@@ -8,10 +8,10 @@ import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentFileSystemService } from './agent-file-system.service';
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
-import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 import { AgentsVcsService } from './agents-vcs.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
+import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 
 describe('AgentsVcsService', () => {
   let service: AgentsVcsService;

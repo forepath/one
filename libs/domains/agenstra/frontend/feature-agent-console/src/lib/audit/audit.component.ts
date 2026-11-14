@@ -74,8 +74,8 @@ import type {
 } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
 
-import { getUnavailableDisplayLabel, resolveNamedDisplayLabel } from '../display-name.util';
 import { ClientSelectComponent } from '../client-select/client-select.component';
+import { getUnavailableDisplayLabel, resolveNamedDisplayLabel } from '../display-name.util';
 import { AG_DL_CHAT, agOpenItem } from '../shared/data-list';
 
 import {
@@ -969,6 +969,7 @@ export class AuditComponent implements OnInit {
     const pending = this.loadTimers.get(table);
 
     if (pending && pending.due >= due) return;
+
     if (pending) clearTimeout(pending.handle);
 
     this.loadTimers.set(table, {

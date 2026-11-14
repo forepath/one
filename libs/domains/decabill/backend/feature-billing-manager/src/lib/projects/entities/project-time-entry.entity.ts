@@ -2,8 +2,9 @@ import { UserEntity } from '@forepath/identity/backend';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { InvoiceEntity } from '../../entities/invoice.entity';
-import { ProjectEntity } from './project.entity';
+
 import { ProjectTicketEntity } from './project-ticket.entity';
+import { ProjectEntity } from './project.entity';
 
 @Entity('billing_project_time_entries')
 export class ProjectTimeEntryEntity {

@@ -12,7 +12,6 @@ describe('OpenCodeConfigSyncService platform context MCP', () => {
   let contextMcp: { buildWireOptions: jest.Mock; invalidate: jest.Mock };
   let fetchSpy: jest.SpyInstance;
   let currentMcp: Record<string, unknown>;
-
   const createService = (withContextMcp = true) =>
     new OpenCodeConfigSyncService(
       { findById: jest.fn().mockResolvedValue(agent), update: jest.fn() } as unknown as AgentsRepository,
@@ -40,7 +39,6 @@ describe('OpenCodeConfigSyncService platform context MCP', () => {
       undefined,
       withContextMcp ? (contextMcp as unknown as AgentContextMcpService) : undefined,
     );
-
   const patchedBody = (): Record<string, unknown> => {
     const call = fetchSpy.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === 'PATCH');
 

@@ -1,34 +1,4 @@
-import {
-  billProjectTime,
-  billProjectTimeFailure,
-  billProjectTimeSuccess,
-  clearProjectsError,
-  createAdminProject,
-  createAdminProjectFailure,
-  createAdminProjectSuccess,
-  deleteAdminProject,
-  deleteAdminProjectFailure,
-  deleteAdminProjectSuccess,
-  loadAdminProjectDetail,
-  loadAdminProjectDetailFailure,
-  loadAdminProjectDetailSuccess,
-  loadAdminProjects,
-  loadAdminProjectsFailure,
-  loadAdminProjectsSuccess,
-  loadProjectDetail,
-  loadProjectDetailFailure,
-  loadProjectDetailSuccess,
-  loadProjects,
-  loadProjectsFailure,
-  loadProjectsSuccess,
-  loadProjectSummary,
-  loadProjectSummaryFailure,
-  loadProjectSummarySuccess,
-  projectSummaryChanged,
-  updateAdminProject,
-  updateAdminProjectFailure,
-  updateAdminProjectSuccess,
-} from './projects.actions';
+import { billProjectTime, billProjectTimeFailure, billProjectTimeSuccess, clearProjectsError, createAdminProject, createAdminProjectFailure, createAdminProjectSuccess, deleteAdminProject, deleteAdminProjectFailure, deleteAdminProjectSuccess, loadAdminProjectDetail, loadAdminProjectDetailSuccess, loadAdminProjects, loadAdminProjectsFailure, loadAdminProjectsSuccess, loadProjectDetail, loadProjectDetailFailure, loadProjectDetailSuccess, loadProjects, loadProjectsFailure, loadProjectsSuccess, loadProjectSummary, loadProjectSummaryFailure, loadProjectSummarySuccess, projectSummaryChanged, updateAdminProject, updateAdminProjectFailure, updateAdminProjectSuccess } from './projects.actions';
 import { initialProjectsState, projectsReducer } from './projects.reducer';
 
 describe('projectsReducer', () => {

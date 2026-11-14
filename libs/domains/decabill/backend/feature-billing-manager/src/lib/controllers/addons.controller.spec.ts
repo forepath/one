@@ -1,10 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
+import { BillingIntervalType } from '../entities/service-plan.entity';
 import { AddonsRepository } from '../repositories/addons.repository';
 import { AddonService } from '../services/addon.service';
 import { MeterService } from '../services/meter.service';
-import { BillingIntervalType } from '../entities/service-plan.entity';
 
 import { AddonsController } from './addons.controller';
 
@@ -30,7 +30,6 @@ describe('AddonsController', () => {
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01'),
   };
-
   const createModule = async (repository: Record<string, jest.Mock>, addonService: Record<string, jest.Mock>) => {
     const moduleRef = await Test.createTestingModule({
       controllers: [AddonsController],
@@ -96,7 +95,6 @@ describe('AddonsController', () => {
         }),
       };
       const controller = await createModule(repository, addonService);
-
       const result = await controller.create({
         key: 'av',
         name: 'Antivirus',
@@ -209,7 +207,6 @@ describe('AddonsController', () => {
         assertNotReferencedByActivePlans: jest.fn(),
       };
       const controller = await createModule(repository, addonService);
-
       const result = await controller.update(sampleRow.id, { name: 'Renamed' } as never);
 
       expect(repository.update).toHaveBeenCalledWith(
@@ -235,7 +232,6 @@ describe('AddonsController', () => {
         assertNotReferencedByActivePlans: jest.fn(),
       };
       const controller = await createModule(repository, addonService);
-
       const result = await controller.update(sampleRow.id, { name: 'Renamed' } as never);
 
       expect(repository.update).toHaveBeenCalledWith(

@@ -7,10 +7,8 @@ const logo = (id: string): SharedLogoGridLogo => ({ id, name: id, logoUrl: `asse
 
 describe('SharedLogoGridComponent', () => {
   let fixture: ComponentFixture<SharedLogoGridComponent>;
-
   const visibleIds = (): string[] =>
     Array.from(fixture.nativeElement.querySelectorAll('img') as NodeListOf<HTMLImageElement>).map((img) => img.alt);
-
   const render = (slots: readonly (readonly SharedLogoGridLogo[])[]): void => {
     fixture = TestBed.createComponent(SharedLogoGridComponent);
     fixture.componentRef.setInput('slots', slots);

@@ -1,4 +1,5 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
+
 import type { NextFunction, Request, Response } from 'express';
 
 import type { OtelAuthCredentials } from './otel-runtime.config';

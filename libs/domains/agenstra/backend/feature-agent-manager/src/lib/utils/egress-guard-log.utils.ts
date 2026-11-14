@@ -112,7 +112,6 @@ export function compareDockerTimestamps(left: string, right: string): number {
 
     return `${base}.${fraction.padEnd(9, '0')}`;
   };
-
   const a = normalize(left);
   const b = normalize(right);
 

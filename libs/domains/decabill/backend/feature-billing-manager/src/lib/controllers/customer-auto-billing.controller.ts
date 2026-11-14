@@ -3,8 +3,8 @@ import { BadRequestException, Controller, HttpCode, HttpStatus, Post, Req } from
 
 import { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto';
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
-import { AutoBillingService } from '../services/auto-billing.service';
 import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
+import { AutoBillingService } from '../services/auto-billing.service';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
 @Controller('customer-profile/auto-billing')

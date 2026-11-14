@@ -1,33 +1,31 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
 import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
+import type { InvoicePromotionApplicationDraft } from '../dto/promotion.dto';
 import type { OpenPositionEntity } from '../entities/open-position.entity';
-import { BillingIntervalType } from '../entities/service-plan.entity';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import type { SubscriptionEntity } from '../entities/subscription.entity';
-import { InvoicesRepository } from '../repositories/invoices.repository';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionAddonsRepository } from '../repositories/subscription-addons.repository';
-import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
+import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { UsageRecordsRepository } from '../repositories/usage-records.repository';
 import { calculateProratedAmount } from '../utils/billing-proration.util';
 import { groupOpenPositionsBySubscription } from '../utils/open-position-grouping.util';
-import { resolveSubscriptionBillingBaseOverride } from '../utils/server-type-billing.utils';
 import { resolvePlanTaxCategory } from '../utils/plan-tax.utils';
+import { resolveSubscriptionBillingBaseOverride } from '../utils/server-type-billing.utils';
 
-import type { LineItemInput } from './tax-calculation.service';
-import { TaxCalculationService } from './tax-calculation.service';
-import { InvoiceService } from './invoice.service';
+import { BillingScheduleService } from './billing-schedule.service';
 import { InvoiceTaxContextService } from './invoice-tax-context.service';
+import { InvoiceService } from './invoice.service';
+import { MeterBillingService, type MeterChargeLine } from './meter-billing.service';
 import { PricingService } from './pricing.service';
 import { PromotionApplicationService, type PromotionRedemptionUpdate } from './promotion-application.service';
 import { ProviderServerTypesService } from './provider-server-types.service';
-import { BillingScheduleService } from './billing-schedule.service';
-import { MeterBillingService, type MeterChargeLine } from './meter-billing.service';
 import { SubscriptionChargePeriodService, type SubscriptionChargePeriod } from './subscription-charge-period.service';
-import type { InvoicePromotionApplicationDraft } from '../dto/promotion.dto';
+import { TaxCalculationService } from './tax-calculation.service';
+import type { LineItemInput } from './tax-calculation.service';
 
 interface InvoiceCreationOptions {
   billUntil?: Date;
@@ -150,7 +148,6 @@ export class InvoiceCreationService {
       })
       .filter((line): line is NonNullable<typeof line> => line != null);
     const meterChargeLines = this.mapMeterLinesToInputs(meterLines, taxCategory);
-
     const promoResult = await this.promotionApplicationService.calculatePromotions({
       userId,
       subscriptionId,

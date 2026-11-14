@@ -16,7 +16,6 @@ export const AGENT_ENVIRONMENT_FILE_PATH = `${AGENT_ENVIRONMENT_MOUNT_TARGET}/${
 export const AGENT_ENVIRONMENT_FILE_MAX_BYTES = 4 * 1024 * 1024;
 
 const TAR_BLOCK_SIZE = 512;
-
 /**
  * Conventional variable names (plus `.` and `-`, which some tools use). Rejects everything that could be
  * misread by the environment file format or a consumer: `=`/NUL separators, option-like names (`-i`) and

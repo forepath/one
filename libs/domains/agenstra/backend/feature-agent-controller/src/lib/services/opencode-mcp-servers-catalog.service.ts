@@ -1,5 +1,5 @@
-import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
 import {
@@ -12,12 +12,12 @@ import { OpencodeMcpServerDto, OpencodeMcpServersListDto } from '../dto/opencode
 import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
 import { mapOpencodeMcpServerToSearchDocument } from '../search/agenstra-search-document.mapper';
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
-import type { AgenstraSearchIdsResult } from '../search/agenstra-search.types';
 import {
   applyAgenstraSearchIlike,
   sanitizeListSearch,
   tryAgenstraSearchIds,
 } from '../search/agenstra-search-list.util';
+import type { AgenstraSearchIdsResult } from '../search/agenstra-search.types';
 
 interface RegistryServerDetail {
   name?: unknown;
@@ -274,6 +274,7 @@ export class OpencodeMcpServersCatalogService {
       }
 
       const payload = (await response.json()) as RegistryServerList;
+
       pages += 1;
 
       const pageServers = Array.isArray(payload.servers) ? payload.servers : [];
@@ -349,7 +350,6 @@ export class OpencodeMcpServersCatalogService {
     const description = descriptionRaw.slice(0, 512);
     const versionRaw = typeof server.version === 'string' && server.version.trim() ? server.version.trim() : '0.0.0';
     const version = versionRaw.slice(0, 255);
-
     const dto: OpencodeMcpServerDto = {
       name,
       title,

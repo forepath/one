@@ -18,7 +18,6 @@ describe('patchSubscriptionItemDisplayName', () => {
         },
       ],
     };
-
     const patched = patchSubscriptionItemDisplayName(subscription, 'item-1', 'Renamed');
 
     expect(patched.items?.[0].displayName).toBe('Renamed');

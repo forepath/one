@@ -19,7 +19,6 @@ import { FORWARDABLE_SIGNALS, ForwardableSignal, parseBootConfig } from '../lib/
 
 /** How long `vm-exec` waits for the launcher daemon's exec socket (container start until the daemon listens). */
 const EXEC_CONNECT_TIMEOUT_MS = 180_000;
-
 const log = (message: string): void => {
   process.stderr.write(`agenstra-microvm: ${message}\n`);
 };

@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
 import type { ProjectEntity } from '../entities/project.entity';
-import { ProjectBoardRealtimeService } from './project-board-realtime.service';
+
 import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
+import { ProjectBoardRealtimeService } from './project-board-realtime.service';
 import { ProjectsService } from './projects.service';
 
 @Injectable()

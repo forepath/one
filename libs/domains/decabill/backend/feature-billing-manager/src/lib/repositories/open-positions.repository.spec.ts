@@ -1,6 +1,6 @@
+import { runWithTenantId } from '@forepath/shared/backend';
 import { QueryFailedError } from 'typeorm';
 
-import { runWithTenantId } from '@forepath/shared/backend';
 
 import { OpenPositionsRepository } from './open-positions.repository';
 
@@ -25,7 +25,6 @@ describe('OpenPositionsRepository', () => {
     andWhere: mockUpdateAndWhere,
     execute: mockUpdateExecute,
   }));
-
   const createQueryBuilderReturn = {
     innerJoin: mockInnerJoin,
     where: mockWhere,
@@ -39,7 +38,6 @@ describe('OpenPositionsRepository', () => {
     getOne: mockGetOne,
     update: mockUpdate,
   };
-
   const mockCreateQueryBuilder = jest.fn(() => createQueryBuilderReturn);
   const mockRepository = {
     create: jest.fn(),

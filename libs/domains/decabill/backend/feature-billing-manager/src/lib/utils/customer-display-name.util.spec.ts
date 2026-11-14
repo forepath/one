@@ -29,7 +29,6 @@ describe('resolveCustomerNamesByUserId', () => {
           { userId: 'u3' },
         ]),
     };
-
     const names = await resolveCustomerNamesByUserId(repository, ['u1', 'u2', 'u1', 'u3', '']);
 
     expect(repository.findByUserIds).toHaveBeenCalledWith(['u1', 'u2', 'u3']);

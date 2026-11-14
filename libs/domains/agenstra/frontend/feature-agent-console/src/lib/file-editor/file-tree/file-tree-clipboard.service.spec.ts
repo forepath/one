@@ -27,7 +27,6 @@ describe('FileTreeClipboardService', () => {
     deleteFileOrDirectory: jest.Mock;
   };
   let store: { dispatch: jest.Mock };
-
   const batch = { clientId: 'c1', agentId: 'a1', context: 'app' as const };
   const mockContent: FileContentDto = {
     fileType: 'text',

@@ -8,7 +8,6 @@ describe('TenantUserGuard', () => {
   let guard: TenantUserGuard;
   let reflector: jest.Mocked<Pick<Reflector, 'getAllAndOverride'>>;
   let usersRepository: jest.Mocked<Pick<UsersRepository, 'findById'>>;
-
   const createExecutionContext = (request: Record<string, unknown>) =>
     ({
       switchToHttp: () => ({

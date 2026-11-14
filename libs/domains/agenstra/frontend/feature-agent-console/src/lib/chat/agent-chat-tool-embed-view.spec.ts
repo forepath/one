@@ -12,13 +12,11 @@ describe('agent-chat-tool-embed-view', () => {
       kind: 'toolCall',
       payload: { toolCallId: 't1', name, status: 'completed', args },
     });
-
   const resultJson = (name: string, result: unknown, isError = false): string =>
     JSON.stringify({
       kind: 'toolResult',
       payload: { toolCallId: 't1', name, isError, result },
     });
-
   const partCallJson = (name: string, args: Record<string, unknown>): string =>
     JSON.stringify({ type: 'tool_call', name, toolCallId: 't1', status: 'completed', args });
 
@@ -40,6 +38,7 @@ describe('agent-chat-tool-embed-view', () => {
     );
 
     expect(view?.kind).toBe('todos');
+
     if (view?.kind === 'todos') {
       expect(view.todos).toHaveLength(2);
       expect(view.todos[0]?.status).toBe('in_progress');
@@ -57,7 +56,6 @@ describe('agent-chat-tool-embed-view', () => {
         { id: '2', content: 'Write fix', status: 'pending', priority: 'medium' },
       ],
     });
-
     const view = buildChatRowEmbedView({
       kind: 'status',
       summaryTitle: 'Todos',
@@ -66,6 +64,7 @@ describe('agent-chat-tool-embed-view', () => {
     });
 
     expect(view?.kind).toBe('todos');
+
     if (view?.kind === 'todos') {
       expect(view.todos).toEqual([
         { id: '1', content: 'Scan auth', status: 'in_progress' },
@@ -86,6 +85,7 @@ describe('agent-chat-tool-embed-view', () => {
     );
 
     expect(view?.kind).toBe('todos');
+
     if (view?.kind === 'todos') {
       expect(view.todos.map((t) => t.status)).toEqual(['completed', 'in_progress', 'pending', 'cancelled']);
       expect(view.todos.map((t) => t.content)).toEqual(['Done item', 'Active item', 'Pending item', 'Cancelled item']);
@@ -118,6 +118,7 @@ describe('agent-chat-tool-embed-view', () => {
     );
 
     expect(view?.kind).toBe('read');
+
     if (view?.kind === 'read') {
       expect(view.filePath).toBe('/app/a.ts');
       expect(view.offset).toBe(1);
@@ -133,6 +134,7 @@ describe('agent-chat-tool-embed-view', () => {
     );
 
     expect(view?.kind).toBe('glob');
+
     if (view?.kind === 'glob') {
       expect(view.files).toEqual(['a.ts', 'b.ts']);
     }
@@ -146,6 +148,7 @@ describe('agent-chat-tool-embed-view', () => {
     );
 
     expect(view?.kind).toBe('grep');
+
     if (view?.kind === 'grep') {
       expect(view.hits[0]).toEqual({ path: 'src/a.ts', line: 12, snippet: 'const foo = 1' });
     }
@@ -156,6 +159,7 @@ describe('agent-chat-tool-embed-view', () => {
     const view = buildToolEmbedView('apply_patch', callJson('apply_patch', { patchText: patch }));
 
     expect(view?.kind).toBe('patch');
+
     if (view?.kind === 'patch') {
       expect(view.lines.some((l) => l.kind === 'add' && l.text === '+new')).toBe(true);
       expect(view.lines.some((l) => l.kind === 'remove' && l.text === '-old')).toBe(true);
@@ -166,6 +170,7 @@ describe('agent-chat-tool-embed-view', () => {
     const view = buildToolEmbedView('edit', callJson('edit', { filePath: 'a.ts', oldString: 'a', newString: 'b' }));
 
     expect(view?.kind).toBe('edit');
+
     if (view?.kind === 'edit') {
       expect(view.oldString).toBe('a');
       expect(view.newString).toBe('b');
@@ -192,6 +197,7 @@ describe('agent-chat-tool-embed-view', () => {
 
     expect(fetchView?.kind).toBe('webfetch');
     expect(searchView?.kind).toBe('websearch');
+
     if (searchView?.kind === 'websearch') {
       expect(searchView.hits[0]?.title).toBe('Docs');
     }

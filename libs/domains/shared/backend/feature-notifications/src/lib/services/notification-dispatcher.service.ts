@@ -1,9 +1,9 @@
 import { randomUUID } from 'crypto';
 
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Queue } from 'bullmq';
 import { enqueueUnitJob } from '@forepath/shared/backend';
 import { recordSharedCounter } from '@forepath/shared/backend/util-otel';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Queue } from 'bullmq';
 
 import {
   NOTIFICATIONS_API_VERSION,

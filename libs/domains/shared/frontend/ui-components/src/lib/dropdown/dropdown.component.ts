@@ -111,6 +111,7 @@ export class FpcDropdownComponent {
     afterRenderEffect(() => {
       const menu = this.menu()?.nativeElement;
       const portaled = this.portaled();
+
       // Track the placement inputs so a change re-places the open menu.
       this.alignment();
       this.direction();
@@ -134,6 +135,7 @@ export class FpcDropdownComponent {
     const view = this.document.defaultView;
 
     if (this.frame !== null) view?.cancelAnimationFrame?.(this.frame);
+
     this.frame =
       view?.requestAnimationFrame?.(() => {
         this.frame = null;
@@ -154,6 +156,7 @@ export class FpcDropdownComponent {
 
   private stopTracking(): void {
     if (this.frame !== null) this.document.defaultView?.cancelAnimationFrame?.(this.frame);
+
     this.frame = null;
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
@@ -204,7 +207,6 @@ export class FpcDropdownComponent {
     const size = menu.getBoundingClientRect();
     const width = size.width || menu.offsetWidth;
     let height = size.height || menu.offsetHeight;
-
     const alignment = this.alignment();
     const alignEnd = alignment === 'end' || (alignment === 'auto' && anchor.left + anchor.width / 2 > vw / 2);
     let left = alignEnd ? anchor.right - width : anchor.left;
@@ -232,6 +234,7 @@ export class FpcDropdownComponent {
 
     style.left = `${Math.round(left)}px`;
     style.top = `${Math.round(top)}px`;
+
     // The measuring reset may have clamped the menu's own scroll position.
     if (menu.scrollTop !== scrollTop) menu.scrollTop = scrollTop;
   }

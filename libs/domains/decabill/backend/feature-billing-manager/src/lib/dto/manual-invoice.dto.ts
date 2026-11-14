@@ -17,7 +17,6 @@ import { PAYMENT_DUE_DAYS_MAX } from '../constants/document-terms.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 
 import { DeliveryTermsInputDto } from './document-terms.dto';
-
 import { InvoiceDetailResponseDto } from './invoice-detail-response.dto';
 
 export class ManualInvoiceLineItemDto {

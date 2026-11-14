@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
 import type {
   PaginatedProjectsResponseDto,
   ProjectListItemDto,
@@ -13,7 +14,6 @@ import { ProjectMilestonesRepository } from '../repositories/project-milestones.
 import { ProjectTicketsRepository } from '../repositories/project-tickets.repository';
 import { ProjectTimeEntriesRepository } from '../repositories/project-time-entries.repository';
 import { ProjectsRepository } from '../repositories/projects.repository';
-import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
 import { ensureProjectReadable } from '../utils/project-access.utils';
 import { computeMilestoneProgressPercent, isMilestoneComplete } from '../utils/project-milestone-progress.utils';
 
@@ -74,12 +74,10 @@ export class ProjectsService {
       this.milestonesRepository.findAllByProject(project.id),
       this.ticketsRepository.findAllByProject(project.id),
     ]);
-
     const billedMinutes = totalTrackedMinutes - unbilledMinutes;
     const hourlyRate = Number(project.hourlyRateNet);
     const openBillableAmountNet = (unbilledMinutes / 60) * hourlyRate;
     const billedAmountNet = (billedMinutes / 60) * hourlyRate;
-
     let openTicketCount = 0;
     let doneTicketCount = 0;
 

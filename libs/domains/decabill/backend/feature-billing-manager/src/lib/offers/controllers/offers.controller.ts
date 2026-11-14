@@ -1,26 +1,13 @@
 import { RequireScopes } from '@forepath/identity/backend';
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  Header,
-  Param,
-  ParseIntPipe,
-  ParseUUIDPipe,
-  Post,
-  Query,
-  Req,
-  StreamableFile,
-} from '@nestjs/common';
+import { BadRequestException, Controller, Get, Header, Param, ParseIntPipe, ParseUUIDPipe, Post, Query, Req, StreamableFile } from '@nestjs/common';
 
+import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
 import type {
   CustomerOfferDetailResponseDto,
   OffersSummaryResponseDto,
   PaginatedCustomerOffersResponseDto,
 } from '../dto/offer.dto';
 import { OffersCustomerService } from '../services/offers-customer.service';
-import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
 
 /** Largest page of the customer offer lists. */
 const MAX_CUSTOMER_OFFERS_LIMIT = 100;

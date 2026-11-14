@@ -26,7 +26,6 @@ export class CustomerNumberSequencesRepository {
         `,
         [scopeKey],
       );
-
       const lastValue = Number(rows?.[0]?.last_value);
 
       if (!Number.isFinite(lastValue) || lastValue < 1) {

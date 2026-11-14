@@ -1,7 +1,8 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { UserRole } from '@forepath/identity/backend';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
 import { ProjectTicketActionType, ProjectTicketStatus } from '../entities/project.enums';
+
 import { ProjectTicketsService } from './project-tickets.service';
 
 describe('ProjectTicketsService', () => {
@@ -24,7 +25,6 @@ describe('ProjectTicketsService', () => {
     publishTicketComment: jest.fn(),
   };
   const ticketAttachmentsService = { listForTicketIds: jest.fn().mockResolvedValue(new Map()) };
-
   let service: ProjectTicketsService;
   const billingSearchIndexService = { scheduleUpsert: jest.fn(), scheduleDelete: jest.fn() };
 

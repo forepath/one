@@ -25,7 +25,6 @@ describe('AdminDatevExports Selectors', () => {
     debtorCount: 1,
     createdAt: '2026-02-01T00:00:00Z',
   };
-
   const createState = (overrides?: Partial<AdminDatevExportsState>): AdminDatevExportsState => ({
     ...initialAdminDatevExportsState,
     ...overrides,

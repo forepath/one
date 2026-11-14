@@ -6,6 +6,7 @@ import { LessThan, Repository } from 'typeorm';
 
 import type { FileNodeDto } from '../dto/file-node.dto';
 import { AgentDirectoryIndexEntity } from '../entities/agent-directory-index.entity';
+
 import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 
 @Injectable()

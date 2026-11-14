@@ -36,6 +36,7 @@ import { UpdateClientDto } from '../dto/update-client.dto';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ProvisioningProvider } from '../providers/provisioning-provider.interface';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { ClientAgentChatsProxyService } from '../services/client-agent-chats-proxy.service';
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
@@ -46,7 +47,6 @@ import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sy
 import { OpencodeEffectiveConfigSyncService } from '../services/opencode-effective-config-sync.service';
 import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
 import { ProvisioningService } from '../services/provisioning.service';
-import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 
 import { ClientsController } from './clients.controller';
 

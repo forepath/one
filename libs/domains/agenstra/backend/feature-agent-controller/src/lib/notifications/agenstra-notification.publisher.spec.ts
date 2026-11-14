@@ -1,7 +1,7 @@
 import { AuthenticationType } from '@forepath/identity/backend';
+import type { ClientEntity } from '@forepath/identity/backend';
 import { INSTANCE_SCOPE_KEY, NotificationDispatcherService } from '@forepath/shared/backend';
 
-import type { ClientEntity } from '@forepath/identity/backend';
 import type { TicketResponseDto } from '../dto/tickets/ticket-response.dto';
 
 import { AgenstraNotificationPublisher } from './agenstra-notification.publisher';

@@ -7,12 +7,12 @@ import {
   resolvePreviousSegmentRoot,
 } from './file-storage-path.config';
 import { FileStorageProviderFactory } from './file-storage-provider.factory';
+import type { FileStorageProvider } from './file-storage-provider.interface';
 import {
   FILE_STORAGE_PREVIOUS_SCOPE_SEGMENTS,
   FileStorageScope,
   type FileStorageScope as FileStorageScopeType,
 } from './file-storage-scope.constants';
-import type { FileStorageProvider } from './file-storage-provider.interface';
 
 /**
  * Facade for scope-aware file I/O. Resolves the active provider from
@@ -177,6 +177,7 @@ export class FileStorageService {
           root: resolvePreviousSegmentRoot(FILE_STORAGE_PREVIOUS_SCOPE_SEGMENTS.invoices),
           storageKey,
         };
+
       case FileStorageScope.customerOffers: {
         const withOffersPrefix = storageKey.replace(/\\/g, '/').startsWith('offers/')
           ? storageKey
@@ -187,6 +188,7 @@ export class FileStorageService {
           storageKey: withOffersPrefix,
         };
       }
+
       case FileStorageScope.supplierInvoices:
         return {
           root: resolvePreviousSegmentRoot(FILE_STORAGE_PREVIOUS_SCOPE_SEGMENTS.supplierInvoices),

@@ -17,8 +17,8 @@ import {
 } from '../entities/ticket-automation.enums';
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActionType, TicketActorType, TicketStatus } from '../entities/ticket.enums';
-import { AGENSTRA_AUTOMATION_TURN_STATUS } from '../utils/automation-turn-status';
 import { routeAutomationFailure } from '../utils/automation-failure-routing';
+import { AGENSTRA_AUTOMATION_TURN_STATUS } from '../utils/automation-turn-status';
 import { isUsablePartialPrototype } from '../utils/automation-usable-partial';
 import {
   buildAutonomousCommitMessagePrompt,

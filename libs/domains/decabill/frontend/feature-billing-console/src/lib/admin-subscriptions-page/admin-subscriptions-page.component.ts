@@ -45,6 +45,13 @@ import {
 import { filter, firstValueFrom, pairwise } from 'rxjs';
 
 import {
+  formatBillingDate,
+  formatBillingDateRange,
+  formatBillingDateTime,
+  formatBillingMoney,
+} from '../billing-format';
+import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import {
   getProvisioningStatusBadgeTone,
   getProvisioningStatusLabel,
   getSubscriptionStatusBadgeTone,
@@ -53,7 +60,7 @@ import {
   getUnavailableLabel,
   resolveNamedLabel,
 } from '../billing-status-labels';
-import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { getCustomerLabel, getCustomerSecondaryLabel, type CustomerLabelSource } from '../named-label.util';
 import {
   dbBulkSummary,
   dbCopyIdItem,
@@ -67,13 +74,6 @@ import {
 } from '../shared/data-list';
 import { dbServerPaging } from '../shared/server-paging';
 import { provisioningState, subscriptionState } from '../shared/table-states';
-import { getCustomerLabel, getCustomerSecondaryLabel, type CustomerLabelSource } from '../named-label.util';
-import {
-  formatBillingDate,
-  formatBillingDateRange,
-  formatBillingDateTime,
-  formatBillingMoney,
-} from '../billing-format';
 
 interface MeterEntryForm {
   meterId: string;

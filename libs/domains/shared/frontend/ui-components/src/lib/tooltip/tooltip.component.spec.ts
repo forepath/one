@@ -24,7 +24,6 @@ class HostComponent {}
 describe('FpcTooltipComponent placement', () => {
   let fixture: ComponentFixture<HostComponent>;
   let rects: Map<string, DOMRect>;
-
   const rectOf = (el: Element): DOMRect => {
     if (el.classList.contains('fpc-tooltip__bubble')) {
       return new DOMRect(0, 0, BUBBLE_WIDTH, BUBBLE_HEIGHT);

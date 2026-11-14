@@ -46,7 +46,6 @@ describe('AgentManagerInstanceScrapeService', () => {
     getRelease: jest.fn(),
     upsertInstance: jest.fn(),
   };
-
   let service: AgentManagerInstanceScrapeService;
 
   beforeEach(() => {

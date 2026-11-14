@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { SubscriptionStatus } from '../entities/subscription.entity';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
+import { SubscriptionStatus } from '../entities/subscription.entity';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
@@ -9,10 +10,9 @@ import { SubscriptionsRepository } from '../repositories/subscriptions.repositor
 import { getProvisioningCredentials } from '../utils/provider-env-defaults.utils';
 import { resolveItemProvider as resolveSubscriptionItemProvider } from '../utils/provider-selection.utils';
 
-import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
+import { AddonLifecycleService } from './addon-lifecycle.service';
 import { CloudflareDnsService } from './cloudflare-dns.service';
 import { HostnameReservationService } from './hostname-reservation.service';
-import { AddonLifecycleService } from './addon-lifecycle.service';
 import { ProvisioningDispatchService } from './provisioning-dispatch.service';
 import { WithdrawalRefundService } from './withdrawal-refund.service';
 
@@ -157,6 +157,7 @@ export class SubscriptionTeardownService {
       if (item.providerReference && provider && item.serviceType) {
         try {
           const credentials = getProvisioningCredentials(provider, item.serviceType.providerDefaults);
+
           await this.provisioningDispatchService.deprovision(provider, item.providerReference, credentials);
           await this.subscriptionItemsRepository.clearProviderReference(item.id);
           this.billingNotificationPublisher.publish(

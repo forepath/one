@@ -1,15 +1,15 @@
+import { UsersRepository } from '@forepath/identity/backend';
 import {
   EmailNotificationDispatcherService,
   getTenantIdOrDefault,
   type EmailAttachmentRef,
 } from '@forepath/shared/backend';
 import { Injectable, Logger } from '@nestjs/common';
-import { UsersRepository } from '@forepath/identity/backend';
 
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
-import type { OfferEntity } from '../offers/entities/offer.entity';
 import type { SubscriptionEntity } from '../entities/subscription.entity';
+import type { OfferEntity } from '../offers/entities/offer.entity';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 
 @Injectable()

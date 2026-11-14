@@ -126,6 +126,7 @@ export class FpcBreadcrumbsComponent {
 
     inject(DestroyRef).onDestroy(() => {
       observer?.disconnect();
+
       if (frame !== null) cancelAnimationFrame(frame);
     });
 
@@ -136,10 +137,12 @@ export class FpcBreadcrumbsComponent {
         item.icon();
         item.active();
       }
+
       this.divider();
       this.size();
       this.collapseEnabled();
       const list = this.list().nativeElement;
+
       this.overflow();
 
       if (!observer && typeof ResizeObserver !== 'undefined') {
@@ -165,6 +168,7 @@ export class FpcBreadcrumbsComponent {
     const overflow = this.overflow()?.nativeElement ?? null;
 
     for (const item of items) item.host.classList.remove(COLLAPSED);
+
     overflow?.classList.remove(OVERFLOW_SHOWN);
 
     const hidden: FpcBreadcrumbItemComponent[] = [];

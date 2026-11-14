@@ -1,6 +1,6 @@
 import { InvoiceStatus } from '../constants/invoice-status.constants';
-import { BillingIntervalType } from '../entities/service-plan.entity';
 import { PaymentRefundStatus } from '../entities/payment-refund.entity';
+import { BillingIntervalType } from '../entities/service-plan.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
 import { BILLING_BASE_PRICE_CONFIG_KEY } from '../utils/server-type-billing.utils';
 
@@ -35,7 +35,6 @@ describe('WithdrawalRefundService', () => {
   };
   const billingEmailPublisher = { publishPartialCreditDocument: jest.fn() };
   const auditLog = { log: jest.fn() };
-
   const subscriptionItemsRepository = {
     findBySubscription: jest.fn().mockResolvedValue([]),
   };
@@ -45,7 +44,6 @@ describe('WithdrawalRefundService', () => {
       { id: 'cpx11', priceMonthly: 6.49 },
     ]),
   };
-
   const service = new WithdrawalRefundService(
     servicePlansRepository as never,
     subscriptionItemsRepository as never,
@@ -66,7 +64,6 @@ describe('WithdrawalRefundService', () => {
     billingEmailPublisher as never,
     auditLog as never,
   );
-
   const subscription = {
     id: 'sub-1',
     number: 'SUB-001',
@@ -77,7 +74,6 @@ describe('WithdrawalRefundService', () => {
     currentPeriodStart: new Date('2024-01-01T00:00:00Z'),
     currentPeriodEnd: new Date('2024-02-01T00:00:00Z'),
   };
-
   const plan = {
     id: 'plan-1',
     billingIntervalType: BillingIntervalType.MONTH,
@@ -188,8 +184,10 @@ describe('WithdrawalRefundService', () => {
 
   describe('estimateRefundGross with server-type pricing', () => {
     const periodStart = new Date();
+
     periodStart.setUTCDate(periodStart.getUTCDate() - 10);
     const periodEnd = new Date();
+
     periodEnd.setUTCDate(periodEnd.getUTCDate() + 20);
 
     const pricedSubscription = {
@@ -197,7 +195,6 @@ describe('WithdrawalRefundService', () => {
       currentPeriodStart: periodStart,
       currentPeriodEnd: periodEnd,
     };
-
     const pricedPlan = {
       id: 'plan-1',
       billingIntervalType: BillingIntervalType.MONTH,
@@ -209,7 +206,6 @@ describe('WithdrawalRefundService', () => {
       marginFixed: '0',
     };
     const realPricingService = new PricingService();
-
     const pricingAwareService = new WithdrawalRefundService(
       servicePlansRepository as never,
       subscriptionItemsRepository as never,
@@ -286,8 +282,10 @@ describe('WithdrawalRefundService', () => {
 
   it('uses reduced plan tax category when computing refund gross', async () => {
     const periodStart = new Date();
+
     periodStart.setUTCDate(periodStart.getUTCDate() - 10);
     const periodEnd = new Date();
+
     periodEnd.setUTCDate(periodEnd.getUTCDate() + 20);
 
     servicePlansRepository.findByIdOrThrow.mockResolvedValue({

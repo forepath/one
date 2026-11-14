@@ -151,15 +151,19 @@ export const subscriptionServerInfoReducer = createReducer(
       activeItemIdBySubscriptionId[item.subscriptionId] = item.itemId;
       serviceBySubscriptionId[item.subscriptionId] = item.service;
       provisioningStatusBySubscriptionId[item.subscriptionId] = 'active';
+
       if (item.sshAccessGranted === true) {
         sshAccessGrantedBySubscriptionId[item.subscriptionId] = true;
       }
+
       if (item.serviceTypeName?.trim()) {
         serviceTypeNameBySubscriptionId[item.subscriptionId] = item.serviceTypeName.trim();
       }
+
       if (item.displayName !== undefined) {
         displayNameBySubscriptionId[item.subscriptionId] = item.displayName;
       }
+
       delete actionInProgress[item.subscriptionId];
       history.push({
         generatedAt,

@@ -204,7 +204,6 @@ export function mergeHostNetworkingIntoTopology(input: {
   const edges = [...input.edges];
   const seenNodes = new Set(nodes.map((node) => node.id));
   const seenEdges = new Set(edges.map((edge) => edge.id));
-
   const ensureNode = (id: string, label: string, kind: ContainerManagerTopologyNodeKind): void => {
     if (seenNodes.has(id)) {
       return;
@@ -213,7 +212,6 @@ export function mergeHostNetworkingIntoTopology(input: {
     seenNodes.add(id);
     nodes.push({ id, label, kind });
   };
-
   const ensureEdge = (id: string, from: string, to: string, label?: string): void => {
     if (seenEdges.has(id) || from === to) {
       return;
@@ -222,7 +220,6 @@ export function mergeHostNetworkingIntoTopology(input: {
     seenEdges.add(id);
     edges.push({ id, from, to, label });
   };
-
   const dockerLinkedIfaceNames = new Set<string>();
 
   for (const node of input.nodes) {
@@ -238,6 +235,7 @@ export function mergeHostNetworkingIntoTopology(input: {
     }
 
     const ifaceId = `host_iface:${iface.name}`;
+
     ensureNode(ifaceId, ifaceLabel(iface, iface.name), 'host_iface');
     ensureEdge(`exit-${gatewayIp}-on-${iface.name}`, node.id, ifaceId, `on ${iface.name}`);
     dockerLinkedIfaceNames.add(iface.name);
@@ -271,10 +269,12 @@ export function mergeHostNetworkingIntoTopology(input: {
 
     const iface = input.hostInterfaces.find((item) => item.name === route.device);
     const ifaceId = `host_iface:${route.device}`;
+
     ensureNode(ifaceId, ifaceLabel(iface, route.device), 'host_iface');
 
     if (route.gateway) {
       const gwId = `host_gw:${route.gateway}`;
+
       ensureNode(gwId, route.gateway, 'host_gateway');
       ensureEdge(
         `host-route-${route.device}-${route.destination}-${route.gateway}`,
@@ -294,12 +294,14 @@ export function mergeHostNetworkingIntoTopology(input: {
     for (const route of defaultRoutes) {
       if (route.device) {
         const iface = input.hostInterfaces.find((item) => item.name === route.device);
+
         ensureNode(`host_iface:${route.device}`, ifaceLabel(iface, route.device), 'host_iface');
         uplinkIfaceNames.add(route.device);
       }
 
       if (route.gateway) {
         const gwId = `host_gw:${route.gateway}`;
+
         ensureNode(gwId, route.gateway, 'host_gateway');
         ensureEdge(`host-gw-${route.gateway}-internet`, gwId, 'internet', 'default');
         uplinkGatewayIds.add(gwId);

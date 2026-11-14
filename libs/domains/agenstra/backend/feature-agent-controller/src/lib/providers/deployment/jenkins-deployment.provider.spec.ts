@@ -18,7 +18,6 @@ const conn = (overrides: Partial<DeploymentProviderConnection> = {}): Deployment
   secrets: { token: 'jenkins-api-token-secret' },
   ...overrides,
 });
-
 const json = (body: unknown, status = 200): Response => new Response(JSON.stringify(body), { status });
 
 describe('JenkinsDeploymentProvider', () => {

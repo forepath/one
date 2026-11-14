@@ -7,7 +7,6 @@ describe('SubscriptionInstantCancelJobHandler', () => {
   const subscriptionTeardownService = {
     processInstantCancel: jest.fn(),
   };
-
   const handler = new SubscriptionInstantCancelJobHandler(
     subscriptionsRepository as never,
     subscriptionTeardownService as never,

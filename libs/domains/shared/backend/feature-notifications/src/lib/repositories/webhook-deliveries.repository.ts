@@ -65,7 +65,6 @@ export class WebhookDeliveriesRepository {
       .where('delivery.endpoint_id = :endpointId', { endpointId })
       .orderBy('delivery.created_at', 'DESC')
       .offset(keepCount);
-
     const result = await this.repository
       .createQueryBuilder()
       .delete()

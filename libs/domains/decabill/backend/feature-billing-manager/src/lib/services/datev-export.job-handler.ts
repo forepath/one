@@ -5,6 +5,7 @@ import { DatevExportScope, DatevExportStatus } from '../constants/datev-export.c
 import type { DatevExportUnitPayload } from '../queue/datev-export.payload';
 import { DatevExportRepository } from '../repositories/datev-export.repository';
 import { resolvePreviousCalendarMonth } from '../utils/datev-format.util';
+
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { DatevExportConfigService } from './datev-export-config.service';
 import { DatevExportService } from './datev-export.service';
@@ -99,7 +100,6 @@ export class DatevExportJobHandler {
       triggeredBy: payload.triggeredBy,
       force: payload.force,
     };
-
     const result =
       payload.scope === DatevExportScope.TENANT
         ? await runWithTenantId(payload.tenantId, () => this.exportService.runExport(runParams))

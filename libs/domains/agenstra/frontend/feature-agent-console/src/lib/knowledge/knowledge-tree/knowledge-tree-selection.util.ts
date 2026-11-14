@@ -49,7 +49,6 @@ export function isStrictKnowledgeDescendant(
  */
 export function flattenVisibleKnowledgeNodes(nodes: KnowledgeTreeSelectableNode[]): KnowledgeTreeSelectableNode[] {
   const result: KnowledgeTreeSelectableNode[] = [];
-
   const walk = (list: KnowledgeTreeSelectableNode[]): void => {
     for (const node of list) {
       result.push(node);

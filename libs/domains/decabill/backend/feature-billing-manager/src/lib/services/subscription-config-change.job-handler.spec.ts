@@ -26,7 +26,6 @@ describe('SubscriptionConfigChangeJobHandler', () => {
   const configChangeBillingService = { apply: jest.fn() };
   const billingNotificationPublisher = { publishConfigChanged: jest.fn(), publishConfigChangeFailed: jest.fn() };
   const billingEmailPublisher = { publishConfigChangeApplied: jest.fn(), publishConfigChangeFailed: jest.fn() };
-
   const handler = new SubscriptionConfigChangeJobHandler(
     configChangesRepository as never,
     subscriptionsRepository as never,

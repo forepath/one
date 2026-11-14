@@ -81,7 +81,6 @@ describe('StatisticsSecurityRepository', () => {
       [{ host: 'example.org', count: '5' }],
       [{ rule: 'deny_host', count: '5' }],
     ]);
-
     const aggregate = await repository.queryEgressAggregate({ statisticsClientIds: ['sc1'], agentId: 'agent-1' });
 
     expect(aggregate).toEqual(
@@ -160,7 +159,6 @@ describe('StatisticsSecurityRepository', () => {
         },
       ],
     ]);
-
     const inserted = await repository.insertEgressEvents([
       {
         statisticsClientId: 'sc1',

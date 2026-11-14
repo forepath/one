@@ -32,6 +32,7 @@ import type {
 const JENKINS_JOBS_MAX = 500;
 const JENKINS_FOLDER_DEPTH = 4;
 const QUEUE_PREFIX = 'queue:';
+
 /** Single pseudo job id: Jenkins builds have one console log. */
 export const JENKINS_CONSOLE_JOB_ID = 'console';
 const BUILD_TREE =

@@ -5,7 +5,6 @@ describe('OfferExpirationJobHandler', () => {
   const offersAdminService = {
     expireOffer: jest.fn(),
   };
-
   let handler: import('./offer-expiration.job-handler').OfferExpirationJobHandler;
 
   beforeEach(async () => {
@@ -35,7 +34,6 @@ describe('OfferFulfillmentJobHandler', () => {
   const offerFulfillmentService = {
     fulfillLine: jest.fn(),
   };
-
   let handler: import('./offer-fulfillment.job-handler').OfferFulfillmentJobHandler;
 
   beforeEach(async () => {
@@ -71,7 +69,6 @@ describe('OfferStatisticsQueryService', () => {
     countByTimestampField: jest.fn(),
     countTransitionSeries: jest.fn(),
   };
-
   let service: import('./offer-statistics-query.service').OfferStatisticsQueryService;
 
   beforeEach(async () => {
@@ -89,7 +86,6 @@ describe('OfferStatisticsQueryService', () => {
   it('aggregates offer statistics for a date range', async () => {
     const from = new Date('2026-01-01T00:00:00.000Z');
     const to = new Date('2026-01-31T23:59:59.999Z');
-
     const result = await service.getStatistics({ from, to, groupBy: 'day' });
 
     expect(result.draftCount).toBe(1);

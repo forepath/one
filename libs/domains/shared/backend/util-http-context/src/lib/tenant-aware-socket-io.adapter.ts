@@ -3,9 +3,9 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import type { Server, ServerOptions, Socket } from 'socket.io';
 
 import { runWithCorrelationId } from './correlation-id.storage';
+import { getOrInitSocketCorrelationId } from './socket-io.adapter';
 import { readIncomingTenantIdFromHandshake } from './tenant-id.config';
 import { runWithTenantId } from './tenant-id.storage';
-import { getOrInitSocketCorrelationId } from './socket-io.adapter';
 
 export function getOrInitSocketTenantId(socket: Socket): string | undefined {
   const anySocket = socket as unknown as {

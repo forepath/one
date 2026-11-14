@@ -1,6 +1,7 @@
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 import type { FileStorageS3Config } from '../file-storage-s3.config';
+
 import { S3FileStorageProvider } from './s3-file-storage.provider';
 
 describe('S3FileStorageProvider', () => {
@@ -13,7 +14,6 @@ describe('S3FileStorageProvider', () => {
     endpoint: 'https://example.r2.cloudflarestorage.com',
     keyPrefix: 'prod',
   };
-
   let send: jest.Mock;
   let provider: S3FileStorageProvider;
   const originalEnv = process.env;

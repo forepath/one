@@ -1,7 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+
 import { getTenantIdOrDefault } from '@forepath/shared/backend';
 import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
-import { randomUUID } from 'crypto';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { SupplierDocumentSource } from '../constants/supplier-document-source.constants';
@@ -16,8 +18,8 @@ import type {
   SupplierInvoiceDetailResponseDto,
   UpdateSupplierInvoiceDto,
 } from '../dto/supplier-invoice.dto';
-import type { SupplierInvoiceEntity } from '../entities/supplier-invoice.entity';
 import type { SupplierInvoiceLineItemEntity } from '../entities/supplier-invoice-line-item.entity';
+import type { SupplierInvoiceEntity } from '../entities/supplier-invoice.entity';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { SupplierInvoiceLineItemsRepository } from '../repositories/supplier-invoice-line-items.repository';
 import { SupplierInvoiceNumberSequencesRepository } from '../repositories/supplier-invoice-number-sequences.repository';
@@ -31,21 +33,19 @@ import { buildSupplierInvoicePdfStorageKey } from '../utils/supplier-invoice-pdf
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
-import { SupplierContractsService } from './supplier-contracts.service';
 import { StoredFileRegistryService } from './stored-file-registry.service';
+import { SupplierContractsService } from './supplier-contracts.service';
 import { SupplierInvoicePdfService } from './supplier-invoice-pdf.service';
 import { SupplierProfilesService } from './supplier-profiles.service';
 import { TaxCalculationService } from './tax-calculation.service';
 
 const MARK_PAID_ALLOWED: InvoiceStatus[] = [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.OVERDUE];
-
 const ALLOWED_SUPPLIER_DOCUMENT_MIME_TYPES = new Set([
   'application/pdf',
   'application/xml',
   'text/xml',
   'application/octet-stream',
 ]);
-
 const MAX_SUPPLIER_DOCUMENT_BYTES = 15 * 1024 * 1024;
 
 /** Multipart upload shape used by Nest FileInterceptor (avoids Express.Multer typing in unit tests). */
@@ -270,7 +270,6 @@ export class SupplierInvoicesAdminService {
     const supplier = await this.supplierProfilesRepository.findByIdOrThrow(invoice.supplierId);
     const invoiceNumber = await this.resolveIssueInvoiceNumber(invoice, dto, issueDate);
     const issuedAt = new Date();
-
     let documentStorageKey = invoice.documentStorageKey;
     let documentSource = invoice.documentSource;
     let hasUploadedDocument = invoice.hasUploadedDocument;
@@ -394,6 +393,7 @@ export class SupplierInvoicesAdminService {
     }
 
     const today = new Date();
+
     today.setHours(0, 0, 0, 0);
     const dueDate = invoice.dueDate ? new Date(invoice.dueDate) : null;
 

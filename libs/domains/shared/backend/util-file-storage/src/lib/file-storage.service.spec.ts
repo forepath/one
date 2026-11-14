@@ -1,7 +1,7 @@
 import { FileStorageProviderFactory } from './file-storage-provider.factory';
-import { FileStorageService } from './file-storage.service';
 import type { FileStorageProvider } from './file-storage-provider.interface';
 import { FileStorageScope } from './file-storage-scope.constants';
+import { FileStorageService } from './file-storage.service';
 
 describe('FileStorageService', () => {
   const originalEnv = process.env;

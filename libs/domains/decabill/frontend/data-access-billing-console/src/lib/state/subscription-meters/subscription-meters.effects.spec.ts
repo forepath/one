@@ -90,8 +90,10 @@ describe('subscriptionMetersEffects', () => {
     usageService.getSubscriptionMeters.mockReturnValue(of([summary]));
 
     const results: unknown[] = [];
+
     loadSubscriptionMeters$(actions$, usageService).subscribe((result) => {
       results.push(result);
+
       if (results.length === 1) {
         expect(result).toEqual(loadSubscriptionMetersSuccess({ subscriptionId: 'sub-1', summaries: [summary] }));
         done();
@@ -152,8 +154,10 @@ describe('subscriptionMetersEffects', () => {
     adminBillingService.createSubscriptionMeterEntry.mockReturnValue(of(entry));
 
     const results: unknown[] = [];
+
     createMeterEntry$(actions$, adminBillingService).subscribe((result) => {
       results.push(result);
+
       if (results.length === 2) {
         expect(results[0]).toEqual(createMeterEntrySuccess({ subscriptionId: 'sub-1', entry }));
         expect(results[1]).toEqual(loadSubscriptionMeters({ subscriptionId: 'sub-1' }));
@@ -177,8 +181,10 @@ describe('subscriptionMetersEffects', () => {
     adminBillingService.updateSubscriptionMeterEntry.mockReturnValue(of({ ...entry, value: 60 }));
 
     const results: unknown[] = [];
+
     updateMeterEntry$(actions$, adminBillingService).subscribe((result) => {
       results.push(result);
+
       if (results.length === 2) {
         expect(results[0]).toEqual(
           updateMeterEntrySuccess({ subscriptionId: 'sub-1', entry: { ...entry, value: 60 } }),
@@ -203,8 +209,10 @@ describe('subscriptionMetersEffects', () => {
     adminBillingService.deleteSubscriptionMeterEntry.mockReturnValue(of(undefined));
 
     const results: unknown[] = [];
+
     deleteMeterEntry$(actions$, adminBillingService).subscribe((result) => {
       results.push(result);
+
       if (results.length === 2) {
         expect(results[0]).toEqual(deleteMeterEntrySuccess({ subscriptionId: 'sub-1', entryId: entry.id }));
         done();

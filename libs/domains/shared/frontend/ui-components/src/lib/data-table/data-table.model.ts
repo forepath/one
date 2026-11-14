@@ -166,6 +166,7 @@ export function fpcStateSortValue(state: FpcTableState | null | undefined): FpcT
 /** The value a column sorts / renders by (`state` columns: severity key). */
 export function fpcColumnValue<T>(column: FpcTableColumn<T>, row: T): FpcTableCellValue {
   if (column.value) return column.value(row);
+
   if (column.type === 'state' && column.state) return fpcStateSortValue(column.state(row));
 
   return null;
@@ -203,6 +204,7 @@ function compareValues(a: FpcTableCellValue, b: FpcTableCellValue): number {
   const emptyB = b === null || b === undefined || b === '';
 
   if (emptyA || emptyB) return emptyA === emptyB ? 0 : emptyA ? 1 : -1;
+
   if (typeof a === 'number' && typeof b === 'number') return a - b;
 
   return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
@@ -237,6 +239,7 @@ export function fpcSortRows<T>(
 /** Next sort when a header is clicked: asc → desc → none. */
 export function fpcNextSort(current: FpcTableSort | null, column: string): FpcTableSort | null {
   if (!current || current.column !== column) return { column, direction: 'asc' };
+
   if (current.direction === 'asc') return { column, direction: 'desc' };
 
   return null;

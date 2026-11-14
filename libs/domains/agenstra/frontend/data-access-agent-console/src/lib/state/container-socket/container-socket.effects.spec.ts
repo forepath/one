@@ -1,12 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import { OidcAuthService } from '@forepath/identity/frontend';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from '@ngrx/store';
 import { provideMockStore } from '@ngrx/store/testing';
-import { OidcAuthService } from '@forepath/identity/frontend';
 import { of } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
+
+import { selectStatsByContainer } from '../stats/stats.selectors';
 
 import {
   connectSocket,
@@ -31,7 +33,6 @@ import {
 import { connectSocket$, disconnectSocket$ } from './container-socket.effects';
 import { selectSelectedAgentId, selectSelectedClientId } from './container-socket.selectors';
 import { ChatActor, type ForwardedEventPayload } from './container-socket.types';
-import { selectStatsByContainer } from '../stats/stats.selectors';
 
 // Mock socket.io-client
 jest.mock('socket.io-client', () => ({

@@ -116,6 +116,7 @@ describe('UsageService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/subscriptions/${subscriptionId}/meters`);
+
       expect(req.request.method).toBe('GET');
       req.flush(summaries);
     });
@@ -149,6 +150,7 @@ describe('UsageService', () => {
           request.params.get('to') === '2026-01-31' &&
           request.params.get('groupBy') === 'day',
       );
+
       expect(req.request.method).toBe('GET');
       req.flush(history);
     });

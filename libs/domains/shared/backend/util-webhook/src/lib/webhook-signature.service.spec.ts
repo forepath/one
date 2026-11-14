@@ -1,5 +1,5 @@
-import { WebhookSignatureService } from './webhook-signature.service';
 import { applyWebhookAuth, assertWebhookAuthCompatible } from './webhook-auth-applicator';
+import { WebhookSignatureService } from './webhook-signature.service';
 
 describe('WebhookSignatureService', () => {
   const service = new WebhookSignatureService();

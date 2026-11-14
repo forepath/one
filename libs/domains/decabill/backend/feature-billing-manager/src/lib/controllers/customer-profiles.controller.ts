@@ -4,10 +4,10 @@ import { BadRequestException, Body, Controller, Get, Post, Req } from '@nestjs/c
 import { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto';
 import { CustomerProfileDto } from '../dto/customer-profile.dto';
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
+import { OfferProfileSummaryService } from '../offers/services/offer-profile-summary.service';
 import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
 import { CustomerProfilesService } from '../services/customer-profiles.service';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
-import { OfferProfileSummaryService } from '../offers/services/offer-profile-summary.service';
 
 @Controller('customer-profile')
 @RequireScopes('customer_profile:write')

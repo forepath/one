@@ -14,9 +14,7 @@ const conn = (overrides: Partial<DeploymentProviderConnection> = {}): Deployment
   secrets: { token: 'glpat-secretsecretsecret' },
   ...overrides,
 });
-
 const json = (body: unknown, status = 200): Response => new Response(JSON.stringify(body), { status });
-
 const pipeline = {
   id: 77,
   iid: 7,

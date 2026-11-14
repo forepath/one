@@ -21,18 +21,15 @@ export enum CloudInitServiceType {
 }
 
 const INTEGRATED_SERVICE_VALUES = new Set<string>(Object.values(IntegratedProvisioningService));
-
 /** Legacy ids accepted only when reading/parsing pre-rename data or clients. */
 const LEGACY_INTEGRATED_SERVICE_ALIASES: Record<string, IntegratedProvisioningService> = {
   controller: IntegratedProvisioningService.AgenstraController,
   manager: IntegratedProvisioningService.AgenstraManager,
 };
-
 const LEGACY_TO_CANONICAL: Record<string, string> = {
   controller: IntegratedProvisioningService.AgenstraController,
   manager: IntegratedProvisioningService.AgenstraManager,
 };
-
 const CANONICAL_TO_LEGACY: Record<string, string> = {
   [IntegratedProvisioningService.AgenstraController]: 'controller',
   [IntegratedProvisioningService.AgenstraManager]: 'manager',
@@ -149,7 +146,6 @@ export function rewriteIntegratedServiceIdsInConfig(
   const map = direction === 'toCanonical' ? LEGACY_TO_CANONICAL : CANONICAL_TO_LEGACY;
   let changed = false;
   const next: Record<string, unknown> = { ...config };
-
   const rewrittenService = rewriteServiceId(next['service'], map);
 
   if (rewrittenService) {

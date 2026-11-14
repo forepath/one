@@ -14,7 +14,6 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthenticationFacade } from '@forepath/identity/frontend';
 import {
   InvoicesFacade,
   SubscriptionsFacade,
@@ -23,6 +22,7 @@ import {
   type InvoiceResponse,
   type InvoicesSummaryResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import { AuthenticationFacade } from '@forepath/identity/frontend';
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
@@ -64,8 +64,12 @@ import {
   take,
 } from 'rxjs';
 
-import { getInvoiceStatusBadgeTone, getInvoiceStatusLabel } from '../billing-status-labels';
+import { formatBillingDate, formatBillingMoney } from '../billing-format';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { getInvoiceStatusBadgeTone, getInvoiceStatusLabel } from '../billing-status-labels';
+import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
+import { getUnnumberedInvoiceLabel } from '../named-label.util';
+import { NextBillingDayPipe } from '../pipes/next-billing-day.pipe';
 import {
   dbBulkSummary,
   dbCopyIdItem,
@@ -80,10 +84,6 @@ import {
 import { invoiceSummaryItems, invoiceTaxItems } from '../shared/invoice-totals';
 import { dbPagerTotal, dbServerPaging, type DbPageQuery } from '../shared/server-paging';
 import { invoiceState } from '../shared/table-states';
-import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
-import { NextBillingDayPipe } from '../pipes/next-billing-day.pipe';
-import { getUnnumberedInvoiceLabel } from '../named-label.util';
-import { formatBillingDate, formatBillingMoney } from '../billing-format';
 
 type CustomerBillingMobilePanel = 'openOverdue' | 'history';
 
@@ -276,6 +276,7 @@ export class InvoicesComponent implements OnInit {
 
         return;
       }
+
       untracked(() => (panel === 'history' ? this.historyPaging : this.openPaging).reload());
     });
   }
@@ -355,6 +356,7 @@ export class InvoicesComponent implements OnInit {
     const silent = { silent: true } as const;
 
     this.invoicesFacade.loadInvoicesSummary(silent);
+
     // The shown tab's current page, silently (no spinner, rows replaced when the answer arrives).
     if (this.mobilePanel() === 'history') {
       this.invoicesFacade.loadHistoryInvoices({ ...silent, ...this.currentQuery(this.historyPaging) });

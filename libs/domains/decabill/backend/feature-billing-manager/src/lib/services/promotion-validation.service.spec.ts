@@ -7,6 +7,7 @@ import {
 } from '../constants/promotion.constants';
 import { PromotionAdvantageType } from '../constants/promotion.constants';
 import { SubscriptionStatus } from '../entities/subscription.entity';
+
 import { PromotionValidationService } from './promotion-validation.service';
 
 describe('PromotionValidationService', () => {
@@ -24,9 +25,7 @@ describe('PromotionValidationService', () => {
     findByIdOrThrow: jest.fn(),
   };
   const auditLog = { log: jest.fn() };
-
   let service: PromotionValidationService;
-
   const basePromotion = {
     id: 'promo-1',
     code: 'SAVE10',

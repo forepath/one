@@ -38,13 +38,13 @@ import {
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActionType, TicketActorType, TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { assertValidPreferredModel } from '../utils/preferred-model.utils';
 import {
   DEFAULT_TICKET_AUTOMATION_BRANCH_STRATEGY,
   type TicketAutomationBranchStrategy,
 } from '../utils/ticket-automation-branch.constants';
 import { ticketActivityEntityToDto } from '../utils/ticket-board-realtime-mappers';
 import { parseAndValidateVerifierProfile } from '../utils/verifier-profile.validation';
-import { assertValidPreferredModel } from '../utils/preferred-model.utils';
 
 import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
 import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';

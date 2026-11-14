@@ -50,7 +50,6 @@ const NETSTACK_RUNTIME: Readonly<Record<IsolationLabLevel, string>> = {
   sandboxed: 'runsc-systrap',
   'sandboxed-kvm': 'runsc-kvm',
 };
-
 const KERNEL_STACK_RUNTIME: Readonly<Record<IsolationLabLevel, string>> = {
   standard: 'runc',
   sandboxed: 'runsc-systrap-hostnet',

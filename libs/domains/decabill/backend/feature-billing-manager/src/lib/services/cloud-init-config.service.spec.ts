@@ -1,6 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { CloudInitConfigEntity } from '../entities/cloud-init-config.entity';
+
 import { CloudInitConfigService } from './cloud-init-config.service';
 
 describe('CloudInitConfigService', () => {
@@ -145,7 +146,6 @@ describe('CloudInitConfigService', () => {
         ],
         envDefaultValues: {},
       } as unknown as CloudInitConfigEntity;
-
       const resolved = service.resolveEnvironmentVariables(randomConfig, {});
 
       expect(resolved.API_KEY).toHaveLength(24);
@@ -164,6 +164,7 @@ describe('CloudInitConfigService', () => {
 
     it('returns active configs', async () => {
       const row = { id: 'cfg-1', isActive: true };
+
       cloudInitConfigsRepository.findByIdOrThrow.mockResolvedValue(row);
 
       await expect(service.findByIdForProvisioning('cfg-1')).resolves.toBe(row);

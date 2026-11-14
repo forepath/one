@@ -2,8 +2,8 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import type { Socket } from 'socket.io';
 
 import * as correlationStorage from './correlation-id.storage';
-import * as tenantStorage from './tenant-id.storage';
 import { getOrInitSocketTenantId, TenantAwareSocketIoAdapter } from './tenant-aware-socket-io.adapter';
+import * as tenantStorage from './tenant-id.storage';
 
 describe('tenant-aware-socket-io.adapter', () => {
   describe('getOrInitSocketTenantId', () => {
@@ -49,13 +49,13 @@ describe('tenant-aware-socket-io.adapter', () => {
       const fakeServer = {
         on: (event: string, handler: (socket: Socket) => void) => {
           serverHandlers[event] = handler;
+
           return fakeServer;
         },
       } as unknown as { on: (event: string, handler: (socket: Socket) => void) => unknown };
-
       const ioSpy = jest.spyOn(IoAdapter.prototype, 'createIOServer').mockReturnValue(fakeServer as never);
-
       const adapter = new TenantAwareSocketIoAdapter(undefined);
+
       adapter.createIOServer(0);
 
       const disconnect = jest.fn();
@@ -76,18 +76,17 @@ describe('tenant-aware-socket-io.adapter', () => {
     it('wraps inbound socket packets in runWithCorrelationId and runWithTenantId', () => {
       const correlationSpy = jest.spyOn(correlationStorage, 'runWithCorrelationId');
       const tenantSpy = jest.spyOn(tenantStorage, 'runWithTenantId');
-
       const serverHandlers: Record<string, (socket: Socket) => void> = {};
       const fakeServer = {
         on: (event: string, handler: (socket: Socket) => void) => {
           serverHandlers[event] = handler;
+
           return fakeServer;
         },
       } as unknown as { on: (event: string, handler: (socket: Socket) => void) => unknown };
-
       const ioSpy = jest.spyOn(IoAdapter.prototype, 'createIOServer').mockReturnValue(fakeServer as never);
-
       const adapter = new TenantAwareSocketIoAdapter(undefined);
+
       adapter.createIOServer(0);
 
       let packetMiddleware: ((packet: unknown, next: () => void) => void) | undefined;
@@ -103,6 +102,7 @@ describe('tenant-aware-socket-io.adapter', () => {
       serverHandlers['connection'](socket);
 
       const next = jest.fn();
+
       packetMiddleware?.(['event', { a: 1 }], next);
 
       expect(correlationSpy).toHaveBeenCalled();
@@ -119,13 +119,13 @@ describe('tenant-aware-socket-io.adapter', () => {
       const fakeServer = {
         on: (event: string, handler: (socket: Socket) => void) => {
           serverHandlers[event] = handler;
+
           return fakeServer;
         },
       } as unknown as { on: (event: string, handler: (socket: Socket) => void) => unknown };
-
       const ioSpy = jest.spyOn(IoAdapter.prototype, 'createIOServer').mockReturnValue(fakeServer as never);
-
       const adapter = new TenantAwareSocketIoAdapter(undefined);
+
       adapter.createIOServer(0);
 
       let packetMiddleware: ((packet: unknown, next: (error?: Error) => void) => void) | undefined;
@@ -147,6 +147,7 @@ describe('tenant-aware-socket-io.adapter', () => {
       };
 
       const next = jest.fn();
+
       packetMiddleware?.(['event'], next);
 
       expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: 'Invalid tenant' }));
@@ -168,7 +169,6 @@ describe('tenant-aware-socket-io.adapter', () => {
       fakeServer.on.mockReturnValue(fakeServer);
 
       const ioSpy = jest.spyOn(IoAdapter.prototype, 'createIOServer').mockReturnValue(fakeServer as never);
-
       const adapter = new TenantAwareSocketIoAdapter(undefined);
       const server = adapter.createIOServer(0);
 

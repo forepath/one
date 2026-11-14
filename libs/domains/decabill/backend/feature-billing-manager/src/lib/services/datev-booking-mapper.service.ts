@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 
+import { DatevExportScope, DATEV_BOOKING_ROW_FIELD_COUNT } from '../constants/datev-export.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 import { TaxMode } from '../constants/tax-mode.constants';
-import { DatevExportScope, DATEV_BOOKING_ROW_FIELD_COUNT } from '../constants/datev-export.constants';
 import type { InvoiceCreditDocumentEntity } from '../entities/invoice-credit-document.entity';
 import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import type { SupplierInvoiceLineItemEntity } from '../entities/supplier-invoice-line-item.entity';
 import type { SupplierInvoiceEntity } from '../entities/supplier-invoice.entity';
 import { formatDatevAmount, formatDatevDate, truncateDatevText } from '../utils/datev-format.util';
-import { buildCreditNoteNumber } from './e-invoice-document-options';
+
 import type { DatevTenantExportConfig } from './datev-export-config.service';
+import { buildCreditNoteNumber } from './e-invoice-document-options';
 
 export interface DatevBookingRowInput {
   amountGross: number;

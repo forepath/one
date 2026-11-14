@@ -96,6 +96,7 @@ describe('ProjectsEffects', () => {
   it('loadProjects$ loads the requested page with the total', (done) => {
     actions$ = of(loadProjects({ page: 2, pageSize: 10 }));
     const items = Array(10).fill(project);
+
     projectsService.list.mockReturnValue(of({ items, total: 20, limit: 10, offset: 10 }));
 
     loadProjects$(actions$, projectsService).subscribe((result) => {
@@ -202,6 +203,7 @@ describe('ProjectsEffects', () => {
       milestoneCount: 0,
       openMilestoneCount: 0,
     };
+
     actions$ = of(loadProjectSummary({ projectId: 'p-1' }));
     projectsService.getSummary.mockReturnValue(of(summary));
 

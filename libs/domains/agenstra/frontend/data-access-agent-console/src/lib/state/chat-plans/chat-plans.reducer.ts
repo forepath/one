@@ -1,5 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 
+import type { ChatPlanResponse } from '../container-socket/container-socket.types';
+
 import {
   chatPlanUpsertReceived,
   clearChatPlansError,
@@ -17,8 +19,6 @@ import {
   updateChatPlanFailure,
   updateChatPlanSuccess,
 } from './chat-plans.actions';
-import type { ChatPlanResponse } from '../container-socket/container-socket.types';
-
 import type { ChatPlanActivityDto } from './chat-plans.types';
 
 export interface ChatPlansState {

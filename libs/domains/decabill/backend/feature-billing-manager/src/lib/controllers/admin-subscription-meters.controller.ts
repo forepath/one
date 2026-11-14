@@ -49,6 +49,7 @@ export class AdminSubscriptionMetersController {
     @Req() req?: RequestWithUser,
   ): Promise<SubscriptionMeterHistoryDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     ensureAdmin(userInfo);
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(id);
     const groupBy = query.groupBy ?? 'day';
@@ -69,6 +70,7 @@ export class AdminSubscriptionMetersController {
     @Req() req?: RequestWithUser,
   ): Promise<SubscriptionMeterSummaryDto[]> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     ensureAdmin(userInfo);
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(id);
 
@@ -88,6 +90,7 @@ export class AdminSubscriptionMetersController {
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
   ): Promise<PaginatedUsageMeterEntriesResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     ensureAdmin(userInfo);
     await this.subscriptionsRepository.findByIdOrThrow(id);
 
@@ -136,6 +139,7 @@ export class AdminSubscriptionMetersController {
     @Req() req?: RequestWithUser,
   ): Promise<UsageMeterEntryResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     ensureAdmin(userInfo);
     await this.subscriptionsRepository.findByIdOrThrow(id);
 
@@ -151,6 +155,7 @@ export class AdminSubscriptionMetersController {
     @Req() req?: RequestWithUser,
   ): Promise<void> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
     ensureAdmin(userInfo);
     await this.subscriptionsRepository.findByIdOrThrow(id);
     await this.usageService.deleteMeterEntry(id, entryId);

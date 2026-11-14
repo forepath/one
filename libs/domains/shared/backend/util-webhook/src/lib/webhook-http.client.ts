@@ -45,7 +45,6 @@ export class WebhookHttpClient {
       ...request.headers,
       ...applied.headers,
     };
-
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 

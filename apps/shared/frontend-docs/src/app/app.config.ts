@@ -7,6 +7,7 @@ import { createCookieConsentConfig } from '@forepath/shared/frontend/util-cookie
 import { provideNgcCookieConsent } from 'ngx-cookieconsent';
 
 import { environment, provideLocale } from '../runtime-environment';
+
 import { appRoutes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {

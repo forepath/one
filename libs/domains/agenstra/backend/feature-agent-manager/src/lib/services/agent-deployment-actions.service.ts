@@ -1,3 +1,5 @@
+import { randomBytes } from 'crypto';
+
 import {
   parseAgentTaskIdFromResumeSessionSuffix,
   type AgentDeploymentActionResponse,
@@ -9,7 +11,6 @@ import {
   type DeploymentWorkflowSummary,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { randomBytes } from 'crypto';
 
 import {
   AGENT_CONTEXT_ACCESS_REQUEST_TTL_MS,
@@ -27,7 +28,6 @@ import { AgentDeploymentsApiService } from './agent-deployments-api.service';
 
 /** Session key of tickets minted for hidden sessions (see the agents gateway). */
 const AUTO_SESSION_KEY_PREFIX = 'suffix:';
-
 /** Characters of one input value shown in an approval prompt. */
 const INPUT_PREVIEW_LENGTH = 200;
 

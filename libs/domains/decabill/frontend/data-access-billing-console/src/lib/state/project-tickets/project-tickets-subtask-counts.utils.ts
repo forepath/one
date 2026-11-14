@@ -1,5 +1,6 @@
-import { isTerminalTicketStatus } from './project-tickets.constants';
 import type { ProjectTicketResponse, ProjectTicketSubtaskCountsDto } from '../../types/projects.types';
+
+import { isTerminalTicketStatus } from './project-tickets.constants';
 
 function directDescendantTickets(
   ticket: ProjectTicketResponse,

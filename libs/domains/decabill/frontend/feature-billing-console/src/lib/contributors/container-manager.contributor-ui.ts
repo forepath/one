@@ -16,6 +16,7 @@ import {
 import type { ActionReducer } from '@ngrx/store';
 
 import { ContainerManagerTabComponent } from '../service-detail-page/tabs/container-manager/container-manager-tab.component';
+
 import type { ContributorUiModule } from './contributor-ui.types';
 
 export const containerManagerContributorUi: ContributorUiModule = {

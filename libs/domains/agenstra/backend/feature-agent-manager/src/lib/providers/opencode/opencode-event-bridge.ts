@@ -35,11 +35,13 @@ export class OpenCodeEventBridge {
     switch (event.type) {
       case 'message.part.updated':
         return event.properties.part.sessionID;
+
       case 'message.updated': {
         const info = event.properties.info;
 
         return typeof info.sessionID === 'string' ? info.sessionID : undefined;
       }
+
       case 'session.idle':
       case 'session.error':
       case 'permission.updated':
@@ -47,6 +49,7 @@ export class OpenCodeEventBridge {
       case 'permission.asked':
       case 'permission.v2.asked':
       case 'question.asked':
+
       case 'question.v2.asked': {
         const payload = ('properties' in event && event.properties) || ('data' in event && event.data) || undefined;
 
@@ -58,6 +61,7 @@ export class OpenCodeEventBridge {
 
         return undefined;
       }
+
       default:
         return undefined;
     }
@@ -72,7 +76,6 @@ export class OpenCodeEventBridge {
     const queue: Event[] = [];
     let done = false;
     const streamError: unknown | null = null;
-
     const notify = (() => {
       let resolve: (() => void) | null = null;
       const wait = () =>
@@ -86,7 +89,6 @@ export class OpenCodeEventBridge {
 
       return { wait, wake };
     })();
-
     const listener: EventListener = (event) => {
       if (event.type === 'server.connected') {
         return;
@@ -102,7 +104,6 @@ export class OpenCodeEventBridge {
       queue.push(event);
       notify.wake();
     };
-
     const workerKey = this.workerKey(agentId, containerId);
     const subscription = await this.ensureWorkerSubscription(agentId, containerId, workerKey);
 
@@ -164,7 +165,6 @@ export class OpenCodeEventBridge {
     const started = new Promise<void>((resolve) => {
       resolveStarted = resolve;
     });
-
     const subscription: WorkerSubscription = { listeners, abort, started };
 
     this.subscriptions.set(workerKey, subscription);

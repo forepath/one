@@ -7,7 +7,6 @@ import { of, Subject, throwError } from 'rxjs';
 
 import { ClientsService } from '../../services/clients.service';
 
-import { clientsReducer, initialClientsState } from './clients.reducer';
 
 import {
   addClientUser,
@@ -69,6 +68,7 @@ import {
   setActiveClient$,
   updateClient$,
 } from './clients.effects';
+import { clientsReducer, initialClientsState } from './clients.reducer';
 import type {
   ClientIsolationSummaryDto,
   ClientResponseDto,

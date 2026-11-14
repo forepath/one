@@ -4,6 +4,7 @@ import { action } from 'storybook/actions';
 
 import { FpcButtonComponent } from '../button/button.component';
 import { FpcButtonGroupComponent } from '../button-group/button-group.component';
+
 import { FpcModalFooterDirective } from './modal-footer.directive';
 import { FpcModalComponent } from './modal.component';
 

@@ -5,9 +5,10 @@ import { FpcBadgeComponent } from '../badge/badge.component';
 import { FpcButtonComponent } from '../button/button.component';
 import { FpcEmptyStateComponent } from '../empty-state/empty-state.component';
 import { FpcLaneHeaderComponent } from '../lane-header/lane-header.component';
-import { FpcListItemComponent } from '../list-item/list-item.component';
 import { FpcListComponent } from '../list/list.component';
+import { FpcListItemComponent } from '../list-item/list-item.component';
 import { FpcSearchFieldComponent } from '../search-field/search-field.component';
+
 import { FpcBoardLaneComponent } from './board-lane.component';
 
 const meta: Meta<FpcBoardLaneComponent> = {

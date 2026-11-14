@@ -22,6 +22,7 @@ import {
   AGENT_CONTEXT_MAX_REFS_PER_REQUEST,
   AGENT_CONTEXT_MAX_SEARCH_RESULTS,
 } from '../constants/agent-context.constants';
+import { isTicketAutomationResumeSessionSuffix } from '../constants/chat-session.constants';
 import type {
   AgentContextControllerContent,
   AgentContextControllerMetadata,
@@ -31,7 +32,6 @@ import type {
   AgentContextTicketRecord,
 } from '../types/agent-context.types';
 
-import { isTicketAutomationResumeSessionSuffix } from '../constants/chat-session.constants';
 
 import { AgentActiveTurnsService } from './agent-active-turns.service';
 import { AgentContextAccessService, type AgentContextAccessReply } from './agent-context-access.service';

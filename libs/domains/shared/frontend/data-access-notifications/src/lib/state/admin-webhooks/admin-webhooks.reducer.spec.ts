@@ -1,4 +1,10 @@
 import {
+  WebhookAuthType,
+  WebhookHttpMethod,
+  type WebhookEndpointResponseDto,
+} from '../../types/webhook-endpoint.types';
+
+import {
   clearAdminWebhookCreatedSigningSecret,
   clearAdminWebhooksError,
   createAdminWebhook,
@@ -16,11 +22,6 @@ import {
   updateAdminWebhookSuccess,
 } from './admin-webhooks.actions';
 import { adminWebhooksReducer, initialAdminWebhooksState } from './admin-webhooks.reducer';
-import {
-  WebhookAuthType,
-  WebhookHttpMethod,
-  type WebhookEndpointResponseDto,
-} from '../../types/webhook-endpoint.types';
 
 describe('adminWebhooksReducer', () => {
   const baseEndpoint = (over: Partial<WebhookEndpointResponseDto> = {}): WebhookEndpointResponseDto => ({

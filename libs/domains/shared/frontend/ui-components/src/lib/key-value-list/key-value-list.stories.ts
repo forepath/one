@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
+
 import { FpcKeyValueListComponent } from './key-value-list.component';
 
 const meta: Meta = {

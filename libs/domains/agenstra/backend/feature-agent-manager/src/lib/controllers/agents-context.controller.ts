@@ -46,7 +46,6 @@ import { authenticateAgentContextCall } from '../utils/agent-context-auth.utils'
 
 /** Session key of tickets minted for hidden sessions (see the agents gateway). */
 const HIDDEN_SESSION_KEY_PREFIX = 'suffix:';
-
 /** Change fields an MCP content tool call must carry unchanged (see {@link AgentsContextController.requestChange}). */
 const CHANGE_ARG_FIELDS = [
   'ref',

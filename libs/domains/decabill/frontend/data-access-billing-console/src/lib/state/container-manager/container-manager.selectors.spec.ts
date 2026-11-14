@@ -1,9 +1,9 @@
+import { initialContainerManagerState } from './container-manager.reducer';
 import {
   selectContainerManagerContainers,
   selectContainerManagerLoadingAny,
   selectContainerManagerSelectedContainer,
 } from './container-manager.selectors';
-import { initialContainerManagerState } from './container-manager.reducer';
 
 describe('containerManagerSelectors', () => {
   const state = {

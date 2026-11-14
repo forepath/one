@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { FpcMenuItem } from '../menu/menu.types';
+
 import {
   FpcDataTableComponent,
   FpcDataTableFooterDirective,
@@ -25,7 +26,6 @@ const columns: FpcTableColumn<Row>[] = [
   { id: 'status', label: 'Status', value: (row) => row.status },
   { id: 'notes', label: 'Notes', hidden: true },
 ];
-
 const rows: Row[] = [
   { id: 'a', name: 'web-10', cpu: 2, status: 'ready' },
   { id: 'b', name: 'web-2', cpu: null, status: 'pending' },
@@ -112,6 +112,7 @@ describe('FpcDataTableComponent', () => {
   function setup() {
     localStorage.clear();
     const fixture = TestBed.createComponent(HostComponent);
+
     fixture.detectChanges();
 
     return { fixture, host: fixture.nativeElement as HTMLElement, app: fixture.componentInstance };
@@ -144,6 +145,7 @@ describe('FpcDataTableComponent', () => {
     expect(scroller.querySelectorAll('tr.fpc-data-table__row')).toHaveLength(3);
     // Same column structure in both tables.
     const headCols = head.querySelectorAll('colgroup > col').length;
+
     expect(scroller.querySelectorAll('colgroup > col').length).toBe(headCols);
     expect(headCols).toBe(5);
     // Both tables are presentational; the roles come from the rows / cells; the sizer copy is hidden.
@@ -240,6 +242,7 @@ describe('FpcDataTableComponent', () => {
     (bodyRows(host)[0].querySelector('[data-testid="fpc-data-table-row-more"]') as HTMLButtonElement).click();
     fixture.detectChanges();
     const item = host.querySelector('[data-testid="fpc-context-menu"] [data-item-id="delete"]') as HTMLButtonElement;
+
     expect(item.textContent).toContain('Delete web-10');
     item.click();
     expect(app.actions.map((action) => [action.row.id, action.item.id])).toEqual([['a', 'delete']]);
@@ -262,6 +265,7 @@ describe('FpcDataTableComponent', () => {
     expect(app.refreshed).toBe(1);
 
     const search = host.querySelector('fpc-search-field input') as HTMLInputElement;
+
     search.value = 'kind:Node';
     search.dispatchEvent(new Event('input'));
     fixture.detectChanges();
@@ -270,6 +274,7 @@ describe('FpcDataTableComponent', () => {
 
   it('virtualizes long lists', () => {
     const { fixture, host, app } = setup();
+
     app.rows.set(
       Array.from({ length: 5000 }, (_, index) => ({
         id: `r${index}`,
@@ -287,6 +292,7 @@ describe('FpcDataTableComponent', () => {
 
   it('shows the empty text without rows', () => {
     const { fixture, host, app } = setup();
+
     app.rows.set([]);
     fixture.detectChanges();
     expect(host.querySelector('.fpc-data-table__empty')?.textContent).toContain('Nothing to show');
@@ -327,6 +333,7 @@ class StickyHostComponent {
 describe('FpcDataTableComponent sticky head / foot', () => {
   it('sticks the head by default and the footer row when one exists', () => {
     const fixture = TestBed.createComponent(StickyHostComponent);
+
     fixture.detectChanges();
     const table = fixture.nativeElement.querySelector('fpc-data-table') as HTMLElement;
 
@@ -343,6 +350,7 @@ describe('FpcDataTableComponent sticky head / foot', () => {
 
   it('keeps the first column in view on request (wide comparisons)', () => {
     const fixture = TestBed.createComponent(StickyHostComponent);
+
     fixture.detectChanges();
     const inner = () => fixture.nativeElement.querySelector('table') as HTMLTableElement;
 
@@ -356,6 +364,7 @@ describe('FpcDataTableComponent sticky head / foot', () => {
 
   it('has no tfoot (and no sticky footer) without a footer template', () => {
     const fixture = TestBed.createComponent(StickyHostComponent);
+
     fixture.componentInstance.withFooter.set(false);
     fixture.detectChanges();
     const table = fixture.nativeElement.querySelector('fpc-data-table') as HTMLElement;
@@ -391,16 +400,19 @@ class DetailHostComponent {
 describe('FpcDataTableComponent row detail', () => {
   it('renders the detail row under the expanded row only', () => {
     const fixture = TestBed.createComponent(DetailHostComponent);
+
     fixture.detectChanges();
     const table = fixture.nativeElement.querySelector('fpc-data-table') as HTMLElement;
 
     expect(table.querySelector('[data-testid="fpc-data-table-detail"]')).toBeNull();
     const row = table.querySelector('tr[data-row-id="b"]') as HTMLElement;
+
     expect(row.getAttribute('aria-expanded')).toBe('false');
 
     row.querySelector('td')?.click();
     fixture.detectChanges();
     const detail = table.querySelector('[data-testid="fpc-data-table-detail"]') as HTMLElement;
+
     expect(detail.textContent).toContain('detail of web-2');
     expect(detail.previousElementSibling?.getAttribute('data-row-id')).toBe('b');
     expect(row.getAttribute('aria-expanded')).toBe('true');
@@ -421,16 +433,18 @@ class ChooserHostComponent {
 describe('FpcDataTableComponent column chooser placement', () => {
   it('puts a lone chooser into the head corner and keeps the toolbar for search', () => {
     const fixture = TestBed.createComponent(ChooserHostComponent);
+
     fixture.detectChanges();
     const table = fixture.nativeElement.querySelector('fpc-data-table') as HTMLElement;
-
     // No search / filters / refresh: the chooser sits in the trailing head cell, body rows get the matching cell.
     const corner = table.querySelector('thead th.fpc-data-table__columns-cell') as HTMLElement;
+
     expect(corner.querySelector('[data-testid="fpc-data-table-columns"]')).not.toBeNull();
     expect(
       table.querySelector('[data-testid="fpc-data-table-toolbar"] [data-testid="fpc-data-table-columns"]'),
     ).toBeNull();
     const firstRow = table.querySelector('tbody tr[data-row-id]') as HTMLElement;
+
     expect(firstRow.querySelectorAll('td').length).toBe(columns.filter((c) => !c.hidden).length + 1);
 
     fixture.componentInstance.searchable.set(true);
@@ -455,6 +469,7 @@ class EmptyHostComponent {
 describe('FpcDataTableComponent empty vs no matches', () => {
   it('shows the empty state without a query and "No matches" while searching', () => {
     const fixture = TestBed.createComponent(EmptyHostComponent);
+
     fixture.detectChanges();
     const table = fixture.nativeElement.querySelector('fpc-data-table') as HTMLElement;
 
@@ -470,6 +485,7 @@ describe('FpcDataTableComponent empty vs no matches', () => {
 describe('FpcDataTableComponent toolbar icon controls', () => {
   it('renders the column chooser as a quiet square toolbar button (shared fpc-icon-btn + fpc-toolbar-btn)', () => {
     const fixture = TestBed.createComponent(ChooserHostComponent);
+
     fixture.componentInstance.searchable.set(true);
     fixture.detectChanges();
     const table = fixture.nativeElement.querySelector('fpc-data-table') as HTMLElement;
@@ -494,7 +510,6 @@ const stateRows: StateRow[] = Array.from({ length: 60 }, (_, index) => ({
   state: index % 3 === 0 ? 'failed' : index % 3 === 1 ? 'pending' : 'ok',
   group: index % 2 === 0 ? 'even' : 'odd',
 }));
-
 const STATE_LABEL = { ok: 'Healthy', failed: 'Failed', pending: 'Pending' } as const;
 const STATE_TONE = { ok: 'success', failed: 'danger', pending: 'warning' } as const;
 
@@ -556,6 +571,7 @@ class PagedHostComponent {
 describe('FpcDataTableComponent data-list pattern (3.38 D1–D4)', () => {
   function setup(configure?: (app: PagedHostComponent) => void) {
     const fixture = TestBed.createComponent(PagedHostComponent);
+
     configure?.(fixture.componentInstance);
     fixture.detectChanges();
 
@@ -637,6 +653,7 @@ describe('FpcDataTableComponent data-list pattern (3.38 D1–D4)', () => {
     const labels = Array.from(host.querySelectorAll('[data-testid="fpc-data-table-state"]')).map((el) =>
       el.getAttribute('aria-label'),
     );
+
     expect(labels.slice(0, 20).every((label) => label === 'Failed')).toBe(true);
   });
 
@@ -682,6 +699,7 @@ describe('FpcDataTableComponent data-list pattern (3.38 D1–D4)', () => {
     expect(app.actions).toEqual(['open']);
 
     const first = host.querySelector('tr.fpc-data-table__row') as HTMLElement;
+
     first.focus();
     first.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
     expect(document.activeElement).toBe(host.querySelectorAll('tr.fpc-data-table__row')[1]);
@@ -689,6 +707,7 @@ describe('FpcDataTableComponent data-list pattern (3.38 D1–D4)', () => {
 
   it('persists the page size per table', async () => {
     const first = setup((app) => app.persistKey.set('things'));
+
     await first.fixture.whenStable();
 
     (first.host.querySelector('[data-testid="fpc-pager-size"]') as HTMLSelectElement).value = '50';
@@ -697,6 +716,7 @@ describe('FpcDataTableComponent data-list pattern (3.38 D1–D4)', () => {
     expect(JSON.parse(localStorage.getItem('fpc-data-table:things') ?? '{}').pageSize).toBe(50);
 
     const second = setup((app) => app.persistKey.set('things'));
+
     await second.fixture.whenStable();
     second.fixture.detectChanges();
     expect(second.app.pageSize).toBe(50);
@@ -817,6 +837,7 @@ class LanesHostComponent {
 describe('FpcDataTableComponent stacked + row drag and drop', () => {
   function setup() {
     const fixture = TestBed.createComponent(LanesHostComponent);
+
     fixture.detectChanges();
     const host = fixture.nativeElement as HTMLElement;
     const lane = (name: string) =>
@@ -867,6 +888,7 @@ describe('FpcDataTableComponent stacked + row drag and drop', () => {
 
     drag(rows('todo')[0], 'dragstart');
     const over = drag(body('done'), 'dragover');
+
     fixture.detectChanges();
 
     expect(over.defaultPrevented).toBe(true);
@@ -977,6 +999,7 @@ describe('FpcDataTableComponent single selection', () => {
     expect(table.querySelector('[data-testid="fpc-data-table-select-all"]')).toBeNull();
     // The head cell stays (same width, magnifier axis) with an invisible radio.
     const ghost = table.querySelector('th.fpc-data-table__check input') as HTMLInputElement;
+
     expect(ghost.type).toBe('radio');
     expect(ghost.getAttribute('aria-hidden')).toBe('true');
     expect(ghost.classList).toContain('fpc-data-table__check-ghost');
@@ -1031,13 +1054,13 @@ describe('FpcDataTableComponent overflow indicators', () => {
   function setup() {
     localStorage.clear();
     const fixture = TestBed.createComponent(HostComponent);
+
     fixture.detectChanges();
     const host = fixture.nativeElement as HTMLElement;
     const scroller = host.querySelector<HTMLElement>('[data-testid="fpc-data-table-scroller"]') as HTMLElement;
     const frame = host.querySelector<HTMLElement>('.fpc-data-table__head-frame') as HTMLElement;
     const start = host.querySelector<HTMLButtonElement>('[data-testid="fpc-data-table-overflow-start"]');
     const end = host.querySelector<HTMLButtonElement>('[data-testid="fpc-data-table-overflow-end"]');
-
     /** Fakes the body's sideways scroll metrics and reports a scroll. */
     const scrollTo = (scrollLeft: number, scrollWidth = 1000, clientWidth = 400): void => {
       Object.defineProperty(scroller, 'scrollWidth', { configurable: true, value: scrollWidth });
@@ -1061,6 +1084,7 @@ describe('FpcDataTableComponent overflow indicators', () => {
       expect(button?.getAttribute('aria-hidden')).toBe('true');
       expect(button?.getAttribute('tabindex')).toBe('-1');
     }
+
     expect(start?.title).toBe('Previous columns');
     expect(end?.title).toBe('Next columns');
     expect(start?.querySelector('.bi-chevron-left')).not.toBeNull();
@@ -1160,6 +1184,7 @@ describe('FpcDataTableComponent overflow indicators', () => {
     const original = window.matchMedia;
 
     window.matchMedia = ((query: string) => ({ matches: query.includes('reduce') })) as unknown as typeof matchMedia;
+
     try {
       scroller.scrollTo = spy as unknown as typeof scroller.scrollTo;
       scrollTo(0);

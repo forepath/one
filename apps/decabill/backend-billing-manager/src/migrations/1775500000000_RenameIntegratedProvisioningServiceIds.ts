@@ -77,7 +77,6 @@ const LEGACY_TO_CANONICAL: Record<string, string> = {
   controller: 'agenstra-controller',
   manager: 'agenstra-manager',
 };
-
 const CANONICAL_TO_LEGACY: Record<string, string> = {
   'agenstra-controller': 'controller',
   'agenstra-manager': 'manager',
@@ -134,7 +133,6 @@ function rewriteIntegratedServiceIdsInConfig(
   const map = direction === 'toCanonical' ? LEGACY_TO_CANONICAL : CANONICAL_TO_LEGACY;
   let changed = false;
   const next: Record<string, unknown> = { ...config };
-
   const rewrittenService = rewriteServiceId(next['service'], map);
 
   if (rewrittenService) {
@@ -209,7 +207,6 @@ function rewriteConfigSchemaServiceIds(
 
     const prop = { ...(rawProp as Record<string, unknown>) };
     let propChanged = false;
-
     const enumRewrite = rewriteServiceIdList(prop['enum'], map);
 
     if (enumRewrite.changed) {

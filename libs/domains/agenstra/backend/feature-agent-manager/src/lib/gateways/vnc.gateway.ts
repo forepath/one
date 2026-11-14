@@ -1,8 +1,9 @@
+import type { Server as HttpServer } from 'http';
+import { parse as parseUrl } from 'url';
+
 import { resolveWebsocketCorsOriginEnv } from '@forepath/shared/shared/util-network-address';
 import { Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
-import type { Server as HttpServer } from 'http';
 import type { Server as SocketIoServer } from 'socket.io';
-import { parse as parseUrl } from 'url';
 import WebSocket = require('ws');
 
 import { VNC_TICKET_SUBPROTOCOL_PREFIX, VNC_WEBSOCKET_PATH } from '../constants/vnc.constants';

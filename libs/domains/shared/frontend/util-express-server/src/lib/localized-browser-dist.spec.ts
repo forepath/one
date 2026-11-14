@@ -2,8 +2,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { resolveLocalizedBrowserDistFolder, stripLocalePrefixFromPath } from './localized-browser-dist';
 import { resolveLocaleFromRequest, resolveLocalizedStaticFilePath } from './create-delegating-server';
+import { resolveLocalizedBrowserDistFolder, stripLocalePrefixFromPath } from './localized-browser-dist';
 
 describe('resolveLocalizedBrowserDistFolder', () => {
   let root: string;

@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import {
   afterRenderEffect,
   booleanAttribute,
@@ -17,11 +18,10 @@ import {
   type EnvironmentProviders,
 } from '@angular/core';
 
-import { DOCUMENT } from '@angular/common';
 
 import { FpcBadgeComponent } from '../badge/badge.component';
-import { FPC_OVERLAY_PORTAL, FpcBodyPortal } from '../overlay/body-portal';
 import { FpcFilterChip, FpcFilterChipsComponent } from '../filter-chips/filter-chips.component';
+import { FPC_OVERLAY_PORTAL, FpcBodyPortal } from '../overlay/body-portal';
 
 /** Texts of `fpc-list-toolbar`; provide them once per app (localized) with `provideFpcListToolbarLabels()`. */
 export interface FpcListToolbarLabels {
@@ -216,10 +216,12 @@ export class FpcListToolbarComponent {
       if (!this.open() || !drawer) {
         this.bodyMaxHeightPx.set(null);
         this.portal.dispose();
+
         return;
       }
 
       if (this.portaled) this.portal.attach(drawer);
+
       this.syncBodyMaxHeight();
     });
     this.destroyRef.onDestroy(() => {
@@ -275,6 +277,7 @@ export class FpcListToolbarComponent {
 
   private cancelPendingInput(): void {
     if (this.inputTimer) clearTimeout(this.inputTimer);
+
     this.inputTimer = null;
   }
 
@@ -325,6 +328,7 @@ export class FpcListToolbarComponent {
     const availablePx = Math.max(0, Math.floor(viewportBottom - hostBottom));
 
     this.bodyMaxHeightPx.set(availablePx);
+
     if (this.portaled) {
       const current = this.bodyRect();
 

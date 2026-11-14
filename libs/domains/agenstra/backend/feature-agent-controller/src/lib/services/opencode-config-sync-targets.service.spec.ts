@@ -1,5 +1,5 @@
-import { NotFoundException } from '@nestjs/common';
 import { AGENSTRA_OPENCODE_PLATFORM_WIRE_VERSION } from '@forepath/agenstra/shared/util-opencode-config';
+import { NotFoundException } from '@nestjs/common';
 
 import { OpencodeConfigSyncTargetsService } from './opencode-config-sync-targets.service';
 

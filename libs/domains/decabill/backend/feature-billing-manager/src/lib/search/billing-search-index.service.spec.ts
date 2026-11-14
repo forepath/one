@@ -1,7 +1,7 @@
 import { UserEntity } from '@forepath/identity/backend';
 import { OpenSearchService } from '@forepath/shared/backend/util-opensearch';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { AddonEntity } from '../entities/addon.entity';
 import { BackorderEntity } from '../entities/backorder.entity';
@@ -9,12 +9,12 @@ import { CloudInitConfigEntity } from '../entities/cloud-init-config.entity';
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { DatevExportEntity } from '../entities/datev-export.entity';
 import { InvoiceEntity } from '../entities/invoice.entity';
-import { OfferEntity } from '../offers/entities/offer.entity';
 import { MeterEntity } from '../entities/meter.entity';
 import { PromotionEntity } from '../entities/promotion.entity';
 import { ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServiceTypeEntity } from '../entities/service-type.entity';
 import { SubscriptionEntity } from '../entities/subscription.entity';
+import { OfferEntity } from '../offers/entities/offer.entity';
 import { ProjectMilestoneEntity } from '../projects/entities/project-milestone.entity';
 import { ProjectTicketEntity } from '../projects/entities/project-ticket.entity';
 import { ProjectTimeEntryEntity } from '../projects/entities/project-time-entry.entity';
@@ -46,7 +46,6 @@ describe('BillingSearchIndexService', () => {
       find: jest.fn().mockResolvedValue([]),
       createQueryBuilder: jest.fn(),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BillingSearchIndexService,

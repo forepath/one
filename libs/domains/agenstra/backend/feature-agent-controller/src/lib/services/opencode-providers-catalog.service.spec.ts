@@ -2,6 +2,7 @@ import { Repository } from 'typeorm';
 
 import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
 import type { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
+
 import { OpencodeProvidersCatalogService } from './opencode-providers-catalog.service';
 
 describe('OpencodeProvidersCatalogService', () => {

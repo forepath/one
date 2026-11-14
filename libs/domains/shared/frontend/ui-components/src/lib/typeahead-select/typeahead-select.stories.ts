@@ -3,6 +3,7 @@ import { moduleMetadata } from '@storybook/angular';
 import { action } from 'storybook/actions';
 
 import { FpcBadgeComponent } from '../badge/badge.component';
+
 import { FpcTypeaheadSelectComponent } from './typeahead-select.component';
 
 /** Storybook does not derive the implicit `Change` outputs of `model()` inputs, so they are declared here. */

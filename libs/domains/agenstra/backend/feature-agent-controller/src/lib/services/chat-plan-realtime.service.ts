@@ -4,8 +4,8 @@ import type { Server, Socket } from 'socket.io';
 
 import { CLIENTS_SOCKET_OUTBOUND_SCOPES } from '../auth/agenstra-websocket.scopes';
 
-import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { CLIENT_CHAT_PLAN_EVENTS } from './client-chat-plan.constants';
+import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
 import { WorkspaceGraphChangeNotifierService } from './workspace-graph-change-notifier.service';
 
 /**

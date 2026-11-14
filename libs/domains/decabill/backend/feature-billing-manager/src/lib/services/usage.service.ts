@@ -3,6 +3,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import type { UpdateUsageMeterEntryDto } from '../dto/create-usage-record.dto';
 import type { PaginatedUsageMeterEntriesResponseDto, UsageMeterEntryResponseDto } from '../dto/meter-response.dto';
 import type { UsageAttachmentType, UsageRecordEntity } from '../entities/usage-record.entity';
+import { BillingMeterRealtimeService } from '../gateways/billing-meter-realtime.service';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { AddonMetersRepository } from '../repositories/addon-meters.repository';
 import { ServicePlanMetersRepository } from '../repositories/service-plan-meters.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
@@ -10,9 +12,8 @@ import { ServiceTypeMetersRepository } from '../repositories/service-type-meters
 import { SubscriptionAddonsRepository } from '../repositories/subscription-addons.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { UsageRecordsRepository } from '../repositories/usage-records.repository';
-import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 
-import { BillingMeterRealtimeService } from '../gateways/billing-meter-realtime.service';
+
 import { MeterBillingService } from './meter-billing.service';
 
 @Injectable()

@@ -3,6 +3,7 @@ import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nest
 
 import { UPDATES_MODULE_OPTIONS } from '../constants/updates.constants';
 import type { UpdatesModuleOptions } from '../interfaces/updates-module.options';
+
 import { UpdatesQueryService } from './updates-query.service';
 
 const METER_NAME = 'forepath.updates';

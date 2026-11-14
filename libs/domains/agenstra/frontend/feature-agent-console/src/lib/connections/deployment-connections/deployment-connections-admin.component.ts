@@ -41,7 +41,6 @@ import {
 } from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
 
-import { resolveNamedDisplayLabel } from '../../display-name.util';
 import {
   connectionAuthTypeLabel,
   connectionAuthTypesFor,
@@ -49,6 +48,7 @@ import {
   deploymentProviderIcon,
   deploymentProviderLabel,
 } from '../../deployments/deployment-labels';
+import { resolveNamedDisplayLabel } from '../../display-name.util';
 import { AG_DL_DELETE, AG_DL_EDIT, AG_DL_TEST, agBulkSummary, agCopyIdItem } from '../../shared/data-list';
 
 import {

@@ -1,6 +1,6 @@
 import type { SubscriptionItemDetailResponse } from '../../types/billing.types';
 
-import { initialServiceDetailState, serviceDetailReducer } from './service-detail.reducer';
+import { initialServiceDetailState } from './service-detail.reducer';
 import {
   selectServiceDetail,
   selectServiceDetailDisplayLabel,
@@ -17,7 +17,6 @@ describe('serviceDetailSelectors', () => {
     displayName: 'Production',
     provisioningStatus: 'active',
   };
-
   const state = {
     serviceDetail: {
       ...initialServiceDetailState,

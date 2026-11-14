@@ -26,7 +26,6 @@ describe('DatevDebtorMapperService', () => {
       email: 'jane@acme.example',
       phone: '+49123456789',
     } as CustomerProfileEntity;
-
     const row = service.mapDebtorRow(profile, 10_042);
 
     expect(row).toHaveLength(DATEV_DEBTOR_ROW_FIELD_COUNT);

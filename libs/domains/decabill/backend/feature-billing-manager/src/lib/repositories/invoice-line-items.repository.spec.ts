@@ -72,6 +72,7 @@ describe('InvoiceLineItemsRepository', () => {
     mockGetMany.mockResolvedValue(lines);
 
     const repository = new InvoiceLineItemsRepository(mockRepository as never);
+
     await runWithTenantId('default', () => repository.deleteByInvoiceId('inv-1'));
 
     expect(mockRepository.delete).toHaveBeenCalledWith(['line-1', 'line-2']);
@@ -81,6 +82,7 @@ describe('InvoiceLineItemsRepository', () => {
     mockGetMany.mockResolvedValue([]);
 
     const repository = new InvoiceLineItemsRepository(mockRepository as never);
+
     await runWithTenantId('default', () => repository.deleteByInvoiceId('inv-1'));
 
     expect(mockRepository.delete).not.toHaveBeenCalled();

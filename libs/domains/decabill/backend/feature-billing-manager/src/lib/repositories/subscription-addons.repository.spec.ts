@@ -10,7 +10,6 @@ describe('SubscriptionAddonsRepository', () => {
     save: jest.fn(),
     count: jest.fn(),
   };
-
   const repository = new SubscriptionAddonsRepository(typeorm as never);
 
   beforeEach(() => {
@@ -68,6 +67,7 @@ describe('SubscriptionAddonsRepository', () => {
     typeorm.save.mockImplementation(async (entity) => entity);
 
     const updated = await repository.update('sa-1', { status: 'active' });
+
     expect(updated.status).toBe('active');
 
     await expect(repository.save({ id: 'sa-1' } as never)).resolves.toEqual({ id: 'sa-1' });

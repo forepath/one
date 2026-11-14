@@ -37,6 +37,7 @@ export class ControllerQueueRegistrarService implements OnModuleInit {
         pattern: definition.pattern,
         tz: definition.tz,
       });
+
       if (definition.pattern) {
         this.logger.log(`Registered repeatable job ${definition.name} cron ${definition.pattern}`);
       } else {

@@ -4,6 +4,8 @@ import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
 
 import { ChatSessionsService } from '../../services/chat-sessions.service';
+import { forwardedEventReceived } from '../container-socket/container-socket.actions';
+import { selectSelectedAgentId, selectSelectedClientId } from '../container-socket/container-socket.selectors';
 
 import {
   createChatSession,
@@ -19,9 +21,6 @@ import {
   updateChatSessionFailure,
   updateChatSessionSuccess,
 } from './chat-sessions.actions';
-import { forwardedEventReceived } from '../container-socket/container-socket.actions';
-import { selectSelectedAgentId, selectSelectedClientId } from '../container-socket/container-socket.selectors';
-
 import {
   createChatSession$,
   deleteChatSession$,

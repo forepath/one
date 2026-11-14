@@ -1,29 +1,4 @@
-import {
-  adminInvoiceManagerMarkPaid,
-  adminInvoiceManagerMarkPaidFailure,
-  adminInvoiceManagerMarkPaidSuccess,
-  adminInvoiceManagerMarkUnpaid,
-  adminInvoiceManagerMarkUnpaidFailure,
-  adminInvoiceManagerMarkUnpaidSuccess,
-  adminInvoiceManagerVoid,
-  adminInvoiceManagerVoidFailure,
-  adminInvoiceManagerVoidSuccess,
-  createManualInvoice,
-  createManualInvoiceFailure,
-  createManualInvoiceSuccess,
-  deleteManualInvoice,
-  deleteManualInvoiceFailure,
-  deleteManualInvoiceSuccess,
-  issueManualInvoice,
-  issueManualInvoiceFailure,
-  issueManualInvoiceSuccess,
-  loadAdminInvoiceManager,
-  loadAdminInvoiceManagerFailure,
-  loadAdminInvoiceManagerSuccess,
-  updateManualInvoice,
-  updateManualInvoiceFailure,
-  updateManualInvoiceSuccess,
-} from './admin-invoice-manager.actions';
+import { adminInvoiceManagerMarkPaid, adminInvoiceManagerMarkPaidSuccess, adminInvoiceManagerMarkUnpaid, adminInvoiceManagerMarkUnpaidFailure, adminInvoiceManagerVoid, adminInvoiceManagerVoidFailure, adminInvoiceManagerVoidSuccess, createManualInvoice, createManualInvoiceFailure, createManualInvoiceSuccess, deleteManualInvoiceFailure, deleteManualInvoiceSuccess, issueManualInvoiceFailure, issueManualInvoiceSuccess, loadAdminInvoiceManager, loadAdminInvoiceManagerFailure, loadAdminInvoiceManagerSuccess, updateManualInvoiceFailure, updateManualInvoiceSuccess } from './admin-invoice-manager.actions';
 import { adminInvoiceManagerReducer, initialAdminInvoiceManagerState } from './admin-invoice-manager.reducer';
 
 describe('adminInvoiceManagerReducer', () => {

@@ -18,17 +18,13 @@ describe('NotificationDispatcherService', () => {
     resolveScopeKey: () => 'tenant-a',
     assertAdmin: () => undefined,
   };
-
   const endpointsRepository = {
     findMatchingForDispatch: jest.fn(),
   };
-
   const queue = {
     add: jest.fn().mockResolvedValue(undefined),
   };
-
   const enqueueUnitJobMock = enqueueUnitJob as jest.MockedFunction<typeof enqueueUnitJob>;
-
   let service: NotificationDispatcherService;
 
   beforeEach(() => {
@@ -83,7 +79,6 @@ describe('NotificationDispatcherService', () => {
       { ...options, scopeMode: 'instance', applicationId: 'agenstra' },
       queue as never,
     );
-
     const envelope = instanceService.buildEnvelope({
       type: 'ticket.created',
       scopeKey: 'instance',

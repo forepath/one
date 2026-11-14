@@ -2,11 +2,10 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { fetchRuntimeConfigFromEnv } from '@forepath/shared/frontend/util-runtime-config-server';
 import type { Response } from 'express';
 
-import { fetchRuntimeConfigFromEnv } from '@forepath/shared/frontend/util-runtime-config-server';
 
-import { computeStrongContentEtag } from './static-memory-cache';
 import {
   RUNTIME_CONFIG_ELEMENT_ID,
   escapeJsonForHtmlScript,
@@ -15,6 +14,7 @@ import {
   sendHtmlStringWithRuntimeConfig,
   sendIndexHtmlWithRuntimeConfig,
 } from './runtime-config-html';
+import { computeStrongContentEtag } from './static-memory-cache';
 
 jest.mock('@forepath/shared/frontend/util-runtime-config-server', () => ({
   fetchRuntimeConfigFromEnv: jest.fn(),
@@ -35,7 +35,6 @@ function mockRes(): Response & {
     statusCode: 200,
     headers: {},
   };
-
   const res = {
     get statusCode() {
       return state.statusCode;

@@ -11,7 +11,6 @@ describe('ProjectBoardGateway', () => {
   let gateway: ProjectBoardGateway;
   let socketAuth: jest.Mocked<Pick<SocketAuthService, 'validateAndGetUser'>>;
   let projectsRepository: jest.Mocked<Pick<ProjectsRepository, 'findByIdOrThrow'>>;
-
   const userSocketInfo = {
     isApiKeyAuth: false,
     userId: 'user-1',

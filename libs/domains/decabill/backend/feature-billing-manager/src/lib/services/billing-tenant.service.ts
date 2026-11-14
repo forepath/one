@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
 import { parseConfiguredTenants, isConfiguredTenant } from '@forepath/shared/backend';
+import { Injectable } from '@nestjs/common';
 
 import { resolveTenantFrontendBaseUrl } from '../utils/tenant-frontend-url.utils';
 

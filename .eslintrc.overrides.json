@@ -13,6 +13,7 @@
           }
         ],
         "@typescript-eslint/no-explicit-any": "off",
+        "no-fallthrough": ["error", { "allowEmptyCase": true }],
         "import/order": [
           "error",
           {

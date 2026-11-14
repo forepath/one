@@ -167,7 +167,6 @@ export function mergeEnvironmentWithOptimisticReads(
 
     return { ...chat, hasUnreadMessages: true };
   });
-
   const hasUnreadMessages =
     incomingChats.length > 0 ? chats.some((chat) => chat.hasUnreadMessages) : Boolean(env.hasUnreadMessages);
 
