@@ -10,6 +10,7 @@ import type { BillingIssuerConfig } from './billing-issuer-config.service';
 import { assertCustomerPostalAddress, resolveCustomerPostalAddress } from './customer-postal-address.util';
 import type { EInvoiceDocumentOptions } from './e-invoice-document-options';
 import type { InvoicingPeriod } from './invoicing-period.util';
+import { deliveryTermsFromColumns, formatDeliveryTerms, formatPaymentTerms } from '../utils/document-terms.utils';
 
 @Injectable()
 export class EInvoiceXmlService {
@@ -28,7 +29,7 @@ export class EInvoiceXmlService {
 
     assertCustomerPostalAddress(buyer);
     const buyerAddress = resolveCustomerPostalAddress(buyer)!;
-    const doc = create({ version: '1.0', encoding: 'UTF-8' })
+    const exchangedDocument = create({ version: '1.0', encoding: 'UTF-8' })
       .ele('rsm:CrossIndustryInvoice', {
         'xmlns:rsm': 'urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100',
         'xmlns:ram': 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100',
@@ -52,9 +53,26 @@ export class EInvoiceXmlService {
       .ele('udt:DateTimeString', { format: '102' })
       .txt(issueDate.replace(/-/g, ''))
       .up()
-      .up()
-      .up()
-      .ele('rsm:SupplyChainTradeTransaction');
+      .up();
+
+    const deliveryTermsNote = documentOptions.includeDocumentTerms
+      ? formatDeliveryTerms(deliveryTermsFromColumns(invoice))
+      : undefined;
+
+    if (deliveryTermsNote) {
+      // BT-21/BT-22 invoice note; UNTDID 4451 subject code AAR = terms of delivery (EN16931 has no dedicated term).
+      exchangedDocument
+        .ele('ram:IncludedNote')
+        .ele('ram:Content')
+        .txt(deliveryTermsNote)
+        .up()
+        .ele('ram:SubjectCode')
+        .txt('AAR')
+        .up()
+        .up();
+    }
+
+    const doc = exchangedDocument.up().ele('rsm:SupplyChainTradeTransaction');
 
     for (const line of lineItems) {
       const categoryCode = String(invoice.einvoiceTaxCategoryCode ?? 'S');
@@ -72,8 +90,8 @@ export class EInvoiceXmlService {
         .up()
         .ele('ram:SpecifiedLineTradeAgreement')
         .ele('ram:NetPriceProductTradePrice')
-        .ele('ram:ChargeAmount', { currencyID: invoice.currency })
-        .txt(String(line.unitPriceNet))
+        .ele('ram:ChargeAmount')
+        .txt(this.formatPrice(line.unitPriceNet))
         .up()
         .up()
         .up()
@@ -95,8 +113,8 @@ export class EInvoiceXmlService {
         .up()
         .up()
         .ele('ram:SpecifiedTradeSettlementLineMonetarySummation')
-        .ele('ram:LineTotalAmount', { currencyID: invoice.currency })
-        .txt(String(line.lineNet))
+        .ele('ram:LineTotalAmount')
+        .txt(this.formatAmount(line.lineNet))
         .up()
         .up()
         .up()
@@ -110,11 +128,11 @@ export class EInvoiceXmlService {
       .txt(issuer.name)
       .up()
       .ele('ram:PostalTradeAddress')
-      .ele('ram:LineOne')
-      .txt(issuer.addressLine1)
-      .up()
       .ele('ram:PostcodeCode')
       .txt(issuer.postalCode)
+      .up()
+      .ele('ram:LineOne')
+      .txt(issuer.addressLine1)
       .up()
       .ele('ram:CityName')
       .txt(issuer.city)
@@ -134,6 +152,9 @@ export class EInvoiceXmlService {
       .txt(buyerName)
       .up()
       .ele('ram:PostalTradeAddress')
+      .ele('ram:PostcodeCode')
+      .txt(buyerAddress.postalCode)
+      .up()
       .ele('ram:LineOne')
       .txt(buyerAddress.street)
       .up();
@@ -143,9 +164,6 @@ export class EInvoiceXmlService {
     }
 
     chain = chain
-      .ele('ram:PostcodeCode')
-      .txt(buyerAddress.postalCode)
-      .up()
       .ele('ram:CityName')
       .txt(buyerAddress.city)
       .up()
@@ -182,17 +200,8 @@ export class EInvoiceXmlService {
       .txt(invoice.currency)
       .up();
 
-    chain = this.appendBillingPeriod(chain, invoicingPeriod);
-
-    if (documentOptions.referencedInvoiceNumber) {
-      chain = chain
-        .ele('ram:InvoiceReferencedDocument')
-        .ele('ram:IssuerAssignedID')
-        .txt(documentOptions.referencedInvoiceNumber)
-        .up()
-        .up();
-    }
-
+    // Children follow the CII HeaderTradeSettlement sequence: payment means → tax → billing period → payment
+    // terms → monetary summation → referenced invoice.
     if (documentOptions.includePaymentMeans) {
       chain = this.appendPaymentMeans(chain, issuer);
     }
@@ -203,47 +212,75 @@ export class EInvoiceXmlService {
 
     let taxBlock = chain
       .ele('ram:ApplicableTradeTax')
-      .ele('ram:CalculatedAmount', { currencyID: invoice.currency })
-      .txt(String(invoice.taxTotal))
+      .ele('ram:CalculatedAmount')
+      .txt(this.formatAmount(invoice.taxTotal))
       .up()
       .ele('ram:TypeCode')
       .txt('VAT')
-      .up()
-      .ele('ram:BasisAmount', { currencyID: invoice.currency })
-      .txt(String(invoice.subtotalNet))
-      .up()
-      .ele('ram:CategoryCode')
-      .txt(headerCategory)
-      .up()
-      .ele('ram:RateApplicablePercent')
-      .txt(headerRate)
       .up();
 
     if (invoice.taxNote?.trim()) {
       taxBlock = taxBlock.ele('ram:ExemptionReason').txt(invoice.taxNote.trim()).up();
     }
 
-    chain = taxBlock.up();
-
-    chain
-      .ele('ram:SpecifiedTradeSettlementHeaderMonetarySummation')
-      .ele('ram:LineTotalAmount', { currencyID: invoice.currency })
-      .txt(String(invoice.subtotalNet))
+    chain = taxBlock
+      .ele('ram:BasisAmount')
+      .txt(this.formatAmount(invoice.subtotalNet))
       .up()
-      .ele('ram:TaxBasisTotalAmount', { currencyID: invoice.currency })
-      .txt(String(invoice.subtotalNet))
+      .ele('ram:CategoryCode')
+      .txt(headerCategory)
       .up()
-      .ele('ram:TaxTotalAmount', { currencyID: invoice.currency })
-      .txt(String(invoice.taxTotal))
-      .up()
-      .ele('ram:GrandTotalAmount', { currencyID: invoice.currency })
-      .txt(String(invoice.totalGross))
-      .up()
-      .ele('ram:DuePayableAmount', { currencyID: invoice.currency })
-      .txt(String(documentOptions.duePayableAmount))
-      .up()
+      .ele('ram:RateApplicablePercent')
+      .txt(headerRate)
       .up()
       .up();
+
+    chain = this.appendBillingPeriod(chain, invoicingPeriod);
+
+    if (documentOptions.includeDocumentTerms || documentOptions.paymentTermsDescription) {
+      chain = this.appendPaymentTerms(chain, invoice, documentOptions);
+    }
+
+    let summation = chain
+      .ele('ram:SpecifiedTradeSettlementHeaderMonetarySummation')
+      .ele('ram:LineTotalAmount')
+      .txt(this.formatAmount(invoice.subtotalNet))
+      .up()
+      .ele('ram:TaxBasisTotalAmount')
+      .txt(this.formatAmount(invoice.subtotalNet))
+      .up()
+      .ele('ram:TaxTotalAmount', { currencyID: invoice.currency })
+      .txt(this.formatAmount(invoice.taxTotal))
+      .up()
+      .ele('ram:GrandTotalAmount')
+      .txt(this.formatAmount(invoice.totalGross))
+      .up();
+
+    // BR-CO-16: amount due = total − paid amount; promotions / earlier payments / voids reduce the amount due.
+    const grandTotalCents = this.toCents(invoice.totalGross);
+    const dueCents = this.toCents(documentOptions.duePayableAmount);
+
+    if (grandTotalCents !== dueCents) {
+      summation = summation
+        .ele('ram:TotalPrepaidAmount')
+        .txt(((grandTotalCents - dueCents) / 100).toFixed(2))
+        .up();
+    }
+
+    chain = summation
+      .ele('ram:DuePayableAmount')
+      .txt((dueCents / 100).toFixed(2))
+      .up()
+      .up();
+
+    if (documentOptions.referencedInvoiceNumber) {
+      chain
+        .ele('ram:InvoiceReferencedDocument')
+        .ele('ram:IssuerAssignedID')
+        .txt(documentOptions.referencedInvoiceNumber)
+        .up()
+        .up();
+    }
 
     return doc.end({ prettyPrint: true });
   }
@@ -262,6 +299,67 @@ export class EInvoiceXmlService {
       .up()
       .up()
       .up();
+  }
+
+  /** BT-20 payment terms (+ BT-9 due date on invoices); satisfies BR-CO-25 for positive amounts due. */
+  private appendPaymentTerms(
+    settlement: XMLBuilder,
+    invoice: InvoiceEntity,
+    documentOptions: EInvoiceDocumentOptions,
+  ): XMLBuilder {
+    const description =
+      documentOptions.paymentTermsDescription ??
+      (documentOptions.includeDocumentTerms ? formatPaymentTerms(invoice.paymentDueDays) : undefined);
+    const dueDate = documentOptions.includeDueDate ? this.toDate(invoice.dueDate) : undefined;
+
+    if (!description && !dueDate) {
+      return settlement;
+    }
+
+    let terms = settlement.ele('ram:SpecifiedTradePaymentTerms');
+
+    if (description) {
+      terms = terms.ele('ram:Description').txt(description).up();
+    }
+
+    if (dueDate) {
+      terms = terms
+        .ele('ram:DueDateDateTime')
+        .ele('udt:DateTimeString', { format: '102' })
+        .txt(this.formatDate102(dueDate))
+        .up()
+        .up();
+    }
+
+    return terms.up();
+  }
+
+  private toDate(value: Date | string | null | undefined): Date | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    const date = value instanceof Date ? value : new Date(value);
+
+    return Number.isNaN(date.getTime()) ? undefined : date;
+  }
+
+  /** Monetary amounts: exactly two decimals (BR-DEC-*). */
+  private formatAmount(value: number | string | null | undefined): string {
+    return (this.toCents(value) / 100).toFixed(2);
+  }
+
+  /** Unit prices (BT-146) may carry more decimals; strip trailing zeros of the decimal(12,4) column. */
+  private formatPrice(value: number | string | null | undefined): string {
+    const parsed = Number(value ?? 0);
+
+    return String(Number.isFinite(parsed) ? parsed : 0);
+  }
+
+  private toCents(value: number | string | null | undefined): number {
+    const parsed = Number(value ?? 0);
+
+    return Number.isFinite(parsed) ? Math.round(parsed * 100) : 0;
   }
 
   private formatDate102(date: Date): string {

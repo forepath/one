@@ -1,3 +1,4 @@
+import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
 import { NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
@@ -51,6 +52,7 @@ describe('PublicServicePlanOfferingsController', () => {
         { provide: PricingService, useValue: { calculate } },
         TaxRateConfigService,
         TaxCalculationService,
+        BillingDocumentTermsConfigService,
         {
           provide: InvoiceTaxContextService,
           useValue: {
@@ -105,6 +107,12 @@ describe('PublicServicePlanOfferingsController', () => {
         unprovisionedAlwaysWithdrawable: true,
         provisionedRefundPolicy: 'unused_period_prorated',
       },
+      effectiveDocumentTerms: {
+        paymentDueDays: 14,
+        deliveryTermsCode: null,
+        deliveryTermsPlace: null,
+        deliveryTermsText: null,
+      },
     });
   });
 
@@ -143,6 +151,7 @@ describe('PublicServicePlanOfferingsController', () => {
         { provide: PricingService, useValue: { calculate } },
         TaxRateConfigService,
         TaxCalculationService,
+        BillingDocumentTermsConfigService,
         {
           provide: InvoiceTaxContextService,
           useValue: {
@@ -269,6 +278,7 @@ describe('PublicServicePlanOfferingsController', () => {
           { provide: PricingService, useValue: { calculate } },
           TaxRateConfigService,
           TaxCalculationService,
+          BillingDocumentTermsConfigService,
           {
             provide: InvoiceTaxContextService,
             useValue: {

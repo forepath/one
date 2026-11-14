@@ -14,6 +14,14 @@ export interface WithdrawalPolicy {
   provisionedRefundPolicy: 'unused_period_prorated';
 }
 
+/** Payment terms (payable within N days) and delivery terms (Incoterms® 2020 rule or CUSTOM free text). */
+export interface PublicDocumentTerms {
+  paymentDueDays: number;
+  deliveryTermsCode: string | null;
+  deliveryTermsPlace: string | null;
+  deliveryTermsText: string | null;
+}
+
 export interface PublicServicePlanOffering {
   id: string;
   name: string;
@@ -37,6 +45,8 @@ export interface PublicServicePlanOffering {
   /** Provider ids customers may select when allowCustomerProviderSelection is true. */
   allowedProviders: string[];
   withdrawalPolicy: WithdrawalPolicy;
+  /** Payment / delivery terms applied to this plan's invoices (plan override, else global default). */
+  effectiveDocumentTerms?: PublicDocumentTerms;
 }
 
 export interface PublicServicePlanOfferingsListParams {

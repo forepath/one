@@ -256,13 +256,7 @@
         <span fpcDataTableEmpty i18n="@@featureAdminSubscriptions-noMeterEntries">No entries yet.</span>
         <ng-template fpcTableCell="period" let-row>{{ entryPeriodLabel(row) }}</ng-template>
       </fpc-data-table>
-      <div>
-        <fpc-list-header
-          class="d-block mb-2"
-          title="Record meter entry"
-          i18n-title="@@featureAdminSubscriptions-createEntry"
-          [sticky]="false"
-        />
+      <fpc-item-card class="d-block" title="Record meter entry" i18n-title="@@featureAdminSubscriptions-createEntry">
         <form (ngSubmit)="submitMeterEntry()">
           <div class="row g-3">
             <div class="col-md-6">
@@ -397,7 +391,7 @@
             </fpc-button>
           </div>
         </form>
-      </div>
+      </fpc-item-card>
     </div>
   </div>
 </fpc-modal>

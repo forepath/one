@@ -47,6 +47,7 @@ import {
   type TaxCategory,
   type TaxPreviewRates,
   type UpdateServicePlanDto,
+  type EffectiveDocumentTerms,
   isNoneServiceTypeId,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import {
@@ -67,7 +68,7 @@ import {
   fpcRunBulk,
   type FpcMenuItem,
   type FpcTableColumn,
-  FpcListHeaderComponent,
+  FpcItemCardComponent,
   FpcMoneyPipe,
   FpcMultiSelectComponent,
   type FpcMultiSelectOption,
@@ -100,6 +101,14 @@ import {
 } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { optionalNumberInputValue } from '../optional-number-input.util';
+import { DocumentTermsFieldsComponent } from '../document-terms/document-terms-fields.component';
+import {
+  documentTermsFormFromTerms,
+  documentTermsFormToInput,
+  emptyDocumentTermsForm,
+  isDocumentTermsFormValid,
+  type DocumentTermsFormModel,
+} from '../document-terms/document-terms.util';
 import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { activeState } from '../shared/table-states';
 import { formatBillingMoney } from '../billing-format';
@@ -131,7 +140,7 @@ interface ServerTypeProviderGroup {
     FpcFormTextDirective,
     FpcMultiSelectComponent,
     FpcMoneyPipe,
-    FpcListHeaderComponent,
+    FpcItemCardComponent,
     CommonModule,
     FormsModule,
     FpcAlertComponent,
@@ -147,6 +156,7 @@ interface ServerTypeProviderGroup {
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
+    DocumentTermsFieldsComponent,
   ],
   templateUrl: './service-plans-page.component.html',
   styleUrls: ['./service-plans-page.component.scss'],
@@ -201,6 +211,10 @@ export class ServicePlansPageComponent implements OnInit {
 
   readonly billingIntervalTypes: BillingIntervalType[] = ['hour', 'day', 'month', 'year'];
   readonly taxRates = signal<TaxPreviewRates>({ standard: 19, reduced: 7 });
+  /** Global default terms (inherited when a plan leaves its terms empty). */
+  readonly documentTermsDefaults = signal<EffectiveDocumentTerms | null>(null);
+  createTermsForm: DocumentTermsFormModel = emptyDocumentTermsForm();
+  editTermsForm: DocumentTermsFormModel = emptyDocumentTermsForm();
   readonly taxCategoryOptions = computed(() => {
     const rates = this.taxRates();
 
@@ -2553,6 +2567,7 @@ export class ServicePlansPageComponent implements OnInit {
     this.addonsFacade.loadAddons();
     this.metersFacade.loadMeters();
     this.refreshIssuerTaxRates();
+    this.refreshDocumentTermsDefaults();
     this.registerModalCloseWatchers();
 
     this.searchQuery$
@@ -2575,6 +2590,20 @@ export class ServicePlansPageComponent implements OnInit {
         next: (preview) => this.taxRates.set(preview.rates),
         error: () => undefined,
       });
+  }
+
+  private refreshDocumentTermsDefaults(): void {
+    this.adminBillingService
+      .getDocumentTermsDefaults()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (defaults) => this.documentTermsDefaults.set(defaults),
+        error: () => undefined,
+      });
+  }
+
+  isDocumentTermsFormValid(form: DocumentTermsFormModel): boolean {
+    return isDocumentTermsFormValid(form);
   }
 
   openCreateModal(): void {
@@ -2612,6 +2641,7 @@ export class ServicePlansPageComponent implements OnInit {
     this.providerLocationsLoading = false;
     this.editProvisioningOptionKeys = new Set(planProvisioningOptionKeysFromDefaults(plan.providerConfigDefaults));
     this.editStaleCustomConfigIds = [];
+    this.editTermsForm = documentTermsFormFromTerms(plan);
     this.editForm = {
       id: plan.id,
       name: plan.name,
@@ -2728,6 +2758,7 @@ export class ServicePlansPageComponent implements OnInit {
               ? [...this.createAllowedProviders]
               : undefined,
           taxCategory: this.createForm.taxCategory ?? 'standard',
+          ...documentTermsFormToInput(this.createTermsForm),
           isActive: this.createForm.isActive ?? true,
         });
       });
@@ -2788,6 +2819,7 @@ export class ServicePlansPageComponent implements OnInit {
               ? [...this.editAllowedProviders]
               : [],
           taxCategory: this.editForm.taxCategory ?? 'standard',
+          ...documentTermsFormToInput(this.editTermsForm),
           migrateExistingSubscriptions: this.editForm.migrateExistingSubscriptions === true,
           isActive: this.editForm.isActive,
         });
@@ -2966,6 +2998,7 @@ export class ServicePlansPageComponent implements OnInit {
 
   private resetCreateForm(): void {
     this.createForm = this.getDefaultCreateForm();
+    this.createTermsForm = emptyDocumentTermsForm();
     this.createProvisioningOptionKeys = new Set();
     this.createAttachedMeters = [];
     this.createAllowedProviders = [];
@@ -2975,6 +3008,7 @@ export class ServicePlansPageComponent implements OnInit {
 
   private resetEditForm(): void {
     this.editForm = this.getDefaultEditForm();
+    this.editTermsForm = emptyDocumentTermsForm();
     this.editingPlan = null;
     this.editStaleCustomConfigIds = [];
     this.editAttachedMeters = [];

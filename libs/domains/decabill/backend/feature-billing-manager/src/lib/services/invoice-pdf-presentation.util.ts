@@ -1,5 +1,8 @@
 import type { InvoiceEntity } from '../entities/invoice.entity';
 
+import { buildCreditNoteSettlementTerms } from './e-invoice-document-options';
+import type { InvoicingPeriod } from './invoicing-period.util';
+
 export interface InvoicePdfPresentationOptions {
   documentTitle: string;
   documentNumber: string;
@@ -10,12 +13,24 @@ export interface InvoicePdfPresentationOptions {
   referencedInvoiceNumber?: string;
   includePaymentDetails: boolean;
   creditGross?: number;
+  /** Print the document's payment / delivery terms (invoices only; credit notes reference the original). */
+  includeDocumentTerms?: boolean;
+  /** Service period (Leistungszeitraum) printed in the header; same as the e-invoice billing period. */
+  servicePeriod?: InvoicingPeriod;
+  /** Fixed payment-terms text (partial credit notes), printed instead of the document's own terms. */
+  paymentTermsText?: string;
+  /** Print the EPC069-12 SEPA payment QR (GiroCode) next to the bank details when applicable. */
+  includePaymentQr?: boolean;
 }
 
 export interface BuildInvoicePdfPresentationOptions {
   zeroBalancePromotional?: boolean;
   /** Calendar document issue date (YYYY-MM-DD or Date). Preferred over lifecycle issuedAt. */
   documentIssueDate?: Date | string | null;
+  /** Service period printed on the document (customer invoices). */
+  servicePeriod?: InvoicingPeriod;
+  /** Opt-in SEPA payment QR (customer invoices only; supplier copies never get one). */
+  includePaymentQr?: boolean;
 }
 
 /**
@@ -65,6 +80,8 @@ export function buildInvoicePdfPresentation(
       showDueDate: false,
       showBalanceDue: false,
       includePaymentDetails: false,
+      includeDocumentTerms: true,
+      ...(options.servicePeriod ? { servicePeriod: options.servicePeriod } : {}),
     };
   }
 
@@ -76,6 +93,9 @@ export function buildInvoicePdfPresentation(
     showDueDate: true,
     showBalanceDue: true,
     includePaymentDetails: true,
+    includeDocumentTerms: true,
+    includePaymentQr: options?.includePaymentQr === true,
+    ...(options?.servicePeriod ? { servicePeriod: options.servicePeriod } : {}),
   };
 }
 
@@ -83,6 +103,7 @@ export function buildCreditNotePdfPresentation(
   creditNoteNumber: string,
   voidedAt: Date,
   originalInvoiceNumber: string,
+  servicePeriod?: InvoicingPeriod,
 ): InvoicePdfPresentationOptions {
   return {
     documentTitle: 'Credit note',
@@ -93,6 +114,7 @@ export function buildCreditNotePdfPresentation(
     showBalanceDue: false,
     referencedInvoiceNumber: originalInvoiceNumber,
     includePaymentDetails: false,
+    ...(servicePeriod ? { servicePeriod } : {}),
   };
 }
 
@@ -101,6 +123,7 @@ export function buildPartialCreditNotePdfPresentation(
   issuedAt: Date,
   originalInvoiceNumber: string,
   creditGross: number,
+  servicePeriod?: InvoicingPeriod,
 ): InvoicePdfPresentationOptions {
   return {
     documentTitle: 'Credit note',
@@ -112,5 +135,7 @@ export function buildPartialCreditNotePdfPresentation(
     referencedInvoiceNumber: originalInvoiceNumber,
     includePaymentDetails: false,
     creditGross,
+    paymentTermsText: buildCreditNoteSettlementTerms(originalInvoiceNumber),
+    ...(servicePeriod ? { servicePeriod } : {}),
   };
 }

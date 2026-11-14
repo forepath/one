@@ -17,9 +17,11 @@ import {
 import { TaxCategory } from '../constants/tax-category.constants';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 
+import { DocumentTermsInputDto } from './document-terms.dto';
 import { ServicePlanOrderingHighlightDto } from './service-plan-ordering-highlight.dto';
 
-export class UpdateServicePlanDto {
+/** Terms fields: omitted = unchanged, null = clear (inherit the global default). */
+export class UpdateServicePlanDto extends DocumentTermsInputDto {
   @IsOptional()
   @IsString({ message: 'Name must be a string' })
   name?: string;

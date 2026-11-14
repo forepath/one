@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 
 import { TaxCategory } from '../constants/tax-category.constants';
+import { DeliveryTermsCode } from '../constants/document-terms.constants';
 
 import { ServiceTypeEntity } from './service-type.entity';
 
@@ -120,6 +121,22 @@ export class ServicePlanEntity {
     default: TaxCategory.STANDARD,
   })
   taxCategory!: TaxCategory;
+
+  /** Payment terms: payable within N days (null inherits the global default). */
+  @Column({ type: 'int', nullable: true, name: 'payment_due_days' })
+  paymentDueDays?: number | null;
+
+  /** Incoterms® 2020 rule or CUSTOM (null inherits the global default). */
+  @Column({ type: 'varchar', length: 16, nullable: true, name: 'delivery_terms_code' })
+  deliveryTermsCode?: DeliveryTermsCode | null;
+
+  /** Named place for an Incoterms rule. */
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'delivery_terms_place' })
+  deliveryTermsPlace?: string | null;
+
+  /** Free-text delivery terms when deliveryTermsCode is CUSTOM. */
+  @Column({ type: 'text', nullable: true, name: 'delivery_terms_text' })
+  deliveryTermsText?: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

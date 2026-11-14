@@ -40,7 +40,7 @@ import {
   FpcSummaryCardComponent,
   FpcSummaryCardValueDirective,
   type FpcBadgeTone,
-  FpcListHeaderComponent,
+  FpcItemCardComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { filter, firstValueFrom, pairwise } from 'rxjs';
 
@@ -95,7 +95,7 @@ interface AddonMeterOption {
   selector: 'framework-admin-subscriptions-page',
   standalone: true,
   imports: [
-    FpcListHeaderComponent,
+    FpcItemCardComponent,
     CommonModule,
     FormsModule,
     FpcAlertComponent,

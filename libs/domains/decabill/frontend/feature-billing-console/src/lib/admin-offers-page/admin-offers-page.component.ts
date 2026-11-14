@@ -15,7 +15,9 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { FormsModule } from '@angular/forms';
 import {
   AdminOffersFacade,
+  AdminBillingService,
   AdminOffersService,
+  type EffectiveDocumentTerms,
   fillPeriodSeriesPoints,
   type AdminOfferDetailResponse,
   type AdminOfferListItem,
@@ -35,6 +37,7 @@ import {
   FpcDataTableComponent,
   FpcEmptyStateComponent,
   FpcFormCheckComponent,
+  FpcItemCardComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcKeyValueListComponent,
@@ -98,6 +101,15 @@ import { invoiceTaxItems } from '../shared/invoice-totals';
 import { dbServerPaging } from '../shared/server-paging';
 import { offerState } from '../shared/table-states';
 import { AdminOfferLineEditorComponent } from './admin-offer-line-editor.component';
+import { DocumentTermsFieldsComponent } from '../document-terms/document-terms-fields.component';
+import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
+import {
+  documentTermsFormFromTerms,
+  documentTermsFormToInput,
+  emptyDocumentTermsForm,
+  isDocumentTermsFormValid,
+  type DocumentTermsFormModel,
+} from '../document-terms/document-terms.util';
 import {
   createEmptyOfferFormLine,
   isOfferFormValid,
@@ -132,6 +144,8 @@ type AdminOffersTab = 'offers' | 'statistics';
     BillingAdminUserSelectComponent,
     AdminOfferLineEditorComponent,
     PricingTotalsSummaryComponent,
+    DocumentTermsFieldsComponent,
+    DocumentTermsSummaryComponent,
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcBoardLaneComponent,
@@ -140,6 +154,7 @@ type AdminOffersTab = 'offers' | 'statistics';
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcFormCheckComponent,
+    FpcItemCardComponent,
     FpcKeyValueListComponent,
     FpcLaneHeaderComponent,
     FpcEmptyStateComponent,
@@ -180,6 +195,7 @@ export class AdminOffersPageComponent implements OnInit {
 
   private readonly facade = inject(AdminOffersFacade);
   private readonly adminOffersService = inject(AdminOffersService);
+  private readonly adminBillingService = inject(AdminBillingService);
   private readonly datePipe = inject(DatePipe);
   private readonly destroyRef = inject(DestroyRef);
   private readonly locale = inject(LOCALE_ID);
@@ -426,6 +442,10 @@ export class AdminOffersPageComponent implements OnInit {
   createUserId = '';
   createLineItems: OfferFormLineItem[] = [createEmptyOfferFormLine()];
   editForm: CreateAdminOfferDto & { id: string } = { ...this.emptyForm(), id: '' };
+  createTermsForm: DocumentTermsFormModel = emptyDocumentTermsForm();
+  editTermsForm: DocumentTermsFormModel = emptyDocumentTermsForm();
+  /** Global default terms (inherited when an offer leaves its terms empty). */
+  readonly documentTermsDefaults = signal<EffectiveDocumentTerms | null>(null);
   editLineItems: OfferFormLineItem[] = [createEmptyOfferFormLine()];
   editDetailLoading = false;
   selectedOffer: AdminOfferListItem | null = null;
@@ -441,6 +461,13 @@ export class AdminOffersPageComponent implements OnInit {
   ngOnInit(): void {
     this.setDefaultDates(false);
     this.loadStatistics();
+    this.adminBillingService
+      .getDocumentTermsDefaults()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (defaults) => this.documentTermsDefaults.set(defaults),
+        error: () => undefined,
+      });
 
     watchBillingMutationModalClose({
       loading$: this.facade.creating$,
@@ -572,6 +599,7 @@ export class AdminOffersPageComponent implements OnInit {
 
   openCreateModal(): void {
     this.createForm = this.emptyForm();
+    this.createTermsForm = emptyDocumentTermsForm();
     this.createUserId = '';
     this.createLineItems = [createEmptyOfferFormLine()];
     showBillingModal(this.createModalOpen);
@@ -589,6 +617,7 @@ export class AdminOffersPageComponent implements OnInit {
       lineItems: [],
     };
     this.editLineItems = [createEmptyOfferFormLine()];
+    this.editTermsForm = emptyDocumentTermsForm();
     showBillingModal(this.editModalOpen);
 
     this.adminOffersService
@@ -604,6 +633,7 @@ export class AdminOffersPageComponent implements OnInit {
             billToOpenPositions: detail.billToOpenPositions,
             lineItems: [],
           };
+          this.editTermsForm = documentTermsFormFromTerms(detail);
           this.editLineItems =
             detail.lineItems.length > 0 ? mapOfferDetailLinesToForm(detail.lineItems) : [createEmptyOfferFormLine()];
           this.editDetailLoading = false;
@@ -661,7 +691,7 @@ export class AdminOffersPageComponent implements OnInit {
   }
 
   submitCreate(): void {
-    if (!this.createUserId || !isOfferFormValid(this.createLineItems)) {
+    if (!this.canSubmitCreate()) {
       return;
     }
 
@@ -669,12 +699,13 @@ export class AdminOffersPageComponent implements OnInit {
       userId: this.createUserId,
       expiresAt: this.createForm.expiresAt || undefined,
       billToOpenPositions: this.createForm.billToOpenPositions,
+      ...documentTermsFormToInput(this.createTermsForm),
       lineItems: mapOfferFormLinesToDto(this.createLineItems),
     });
   }
 
   submitEdit(): void {
-    if (!isOfferFormValid(this.editLineItems)) {
+    if (!this.canSubmitEdit()) {
       return;
     }
 
@@ -682,16 +713,23 @@ export class AdminOffersPageComponent implements OnInit {
       userId: this.editForm.userId,
       expiresAt: this.editForm.expiresAt || undefined,
       billToOpenPositions: this.editForm.billToOpenPositions,
+      ...documentTermsFormToInput(this.editTermsForm),
       lineItems: mapOfferFormLinesToDto(this.editLineItems),
     });
   }
 
   canSubmitCreate(): boolean {
-    return Boolean(this.createUserId) && isOfferFormValid(this.createLineItems);
+    return (
+      Boolean(this.createUserId) &&
+      isOfferFormValid(this.createLineItems) &&
+      isDocumentTermsFormValid(this.createTermsForm)
+    );
   }
 
   canSubmitEdit(): boolean {
-    return isOfferFormValid(this.editLineItems) && !this.editDetailLoading;
+    return (
+      isOfferFormValid(this.editLineItems) && isDocumentTermsFormValid(this.editTermsForm) && !this.editDetailLoading
+    );
   }
 
   confirmDelete(): void {

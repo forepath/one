@@ -80,6 +80,7 @@ import {
 import { invoiceSummaryItems, invoiceTaxItems } from '../shared/invoice-totals';
 import { dbPagerTotal, dbServerPaging, type DbPageQuery } from '../shared/server-paging';
 import { invoiceState } from '../shared/table-states';
+import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
 import { NextBillingDayPipe } from '../pipes/next-billing-day.pipe';
 import { getUnnumberedInvoiceLabel } from '../named-label.util';
 import { formatBillingDate, formatBillingMoney } from '../billing-format';
@@ -96,6 +97,7 @@ type PaymentReturnFeedback = 'waiting' | 'confirmed' | 'canceled';
     CommonModule,
     FormsModule,
     NextBillingDayPipe,
+    DocumentTermsSummaryComponent,
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcDataTableComponent,

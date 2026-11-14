@@ -1,4 +1,5 @@
 import type { ListParams, TaxCategory } from './billing.types';
+import type { DeliveryTermsCode, EffectiveDocumentTerms, DocumentTermsInput } from './document-terms.types';
 
 export type OfferStatus = 'draft' | 'archived' | 'accepted' | 'declined' | 'expired' | 'revoked';
 
@@ -61,6 +62,11 @@ export interface CustomerOfferDetailResponse extends CustomerOfferListItem {
   taxTotal: number;
   lineItems: OfferLineResponse[];
   billToOpenPositions: boolean;
+  /** Payment / delivery terms of the offer (also applied to the invoice created on acceptance). */
+  paymentDueDays?: number | null;
+  deliveryTermsCode?: DeliveryTermsCode | null;
+  deliveryTermsPlace?: string | null;
+  deliveryTermsText?: string | null;
 }
 
 export interface AdminOfferListItem {
@@ -89,6 +95,13 @@ export interface AdminOfferDetailResponse extends AdminOfferListItem {
   lineItems: OfferLineResponse[];
   taxMode?: string | null;
   taxNote?: string | null;
+  /** Stored terms: overrides on drafts (null = global default), frozen terms once archived. */
+  paymentDueDays?: number | null;
+  deliveryTermsCode?: DeliveryTermsCode | null;
+  deliveryTermsPlace?: string | null;
+  deliveryTermsText?: string | null;
+  /** Terms printed on the offer / applied to its invoice. */
+  effectiveDocumentTerms?: EffectiveDocumentTerms;
 }
 
 export interface OfferStandardLineDto {
@@ -128,7 +141,7 @@ export interface OfferLineInputDto {
   payload: OfferStandardLineDto | OfferProjectTemplateLineDto | OfferPlanTemplateLineDto;
 }
 
-export interface CreateAdminOfferDto {
+export interface CreateAdminOfferDto extends DocumentTermsInput {
   userId: string;
   currency?: string;
   expiresAt?: string;

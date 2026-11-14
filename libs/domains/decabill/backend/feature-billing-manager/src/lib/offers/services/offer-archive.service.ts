@@ -19,6 +19,9 @@ import { BillingSearchIndexService } from '../../search/billing-search-index.ser
 import { getRequiredTenantId } from '../../utils/tenant-query.utils';
 import { assertOfferHasPdf, offerCapabilityFlags } from '../utils/offer-capabilities.util';
 import { assertOfferDraftEditable } from '../utils/offer-mutability.util';
+import { mapAdminOfferDocumentTerms } from '../utils/offer-document-terms.util';
+import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
+import { documentTermsLayerFromFields, toDocumentTermsColumns } from '../../utils/document-terms.utils';
 import { mapOfferLineItemToResponse } from '../utils/map-offer-line-items.util';
 
 import { OfferPdfService } from './offer-pdf.service';
@@ -42,6 +45,7 @@ export class OfferArchiveService {
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingSearchIndexService: BillingSearchIndexService,
     private readonly auditLog: BillingAuditLogService,
+    private readonly documentTermsConfig: BillingDocumentTermsConfigService,
   ) {}
 
   async archive(id: string, adminUserId?: string): Promise<AdminOfferDetailResponseDto> {
@@ -112,6 +116,8 @@ export class OfferArchiveService {
       buyerCustomerType: taxContext.buyerCustomerType,
       issuerCountry: taxContext.issuerCountry,
       issuerIsInEu: taxContext.treatment.issuerIsInEu,
+      // Freeze the terms the customer is offered (draft override, else global default); they carry over to the invoice.
+      ...toDocumentTermsColumns(this.documentTermsConfig.resolve(documentTermsLayerFromFields(offer))),
     });
 
     const refreshedLines = await this.offerLineItemsRepository.findByOfferId(id);
@@ -256,6 +262,7 @@ export class OfferArchiveService {
       lineItems: lines.map((line) => mapOfferLineItemToResponse(line)),
       taxMode: offer.taxMode ?? null,
       taxNote: offer.taxNote ?? null,
+      ...mapAdminOfferDocumentTerms(offer, this.documentTermsConfig),
     };
   }
 }

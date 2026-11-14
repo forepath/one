@@ -41,6 +41,7 @@ import { dbServerPaging } from '../shared/server-paging';
 import { offerState } from '../shared/table-states';
 import { getUnnumberedOfferLabel } from '../named-label.util';
 import { formatBillingDate, formatBillingMoney } from '../billing-format';
+import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
 
 type CustomerOffersTab = 'pending' | 'history';
 
@@ -50,6 +51,7 @@ type CustomerOffersTab = 'pending' | 'history';
   imports: [
     CommonModule,
     FormsModule,
+    DocumentTermsSummaryComponent,
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcDataTableComponent,

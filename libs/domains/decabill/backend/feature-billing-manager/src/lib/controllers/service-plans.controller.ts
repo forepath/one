@@ -19,6 +19,7 @@ import {
 import { randomUUID } from 'crypto';
 
 import { CreateServicePlanDto } from '../dto/create-service-plan.dto';
+import { mapDocumentTermsToResponse, mapEffectiveDocumentTermsToResponse } from '../dto/document-terms.dto';
 import { CloudInitConfigOrderFieldDto } from '../dto/cloud-init-config-response.dto';
 import { PlanAddonOptionDto } from '../dto/addon-response.dto';
 import { OrderProvisioningOptionDto } from '../dto/order-provisioning-option.dto';
@@ -33,6 +34,7 @@ import { ServicePlansRepository } from '../repositories/service-plans.repository
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { AddonService } from '../services/addon.service';
+import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
 import { CloudInitConfigService } from '../services/cloud-init-config.service';
 import { ContainerManagerCatalogService } from '../contributors/container-manager/services/container-manager-catalog.service';
 import { MeterService } from '../services/meter.service';
@@ -47,6 +49,13 @@ import {
 import { convertAddonPriceToPlanPeriod } from '../utils/addon-pricing.util';
 import { isAddonCompatibleWithProvider } from '../utils/addon-compatibility.utils';
 import { normalizePlanProviderConfigDefaults } from '../utils/cloud-init/plan-provisioning-options.utils';
+import {
+  documentTermsLayerFromFields,
+  hasDeliveryTermsInput,
+  normalizeDeliveryTermsInput,
+  normalizePaymentDueDaysInput,
+  toDeliveryTermsColumns,
+} from '../utils/document-terms.utils';
 import { parsePlanAllowedAddonIds, parsePlanMandatoryAddonIds } from '../utils/plan-addons.utils';
 import { commercialPricingFieldsChanged, snapshotCommercialPricing } from '../utils/plan-commercial-pricing.utils';
 import { isPostgresForeignKeyViolation } from '../utils/postgres-foreign-key-violation.util';
@@ -77,6 +86,7 @@ export class ServicePlansController {
     private readonly withdrawalPolicyService: WithdrawalPolicyService,
     private readonly containerManagerCatalogService: ContainerManagerCatalogService,
     private readonly notificationPublisher: BillingNotificationPublisher,
+    private readonly documentTermsConfig: BillingDocumentTermsConfigService,
     @Inject(PLAN_PRICE_MIGRATE_ENQUEUE)
     private readonly planPriceMigrateEnqueue: PlanPriceMigrateEnqueuePort,
   ) {}
@@ -306,6 +316,8 @@ export class ServicePlansController {
       allowCustomerProviderSelection,
       allowedProviders,
       taxCategory: dto.taxCategory ?? TaxCategory.STANDARD,
+      paymentDueDays: normalizePaymentDueDaysInput(dto.paymentDueDays),
+      ...toDeliveryTermsColumns(normalizeDeliveryTermsInput(dto)),
       isActive: dto.isActive ?? true,
     });
 
@@ -413,6 +425,16 @@ export class ServicePlansController {
       }
     }
 
+    const deliveryTermsUpdate = hasDeliveryTermsInput(dto)
+      ? toDeliveryTermsColumns(
+          normalizeDeliveryTermsInput({
+            deliveryTermsCode: dto.deliveryTermsCode !== undefined ? dto.deliveryTermsCode : existing.deliveryTermsCode,
+            deliveryTermsPlace:
+              dto.deliveryTermsPlace !== undefined ? dto.deliveryTermsPlace : existing.deliveryTermsPlace,
+            deliveryTermsText: dto.deliveryTermsText !== undefined ? dto.deliveryTermsText : existing.deliveryTermsText,
+          }),
+        )
+      : {};
     const row = await this.servicePlansRepository.update(id, {
       ...(dto.name !== undefined ? { name: dto.name } : {}),
       ...(dto.description !== undefined ? { description: dto.description } : {}),
@@ -445,6 +467,8 @@ export class ServicePlansController {
       ...(dto.allowCustomerProviderSelection !== undefined || isNone ? { allowCustomerProviderSelection } : {}),
       ...(providerSelectionTouched ? { allowedProviders } : {}),
       ...(dto.taxCategory !== undefined ? { taxCategory: dto.taxCategory } : {}),
+      ...(dto.paymentDueDays !== undefined ? { paymentDueDays: normalizePaymentDueDaysInput(dto.paymentDueDays) } : {}),
+      ...deliveryTermsUpdate,
       ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
     });
 
@@ -553,6 +577,10 @@ export class ServicePlansController {
       allowCustomerProviderSelection: row.allowCustomerProviderSelection === true,
       allowedProviders: normalizeAllowedProviders(row.allowedProviders),
       taxCategory: row.taxCategory ?? TaxCategory.STANDARD,
+      ...mapDocumentTermsToResponse(row),
+      effectiveDocumentTerms: mapEffectiveDocumentTermsToResponse(
+        this.documentTermsConfig.resolve(documentTermsLayerFromFields(row)),
+      ),
       withdrawalPolicy,
       meters: await this.meterService.listEffectivePlanMeters(row.id, row.serviceTypeId),
       isActive: row.isActive,

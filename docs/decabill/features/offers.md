@@ -67,7 +67,9 @@ Created invoices may reference `offer_id`.
 
 ## PDF and e-invoice
 
-Offer PDFs mirror invoice layout (`offer-pdf.template.html`). Embedded ZUGFeRD uses EN 16931 document type **330 (Quotation)** without payment means.
+Offer PDFs mirror invoice layout (`offer-pdf.template.html`). Embedded ZUGFeRD uses document type **325 (proforma invoice)** without payment means: EN 16931 has no quotation code (BR-CL-01), and 330 means "request for quote".
+
+Offers carry optional payment and delivery terms (offer editor; empty = global default). They are frozen on archive, printed on the PDF, embedded in the XML, and carried over to the invoice created on acceptance. See [Payment and delivery terms](./document-terms.md).
 
 ## Notifications and email
 

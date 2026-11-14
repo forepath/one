@@ -7,6 +7,7 @@ import { mapManualInvoiceLineItemsToInputs } from '../utils/map-manual-invoice-l
 import { InvoiceLineItemsRepository } from '../repositories/invoice-line-items.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+import { normalizeDeliveryTermsInput, normalizePaymentDueDaysInput } from '../utils/document-terms.utils';
 import { assertDraftEditable } from '../utils/invoice-mutability.util';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
@@ -144,7 +145,12 @@ export class ManualInvoiceService {
       throw new BadRequestException('Customer profile must be complete before issuing invoice');
     }
 
-    await this.invoiceIssuanceService.issueDraft(invoiceRefId, dto?.dueInDays ?? 14);
+    const issued = await this.invoiceIssuanceService.issueDraft(invoiceRefId, {
+      terms: {
+        paymentDueDays: normalizePaymentDueDaysInput(dto?.dueInDays),
+        deliveryTerms: normalizeDeliveryTermsInput(dto ?? {}),
+      },
+    });
 
     await this.auditLog.log({
       process: 'invoice.manual_issue',
@@ -152,7 +158,11 @@ export class ManualInvoiceService {
       message: 'Admin issued manual invoice draft',
       invoiceId: invoiceRefId,
       userId: invoice.userId,
-      context: { adminUserId, dueInDays: dto?.dueInDays ?? 14 },
+      context: {
+        adminUserId,
+        dueInDays: issued.paymentDueDays ?? null,
+        deliveryTermsCode: issued.deliveryTermsCode ?? null,
+      },
     });
 
     return await this.getDetail(invoiceRefId);

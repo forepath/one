@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 import { CustomerType } from '../../constants/customer-type.constants';
+import { DeliveryTermsCode } from '../../constants/document-terms.constants';
 import { EinvoiceTaxCategoryCode, TaxMode } from '../../constants/tax-mode.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
 
@@ -91,6 +92,22 @@ export class OfferEntity {
 
   @Column({ type: 'boolean', default: false, name: 'bill_to_open_positions' })
   billToOpenPositions!: boolean;
+
+  /** Payment terms: payable within N days (null inherits the global default until archived; frozen on archive). */
+  @Column({ type: 'int', nullable: true, name: 'payment_due_days' })
+  paymentDueDays?: number | null;
+
+  /** Incoterms® 2020 rule or CUSTOM (null inherits the global default until archived; frozen on archive). */
+  @Column({ type: 'varchar', length: 16, nullable: true, name: 'delivery_terms_code' })
+  deliveryTermsCode?: DeliveryTermsCode | null;
+
+  /** Named place for an Incoterms rule. */
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'delivery_terms_place' })
+  deliveryTermsPlace?: string | null;
+
+  /** Free-text delivery terms when deliveryTermsCode is CUSTOM. */
+  @Column({ type: 'text', nullable: true, name: 'delivery_terms_text' })
+  deliveryTermsText?: string | null;
 
   @Column({ type: 'varchar', length: 512, nullable: true, name: 'pdf_storage_key' })
   pdfStorageKey?: string | null;

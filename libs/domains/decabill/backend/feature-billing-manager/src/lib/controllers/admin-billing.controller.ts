@@ -58,10 +58,12 @@ import { InvoiceService } from '../services/invoice.service';
 import { ManualInvoiceService } from '../services/manual-invoice.service';
 import { StoredFileSigningConfigService } from '../services/stored-file-signing-config.service';
 import { TaxPreviewService } from '../services/tax-preview.service';
+import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
 import { TenantsGlobalViewsConfigService } from '../services/tenants-global-views-config.service';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 import { TaxPreviewRequestDto } from '../dto/tax-preview.dto';
+import { type EffectiveDocumentTermsResponseDto, mapEffectiveDocumentTermsToResponse } from '../dto/document-terms.dto';
 
 @Controller('admin/billing')
 @UsersRoles(UserRole.ADMIN)
@@ -80,12 +82,20 @@ export class AdminBillingController {
     private readonly billingTenantService: BillingTenantService,
     private readonly taxPreviewService: TaxPreviewService,
     private readonly storedFileSigningConfig: StoredFileSigningConfigService,
+    private readonly documentTermsConfig: BillingDocumentTermsConfigService,
   ) {}
 
   @RequireScopes('billing:admin')
   @Post('tax/preview')
   async previewTax(@Body() dto: TaxPreviewRequestDto) {
     return await this.taxPreviewService.preview(dto);
+  }
+
+  /** Global default payment / delivery terms (`BILLING_DEFAULT_*`), shown as the inherited value in admin forms. */
+  @RequireScopes('billing:admin')
+  @Get('document-terms/defaults')
+  getDocumentTermsDefaults(): EffectiveDocumentTermsResponseDto {
+    return mapEffectiveDocumentTermsToResponse(this.documentTermsConfig.getDefaults());
   }
 
   @RequireScopes('billing:admin')

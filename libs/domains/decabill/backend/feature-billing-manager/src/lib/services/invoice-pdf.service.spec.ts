@@ -91,6 +91,36 @@ describe('InvoicePdfService', () => {
     jest.spyOn(eInvoiceEmbedService, 'embedXmlInPdf').mockImplementation(async (pdfBytes) => pdfBytes);
   });
 
+  describe('generatePartialCreditDocumentAndStore', () => {
+    it('uses the credited amounts (not the original invoice totals) in the XML and PDF', async () => {
+      const embedSpy = jest.spyOn(eInvoiceEmbedService, 'embedXmlInPdf');
+      const htmlSpy = jest.spyOn(invoicePdfTemplateService, 'buildHtml');
+
+      await service.generatePartialCreditDocumentAndStore(
+        invoice,
+        new Date('2026-06-10'),
+        issuer,
+        buyer,
+        purchaseOrderReference,
+        invoicingPeriod,
+        10,
+        11.9,
+        'Withdrawal refund',
+        'abc',
+      );
+
+      const xml = embedSpy.mock.calls[0][1] as string;
+
+      expect(xml).toContain('<ram:TypeCode>381</ram:TypeCode>');
+      expect(xml).toContain('<ram:GrandTotalAmount>11.90</ram:GrandTotalAmount>');
+      expect(xml).toContain('<ram:TaxBasisTotalAmount>10.00</ram:TaxBasisTotalAmount>');
+      expect(xml).toContain('<ram:DuePayableAmount>11.90</ram:DuePayableAmount>');
+      expect(xml).not.toContain('<ram:TotalPrepaidAmount>');
+      expect(xml).toContain('Offset against the open balance of invoice INV-2026-00001');
+      expect(htmlSpy.mock.calls[0][0]).toEqual(expect.objectContaining({ totalGross: 11.9, subtotalNet: 10 }));
+    });
+  });
+
   describe('generateAndStore', () => {
     it('handles decimal columns returned as strings from the database', async () => {
       const stringLineItems = [

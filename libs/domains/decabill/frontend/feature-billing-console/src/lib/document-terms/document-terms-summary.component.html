@@ -1,0 +1,31 @@
+<ng-template #termsRows>
+  <div class="row g-3">
+    @if (paymentTermsLabel; as paymentTerms) {
+      <div class="col-md-6">
+        <div class="small text-body-secondary" i18n="@@featureDocumentTerms-paymentTermsLabel">Payment terms</div>
+        <div class="fw-medium">{{ paymentTerms }}</div>
+      </div>
+    }
+    @if (deliveryTermsLabel; as deliveryTerms) {
+      <div class="col-md-6">
+        <div class="small text-body-secondary" i18n="@@featureDocumentTerms-deliveryTermsLabel">Delivery terms</div>
+        <div class="fw-medium text-break document-terms-summary__text">{{ deliveryTerms }}</div>
+      </div>
+    }
+  </div>
+</ng-template>
+
+@if (hasTerms) {
+  @if (layout === 'card') {
+    <div class="card">
+      <fpc-lane-header>
+        <span fpcLaneHeaderTitle i18n="@@featureDocumentTerms-title">Terms</span>
+      </fpc-lane-header>
+      <div class="card-body">
+        <ng-container [ngTemplateOutlet]="termsRows" />
+      </div>
+    </div>
+  } @else {
+    <ng-container [ngTemplateOutlet]="termsRows" />
+  }
+}

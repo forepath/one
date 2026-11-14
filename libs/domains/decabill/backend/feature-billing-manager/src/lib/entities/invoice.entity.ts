@@ -2,6 +2,7 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, Pri
 
 import { AutoPaymentStatus } from '../constants/auto-payment-status.constants';
 import { CustomerType } from '../constants/customer-type.constants';
+import { DeliveryTermsCode } from '../constants/document-terms.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { EinvoiceTaxCategoryCode, TaxMode } from '../constants/tax-mode.constants';
 
@@ -97,6 +98,22 @@ export class InvoiceEntity {
 
   @Column({ type: 'timestamp', nullable: true, name: 'paid_at' })
   paidAt?: Date | null;
+
+  /** Payment terms: payable within N days (resolved and frozen at issuance). */
+  @Column({ type: 'int', nullable: true, name: 'payment_due_days' })
+  paymentDueDays?: number | null;
+
+  /** Incoterms® 2020 rule or CUSTOM (resolved and frozen at issuance). */
+  @Column({ type: 'varchar', length: 16, nullable: true, name: 'delivery_terms_code' })
+  deliveryTermsCode?: DeliveryTermsCode | null;
+
+  /** Named place for an Incoterms rule. */
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'delivery_terms_place' })
+  deliveryTermsPlace?: string | null;
+
+  /** Free-text delivery terms when deliveryTermsCode is CUSTOM. */
+  @Column({ type: 'text', nullable: true, name: 'delivery_terms_text' })
+  deliveryTermsText?: string | null;
 
   @Column({ type: 'varchar', length: 512, nullable: true, name: 'pdf_storage_key' })
   pdfStorageKey?: string;

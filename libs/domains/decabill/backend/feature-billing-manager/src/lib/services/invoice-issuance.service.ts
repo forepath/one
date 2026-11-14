@@ -11,6 +11,7 @@ import { SubscriptionsRepository } from '../repositories/subscriptions.repositor
 
 import { AutoBillingService } from './auto-billing.service';
 import { BillingAuditLogService } from './billing-audit-log.service';
+import { BillingDocumentTermsConfigService } from './billing-document-terms-config.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { mapInvoiceToSearchDocument } from '../search/billing-search-document.mapper';
@@ -25,9 +26,19 @@ import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 import { isEuMemberState } from '../constants/eu-member-states.constants';
 import { TaxMode } from '../constants/tax-mode.constants';
+import {
+  documentTermsLayerFromFields,
+  type DocumentTermsLayer,
+  toDocumentTermsColumns,
+} from '../utils/document-terms.utils';
 
 export interface IssueDraftOptions {
   skipNotification?: boolean;
+  /**
+   * Document-level payment / delivery terms (manual issue dialog, accepted offer). Unset facets inherit from the
+   * subscription's service plan, then the global default.
+   */
+  terms?: DocumentTermsLayer;
 }
 
 @Injectable()
@@ -49,9 +60,10 @@ export class InvoiceIssuanceService {
     private readonly invoiceTaxContextService: InvoiceTaxContextService,
     private readonly ossThresholdService: OssThresholdService,
     private readonly billingSearchIndexService: BillingSearchIndexService,
+    private readonly documentTermsConfig: BillingDocumentTermsConfigService,
   ) {}
 
-  async issueDraft(invoiceId: string, dueInDays = 14, options?: IssueDraftOptions): Promise<InvoiceEntity> {
+  async issueDraft(invoiceId: string, options?: IssueDraftOptions): Promise<InvoiceEntity> {
     const invoice = await this.invoicesRepository.findByIdOrThrow(invoiceId);
 
     if (invoice.status !== InvoiceStatus.DRAFT) {
@@ -67,12 +79,21 @@ export class InvoiceIssuanceService {
       throw new Error('Customer profile required before issuing invoice');
     }
 
+    const subscription = invoice.subscriptionId
+      ? await this.subscriptionsRepository.findByIdOrThrow(invoice.subscriptionId)
+      : null;
+    const plan = subscription ? await this.servicePlansRepository.findByIdOrThrow(subscription.planId) : null;
+    const terms = this.documentTermsConfig.resolve(
+      options?.terms,
+      documentTermsLayerFromFields(invoice),
+      documentTermsLayerFromFields(plan),
+    );
     const year = new Date().getFullYear();
     const invoiceNumber = await this.invoiceNumberSequencesRepository.nextInvoiceNumber(year);
     const issuedAt = new Date();
     const dueDate = new Date(issuedAt);
 
-    dueDate.setDate(dueDate.getDate() + dueInDays);
+    dueDate.setDate(dueDate.getDate() + terms.paymentDueDays);
 
     const balanceDue = Math.max(0, Number(invoice.balanceDue));
     const isPromotionalZeroBalance = balanceDue === 0;
@@ -82,15 +103,14 @@ export class InvoiceIssuanceService {
       issuedAt,
       paidAt: isPromotionalZeroBalance ? issuedAt : undefined,
       dueDate: isPromotionalZeroBalance ? undefined : dueDate,
+      // Frozen with the document; a promotional zero balance is paid on issue, so it carries no payment terms.
+      ...toDocumentTermsColumns(terms),
+      ...(isPromotionalZeroBalance ? { paymentDueDays: null } : {}),
       balanceDue,
       paymentProcessor: isPromotionalZeroBalance
         ? undefined
         : (process.env.BILLING_DEFAULT_PAYMENT_PROCESSOR ?? 'stripe'),
     });
-    const subscription = invoice.subscriptionId
-      ? await this.subscriptionsRepository.findByIdOrThrow(invoice.subscriptionId)
-      : null;
-    const plan = subscription ? await this.servicePlansRepository.findByIdOrThrow(subscription.planId) : null;
     const pdfStorageKey = await this.invoicePdfService.generateAndStore(
       updated,
       lineItems,

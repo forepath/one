@@ -154,10 +154,6 @@
         <source>Issue invoice</source>
         <target>Rechnung ausstellen</target>
       </trans-unit>
-      <trans-unit id="featureAdminInvoices-dueInDays" datatype="html">
-        <source>Due in days</source>
-        <target>Fällig in Tagen</target>
-      </trans-unit>
       <trans-unit id="featureAdminInvoices-deleteTitle" datatype="html">
         <source>Delete draft</source>
         <target>Entwurf löschen</target>
@@ -9137,6 +9133,154 @@
       <trans-unit id="identityAuthLegalLinks-privacy" datatype="html">
         <source>Privacy Policy</source>
         <target>Datenschutzerklärung</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-paymentDueDays" datatype="html">
+        <source>Payment terms (days)</source>
+        <target>Zahlungsziel (Tage)</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTerms" datatype="html">
+        <source>Delivery terms</source>
+        <target>Lieferbedingungen</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTermsHint" datatype="html">
+        <source>Incoterms® 2020 for physical goods; choose the manual option for digital goods and services.</source>
+        <target>Incoterms® 2020 für physische Waren; für digitale Waren und Dienstleistungen die manuelle Option wählen.</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTermsPlace" datatype="html">
+        <source>Named place</source>
+        <target>Benannter Ort</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTermsPlaceHint" datatype="html">
+        <source>Optional, e.g. the delivery address city and country.</source>
+        <target>Optional, z. B. Ort und Land der Lieferadresse.</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTermsText" datatype="html">
+        <source>Delivery terms text</source>
+        <target>Text der Lieferbedingungen</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTermsTextPlaceholder" datatype="html">
+        <source>e.g. Provided as online access within 24 hours after payment.</source>
+        <target>z. B. Bereitstellung als Online-Zugang innerhalb von 24 Stunden nach Zahlungseingang.</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-inheritOption" datatype="html">
+        <source>Default (service plan or global setting)</source>
+        <target>Standard (Serviceplan oder globale Einstellung)</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-inheritOptionValue" datatype="html">
+        <source>Default: <x id="terms" equiv-text="inherited"/></source>
+        <target>Standard: <x id="terms" equiv-text="inherited"/></target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-inheritOptionNone" datatype="html">
+        <source>Default: none</source>
+        <target>Standard: keine</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-paymentTermsLabel" datatype="html">
+        <source>Payment terms</source>
+        <target>Zahlungsbedingungen</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTermsLabel" datatype="html">
+        <source>Delivery terms</source>
+        <target>Lieferbedingungen</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-title" datatype="html">
+        <source>Terms</source>
+        <target>Bedingungen</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermExw" datatype="html">
+        <source>Ex Works</source>
+        <target>Ab Werk</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermFca" datatype="html">
+        <source>Free Carrier</source>
+        <target>Frei Frachtführer</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermCpt" datatype="html">
+        <source>Carriage Paid To</source>
+        <target>Frachtfrei</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermCip" datatype="html">
+        <source>Carriage and Insurance Paid To</source>
+        <target>Frachtfrei versichert</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermDap" datatype="html">
+        <source>Delivered at Place</source>
+        <target>Geliefert benannter Ort</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermDpu" datatype="html">
+        <source>Delivered at Place Unloaded</source>
+        <target>Geliefert benannter Ort entladen</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermDdp" datatype="html">
+        <source>Delivered Duty Paid</source>
+        <target>Geliefert verzollt</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermFas" datatype="html">
+        <source>Free Alongside Ship</source>
+        <target>Frei Längsseite Schiff</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermFob" datatype="html">
+        <source>Free on Board</source>
+        <target>Frei an Bord</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermCfr" datatype="html">
+        <source>Cost and Freight</source>
+        <target>Kosten und Fracht</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermCif" datatype="html">
+        <source>Cost, Insurance and Freight</source>
+        <target>Kosten, Versicherung und Fracht</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-customOption" datatype="html">
+        <source>Manual (free text)</source>
+        <target>Manuell (Freitext)</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-payableImmediately" datatype="html">
+        <source>Payable immediately</source>
+        <target>Sofort zahlbar</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-payableWithinOneDay" datatype="html">
+        <source>Payable within 1 day of the invoice date</source>
+        <target>Zahlbar innerhalb von 1 Tag ab Rechnungsdatum</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-payableWithinDays" datatype="html">
+        <source>Payable within <x id="days" equiv-text="paymentDueDays"/> days of the invoice date</source>
+        <target>Zahlbar innerhalb von <x id="days" equiv-text="paymentDueDays"/> Tagen ab Rechnungsdatum</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermsLabel" datatype="html">
+        <source><x id="rule" equiv-text="rule"/> (Incoterms® 2020)</source>
+        <target><x id="rule" equiv-text="rule"/> (Incoterms® 2020)</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-paymentDueDaysInvalid" datatype="html">
+        <source>Use 0–<x id="max" equiv-text="PAYMENT_DUE_DAYS_MAX"/> days.</source>
+        <target>0–<x id="max" equiv-text="PAYMENT_DUE_DAYS_MAX"/> Tage erlaubt.</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-customTextRequired" datatype="html">
+        <source>Enter the delivery terms.</source>
+        <target>Geben Sie die Lieferbedingungen ein.</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-customTextTooLong" datatype="html">
+        <source>Use at most <x id="max" equiv-text="DELIVERY_TERMS_TEXT_MAX_LENGTH"/> characters.</source>
+        <target>Verwenden Sie höchstens <x id="max" equiv-text="DELIVERY_TERMS_TEXT_MAX_LENGTH"/> Zeichen.</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-placeTooLong" datatype="html">
+        <source>Use at most <x id="max" equiv-text="DELIVERY_TERMS_PLACE_MAX_LENGTH"/> characters.</source>
+        <target>Verwenden Sie höchstens <x id="max" equiv-text="DELIVERY_TERMS_PLACE_MAX_LENGTH"/> Zeichen.</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-documentTerms" datatype="html">
+        <source>Payment and delivery terms</source>
+        <target>Zahlungs- und Lieferbedingungen</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-documentTermsTitle" datatype="html">
+        <source> Payment and delivery terms </source>
+        <target> Zahlungs- und Lieferbedingungen </target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-paymentDueDaysHintDays" datatype="html">
+        <source>Default if empty: <x id="days" equiv-text="days"/> days</source>
+        <target>Standard, wenn leer: <x id="days" equiv-text="days"/> Tage</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentTerms-paymentDueDaysHintPlan" datatype="html">
+        <source>Default if empty: plan or global</source>
+        <target>Standard, wenn leer: Plan oder global</target>
       </trans-unit>
     </body>
   </file>

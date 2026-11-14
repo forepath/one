@@ -316,6 +316,39 @@ describe('DatevExportService', () => {
     expect(tenantIds).toContain('acme');
   });
 
+  it('books both the original and the cancellation for an invoice issued and voided in the same period', async () => {
+    const invoice = {
+      id: 'inv-v',
+      userId: 'user-1',
+      invoiceNumber: 'INV-V',
+      status: 'void',
+      issuedAt: new Date('2026-01-10'),
+      voidedAt: new Date('2026-01-12'),
+      createdAt: new Date('2026-01-10'),
+      lineItems: [{ description: 'Line', lineGross: 10, taxCategory: 'standard' }],
+    };
+
+    invoicesRepository.findIssuedInPeriod.mockResolvedValue([invoice]);
+    invoicesRepository.findVoidedInPeriod.mockResolvedValue([invoice]);
+    customerProfilesRepository.findByUserId.mockResolvedValue({ userId: 'user-1', company: 'Acme' });
+    debtorAccountService.resolveDebtorNumber.mockResolvedValue(10_001);
+    bookingMapper.mapIssuedLineItem.mockReturnValue(['issued-row']);
+    bookingMapper.mapVoidedLineItem.mockReturnValue(['void-row']);
+
+    await service.runExport({
+      scope: DatevExportScope.TENANT,
+      tenantId: 'default',
+      year: 2026,
+      month: 1,
+      periodStart: new Date('2026-01-01'),
+      periodEnd: new Date('2026-01-31'),
+      triggeredBy: 'scheduler',
+    });
+
+    expect(bookingMapper.mapIssuedLineItem).toHaveBeenCalledWith(expect.objectContaining({ invoice }));
+    expect(bookingMapper.mapVoidedLineItem).toHaveBeenCalledWith(expect.objectContaining({ invoice }));
+  });
+
   it('fails unified export when an invoice has no customer profile', async () => {
     const invoice = {
       id: 'inv-1',

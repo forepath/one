@@ -1,5 +1,12 @@
 // Types based on OpenAPI spec for Billing Service API
 
+import type {
+  DeliveryTermsCode,
+  DocumentTerms,
+  DocumentTermsInput,
+  EffectiveDocumentTerms,
+} from './document-terms.types';
+
 // Enums
 export type BillingIntervalType = 'hour' | 'day' | 'month' | 'year';
 
@@ -535,7 +542,7 @@ export interface ServicePlanOrderingHighlight {
   text: string;
 }
 
-export interface ServicePlanResponse {
+export interface ServicePlanResponse extends DocumentTerms {
   id: string;
   serviceTypeId: string | null;
   name: string;
@@ -563,6 +570,8 @@ export interface ServicePlanResponse {
   /** Provider ids customers may select when allowCustomerProviderSelection is true. */
   allowedProviders: string[];
   taxCategory?: TaxCategory;
+  /** Terms applied to this plan's invoices (plan override, else global default). */
+  effectiveDocumentTerms?: EffectiveDocumentTerms;
   withdrawalPolicy: WithdrawalPolicy;
   isActive: boolean;
   meters?: AttachedMeterResponse[];
@@ -570,7 +579,7 @@ export interface ServicePlanResponse {
   updatedAt: string;
 }
 
-export interface CreateServicePlanDto {
+export interface CreateServicePlanDto extends DocumentTermsInput {
   /** UUID of a service type, or null for no deployment. */
   serviceTypeId?: string | null;
   name: string;
@@ -597,7 +606,7 @@ export interface CreateServicePlanDto {
   isActive?: boolean;
 }
 
-export interface UpdateServicePlanDto {
+export interface UpdateServicePlanDto extends DocumentTermsInput {
   name?: string;
   description?: string;
   billingIntervalType?: BillingIntervalType;
@@ -1168,6 +1177,12 @@ export interface InvoiceDetailResponse {
   taxBreakdown: InvoiceTaxBreakdown[];
   issuedAt?: string | null;
   dueDate?: string | null;
+  /** Payment terms frozen at issuance (null for drafts and legacy invoices). */
+  paymentDueDays?: number | null;
+  /** Delivery terms frozen at issuance. */
+  deliveryTermsCode?: DeliveryTermsCode | null;
+  deliveryTermsPlace?: string | null;
+  deliveryTermsText?: string | null;
   paidAt?: string | null;
   createdAt: string;
   canPay: boolean;
@@ -1484,8 +1499,9 @@ export interface UpdateManualInvoiceDto {
   lineItems: ManualInvoiceLineItemDto[];
 }
 
-export interface IssueManualInvoiceDto {
-  dueInDays?: number;
+/** Payment terms (`dueInDays`) and delivery terms; omitted / null values inherit (plan → global default). */
+export interface IssueManualInvoiceDto extends Omit<DocumentTermsInput, 'paymentDueDays'> {
+  dueInDays?: number | null;
 }
 
 export interface ManualInvoiceDetailResponse extends InvoiceDetailResponse {

@@ -1,4 +1,8 @@
-export type EInvoiceDocumentTypeCode = '380' | '325' | '330' | '381';
+/**
+ * UNTDID 1001 codes from the EN 16931 BT-3 code list (BR-CL-01): 380 commercial invoice, 381 credit note,
+ * 325 proforma invoice (offers / quotations, which have no code of their own).
+ */
+export type EInvoiceDocumentTypeCode = '380' | '325' | '381';
 
 export interface EInvoiceDocumentOptions {
   typeCode: EInvoiceDocumentTypeCode;
@@ -7,6 +11,12 @@ export interface EInvoiceDocumentOptions {
   duePayableAmount: number;
   includePaymentMeans: boolean;
   referencedInvoiceNumber?: string;
+  /** Embed the document's payment terms (BT-20) and delivery terms (note, subject code AAR). */
+  includeDocumentTerms?: boolean;
+  /** Embed the payment due date (BT-9) from the document's due date. */
+  includeDueDate?: boolean;
+  /** Fixed BT-20 text (credit notes with an amount due, where the document carries no payment terms of its own). */
+  paymentTermsDescription?: string;
 }
 
 export const DEFAULT_INVOICE_DOCUMENT_OPTIONS: Omit<EInvoiceDocumentOptions, 'documentId' | 'issueDate'> = {
@@ -30,6 +40,11 @@ export function buildCreditNoteDocumentOptions(
   };
 }
 
+/** How a partial credit is settled (withdrawal refunds and configuration-change credits). */
+export function buildCreditNoteSettlementTerms(originalInvoiceNumber: string): string {
+  return `Offset against the open balance of invoice ${originalInvoiceNumber}; any amount already paid is refunded or credited to future invoices.`;
+}
+
 export function buildCreditNoteNumber(invoiceNumber: string): string {
   return `${invoiceNumber}-CN`;
 }
@@ -51,6 +66,8 @@ export function buildPartialCreditNoteDocumentOptions(
     duePayableAmount: creditGross,
     includePaymentMeans: false,
     referencedInvoiceNumber: originalInvoiceNumber,
+    // BR-CO-25: a positive amount due needs a due date (BT-9) or payment terms (BT-20).
+    paymentTermsDescription: buildCreditNoteSettlementTerms(originalInvoiceNumber),
   };
 }
 
@@ -67,6 +84,8 @@ export function buildInvoiceDocumentOptions(invoice: {
     issueDate: invoice.issuedAt ?? invoice.createdAt,
     duePayableAmount: Number(invoice.balanceDue),
     includePaymentMeans: true,
+    includeDocumentTerms: true,
+    includeDueDate: true,
   };
 }
 
@@ -77,11 +96,13 @@ export function buildZeroBalancePromotionalInvoiceDocumentOptions(invoice: {
   createdAt: Date;
 }): EInvoiceDocumentOptions {
   return {
-    typeCode: '325',
+    // A real (tax) invoice that is paid on issue by the promotion: commercial invoice, nothing due (prepaid).
+    typeCode: '380',
     documentId: invoice.invoiceNumber ?? invoice.id,
     issueDate: invoice.issuedAt ?? invoice.createdAt,
     duePayableAmount: 0,
     includePaymentMeans: false,
+    includeDocumentTerms: true,
   };
 }
 
@@ -93,10 +114,11 @@ export function buildOfferDocumentOptions(offer: {
   totalGross: number;
 }): EInvoiceDocumentOptions {
   return {
-    typeCode: '330',
+    typeCode: '325',
     documentId: offer.offerNumber ?? offer.id,
     issueDate: offer.archivedAt ?? offer.createdAt,
     duePayableAmount: Number(offer.totalGross),
     includePaymentMeans: false,
+    includeDocumentTerms: true,
   };
 }

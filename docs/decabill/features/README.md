@@ -119,6 +119,10 @@ Admin-composed draft quotations with standard, project-template, and plan-templa
 - OpenSearch list search with PostgreSQL fallback
 - Webhooks and email on archive/accept; BullMQ expiration and scheduled fulfillment
 
+### [Payment and delivery terms](./document-terms.md)
+
+Payment terms (payable within N days) and delivery terms (Incoterms® 2020 or custom text) per service plan, offer, and manual invoice, with an environment default. Frozen on issue / archive, printed on PDFs, and embedded in the e-invoice XML.
+
 ### [Invoices](./invoices.md)
 
 Issue, preview, download, void, and pay invoices. Open positions accumulate until each user's billing day.

@@ -156,6 +156,7 @@ import {
 } from '../plan-order-configurator/plan-order-requested-config.util';
 import { buildPromotionAdjustedOrderPricing } from '../promotion-pricing-preview.util';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
+import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
 import {
   buildPricingTotalsSummary,
   type PricingTotalsLeadingRow,
@@ -190,6 +191,7 @@ type ConfigChangeWizardStep = {
   selector: 'framework-billing-subscriptions',
   standalone: true,
   imports: [
+    DocumentTermsSummaryComponent,
     FpcFormTextDirective,
     FpcStepStripComponent,
     FpcStepStripDirective,

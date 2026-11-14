@@ -1,3 +1,4 @@
+import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
 import { BadRequestException, NotFoundException, StreamableFile } from '@nestjs/common';
 import 'reflect-metadata';
 
@@ -59,6 +60,7 @@ describe('AdminBillingController', () => {
     billingTenantService as never,
     taxPreviewService as never,
     storedFileSigningConfig as never,
+    new BillingDocumentTermsConfigService(),
   );
 
   beforeEach(() => {
@@ -70,6 +72,15 @@ describe('AdminBillingController', () => {
     const usersRoles = Reflect.getMetadata(USERS_ROLES_KEY, AdminBillingController);
 
     expect(usersRoles).toContain(UserRole.ADMIN);
+  });
+
+  it('getDocumentTermsDefaults returns the global default terms', () => {
+    expect(controller.getDocumentTermsDefaults()).toEqual({
+      paymentDueDays: 14,
+      deliveryTermsCode: null,
+      deliveryTermsPlace: null,
+      deliveryTermsText: null,
+    });
   });
 
   it('getCapabilities returns datev and global-view flags', () => {

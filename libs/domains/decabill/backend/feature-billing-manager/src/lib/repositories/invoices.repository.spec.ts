@@ -121,6 +121,22 @@ describe('InvoicesRepository', () => {
     });
   });
 
+  it('findIssuedInPeriod keeps invoices voided since (DATEV books the original and the cancellation)', async () => {
+    mockQueryBuilder.getMany.mockResolvedValue([]);
+
+    await repository.findIssuedInPeriod(new Date('2026-11-01'), new Date('2026-11-30'));
+
+    expect(mockQueryBuilder.where).toHaveBeenCalledWith('inv.status IN (:...statuses)', {
+      statuses: [
+        InvoiceStatus.ISSUED,
+        InvoiceStatus.PARTIALLY_PAID,
+        InvoiceStatus.OVERDUE,
+        InvoiceStatus.PAID,
+        InvoiceStatus.VOID,
+      ],
+    });
+  });
+
   it('findBySubscription excludes draft invoices', async () => {
     const items = [{ id: 'inv-1' }];
 

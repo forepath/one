@@ -36,6 +36,8 @@ import { CustomerProfilesRepository } from '../../repositories/customer-profiles
 import { resolveCustomerNamesByUserId } from '../../utils/customer-display-name.util';
 import { resolvePlanTaxCategory } from '../../utils/plan-tax.utils';
 import { assertOfferDeletable, assertOfferDraftEditable } from '../utils/offer-mutability.util';
+import { buildOfferDraftDocumentTerms, mapAdminOfferDocumentTerms } from '../utils/offer-document-terms.util';
+import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
 import {
   buildOfferProjectTemplatePayload,
   mapOfferLineItemToResponse,
@@ -68,6 +70,7 @@ export class OffersAdminService {
     private readonly offerArchiveService: OfferArchiveService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingSearchIndexService: BillingSearchIndexService,
+    private readonly documentTermsConfig: BillingDocumentTermsConfigService,
     @Optional() private readonly customerProfilesRepository?: CustomerProfilesRepository,
   ) {}
 
@@ -333,6 +336,7 @@ export class OffersAdminService {
         issuerIsInEu: taxContext.treatment.issuerIsInEu,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
         billToOpenPositions: dto.billToOpenPositions ?? false,
+        ...buildOfferDraftDocumentTerms(dto),
       },
       lineEntities,
       preparedLines: builtLines.flatMap((line) => (line.prepared ? [line.prepared] : [])),
@@ -473,6 +477,7 @@ export class OffersAdminService {
       lineItems: lines.map((line) => mapOfferLineItemToResponse(line)),
       taxMode: offer.taxMode ?? null,
       taxNote: offer.taxNote ?? null,
+      ...mapAdminOfferDocumentTerms(offer, this.documentTermsConfig),
     };
   }
 
