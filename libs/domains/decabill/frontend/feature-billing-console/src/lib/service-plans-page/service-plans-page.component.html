@@ -668,7 +668,8 @@
             [sticky]="false"
           />
           <p class="form-text fpc-form-text--wrap mb-3" i18n="@@featureServicePlans-provisioningOptionsHelp">
-            Choose which integrated stacks and cloud-init configs customers may pick when ordering this plan.
+            Choose which integrated stacks and cloud-init configs customers may pick when ordering this plan. No
+            provisioning creates a bare server without a preinstalled software stack.
           </p>
           @if (
             serviceEnumIncludes(
@@ -722,6 +723,25 @@
               (checkedChange)="toggleProvisioningOption('create', 'integrated:decabill-billing', $event)"
               [disabled]="(creating$ | async) === true"
               label="Decabill Billing"
+            />
+          }
+          @if (
+            serviceEnumIncludes(
+              data.serviceTypes,
+              data.providerDetails,
+              createForm.serviceTypeId,
+              noProvisioningOptionKey,
+              'create'
+            )
+          ) {
+            <fpc-form-check
+              class="mb-2"
+              checkId="createProvisioningNone"
+              [checked]="isProvisioningOptionSelected('create', noProvisioningOptionKey)"
+              (checkedChange)="toggleProvisioningOption('create', noProvisioningOptionKey, $event)"
+              [disabled]="(creating$ | async) === true"
+              i18n-label="@@featureServicePlans-provisioningOptionNone"
+              label="No provisioning (bare server)"
             />
           }
           @for (cfg of cloudInitConfigs$ | async; track cfg.id) {
@@ -1625,7 +1645,8 @@
             [sticky]="false"
           />
           <p class="form-text fpc-form-text--wrap mb-3" i18n="@@featureServicePlans-provisioningOptionsHelp">
-            Choose which integrated stacks and cloud-init configs customers may pick when ordering this plan.
+            Choose which integrated stacks and cloud-init configs customers may pick when ordering this plan. No
+            provisioning creates a bare server without a preinstalled software stack.
           </p>
           @if (editStaleCustomConfigIds.length > 0) {
             <fpc-alert class="py-2 small mb-3" variant="warning"
@@ -1687,6 +1708,25 @@
               (checkedChange)="toggleProvisioningOption('edit', 'integrated:decabill-billing', $event)"
               [disabled]="(updating$ | async) === true"
               label="Decabill Billing"
+            />
+          }
+          @if (
+            serviceEnumIncludes(
+              data.serviceTypes,
+              data.providerDetails,
+              editingPlan.serviceTypeId,
+              noProvisioningOptionKey,
+              'edit'
+            )
+          ) {
+            <fpc-form-check
+              class="mb-2"
+              checkId="editProvisioningNone"
+              [checked]="isProvisioningOptionSelected('edit', noProvisioningOptionKey)"
+              (checkedChange)="toggleProvisioningOption('edit', noProvisioningOptionKey, $event)"
+              [disabled]="(updating$ | async) === true"
+              i18n-label="@@featureServicePlans-provisioningOptionNone"
+              label="No provisioning (bare server)"
             />
           }
           @for (cfg of cloudInitConfigs$ | async; track cfg.id) {

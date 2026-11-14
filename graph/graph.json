@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-14T11:59:27.601Z",
+  "generatedAt": "2026-11-14T16:46:47.499Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -7441,6 +7441,15 @@
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/docs/overview.mmd",
         "languageOrKind": "mmd",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/docs/plan-no-provisioning.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/docs/plan-no-provisioning.md",
+        "languageOrKind": "md",
         "projectName": "decabill-backend-feature-billing-manager"
       }
     },
@@ -42875,6 +42884,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/docs/overview.mmd",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/docs/plan-no-provisioning.md",
       "type": "contains"
     },
     {
@@ -85479,7 +85493,22 @@
     },
     {
       "from": "concept:decabill-bundled-product-stack",
+      "to": "api:HTTP:POST:/auth/login",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-bundled-product-stack",
       "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-bundled-product-stack",
+      "to": "api:HTTP:GET:/cloud-init-configs",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-bundled-product-stack",
+      "to": "api:HTTP:POST:/cloud-init-configs",
       "type": "documents"
     },
     {

@@ -260,6 +260,10 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
     return this.getSelectedProvisioningOption()?.type === 'integrated';
   }
 
+  showNoProvisioningConfiguration(): boolean {
+    return this.getSelectedProvisioningOption()?.type === 'none';
+  }
+
   getSelectedProvisioningOption(): OrderProvisioningOption | null {
     return this.provisioningOptions.find((option) => option.optionKey === this.provisioningOptionKey) ?? null;
   }
@@ -539,6 +543,8 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
           Object.entries(env as Record<string, unknown>).map(([key, value]) => [key, String(value ?? '')]),
         );
       }
+    } else if (service === 'none') {
+      this.integratedConfig = { ...createDefaultIntegratedOrderConfig(), service: 'none' };
     } else if (service === 'agenstra-controller' || service === 'agenstra-manager' || service === 'decabill-billing') {
       this.integratedConfig = this.mergeIntegratedConfigFromSnapshot(config);
     } else {
@@ -748,6 +754,14 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
   }
 
   private applyProvisioningOption(option: OrderProvisioningOption): void {
+    if (option.type === 'none') {
+      this.integratedConfig = { ...this.integratedConfig, service: 'none' };
+      this.customOrderFields = [];
+      this.customEnv = {};
+
+      return;
+    }
+
     if (option.type === 'custom' && option.cloudInitConfigId?.trim()) {
       this.integratedConfig = { ...this.integratedConfig, service: 'custom' };
       this.loadCustomOrderFields(option.cloudInitConfigId.trim());

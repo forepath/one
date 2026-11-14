@@ -572,6 +572,10 @@ export class SubscriptionItemServerService {
 
     const service = normalizeCloudInitService(item.configSnapshot?.['service'] as string | undefined);
 
+    if (service === CloudInitServiceType.None) {
+      return;
+    }
+
     if (service === CloudInitServiceType.Custom) {
       const rawConfigId = item.configSnapshot?.['cloudInitConfigId'];
       const cloudInitConfigId = typeof rawConfigId === 'string' ? rawConfigId.trim() : '';

@@ -12,6 +12,7 @@ import {
   MetersFacade,
   ServicePlansService,
   CONTAINER_MANAGER_ADDON_KEY,
+  NO_PROVISIONING_OPTION_KEY,
   buildProvisioningOptionsFromKeys,
   collectPlanProductEnvFields,
   formatServerTypeOption,
@@ -283,6 +284,7 @@ export class ServicePlansPageComponent implements OnInit {
 
   createForm: CreateServicePlanDto = this.getDefaultCreateForm();
   editForm: UpdateServicePlanDto & { id: string } = this.getDefaultEditForm();
+  readonly noProvisioningOptionKey = NO_PROVISIONING_OPTION_KEY;
   createProvisioningOptionKeys = new Set<string>();
   editProvisioningOptionKeys = new Set<string>();
   editStaleCustomConfigIds: string[] = [];
@@ -434,6 +436,13 @@ export class ServicePlansPageComponent implements OnInit {
       ) {
         target.delete(optionKey);
       }
+
+      if (
+        optionKey === NO_PROVISIONING_OPTION_KEY &&
+        !this.serviceEnumIncludes(serviceTypes, providerDetails, serviceTypeId, NO_PROVISIONING_OPTION_KEY, form)
+      ) {
+        target.delete(optionKey);
+      }
     }
   }
 
@@ -483,7 +492,8 @@ export class ServicePlansPageComponent implements OnInit {
         value === 'decabill-billing' ||
         value === 'controller' ||
         value === 'manager' ||
-        value === 'custom',
+        value === 'custom' ||
+        value === NO_PROVISIONING_OPTION_KEY,
     );
   }
 

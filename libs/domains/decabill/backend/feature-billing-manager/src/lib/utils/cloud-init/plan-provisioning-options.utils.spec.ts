@@ -465,4 +465,101 @@ describe('planProvisioningOptionsUtils', () => {
       });
     });
   });
+
+  describe('no provisioning option (bare server)', () => {
+    it('encodes and parses the none option key', () => {
+      expect(encodeProvisioningOptionKey({ type: 'none' })).toBe('none');
+      expect(parseProvisioningOptionKey('none')).toEqual({ type: 'none' });
+      expect(parseProvisioningOptionKey(' none ')).toEqual({ type: 'none' });
+      expect(parseProvisioningOptionKey('none:extra')).toBeNull();
+    });
+
+    it('reads explicit none entries and dedupes them', () => {
+      expect(
+        parsePlanProvisioningOptions({
+          provisioningOptions: [{ type: 'none' }, { type: 'none' }, { type: 'custom', cloudInitConfigId: 'cfg-1' }],
+        }),
+      ).toEqual([{ type: 'none' }, { type: 'custom', cloudInitConfigId: 'cfg-1' }]);
+    });
+
+    it('normalizes a none-only plan without falling back to agenstra-controller', () => {
+      const normalized = normalizePlanProviderConfigDefaults({
+        provisioningOptions: [{ type: 'none' }],
+        cloudInitConfigId: 'stale',
+      });
+
+      expect(normalized).toEqual({ provisioningOptions: [{ type: 'none' }], service: 'none' });
+      expect(resolvePlanProvisioningOptions(normalized)).toEqual([{ type: 'none' }]);
+    });
+
+    it('infers none from legacy service when explicit options are absent', () => {
+      expect(resolvePlanProvisioningOptions({ service: 'none' })).toEqual([{ type: 'none' }]);
+    });
+
+    it('resolves a none-only plan regardless of the customer requested service', () => {
+      const defaults = { provisioningOptions: [{ type: 'none' }] };
+
+      expect(resolveOrderProvisioningSelection(defaults, {})).toEqual({ service: 'none' });
+      expect(
+        resolveOrderProvisioningSelection(defaults, { service: IntegratedProvisioningService.AgenstraController }),
+      ).toEqual({ service: 'none' });
+    });
+
+    it('lets customers pick none only when the plan offers it', () => {
+      const withNone = {
+        provisioningOptions: [
+          { type: 'integrated', service: IntegratedProvisioningService.AgenstraController },
+          { type: 'none' },
+        ],
+      };
+      const withoutNone = {
+        provisioningOptions: [
+          { type: 'integrated', service: IntegratedProvisioningService.AgenstraController },
+          { type: 'integrated', service: IntegratedProvisioningService.AgenstraManager },
+        ],
+      };
+
+      expect(resolveOrderProvisioningSelection(withNone, { provisioningOptionKey: 'none' })).toEqual({
+        service: 'none',
+      });
+      expect(resolveOrderProvisioningSelection(withNone, { service: 'none' })).toEqual({ service: 'none' });
+      expect(() => resolveOrderProvisioningSelection(withoutNone, { provisioningOptionKey: 'none' })).toThrow(
+        'Provisioning option is not available for this plan',
+      );
+      expect(() => resolveOrderProvisioningSelection(withoutNone, { service: 'none' })).toThrow(
+        'provisioningOptionKey is required when the plan offers multiple provisioning options',
+      );
+    });
+
+    it('does not let a none-only plan be steered to an integrated stack or custom template', () => {
+      const defaults = { provisioningOptions: [{ type: 'none' }] };
+
+      expect(() =>
+        resolveOrderProvisioningSelection(defaults, { provisioningOptionKey: 'integrated:agenstra-controller' }),
+      ).toThrow('Provisioning option is not available for this plan');
+      expect(() => resolveOrderProvisioningSelection(defaults, { provisioningOptionKey: 'custom:cfg-1' })).toThrow(
+        'Provisioning option is not available for this plan',
+      );
+    });
+
+    it('applies the none selection and strips custom template references', () => {
+      const config: Record<string, unknown> = {
+        service: IntegratedProvisioningService.AgenstraController,
+        cloudInitConfigId: 'cfg-1',
+        provisioningOptions: [{ type: 'none' }],
+        provisioningOptionKey: 'none',
+      };
+
+      applyResolvedProvisioningSelectionToConfig(config, { service: 'none' });
+
+      expect(config).toEqual({ service: 'none' });
+    });
+
+    it('is neither integrated nor a custom config reference', () => {
+      const defaults = { provisioningOptions: [{ type: 'none' }] };
+
+      expect(collectCustomCloudInitConfigIdsFromPlanDefaults(defaults)).toEqual([]);
+      expect(planHasCustomerProvisioningChoice(defaults)).toBe(false);
+    });
+  });
 });

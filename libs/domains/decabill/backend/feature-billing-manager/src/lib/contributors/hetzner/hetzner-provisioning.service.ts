@@ -36,6 +36,49 @@ export class HetznerProvisioningService {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  /**
+   * Registers the server's public key as a temporary Hetzner SSH key so it is injected at creation.
+   * With an SSH key, Hetzner issues no root password. Failure falls back to the user-data key only.
+   */
+  private async createTemporarySshKey(
+    serverName: string,
+    publicKey: string,
+    token: string,
+  ): Promise<number | undefined> {
+    try {
+      const response = await axios.post(
+        'https://api.hetzner.cloud/v1/ssh_keys',
+        {
+          name: `decabill-${serverName}-${Date.now().toString(36)}`,
+          public_key: publicKey,
+          labels: { 'managed-by': 'decabill' },
+        },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      return (response.data?.ssh_key?.id as number | undefined) ?? undefined;
+    } catch (error) {
+      this.logger.warn(
+        `Could not register SSH key with Hetzner for ${serverName}; using the user-data key only: ${this.formatHetznerErrorMessage(error as AxiosError, 'unknown error')}`,
+      );
+
+      return undefined;
+    }
+  }
+
+  /** The key is copied into the server at creation, so the account-level resource is removed right away. */
+  private async deleteTemporarySshKey(sshKeyId: number, token: string): Promise<void> {
+    try {
+      await axios.delete(`https://api.hetzner.cloud/v1/ssh_keys/${sshKeyId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Failed to delete temporary Hetzner SSH key ${sshKeyId}: ${this.formatHetznerErrorMessage(error as AxiosError, 'unknown error')}`,
+      );
+    }
+  }
+
   private formatHetznerErrorMessage(axiosError: AxiosError, fallback: string): string {
     const data = axiosError.response?.data as HetznerErrorResponse | undefined;
     const code = data?.error?.code;
@@ -153,6 +196,8 @@ export class HetznerProvisioningService {
       location: string;
       firewallId?: number;
       userData: string;
+      /** Registered as a temporary Hetzner SSH key for creation; omitted keys fall back to user data only. */
+      sshPublicKey?: string;
     },
     apiToken?: string,
   ) {
@@ -172,6 +217,9 @@ export class HetznerProvisioningService {
       );
     }
 
+    const publicKey = config.sshPublicKey?.trim();
+    const sshKeyId = publicKey ? await this.createTemporarySshKey(config.name, publicKey, token) : undefined;
+
     try {
       const response = await axios.post(
         'https://api.hetzner.cloud/v1/servers',
@@ -181,6 +229,7 @@ export class HetznerProvisioningService {
           image: 'ubuntu-22.04',
           location: config.location,
           user_data: userData,
+          ...(sshKeyId ? { ssh_keys: [sshKeyId] } : {}),
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -206,6 +255,10 @@ export class HetznerProvisioningService {
 
       this.logger.error(`Failed to provision Hetzner server: ${axiosError.message}`);
       throw new BadRequestException(`Failed to provision server: ${axiosError.message}`);
+    } finally {
+      if (sshKeyId) {
+        await this.deleteTemporarySshKey(sshKeyId, token);
+      }
     }
   }
 

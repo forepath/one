@@ -80,3 +80,44 @@ describe('plan-order-requested-config auth helpers', () => {
     expect(config['oidc']).toEqual({ issuer: 'https://idp', clientId: 'api', clientSecret: 's' });
   });
 });
+
+describe('buildPlanOrderRequestedConfig for plans without provisioning', () => {
+  it('sends only service none plus placement fields, never stack settings', () => {
+    const integrated = {
+      ...createDefaultIntegratedOrderConfig(),
+      service: 'none' as const,
+      authenticationMethod: 'api-key' as const,
+      staticApiKey: 'secret',
+      hetznerApiToken: 'token',
+    };
+
+    expect(
+      buildPlanOrderRequestedConfig({
+        ...baseParams,
+        integrated,
+        provisioningOptionKey: 'none',
+        showProvisioningPicker: true,
+        provisioningProvider: 'hetzner',
+        hasProviderSelection: true,
+        geographyFieldKey: 'region',
+        provisioningLocation: ' fsn1 ',
+        provisioningServerType: 'cx23',
+      }),
+    ).toEqual({
+      service: 'none',
+      provider: 'hetzner',
+      region: 'fsn1',
+      serverType: 'cx23',
+      provisioningOptionKey: 'none',
+    });
+  });
+
+  it('omits the option key when the plan offers only the bare server', () => {
+    expect(
+      buildPlanOrderRequestedConfig({
+        ...baseParams,
+        integrated: { ...createDefaultIntegratedOrderConfig(), service: 'none' },
+      }),
+    ).toEqual({ service: 'none' });
+  });
+});

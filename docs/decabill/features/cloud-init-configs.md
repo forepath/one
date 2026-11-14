@@ -105,18 +105,15 @@ Service plans can expose one or more provisioning options that customers choose 
 
 ```json
 {
-  "provisioningOptions": [
-    { "type": "integrated", "service": "agenstra-controller" },
-    { "type": "integrated", "service": "agenstra-manager" },
-    { "type": "custom", "cloudInitConfigId": "<uuid-a>" },
-    { "type": "custom", "cloudInitConfigId": "<uuid-b>" }
-  ],
+  "provisioningOptions": [{ "type": "integrated", "service": "agenstra-controller" }, { "type": "integrated", "service": "agenstra-manager" }, { "type": "custom", "cloudInitConfigId": "<uuid-a>" }, { "type": "custom", "cloudInitConfigId": "<uuid-b>" }, { "type": "none" }],
   "serverType": "cx11",
   "region": "fsn1"
 }
 ```
 
 The plan editor shows checkboxes for integrated stacks (Agenstra Controller, Agenstra Manager) and each active CloudInit config when the provider schema supports provisioning products. Both integrated options are selected by default for new plans. Provider keys such as `serverType` and `region` continue to use the existing provider schema.
+
+The **No provisioning (bare server)** checkbox adds `{ "type": "none" }` (option key `none`). It is offered when the provider `service` enum includes `none` (Hetzner and DigitalOcean) and is never preselected. A plan may offer only this option. Orders then create a bare server without a CloudInit config (see [Server Provisioning](./server-provisioning.md#bare-servers-no-provisioning)). Customers can select `none` only on plans that offer it.
 
 `GET /service-plans/{id}/order-provisioning-options` returns the customer-facing option list (labels and descriptions) for the order modal.
 
@@ -125,7 +122,7 @@ The plan editor shows checkboxes for integrated stacks (Agenstra Controller, Age
 When a customer orders a plan with provisioning options:
 
 1. The console loads `GET /service-plans/{id}/order-provisioning-options`.
-2. When more than one option exists, the customer selects one via `requestedConfig.provisioningOptionKey` (for example `integrated:agenstra-controller` or `custom:<uuid>`).
+2. When more than one option exists, the customer selects one via `requestedConfig.provisioningOptionKey` (for example `integrated:agenstra-controller`, `custom:<uuid>` or `none`).
 3. For custom options, the console loads `GET /service-plans/{planId}/cloud-init-configs/{configId}/order-fields` for the selected config on the current plan.
 4. Only variables with `showInOrderForm` appear in the order modal.
 5. Fields with admin defaults (static or random) are optional (`required: false`) and expose `hasDefault: true` in the order-fields response. Default values are resolved server-side at order time and are not returned to customers.

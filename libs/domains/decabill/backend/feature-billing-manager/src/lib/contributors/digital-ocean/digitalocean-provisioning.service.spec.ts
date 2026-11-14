@@ -55,6 +55,66 @@ describe('DigitaloceanProvisioningService', () => {
     );
   });
 
+  it('registers the public key as a temporary account key, passes it on create and deletes it afterwards', async () => {
+    mockedAxios.post
+      .mockResolvedValueOnce({ data: { ssh_key: { id: 555 } } })
+      .mockResolvedValueOnce({ data: { droplet: { id: 98766 } } });
+    mockedAxios.delete.mockResolvedValueOnce({});
+
+    const service = new DigitaloceanProvisioningService();
+    const result = await service.provisionServer({
+      name: 'test-server',
+      serverType: 's-1vcpu-1gb',
+      location: 'fra1',
+      userData: '#!/bin/bash\necho hello',
+      sshPublicKey: 'ssh-ed25519 AAAATEST',
+    });
+
+    expect(result).toEqual({ serverId: '98766' });
+    expect(mockedAxios.post).toHaveBeenNthCalledWith(
+      1,
+      'https://api.digitalocean.com/v2/account/keys',
+      expect.objectContaining({
+        name: expect.stringMatching(/^decabill-test-server-/),
+        public_key: 'ssh-ed25519 AAAATEST',
+      }),
+      expect.anything(),
+    );
+    expect(mockedAxios.post).toHaveBeenNthCalledWith(
+      2,
+      'https://api.digitalocean.com/v2/droplets',
+      expect.objectContaining({ ssh_keys: [555] }),
+      expect.anything(),
+    );
+    expect(mockedAxios.delete).toHaveBeenCalledWith(
+      'https://api.digitalocean.com/v2/account/keys/555',
+      expect.anything(),
+    );
+  });
+
+  it('deletes the temporary account key even when droplet creation fails', async () => {
+    mockedAxios.post
+      .mockResolvedValueOnce({ data: { ssh_key: { id: 556 } } })
+      .mockRejectedValueOnce(Object.assign(new Error('boom'), { isAxiosError: true }));
+    mockedAxios.delete.mockResolvedValueOnce({});
+
+    const service = new DigitaloceanProvisioningService();
+
+    await expect(
+      service.provisionServer({
+        name: 'test-server',
+        serverType: 's-1vcpu-1gb',
+        location: 'fra1',
+        userData: '#!/bin/bash\necho hello',
+        sshPublicKey: 'ssh-ed25519 AAAATEST',
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(mockedAxios.delete).toHaveBeenCalledWith(
+      'https://api.digitalocean.com/v2/account/keys/556',
+      expect.anything(),
+    );
+  });
+
   it('decodes base64 user_data before sending (billing cloud-init matches Hetzner encoding)', async () => {
     mockedAxios.post.mockResolvedValueOnce({
       data: { droplet: { id: 111 } },

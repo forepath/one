@@ -9,13 +9,15 @@ export enum IntegratedProvisioningService {
 }
 
 /**
- * Cloud-init dispatch target: integrated stacks plus admin-defined custom templates.
+ * Cloud-init dispatch target: integrated stacks, admin-defined custom templates, or a bare server
+ * without a product stack (`none`).
  */
 export enum CloudInitServiceType {
   AgenstraController = IntegratedProvisioningService.AgenstraController,
   AgenstraManager = IntegratedProvisioningService.AgenstraManager,
   DecabillBilling = IntegratedProvisioningService.DecabillBilling,
   Custom = 'custom',
+  None = 'none',
 }
 
 const INTEGRATED_SERVICE_VALUES = new Set<string>(Object.values(IntegratedProvisioningService));
@@ -58,12 +60,16 @@ export function canonicalizeIntegratedProvisioningService(value: string): Integr
 }
 
 /**
- * Maps a stored or requested cloud-init service id (integrated, custom, or legacy) to the enum.
+ * Maps a stored or requested cloud-init service id (integrated, custom, none, or legacy) to the enum.
  * Unknown values default to agenstra-controller for backward compatibility.
  */
 export function canonicalizeCloudInitService(value: string | undefined): CloudInitServiceType {
   if (value === CloudInitServiceType.Custom || value === 'custom') {
     return CloudInitServiceType.Custom;
+  }
+
+  if (value === CloudInitServiceType.None) {
+    return CloudInitServiceType.None;
   }
 
   const integrated = value ? canonicalizeIntegratedProvisioningService(value) : null;
@@ -103,6 +109,14 @@ export function integratedProvisioningServiceDescription(service: IntegratedProv
     default:
       return 'Runs the full agent controller stack.';
   }
+}
+
+export function noProvisioningOptionLabel(): string {
+  return 'No provisioning';
+}
+
+export function noProvisioningOptionDescription(): string {
+  return 'Bare server without a preinstalled software stack. Access it with the SSH key from the service page.';
 }
 
 function rewriteServiceId(value: unknown, map: Record<string, string>): string | undefined {

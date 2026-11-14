@@ -369,6 +369,10 @@ export class OverviewComponent implements OnInit {
       return $localize`:@@featureOverview-customService:Custom application`;
     }
 
+    if (service === 'none') {
+      return $localize`:@@featureOverview-bareServerService:Server`;
+    }
+
     return integratedProvisioningServiceLabel('agenstra-controller');
   }
 

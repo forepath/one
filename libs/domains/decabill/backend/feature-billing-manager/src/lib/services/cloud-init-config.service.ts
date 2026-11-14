@@ -20,6 +20,8 @@ import {
 import {
   integratedProvisioningServiceDescription,
   integratedProvisioningServiceLabel,
+  noProvisioningOptionDescription,
+  noProvisioningOptionLabel,
 } from '../utils/cloud-init/integrated-provisioning-service';
 import {
   CloudInitTemplateContext,
@@ -353,6 +355,16 @@ export class CloudInitConfigService {
     const result: OrderProvisioningOptionDto[] = [];
 
     for (const option of options) {
+      if (option.type === 'none') {
+        result.push({
+          optionKey: encodeProvisioningOptionKey(option),
+          type: 'none',
+          label: noProvisioningOptionLabel(),
+          description: noProvisioningOptionDescription(),
+        });
+        continue;
+      }
+
       if (option.type === 'integrated') {
         result.push({
           optionKey: encodeProvisioningOptionKey(option),

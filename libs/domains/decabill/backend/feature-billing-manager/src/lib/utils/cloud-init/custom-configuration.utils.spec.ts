@@ -3,6 +3,7 @@ import {
   buildCustomConfigurationCloudInitConfigFromRequest,
   buildCustomConfigurationCloudInitUserData,
 } from './custom-configuration.utils';
+import { SSHD_HARDENING_DROP_IN_PATH } from './ssh-hardening.utils';
 
 describe('custom-configuration.utils', () => {
   const baseTemplate: CloudInitConfigEntity = {
@@ -51,6 +52,12 @@ describe('custom-configuration.utils', () => {
       const decoded = Buffer.from(userData, 'base64').toString('utf8');
 
       expect(decoded).toContain('nginx:alpine');
+      // sshd hardening drop-in is written and validated before sshd restarts (overrides image drop-ins).
+      expect(decoded).toContain(`cat > ${SSHD_HARDENING_DROP_IN_PATH} <<'SSHD_HARDENING_EOF'`);
+      expect(decoded).toContain('PasswordAuthentication no\nKbdInteractiveAuthentication no\nSSHD_HARDENING_EOF');
+      expect(decoded.indexOf('sshd -t')).toBeLessThan(decoded.indexOf('service ssh restart'));
+      expect(decoded.indexOf(SSHD_HARDENING_DROP_IN_PATH)).toBeLessThan(decoded.indexOf('sshd -t'));
+
       expect(decoded).toContain('API_KEY');
       expect(decoded).toContain('secret');
       expect(decoded).toContain('docker compose up -d');

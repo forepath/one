@@ -1,7 +1,12 @@
 import type { CloudInitConfigOrderField } from '@forepath/decabill/frontend/data-access-billing-console';
 import type { PlanAddonOptionDto } from '@forepath/decabill/frontend/data-access-billing-console';
 
-export type IntegratedOrderService = 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' | 'custom';
+export type IntegratedOrderService =
+  | 'agenstra-controller'
+  | 'agenstra-manager'
+  | 'decabill-billing'
+  | 'custom'
+  | 'none';
 
 export type IntegratedOrderAuthMethod = 'users' | 'api-key' | 'oidc' | 'saml';
 
@@ -162,6 +167,18 @@ export function buildPlanOrderRequestedConfig(params: BuildPlanOrderRequestedCon
       service: 'custom',
       env,
     };
+
+    attachOrderProvider(requestedConfig, params);
+    attachGeography(requestedConfig, params);
+    attachServerType(requestedConfig, params.provisioningServerType);
+    attachProvisioningOptionKey(requestedConfig, params);
+
+    return requestedConfig;
+  }
+
+  if (cfg.service === 'none') {
+    // Bare server: no product stack, so no stack-specific settings are sent.
+    const requestedConfig: Record<string, unknown> = { service: 'none' };
 
     attachOrderProvider(requestedConfig, params);
     attachGeography(requestedConfig, params);

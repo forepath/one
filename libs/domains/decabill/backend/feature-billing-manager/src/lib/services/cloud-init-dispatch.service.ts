@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 
 import { CloudInitConfigEntity } from '../entities/cloud-init-config.entity';
 import {
+  buildBareServerCloudInitConfigFromRequest,
+  buildBareServerCloudInitUserData,
+} from '../utils/cloud-init/bare-server.utils';
+import {
   buildCustomConfigurationCloudInitConfigFromRequest,
   buildCustomConfigurationCloudInitUserData,
 } from '../utils/cloud-init/custom-configuration.utils';
@@ -22,7 +26,8 @@ export interface BuildProvisioningUserDataParams {
 }
 
 /**
- * Builds cloud-init user-data for custom jsonb templates or registered integrated stacks.
+ * Builds cloud-init user-data for custom jsonb templates, registered integrated stacks, or bare servers
+ * (`none`: SSH access baseline only, no product stack).
  * Unknown integrated keys fail closed (no silent fallback to agenstra-controller).
  */
 @Injectable()
@@ -32,6 +37,10 @@ export class CloudInitDispatchService {
   buildUserData(params: BuildProvisioningUserDataParams): string {
     const { service, effectiveConfig, hostname, baseDomain, customTemplate, resolvedCustomEnv } = params;
     const trimmed = service?.trim();
+
+    if (trimmed === CloudInitServiceType.None) {
+      return buildBareServerCloudInitUserData(buildBareServerCloudInitConfigFromRequest(effectiveConfig));
+    }
 
     if (trimmed === CloudInitServiceType.Custom) {
       if (!customTemplate || !resolvedCustomEnv) {

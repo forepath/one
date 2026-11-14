@@ -1,3 +1,5 @@
+import { DIGITAL_OCEAN_CONFIG_SCHEMA } from '../contributors/digital-ocean/digital-ocean-provider.constants';
+import { HETZNER_CONFIG_SCHEMA } from '../contributors/hetzner/hetzner-provider.constants';
 import { validateConfigSchema } from '../utils/config-validation.utils';
 
 describe('validateConfigSchema', () => {
@@ -59,5 +61,16 @@ describe('validateConfigSchema', () => {
     );
 
     expect(errors.length).toBe(0);
+  });
+
+  it('accepts service none (bare server) on host provider schemas and still rejects unknown services', () => {
+    for (const schema of [HETZNER_CONFIG_SCHEMA, DIGITAL_OCEAN_CONFIG_SCHEMA]) {
+      expect(validateConfigSchema(schema, { region: 'fsn1', service: 'none' })).not.toEqual(
+        expect.arrayContaining([expect.stringContaining('service')]),
+      );
+      expect(validateConfigSchema(schema, { region: 'fsn1', service: 'bogus' })).toEqual(
+        expect.arrayContaining([expect.stringContaining('service')]),
+      );
+    }
   });
 });

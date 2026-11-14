@@ -119,4 +119,31 @@ describe('CloudInitDispatchService', () => {
       'Integrated CloudInit stack is not provisionable: agenstra-manager',
     );
   });
+
+  it('builds bare server user data with only the SSH access baseline for service none', () => {
+    const dispatch = createService(new IntegratedStackRegistryService());
+    const userData = dispatch.buildUserData({
+      ...baseParams,
+      service: CloudInitServiceType.None,
+      effectiveConfig: { service: 'none', sshPublicKey: 'ssh-ed25519 AAAATEST decabill' },
+    });
+    const script = Buffer.from(userData, 'base64').toString('utf8');
+
+    expect(script.startsWith('#!/bin/bash')).toBe(true);
+    expect(script).toContain(`printf '%s\\n' 'ssh-ed25519 AAAATEST decabill' > /root/.ssh/authorized_keys`);
+    expect(script).toContain('PasswordAuthentication no');
+    expect(script).not.toContain('docker');
+  });
+
+  it('fails closed for service none without an SSH public key', () => {
+    const dispatch = createService(new IntegratedStackRegistryService());
+
+    expect(() =>
+      dispatch.buildUserData({
+        ...baseParams,
+        service: CloudInitServiceType.None,
+        effectiveConfig: { service: 'none' },
+      }),
+    ).toThrow('Bare server provisioning requires an SSH public key');
+  });
 });

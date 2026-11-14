@@ -274,6 +274,7 @@ components:
                         agenstra-manager,
                         decabill-billing,
                         custom,
+                        none,
                       ],
                   }
                 serviceTypeName:

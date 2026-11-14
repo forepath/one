@@ -10,6 +10,7 @@ import {
   buildAgentManagerUpdateCommand,
   AgentManagerCloudInitConfig,
 } from './agent-manager.utils';
+import { SSHD_HARDENING_DROP_IN_PATH } from '../../utils/cloud-init/ssh-hardening.utils';
 
 describe('agent-manager.utils', () => {
   describe('buildAgentManagerCloudInitConfigFromRequest', () => {
@@ -174,6 +175,12 @@ describe('agent-manager.utils', () => {
       const script = Buffer.from(b64, 'base64').toString('utf-8');
 
       // Container isolation: optional gVisor runtime installed right after Docker (never fatal).
+      // sshd hardening drop-in is written and validated before sshd restarts (overrides image drop-ins).
+      expect(script).toContain(`cat > ${SSHD_HARDENING_DROP_IN_PATH} <<'SSHD_HARDENING_EOF'`);
+      expect(script).toContain('PasswordAuthentication no\nKbdInteractiveAuthentication no\nSSHD_HARDENING_EOF');
+      expect(script.indexOf('sshd -t')).toBeLessThan(script.indexOf('service ssh restart'));
+      expect(script.indexOf(SSHD_HARDENING_DROP_IN_PATH)).toBeLessThan(script.indexOf('sshd -t'));
+
       expect(script).toContain('if ( agenstra_prepare_gvisor ); then');
       expect(script.indexOf('agenstra_prepare_gvisor')).toBeGreaterThan(script.indexOf('get-docker.sh'));
 

@@ -412,9 +412,15 @@ describe('SubscriptionService', () => {
         location: 'fsn1',
         firewallId: undefined,
         userData: 'mock-user-data',
+        sshPublicKey: expect.stringMatching(/^ssh-ed25519 /),
       },
       {},
     );
+    // The provider-side key is the same key the user data installs (and the customer can reveal).
+    const provisionConfig = (provisioningService.provision as jest.Mock).mock.calls[0][1];
+    const userDataParams = (cloudInitDispatchService.buildUserData as jest.Mock).mock.calls[0][0];
+
+    expect(provisionConfig.sshPublicKey).toBe(userDataParams.effectiveConfig.sshPublicKey);
     expect(cloudflareDnsService.createARecord).toHaveBeenCalledWith('awesome-armadillo-abc12', '1.2.3.4');
     expect(itemsRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -494,6 +500,95 @@ describe('SubscriptionService', () => {
       expect.objectContaining({ userData: 'mock-user-data' }),
       {},
     );
+  });
+
+  it('provisions a bare server without CloudInit config when the plan has no provisioning process', async () => {
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      providerConfigDefaults: {
+        provisioningOptions: [{ type: 'none' }],
+        service: 'none',
+        region: 'fsn1',
+        serverType: 'cx23',
+      },
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+
+    // A customer trying to steer the plan to an integrated stack or custom template is ignored.
+    await service.createSubscription('user-1', 'plan-1', {
+      service: 'agenstra-controller',
+      cloudInitConfigId: 'cfg-evil',
+    });
+    await provisionCreatedItem();
+
+    expect(itemsRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        configSnapshot: expect.objectContaining({ service: 'none' }),
+      }),
+    );
+    expect(itemsRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        configSnapshot: expect.not.objectContaining({ cloudInitConfigId: expect.anything() }),
+      }),
+    );
+    expect(cloudInitConfigService.findByIdForProvisioning).not.toHaveBeenCalled();
+    expect(itemsRepository.updateSshPrivateKey).toHaveBeenCalledWith('item-1', expect.any(String));
+    expect(cloudInitDispatchService.buildUserData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        service: 'none',
+        customTemplate: undefined,
+        effectiveConfig: expect.objectContaining({ service: 'none', sshPublicKey: expect.any(String) }),
+      }),
+    );
+    expect(provisioningService.provision).toHaveBeenCalledWith(
+      'hetzner',
+      expect.objectContaining({ userData: 'mock-user-data', serverType: 'cx23', location: 'fsn1' }),
+      {},
+    );
+  });
+
+  it('rejects a no-provisioning order on plans that do not offer it', async () => {
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      providerConfigDefaults: {
+        provisioningOptions: [
+          { type: 'integrated', service: 'agenstra-controller' },
+          { type: 'integrated', service: 'agenstra-manager' },
+        ],
+        region: 'fsn1',
+      },
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: { required: ['region'] },
+    });
+
+    await expect(
+      service.createSubscription('user-1', 'plan-1', { provisioningOptionKey: 'none', service: 'none' }),
+    ).rejects.toThrow('Provisioning option is not available for this plan');
+    expect(itemsRepository.create).not.toHaveBeenCalled();
   });
 
   it('resolves custom CloudInit config and env when service is custom', async () => {
