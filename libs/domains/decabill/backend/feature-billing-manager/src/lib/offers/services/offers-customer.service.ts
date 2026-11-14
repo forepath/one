@@ -16,6 +16,9 @@ import { BillingNotificationPublisher } from '../../notifications/billing-notifi
 import { mapOfferToSearchDocument } from '../../search/billing-search-document.mapper';
 import { BillingSearchIndexService } from '../../search/billing-search-index.service';
 import { getRequiredTenantId } from '../../utils/tenant-query.utils';
+import { mapEffectiveDocumentTermsToResponse } from '../../dto/document-terms.dto';
+import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
+import { documentTermsLayerFromFields } from '../../utils/document-terms.utils';
 import { mapOfferLineItemToResponse } from '../utils/map-offer-line-items.util';
 
 import { OfferFulfillmentService } from './offer-fulfillment.service';
@@ -33,6 +36,7 @@ export class OffersCustomerService {
     private readonly billingSearchIndexService: BillingSearchIndexService,
     private readonly auditLog: BillingAuditLogService,
     private readonly offerArchiveService: OfferArchiveService,
+    private readonly documentTermsConfig: BillingDocumentTermsConfigService,
   ) {}
 
   async getSummary(userId: string): Promise<OffersSummaryResponseDto> {
@@ -88,6 +92,7 @@ export class OffersCustomerService {
       taxTotal: Number(offer.taxTotal),
       billToOpenPositions: offer.billToOpenPositions,
       lineItems: lines.map((line) => mapOfferLineItemToResponse(line)),
+      ...mapEffectiveDocumentTermsToResponse(this.documentTermsConfig.resolve(documentTermsLayerFromFields(offer))),
     };
   }
 

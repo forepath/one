@@ -8,6 +8,7 @@ export * from './lib/controllers/admin-supplier-profiles.controller';
 export * from './lib/controllers/admin-supplier-invoices.controller';
 export * from './lib/dto/promotion.dto';
 export * from './lib/constants/promotion.constants';
+export * from './lib/constants/document-terms.constants';
 export * from './lib/constants/service-type-id.constants';
 export * from './lib/entities/promotion.entity';
 export * from './lib/entities/promotion-redemption.entity';

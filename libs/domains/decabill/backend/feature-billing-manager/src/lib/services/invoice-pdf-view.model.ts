@@ -43,6 +43,16 @@ export interface InvoicePdfViewModel {
   taxNote?: string;
   taxModeLabel?: string;
   paymentDetails?: InvoicePdfPaymentDetailsView;
+  /** "Service date" (single day) or "Service period". */
+  servicePeriodLabel?: string;
+  servicePeriod?: string;
+  /** Printed payment terms, e.g. "Payable within 14 days of the invoice date without deduction." */
+  paymentTerms?: string;
+  /** Printed delivery terms (Incoterms® 2020 rule or custom text). */
+  deliveryTerms?: string;
+  showDocumentTerms?: boolean;
+  /** EPC069-12 SEPA credit transfer QR (SVG data URI); only for open EUR invoices with a valid IBAN. */
+  epcQrDataUri?: string;
   /** Identity short SHA stamped when file signing is enabled. */
   authenticityShortSha?: string;
 }

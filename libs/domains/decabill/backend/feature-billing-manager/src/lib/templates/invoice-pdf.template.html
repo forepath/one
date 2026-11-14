@@ -85,7 +85,6 @@
 
       .meta-value {
         font-size: 14px;
-        font-weight: 600;
         color: var(--body-emphasis);
       }
 
@@ -196,6 +195,10 @@
         color: var(--body-emphasis);
       }
 
+      .payment-details + .payment-details {
+        margin-top: 24px;
+      }
+
       .payment-heading {
         font-size: 13px;
         font-weight: 700;
@@ -210,6 +213,35 @@
         gap: 16px;
       }
 
+      .payment-row {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+      }
+
+      .payment-row .payment-grid {
+        flex: 1;
+      }
+
+      .payment-qr {
+        margin: 0;
+        width: 112px;
+        flex-shrink: 0;
+        text-align: center;
+      }
+
+      .payment-qr img {
+        display: block;
+        width: 112px;
+        height: 112px;
+      }
+
+      .payment-qr figcaption {
+        margin-top: 4px;
+        font-size: 9px;
+        color: var(--secondary);
+      }
+
       .payment-item-label {
         display: block;
         font-size: 11px;
@@ -222,9 +254,21 @@
 
       .payment-item-value {
         font-size: 13px;
-        font-weight: 600;
         color: var(--body-emphasis);
         word-break: break-all;
+      }
+
+      .terms-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+
+      .terms-value {
+        font-size: 13px;
+        color: var(--body-emphasis);
+        white-space: pre-line;
+        overflow-wrap: anywhere;
       }
 
       .authenticity-mark {
@@ -259,6 +303,11 @@
         <div class="meta-card">
           <span class="meta-label">Original invoice</span>
           <span class="meta-value">{{referencedInvoiceNumber}}</span>
+        </div>
+        {{/if}} {{#if servicePeriod}}
+        <div class="meta-card">
+          <span class="meta-label">{{servicePeriodLabel}}</span>
+          <span class="meta-value">{{servicePeriod}}</span>
         </div>
         {{/if}} {{#if showDueDate}} {{#if dueDate}}
         <div class="meta-card">
@@ -356,25 +405,50 @@
         <h2 class="payment-heading">Tax note</h2>
         <p class="address-line">{{taxNote}}</p>
       </section>
+      {{/if}} {{#if showDocumentTerms}}
+      <section class="payment-details">
+        <h2 class="payment-heading">Terms</h2>
+        <div class="terms-grid">
+          {{#if paymentTerms}}
+          <div>
+            <span class="payment-item-label">Payment terms</span>
+            <span class="terms-value">{{paymentTerms}}</span>
+          </div>
+          {{/if}} {{#if deliveryTerms}}
+          <div>
+            <span class="payment-item-label">Delivery terms</span>
+            <span class="terms-value">{{deliveryTerms}}</span>
+          </div>
+          {{/if}}
+        </div>
+      </section>
       {{/if}} {{#if paymentDetails}}
       <section class="payment-details">
         <h2 class="payment-heading">Payment details</h2>
-        <div class="payment-grid">
-          {{#if paymentDetails.bank}}
-          <div>
-            <span class="payment-item-label">Bank</span>
-            <span class="payment-item-value">{{paymentDetails.bank}}</span>
+        <div class="payment-row">
+          <div class="payment-grid">
+            {{#if paymentDetails.bank}}
+            <div>
+              <span class="payment-item-label">Bank</span>
+              <span class="payment-item-value">{{paymentDetails.bank}}</span>
+            </div>
+            {{/if}} {{#if paymentDetails.iban}}
+            <div>
+              <span class="payment-item-label">IBAN</span>
+              <span class="payment-item-value">{{paymentDetails.iban}}</span>
+            </div>
+            {{/if}} {{#if paymentDetails.bic}}
+            <div>
+              <span class="payment-item-label">BIC</span>
+              <span class="payment-item-value">{{paymentDetails.bic}}</span>
+            </div>
+            {{/if}}
           </div>
-          {{/if}} {{#if paymentDetails.iban}}
-          <div>
-            <span class="payment-item-label">IBAN</span>
-            <span class="payment-item-value">{{paymentDetails.iban}}</span>
-          </div>
-          {{/if}} {{#if paymentDetails.bic}}
-          <div>
-            <span class="payment-item-label">BIC</span>
-            <span class="payment-item-value">{{paymentDetails.bic}}</span>
-          </div>
+          {{#if epcQrDataUri}}
+          <figure class="payment-qr">
+            <img src="{{epcQrDataUri}}" alt="SEPA payment QR code" />
+            <figcaption>Scan with your banking app (GiroCode)</figcaption>
+          </figure>
           {{/if}}
         </div>
       </section>

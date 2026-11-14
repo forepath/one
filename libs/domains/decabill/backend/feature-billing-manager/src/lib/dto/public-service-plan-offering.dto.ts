@@ -1,5 +1,6 @@
 import { BillingIntervalType, ServicePlanOrderingHighlight } from '../entities/service-plan.entity';
 
+import { EffectiveDocumentTermsResponseDto } from './document-terms.dto';
 import { WithdrawalPolicyDto } from './withdrawal-policy.dto';
 
 /** Safe subset of a service plan for public marketing / external card UIs. */
@@ -38,4 +39,6 @@ export class PublicServicePlanOfferingDto {
   /** Checkout options when selection is allowed; otherwise the pinned plan provider (length 0–1). */
   allowedProviders!: string[];
   withdrawalPolicy!: WithdrawalPolicyDto;
+  /** Payment / delivery terms applied to this plan's invoices (plan override, else global default). */
+  effectiveDocumentTerms!: EffectiveDocumentTermsResponseDto;
 }

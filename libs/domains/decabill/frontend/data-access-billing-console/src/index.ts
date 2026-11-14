@@ -8,6 +8,7 @@ export * from './lib/types/promotions.types';
 export * from './lib/types/projects.types';
 export * from './lib/types/config-change.types';
 export * from './lib/types/offers.types';
+export * from './lib/types/document-terms.types';
 
 // Utils
 export * from './lib/constants/list-paging.constants';

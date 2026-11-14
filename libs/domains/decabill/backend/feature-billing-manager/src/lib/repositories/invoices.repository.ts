@@ -714,12 +714,16 @@ export class InvoicesRepository {
     await this.repository.delete(id);
   }
 
+  /**
+   * Invoices issued in the period (DATEV revenue bookings). Includes invoices voided since: the original booking must
+   * still be exported; the cancellation is booked separately in the period it was voided (findVoidedInPeriod).
+   */
   async findIssuedInPeriod(from: Date, to: Date): Promise<InvoiceEntity[]> {
     const qb = this.repository
       .createQueryBuilder('inv')
       .innerJoin('users', 'user', 'user.id = inv.user_id')
       .leftJoinAndSelect('inv.lineItems', 'lineItems')
-      .where('inv.status IN (:...statuses)', { statuses: BILLED_INVOICE_STATUSES })
+      .where('inv.status IN (:...statuses)', { statuses: [...BILLED_INVOICE_STATUSES, InvoiceStatus.VOID] })
       .andWhere('inv.issued_at IS NOT NULL')
       .andWhere('inv.issued_at >= :from', { from })
       .andWhere('inv.issued_at <= :to', { to })

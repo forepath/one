@@ -2,6 +2,9 @@ import { BadRequestException, ForbiddenException, NotFoundException } from '@nes
 
 import { OfferStatus } from '../constants/offer-status.constants';
 
+import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
+import { DeliveryTermsCode } from '../../constants/document-terms.constants';
+
 import { OffersCustomerService } from './offers-customer.service';
 
 describe('OffersCustomerService status guards', () => {
@@ -35,6 +38,7 @@ describe('OffersCustomerService status guards', () => {
     billingSearchIndexService as never,
     auditLog as never,
     offerArchiveService as never,
+    new BillingDocumentTermsConfigService(),
   );
 
   beforeEach(() => {
@@ -100,6 +104,34 @@ describe('OffersCustomerService status guards', () => {
     });
 
     await expect(service.accept('user-1', 'offer-1')).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('returns the offer terms, falling back to the global default for unset facets', async () => {
+    offersRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'offer-1',
+      userId: 'user-1',
+      status: OfferStatus.ARCHIVED,
+      currency: 'EUR',
+      subtotalNet: 100,
+      taxTotal: 19,
+      totalGross: 119,
+      billToOpenPositions: false,
+      paymentDueDays: null,
+      deliveryTermsCode: DeliveryTermsCode.CUSTOM,
+      deliveryTermsPlace: null,
+      deliveryTermsText: 'Online access',
+    });
+
+    const detail = await service.getDetail('user-1', 'offer-1');
+
+    expect(detail).toEqual(
+      expect.objectContaining({
+        paymentDueDays: 14,
+        deliveryTermsCode: DeliveryTermsCode.CUSTOM,
+        deliveryTermsPlace: null,
+        deliveryTermsText: 'Online access',
+      }),
+    );
   });
 
   it('hides draft offers from customer detail', async () => {

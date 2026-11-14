@@ -739,6 +739,8 @@
         </div>
       </div>
 
+      <framework-document-terms-summary [terms]="detail.terms" />
+
       <div class="card">
         <fpc-lane-header>
           <span fpcLaneHeaderTitle i18n="@@featureInvoices-lineItems">Line items</span>
@@ -1175,21 +1177,17 @@
       </div>
     </div>
   } @else {
-    <fpc-form-field forId="issueDueInDays" i18n-label="@@featureAdminInvoices-dueInDays" label="Due in days">
-      <fpc-form-control
-        controlId="issueDueInDays"
-        inputType="number"
-        name="issueDueInDays"
-        min="1"
-        [(ngModel)]="issueDueInDays"
-      />
-    </fpc-form-field>
+    <framework-document-terms-fields [form]="issueTermsForm" idPrefix="issueInvoice" />
   }
   <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
       variant="success"
       (clicked)="submitIssue()"
-      [disabled]="(invoicesIssuing$ | async) === true || (supplierInvoicesIssuing$ | async) === true"
+      [disabled]="
+        (!issueSupplierInvoiceId && !isIssueTermsFormValid()) ||
+        (invoicesIssuing$ | async) === true ||
+        (supplierInvoicesIssuing$ | async) === true
+      "
       [loading]="(invoicesIssuing$ | async) === true || (supplierInvoicesIssuing$ | async) === true"
       i18n="@@featureAdminInvoices-issue"
     >

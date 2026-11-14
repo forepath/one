@@ -85,7 +85,6 @@
 
       .meta-value {
         font-size: 14px;
-        font-weight: 600;
         color: var(--body-emphasis);
       }
 
@@ -196,6 +195,10 @@
         color: var(--body-emphasis);
       }
 
+      .payment-details + .payment-details {
+        margin-top: 24px;
+      }
+
       .payment-heading {
         font-size: 13px;
         font-weight: 700;
@@ -222,9 +225,21 @@
 
       .payment-item-value {
         font-size: 13px;
-        font-weight: 600;
         color: var(--body-emphasis);
         word-break: break-all;
+      }
+
+      .terms-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+
+      .terms-value {
+        font-size: 13px;
+        color: var(--body-emphasis);
+        white-space: pre-line;
+        overflow-wrap: anywhere;
       }
 
       .authenticity-mark {
@@ -259,6 +274,11 @@
         <div class="meta-card">
           <span class="meta-label">Original invoice</span>
           <span class="meta-value">{{referencedInvoiceNumber}}</span>
+        </div>
+        {{/if}} {{#if servicePeriod}}
+        <div class="meta-card">
+          <span class="meta-label">{{servicePeriodLabel}}</span>
+          <span class="meta-value">{{servicePeriod}}</span>
         </div>
         {{/if}} {{#if showExpiresAt}} {{#if expiresAt}}
         <div class="meta-card">
@@ -355,6 +375,23 @@
       <section class="payment-details">
         <h2 class="payment-heading">Tax note</h2>
         <p class="address-line">{{taxNote}}</p>
+      </section>
+      {{/if}} {{#if showDocumentTerms}}
+      <section class="payment-details">
+        <h2 class="payment-heading">Terms</h2>
+        <div class="terms-grid">
+          {{#if paymentTerms}}
+          <div>
+            <span class="payment-item-label">Payment terms</span>
+            <span class="terms-value">{{paymentTerms}}</span>
+          </div>
+          {{/if}} {{#if deliveryTerms}}
+          <div>
+            <span class="payment-item-label">Delivery terms</span>
+            <span class="terms-value">{{deliveryTerms}}</span>
+          </div>
+          {{/if}}
+        </div>
       </section>
       {{/if}} {{#if paymentDetails}}
       <section class="payment-details">

@@ -7,9 +7,11 @@ import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { loadInvoicePdfTemplate } from '../templates/invoice-pdf-template.loader';
 import { resolveCountryDisplayName } from '../utils/country-display-name.util';
+import { deliveryTermsFromColumns, formatDeliveryTerms, formatPaymentTerms } from '../utils/document-terms.utils';
+import { buildEpcQrDataUri } from '../utils/epc-qr.util';
 
 import type { BillingIssuerConfig } from './billing-issuer-config.service';
-import { formatAmount, formatDate, toAmount } from './invoice-pdf-amount.util';
+import { formatAmount, formatDate, formatServicePeriod, toAmount } from './invoice-pdf-amount.util';
 import type { InvoicePdfPresentationOptions } from './invoice-pdf-presentation.util';
 import { buildInvoicePdfPresentation } from './invoice-pdf-presentation.util';
 import type {
@@ -44,6 +46,24 @@ export class InvoicePdfTemplateService {
     authenticityShortSha?: string,
   ): InvoicePdfViewModel {
     const paymentDetails = presentation.includePaymentDetails ? this.buildPaymentDetails(issuer) : undefined;
+    const servicePeriod = formatServicePeriod(presentation.servicePeriod);
+    const epcQrDataUri =
+      paymentDetails && presentation.includePaymentQr && presentation.showBalanceDue
+        ? buildEpcQrDataUri({
+            beneficiaryName: issuer.name,
+            iban: issuer.iban,
+            bic: issuer.bic,
+            currency: invoice.currency,
+            amount: invoice.balanceDue,
+            remittanceText: presentation.documentNumber,
+          })
+        : undefined;
+    const paymentTerms =
+      presentation.paymentTermsText ??
+      (presentation.includeDocumentTerms ? formatPaymentTerms(invoice.paymentDueDays) : undefined);
+    const deliveryTerms = presentation.includeDocumentTerms
+      ? formatDeliveryTerms(deliveryTermsFromColumns(invoice))
+      : undefined;
 
     return {
       documentTitle: presentation.documentTitle,
@@ -75,6 +95,11 @@ export class InvoicePdfTemplateService {
       taxNote: invoice.taxNote?.trim() || undefined,
       taxModeLabel: invoice.taxMode?.replace(/_/g, ' ') || undefined,
       ...(paymentDetails ? { paymentDetails } : {}),
+      ...(servicePeriod ? { servicePeriodLabel: servicePeriod.label, servicePeriod: servicePeriod.value } : {}),
+      ...(paymentTerms ? { paymentTerms } : {}),
+      ...(deliveryTerms ? { deliveryTerms } : {}),
+      showDocumentTerms: Boolean(paymentTerms || deliveryTerms),
+      ...(epcQrDataUri ? { epcQrDataUri } : {}),
       ...(authenticityShortSha ? { authenticityShortSha } : {}),
     };
   }

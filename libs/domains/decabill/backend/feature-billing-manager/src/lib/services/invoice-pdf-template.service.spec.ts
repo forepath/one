@@ -1,3 +1,4 @@
+import { DeliveryTermsCode } from '../constants/document-terms.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
@@ -5,7 +6,11 @@ import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { resetInvoicePdfTemplateCacheForTests } from '../templates/invoice-pdf-template.loader';
 
-import { buildCreditNotePdfPresentation } from './invoice-pdf-presentation.util';
+import {
+  buildCreditNotePdfPresentation,
+  buildInvoicePdfPresentation,
+  buildPartialCreditNotePdfPresentation,
+} from './invoice-pdf-presentation.util';
 import { InvoicePdfTemplateService } from './invoice-pdf-template.service';
 
 describe('InvoicePdfTemplateService', () => {
@@ -179,5 +184,130 @@ describe('InvoicePdfTemplateService', () => {
     );
 
     expect(html).not.toContain('Payment details');
+  });
+
+  describe('payment / delivery terms and service period', () => {
+    const termsInvoice = {
+      ...invoice,
+      paymentDueDays: 14,
+      deliveryTermsCode: DeliveryTermsCode.CUSTOM,
+      deliveryTermsPlace: null,
+      deliveryTermsText: 'Line one\n<b>Online</b> access',
+    } as InvoiceEntity;
+    const period = { periodStart: new Date('2026-05-01T00:00:00Z'), periodEnd: new Date('2026-06-01T00:00:00Z') };
+
+    it('prints service period, payment and delivery terms on invoices', () => {
+      const html = service.buildHtml(
+        termsInvoice,
+        lineItems,
+        issuer,
+        buyer,
+        buildInvoicePdfPresentation(termsInvoice, { servicePeriod: period }),
+      );
+
+      expect(html).toContain('Service period');
+      expect(html).toContain('2026-05-01 – 2026-06-01');
+      expect(html).toContain('Payment terms');
+      expect(html).toContain('Payable within 14 days of the invoice date without deduction.');
+      expect(html).toContain('Delivery terms');
+      expect(html).toContain('&lt;b&gt;Online&lt;/b&gt; access');
+      expect(html).not.toContain('<b>Online</b>');
+    });
+
+    it('prints a SEPA payment QR on open EUR invoices only when opted in', () => {
+      const withQr = service.buildViewModel(
+        termsInvoice,
+        lineItems,
+        issuer,
+        buyer,
+        buildInvoicePdfPresentation(termsInvoice, { includePaymentQr: true }),
+      );
+      const html = service.buildHtml(
+        termsInvoice,
+        lineItems,
+        issuer,
+        buyer,
+        buildInvoicePdfPresentation(termsInvoice, { includePaymentQr: true }),
+      );
+
+      expect(withQr.epcQrDataUri).toMatch(/^data:image\/svg\+xml;base64,/);
+      expect(html).toContain('alt="SEPA payment QR code"');
+      expect(service.buildViewModel(termsInvoice, lineItems, issuer, buyer).epcQrDataUri).toBeUndefined();
+      expect(
+        service.buildViewModel(
+          termsInvoice,
+          lineItems,
+          issuer,
+          buyer,
+          buildInvoicePdfPresentation(termsInvoice, { includePaymentQr: true, zeroBalancePromotional: true }),
+        ).epcQrDataUri,
+      ).toBeUndefined();
+      expect(
+        service.buildViewModel(
+          termsInvoice,
+          lineItems,
+          issuer,
+          buyer,
+          buildCreditNotePdfPresentation('INV-2026-00001-CN', new Date('2026-06-02'), 'INV-2026-00001'),
+        ).epcQrDataUri,
+      ).toBeUndefined();
+      expect(
+        service.buildViewModel(
+          { ...termsInvoice, currency: 'USD' } as InvoiceEntity,
+          lineItems,
+          issuer,
+          buyer,
+          buildInvoicePdfPresentation(termsInvoice, { includePaymentQr: true }),
+        ).epcQrDataUri,
+      ).toBeUndefined();
+    });
+
+    it('labels a single-day period as service date', () => {
+      const day = new Date('2026-06-01T10:00:00Z');
+      const viewModel = service.buildViewModel(
+        termsInvoice,
+        lineItems,
+        issuer,
+        buyer,
+        buildInvoicePdfPresentation(termsInvoice, { servicePeriod: { periodStart: day, periodEnd: day } }),
+      );
+
+      expect(viewModel).toMatchObject({ servicePeriodLabel: 'Service date', servicePeriod: '2026-06-01' });
+    });
+
+    it('omits the terms section for legacy invoices without terms', () => {
+      const html = service.buildHtml(invoice, lineItems, issuer, buyer);
+
+      expect(html).not.toContain('Payment terms');
+      expect(html).not.toContain('Delivery terms');
+    });
+
+    it('prints settlement terms instead of invoice terms on partial credit notes', () => {
+      const viewModel = service.buildViewModel(
+        termsInvoice,
+        lineItems,
+        issuer,
+        buyer,
+        buildPartialCreditNotePdfPresentation('INV-2026-00001-CN-x', new Date('2026-06-02'), 'INV-2026-00001', 11.9),
+      );
+
+      expect(viewModel.paymentTerms).toContain('Offset against the open balance of invoice INV-2026-00001');
+      expect(viewModel.deliveryTerms).toBeUndefined();
+      expect(viewModel.showDocumentTerms).toBe(true);
+    });
+
+    it('omits terms on credit notes', () => {
+      const viewModel = service.buildViewModel(
+        termsInvoice,
+        lineItems,
+        issuer,
+        buyer,
+        buildCreditNotePdfPresentation('INV-2026-00001-CN', new Date('2026-06-02'), 'INV-2026-00001', period),
+      );
+
+      expect(viewModel.showDocumentTerms).toBe(false);
+      expect(viewModel.paymentTerms).toBeUndefined();
+      expect(viewModel.servicePeriod).toBe('2026-05-01 – 2026-06-01');
+    });
   });
 });

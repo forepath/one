@@ -38,6 +38,7 @@
     "nestjs-otel": "8.1.0",
     "nodemailer": "7.0.13",
     "pdf-lib": "1.17.1",
+    "qrcode": "1.5.4",
     "stripe": "22.1.1",
     "typeorm": "0.3.27",
     "xmlbuilder2": "4.0.3",

@@ -8,11 +8,15 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   Min,
   ValidateNested,
 } from 'class-validator';
 
+import { PAYMENT_DUE_DAYS_MAX } from '../constants/document-terms.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
+
+import { DeliveryTermsInputDto } from './document-terms.dto';
 
 import { InvoiceDetailResponseDto } from './invoice-detail-response.dto';
 
@@ -59,11 +63,16 @@ export class UpdateManualInvoiceDto {
   lineItems!: ManualInvoiceLineItemDto[];
 }
 
-export class IssueManualInvoiceDto {
+/**
+ * Payment terms (`dueInDays`) and delivery terms for this invoice. Omitted values inherit from the subscription's
+ * service plan, then the global default.
+ */
+export class IssueManualInvoiceDto extends DeliveryTermsInputDto {
   @IsOptional()
   @IsInt({ message: 'Due in days must be an integer' })
-  @Min(1, { message: 'Due in days must be at least 1' })
-  dueInDays?: number;
+  @Min(0, { message: 'Due in days must be at least 0' })
+  @Max(PAYMENT_DUE_DAYS_MAX, { message: `Due in days must be at most ${PAYMENT_DUE_DAYS_MAX}` })
+  dueInDays?: number | null;
 }
 
 export class ManualInvoiceDetailResponseDto extends InvoiceDetailResponseDto {

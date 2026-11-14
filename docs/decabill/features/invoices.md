@@ -93,12 +93,18 @@ Admin routes under `/admin/billing/invoices`:
 
 ## PDF Generation
 
+Invoice, credit-note and offer PDFs are **Factur-X 1.0 / ZUGFeRD 2.x hybrid documents** (profile EN 16931): PDF/A-3b with XMP identification and the Factur-X extension schema, an sRGB output intent (ICC profile generated in code), and the CII XML attached as `factur-x.xml` (`text/xml`, AFRelationship `Alternative`). Validate with a Factur-X validator such as Mustang (`--action validate`).
+
+Open EUR invoices also print a **SEPA payment QR code** (EPC069-12 "GiroCode", version 002, error correction M) next to the bank details: beneficiary `BILLING_ISSUER_NAME`, `BILLING_ISSUER_IBAN` (mod-97 checked) and optional `BILLING_ISSUER_BIC`, the balance due, and the invoice number as remittance text. It is omitted for other currencies, missing or invalid IBANs, zero balances, credit notes, offers, and supplier invoice copies.
+
 PDFs are stored under `{FILE_STORAGE_ROOT}/customer/invoices` when using the local provider (compose default `/data/customer/invoices`), or as S3 object keys `customer/invoices/...` when `FILE_STORAGE_PROVIDER=s3`. Issuer details come from environment:
 
 - `BILLING_ISSUER_*` (name, VAT ID, address, email, IBAN)
 - `BILLING_TAX_RATE_STANDARD` and `BILLING_TAX_RATE_REDUCED`
 
 Issued invoices (and credit notes) also enqueue customer emails via BullMQ; see [Email notifications](./email-notifications.md).
+
+Invoice PDFs print the service period and the invoice's payment and delivery terms; the XML embeds them as BG-14, BT-20 / BT-9 and an `AAR` note. Terms resolve from the document, the subscription's service plan, or the `BILLING_DEFAULT_*` environment and are frozen on issue. See [Payment and delivery terms](./document-terms.md).
 
 ## Usage on Invoices
 
@@ -137,7 +143,7 @@ See **[Projects](./projects.md)** for KPIs, reassignment rules, and minimum bill
 
 1. `POST /admin/billing/invoices/manual` - Create draft with user, optional subscription, custom line items
 2. `POST /admin/billing/invoices/{invoiceRefId}` - Update draft line items
-3. `POST /admin/billing/invoices/{invoiceRefId}/issue` - Issue draft (requires complete customer profile)
+3. `POST /admin/billing/invoices/{invoiceRefId}/issue` - Issue draft (requires complete customer profile); optional `dueInDays` and delivery terms override the plan / global defaults
 4. `DELETE /admin/billing/invoices/{invoiceRefId}` - Delete draft only
 
 ## API Endpoints Summary

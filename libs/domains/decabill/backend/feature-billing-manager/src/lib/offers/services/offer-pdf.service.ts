@@ -19,6 +19,7 @@ import {
   OfferPdfTemplateService,
 } from './offer-pdf-template.service';
 import { buildOfferPdfPresentation } from './offer-pdf-presentation.util';
+import { facturXMetadata } from '../../services/invoice-pdf.service';
 
 @Injectable()
 export class OfferPdfService {
@@ -72,7 +73,11 @@ export class OfferPdfService {
       authenticityShortSha,
     );
     const pdfBytes = await this.invoicePdfHtmlRendererService.renderHtmlToPdf(html);
-    const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
+    const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(
+      pdfBytes,
+      xml,
+      facturXMetadata(presentation.documentTitle, presentation.documentNumber, issuer),
+    );
 
     const content = Buffer.from(embedded);
     await this.fileStorage.writeCustomerOfferFile(storageKey, content);

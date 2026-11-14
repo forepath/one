@@ -1,5 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
+import { DeliveryTermsCode } from '../constants/document-terms.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 
@@ -230,10 +231,52 @@ describe('ManualInvoiceService', () => {
     customerProfilesService.getByUserId.mockResolvedValue({ userId: 'user-1' });
     customerProfilesService.isProfileComplete.mockReturnValue(true);
 
-    const result = await service.issueDraft('inv-1', 'admin-1', { dueInDays: 7 });
+    invoiceIssuanceService.issueDraft.mockResolvedValue({ id: 'inv-1', paymentDueDays: 7, deliveryTermsCode: 'DAP' });
 
-    expect(invoiceIssuanceService.issueDraft).toHaveBeenCalledWith('inv-1', 7);
+    const result = await service.issueDraft('inv-1', 'admin-1', {
+      dueInDays: 7,
+      deliveryTermsCode: DeliveryTermsCode.DAP,
+      deliveryTermsPlace: ' Berlin ',
+      deliveryTermsText: 'ignored for Incoterms',
+    });
+
+    expect(invoiceIssuanceService.issueDraft).toHaveBeenCalledWith('inv-1', {
+      terms: {
+        paymentDueDays: 7,
+        deliveryTerms: { code: DeliveryTermsCode.DAP, place: 'Berlin', text: null },
+      },
+    });
+    expect(auditLog.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        process: 'invoice.manual_issue',
+        context: expect.objectContaining({ dueInDays: 7, deliveryTermsCode: 'DAP' }),
+      }),
+    );
     expect(result.id).toBe('inv-1');
+  });
+
+  it('issueDraft inherits terms when none are given', async () => {
+    invoicesRepository.findByIdOrThrow.mockResolvedValue(draftInvoice);
+    customerProfilesService.getByUserId.mockResolvedValue({ userId: 'user-1' });
+    customerProfilesService.isProfileComplete.mockReturnValue(true);
+    invoiceIssuanceService.issueDraft.mockResolvedValue({ id: 'inv-1', paymentDueDays: 14 });
+
+    await service.issueDraft('inv-1', 'admin-1');
+
+    expect(invoiceIssuanceService.issueDraft).toHaveBeenCalledWith('inv-1', {
+      terms: { paymentDueDays: null, deliveryTerms: null },
+    });
+  });
+
+  it('issueDraft rejects custom delivery terms without text before issuing', async () => {
+    invoicesRepository.findByIdOrThrow.mockResolvedValue(draftInvoice);
+    customerProfilesService.getByUserId.mockResolvedValue({ userId: 'user-1' });
+    customerProfilesService.isProfileComplete.mockReturnValue(true);
+
+    await expect(
+      service.issueDraft('inv-1', 'admin-1', { deliveryTermsCode: DeliveryTermsCode.CUSTOM, deliveryTermsText: ' ' }),
+    ).rejects.toThrow(BadRequestException);
+    expect(invoiceIssuanceService.issueDraft).not.toHaveBeenCalled();
   });
 
   it('getDetail enriches response with user email', async () => {

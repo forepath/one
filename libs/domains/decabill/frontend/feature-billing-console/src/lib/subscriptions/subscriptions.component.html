@@ -1396,6 +1396,14 @@
                             </p>
                           </div>
                         }
+                        @if (plan.effectiveDocumentTerms; as documentTerms) {
+                          <div class="p-3 bg-body border rounded mb-3 small" data-testid="order-document-terms">
+                            <h6 class="mb-2" i18n="@@featureSubscriptions-documentTermsTitle">
+                              Payment and delivery terms
+                            </h6>
+                            <framework-document-terms-summary [terms]="documentTerms" layout="inline" />
+                          </div>
+                        }
                         @if (plan.withdrawalPolicy) {
                           <div class="p-3 bg-body border rounded mb-3">
                             <h6 class="mb-2" i18n="@@featureSubscriptions-withdrawalPolicyTitle">

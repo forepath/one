@@ -174,7 +174,7 @@ describe('ProjectBillingService', () => {
 
     expect(result.billedMinutes).toBe(90);
     expect(result.amountNet).toBe(150);
-    expect(invoiceIssuanceService.issueDraft).toHaveBeenCalledWith('draft-1', 14, { skipNotification: true });
+    expect(invoiceIssuanceService.issueDraft).toHaveBeenCalledWith('draft-1', { skipNotification: true });
     expect(timeEntriesRepository.markBilled).toHaveBeenCalledWith('p1', ['e1', 'e2'], 'inv-1', expect.any(Date));
     expect(billingEmailPublisher.publishInvoiceIssued).toHaveBeenCalledWith(
       expect.objectContaining({

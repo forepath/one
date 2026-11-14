@@ -1,0 +1,93 @@
+<div class="row">
+  @if (includePaymentTerms) {
+    <div class="col-md-4">
+      <fpc-form-field
+        [class.mb-md-0]="!showPlace && !showCustomText"
+        [forId]="idPrefix + 'PaymentDueDays'"
+        i18n-label="@@featureDocumentTerms-paymentDueDays"
+        label="Payment terms (days)"
+        [hint]="paymentDueDaysError ? null : paymentDueDaysHint"
+        [error]="paymentDueDaysError"
+      >
+        <fpc-form-control
+          inputType="number"
+          [controlId]="idPrefix + 'PaymentDueDays'"
+          [name]="idPrefix + 'PaymentDueDays'"
+          [(ngModel)]="form.paymentDueDays"
+          min="0"
+          [max]="paymentDueDaysMax"
+          step="1"
+          [invalid]="!!paymentDueDaysError"
+          [disabled]="disabled"
+        />
+      </fpc-form-field>
+    </div>
+  }
+  <div [class.col-md-8]="includePaymentTerms" [class.col-12]="!includePaymentTerms">
+    <fpc-form-field
+      [class.mb-0]="!showPlace && !showCustomText"
+      [forId]="idPrefix + 'DeliveryTermsCode'"
+      i18n-label="@@featureDocumentTerms-deliveryTerms"
+      label="Delivery terms"
+      i18n-hint="@@featureDocumentTerms-deliveryTermsHint"
+      hint="Incoterms® 2020 for physical goods; choose the manual option for digital goods and services."
+    >
+      <fpc-form-control
+        controlType="select"
+        [controlId]="idPrefix + 'DeliveryTermsCode'"
+        [name]="idPrefix + 'DeliveryTermsCode'"
+        [(ngModel)]="form.deliveryTermsCode"
+        [disabled]="disabled"
+      >
+        <option value="">{{ inheritOptionLabel }}</option>
+        @for (option of deliveryTermsOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+  </div>
+</div>
+@if (showPlace) {
+  <fpc-form-field
+    class="mb-0"
+    [forId]="idPrefix + 'DeliveryTermsPlace'"
+    i18n-label="@@featureDocumentTerms-deliveryTermsPlace"
+    label="Named place"
+    i18n-hint="@@featureDocumentTerms-deliveryTermsPlaceHint"
+    hint="Optional, e.g. the delivery address city and country."
+    [error]="deliveryTermsPlaceError"
+  >
+    <fpc-form-control
+      [controlId]="idPrefix + 'DeliveryTermsPlace'"
+      [name]="idPrefix + 'DeliveryTermsPlace'"
+      [(ngModel)]="form.deliveryTermsPlace"
+      [maxLength]="placeMaxLength"
+      [invalid]="!!deliveryTermsPlaceError"
+      [disabled]="disabled"
+    />
+  </fpc-form-field>
+}
+@if (showCustomText) {
+  <fpc-form-field
+    class="mb-0"
+    [forId]="idPrefix + 'DeliveryTermsText'"
+    i18n-label="@@featureDocumentTerms-deliveryTermsText"
+    label="Delivery terms text"
+    [required]="true"
+    [error]="deliveryTermsTextError"
+  >
+    <fpc-form-control
+      controlType="textarea"
+      [controlId]="idPrefix + 'DeliveryTermsText'"
+      [name]="idPrefix + 'DeliveryTermsText'"
+      [(ngModel)]="form.deliveryTermsText"
+      [rows]="3"
+      [maxLength]="textMaxLength"
+      [required]="true"
+      [invalid]="!!deliveryTermsTextError"
+      [disabled]="disabled"
+      i18n-placeholder="@@featureDocumentTerms-deliveryTermsTextPlaceholder"
+      placeholder="e.g. Provided as online access within 24 hours after payment."
+    />
+  </fpc-form-field>
+}

@@ -305,6 +305,17 @@
     i18n-label="@@featureAdminOffers-billToOpenPositions"
     label="Bill accepted charges to open positions"
   />
+  <fpc-item-card
+    class="d-block mb-3"
+    title="Payment and delivery terms"
+    i18n-title="@@featureServicePlans-documentTerms"
+  >
+    <framework-document-terms-fields
+      [form]="createTermsForm"
+      idPrefix="createOffer"
+      [inherited]="documentTermsDefaults()"
+    />
+  </fpc-item-card>
   <framework-admin-offer-line-editor
     #createLineEditor
     prefix="create"
@@ -351,6 +362,17 @@
       i18n-label="@@featureAdminOffers-billToOpenPositions"
       label="Bill accepted charges to open positions"
     />
+    <fpc-item-card
+      class="d-block mb-3"
+      title="Payment and delivery terms"
+      i18n-title="@@featureServicePlans-documentTerms"
+    >
+      <framework-document-terms-fields
+        [form]="editTermsForm"
+        idPrefix="editOffer"
+        [inherited]="documentTermsDefaults()"
+      />
+    </fpc-item-card>
     <framework-admin-offer-line-editor
       #editLineEditor
       prefix="edit"
@@ -466,6 +488,8 @@
           </div>
         </div>
       </div>
+
+      <framework-document-terms-summary [terms]="detail.effectiveDocumentTerms ?? detail" />
 
       <div class="card">
         <fpc-lane-header>

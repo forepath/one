@@ -1,4 +1,5 @@
 import { InvoiceStatus } from '../constants/invoice-status.constants';
+import { DeliveryTermsCode } from '../constants/document-terms.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 
 export class InvoiceLineItemResponseDto {
@@ -38,6 +39,12 @@ export class InvoiceDetailResponseDto {
   taxBreakdown!: InvoiceTaxBreakdownDto[];
   issuedAt?: Date;
   dueDate?: Date;
+  /** Payment terms frozen at issuance (null for drafts and documents issued before terms existed). */
+  paymentDueDays!: number | null;
+  /** Delivery terms frozen at issuance (Incoterms® 2020 rule or CUSTOM). */
+  deliveryTermsCode!: DeliveryTermsCode | null;
+  deliveryTermsPlace!: string | null;
+  deliveryTermsText!: string | null;
   paidAt?: Date | null;
   createdAt!: Date;
   canPay!: boolean;

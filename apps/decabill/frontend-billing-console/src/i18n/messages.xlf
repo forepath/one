@@ -527,9 +527,6 @@
       <trans-unit id="featureAdminInvoices-issueTitle" datatype="html">
         <source>Issue invoice</source>
         </trans-unit>
-      <trans-unit id="featureAdminInvoices-dueInDays" datatype="html">
-        <source>Due in days</source>
-        </trans-unit>
       <trans-unit id="featureAdminInvoices-issue" datatype="html">
         <source> Issue </source>
         </trans-unit>
@@ -1079,11 +1076,11 @@
       <trans-unit id="featureAdminOffers-lineTypeStandard" datatype="html">
         <source>Generic</source>
         </trans-unit>
+      <trans-unit id="featureAdminOffers-statisticsTitle" datatype="html">
+        <source>Statistics</source>
+        </trans-unit>
       <trans-unit id="featureAdminOffers-customerFilter" datatype="html">
         <source>Customer</source>
-        </trans-unit>
-      <trans-unit id="featureAdminOffers-empty" datatype="html">
-        <source>No offers yet</source>
         </trans-unit>
       <trans-unit id="featureAdminOffers-fromDate" datatype="html">
         <source>From</source>
@@ -1103,6 +1100,12 @@
       <trans-unit id="featureAdminOffers-noStatistics" datatype="html">
         <source>No statistics for the selected period.</source>
         </trans-unit>
+      <trans-unit id="featureAdminOffers-mobileOffers" datatype="html">
+        <source>Offers</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-empty" datatype="html">
+        <source>No offers yet</source>
+        </trans-unit>
       <trans-unit id="featureAdminOffers-createTitle" datatype="html">
         <source>Create offer</source>
         </trans-unit>
@@ -1114,6 +1117,9 @@
         </trans-unit>
       <trans-unit id="featureAdminOffers-billToOpenPositions" datatype="html">
         <source>Bill accepted charges to open positions</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-documentTerms" datatype="html">
+        <source>Payment and delivery terms</source>
         </trans-unit>
       <trans-unit id="featureAdminOffers-editTitle" datatype="html">
         <source>Edit offer</source>
@@ -1136,6 +1142,21 @@
       <trans-unit id="featureAdminOffers-noAuditLogs" datatype="html">
         <source>No audit entries.</source>
         </trans-unit>
+      <trans-unit id="featureOffers-previewTitle" datatype="html">
+        <source>Offer preview</source>
+        </trans-unit>
+      <trans-unit id="featureOffers-loadingPreview" datatype="html">
+        <source>Loading offer...</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-colCreated" datatype="html">
+        <source>Created</source>
+        </trans-unit>
+      <trans-unit id="featureOffers-colExpires" datatype="html">
+        <source>Expires</source>
+        </trans-unit>
+      <trans-unit id="featureOffers-downloadPdf" datatype="html">
+        <source>Download</source>
+        </trans-unit>
       <trans-unit id="featureAdminOffers-filters" datatype="html">
         <source>Filters</source>
         </trans-unit>
@@ -1147,6 +1168,15 @@
         </trans-unit>
       <trans-unit id="featureAdminOffers-searchPlaceholder" datatype="html">
         <source>Search offers</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-subtotalNet" datatype="html">
+        <source>Subtotal (net)</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-taxTotal" datatype="html">
+        <source>Tax total</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-totalGross" datatype="html">
+        <source>Total</source>
         </trans-unit>
       <trans-unit id="featureAdminOffers-draftCount" datatype="html">
         <source>Draft</source>
@@ -1168,12 +1198,6 @@
         </trans-unit>
       <trans-unit id="featureOffers-colTotal" datatype="html">
         <source>Total (gross)</source>
-        </trans-unit>
-      <trans-unit id="featureAdminOffers-colCreated" datatype="html">
-        <source>Created</source>
-        </trans-unit>
-      <trans-unit id="featureOffers-colExpires" datatype="html">
-        <source>Expires</source>
         </trans-unit>
       <trans-unit id="featureAdminOffers-audit" datatype="html">
         <source>Audit log</source>
@@ -1202,12 +1226,6 @@
       <trans-unit id="featureAdminOffers-chartTitle" datatype="html">
         <source>Offer activity over time</source>
         </trans-unit>
-      <trans-unit id="featureAdminOffers-statisticsTitle" datatype="html">
-        <source>Statistics</source>
-        </trans-unit>
-      <trans-unit id="featureAdminOffers-mobileOffers" datatype="html">
-        <source>Offers</source>
-        </trans-unit>
       <trans-unit id="featureAdminOffers-chartArchived" datatype="html">
         <source>Archived</source>
         </trans-unit>
@@ -1222,6 +1240,9 @@
         </trans-unit>
       <trans-unit id="featureAdminProjects-createTitle" datatype="html">
         <source>Create project</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-colCustomer" datatype="html">
+        <source>Customer</source>
         </trans-unit>
       <trans-unit id="featureAdminProjects-nameLabel" datatype="html">
         <source>Name</source>
@@ -1280,9 +1301,6 @@
       <trans-unit id="featureProjects-colProject" datatype="html">
         <source>Project</source>
         </trans-unit>
-      <trans-unit id="featureAdminProjects-colCustomer" datatype="html">
-        <source>Customer</source>
-        </trans-unit>
       <trans-unit id="featureProjects-colHourlyRate" datatype="html">
         <source>Hourly rate</source>
         </trans-unit>
@@ -1306,9 +1324,6 @@
         </trans-unit>
       <trans-unit id="featureAdminPromotions-createTitle" datatype="html">
         <source>Create promotion</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-create" datatype="html">
-        <source> Create promotion </source>
         </trans-unit>
       <trans-unit id="featureAdminPromotions-createSubmit" datatype="html">
         <source> Create </source>
@@ -1373,6 +1388,9 @@
       <trans-unit id="featureAdminPromotions-pageTitle" datatype="html">
         <source>Promotions</source>
         </trans-unit>
+      <trans-unit id="featureAdminPromotions-create" datatype="html">
+        <source>Create promotion</source>
+        </trans-unit>
       <trans-unit id="featureAdminPromotions-searchPlaceholder" datatype="html">
         <source>Search promotions</source>
         </trans-unit>
@@ -1435,9 +1453,6 @@
         </trans-unit>
       <trans-unit id="featureAdminSubscriptions-empty" datatype="html">
         <source>No subscriptions yet</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-cancel" datatype="html">
-        <source>Cancel subscription</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-withdrawSubscriptionTitle" datatype="html">
         <source>Withdraw subscription?</source>
@@ -1607,11 +1622,14 @@
       <trans-unit id="featureAdminSubscriptions-bulkCancelTitle" datatype="html">
         <source>Cancel subscriptions?</source>
         </trans-unit>
+      <trans-unit id="featureSubscriptions-cancelSubscriptionTitle" datatype="html">
+        <source>Cancel subscription?</source>
+        </trans-unit>
       <trans-unit id="featureAdminSubscriptions-bulkCancelConfirm" datatype="html">
         <source>Cancel subscriptions</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-cancelSubscriptionTitle" datatype="html">
-        <source>Cancel subscription?</source>
+      <trans-unit id="featureSubscriptions-cancel" datatype="html">
+        <source>Cancel subscription</source>
         </trans-unit>
       <trans-unit id="featureAdminSubscriptions-bulkCancelMessage" datatype="html">
         <source>Cancel <x id="count" equiv-text="this.cancelDialogCount()"/> selected subscriptions? Each remains active until the end of its current period.</source>
@@ -2342,18 +2360,6 @@
       <trans-unit id="featureCloudInitConfigs-noImage" datatype="html">
         <source>No image</source>
         </trans-unit>
-      <trans-unit id="featureContainer-securityTitle" datatype="html">
-        <source>Security</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-security" datatype="html">
-        <source>Security</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-securityAuthenticatorSuggested" datatype="html">
-        <source>Authenticator app is not enabled</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-logout" datatype="html">
-        <source>Logout</source>
-        </trans-unit>
       <trans-unit id="featureContainer-overviewTitle" datatype="html">
         <source>Overview</source>
         </trans-unit>
@@ -2390,17 +2396,14 @@
       <trans-unit id="featureContainer-projects" datatype="html">
         <source>Projects</source>
         </trans-unit>
-      <trans-unit id="featureContainer-tokensTitle" datatype="html">
-        <source>Access Tokens</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-tokens" datatype="html">
-        <source>Tokens</source>
-        </trans-unit>
       <trans-unit id="featureContainer-accountTitle" datatype="html">
         <source>Account</source>
         </trans-unit>
       <trans-unit id="featureContainer-account" datatype="html">
         <source>Account</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-securityAuthenticatorSuggested" datatype="html">
+        <source>Authenticator app is not enabled</source>
         </trans-unit>
       <trans-unit id="featureContainer-adminTitle" datatype="html">
         <source>Admin</source>
@@ -2410,6 +2413,9 @@
         </trans-unit>
       <trans-unit id="featureContainer-updatesAttention" datatype="html">
         <source>Updates need attention</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-logout" datatype="html">
+        <source>Logout</source>
         </trans-unit>
       <trans-unit id="featureContainer-languageSwitcherAriaLabel" datatype="html">
         <source>Select language</source>
@@ -2422,6 +2428,24 @@
         </trans-unit>
       <trans-unit id="featureContainer-sidebarAriaLabel" datatype="html">
         <source>Main navigation</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-securityTitle" datatype="html">
+        <source>Security</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-security" datatype="html">
+        <source>Security</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-tokensTitle" datatype="html">
+        <source>Access Tokens</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-tokens" datatype="html">
+        <source>Tokens</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-authorizedAppsTitle" datatype="html">
+        <source>Authorized apps</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-authorizedApps" datatype="html">
+        <source>Apps</source>
         </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
@@ -2495,6 +2519,12 @@
       <trans-unit id="featureContainer-users" datatype="html">
         <source>Users</source>
         </trans-unit>
+      <trans-unit id="featureContainer-appsTitle" datatype="html">
+        <source>App management</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-apps" datatype="html">
+        <source>Apps</source>
+        </trans-unit>
       <trans-unit id="featureContainer-adminProfilesTitle" datatype="html">
         <source>Billing Profiles</source>
         </trans-unit>
@@ -2530,6 +2560,111 @@
         </trans-unit>
       <trans-unit id="featureContainer-adminDatevExports" datatype="html">
         <source>DATEV</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-paymentDueDays" datatype="html">
+        <source>Payment terms (days)</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTerms" datatype="html">
+        <source>Delivery terms</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTermsHint" datatype="html">
+        <source>Incoterms® 2020 for physical goods; choose the manual option for digital goods and services.</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTermsPlace" datatype="html">
+        <source>Named place</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTermsPlaceHint" datatype="html">
+        <source>Optional, e.g. the delivery address city and country.</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTermsText" datatype="html">
+        <source>Delivery terms text</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTermsTextPlaceholder" datatype="html">
+        <source>e.g. Provided as online access within 24 hours after payment.</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-paymentDueDaysHintDays" datatype="html">
+        <source>Default if empty: <x id="days" equiv-text="days"/> days</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-paymentDueDaysHintPlan" datatype="html">
+        <source>Default if empty: plan or global</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-inheritOption" datatype="html">
+        <source>Default (service plan or global setting)</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-inheritOptionValue" datatype="html">
+        <source>Default: <x id="terms" equiv-text="inherited"/></source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-inheritOptionNone" datatype="html">
+        <source>Default: none</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-paymentTermsLabel" datatype="html">
+        <source>Payment terms</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-deliveryTermsLabel" datatype="html">
+        <source>Delivery terms</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-title" datatype="html">
+        <source>Terms</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermExw" datatype="html">
+        <source>Ex Works</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermFca" datatype="html">
+        <source>Free Carrier</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermCpt" datatype="html">
+        <source>Carriage Paid To</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermCip" datatype="html">
+        <source>Carriage and Insurance Paid To</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermDap" datatype="html">
+        <source>Delivered at Place</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermDpu" datatype="html">
+        <source>Delivered at Place Unloaded</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermDdp" datatype="html">
+        <source>Delivered Duty Paid</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermFas" datatype="html">
+        <source>Free Alongside Ship</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermFob" datatype="html">
+        <source>Free on Board</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermCfr" datatype="html">
+        <source>Cost and Freight</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermCif" datatype="html">
+        <source>Cost, Insurance and Freight</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-customOption" datatype="html">
+        <source>Manual (free text)</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-payableImmediately" datatype="html">
+        <source>Payable immediately</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-payableWithinOneDay" datatype="html">
+        <source>Payable within 1 day of the invoice date</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-payableWithinDays" datatype="html">
+        <source>Payable within <x id="days" equiv-text="paymentDueDays"/> days of the invoice date</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-incotermsLabel" datatype="html">
+        <source><x id="rule" equiv-text="rule"/> (Incoterms® 2020)</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-paymentDueDaysInvalid" datatype="html">
+        <source>Use 0–<x id="max" equiv-text="PAYMENT_DUE_DAYS_MAX"/> days.</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-customTextRequired" datatype="html">
+        <source>Enter the delivery terms.</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-customTextTooLong" datatype="html">
+        <source>Use at most <x id="max" equiv-text="DELIVERY_TERMS_TEXT_MAX_LENGTH"/> characters.</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentTerms-placeTooLong" datatype="html">
+        <source>Use at most <x id="max" equiv-text="DELIVERY_TERMS_PLACE_MAX_LENGTH"/> characters.</source>
         </trans-unit>
       <trans-unit id="featureInvoices-paymentWaiting" datatype="html">
         <source> Payment submitted. Waiting for confirmation from the payment provider... </source>
@@ -2693,12 +2828,6 @@
       <trans-unit id="featureOffers-noHistory" datatype="html">
         <source>No offer history yet</source>
         </trans-unit>
-      <trans-unit id="featureOffers-previewTitle" datatype="html">
-        <source>Offer preview</source>
-        </trans-unit>
-      <trans-unit id="featureOffers-loadingPreview" datatype="html">
-        <source>Loading offer...</source>
-        </trans-unit>
       <trans-unit id="featureOffers-expiresAt" datatype="html">
         <source> Expires <x id="INTERPOLATION" equiv-text="{{ formatDate(detail.expiresAt) }}"/> </source>
         </trans-unit>
@@ -2710,9 +2839,6 @@
         </trans-unit>
       <trans-unit id="featureOffers-lineGross" datatype="html">
         <source>Gross</source>
-        </trans-unit>
-      <trans-unit id="featureOffers-downloadPdf" datatype="html">
-        <source>Download</source>
         </trans-unit>
       <trans-unit id="featureOffers-decline" datatype="html">
         <source> Decline </source>
@@ -2799,7 +2925,7 @@
         <source>SSH access key</source>
         </trans-unit>
       <trans-unit id="featureOverview-sshAccessDisplayHint" datatype="html">
-        <source> Store this key securely. It won't be shown again. </source>
+        <source> Store this key securely. It won&apos;t be shown again. </source>
         </trans-unit>
       <trans-unit id="featureOverview-sshAccessCopied" datatype="html">
         <source>Copied</source>
@@ -2924,9 +3050,6 @@
       <trans-unit id="featureSubscriptions-provisioningOption" datatype="html">
         <source>Provisioning option</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-noProvisioningHint" datatype="html">
-        <source> This server is delivered without a preinstalled software stack. Access it with the SSH key from the service page once it is provisioned. </source>
-        </trans-unit>
       <trans-unit id="featureSubscriptions-loadingCustomOrderFields" datatype="html">
         <source>Loading configuration fields...</source>
         </trans-unit>
@@ -2942,50 +3065,65 @@
       <trans-unit id="featureSubscriptions-authApiKey" datatype="html">
         <source>API Key</source>
         </trans-unit>
+      <trans-unit id="featureSubscriptions-authOidc" datatype="html">
+        <source>OpenID Connect</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-authSaml" datatype="html">
+        <source>SAML 2.0</source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-disableSignup" datatype="html">
         <source>Disable signup</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-staticApiKey" datatype="html">
         <source>Static API key</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-smtpHostLabel" datatype="html">
-        <source>SMTP host</source>
+      <trans-unit id="featureSubscriptions-oidcSection" datatype="html">
+        <source>OpenID Connect</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-smtpPortLabel" datatype="html">
-        <source>Port</source>
+      <trans-unit id="featureSubscriptions-oidcIssuerLabel" datatype="html">
+        <source>Issuer</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-smtpUserLabel" datatype="html">
-        <source>Username</source>
+      <trans-unit id="featureSubscriptions-oidcClientIdLabel" datatype="html">
+        <source>Client ID (API)</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-smtpPasswordLabel" datatype="html">
-        <source>Password</source>
+      <trans-unit id="featureSubscriptions-oidcClientSecretLabel" datatype="html">
+        <source>Client secret</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-smtpFromLabel" datatype="html">
-        <source>Sender address</source>
+      <trans-unit id="featureSubscriptions-oidcAudienceLabel" datatype="html">
+        <source>Audience (optional)</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-gitRepositoryUrlLabel" datatype="html">
-        <source>Repository URL</source>
+      <trans-unit id="featureSubscriptions-oidcFrontendClientIdLabel" datatype="html">
+        <source>Console client ID (optional)</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-gitUsernameLabel" datatype="html">
-        <source>HTTPS username</source>
+      <trans-unit id="featureSubscriptions-oidcFrontendClientIdHint" datatype="html">
+        <source>Public client used by the console; defaults to the API client ID.</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-gitTokenLabel" datatype="html">
-        <source>Access token</source>
+      <trans-unit id="featureSubscriptions-samlSection" datatype="html">
+        <source>SAML 2.0</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-gitPasswordLabel" datatype="html">
-        <source>Password</source>
+      <trans-unit id="featureSubscriptions-samlIdpSsoUrlLabel" datatype="html">
+        <source>IdP sign-in URL</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-gitPasswordHint" datatype="html">
-        <source>Alternative to the access token.</source>
+      <trans-unit id="featureSubscriptions-samlIdpCertLabel" datatype="html">
+        <source>IdP signing certificate (PEM)</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-gitPrivateKeyLabel" datatype="html">
-        <source>SSH private key</source>
+      <trans-unit id="featureSubscriptions-samlIdpIssuerLabel" datatype="html">
+        <source>IdP entity ID (optional)</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-gitCommitAuthorNameLabel" datatype="html">
-        <source>Commit author name</source>
+      <trans-unit id="featureSubscriptions-samlSpEntityIdLabel" datatype="html">
+        <source>SP entity ID (optional)</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-gitCommitAuthorEmailLabel" datatype="html">
-        <source>Commit author email</source>
+      <trans-unit id="featureSubscriptions-samlSpEntityIdHint" datatype="html">
+        <source>Defaults to the instance URL.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-samlNameIdFormatLabel" datatype="html">
+        <source>NameID format (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-samlEmailAttributeLabel" datatype="html">
+        <source>Email attribute (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-noProvisioningHint" datatype="html">
+        <source> This server is delivered without a preinstalled software stack. Access it with the SSH key from the service page once it is provisioned. </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-orderTermsTitle" datatype="html">
         <source>Runtime &amp; terms</source>
@@ -3010,15 +3148,6 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-loadingPrice" datatype="html">
         <source>Loading price...</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-subtotalNet" datatype="html">
-        <source> Subtotal (net) </source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-taxTotal" datatype="html">
-        <source>Tax total</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-totalGross" datatype="html">
-        <source>Total</source>
         </trans-unit>
       <trans-unit id="featureProjectBoard-priorityLow" datatype="html">
         <source>Low</source>
@@ -3079,6 +3208,9 @@
         </trans-unit>
       <trans-unit id="featureProjectBoard-empty" datatype="html">
         <source>No tickets yet</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-titleLabel" datatype="html">
+        <source>Title</source>
         </trans-unit>
       <trans-unit id="featureProjectBoard-modalLoadingTitle" datatype="html">
         <source>Ticket</source>
@@ -3194,9 +3326,6 @@
         </trans-unit>
       <trans-unit id="featureProjectBoard-createTitle" datatype="html">
         <source>New ticket</source>
-        </trans-unit>
-      <trans-unit id="featureProjectBoard-titleLabel" datatype="html">
-        <source>Title</source>
         </trans-unit>
       <trans-unit id="featureProjectBoard-createTitlePlaceholder" datatype="html">
         <source>Short summary</source>
@@ -3321,9 +3450,6 @@
       <trans-unit id="featureProjectDetail-save" datatype="html">
         <source> Save </source>
         </trans-unit>
-      <trans-unit id="featureProjectDetail-timeReportDownload" datatype="html">
-        <source> Download </source>
-        </trans-unit>
       <trans-unit id="featureProjectDetail-deleteTimeTitle" datatype="html">
         <source>Delete time entry</source>
         </trans-unit>
@@ -3383,6 +3509,9 @@
         </trans-unit>
       <trans-unit id="featureProjectDetail-timeReportUnbilledOnly" datatype="html">
         <source>Only include unbilled positions</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-timeReportDownload" datatype="html">
+        <source> Download </source>
         </trans-unit>
       <trans-unit id="featureProjectDetail-trackedTimeProgressAria" datatype="html">
         <source>Tracked time progress</source>
@@ -4186,14 +4315,14 @@
         <source>Mandatory</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-mandatoryAddonHelp" datatype="html">
-        <source>Customers cannot deselect this add-on when ordering.</source>
+        <source> Customers cannot deselect this add-on when ordering. </source>
         </trans-unit>
       <trans-unit id="featureServicePlans-cancelAtPeriodEnd" datatype="html">
         <source>Cancel at period end</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-cancelAtPeriodEndHelpFull" datatype="html">
         <source>Cancellation will be scheduled for the end of the current billing period. Unchecking this allows immediate cancellation mid-period.</source>
-      </trans-unit>
+        </trans-unit>
       <trans-unit id="featureServicePlans-cancelAtPeriodEndHelp" datatype="html">
         <source> Cancellations take effect at the end of the billing period. </source>
         </trans-unit>
@@ -4202,7 +4331,7 @@
         </trans-unit>
       <trans-unit id="featureServicePlans-billInAdvanceHelpFull" datatype="html">
         <source>Charge the full period at its start (prepaid). Usage-based metering cannot be used with advance billing. Cancellation always takes effect at the end of the already-billed period.</source>
-      </trans-unit>
+        </trans-unit>
       <trans-unit id="featureServicePlans-billInAdvanceHelp" datatype="html">
         <source> Prepaid: bills each period upfront, without usage meters. </source>
         </trans-unit>
@@ -4211,7 +4340,7 @@
         </trans-unit>
       <trans-unit id="featureServicePlans-autoRecalculatePriceDailyHelpFull" datatype="html">
         <source>Opt in only when required for EU compliance. When enabled, the package price is recalculated nightly at midnight from the provider catalog. Checkout must disclose this and the statutory withdrawal restart when the price changes.</source>
-      </trans-unit>
+        </trans-unit>
       <trans-unit id="featureServicePlans-autoRecalculatePriceDailyHelp" datatype="html">
         <source> Only for EU compliance: reprices nightly from the provider catalog. </source>
         </trans-unit>
@@ -4621,7 +4750,7 @@
         <source>Choose a plan</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-mandatoryAddonHint" datatype="html">
-        <source>Included with this plan and cannot be removed.</source>
+        <source> Included with this plan and cannot be removed. </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-orderInvalidAddonsHint" datatype="html">
         <source> Some selected add-ons are not available for the chosen provider and will be omitted from the order. </source>
@@ -4665,6 +4794,21 @@
       <trans-unit id="featureSubscriptions-smtpSection" datatype="html">
         <source>SMTP (optional)</source>
         </trans-unit>
+      <trans-unit id="featureSubscriptions-smtpHostLabel" datatype="html">
+        <source>SMTP host</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-smtpPortLabel" datatype="html">
+        <source>Port</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-smtpUserLabel" datatype="html">
+        <source>Username</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-smtpPasswordLabel" datatype="html">
+        <source>Password</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-smtpFromLabel" datatype="html">
+        <source>Sender address</source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-gitSection" datatype="html">
         <source>Git (optional)</source>
         </trans-unit>
@@ -4682,6 +4826,30 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-gitSetupModeEmpty" datatype="html">
         <source> Empty repository (git init) </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitRepositoryUrlLabel" datatype="html">
+        <source>Repository URL</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitUsernameLabel" datatype="html">
+        <source>HTTPS username</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitTokenLabel" datatype="html">
+        <source>Access token</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitPasswordLabel" datatype="html">
+        <source>Password</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitPasswordHint" datatype="html">
+        <source>Alternative to the access token.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitPrivateKeyLabel" datatype="html">
+        <source>SSH private key</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitCommitAuthorNameLabel" datatype="html">
+        <source>Commit author name</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-gitCommitAuthorEmailLabel" datatype="html">
+        <source>Commit author email</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-provisioningSection" datatype="html">
         <source> Provisioning (optional) </source>
@@ -4706,6 +4874,9 @@
         </trans-unit>
       <trans-unit id="featurePromotions-orderPricingPendingSidebar" datatype="html">
         <source> Check the price summary for updated totals. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-documentTermsTitle" datatype="html">
+        <source> Payment and delivery terms </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-withdrawalPolicyTitle" datatype="html">
         <source> Statutory withdrawal </source>
@@ -4783,7 +4954,7 @@
         <source>Will be removed</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeAddonConfigLocked" datatype="html">
-        <source> This add-on's configuration can't be changed here. </source>
+        <source> This add-on&apos;s configuration can&apos;t be changed here. </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeNoAddons" datatype="html">
         <source> No add-ons are available for this plan. </source>
@@ -5043,6 +5214,304 @@
       <trans-unit id="featureUserManager-roleUnknownValue" datatype="html">
         <source>Unknown (<x id="PH" equiv-text="role"/>)</source>
         </trans-unit>
+      <trans-unit id="featureAppAuthorize-redirecting" datatype="html">
+        <source>Returning to the app...</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-loading" datatype="html">
+        <source>Loading authorization request...</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-errorTitle" datatype="html">
+        <source>Authorization failed</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-wantsAccess" datatype="html">
+        <source> wants to access your <x id="INTERPOLATION" equiv-text="{{ productName }}"/> account </source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-signedInAs" datatype="html">
+        <source>Signed in as <x id="INTERPOLATION" equiv-text="{{ signedIn.email }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-grantedTitle" datatype="html">
+        <source> This app will be able to </source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-nothingGrantable" datatype="html">
+        <source> Your account has none of the permissions this app requests. </source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-notGrantedTitle" datatype="html">
+        <source> Not granted (your account does not have these permissions) </source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-totpHint" datatype="html">
+        <source>Confirm with the 6-digit code from your authenticator app.</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-emailHint" datatype="html">
+        <source>We sent a 6-character verification code to your email. Enter it to confirm.</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-codeLabel" datatype="html">
+        <source>Verification code</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-emailNotice" datatype="html">
+        <source> For your security, we will email you a verification code when you authorize. </source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-redirectNotice" datatype="html">
+        <source>You will be redirected to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ returnHost() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-cancel" datatype="html">
+        <source>Cancel</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-approve" datatype="html">
+        <source>Authorize</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-invalidLink" datatype="html">
+        <source>This authorization link is invalid. Return to the app and try again.</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-notFound" datatype="html">
+        <source>This app does not exist or the authorization link is invalid.</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-redirectBlocked" datatype="html">
+        <source>The app returned an unexpected redirect.</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-unexpectedError" datatype="html">
+        <source>Something went wrong. Please try again.</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-levelRead" datatype="html">
+        <source>Read</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-levelWrite" datatype="html">
+        <source>Read and write</source>
+        </trans-unit>
+      <trans-unit id="featureAppAuthorize-levelAdmin" datatype="html">
+        <source>Administer</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-scopes" datatype="html">
+        <source>scopes</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-bulkDeleteTitle" datatype="html">
+        <source>Delete apps</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-bulkDeleteBody" datatype="html">
+        <source> Delete the selected apps? All their authorizations are revoked and their tokens stop working immediately. This cannot be undone. </source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-nameLabel" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-descriptionLabel" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-descriptionHint" datatype="html">
+        <source> Shown to users on the authorization page. </source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-returnUrlLabel" datatype="html">
+        <source>Return URL</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-returnUrlInvalid" datatype="html">
+        <source> Use an absolute https URL (http only for localhost) without credentials or #fragment. </source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-returnUrlHint" datatype="html">
+        <source> Users are sent here after authorizing, with status, code and state as query parameters. </source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-scopesLabel" datatype="html">
+        <source>Scopes</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-scopesHint" datatype="html">
+        <source> Users can only grant the scopes their own account has. Adding scopes later asks users to authorize again. </source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-loadingScopes" datatype="html">
+        <source>Loading scopes...</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-noScopes" datatype="html">
+        <source>No scopes available</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-allScopesAriaLabel" datatype="html">
+        <source>All scopes</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-selectedScopesCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ selectedScopeCount() }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ scopes().length }}"/> selected</source>
+        </trans-unit>
+      <trans-unit id="featureScopePicker-noMatches" datatype="html">
+        <source>No scopes match your search</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-secretTitle" datatype="html">
+        <source>App credentials</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-secretIntro" datatype="html">
+        <source> Configure <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ app.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> with these credentials. They authenticate the app when it exchanges an authorization code or refresh token. </source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-appIdLabel" datatype="html">
+        <source>App ID</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-copied" datatype="html">
+        <source>Copied</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-copy" datatype="html">
+        <source>Copy</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-secretLabel" datatype="html">
+        <source>App secret</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-secretHint" datatype="html">
+        <source> Copy this secret now. It will not be shown again; only a hash is stored. </source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-secretCopied" datatype="html">
+        <source>Secret copied</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-copySecret" datatype="html">
+        <source>Copy secret</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-rotateTitle" datatype="html">
+        <source>Regenerate secret</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-rotateConfirmLabel" datatype="html">
+        <source>Regenerate</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-rotateBody" datatype="html">
+        <source> Regenerate the secret of <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ app.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/>? The current secret stops working right away; existing authorizations stay valid once the app uses the new secret. </source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-deleteTitle" datatype="html">
+        <source>Delete app</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-deleteBody" datatype="html">
+        <source> Delete the app <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ app.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/>? All authorizations are revoked and its tokens stop working immediately. </source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-grantsHint" datatype="html">
+        <source> Revoking an authorization ends the app&apos;s sessions for that user. The user has to authorize the app again (incl. two-factor verification) before it regains access. </source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-revokeAll" datatype="html">
+        <source>Revoke all</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-revokeGrantTitle" datatype="html">
+        <source>Revoke authorization</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-revokeGrantBody" datatype="html">
+        <source> Revoke the authorization of <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ grantToRevoke.userEmail }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/>? The app loses access for this user until they authorize it again. </source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-revokeAllTitle" datatype="html">
+        <source>Revoke all authorizations</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-revokeAllBody" datatype="html">
+        <source> Revoke every user&apos;s authorization for this app? All its sessions end and every user has to authorize it again. </source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-title" datatype="html">
+        <source>Apps</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-addAppTitle" datatype="html">
+        <source>Create app</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-searchPlaceholder" datatype="html">
+        <source>Search apps</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-empty" datatype="html">
+        <source>No apps yet</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-grantsTitle" datatype="html">
+        <source>Authorizations</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-noGrants" datatype="html">
+        <source>No user has authorized this app yet</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-createTitle" datatype="html">
+        <source>Create app</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-editTitle" datatype="html">
+        <source>Edit app</source>
+        </trans-unit>
+      <trans-unit id="featureScopePicker-searchPlaceholder" datatype="html">
+        <source>Search scopes</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-colGrants" datatype="html">
+        <source>Authorizations</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-colCreated" datatype="html">
+        <source>Created</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-colGrantState" datatype="html">
+        <source>State</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-grantNeedsReauth" datatype="html">
+        <source>Re-authorization pending</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-grantActive" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-colUser" datatype="html">
+        <source>User</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-colSessions" datatype="html">
+        <source>Sessions</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-colLastUsed" datatype="html">
+        <source>Last used</source>
+        </trans-unit>
+      <trans-unit id="featureAppManager-rotateSecret" datatype="html">
+        <source>Regenerate secret</source>
+        </trans-unit>
+      <trans-unit id="identityAuthLegalLinks-label" datatype="html">
+        <source>Legal</source>
+        </trans-unit>
+      <trans-unit id="identityAuthLegalLinks-disclosure" datatype="html">
+        <source>Legal Disclosure</source>
+        </trans-unit>
+      <trans-unit id="identityAuthLegalLinks-terms" datatype="html">
+        <source>Terms of Service</source>
+        </trans-unit>
+      <trans-unit id="identityAuthLegalLinks-privacy" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-scopes" datatype="html">
+        <source>scopes</source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-revokeTitle" datatype="html">
+        <source>Revoke access</source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-revokeBody" datatype="html">
+        <source> Revoke access for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ grantToRevoke.appName }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/>? The app is signed out immediately and has to ask for your authorization again. </source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-bulkRevokeTitle" datatype="html">
+        <source>Revoke access</source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-bulkRevokeBody" datatype="html">
+        <source> Revoke access for the selected apps? They are signed out immediately. </source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-title" datatype="html">
+        <source>Authorized apps</source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-searchPlaceholder" datatype="html">
+        <source>Search apps</source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-empty" datatype="html">
+        <source>You have not authorized any apps</source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-colState" datatype="html">
+        <source>State</source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-stateReauth" datatype="html">
+        <source>Requests more access</source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-stateActive" datatype="html">
+        <source>Authorized</source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-colApp" datatype="html">
+        <source>App</source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-colScopes" datatype="html">
+        <source>Scopes</source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-colAuthorized" datatype="html">
+        <source>Authorized</source>
+        </trans-unit>
+      <trans-unit id="featureAuthorizedApps-colLastUsed" datatype="html">
+        <source>Last used</source>
+        </trans-unit>
       <trans-unit id="featureConfirmEmail-formTitle" datatype="html">
         <source>Email Confirmation</source>
         </trans-unit>
@@ -5118,6 +5587,9 @@
       <trans-unit id="featureAuth-loginPage" datatype="html">
         <source>Login</source>
         </trans-unit>
+      <trans-unit id="featureAuth-samlCallbackPage" datatype="html">
+        <source>Signing in</source>
+        </trans-unit>
       <trans-unit id="featureAuth-login2faPage" datatype="html">
         <source>Two-Factor Authentication</source>
         </trans-unit>
@@ -5138,6 +5610,15 @@
         </trans-unit>
       <trans-unit id="featureAuth-usersPage" datatype="html">
         <source>User management</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-appsPage" datatype="html">
+        <source>Apps</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-authorizedAppsPage" datatype="html">
+        <source>Authorized apps</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-authorizeAppPage" datatype="html">
+        <source>Authorize app</source>
         </trans-unit>
       <trans-unit id="featureAuth-tokensPage" datatype="html">
         <source>Personal access tokens</source>
@@ -5211,13 +5692,19 @@
         <source>PEM with your certificate; may also contain the PKCS#8 key.</source>
         </trans-unit>
       <trans-unit id="featureLogin-clientCertificateRequired" datatype="html">
-        <source>A client certificate is required.</source>
+        <source> A client certificate is required. </source>
         </trans-unit>
       <trans-unit id="featureLogin-clientPrivateKey" datatype="html">
         <source>Private key (optional)</source>
         </trans-unit>
       <trans-unit id="featureLogin-clientPrivateKeyHint" datatype="html">
         <source>Only for a separate key file. The key never leaves this browser.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-ssoFailed" datatype="html">
+        <source>Sign-in with your identity provider failed. Please try again or contact your administrator.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin-ssoRedirecting" datatype="html">
+        <source> You are being redirected to your organization&apos;s sign-in page. </source>
         </trans-unit>
       <trans-unit id="featureLogin-emailLabel" datatype="html">
         <source>Email</source>
@@ -5249,6 +5736,9 @@
       <trans-unit id="featureLogin-loggingIn" datatype="html">
         <source>Logging in...</source>
         </trans-unit>
+      <trans-unit id="featureLogin-ssoSubmit" datatype="html">
+        <source>Continue with single sign-on</source>
+        </trans-unit>
       <trans-unit id="featureLogin-submit" datatype="html">
         <source>Login</source>
         </trans-unit>
@@ -5261,11 +5751,20 @@
       <trans-unit id="identityLogoutConfirm-usersTitle" datatype="html">
         <source>Log out?</source>
         </trans-unit>
+      <trans-unit id="identityLogoutConfirm-oidcTitle" datatype="html">
+        <source>Log out?</source>
+        </trans-unit>
       <trans-unit id="identityLogoutConfirm-defaultTitle" datatype="html">
         <source>Log out?</source>
         </trans-unit>
       <trans-unit id="identityLogoutConfirm-usersMessage" datatype="html">
         <source>You will be signed out of this browser only. Other devices and browsers will stay signed in unless you choose to sign out everywhere below.</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-samlMessage" datatype="html">
+        <source>You will be signed out of this browser only. Your single sign-on session at your identity provider stays active unless you sign out there.</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-oidcMessage" datatype="html">
+        <source>You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.</source>
         </trans-unit>
       <trans-unit id="identityLogoutConfirm-defaultMessage" datatype="html">
         <source>Are you sure you want to log out?</source>
@@ -5506,6 +6005,18 @@
         </trans-unit>
       <trans-unit id="featureResetPassword-submit" datatype="html">
         <source>Reset Password</source>
+        </trans-unit>
+      <trans-unit id="featureSamlCallback-failedTitle" datatype="html">
+        <source>Sign-in failed</source>
+        </trans-unit>
+      <trans-unit id="featureSamlCallback-failedMessage" datatype="html">
+        <source>Single sign-on could not be completed. The sign-in link may have expired or was opened in another browser tab.</source>
+        </trans-unit>
+      <trans-unit id="featureSamlCallback-retry" datatype="html">
+        <source>Try again</source>
+        </trans-unit>
+      <trans-unit id="featureSamlCallback-signingIn" datatype="html">
+        <source>Signing you in…</source>
         </trans-unit>
       <trans-unit id="featureSecuritySettings-passwordTitle" datatype="html">
         <source>Password</source>
@@ -6035,6 +6546,9 @@
       <trans-unit id="sharedFeatureLandingpageContact-metaKeywords" datatype="html">
         <source>contact, support, <x id="productName" equiv-text="productName"/></source>
         </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageTheme-toggleAriaLabel" datatype="html">
+        <source>Toggle dark mode</source>
+        </trans-unit>
       <trans-unit id="sharedDataList-test" datatype="html">
         <source>Test</source>
         </trans-unit>
@@ -6126,7 +6640,7 @@
         <source>Subscribed events</source>
         </trans-unit>
       <trans-unit id="featureNotifications-loadingEventTypes" datatype="html">
-        <source> Loading event types... </source>
+        <source>Loading event types...</source>
         </trans-unit>
       <trans-unit id="featureNotifications-noEventTypes" datatype="html">
         <source>No event types available</source>
@@ -6139,9 +6653,6 @@
         </trans-unit>
       <trans-unit id="featureNotifications-noMatchingEvents" datatype="html">
         <source>No events match your search</source>
-        </trans-unit>
-      <trans-unit id="featureNotifications-eventSearchPlaceholder" datatype="html">
-        <source>Search events</source>
         </trans-unit>
       <trans-unit id="featureNotifications-deleteWebhookModalTitle" datatype="html">
         <source>Delete webhook</source>
@@ -6171,6 +6682,9 @@
       <trans-unit id="featureNotifications-deliveryResponse" datatype="html">
         <source>Response</source>
         </trans-unit>
+      <trans-unit id="featureNotifications-authValueKeepPlaceholder" datatype="html">
+        <source>Leave empty to keep current</source>
+        </trans-unit>
       <trans-unit id="featureNotifications-title" datatype="html">
         <source>Webhooks</source>
         </trans-unit>
@@ -6179,6 +6693,9 @@
         </trans-unit>
       <trans-unit id="featureNotifications-searchPlaceholder" datatype="html">
         <source>Search webhooks</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-eventSearchPlaceholder" datatype="html">
+        <source>Search events</source>
         </trans-unit>
       <trans-unit id="featureNotifications-testWebhookTitle" datatype="html">
         <source>Send test delivery</source>
@@ -6441,413 +6958,6 @@
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
         </trans-unit>
-      <trans-unit id="featureNotifications-authValueKeepPlaceholder" datatype="html">
-        <source>Leave empty to keep current</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-targetTime" datatype="html">
-        <source>Target: <x id="PH" equiv-text="formatted"/></source>
-      </trans-unit>
-      <trans-unit id="featureContainer-authorizedAppsTitle" datatype="html">
-        <source>Authorized apps</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-authorizedApps" datatype="html">
-        <source>Apps</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-appsTitle" datatype="html">
-        <source>App management</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-apps" datatype="html">
-        <source>Apps</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-redirecting" datatype="html">
-        <source>Returning to the app...</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-loading" datatype="html">
-        <source>Loading authorization request...</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-errorTitle" datatype="html">
-        <source>Authorization failed</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-wantsAccess" datatype="html">
-        <source> wants to access your <x id="INTERPOLATION" equiv-text="{{ productName }}"/> account </source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-signedInAs" datatype="html">
-        <source>Signed in as <x id="INTERPOLATION" equiv-text="{{ signedIn.email }}"/></source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-grantedTitle" datatype="html">
-        <source> This app will be able to </source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-nothingGrantable" datatype="html">
-        <source> Your account has none of the permissions this app requests. </source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-notGrantedTitle" datatype="html">
-        <source> Not granted (your account does not have these permissions) </source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-totpHint" datatype="html">
-        <source>Confirm with the 6-digit code from your authenticator app.</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-emailHint" datatype="html">
-        <source>We sent a 6-character verification code to your email. Enter it to confirm.</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-codeLabel" datatype="html">
-        <source>Verification code</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-emailNotice" datatype="html">
-        <source> For your security, we will email you a verification code when you authorize. </source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-redirectNotice" datatype="html">
-        <source>You will be redirected to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ returnHost() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-cancel" datatype="html">
-        <source>Cancel</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-approve" datatype="html">
-        <source>Authorize</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-invalidLink" datatype="html">
-        <source>This authorization link is invalid. Return to the app and try again.</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-notFound" datatype="html">
-        <source>This app does not exist or the authorization link is invalid.</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-redirectBlocked" datatype="html">
-        <source>The app returned an unexpected redirect.</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-unexpectedError" datatype="html">
-        <source>Something went wrong. Please try again.</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-levelRead" datatype="html">
-        <source>Read</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-levelWrite" datatype="html">
-        <source>Read and write</source>
-        </trans-unit>
-      <trans-unit id="featureAppAuthorize-levelAdmin" datatype="html">
-        <source>Administer</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-scopes" datatype="html">
-        <source>scopes</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-bulkDeleteTitle" datatype="html">
-        <source>Delete apps</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-bulkDeleteBody" datatype="html">
-        <source> Delete the selected apps? All their authorizations are revoked and their tokens stop working immediately. This cannot be undone. </source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-nameLabel" datatype="html">
-        <source>Name</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-descriptionLabel" datatype="html">
-        <source>Description</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-descriptionHint" datatype="html">
-        <source> Shown to users on the authorization page. </source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-returnUrlLabel" datatype="html">
-        <source>Return URL</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-returnUrlInvalid" datatype="html">
-        <source> Use an absolute https URL (http only for localhost) without credentials or #fragment. </source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-returnUrlHint" datatype="html">
-        <source> Users are sent here after authorizing, with status, code and state as query parameters. </source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-scopesLabel" datatype="html">
-        <source>Scopes</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-scopesHint" datatype="html">
-        <source> Users can only grant the scopes their own account has. Adding scopes later asks users to authorize again. </source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-loadingScopes" datatype="html">
-        <source>Loading scopes...</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-noScopes" datatype="html">
-        <source>No scopes available</source>
-        </trans-unit>
-      <trans-unit id="featureScopePicker-noMatches" datatype="html">
-        <source>No scopes match your search</source>
-        </trans-unit>
-      <trans-unit id="featureScopePicker-searchPlaceholder" datatype="html">
-        <source>Search scopes</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-allScopesAriaLabel" datatype="html">
-        <source>All scopes</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-selectedScopesCount" datatype="html">
-        <source><x id="INTERPOLATION" equiv-text="{{ selectedScopeCount() }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ scopes().length }}"/> selected</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-save" datatype="html">
-        <source>Save</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-create" datatype="html">
-        <source>Create</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-secretTitle" datatype="html">
-        <source>App credentials</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-secretIntro" datatype="html">
-        <source> Configure <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ app.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> with these credentials. They authenticate the app when it exchanges an authorization code or refresh token. </source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-appIdLabel" datatype="html">
-        <source>App ID</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-copied" datatype="html">
-        <source>Copied</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-copy" datatype="html">
-        <source>Copy</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-secretLabel" datatype="html">
-        <source>App secret</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-secretHint" datatype="html">
-        <source> Copy this secret now. It will not be shown again; only a hash is stored. </source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-secretCopied" datatype="html">
-        <source>Secret copied</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-copySecret" datatype="html">
-        <source>Copy secret</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-rotateTitle" datatype="html">
-        <source>Regenerate secret</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-rotateConfirmLabel" datatype="html">
-        <source>Regenerate</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-rotateBody" datatype="html">
-        <source> Regenerate the secret of <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ app.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? The current secret stops working right away; existing authorizations stay valid once the app uses the new secret. </source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-deleteTitle" datatype="html">
-        <source>Delete app</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-deleteBody" datatype="html">
-        <source> Delete the app <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ app.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? All authorizations are revoked and its tokens stop working immediately. </source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-cannotUndo" datatype="html">
-        <source>This action cannot be undone.</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-grantsHint" datatype="html">
-        <source> Revoking an authorization ends the app&apos;s sessions for that user. The user has to authorize the app again (incl. two-factor verification) before it regains access. </source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-revokeAll" datatype="html">
-        <source>Revoke all</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-revokeGrantTitle" datatype="html">
-        <source>Revoke authorization</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-revokeGrantBody" datatype="html">
-        <source> Revoke the authorization of <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ grantToRevoke.userEmail }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-      &gt;"/>? The app loses access for this user until they authorize it again. </source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-revokeAllTitle" datatype="html">
-        <source>Revoke all authorizations</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-revokeAllBody" datatype="html">
-        <source> Revoke every user&apos;s authorization for this app? All its sessions end and every user has to authorize it again. </source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-title" datatype="html">
-        <source>Apps</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-addAppTitle" datatype="html">
-        <source>Create app</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-searchPlaceholder" datatype="html">
-        <source>Search apps</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-empty" datatype="html">
-        <source>No apps yet</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-grantsTitle" datatype="html">
-        <source>Authorizations</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-noGrants" datatype="html">
-        <source>No user has authorized this app yet</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-createTitle" datatype="html">
-        <source>Create app</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-editTitle" datatype="html">
-        <source>Edit app</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-colGrants" datatype="html">
-        <source>Authorizations</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-colCreated" datatype="html">
-        <source>Created</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-colGrantState" datatype="html">
-        <source>State</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-grantNeedsReauth" datatype="html">
-        <source>Re-authorization pending</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-grantActive" datatype="html">
-        <source>Active</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-colUser" datatype="html">
-        <source>User</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-colSessions" datatype="html">
-        <source>Sessions</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-colLastUsed" datatype="html">
-        <source>Last used</source>
-        </trans-unit>
-      <trans-unit id="featureAppManager-rotateSecret" datatype="html">
-        <source>Regenerate secret</source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-scopes" datatype="html">
-        <source>scopes</source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-revokeTitle" datatype="html">
-        <source>Revoke access</source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-revokeBody" datatype="html">
-        <source> Revoke access for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ grantToRevoke.appName }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-      &gt;"/>? The app is signed out immediately and has to ask for your authorization again. </source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-bulkRevokeTitle" datatype="html">
-        <source>Revoke access</source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-bulkRevokeBody" datatype="html">
-        <source> Revoke access for the selected apps? They are signed out immediately. </source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-title" datatype="html">
-        <source>Authorized apps</source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-searchPlaceholder" datatype="html">
-        <source>Search apps</source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-empty" datatype="html">
-        <source>You have not authorized any apps</source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-colState" datatype="html">
-        <source>State</source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-stateReauth" datatype="html">
-        <source>Requests more access</source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-stateActive" datatype="html">
-        <source>Authorized</source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-colApp" datatype="html">
-        <source>App</source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-colScopes" datatype="html">
-        <source>Scopes</source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-colAuthorized" datatype="html">
-        <source>Authorized</source>
-        </trans-unit>
-      <trans-unit id="featureAuthorizedApps-colLastUsed" datatype="html">
-        <source>Last used</source>
-        </trans-unit>
-      <trans-unit id="featureAuth-appsPage" datatype="html">
-        <source>Apps</source>
-        </trans-unit>
-      <trans-unit id="featureAuth-authorizedAppsPage" datatype="html">
-        <source>Authorized apps</source>
-        </trans-unit>
-      <trans-unit id="featureAuth-authorizeAppPage" datatype="html">
-        <source>Authorize app</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-oidcTitle" datatype="html">
-        <source>Log out?</source>
-      </trans-unit>
-      <trans-unit id="identityLogoutConfirm-oidcMessage" datatype="html">
-        <source>You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.</source>
-      </trans-unit>
-      <trans-unit id="identityLogoutConfirm-samlMessage" datatype="html">
-        <source>You will be signed out of this browser only. Your single sign-on session at your identity provider stays active unless you sign out there.</source>
-      </trans-unit>
-      <trans-unit id="featureLogin-ssoFailed" datatype="html">
-        <source>Sign-in with your identity provider failed. Please try again or contact your administrator.</source>
-      </trans-unit>
-      <trans-unit id="featureLogin-ssoRedirecting" datatype="html">
-        <source>You are being redirected to your organization's sign-in page.</source>
-      </trans-unit>
-      <trans-unit id="featureLogin-ssoSubmit" datatype="html">
-        <source>Continue with single sign-on</source>
-      </trans-unit>
-      <trans-unit id="featureAuth-samlCallbackPage" datatype="html">
-        <source>Signing in</source>
-      </trans-unit>
-      <trans-unit id="featureSamlCallback-failedTitle" datatype="html">
-        <source>Sign-in failed</source>
-      </trans-unit>
-      <trans-unit id="featureSamlCallback-failedMessage" datatype="html">
-        <source>Single sign-on could not be completed. The sign-in link may have expired or was opened in another browser tab.</source>
-      </trans-unit>
-      <trans-unit id="featureSamlCallback-retry" datatype="html">
-        <source>Try again</source>
-      </trans-unit>
-      <trans-unit id="featureSamlCallback-signingIn" datatype="html">
-        <source>Signing you in…</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-authOidc" datatype="html">
-        <source>OpenID Connect</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-authSaml" datatype="html">
-        <source>SAML 2.0</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-oidcSection" datatype="html">
-        <source>OpenID Connect</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-samlSection" datatype="html">
-        <source>SAML 2.0</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-oidcIssuerLabel" datatype="html">
-        <source>Issuer</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-oidcClientIdLabel" datatype="html">
-        <source>Client ID (API)</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-oidcClientSecretLabel" datatype="html">
-        <source>Client secret</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-oidcAudienceLabel" datatype="html">
-        <source>Audience (optional)</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-oidcFrontendClientIdLabel" datatype="html">
-        <source>Console client ID (optional)</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-oidcFrontendClientIdHint" datatype="html">
-        <source>Public client used by the console; defaults to the API client ID.</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-samlIdpSsoUrlLabel" datatype="html">
-        <source>IdP sign-in URL</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-samlIdpCertLabel" datatype="html">
-        <source>IdP signing certificate (PEM)</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-samlIdpIssuerLabel" datatype="html">
-        <source>IdP entity ID (optional)</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-samlSpEntityIdLabel" datatype="html">
-        <source>SP entity ID (optional)</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-samlSpEntityIdHint" datatype="html">
-        <source>Defaults to the instance URL.</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-samlNameIdFormatLabel" datatype="html">
-        <source>NameID format (optional)</source>
-      </trans-unit>
-      <trans-unit id="featureSubscriptions-samlEmailAttributeLabel" datatype="html">
-        <source>Email attribute (optional)</source>
-      </trans-unit>
-      <trans-unit id="identityAuthLegalLinks-label" datatype="html">
-        <source>Legal</source>
-      </trans-unit>
-      <trans-unit id="identityAuthLegalLinks-disclosure" datatype="html">
-        <source>Legal Disclosure</source>
-      </trans-unit>
-      <trans-unit id="identityAuthLegalLinks-terms" datatype="html">
-        <source>Terms of Service</source>
-      </trans-unit>
-      <trans-unit id="identityAuthLegalLinks-privacy" datatype="html">
-        <source>Privacy Policy</source>
-      </trans-unit>
     </body>
   </file>
 </xliff>

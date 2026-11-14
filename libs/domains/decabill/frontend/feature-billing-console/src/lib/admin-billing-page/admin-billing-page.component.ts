@@ -35,6 +35,7 @@ import {
   type SupplierInvoiceDetailResponse,
   type SupplierInvoiceLineItemDto,
   type TaxPreviewRates,
+  type DocumentTerms,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { AuthenticationFacade, type UserResponseDto } from '@forepath/identity/frontend';
 import {
@@ -144,6 +145,14 @@ import {
 import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart';
 import { formatBillingDate, formatBillingDateRange, formatBillingMoney } from '../billing-format';
 import { ThemeService } from '../theme.service';
+import { DocumentTermsFieldsComponent } from '../document-terms/document-terms-fields.component';
+import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
+import {
+  documentTermsFormToInput,
+  emptyDocumentTermsForm,
+  isDocumentTermsFormValid,
+  type DocumentTermsFormModel,
+} from '../document-terms/document-terms.util';
 
 const FILTERS_STORAGE_KEY = 'billing-console-admin-billing-filters';
 
@@ -193,6 +202,8 @@ interface InvoicePreviewView {
   taxTotal: number;
   totalGross: number;
   balanceDue: number;
+  /** Payment / delivery terms frozen on the invoice (customer invoices only). */
+  terms?: Partial<DocumentTerms> | null;
 }
 
 type AdminBillingMobilePanel = 'overview' | 'invoices';
@@ -204,6 +215,8 @@ type AdminBillingPerspective = 'customer' | 'supplier';
   imports: [
     FpcMoneyPipe,
     FpcDatePipe,
+    DocumentTermsFieldsComponent,
+    DocumentTermsSummaryComponent,
     FpcBoardLaneComponent,
     FpcSectionRowComponent,
     FpcSectionColumnComponent,
@@ -744,7 +757,8 @@ export class AdminBillingPageComponent implements OnInit {
   editInvoiceId = '';
   editLineItems: InvoiceFormLineItem[] = [this.emptyLineItem()];
   issueInvoiceId = '';
-  issueDueInDays = 14;
+  /** Payment terms (`dueInDays`) and delivery terms for the manual invoice; empty fields inherit. */
+  issueTermsForm: DocumentTermsFormModel = emptyDocumentTermsForm();
   deleteInvoice: AdminInvoiceListItem | null = null;
 
   customerLabel(row: CustomerLabelSource): string {
@@ -886,7 +900,7 @@ export class AdminBillingPageComponent implements OnInit {
 
   openIssueModal(invoice: AdminInvoiceListItem): void {
     this.issueInvoiceId = invoice.id;
-    this.issueDueInDays = 14;
+    this.issueTermsForm = emptyDocumentTermsForm();
     showBillingModal(this.issueModalOpen);
   }
 
@@ -1182,7 +1196,11 @@ export class AdminBillingPageComponent implements OnInit {
 
     if (!this.issueInvoiceId) return;
 
-    this.invoiceManagerFacade.issueManualInvoice(this.issueInvoiceId, { dueInDays: this.issueDueInDays });
+    if (!isDocumentTermsFormValid(this.issueTermsForm)) return;
+
+    const { paymentDueDays, ...deliveryTerms } = documentTermsFormToInput(this.issueTermsForm);
+
+    this.invoiceManagerFacade.issueManualInvoice(this.issueInvoiceId, { dueInDays: paymentDueDays, ...deliveryTerms });
   }
 
   confirmDelete(): void {
@@ -2015,7 +2033,12 @@ export class AdminBillingPageComponent implements OnInit {
       taxTotal: detail.taxTotal,
       totalGross: detail.totalGross,
       balanceDue: detail.balanceDue,
+      terms: detail,
     };
+  }
+
+  isIssueTermsFormValid(): boolean {
+    return isDocumentTermsFormValid(this.issueTermsForm);
   }
 
   private mapSupplierPreview(detail: SupplierInvoiceDetailResponse): InvoicePreviewView {

@@ -5,6 +5,7 @@ import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constan
 import { isAutoPaymentBlocking } from '../constants/auto-payment-status.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 import type { InvoiceDetailResponseDto } from '../dto/invoice-detail-response.dto';
+import { mapDocumentTermsToResponse } from '../dto/document-terms.dto';
 import type { InvoiceResponseDto } from '../dto/invoice-response.dto';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import type { InvoicePromotionApplicationDraft } from '../dto/promotion.dto';
@@ -300,6 +301,7 @@ export class InvoiceService {
       taxBreakdown: Array.from(taxByKey.values()),
       issuedAt: invoice.issuedAt,
       dueDate: invoice.dueDate,
+      ...mapDocumentTermsToResponse(invoice),
       paidAt: invoice.paidAt ?? null,
       createdAt: invoice.createdAt,
       autoPaymentStatus: invoice.autoPaymentStatus,

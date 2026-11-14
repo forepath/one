@@ -1,7 +1,9 @@
+import { DeliveryTermsCode } from '../constants/document-terms.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 
+import { BillingDocumentTermsConfigService } from './billing-document-terms-config.service';
 import { InvoiceIssuanceService } from './invoice-issuance.service';
 
 describe('InvoiceIssuanceService', () => {
@@ -75,6 +77,7 @@ describe('InvoiceIssuanceService', () => {
     publishSubscription: jest.fn(),
     publish: jest.fn(),
   };
+  const documentTermsConfig = new BillingDocumentTermsConfigService();
   const service = new InvoiceIssuanceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -94,6 +97,7 @@ describe('InvoiceIssuanceService', () => {
     invoiceTaxContextService as never,
     ossThresholdService as never,
     billingSearchIndexService as never,
+    documentTermsConfig,
   );
   const draftInvoice = {
     id: 'inv-1',
@@ -287,9 +291,147 @@ describe('InvoiceIssuanceService', () => {
   });
 
   it('skips invoice email when skipNotification is set', async () => {
-    await service.issueDraft('inv-1', 14, { skipNotification: true });
+    await service.issueDraft('inv-1', { skipNotification: true });
 
     expect(billingEmailPublisher.publishInvoiceIssued).not.toHaveBeenCalled();
+  });
+
+  describe('payment and delivery terms', () => {
+    const updatePatch = (): Partial<InvoiceEntity> =>
+      (invoicesRepository.update.mock.calls[0] as [string, Partial<InvoiceEntity>])[1];
+    const daysUntilDue = (patch: Partial<InvoiceEntity>): number =>
+      Math.round(((patch.dueDate as Date).getTime() - (patch.issuedAt as Date).getTime()) / 86_400_000);
+
+    afterEach(() => {
+      delete process.env.BILLING_DEFAULT_PAYMENT_DUE_DAYS;
+      delete process.env.BILLING_DEFAULT_DELIVERY_TERMS_CODE;
+      delete process.env.BILLING_DEFAULT_DELIVERY_TERMS_PLACE;
+      documentTermsConfig.onModuleInit();
+    });
+
+    it('falls back to 14 days and no delivery terms without plan or global settings', async () => {
+      documentTermsConfig.onModuleInit();
+
+      await service.issueDraft('inv-1');
+
+      expect(updatePatch()).toEqual(
+        expect.objectContaining({
+          paymentDueDays: 14,
+          deliveryTermsCode: null,
+          deliveryTermsPlace: null,
+          deliveryTermsText: null,
+        }),
+      );
+      expect(daysUntilDue(updatePatch())).toBe(14);
+    });
+
+    it('uses the global default when the plan leaves terms empty', async () => {
+      process.env.BILLING_DEFAULT_PAYMENT_DUE_DAYS = '21';
+      process.env.BILLING_DEFAULT_DELIVERY_TERMS_CODE = 'exw';
+      process.env.BILLING_DEFAULT_DELIVERY_TERMS_PLACE = 'Munich';
+      documentTermsConfig.onModuleInit();
+
+      await service.issueDraft('inv-1');
+
+      expect(updatePatch()).toEqual(
+        expect.objectContaining({
+          paymentDueDays: 21,
+          deliveryTermsCode: DeliveryTermsCode.EXW,
+          deliveryTermsPlace: 'Munich',
+        }),
+      );
+      expect(daysUntilDue(updatePatch())).toBe(21);
+    });
+
+    it('applies the subscription plan terms over the global default', async () => {
+      process.env.BILLING_DEFAULT_PAYMENT_DUE_DAYS = '21';
+      documentTermsConfig.onModuleInit();
+      servicePlansRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'plan-1',
+        billingIntervalType: 'month',
+        billingIntervalValue: 1,
+        paymentDueDays: 30,
+        deliveryTermsCode: DeliveryTermsCode.DAP,
+        deliveryTermsPlace: 'Berlin',
+        deliveryTermsText: null,
+      });
+
+      await service.issueDraft('inv-1');
+
+      expect(updatePatch()).toEqual(
+        expect.objectContaining({
+          paymentDueDays: 30,
+          deliveryTermsCode: DeliveryTermsCode.DAP,
+          deliveryTermsPlace: 'Berlin',
+          deliveryTermsText: null,
+        }),
+      );
+      expect(daysUntilDue(updatePatch())).toBe(30);
+    });
+
+    it('applies document overrides per facet over the plan', async () => {
+      servicePlansRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'plan-1',
+        billingIntervalType: 'month',
+        billingIntervalValue: 1,
+        paymentDueDays: 30,
+        deliveryTermsCode: DeliveryTermsCode.DAP,
+        deliveryTermsPlace: 'Berlin',
+      });
+
+      await service.issueDraft('inv-1', {
+        terms: {
+          paymentDueDays: null,
+          deliveryTerms: { code: DeliveryTermsCode.CUSTOM, place: null, text: 'Online access' },
+        },
+      });
+
+      expect(updatePatch()).toEqual(
+        expect.objectContaining({
+          paymentDueDays: 30,
+          deliveryTermsCode: DeliveryTermsCode.CUSTOM,
+          deliveryTermsPlace: null,
+          deliveryTermsText: 'Online access',
+        }),
+      );
+    });
+
+    it('allows payable immediately (0 days)', async () => {
+      await service.issueDraft('inv-1', { terms: { paymentDueDays: 0 } });
+
+      expect(updatePatch()).toEqual(expect.objectContaining({ paymentDueDays: 0 }));
+      expect(daysUntilDue(updatePatch())).toBe(0);
+    });
+
+    it('keeps delivery terms but drops payment terms on a promotional zero-balance invoice', async () => {
+      invoicesRepository.findByIdOrThrow.mockResolvedValue({ ...draftInvoice, balanceDue: 0 } as InvoiceEntity);
+      invoicesRepository.update.mockReset();
+      invoicesRepository.update.mockImplementation(async (_id: string, patch: Partial<InvoiceEntity>) => ({
+        ...draftInvoice,
+        ...patch,
+      }));
+
+      await service.issueDraft('inv-1', {
+        terms: { deliveryTerms: { code: DeliveryTermsCode.CUSTOM, place: null, text: 'Online access' } },
+      });
+
+      expect(updatePatch()).toEqual(
+        expect.objectContaining({
+          status: InvoiceStatus.PAID,
+          dueDate: undefined,
+          paymentDueDays: null,
+          deliveryTermsCode: DeliveryTermsCode.CUSTOM,
+          deliveryTermsText: 'Online access',
+        }),
+      );
+    });
+
+    it('resolves the plan before allocating an invoice number', async () => {
+      servicePlansRepository.findByIdOrThrow.mockRejectedValue(new Error('plan missing'));
+
+      await expect(service.issueDraft('inv-1')).rejects.toThrow('plan missing');
+      expect(invoiceNumberSequencesRepository.nextInvoiceNumber).not.toHaveBeenCalled();
+    });
   });
 
   it('throws when invoice is not a draft', async () => {

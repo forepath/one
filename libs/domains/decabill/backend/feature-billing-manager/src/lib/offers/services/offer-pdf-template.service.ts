@@ -10,6 +10,7 @@ import { loadOfferPdfTemplate } from '../templates/offer-pdf-template.loader';
 import { resolveCountryDisplayName } from '../../utils/country-display-name.util';
 import type { BillingIssuerConfig } from '../../services/billing-issuer-config.service';
 import { formatAmount, formatDate, toAmount } from '../../services/invoice-pdf-amount.util';
+import { deliveryTermsFromColumns, formatDeliveryTerms, formatPaymentTerms } from '../../utils/document-terms.utils';
 import type { OfferPdfPresentationOptions } from './offer-pdf-presentation.util';
 import { buildOfferPdfPresentation } from './offer-pdf-presentation.util';
 
@@ -52,6 +53,9 @@ export interface OfferPdfViewModel {
   balanceDue: string;
   taxNote?: string;
   taxModeLabel?: string;
+  paymentTerms?: string;
+  deliveryTerms?: string;
+  showDocumentTerms: boolean;
   authenticityShortSha?: string;
 }
 
@@ -80,6 +84,9 @@ export class OfferPdfTemplateService {
     presentation: OfferPdfPresentationOptions = buildOfferPdfPresentation(offer),
     authenticityShortSha?: string,
   ): OfferPdfViewModel {
+    const paymentTerms = formatPaymentTerms(offer.paymentDueDays);
+    const deliveryTerms = formatDeliveryTerms(deliveryTermsFromColumns(offer));
+
     return {
       documentTitle: presentation.documentTitle,
       documentNumberLabel: presentation.documentNumberLabel,
@@ -109,6 +116,9 @@ export class OfferPdfTemplateService {
       balanceDue: '0.00',
       taxNote: offer.taxNote?.trim() || undefined,
       taxModeLabel: offer.taxMode?.replace(/_/g, ' ') || undefined,
+      ...(paymentTerms ? { paymentTerms } : {}),
+      ...(deliveryTerms ? { deliveryTerms } : {}),
+      showDocumentTerms: Boolean(paymentTerms || deliveryTerms),
       ...(authenticityShortSha ? { authenticityShortSha } : {}),
     };
   }
@@ -186,6 +196,10 @@ export function mapOfferToInvoiceDocument(offer: OfferEntity): InvoiceEntity {
     buyerCustomerType: offer.buyerCustomerType,
     issuerCountry: offer.issuerCountry,
     issuerIsInEu: offer.issuerIsInEu,
+    paymentDueDays: offer.paymentDueDays ?? null,
+    deliveryTermsCode: offer.deliveryTermsCode ?? null,
+    deliveryTermsPlace: offer.deliveryTermsPlace ?? null,
+    deliveryTermsText: offer.deliveryTermsText ?? null,
     invoiceNumber: offer.offerNumber ?? undefined,
     issuedAt: offer.archivedAt ?? undefined,
     createdAt: offer.createdAt,

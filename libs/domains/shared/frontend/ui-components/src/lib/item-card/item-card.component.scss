@@ -15,7 +15,14 @@
   padding: 0.75rem 1rem;
 }
 
-// The padding closes the box: no trailing form-field / row margin below the last child.
+// The padding closes the box: no trailing form-field / row margin below the last child. `!important` so that
+// Bootstrap spacing utilities on that child (e.g. `mb-2` on the last of a check list) do not reopen the gap.
 :host ::ng-deep .fpc-item-card__body > :last-child {
-  margin-bottom: 0;
+  margin-bottom: 0 !important;
+}
+
+// A body that only holds a closed collapse (e.g. a section toggled by a header action) has no padding, so the
+// collapsed card ends at its header instead of showing an empty strip.
+:host ::ng-deep .fpc-item-card__body:has(> .collapse:only-child:not(.show)) {
+  padding: 0;
 }

@@ -16,7 +16,7 @@ import {
   buildPartialCreditNoteNumber,
   buildZeroBalancePromotionalInvoiceDocumentOptions,
 } from './e-invoice-document-options';
-import { EInvoiceEmbedService } from './e-invoice-embed.service';
+import { EInvoiceEmbedService, type FacturXDocumentMetadata } from './e-invoice-embed.service';
 import { EInvoiceXmlService } from './e-invoice-xml.service';
 import { InvoicePdfHtmlRendererService } from './invoice-pdf-html-renderer.service';
 import {
@@ -29,6 +29,15 @@ import type { InvoicingPeriod } from './invoicing-period.util';
 import { buildInvoicePdfStorageKey } from '../utils/invoice-pdf-storage.util';
 import { InvoicePromotionApplicationsRepository } from '../repositories/invoice-promotion-applications.repository';
 import { StoredFileRegistryService } from './stored-file-registry.service';
+
+/** Factur-X title / author: "Invoice INV-2026-00001", issuer name. */
+export function facturXMetadata(
+  documentTitle: string,
+  documentNumber: string,
+  issuer: Pick<BillingIssuerConfig, 'name'>,
+): FacturXDocumentMetadata {
+  return { title: `${documentTitle} ${documentNumber}`, author: issuer.name };
+}
 
 export interface VoidDocumentGenerationResult {
   storageKey: string;
@@ -73,15 +82,17 @@ export class InvoicePdfService {
     );
     const storageKey = buildInvoicePdfStorageKey(invoice, '.pdf');
     const authenticityShortSha = await this.reserveAuthenticityShortSha(storageKey);
-    const pdfBytes = await this.renderPdf(
-      invoice,
-      lineItems,
-      issuer,
-      buyer,
-      buildInvoicePdfPresentation(invoice, { zeroBalancePromotional }),
-      authenticityShortSha,
+    const presentation = buildInvoicePdfPresentation(invoice, {
+      zeroBalancePromotional,
+      servicePeriod: invoicingPeriod,
+      includePaymentQr: true,
+    });
+    const pdfBytes = await this.renderPdf(invoice, lineItems, issuer, buyer, presentation, authenticityShortSha);
+    const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(
+      pdfBytes,
+      xml,
+      facturXMetadata(presentation.documentTitle, presentation.documentNumber, issuer),
     );
-    const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
 
     const content = Buffer.from(embedded);
     await this.fileStorage.writeCustomerInvoiceFile(storageKey, content);
@@ -121,11 +132,20 @@ export class InvoicePdfService {
       invoicingPeriod,
       documentOptions,
     );
-    const presentation = buildCreditNotePdfPresentation(documentNumber, voidedAt, originalInvoiceNumber);
+    const presentation = buildCreditNotePdfPresentation(
+      documentNumber,
+      voidedAt,
+      originalInvoiceNumber,
+      invoicingPeriod,
+    );
     const storageKey = buildInvoicePdfStorageKey(invoice, '-void.pdf');
     const authenticityShortSha = await this.reserveAuthenticityShortSha(storageKey);
     const pdfBytes = await this.renderPdf(invoice, lineItems, issuer, buyer, presentation, authenticityShortSha);
-    const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
+    const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(
+      pdfBytes,
+      xml,
+      facturXMetadata(presentation.documentTitle, documentNumber, issuer),
+    );
 
     const content = Buffer.from(embedded);
     await this.fileStorage.writeCustomerInvoiceFile(storageKey, content);
@@ -172,6 +192,15 @@ export class InvoicePdfService {
       lineTax: Math.round((creditGross - creditNet) * 100) / 100,
       lineGross: creditGross,
     } as InvoiceLineItemEntity;
+    // Header totals of the credit note are the credited amounts, not the original invoice's (BR-CO-10/13/15/16).
+    const creditDocument = {
+      ...invoice,
+      subtotalNet: creditNet,
+      taxTotal: syntheticLine.lineTax,
+      totalGross: creditGross,
+      balanceDue: creditGross,
+      resolvedTaxRate: syntheticLine.taxRate,
+    } as InvoiceEntity;
     const documentOptions = buildPartialCreditNoteDocumentOptions(
       documentNumber,
       issuedAt,
@@ -179,7 +208,7 @@ export class InvoicePdfService {
       creditGross,
     );
     const xml = this.eInvoiceXmlService.buildEn16931Xml(
-      invoice,
+      creditDocument,
       [syntheticLine],
       issuer,
       buyer,
@@ -192,11 +221,23 @@ export class InvoicePdfService {
       issuedAt,
       originalInvoiceNumber,
       creditGross,
+      invoicingPeriod,
     );
     const storageKey = buildInvoicePdfStorageKey(invoice, `-credit-${suffix}.pdf`);
     const authenticityShortSha = await this.reserveAuthenticityShortSha(storageKey);
-    const pdfBytes = await this.renderPdf(invoice, [syntheticLine], issuer, buyer, presentation, authenticityShortSha);
-    const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
+    const pdfBytes = await this.renderPdf(
+      creditDocument,
+      [syntheticLine],
+      issuer,
+      buyer,
+      presentation,
+      authenticityShortSha,
+    );
+    const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(
+      pdfBytes,
+      xml,
+      facturXMetadata(presentation.documentTitle, documentNumber, issuer),
+    );
 
     const content = Buffer.from(embedded);
     await this.fileStorage.writeCustomerInvoiceFile(storageKey, content);

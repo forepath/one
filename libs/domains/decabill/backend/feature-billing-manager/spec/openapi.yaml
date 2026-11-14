@@ -6586,6 +6586,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BillingStatisticsByCountry'
+  /admin/billing/document-terms/defaults:
+    get:
+      tags: [Admin Billing]
+      summary: Global default payment and delivery terms
+      description: Resolved `BILLING_DEFAULT_PAYMENT_DUE_DAYS` / `BILLING_DEFAULT_DELIVERY_TERMS_*`; shown as the inherited value in admin forms (admin only).
+      operationId: getDocumentTermsDefaults
+      security:
+        - bearerAuth: [billing:admin]
+      responses:
+        '200':
+          description: Default terms
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EffectiveDocumentTerms'
   /admin/billing/capabilities:
     get:
       tags: [Admin Billing]
@@ -9271,6 +9286,45 @@ components:
           description: Indicates which platform env overrides are configured (never returns secret values).
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+    PaymentDueDays:
+      type: integer
+      minimum: 0
+      maximum: 365
+      nullable: true
+      description: Payment terms — payable within N days of the invoice date (0 = immediately). Null inherits (service plan → BILLING_DEFAULT_PAYMENT_DUE_DAYS, default 14).
+    DeliveryTermsCode:
+      type: string
+      enum: [EXW, FCA, CPT, CIP, DAP, DPU, DDP, FAS, FOB, CFR, CIF, CUSTOM]
+      nullable: true
+      description: Delivery terms — an Incoterms® 2020 rule, or CUSTOM for free text (digital goods/services). Null inherits (service plan → BILLING_DEFAULT_DELIVERY_TERMS_*).
+    DeliveryTermsPlace:
+      type: string
+      maxLength: 255
+      nullable: true
+      description: Named place for an Incoterms rule (ignored for CUSTOM).
+    DeliveryTermsText:
+      type: string
+      maxLength: 1000
+      nullable: true
+      description: Free-text delivery terms; required when deliveryTermsCode is CUSTOM (ignored otherwise).
+    EffectiveDocumentTerms:
+      type: object
+      description: Terms after the cascade (document / service plan → global default). Payment terms are always set.
+      required:
+        [
+          paymentDueDays,
+          deliveryTermsCode,
+          deliveryTermsPlace,
+          deliveryTermsText,
+        ]
+      properties:
+        paymentDueDays: { type: integer, minimum: 0, maximum: 365 }
+        deliveryTermsCode:
+          $ref: '#/components/schemas/DeliveryTermsCode'
+        deliveryTermsPlace:
+          $ref: '#/components/schemas/DeliveryTermsPlace'
+        deliveryTermsText:
+          $ref: '#/components/schemas/DeliveryTermsText'
     ServicePlanOrderingHighlight:
       type: object
       required: [icon, text]
@@ -9469,6 +9523,8 @@ components:
           description: Provider ids available for customer selection when allowCustomerProviderSelection is true.
         withdrawalPolicy:
           $ref: '#/components/schemas/WithdrawalPolicy'
+        effectiveDocumentTerms:
+          $ref: '#/components/schemas/EffectiveDocumentTerms'
     CreateServicePlanDto:
       type: object
       required: [name, billingIntervalType, billingIntervalValue]
@@ -9557,6 +9613,14 @@ components:
           type: string
           enum: [standard, reduced]
           description: VAT category applied to automated subscription charges for this plan
+        paymentDueDays:
+          $ref: '#/components/schemas/PaymentDueDays'
+        deliveryTermsCode:
+          $ref: '#/components/schemas/DeliveryTermsCode'
+        deliveryTermsPlace:
+          $ref: '#/components/schemas/DeliveryTermsPlace'
+        deliveryTermsText:
+          $ref: '#/components/schemas/DeliveryTermsText'
     UpdateServicePlanDto:
       type: object
       properties:
@@ -9602,6 +9666,14 @@ components:
         taxCategory:
           type: string
           enum: [standard, reduced]
+        paymentDueDays:
+          $ref: '#/components/schemas/PaymentDueDays'
+        deliveryTermsCode:
+          $ref: '#/components/schemas/DeliveryTermsCode'
+        deliveryTermsPlace:
+          $ref: '#/components/schemas/DeliveryTermsPlace'
+        deliveryTermsText:
+          $ref: '#/components/schemas/DeliveryTermsText'
     ServicePlanResponse:
       type: object
       properties:
@@ -9656,6 +9728,16 @@ components:
         taxCategory:
           type: string
           enum: [standard, reduced]
+        paymentDueDays:
+          $ref: '#/components/schemas/PaymentDueDays'
+        deliveryTermsCode:
+          $ref: '#/components/schemas/DeliveryTermsCode'
+        deliveryTermsPlace:
+          $ref: '#/components/schemas/DeliveryTermsPlace'
+        deliveryTermsText:
+          $ref: '#/components/schemas/DeliveryTermsText'
+        effectiveDocumentTerms:
+          $ref: '#/components/schemas/EffectiveDocumentTerms'
         isActive: { type: boolean }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
@@ -10822,6 +10904,14 @@ components:
             $ref: '#/components/schemas/InvoiceTaxBreakdown'
         issuedAt: { type: string, format: date-time, nullable: true }
         dueDate: { type: string, format: date, nullable: true }
+        paymentDueDays:
+          $ref: '#/components/schemas/PaymentDueDays'
+        deliveryTermsCode:
+          $ref: '#/components/schemas/DeliveryTermsCode'
+        deliveryTermsPlace:
+          $ref: '#/components/schemas/DeliveryTermsPlace'
+        deliveryTermsText:
+          $ref: '#/components/schemas/DeliveryTermsText'
         paidAt: { type: string, format: date-time, nullable: true }
         createdAt: { type: string, format: date-time }
         canPay: { type: boolean }
@@ -11597,8 +11687,15 @@ components:
             $ref: '#/components/schemas/ManualInvoiceLineItemDto'
     IssueManualInvoiceDto:
       type: object
+      description: Payment terms (dueInDays) and delivery terms for this invoice; omitted values inherit (subscription service plan → global default).
       properties:
-        dueInDays: { type: integer, minimum: 1 }
+        dueInDays: { type: integer, minimum: 0, maximum: 365, nullable: true }
+        deliveryTermsCode:
+          $ref: '#/components/schemas/DeliveryTermsCode'
+        deliveryTermsPlace:
+          $ref: '#/components/schemas/DeliveryTermsPlace'
+        deliveryTermsText:
+          $ref: '#/components/schemas/DeliveryTermsText'
     ManualInvoiceDetailResponse:
       allOf:
         - $ref: '#/components/schemas/InvoiceDetailResponse'
@@ -12657,6 +12754,14 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/OfferLineInputDto'
+        paymentDueDays:
+          $ref: '#/components/schemas/PaymentDueDays'
+        deliveryTermsCode:
+          $ref: '#/components/schemas/DeliveryTermsCode'
+        deliveryTermsPlace:
+          $ref: '#/components/schemas/DeliveryTermsPlace'
+        deliveryTermsText:
+          $ref: '#/components/schemas/DeliveryTermsText'
     UpdateAdminOfferDto:
       allOf:
         - $ref: '#/components/schemas/CreateAdminOfferDto'
@@ -12713,6 +12818,16 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/AdminOfferLineResponseDto'
+            paymentDueDays:
+              $ref: '#/components/schemas/PaymentDueDays'
+            deliveryTermsCode:
+              $ref: '#/components/schemas/DeliveryTermsCode'
+            deliveryTermsPlace:
+              $ref: '#/components/schemas/DeliveryTermsPlace'
+            deliveryTermsText:
+              $ref: '#/components/schemas/DeliveryTermsText'
+            effectiveDocumentTerms:
+              $ref: '#/components/schemas/EffectiveDocumentTerms'
     PaginatedAdminOffersResponseDto:
       type: object
       properties:
@@ -12792,6 +12907,14 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/AdminOfferLineResponseDto'
+            paymentDueDays:
+              $ref: '#/components/schemas/PaymentDueDays'
+            deliveryTermsCode:
+              $ref: '#/components/schemas/DeliveryTermsCode'
+            deliveryTermsPlace:
+              $ref: '#/components/schemas/DeliveryTermsPlace'
+            deliveryTermsText:
+              $ref: '#/components/schemas/DeliveryTermsText'
     CreateAdminPromotionDto:
       type: object
       required:

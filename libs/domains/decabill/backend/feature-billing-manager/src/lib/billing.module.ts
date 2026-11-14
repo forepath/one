@@ -239,6 +239,7 @@ import { StoredFileRegistryService } from './services/stored-file-registry.servi
 import { StoredFileSigningConfigService } from './services/stored-file-signing-config.service';
 import { StoredFilesBackfillJobHandler } from './services/stored-files-backfill.job-handler';
 import { TenantsGlobalViewsConfigService } from './services/tenants-global-views-config.service';
+import { BillingDocumentTermsConfigService } from './services/billing-document-terms-config.service';
 import { BillingIssuerConfigService } from './services/billing-issuer-config.service';
 import { BillingScheduleService } from './services/billing-schedule.service';
 import { BillingStatisticsQueryService } from './services/billing-statistics-query.service';
@@ -511,6 +512,7 @@ import { TrustScoreProviderRegistry } from './trust-score/trust-score-provider.r
     InvoiceTaxContextService,
     TaxPreviewService,
     BillingIssuerConfigService,
+    BillingDocumentTermsConfigService,
     AdminBillNowEnqueueAdapter,
     DatevExportEnqueueAdapter,
     PlanPriceMigrateEnqueueAdapter,

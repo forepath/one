@@ -135,7 +135,7 @@ export class ProjectBillingService {
       lineInputs,
     });
 
-    const issued = await this.invoiceIssuanceService.issueDraft(draft.id, 14, { skipNotification: true });
+    const issued = await this.invoiceIssuanceService.issueDraft(draft.id, { skipNotification: true });
     const billedAt = new Date();
     const markedCount = await this.timeEntriesRepository.markBilled(
       projectId,

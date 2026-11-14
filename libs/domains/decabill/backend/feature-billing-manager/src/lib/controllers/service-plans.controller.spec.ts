@@ -1,3 +1,5 @@
+import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
+import { DeliveryTermsCode } from '../constants/document-terms.constants';
 import { BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
@@ -148,6 +150,7 @@ describe('ServicePlansController', () => {
         { provide: WithdrawalPolicyService, useValue: new WithdrawalPolicyService() },
         { provide: ContainerManagerCatalogService, useValue: containerManagerCatalogServiceStub },
         { provide: BillingNotificationPublisher, useValue: notificationPublisherStub },
+        BillingDocumentTermsConfigService,
         { provide: PLAN_PRICE_MIGRATE_ENQUEUE, useValue: planPriceMigrateEnqueueStub },
       ],
     }).compile();
@@ -233,6 +236,136 @@ describe('ServicePlansController', () => {
       orderingHighlights: highlights,
     } as CreateServicePlanDto);
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ orderingHighlights: highlights }));
+  });
+
+  describe('payment and delivery terms', () => {
+    const setup = async (existing: Partial<ServicePlanEntity> = {}) => {
+      const create = jest
+        .fn()
+        .mockImplementation((dto: Partial<ServicePlanEntity>) => Promise.resolve({ ...basePlanRow, ...dto }));
+      const update = jest
+        .fn()
+        .mockImplementation((_id: string, dto: Partial<ServicePlanEntity>) =>
+          Promise.resolve({ ...basePlanRow, ...existing, ...dto }),
+        );
+      const moduleRef = await setupRepositoryMock({
+        findAll: jest.fn(),
+        findByIdOrThrow: jest.fn().mockResolvedValue({ ...basePlanRow, ...existing }),
+        create,
+        update,
+        delete: jest.fn(),
+      });
+
+      return { controller: moduleRef.get(ServicePlansController), create, update };
+    };
+
+    it('create stores normalized overrides and returns effective terms', async () => {
+      const { controller, create } = await setup();
+      const result = await controller.create({
+        serviceTypeId: basePlanRow.serviceTypeId,
+        name: 'Basic',
+        billingIntervalType: BillingIntervalType.MONTH,
+        billingIntervalValue: 1,
+        paymentDueDays: 0,
+        deliveryTermsCode: DeliveryTermsCode.CUSTOM,
+        deliveryTermsPlace: 'dropped',
+        deliveryTermsText: ' Online access\u0000 ',
+      } as CreateServicePlanDto);
+
+      expect(create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          paymentDueDays: 0,
+          deliveryTermsCode: DeliveryTermsCode.CUSTOM,
+          deliveryTermsPlace: null,
+          deliveryTermsText: 'Online access',
+        }),
+      );
+      expect(result.effectiveDocumentTerms).toEqual({
+        paymentDueDays: 0,
+        deliveryTermsCode: DeliveryTermsCode.CUSTOM,
+        deliveryTermsPlace: null,
+        deliveryTermsText: 'Online access',
+      });
+    });
+
+    it('create without terms inherits the global default', async () => {
+      const { controller, create } = await setup();
+      const result = await controller.create({
+        serviceTypeId: basePlanRow.serviceTypeId,
+        name: 'Basic',
+        billingIntervalType: BillingIntervalType.MONTH,
+        billingIntervalValue: 1,
+      } as CreateServicePlanDto);
+
+      expect(create).toHaveBeenCalledWith(
+        expect.objectContaining({ paymentDueDays: null, deliveryTermsCode: null, deliveryTermsText: null }),
+      );
+      expect(result.paymentDueDays).toBeNull();
+      expect(result.effectiveDocumentTerms.paymentDueDays).toBe(14);
+    });
+
+    it('create rejects CUSTOM delivery terms without text', async () => {
+      const { controller, create } = await setup();
+
+      await expect(
+        controller.create({
+          serviceTypeId: basePlanRow.serviceTypeId,
+          name: 'Basic',
+          billingIntervalType: BillingIntervalType.MONTH,
+          billingIntervalValue: 1,
+          deliveryTermsCode: DeliveryTermsCode.CUSTOM,
+        } as CreateServicePlanDto),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(create).not.toHaveBeenCalled();
+    });
+
+    it('update leaves terms untouched when omitted', async () => {
+      const { controller, update } = await setup({ paymentDueDays: 30, deliveryTermsCode: DeliveryTermsCode.DAP });
+
+      await controller.update('11111111-1111-4111-8111-111111111111', { name: 'Renamed' } as UpdateServicePlanDto);
+
+      const patch = update.mock.calls[0][1] as Partial<ServicePlanEntity>;
+
+      expect('paymentDueDays' in patch).toBe(false);
+      expect('deliveryTermsCode' in patch).toBe(false);
+    });
+
+    it('update merges a partial delivery change with the stored code', async () => {
+      const { controller, update } = await setup({
+        deliveryTermsCode: DeliveryTermsCode.DAP,
+        deliveryTermsPlace: 'Berlin',
+      });
+
+      await controller.update('11111111-1111-4111-8111-111111111111', {
+        deliveryTermsPlace: 'Hamburg',
+      } as UpdateServicePlanDto);
+
+      expect(update.mock.calls[0][1]).toEqual(
+        expect.objectContaining({
+          deliveryTermsCode: DeliveryTermsCode.DAP,
+          deliveryTermsPlace: 'Hamburg',
+          deliveryTermsText: null,
+        }),
+      );
+    });
+
+    it('update clears overrides with null', async () => {
+      const { controller, update } = await setup({ paymentDueDays: 30, deliveryTermsCode: DeliveryTermsCode.DAP });
+
+      await controller.update('11111111-1111-4111-8111-111111111111', {
+        paymentDueDays: null,
+        deliveryTermsCode: null,
+      } as UpdateServicePlanDto);
+
+      expect(update.mock.calls[0][1]).toEqual(
+        expect.objectContaining({
+          paymentDueDays: null,
+          deliveryTermsCode: null,
+          deliveryTermsPlace: null,
+          deliveryTermsText: null,
+        }),
+      );
+    });
   });
 
   it('update omits orderingHighlights when dto does not include it', async () => {

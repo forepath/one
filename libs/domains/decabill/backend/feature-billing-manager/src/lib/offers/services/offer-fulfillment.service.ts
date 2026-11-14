@@ -15,6 +15,7 @@ import { SubscriptionService } from '../../services/subscription.service';
 import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import { ProjectsAdminService } from '../../projects/services/projects-admin.service';
 import type { CreateAdminProjectDto } from '../../projects/dto/project.dto';
+import { documentTermsLayerFromFields } from '../../utils/document-terms.utils';
 import { SubscriptionOrderPreparationService } from './subscription-order-preparation.service';
 
 @Injectable()
@@ -230,7 +231,10 @@ export class OfferFulfillmentService {
       });
 
       await this.offersRepository.update(offer.id, {});
-      const issued = await this.invoiceIssuanceService.issueDraft(draft.id);
+      // The accepted offer's (frozen) payment / delivery terms carry over to its invoice.
+      const issued = await this.invoiceIssuanceService.issueDraft(draft.id, {
+        terms: documentTermsLayerFromFields(offer),
+      });
 
       for (const line of lines) {
         await this.completeLine(offer, line, { resultInvoiceId: issued.id });

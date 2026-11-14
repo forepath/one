@@ -1,6 +1,11 @@
 import { OfferLineType } from '../constants/offer-line-type.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
 
+import { BadRequestException } from '@nestjs/common';
+
+import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
+import { DeliveryTermsCode } from '../../constants/document-terms.constants';
+
 import { OffersAdminService } from './offers-admin.service';
 
 describe('OffersAdminService', () => {
@@ -75,6 +80,7 @@ describe('OffersAdminService', () => {
     offerArchiveService as never,
     billingNotificationPublisher as never,
     billingSearchIndexService as never,
+    new BillingDocumentTermsConfigService(),
   );
 
   beforeEach(() => {
@@ -153,6 +159,56 @@ describe('OffersAdminService', () => {
     expect(result.id).toBe('offer-1');
     expect(result.lineItems).toHaveLength(1);
     expect(result).toEqual(expect.objectContaining({ canPreview: false, canDownload: false }));
+  });
+
+  it('stores normalized payment / delivery terms on the draft and returns stored + effective terms', async () => {
+    const result = await service.create(
+      {
+        userId: 'user-1',
+        paymentDueDays: 30,
+        deliveryTermsCode: DeliveryTermsCode.DAP,
+        deliveryTermsPlace: '  Berlin  ',
+        deliveryTermsText: 'dropped for Incoterms',
+        lineItems: [
+          { lineType: OfferLineType.STANDARD, payload: { description: 'Consulting', quantity: 1, unitPriceNet: 100 } },
+        ],
+      },
+      'admin-1',
+    );
+
+    expect(offersRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentDueDays: 30,
+        deliveryTermsCode: DeliveryTermsCode.DAP,
+        deliveryTermsPlace: 'Berlin',
+        deliveryTermsText: null,
+      }),
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        paymentDueDays: null,
+        deliveryTermsCode: null,
+        effectiveDocumentTerms: {
+          paymentDueDays: 14,
+          deliveryTermsCode: null,
+          deliveryTermsPlace: null,
+          deliveryTermsText: null,
+        },
+      }),
+    );
+  });
+
+  it('rejects custom delivery terms without text', async () => {
+    await expect(
+      service.create({
+        userId: 'user-1',
+        deliveryTermsCode: DeliveryTermsCode.CUSTOM,
+        lineItems: [
+          { lineType: OfferLineType.STANDARD, payload: { description: 'Consulting', quantity: 1, unitPriceNet: 100 } },
+        ],
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(offersRepository.create).not.toHaveBeenCalled();
   });
 
   it('serves the stored PDF of a sent offer and flags it previewable / downloadable', async () => {

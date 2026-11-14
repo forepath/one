@@ -28,7 +28,7 @@ import {
   fpcRunBulk,
   type FpcMenuItem,
   type FpcTableColumn,
-  FpcListHeaderComponent,
+  FpcItemCardComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, firstValueFrom, skip, take } from 'rxjs';
 
@@ -117,7 +117,7 @@ const MIN_RANDOM_DEFAULT_LENGTH = 21;
   selector: 'framework-billing-cloud-init-configs-page',
   standalone: true,
   imports: [
-    FpcListHeaderComponent,
+    FpcItemCardComponent,
     CommonModule,
     FormsModule,
     MonacoEditorWrapperComponent,

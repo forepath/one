@@ -20,9 +20,11 @@ import {
 import { TaxCategory } from '../constants/tax-category.constants';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 
+import { DocumentTermsInputDto } from './document-terms.dto';
 import { ServicePlanOrderingHighlightDto } from './service-plan-ordering-highlight.dto';
 
-export class CreateServicePlanDto {
+/** Inherits optional payment / delivery terms (null = global default). */
+export class CreateServicePlanDto extends DocumentTermsInputDto {
   /** UUID of a catalog service type, or null/omitted for no deployment. */
   @IsOptional()
   @ValidateIf((_, value) => value != null && value !== '')

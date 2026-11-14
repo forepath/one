@@ -47,6 +47,7 @@ import type {
   TriggerDatevExportResponse,
 } from '../types/billing.types';
 import type { TaxPreviewRequestDto, TaxPreviewResponse } from '../types/billing.types';
+import type { EffectiveDocumentTerms } from '../types/document-terms.types';
 
 @Injectable({
   providedIn: 'root',
@@ -255,6 +256,11 @@ export class AdminBillingService {
 
   previewTax(dto: TaxPreviewRequestDto = {}): Observable<TaxPreviewResponse> {
     return this.http.post<TaxPreviewResponse>(`${this.apiUrl}/admin/billing/tax/preview`, dto);
+  }
+
+  /** Global default payment / delivery terms (inherited when plans, offers or manual invoices leave them empty). */
+  getDocumentTermsDefaults(): Observable<EffectiveDocumentTerms> {
+    return this.http.get<EffectiveDocumentTerms>(`${this.apiUrl}/admin/billing/document-terms/defaults`);
   }
 
   listDatevExports(params: AdminDatevExportListParams): Observable<PaginatedAdminDatevExportsResponse> {

@@ -16,6 +16,8 @@ import {
 
 import { TaxCategory } from '../../constants/tax-category.constants';
 import { CreateSubscriptionDto } from '../../dto/create-subscription.dto';
+import { DocumentTermsInputDto, EffectiveDocumentTermsResponseDto } from '../../dto/document-terms.dto';
+import { DeliveryTermsCode } from '../../constants/document-terms.constants';
 import { OfferLineType } from '../constants/offer-line-type.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
 
@@ -99,7 +101,11 @@ export class OfferLineInputDto {
   payload!: OfferStandardLineDto | OfferProjectTemplateLineDto | OfferPlanTemplateLineDto;
 }
 
-export class CreateAdminOfferDto {
+/**
+ * Payment / delivery terms (inherited from `DocumentTermsInputDto`): null/omitted uses the global default; the resolved
+ * terms are frozen onto the offer when it is archived and carry over to the invoice on acceptance.
+ */
+export class CreateAdminOfferDto extends DocumentTermsInputDto {
   @IsUUID('4')
   userId!: string;
 
@@ -174,6 +180,13 @@ export class AdminOfferDetailResponseDto extends AdminOfferListItemDto {
   lineItems!: AdminOfferLineResponseDto[];
   taxMode?: string | null;
   taxNote?: string | null;
+  /** Stored terms: overrides on drafts (null = global default), frozen terms once archived. */
+  paymentDueDays!: number | null;
+  deliveryTermsCode!: DeliveryTermsCode | null;
+  deliveryTermsPlace!: string | null;
+  deliveryTermsText!: string | null;
+  /** Terms printed on the offer / applied to its invoice (stored terms, else global default). */
+  effectiveDocumentTerms!: EffectiveDocumentTermsResponseDto;
 }
 
 export class PaginatedAdminOffersResponseDto {
@@ -230,4 +243,9 @@ export class CustomerOfferDetailResponseDto extends CustomerOfferListItemDto {
   taxTotal!: number;
   lineItems!: AdminOfferLineResponseDto[];
   billToOpenPositions!: boolean;
+  /** Payment / delivery terms of this offer (also applied to the invoice created on acceptance). */
+  paymentDueDays!: number;
+  deliveryTermsCode!: DeliveryTermsCode | null;
+  deliveryTermsPlace!: string | null;
+  deliveryTermsText!: string | null;
 }

@@ -127,7 +127,14 @@ export class SupplierInvoicesRepository {
       .leftJoinAndSelect('invoice.supplier', 'supplier')
       .andWhere('supplierFilter.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
       .andWhere('invoice.status IN (:...statuses)', {
-        statuses: [InvoiceStatus.ISSUED, InvoiceStatus.PAID, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.OVERDUE],
+        // Voided invoices keep their original booking; the cancellation is exported in the void period.
+        statuses: [
+          InvoiceStatus.ISSUED,
+          InvoiceStatus.PAID,
+          InvoiceStatus.PARTIALLY_PAID,
+          InvoiceStatus.OVERDUE,
+          InvoiceStatus.VOID,
+        ],
       })
       .andWhere('invoice.issue_date IS NOT NULL')
       .andWhere('invoice.issue_date >= :from', { from: from.toISOString().slice(0, 10) })

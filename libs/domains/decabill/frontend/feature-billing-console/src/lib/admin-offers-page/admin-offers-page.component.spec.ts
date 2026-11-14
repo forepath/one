@@ -2,6 +2,7 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import {
   AdminOffersFacade,
+  AdminBillingService,
   AdminOffersService,
   type AdminOfferListItem,
 } from '@forepath/decabill/frontend/data-access-billing-console';
@@ -72,6 +73,14 @@ describe('AdminOffersPageComponent (data list)', () => {
         DecimalPipe,
         { provide: AdminOffersFacade, useValue: facade },
         { provide: AdminOffersService, useValue: service },
+        {
+          provide: AdminBillingService,
+          useValue: {
+            getDocumentTermsDefaults: jest.fn(() =>
+              of({ paymentDueDays: 14, deliveryTermsCode: null, deliveryTermsPlace: null, deliveryTermsText: null }),
+            ),
+          },
+        },
       ],
     });
     component = TestBed.runInInjectionContext(() => new AdminOffersPageComponent());

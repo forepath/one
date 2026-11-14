@@ -1,10 +1,12 @@
 import { TaxCategory } from '../constants/tax-category.constants';
 import { BillingIntervalType, ServicePlanOrderingHighlight } from '../entities/service-plan.entity';
 
+import { DocumentTermsResponseDto, EffectiveDocumentTermsResponseDto } from './document-terms.dto';
 import { AttachedMeterResponseDto } from './meter-response.dto';
 import { WithdrawalPolicyDto } from './withdrawal-policy.dto';
 
-export class ServicePlanResponseDto {
+/** Terms fields are the plan's overrides (null = global default). */
+export class ServicePlanResponseDto extends DocumentTermsResponseDto {
   id!: string;
   serviceTypeId!: string | null;
   name!: string;
@@ -41,6 +43,8 @@ export class ServicePlanResponseDto {
    */
   allowedProviders!: string[];
   taxCategory!: TaxCategory;
+  /** Terms applied to this plan's invoices (plan override, else global default). */
+  effectiveDocumentTerms!: EffectiveDocumentTermsResponseDto;
   withdrawalPolicy!: WithdrawalPolicyDto;
   meters!: AttachedMeterResponseDto[];
   isActive!: boolean;

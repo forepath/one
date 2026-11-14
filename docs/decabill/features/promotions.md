@@ -39,7 +39,7 @@ Decabill marketing promotions let tenants define discount codes that customers r
 
 - `PromotionApplicationService` runs during invoice creation before totals finalize.
 - Invoices are issued when raw charges ≥ €0.01 even if promotions reduce the balance to zero.
-- Zero-balance promotional invoices are marked **paid** immediately and use e-invoice type code **325** (instead of **380**).
+- Zero-balance promotional invoices are marked **paid** immediately. They are regular invoices (e-invoice type code **380**) with the full total stated as prepaid (`TotalPrepaidAmount`) and nothing due.
 
 ## Related documentation
 
