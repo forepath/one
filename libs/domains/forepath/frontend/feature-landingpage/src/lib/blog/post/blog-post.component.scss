@@ -242,6 +242,19 @@
   margin-inline: auto;
 }
 
+.blog-post__feature-frame {
+  position: relative;
+}
+
+// The brand character hanging from the feature image's top-right corner.
+.blog-post__mascot {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  width: clamp(5rem, 10vw, 7.5rem);
+}
+
 .blog-post__feature-image {
   width: 100%;
   height: auto;

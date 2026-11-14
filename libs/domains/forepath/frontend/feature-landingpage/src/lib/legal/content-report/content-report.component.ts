@@ -33,10 +33,13 @@ import {
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { NgxTurnstileComponent, NgxTurnstileModule } from 'ngx-turnstile';
+import { SharedHeroMascotComponent, SharedMarkStackComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-forepath-legal-content-report',
   imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

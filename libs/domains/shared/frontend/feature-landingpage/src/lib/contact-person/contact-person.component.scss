@@ -63,6 +63,25 @@
   }
 }
 
+// Stacked on phones, centred like the rest of the page there: the quote mark above the centred
+// message, the signature (photo, name and role) in the middle under its card.
+@media (max-width: 575.98px) {
+  .shared-contact-person__card {
+    padding-inline: 1.5rem;
+    text-align: center;
+  }
+
+  .shared-contact-person__quote {
+    position: static;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .shared-contact-person__author {
+    justify-content: center;
+  }
+}
+
 .shared-contact-person__avatar {
   position: relative;
   flex-shrink: 0;

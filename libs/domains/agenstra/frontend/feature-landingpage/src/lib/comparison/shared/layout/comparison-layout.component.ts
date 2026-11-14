@@ -9,11 +9,19 @@ import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { PortalComparisonMatrixComponent } from '../matrix/comparison-matrix.component';
 import { PORTAL_COMPARISON_NAV_ITEMS } from '../misc/comparison-nav.items';
 import type { ComparisonPageConfig } from '../misc/comparison-page.model';
+import { SharedHeroMascotComponent, SharedMarkStackComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-portal-comparison-layout',
   standalone: true,
-  imports: [FpcButtonComponent, CommonModule, RouterModule, PortalComparisonMatrixComponent],
+  imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
+    FpcButtonComponent,
+    CommonModule,
+    RouterModule,
+    PortalComparisonMatrixComponent,
+  ],
   templateUrl: './comparison-layout.component.html',
   styleUrl: './comparison-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

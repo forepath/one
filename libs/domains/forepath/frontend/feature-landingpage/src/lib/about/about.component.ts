@@ -3,7 +3,12 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnIn
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
-import { SharedLogoGridComponent, type SharedLogoGridLogo } from '@forepath/shared/frontend/feature-landingpage';
+import {
+  SharedLogoGridComponent,
+  type SharedLogoGridLogo,
+  SharedHeroMascotComponent,
+  SharedMarkStackComponent,
+} from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
@@ -33,7 +38,15 @@ const PARTNER_LOGO_SLOTS: readonly (readonly SharedLogoGridLogo[])[] = [
 
 @Component({
   selector: 'framework-forepath-about',
-  imports: [FpcButtonComponent, CommonModule, RouterModule, SharedLogoGridComponent, EvolutionIllustrationComponent],
+  imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
+    FpcButtonComponent,
+    CommonModule,
+    RouterModule,
+    SharedLogoGridComponent,
+    EvolutionIllustrationComponent,
+  ],
   styleUrls: ['./about.component.scss'],
   templateUrl: './about.component.html',
   standalone: true,

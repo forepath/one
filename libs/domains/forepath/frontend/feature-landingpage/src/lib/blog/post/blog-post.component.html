@@ -75,11 +75,15 @@
 
         @if (currentPost.feature_image) {
           <figure class="blog-post__feature mb-5">
-            <img
-              [src]="currentPost.feature_image"
-              [alt]="currentPost.feature_image_alt || currentPost.title"
-              class="blog-post__feature-image"
-            />
+            <!-- The brand character hangs from the feature image's top-right corner. -->
+            <div class="blog-post__feature-frame">
+              <shared-hero-mascot brand="forepath" pose="corner" class="blog-post__mascot" />
+              <img
+                [src]="currentPost.feature_image"
+                [alt]="currentPost.feature_image_alt || currentPost.title"
+                class="blog-post__feature-image"
+              />
+            </div>
             @if (currentPost.feature_image_caption) {
               <figcaption
                 class="blog-post__feature-caption small text-muted mt-2"

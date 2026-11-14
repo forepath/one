@@ -36,9 +36,16 @@
           </fpc-button>
         </div>
       </div>
-      <!-- Fact cards, in the hero's bottom-right corner from lg up. -->
-      <div class="col-lg-5 d-none d-lg-block home-hero__visual">
-        <framework-forepath-hero-collage class="home-hero__collage" />
+      <!-- Fact cards: centred under the copy below lg, in the hero's bottom-right corner from lg up. -->
+      <div class="col-12 col-lg-5 home-hero__visual">
+        <div class="home-hero__collage">
+          <!-- The brand character: from xl up at the cards' bottom-left, pointing up at them; below xl
+               standing on the top card, at its right end (not hanging in front of it: the card is the
+               brand colour too), pointing down into the cards. -->
+          <shared-hero-mascot brand="forepath" class="home-hero__mascot" />
+          <shared-hero-mascot brand="forepath" pose="perch" class="home-hero__mascot-perch" />
+          <framework-forepath-hero-collage />
+        </div>
       </div>
     </div>
     @if (latestBlogPost(); as post) {

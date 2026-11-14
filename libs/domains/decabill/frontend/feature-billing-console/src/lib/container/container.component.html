@@ -1,7 +1,11 @@
 <fpc-loading-overlay [loading]="showStandaloneLoading()" [fixed]="true" spinnerSize="lg" [label]="loadingFileLabel" />
 
 @if (!fileOnlyMode()) {
-  <fpc-top-bar brandSrc="assets/images/icon_light.svg" [brandAlt]="productName">
+  <fpc-top-bar
+    brandSrc="assets/images/icon_light.svg"
+    [appearance]="(isAuthenticated$ | async) ? 'console' : 'landing'"
+    [brandAlt]="productName"
+  >
     @if (headerCustomerNumber(); as customerNumber) {
       <fpc-badge
         variant="info"

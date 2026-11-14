@@ -1,5 +1,5 @@
 import { InjectionToken } from '@angular/core';
-import type { AuthLayoutConfig, AuthMarketing } from '@forepath/shared/frontend/util-configuration';
+import type { AuthLayoutConfig } from '@forepath/shared/frontend/util-configuration';
 
 /**
  * Authentication configuration types.
@@ -96,8 +96,6 @@ export function usesExternalSignIn(type: AuthenticationConfigType | null | undef
 export interface IdentityAuthEnvironment {
   /** Product name shown on auth screens and in page titles. */
   productName: string;
-  /** Brand-specific copy for login, registration, and related auth screens. */
-  authMarketing: AuthMarketing;
   /** Layout options for login, registration, and related public auth screens. */
   authLayout?: AuthLayoutConfig;
   /** The base URL of the REST API (used to scope auth headers to API requests) */
@@ -127,6 +125,11 @@ export interface IdentityAuthEnvironment {
    * Used by registration UI when both this and {@link termsUrl} are set.
    */
   privacyPolicyUrl?: string;
+  /**
+   * Optional: Legal disclosure (imprint) URL (e.g. {@code environment.cookieConsent.urls.legalDisclosure}).
+   * Linked under the public auth pages' card, with the terms and privacy policy, when set.
+   */
+  legalDisclosureUrl?: string;
 }
 
 /**
@@ -153,9 +156,17 @@ export interface IdentityAuthEnvironment {
 export const IDENTITY_AUTH_ENVIRONMENT = new InjectionToken<IdentityAuthEnvironment>('IdentityAuthEnvironment');
 
 /**
- * Whether the left marketing panel should be shown on login-like pages.
- * Defaults to true when {@link AuthLayoutConfig.showMarketingPanel} is omitted.
+ * Whether the brand character should peek in on login-like pages.
+ * Defaults to true when {@link AuthLayoutConfig.showMascot} is omitted.
  */
-export function isAuthMarketingPanelVisible(authLayout?: AuthLayoutConfig): boolean {
-  return authLayout?.showMarketingPanel !== false;
+export function isAuthMascotVisible(authLayout?: AuthLayoutConfig): boolean {
+  return authLayout?.showMascot !== false;
+}
+
+/**
+ * Whether the brand mark stack should run off the corner of login-like pages.
+ * Defaults to true when {@link AuthLayoutConfig.showMarkStack} is omitted.
+ */
+export function isAuthMarkStackVisible(authLayout?: AuthLayoutConfig): boolean {
+  return authLayout?.showMarkStack !== false;
 }

@@ -14,13 +14,26 @@
   }
 }
 
+// The visual column: beside the copy from lg up, below it before that.
 .desktop-hero-visual {
-  min-height: 12rem;
+  @media (min-width: 992px) {
+    min-height: 12rem;
+  }
 }
 
-.desktop-hero-illustration {
+.desktop-hero-frame {
+  position: relative;
   max-width: 40rem;
   margin-inline: auto;
+}
+
+// The brand character hanging from the illustration's top-right corner.
+.desktop-hero-mascot {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  width: clamp(6rem, 9vw, 8rem);
 }
 
 // Connection scene inset in the card, running off its right and bottom edges.

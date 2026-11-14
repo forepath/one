@@ -1,16 +1,13 @@
-<fpc-section-row class="fpc-density-comfortable" [marketingHidden]="!showAuthMarketingPanel">
-  <fpc-section-column
-    variant="marketing"
-    class="d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
-  >
-    <div class="p-4" style="width: 700px; max-width: 100%">
-      <h1 class="display-5 fw-bold mb-3" i18n="@@featureConfirmEmail-title">Confirm Your Email</h1>
-      <p class="lead mb-4">{{ authMarketing.confirmEmailDescription }}</p>
-    </div>
-  </fpc-section-column>
+<fpc-section-row data-hero-mascot-track data-mark-stack-area class="fpc-density-comfortable">
+  <!-- The brand mark stack off the form column's top-right corner, as on the landing heroes (hidden with
+       layout.showMarkStack: false). -->
+  <identity-auth-mark-stack />
   <fpc-section-column variant="form" [scroll]="true" class="d-flex align-items-center">
     <div class="p-4 my-auto" style="width: 500px; max-width: 100%">
-      <h2 class="section__column-title mb-4" i18n="@@featureConfirmEmail-formTitle">Email Confirmation</h2>
+      <div class="fpc-auth-card__header">
+        <h2 class="section__column-title" i18n="@@featureConfirmEmail-formTitle">Email Confirmation</h2>
+        <i class="bi bi-envelope-check text-primary" aria-hidden="true"></i>
+      </div>
 
       @if (!isUsersAuth) {
         <fpc-alert variant="info">
@@ -73,45 +70,43 @@
             </fpc-form-field>
 
             <!-- Confirmation Code Input (6-character OTP) -->
-            <div class="border rounded-3 p-3 mb-3">
-              <fpc-form-field
-                forId="confirmationCode"
-                i18n-label="@@featureConfirmEmail-codeLabel"
-                label="Confirmation code"
-                [required]="true"
-              >
-                <fpc-otp-input
-                  controlId="confirmationCode"
-                  i18n-ariaLabel="@@featureConfirmEmail-codeLabel"
-                  ariaLabel="Confirmation code"
-                  formControlName="code"
-                  [invalid]="
-                    (form.get('code')?.invalid &&
-                      form.get('code')?.touched &&
-                      ((form.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)) ??
-                    false
-                  "
-                  [disabled]="(confirmingEmail$ | async) ?? false"
-                />
-                @if (
-                  form.get('code')?.invalid &&
-                  form.get('code')?.touched &&
-                  ((form.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)
-                ) {
-                  <div fpcFormFieldError>
-                    @if (form.get('code')?.errors?.['required']) {
-                      <ng-container i18n="@@featureConfirmEmail-codeRequired"
-                        >Confirmation code is required.</ng-container
-                      >
-                    } @else if (form.get('code')?.errors?.['pattern']) {
-                      <ng-container i18n="@@featureConfirmEmail-codePattern"
-                        >Code must be exactly 6 characters (uppercase letters and numbers).</ng-container
-                      >
-                    }
-                  </div>
-                }
-              </fpc-form-field>
-            </div>
+            <fpc-form-field
+              forId="confirmationCode"
+              i18n-label="@@featureConfirmEmail-codeLabel"
+              label="Confirmation code"
+              [required]="true"
+            >
+              <fpc-otp-input
+                controlId="confirmationCode"
+                i18n-ariaLabel="@@featureConfirmEmail-codeLabel"
+                ariaLabel="Confirmation code"
+                formControlName="code"
+                [invalid]="
+                  (form.get('code')?.invalid &&
+                    form.get('code')?.touched &&
+                    ((form.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)) ??
+                  false
+                "
+                [disabled]="(confirmingEmail$ | async) ?? false"
+              />
+              @if (
+                form.get('code')?.invalid &&
+                form.get('code')?.touched &&
+                ((form.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)
+              ) {
+                <div fpcFormFieldError>
+                  @if (form.get('code')?.errors?.['required']) {
+                    <ng-container i18n="@@featureConfirmEmail-codeRequired"
+                      >Confirmation code is required.</ng-container
+                    >
+                  } @else if (form.get('code')?.errors?.['pattern']) {
+                    <ng-container i18n="@@featureConfirmEmail-codePattern"
+                      >Code must be exactly 6 characters (uppercase letters and numbers).</ng-container
+                    >
+                  }
+                </div>
+              }
+            </fpc-form-field>
 
             <!-- Submit Button -->
             <div class="d-flex gap-2 justify-content-between align-items-center">
@@ -132,5 +127,10 @@
         </form>
       }
     </div>
+    <!-- The legal links (as configured) right below the card. -->
+    <identity-auth-legal-links />
   </fpc-section-column>
+  <!-- The brand character peeking up from the bottom of the form column, centred, like the landing
+       footers' (hidden with layout.showMascot: false). -->
+  <identity-auth-mascot />
 </fpc-section-row>

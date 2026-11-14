@@ -5,7 +5,7 @@
 // - Closing CTA section and footer: one continuous field that gathers toward the boundary between
 //   them, like the horizon of the map.
 //
-// The sign-in column (`_section-marketing.scss`) uses the same artwork, so the journey from the
+// The auth-style pages (`_section-auth.scss`) use the same artwork, so the journey from the
 // landing page into the product reads as one place. All lines are masks over `--bs-primary`, so
 // every brand and colour mode gets its own tint without extra rules.
 //
@@ -73,6 +73,17 @@
   &.bg-body-tertiary {
     --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 20%, transparent);
     --fpc-landing-hero-surface: var(--fpc-landing-tertiary-surface);
+  }
+}
+
+// Below md, a hero whose brand character peeks up in the middle of its bottom edge
+// (`shared-hero-mascot--section-end`, centred below lg) makes room for it under the copy: the visible
+// part of the figure (about 70% of its box, 111/139 of its width tall) plus a gap. From md up the 6rem
+// padding already holds it. The width repeats the mascot's (`hero-mascot.component.scss`). Pages with
+// `pb-md-0` keep their own padding from md up (`!important`).
+@media (max-width: 767.98px) {
+  .grid-section#hero:has(> .shared-hero-mascot--section-end) {
+    padding-bottom: calc(clamp(6rem, 11vw, 9rem) * 111 / 139 * 0.7 + 1.5rem);
   }
 }
 
@@ -419,6 +430,85 @@
   background-color: var(--bs-body-bg);
   border: var(--bs-border-width) solid var(--bs-border-color);
   border-radius: var(--bs-border-radius-lg);
+}
+
+// ---- Small screens: centred content ----------------------------------------------------------------
+// Below md, where the columns stack, the content sections centre like the heroes (below lg) and the
+// footer: copy, card icons, rows of buttons and badges, and icon-beside-text items (stacked, icon on
+// top). Lists keep their bullets on the left. Scenes, forms, tables and code keep their own layout
+// (`$fpc-landing-keep-layout`), and a section reading top to bottom (legal text, a form, an article)
+// opts out with `landing-align-start`.
+$fpc-landing-keep-layout: (
+  shared-app-illustration,
+  framework-forepath-code-illustration,
+  framework-forepath-evolution-illustration,
+  framework-forepath-operations-illustration,
+  framework-forepath-platform-board-illustration,
+  framework-forepath-rental-illustration,
+  framework-portal-agentctx-illustration,
+  framework-portal-architecture-illustration,
+  framework-portal-billing-timeline-illustration,
+  framework-portal-cloud-illustration,
+  framework-portal-comparison-matrix,
+  framework-portal-console-illustration,
+  framework-portal-desktop-illustration,
+  framework-portal-desktop-security-illustration,
+  framework-portal-ide-illustration,
+  framework-portal-overview-illustration,
+  framework-portal-plan-config-illustration,
+  framework-portal-toolchain-illustration,
+  shared-logo-grid,
+  form,
+  table,
+  pre,
+  // Bullet lists; card grids built as lists (`ul.row`) centre like any other grid.
+  'ul:not(.row)',
+  'ol:not(.row)',
+  '.landing-align-start'
+);
+
+@media (max-width: 767.98px) {
+  section.grid-section:not(#hero, .landing-align-start) {
+    text-align: center;
+
+    :is(#{$fpc-landing-keep-layout}) {
+      text-align: start;
+    }
+
+    // Rows of buttons, badges and links (and chip lists) centre along the row.
+    .d-flex:not(.flex-column, li):not(:is(#{$fpc-landing-keep-layout}) *),
+    ul.d-flex:not(.flex-column) {
+      justify-content: center !important;
+    }
+
+    // Columns that pin their content to the start (a button under copy, a badge above a title) centre
+    // it instead.
+    .d-flex.flex-column.align-items-start:not(:is(#{$fpc-landing-keep-layout}) *) {
+      align-items: center !important;
+    }
+
+    .d-flex.flex-column > .align-self-start:not(:is(#{$fpc-landing-keep-layout}) *) {
+      align-self: center !important;
+    }
+
+    // Inline content placed straight in a column (a step number, an icon, a badge, a button) is a flex
+    // item there, which `text-align` does not move: centre it on the column's axis.
+    .d-flex.flex-column
+      > :is(span, i, img, svg, a, fpc-badge, fpc-button, .badge):not(:is(#{$fpc-landing-keep-layout}) *) {
+      align-self: center;
+    }
+
+    // An icon beside its text block: the icon on top, both centred.
+    .d-flex:not(.flex-column, li):has(> :is(i, img, svg, .card-icon) + div):not(:is(#{$fpc-landing-keep-layout}) *) {
+      flex-direction: column;
+      align-items: center !important;
+    }
+
+    // Width-capped copy sits in the middle, not at the start.
+    :is(.max-w-650, .max-w-700, .max-w-750, .section-lead):not(:is(#{$fpc-landing-keep-layout}) *) {
+      margin-inline: auto;
+    }
+  }
 }
 
 // ---- Logo strips (`shared-logo-grid`) -------------------------------------------------------------

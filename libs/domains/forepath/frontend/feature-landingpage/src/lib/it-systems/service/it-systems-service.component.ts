@@ -3,7 +3,12 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnIn
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
-import { SharedContactPersonComponent, SharedLogoGridComponent } from '@forepath/shared/frontend/feature-landingpage';
+import {
+  SharedContactPersonComponent,
+  SharedLogoGridComponent,
+  SharedHeroMascotComponent,
+  SharedMarkStackComponent,
+} from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
@@ -23,6 +28,8 @@ export const FOREPATH_IT_SERVICE_ROUTE_DATA_KEY = 'itService';
 @Component({
   selector: 'framework-forepath-it-systems-service',
   imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
     SharedContactPersonComponent,
     FpcButtonComponent,
     CommonModule,

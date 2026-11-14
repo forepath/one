@@ -9,6 +9,8 @@ import {
   SharedContactPersonComponent,
   SharedLogoGridComponent,
   type SharedLogoGridLogo,
+  SharedHeroMascotComponent,
+  SharedMarkStackComponent,
 } from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
@@ -55,6 +57,8 @@ const VENDOR_LOGO_SLOTS: readonly (readonly SharedLogoGridLogo[])[] = [
 @Component({
   selector: 'framework-forepath-it-systems',
   imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
     SharedContactPersonComponent,
     FpcButtonComponent,
     CommonModule,

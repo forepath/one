@@ -5,7 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { RouterModule } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
 import { AuthenticationFacade, requestPasswordResetSuccess } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT, isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
+import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import {
   FpcAlertComponent,
   FpcButtonComponent,
@@ -19,9 +19,16 @@ import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
 
+import { IdentityAuthLegalLinksComponent } from '../auth-legal-links/auth-legal-links.component';
+import { IdentityAuthMarkStackComponent } from '../auth-mark-stack/auth-mark-stack.component';
+import { IdentityAuthMascotComponent } from '../auth-mascot/auth-mascot.component';
+
 @Component({
   selector: 'identity-auth-request-password-reset',
   imports: [
+    IdentityAuthMascotComponent,
+    IdentityAuthLegalLinksComponent,
+    IdentityAuthMarkStackComponent,
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
@@ -48,9 +55,6 @@ export class IdentityRequestPasswordResetComponent implements OnInit {
   requestingPasswordReset$: Observable<boolean> = this.authFacade.requestingPasswordReset$;
   error$: Observable<string | null> = this.authFacade.error$;
   successMessage$: Observable<string | null> = this.authFacade.successMessage$;
-
-  protected readonly authMarketing = this.environment.authMarketing;
-  protected readonly showAuthMarketingPanel = isAuthMarketingPanelVisible(this.environment.authLayout);
 
   get isUsersAuth(): boolean {
     return this.environment.authentication.type === 'users';

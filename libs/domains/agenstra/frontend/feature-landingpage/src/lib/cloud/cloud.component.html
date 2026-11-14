@@ -1,17 +1,21 @@
 <!-- Hero -->
-<section id="hero" class="py-10 py-lg-6 bg-body text-body-emphasis grid-section grid-section--deep">
+<section id="hero" class="py-10 py-lg-6 bg-body text-body-emphasis grid-section grid-section--deep position-relative">
+  <!-- The brand mark stack, as on the home heroes (it runs off the top-right corner). -->
+  <shared-mark-stack brand="agenstra" />
+  <!-- The brand character peeking up from the hero's bottom edge, at the content's right edge. -->
+  <shared-hero-mascot brand="agenstra" pose="peek-point" class="shared-hero-mascot--section-end" />
   <div class="container grid-section__container">
-    <div class="text-center">
+    <div class="text-center text-lg-start">
       <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featurePortalCloud-heroTitle">
         <span class="text-primary">Fully managed platform</span> for your coding agents
       </h1>
-      <p class="lead mb-4 mx-auto hero-lead max-w-750" i18n="@@featurePortalCloud-heroLead">
+      <p class="lead mb-4 mx-auto mx-lg-0 hero-lead max-w-750" i18n="@@featurePortalCloud-heroLead">
         Run Agenstra as a fully managed cloud service. Your agents stay in the tools, clouds, and environments you
         already use. You do not deploy infrastructure or operate the platform yourself.
       </p>
-      <div class="cloud-hero-price mx-auto mb-5">
+      <div class="cloud-hero-price mx-auto mx-lg-0 mb-5">
         <div
-          class="card border border-secondary rounded-2 card-capability card-capability-primary p-3 text-center hero-lead shadow-sm"
+          class="card border border-secondary rounded-2 card-capability card-capability-primary p-3 text-center text-lg-start hero-lead shadow-sm"
         >
           <div class="mb-2" i18n="@@featurePortalCloud-heroFrom">From</div>
           <div class="h3 fw-bold hero-lead mb-0">
@@ -32,7 +36,7 @@
           </div>
         </div>
       </div>
-      <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
         <fpc-button
           variant="primary"
           size="xl"

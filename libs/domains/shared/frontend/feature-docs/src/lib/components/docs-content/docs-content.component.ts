@@ -75,6 +75,9 @@ export class DocsContentComponent implements AfterViewInit {
       html = html.replace(match[0], `<div class="mermaid-placeholder" data-diagram-id="${diagramId}"></div>`);
     }
 
+    // Each table scrolls sideways in its own box, so a wide one does not widen the page.
+    html = html.replace(/<table\b[\s\S]*?<\/table>/gi, (table) => `<div class="docs-table-scroll">${table}</div>`);
+
     // Process links to convert to router links
     html = this.processLinks(html);
 

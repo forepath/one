@@ -43,17 +43,18 @@
       (darkChange)="themeService.setTheme($event)"
     />
 
-    <fpc-button
-      class="d-md-none fpc-top-bar__action"
-      variant="link"
-      size="sm"
-      iconOnly
-      [ariaLabel]="toggleNavAriaLabel"
+    <!-- The landing headers' menu toggle: a full-height square at the bar's end. -->
+    <button
+      type="button"
+      class="docs-layout__nav-toggle d-md-none"
+      [class.docs-layout__nav-toggle--tertiary]="productName.toLowerCase() === 'decabill'"
+      [attr.aria-label]="toggleNavAriaLabel"
+      [attr.aria-expanded]="mobileMenuOpen()"
       [title]="toggleNavAriaLabel"
-      (clicked)="toggleMobileMenu()"
+      (click)="toggleMobileMenu()"
     >
-      <i class="bi bi-list fs-5" aria-hidden="true"></i>
-    </fpc-button>
+      <i class="bi bi-list fs-4" aria-hidden="true"></i>
+    </button>
   </fpc-top-bar>
 
   <div class="docs-main border-top flex-grow-1 d-flex overflow-hidden">

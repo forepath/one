@@ -25,6 +25,10 @@ import {
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 
+import { IdentityAuthLegalLinksComponent } from '../auth-legal-links/auth-legal-links.component';
+import { IdentityAuthMarkStackComponent } from '../auth-mark-stack/auth-mark-stack.component';
+import { IdentityAuthMascotComponent } from '../auth-mascot/auth-mascot.component';
+
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Navigates the browser to the app (separate for tests). */
@@ -59,6 +63,9 @@ function toScopeView(scope: string): ScopeView {
 @Component({
   selector: 'identity-auth-app-authorize',
   imports: [
+    IdentityAuthMascotComponent,
+    IdentityAuthLegalLinksComponent,
+    IdentityAuthMarkStackComponent,
     CommonModule,
     FormsModule,
     FpcAlertComponent,

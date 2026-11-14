@@ -17,15 +17,6 @@ const baseEnvironment: BaseEnvironment = {
   },
   authentication: {
     config: { type: 'users', disableSignup: false, disableForceLogin2fa: false },
-    marketing: {
-      loginDescription: 'login',
-      registerDescription: 'register',
-      requestPasswordResetDescription: 'request',
-      resetPasswordConfirmationDescription: 'confirm-reset',
-      resetPasswordDescription: 'reset',
-      confirmEmailDescription: 'confirm',
-      features: [],
-    },
   },
   cookieConsent: {
     enabled: true,
@@ -61,7 +52,6 @@ describe('environment.token', () => {
       expect(merged.application.productName).toBe('Merged');
       expect(merged.application.production).toBe(false);
       expect(merged.authentication.config.type).toBe('api-key');
-      expect(merged.authentication.marketing.loginDescription).toBe('login');
     });
 
     it('overlays role-split remote JSON onto billing and landing bases', () => {

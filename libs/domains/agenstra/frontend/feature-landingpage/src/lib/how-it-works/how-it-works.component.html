@@ -1,16 +1,21 @@
 <!-- Hero -->
-<section id="hero" class="pt-10 pb-10 pb-md-0 py-lg-6 bg-body text-body-emphasis grid-section grid-section--deep">
+<section
+  id="hero"
+  class="pt-10 pb-0 py-lg-6 bg-body text-body-emphasis grid-section grid-section--deep position-relative"
+>
+  <!-- The brand mark stack, as on the home heroes (it runs off the top-right corner). -->
+  <shared-mark-stack brand="agenstra" />
   <div class="container hero-content grid-section__container">
-    <div class="row justify-content-center">
-      <div class="col-12 text-center hero-container">
+    <div class="row justify-content-center justify-content-lg-start">
+      <div class="col-12 text-center text-lg-start hero-container">
         <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featurePortalHowItWorks-heroTitle">
           <span class="text-primary">How Agenstra works</span>, from the first prompt to the last packet
         </h1>
-        <p class="hero-lead lead fs-5 mb-5 mx-auto" i18n="@@featurePortalHowItWorks-heroLead">
+        <p class="hero-lead lead fs-5 mb-5 mx-auto mx-lg-0" i18n="@@featurePortalHowItWorks-heroLead">
           A control plane that decides and agent managers that execute. Every environment runs in its own container, can
           run inside a gVisor sandbox, and reaches the internet only through its own egress guard.
         </p>
-        <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
           <fpc-button
             variant="primary"
             size="xl"
@@ -38,7 +43,9 @@
   </div>
   <div class="container grid-section__container">
     <div class="row">
-      <div class="col-md-12 hero-illustration d-none d-md-block">
+      <div class="col-12 hero-illustration">
+        <!-- The brand character hangs from the scene's top-right corner. -->
+        <shared-hero-mascot brand="agenstra" pose="corner" class="hero-mascot-corner" />
         <framework-portal-architecture-illustration
           label="Agenstra architecture: the console signs in through the agent controller, which provisions a sandboxed agent container behind its own egress guard on your host. A prompt passes the message filters, the guard allows one web request and blocks another, and both decisions land in the audit log."
           i18n-label="@@featurePortalHowItWorks-heroIllustration"

@@ -2,7 +2,7 @@
   class="header sticky-top bg-body portal-chrome-text grid-section grid-section--deep grid-section--navigation"
   [class.shadow]="isScrolled()"
 >
-  <nav class="navbar navbar-expand-md p-0">
+  <nav class="navbar navbar-expand-lg p-0">
     <div
       class="container grid-section__container grid-section__container--shadow d-flex align-items-center justify-content-between gap-2 navbar-content"
     >
@@ -29,7 +29,7 @@
       </div>
       <div class="d-flex align-items-center gap-2 flex-grow-1 justify-content-end">
         <button
-          class="navbar-toggler d-md-none d-block"
+          class="navbar-toggler d-lg-none d-block"
           type="button"
           (click)="toggleMobileMenu()"
           [attr.aria-expanded]="mobileMenuOpen()"
@@ -133,7 +133,7 @@
             </li>
             <li class="nav-item">
               <a
-                class="nav-link portal-chrome-text ms-3 d-none d-md-block"
+                class="nav-link portal-chrome-text ms-3 d-none d-lg-block"
                 href="https://github.com/forepath/one"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -145,10 +145,10 @@
                 <i class="bi bi-github fs-5"></i>
               </a>
             </li>
-            <li class="nav-item ms-md-2">
+            <li class="nav-item ms-lg-2">
               <shared-landing-theme-toggle />
             </li>
-            <li class="nav-item ms-md-3">
+            <li class="nav-item ms-lg-3">
               <fpc-button
                 routerLink="/contact"
                 variant="primary"
@@ -171,15 +171,20 @@
   class="footer bg-body portal-chrome-text position-relative grid-section grid-section--deep grid-section--footer pt-10"
 >
   <div class="container grid-section__container grid-section__container--footer-top">
-    <div class="row">
+    <div class="row text-center text-md-start">
       <div class="col-md-4 mb-3 mb-md-0">
-        <img src="assets/images/favicon.svg" i18n-alt="@@featurePortal-brandAlt" alt="Agenstra" class="brand-icon" />
+        <img
+          src="assets/images/favicon.svg"
+          i18n-alt="@@featurePortal-brandAlt"
+          alt="Agenstra"
+          class="brand-icon mx-auto mx-md-0"
+        />
         <h5 class="fw-bold my-3" i18n="@@featurePortal-footerBrand">Agenstra</h5>
         <p class="fs-6 mb-5" i18n="@@featurePortal-footerTagline">
           Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact
           with agents in real-time, and edit code directly in their containers.
         </p>
-        <div class="d-flex align-items-center gap-3 mt-4 fs-3">
+        <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 mt-4 fs-3">
           <a
             href="https://github.com/forepath/one"
             class="text-decoration-none footer-link small d-inline-flex align-items-center gap-1"
@@ -208,7 +213,9 @@
         <p class="portal-chrome-text small mb-3 mt-4" i18n="@@featurePortal-footerListings">
           <span class="fw-bold">Want to learn even more?</span> Check out the Agenstra listings on these platforms:
         </p>
-        <ul class="list-unstyled mb-0 d-flex align-items-center gap-2 flex-wrap flex-row mt-2">
+        <ul
+          class="list-unstyled mb-0 d-flex align-items-center justify-content-center justify-content-md-start gap-2 flex-wrap flex-row mt-2"
+        >
           <li class="mb-2">
             <a
               href="https://www.producthunt.com/products/agenstra"
@@ -254,7 +261,7 @@
           triggerLabel="Language"
         />
       </div>
-      <div class="col-md-3 offset-md-2">
+      <div class="col-md-3 offset-md-2 mb-4 mb-md-0">
         <h6 class="fw-bold mb-3" i18n="@@featurePortal-footerProduct">Product</h6>
         <ul class="list-unstyled mb-0">
           <li class="mb-2">
@@ -415,9 +422,11 @@
     </div>
   </div>
   <div class="portal-chrome-text py-5">
-    <div class="container grid-section__container grid-section__container--footer-bottom">
+    <div class="container grid-section__container grid-section__container--footer-bottom position-relative">
+      <!-- The brand character peeking up from the footer's bottom edge, centred under the copyright line. -->
+      <shared-hero-mascot brand="agenstra" pose="peek" class="footer-mascot" />
       <div class="row">
-        <div class="col-md-12 text-center">
+        <div class="col-md-12 text-center footer-copyright">
           <p class="mb-0 small" i18n="@@featurePortal-footerCopyright">
             &copy; {{ currentYear }} IPvX UG (haftungsbeschränkt). All rights reserved.
           </p>

@@ -152,6 +152,12 @@ $_select: '.form-select:not([multiple], [size])';
   @include _field-height(var(--fpc-control-height-md));
 }
 
+// An input group's addon (icon, prefix, unit) on the same surface as the field beside it, not
+// Bootstrap's tertiary grey, so the group reads as one control.
+.input-group-text {
+  background-color: var(--bs-body-bg);
+}
+
 #{$_field}.form-control-sm,
 #{$_select}.form-select-sm,
 .input-group-sm > #{$_field},

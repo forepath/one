@@ -1,4 +1,3 @@
-export * from './lib/auth-marketing.interface';
 export * from './lib/communication.constants';
 export * from './lib/environment.interface';
 export * from './lib/environment.token';

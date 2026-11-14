@@ -9,6 +9,7 @@ import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forep
 import {
   SharedContactPersonComponent,
   SharedLogoGridComponent,
+  SharedHeroMascotComponent,
   SharedMarkStackComponent,
   type SharedLogoGridLogo,
 } from '@forepath/shared/frontend/feature-landingpage';
@@ -29,6 +30,7 @@ import { IdeIllustrationComponent } from '../illustrations/ide-illustration.comp
     ConsoleIllustrationComponent,
     IdeIllustrationComponent,
     SharedLogoGridComponent,
+    SharedHeroMascotComponent,
     SharedMarkStackComponent,
   ],
   styleUrls: ['./home.component.scss'],

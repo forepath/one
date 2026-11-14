@@ -12,8 +12,7 @@
   overflow-y: auto;
 }
 
-// `.section__column--marketing` visuals (wash, contour pattern, phone hiding) are global in
-// `styles/_section-marketing.scss` so plain `section__column` markup gets them too.
+// The auth-style pages' look (contour field, form card) is global in `styles/_section-auth.scss`.
 
 :host(.section__column--form) {
   @media (max-width: 767.98px) {
@@ -27,9 +26,9 @@
 }
 
 // Lane columns side by side (≥ md): every column but the last owns its right edge (one 1 px divider,
-// no gap). Auth split layouts (`marketing` / `form`) draw no divider.
+// no gap). The auth-style pages' form column draws no divider.
 @media (min-width: 768px) {
-  :host(:not(:last-child):not(.section__column--marketing):not(.section__column--form)) {
+  :host(:not(:last-child):not(.section__column--form)) {
     border-right: var(--bs-border-width) solid var(--bs-border-color);
   }
 }

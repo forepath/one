@@ -7,7 +7,6 @@ import type { IdentityAuthEnvironment, UsersAuthenticationConfig } from '@forepa
 import { AuthenticationFacade, loginSuccess } from '@forepath/identity/frontend';
 import {
   IDENTITY_AUTH_ENVIRONMENT,
-  isAuthMarketingPanelVisible,
   SSO_ERROR_QUERY_PARAM,
   usesExternalSignIn,
   usesStaticCredential,
@@ -25,9 +24,16 @@ import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
 
+import { IdentityAuthLegalLinksComponent } from '../auth-legal-links/auth-legal-links.component';
+import { IdentityAuthMarkStackComponent } from '../auth-mark-stack/auth-mark-stack.component';
+import { IdentityAuthMascotComponent } from '../auth-mascot/auth-mascot.component';
+
 @Component({
   selector: 'identity-auth-login',
   imports: [
+    IdentityAuthMascotComponent,
+    IdentityAuthLegalLinksComponent,
+    IdentityAuthMarkStackComponent,
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
@@ -90,10 +96,6 @@ export class IdentityLoginComponent implements OnInit {
   get isMtlsAuth(): boolean {
     return this.environment.authentication.type === 'mtls';
   }
-
-  protected readonly productName = this.environment.productName;
-  protected readonly authMarketing = this.environment.authMarketing;
-  protected readonly showAuthMarketingPanel = isAuthMarketingPanelVisible(this.environment.authLayout);
 
   /**
    * Whether signup is disabled (users auth only). When true, the "Create an account" link is hidden.

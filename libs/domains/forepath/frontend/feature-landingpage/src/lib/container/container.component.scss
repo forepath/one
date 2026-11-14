@@ -165,6 +165,13 @@
   -webkit-mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 70%, transparent 100%);
 }
 
+// Menu labels never wrap.
+.navbar-nav > .nav-item > .nav-link,
+.navbar-nav > .nav-item > fpc-button,
+.portal-nav-dropdown-toggle {
+  white-space: nowrap;
+}
+
 .navbar-content {
   @media (max-width: 575px) {
     padding: 0;
@@ -867,4 +874,44 @@
 
 .portal-nav-product__link--disabled {
   opacity: 0.6;
+}
+
+// The brand character peeks up from the footer's bottom edge, centred under the copyright line with a
+// little space between (out of the way of the live chat widget in the bottom-right corner): positioned in
+// the copyright row's container, whose row pads 3rem (`py-5`) below it.
+.footer {
+  --footer-mascot-width: clamp(4rem, 8vw, 5.5rem);
+}
+
+.footer-mascot {
+  position: absolute;
+  left: 50%;
+  bottom: -3rem;
+  width: var(--footer-mascot-width);
+  translate: -50% 0;
+}
+
+// When the character pulls itself up (pointer in the footer; always without hover) it pushes the footer
+// open by as much as it rises (27 of its 111 viewBox units, in step with its own transition), so the
+// space under the copyright line stays the same. A reader scrolled to the bottom is kept there while it
+// grows (`SharedHeroMascotComponent`), so the page scrolls along instead of opening below the viewport.
+.footer-copyright {
+  padding-bottom: 1.5rem;
+  transition: padding-bottom 0.6s cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+
+.footer:hover .footer-copyright {
+  padding-bottom: calc(1.5rem + var(--footer-mascot-width) * 27 / 111);
+}
+
+@media (hover: none) {
+  .footer-copyright {
+    padding-bottom: calc(1.5rem + var(--footer-mascot-width) * 27 / 111);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-copyright {
+    transition: none;
+  }
 }

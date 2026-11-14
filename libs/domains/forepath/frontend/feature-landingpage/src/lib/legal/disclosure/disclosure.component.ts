@@ -5,10 +5,11 @@ import { RouterModule } from '@angular/router';
 import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
+import { SharedHeroMascotComponent, SharedMarkStackComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-forepath-legal-disclosure',
-  imports: [CommonModule, RouterModule, FpcButtonComponent],
+  imports: [SharedMarkStackComponent, SharedHeroMascotComponent, CommonModule, RouterModule, FpcButtonComponent],
   styleUrls: ['./disclosure.component.scss'],
   templateUrl: './disclosure.component.html',
   standalone: true,

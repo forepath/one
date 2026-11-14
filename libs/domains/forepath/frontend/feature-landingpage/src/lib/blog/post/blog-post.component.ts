@@ -29,6 +29,7 @@ import {
   resolveGhostPostKeywords,
 } from '../ghost-post-meta.util';
 import type { GhostPost, GhostTag } from '../ghost.types';
+import { SharedHeroMascotComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 function isGhostNotFoundError(error: unknown): boolean {
   if (!error || typeof error !== 'object') {
@@ -41,7 +42,7 @@ function isGhostNotFoundError(error: unknown): boolean {
 
 @Component({
   selector: 'framework-forepath-blog-post',
-  imports: [CommonModule, RouterModule, DatePipe, FpcBadgeComponent, FpcButtonComponent],
+  imports: [SharedHeroMascotComponent, CommonModule, RouterModule, DatePipe, FpcBadgeComponent, FpcButtonComponent],
   styleUrls: ['./blog-post.component.scss'],
   templateUrl: './blog-post.component.html',
   standalone: true,

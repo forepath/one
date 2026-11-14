@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-11T18:31:56.402Z",
+  "generatedAt": "2026-11-14T11:59:27.601Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -38019,6 +38019,11 @@
     },
     {
       "from": "project:identity-frontend-feature-auth",
+      "to": "project:shared-frontend-feature-landingpage",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:identity-frontend-feature-auth",
       "to": "project:shared-frontend-util-configuration",
       "type": "depends_on"
     },
@@ -38060,6 +38065,11 @@
     {
       "from": "project:shared-frontend-feature-docs",
       "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-feature-docs",
+      "to": "project:shared-frontend-feature-landingpage",
       "type": "depends_on"
     },
     {
@@ -40459,6 +40469,16 @@
     },
     {
       "from": "project:shared-frontend-docs",
+      "to": "package:@ngrx/effects",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-docs",
+      "to": "package:@ngrx/store",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-docs",
       "to": "package:cookieconsent",
       "type": "depends_on"
     },
@@ -40480,6 +40500,11 @@
     {
       "from": "project:shared-frontend-docs",
       "to": "package:ngx-cookieconsent",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-docs",
+      "to": "package:ngx-turnstile",
       "type": "depends_on"
     },
     {

@@ -7,7 +7,6 @@ import type { IdentityAuthEnvironment, Login2faMethod } from '@forepath/identity
 import {
   AuthenticationFacade,
   IDENTITY_AUTH_ENVIRONMENT,
-  isAuthMarketingPanelVisible,
   loginSuccess,
   PENDING_LOGIN_PASSWORD_STORAGE_KEY,
 } from '@forepath/identity/frontend';
@@ -23,9 +22,16 @@ import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
 
+import { IdentityAuthLegalLinksComponent } from '../auth-legal-links/auth-legal-links.component';
+import { IdentityAuthMarkStackComponent } from '../auth-mark-stack/auth-mark-stack.component';
+import { IdentityAuthMascotComponent } from '../auth-mascot/auth-mascot.component';
+
 @Component({
   selector: 'identity-auth-login-2fa',
   imports: [
+    IdentityAuthMascotComponent,
+    IdentityAuthLegalLinksComponent,
+    IdentityAuthMarkStackComponent,
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
@@ -57,9 +63,6 @@ export class IdentityLogin2faComponent implements OnInit {
 
   loading$: Observable<boolean> = this.authFacade.loading$;
   error$: Observable<string | null> = this.authFacade.error$;
-
-  protected readonly authMarketing = this.environment.authMarketing;
-  protected readonly showAuthMarketingPanel = isAuthMarketingPanelVisible(this.environment.authLayout);
 
   get isUsersAuth(): boolean {
     return this.environment.authentication.type === 'users';

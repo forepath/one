@@ -1,16 +1,20 @@
 <!-- Hero -->
-<section id="hero" class="py-10 py-lg-6 bg-body text-body-emphasis grid-section grid-section--deep">
+<section id="hero" class="py-10 py-lg-6 bg-body text-body-emphasis grid-section grid-section--deep position-relative">
+  <!-- The brand mark stack, as on the home heroes (it runs off the top-right corner). -->
+  <shared-mark-stack brand="agenstra" />
+  <!-- The brand character peeking up from the hero's bottom edge, at the content's right edge. -->
+  <shared-hero-mascot brand="agenstra" pose="peek-point" class="shared-hero-mascot--section-end" />
   <div class="container grid-section__container">
-    <div class="text-center">
+    <div class="text-center text-lg-start">
       <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featurePortalAgentctx-heroTitle">
         <span class="text-primary">One Context</span> For All Your AI Coding Tools
       </h1>
-      <p class="lead mb-5 mx-auto hero-lead max-w-750" i18n="@@featurePortalAgentctx-heroDescription">
+      <p class="lead mb-5 mx-auto mx-lg-0 hero-lead max-w-750" i18n="@@featurePortalAgentctx-heroDescription">
         Every AI coding tool wants its own configuration and instructions. Over time they drift apart and assistants
         start contradicting each other. AgentCTX lets you maintain project context once and generate aligned configs for
         every editor your team uses.
       </p>
-      <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
         <fpc-button
           variant="primary"
           size="xl"

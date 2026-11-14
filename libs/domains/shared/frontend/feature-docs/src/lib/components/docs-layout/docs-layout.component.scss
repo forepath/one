@@ -22,6 +22,38 @@
     padding: 1rem;
   }
 
+  // Menu toggle below md, like the landing headers' (`.navbar-toggler` in the landing containers): a
+  // square as tall as the bar, flush with its end (past the actions' 0.5rem end padding), on a wash of
+  // the bar: black on the dark bar, a faint ink on the light one (Decabill's landing uses its tertiary
+  // surface there).
+  .docs-layout__nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    // Cancels the actions' end padding (`fpc-top-bar`: 0.375rem below sm, 0.5rem up to md).
+    margin-inline-end: -0.5rem;
+
+    @media (max-width: 575.98px) {
+      margin-inline-end: -0.375rem;
+    }
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    color: inherit;
+    background-color: rgb(0 0 0 / 0.25);
+    flex-shrink: 0;
+
+    :host-context([data-bs-theme='light']) & {
+      background-color: rgba(var(--bs-emphasis-color-rgb), 0.06);
+    }
+
+    :host-context([data-bs-theme='light']) &.docs-layout__nav-toggle--tertiary {
+      background-color: var(--bs-tertiary-bg);
+    }
+  }
+
   .docs-layout__brand-icon {
     height: 40px;
     width: 40px;

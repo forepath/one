@@ -17,15 +17,3 @@
     flex-direction: column;
   }
 }
-
-// Projected `fpc-section-column` hosts live in the light DOM; pierce encapsulation so the
-// marketing-hidden flag can collapse the marketing rail the same way identity section.scss did.
-:host(.section__row--marketing-hidden) {
-  ::ng-deep .section__column--marketing {
-    display: none;
-  }
-
-  ::ng-deep .section__column--form {
-    flex: 1 1 100%;
-  }
-}

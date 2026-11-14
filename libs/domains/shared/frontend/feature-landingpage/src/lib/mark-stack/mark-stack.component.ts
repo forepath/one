@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  input,
+  NgZone,
+} from '@angular/core';
 
 export type SharedMarkStackBrand = 'forepath' | 'agenstra' | 'decabill';
 
@@ -31,12 +41,15 @@ const SHARED_MARKS: Record<SharedMarkStackBrand, SharedMark> = {
   },
 };
 
-/** Front to back: scale of each copy (around its own centre) and its fill class. */
+/**
+ * Front to back: scale of each copy (around its own centre), its fill class, and how far it follows the
+ * pointer (the front copy furthest, the copies behind less, so the pull reads as depth).
+ */
 const LAYERS = [
-  { scale: 1, cls: 'shared-mark-stack__mark--front' },
-  { scale: 0.84, cls: 'shared-mark-stack__mark--2' },
-  { scale: 0.7, cls: 'shared-mark-stack__mark--3' },
-  { scale: 0.58, cls: 'shared-mark-stack__mark--4' },
+  { scale: 1, cls: 'shared-mark-stack__mark--front', depth: 1 },
+  { scale: 0.84, cls: 'shared-mark-stack__mark--2', depth: 0.8 },
+  { scale: 0.7, cls: 'shared-mark-stack__mark--3', depth: 0.62 },
+  { scale: 0.58, cls: 'shared-mark-stack__mark--4', depth: 0.46 },
 ] as const;
 
 /** Diagonal step between copies, as a share of the mark size. */
@@ -49,6 +62,10 @@ let nextMarkStackId = 0;
  * top right that runs off the section; the copies behind step down and to the left, each smaller and
  * in a lighter brand tint. Place it as a direct child of the hero (`position: relative`,
  * `overflow: hidden`), before the content.
+ *
+ * The copies settle in from the corner on load, front first (the presentations' title-slide build-in).
+ * While a fine pointer hovers the hero, the copies lean slightly towards it, and ease back into place
+ * when it leaves; both are off for reduced motion.
  */
 @Component({
   selector: 'shared-mark-stack',
@@ -61,12 +78,15 @@ let nextMarkStackId = 0;
         <path [attr.id]="pathId" [attr.d]="mark().d" fill-rule="evenodd" />
       </defs>
       @for (layer of layers(); track layer.cls) {
-        <use
-          [attr.href]="'#' + pathId"
-          class="shared-mark-stack__mark"
-          [class]="layer.cls"
-          [attr.transform]="layer.transform"
-        />
+        <g class="shared-mark-stack__layer" [style.--shared-mark-stack-depth]="layer.depth">
+          <use
+            [attr.href]="'#' + pathId"
+            class="shared-mark-stack__mark"
+            [class]="layer.cls"
+            [style.--shared-mark-stack-layer]="layer.index"
+            [attr.transform]="layer.transform"
+          />
+        </g>
       }
     </svg>
   `,
@@ -96,8 +116,83 @@ export class SharedMarkStackComponent {
 
       return {
         cls: layer.cls,
+        index,
+        depth: layer.depth,
         transform: `translate(${(centreX - offset).toFixed(2)} ${(centreY - offset).toFixed(2)}) scale(${layer.scale})`,
       };
     }).reverse();
   });
+
+  constructor() {
+    const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    const zone = inject(NgZone);
+    const destroyRef = inject(DestroyRef);
+
+    afterNextRender(() => {
+      // The area it leans towards the pointer in: the hero section it runs off, or an area marked
+      // `data-mark-stack-area` when a wrapper places it (the auth pages' row); else its parent.
+      const hero = host.closest<HTMLElement>('section, [data-mark-stack-area]') ?? host.parentElement;
+      const mediaMatches = (query: string) => typeof matchMedia === 'function' && matchMedia(query).matches;
+      const canPull =
+        mediaMatches('(hover: hover) and (pointer: fine)') && !mediaMatches('(prefers-reduced-motion: reduce)');
+
+      if (!hero || !canPull) {
+        return;
+      }
+
+      let frame = 0;
+      let pointer: { x: number; y: number } | null = null;
+
+      // The pull is the pointer's position in the hero, -1 to 1 from its centre on each axis; the CSS
+      // turns it into a few pixels per copy and eases there.
+      const apply = () => {
+        frame = 0;
+
+        if (!pointer) {
+          return;
+        }
+
+        const rect = hero.getBoundingClientRect();
+        const x = ((pointer.x - rect.left) / rect.width) * 2 - 1;
+        const y = ((pointer.y - rect.top) / rect.height) * 2 - 1;
+
+        host.classList.remove('shared-mark-stack--settling');
+        host.style.setProperty('--shared-mark-stack-pull-x', clampUnit(x).toFixed(3));
+        host.style.setProperty('--shared-mark-stack-pull-y', clampUnit(y).toFixed(3));
+      };
+
+      const onMove = (event: PointerEvent) => {
+        if (event.pointerType !== 'mouse') {
+          return;
+        }
+
+        pointer = { x: event.clientX, y: event.clientY };
+        frame ||= requestAnimationFrame(apply);
+      };
+
+      const onLeave = () => {
+        pointer = null;
+        cancelAnimationFrame(frame);
+        frame = 0;
+        host.classList.add('shared-mark-stack--settling');
+        host.style.removeProperty('--shared-mark-stack-pull-x');
+        host.style.removeProperty('--shared-mark-stack-pull-y');
+      };
+
+      zone.runOutsideAngular(() => {
+        hero.addEventListener('pointermove', onMove, { passive: true });
+        hero.addEventListener('pointerleave', onLeave, { passive: true });
+      });
+
+      destroyRef.onDestroy(() => {
+        cancelAnimationFrame(frame);
+        hero.removeEventListener('pointermove', onMove);
+        hero.removeEventListener('pointerleave', onLeave);
+      });
+    });
+  }
+}
+
+function clampUnit(value: number): number {
+  return Math.min(1, Math.max(-1, value));
 }

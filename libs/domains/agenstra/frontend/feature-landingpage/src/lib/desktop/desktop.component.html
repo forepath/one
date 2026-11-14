@@ -3,18 +3,20 @@
   id="hero"
   class="py-10 py-lg-6 bg-body text-body-emphasis position-relative overflow-hidden grid-section grid-section--deep"
 >
+  <!-- The brand mark stack, as on the home heroes (it runs off the top-right corner). -->
+  <shared-mark-stack brand="agenstra" />
   <div class="container grid-section__container">
     <div class="row align-items-center">
-      <div class="col-lg-6 mb-5 mb-lg-0">
+      <div class="col-lg-6 mb-5 mb-lg-0 text-center text-lg-start">
         <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featurePortalDesktop-heroTitle">
           A <span class="text-primary">Local Control Center</span> For Your AI Agents
         </h1>
-        <p class="lead mb-5 hero-lead max-w-650" i18n="@@featurePortalDesktop-heroDescription">
+        <p class="lead mb-5 mx-auto mx-lg-0 hero-lead max-w-650" i18n="@@featurePortalDesktop-heroDescription">
           Agenstra Desktop brings the power of the Agenstra platform to your workstation. Connect to your agent
           infrastructure, inspect activity, and work with context from a focused desktop experience that fits into your
           daily tools.
         </p>
-        <div class="d-flex gap-3 flex-wrap">
+        <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
           <fpc-button
             variant="primary"
             size="xl"
@@ -43,11 +45,15 @@
         </p>
       </div>
       <div class="col-lg-6 text-center position-relative desktop-hero-visual">
-        <framework-portal-desktop-illustration
-          class="desktop-hero-illustration d-none d-lg-block"
-          label="Agenstra Desktop application"
-          i18n-label="@@featurePortalDesktop-heroAlt"
-        />
+        <!-- The brand character hangs from the illustration's top-right corner. -->
+        <div class="desktop-hero-frame">
+          <shared-hero-mascot brand="agenstra" pose="corner" class="desktop-hero-mascot" />
+          <framework-portal-desktop-illustration
+            class="desktop-hero-illustration"
+            label="Agenstra Desktop application"
+            i18n-label="@@featurePortalDesktop-heroAlt"
+          />
+        </div>
       </div>
     </div>
   </div>

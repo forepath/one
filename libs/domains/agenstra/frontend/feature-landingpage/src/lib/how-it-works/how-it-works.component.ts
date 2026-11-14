@@ -17,7 +17,11 @@ import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/ut
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 import { ArchitectureIllustrationComponent } from '../illustrations/architecture-illustration.component';
-import { SharedContactPersonComponent } from '@forepath/shared/frontend/feature-landingpage';
+import {
+  SharedContactPersonComponent,
+  SharedHeroMascotComponent,
+  SharedMarkStackComponent,
+} from '@forepath/shared/frontend/feature-landingpage';
 
 /** Isolation levels compared in the limits section, weakest first (the order of the tabs). */
 const ISOLATION_LEVELS = ['standard', 'sandboxed', 'sandboxed-kvm', 'microvm'] as const;
@@ -33,6 +37,8 @@ function isIsolationLevel(value: string): value is IsolationLevel {
 @Component({
   selector: 'framework-portal-how-it-works',
   imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
     SharedContactPersonComponent,
     FpcBadgeComponent,
     FpcButtonComponent,

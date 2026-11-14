@@ -1,7 +1,5 @@
 import type { BaseEnvironment } from '@forepath/shared/frontend/util-configuration';
 
-import { agenstraAuthMarketing } from './auth-marketing';
-
 export function createAgenstraShell(options: { production: boolean; socialPreviewImageUrl: string }): BaseEnvironment {
   return {
     application: {
@@ -14,7 +12,6 @@ export function createAgenstraShell(options: { production: boolean; socialPrevie
         disableSignup: false,
         disableForceLogin2fa: false,
       },
-      marketing: agenstraAuthMarketing,
     },
     cookieConsent: {
       enabled: true,
@@ -22,6 +19,7 @@ export function createAgenstraShell(options: { production: boolean; socialPrevie
       urls: {
         privacyPolicy: 'https://agenstra.com/legal/privacy',
         terms: 'https://agenstra.com/legal/terms',
+        legalDisclosure: 'https://agenstra.com/legal/disclosure',
       },
     },
     socialPreview: {

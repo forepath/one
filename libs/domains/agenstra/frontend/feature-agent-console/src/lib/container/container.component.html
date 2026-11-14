@@ -7,7 +7,12 @@
 />
 
 @if (!isToolWindowRoute()) {
-  <fpc-top-bar brandSrc="assets/images/icon_light.svg" brandAlt="Agenstra" i18n-brandAlt="@@featureContainer-brandAlt">
+  <fpc-top-bar
+    brandSrc="assets/images/icon_light.svg"
+    [appearance]="(isAuthenticated$ | async) ? 'console' : 'landing'"
+    brandAlt="Agenstra"
+    i18n-brandAlt="@@featureContainer-brandAlt"
+  >
     <fpc-language-switcher
       [locales]="localeService.getAvailableLocales()"
       [locale]="localeService.getCurrentLocale()"

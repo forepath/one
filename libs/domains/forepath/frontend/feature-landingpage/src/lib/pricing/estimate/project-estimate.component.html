@@ -3,12 +3,19 @@
   id="hero"
   class="py-10 py-lg-6 bg-body text-body-emphasis position-relative overflow-hidden grid-section grid-section--deep"
 >
+  <!-- The brand mark stack, as on the home heroes (it runs off the top-right corner). -->
+  <shared-mark-stack brand="forepath" />
+  <!-- The brand character peeking up from the hero's bottom edge, at the content's right edge. -->
+  <shared-hero-mascot brand="forepath" pose="peek-point" class="shared-hero-mascot--section-end" />
   <div class="container grid-section__container">
-    <div class="text-center">
+    <div class="text-center text-lg-start">
       <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathProjectEstimate-heroTitle">
         Describe your project, get an <span class="text-primary">instant quote</span>
       </h1>
-      <p class="lead mb-0 mx-auto hero-lead section-lead" i18n="@@featureForepathProjectEstimate-heroDescription">
+      <p
+        class="lead mb-0 mx-auto mx-lg-0 hero-lead section-lead"
+        i18n="@@featureForepathProjectEstimate-heroDescription"
+      >
         Tell us what you want to build or improve. We match your brief to ForePath services and show an indicative price
         range. Your details stay private and are not sent to our servers.
       </p>
@@ -16,7 +23,7 @@
   </div>
 </section>
 
-<section class="py-10 bg-body grid-section">
+<section class="py-10 bg-body grid-section landing-align-start">
   <div class="container grid-section__container">
     @if (showDebugPanel()) {
       <framework-forepath-project-estimate-debug-panel

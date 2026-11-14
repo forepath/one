@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
-export type FpcSectionColumnVariant = 'default' | 'marketing' | 'form';
+export type FpcSectionColumnVariant = 'default' | 'form';
 
 /**
- * One page column inside `fpc-section-row`. Use `variant="marketing"` / `variant="form"` for
- * auth-style split layouts; `scroll` makes the column its own vertical scroll area.
+ * One page column inside `fpc-section-row`. Use `variant="form"` for the auth-style pages' form column;
+ * `scroll` makes the column its own vertical scroll area.
  */
 @Component({
   selector: 'fpc-section-column',
@@ -13,7 +13,6 @@ export type FpcSectionColumnVariant = 'default' | 'marketing' | 'form';
   host: {
     class: 'section__column fpc-section-column',
     '[class.section__column--scroll]': 'scroll()',
-    '[class.section__column--marketing]': 'variant() === "marketing"',
     '[class.section__column--form]': 'variant() === "form"',
     // A style map, not `[style.flex]`: a null `flex` binding removes the shorthand and with it a consumer's own
     // `[style.flex-basis]` (the knowledge tree's resizable sidebar collapsed to 1 px).
@@ -30,7 +29,7 @@ export type FpcSectionColumnVariant = 'default' | 'marketing' | 'form';
 export class FpcSectionColumnComponent {
   /** Turns the column into its own vertical scroll area. */
   readonly scroll = input(false);
-  /** Auth / marketing split layouts. */
+  /** `form`: the auth-style pages' form column. */
   readonly variant = input<FpcSectionColumnVariant>('default');
   /** Optional column heading rendered above projected content. */
   readonly title = input<string | null>(null);
