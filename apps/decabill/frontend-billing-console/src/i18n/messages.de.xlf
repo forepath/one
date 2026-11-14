@@ -2118,6 +2118,10 @@
         <source>Custom application</source>
         <target>Benutzerdefinierte Anwendung</target>
       </trans-unit>
+      <trans-unit id="featureServiceDetail-bareServerService" datatype="html">
+        <source>Server</source>
+        <target>Server</target>
+      </trans-unit>
       <trans-unit id="featureOverview-title" datatype="html">
         <source>Overview</source>
         <target>Übersicht</target>
@@ -2241,6 +2245,10 @@
       <trans-unit id="featureOverview-customService" datatype="html">
         <source>Custom application</source>
         <target>Benutzerdefinierte Anwendung</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-bareServerService" datatype="html">
+        <source>Server</source>
+        <target>Server</target>
       </trans-unit>
       <trans-unit id="featureOverview-serverStatusOnline" datatype="html">
         <source>Online</source>
@@ -2371,8 +2379,12 @@
         <target>Vom Kunden wählbare Optionen</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-provisioningOptionsHelp" datatype="html">
-        <source> Choose which integrated stacks and cloud-init configs customers may pick when ordering this plan. </source>
-        <target> Wählen Sie, welche integrierten Stacks und Cloud-init-Konfigurationen Kunden bei der Bestellung auswählen dürfen.</target>
+        <source> Choose which integrated stacks and cloud-init configs customers may pick when ordering this plan. No provisioning creates a bare server without a preinstalled software stack. </source>
+        <target> Wählen Sie, welche integrierten Stacks und Cloud-init-Konfigurationen Kunden bei der Bestellung auswählen dürfen. Keine Bereitstellung erstellt einen Bare-Server ohne vorinstallierten Software-Stack.</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-provisioningOptionNone" datatype="html">
+        <source>No provisioning (bare server)</source>
+        <target>Keine Bereitstellung (Bare-Server)</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-productDefaults" datatype="html">
         <source>Product defaults</source>
@@ -2637,6 +2649,10 @@
       <trans-unit id="featureSubscriptions-provisioningOption" datatype="html">
         <source>Provisioning option</source>
         <target>Bereitstellungsoption</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-noProvisioningHint" datatype="html">
+        <source> This server is delivered without a preinstalled software stack. Access it with the SSH key from the service page once it is provisioned. </source>
+        <target> Dieser Server wird ohne vorinstallierten Software-Stack ausgeliefert. Greifen Sie nach der Bereitstellung mit dem SSH-Schlüssel von der Service-Seite darauf zu.</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-loadingCustomOrderFields" datatype="html">
         <source>Loading configuration fields...</source>

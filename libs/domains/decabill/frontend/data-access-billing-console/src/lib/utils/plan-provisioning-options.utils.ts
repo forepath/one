@@ -13,6 +13,9 @@ const LEGACY_INTEGRATED_SERVICE_ALIASES: Record<string, IntegratedProvisioningSe
   manager: 'agenstra-manager',
 };
 
+/** Option key (and persisted service id) for a bare server without a provisioning process. */
+export const NO_PROVISIONING_OPTION_KEY = 'none';
+
 export const DEFAULT_INTEGRATED_PROVISIONING_OPTION_KEYS = [
   'integrated:agenstra-controller',
   'integrated:agenstra-manager',
@@ -50,6 +53,10 @@ export function integratedProvisioningServiceLabel(service: IntegratedProvisioni
 }
 
 export function encodeProvisioningOptionKey(option: PlanProvisioningOption): string {
+  if (option.type === 'none') {
+    return NO_PROVISIONING_OPTION_KEY;
+  }
+
   if (option.type === 'integrated') {
     return `integrated:${option.service}`;
   }
@@ -62,6 +69,10 @@ export function parseProvisioningOptionKey(key: string): PlanProvisioningOption 
 
   if (!trimmed) {
     return null;
+  }
+
+  if (trimmed === NO_PROVISIONING_OPTION_KEY) {
+    return { type: 'none' };
   }
 
   if (trimmed.startsWith('integrated:')) {
@@ -85,6 +96,10 @@ function parseProvisioningOptionEntry(value: unknown): PlanProvisioningOption | 
   }
 
   const entry = value as Record<string, unknown>;
+
+  if (entry['type'] === 'none') {
+    return { type: 'none' };
+  }
 
   if (entry['type'] === 'integrated' && typeof entry['service'] === 'string') {
     const service = canonicalizeIntegratedProvisioningService(entry['service']);
@@ -170,6 +185,10 @@ function inferLegacyPlanProvisioningOptionKeys(providerConfigDefaults: Record<st
   }
 
   const legacyService = providerConfigDefaults['service'];
+
+  if (legacyService === NO_PROVISIONING_OPTION_KEY) {
+    return [NO_PROVISIONING_OPTION_KEY];
+  }
 
   if (typeof legacyService === 'string') {
     const integrated = canonicalizeIntegratedProvisioningService(legacyService);

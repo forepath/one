@@ -62,6 +62,10 @@ Cloud-init installs Docker CE and deploys a docker-compose stack on the instance
 
 Containers share a defined application directory on the host (typically under `/opt/`). Environment variables for authentication, database connection, and product-specific settings are interpolated into the generated compose file from the subscription's requested configuration.
 
+### Bare servers (no provisioning)
+
+Plans can also offer the **no provisioning** option (`service: none`). The server is created without a product stack and without a CloudInit config. Its user data only applies the SSH access baseline: the generated platform key in root's `authorized_keys`, password authentication disabled and root login limited to keys. These settings go in the `00-decabill-hardening.conf` drop-in, so they override image drop-ins such as `50-cloud-init.conf`. Customers reveal the access key on the service page as usual. Addon CloudInit scripts are still appended. The update job skips these items. See [CloudInit Configs](./cloud-init-configs.md#plan-linkage).
+
 OpenSearch on `agenstra-controller` and `decabill-billing` is single-node, bound only to the compose network (no host port), with `vm.max_map_count=262144` set during cloud-init. Existing provisioned hosts do not pick this up from image pull alone; re-provision or replace the host compose file.
 
 On `agenstra-manager` hosts, cloud-init installs a pinned, checksum-verified gVisor release right after Docker. It registers the Docker runtimes `runsc-systrap` and `runsc-systrap-hostnet`, which enable the **sandboxed** container isolation level for Agenstra environments. Docker's default runtime stays `runc`.
@@ -69,6 +73,11 @@ On `agenstra-manager` hosts, cloud-init installs a pinned, checksum-verified gVi
 When the host exposes hardware virtualization (`/dev/kvm`, or a CPU with `vmx` / `svm` whose KVM modules can be loaded), cloud-init also registers `runsc-kvm` and `runsc-kvm-hostnet` for the **sandboxed-kvm** level (gVisor on its KVM platform). No libvirt or QEMU is installed on the host. The same `/dev/kvm` also enables the **microvm** level (a KVM microVM per environment). cloud-init prepares it first and independently of gVisor, so it is available even when the gVisor installation fails. The level needs nothing else on the host, because libvirt and QEMU ship inside the microVM worker image that the agent manager pulls. Hetzner Cloud and DigitalOcean servers normally do not expose KVM, so those hosts offer `sandboxed` only.
 
 Both steps are optional and never fail provisioning. On any failure they are rolled back; a KVM failure only rolls back the KVM runtimes, and the host keeps whatever it could set up (at least standard Docker).
+
+**SSH access:** each provisioned item gets a newly generated ed25519 key pair. The private key is stored encrypted on the item, and the customer can reveal it once. The public key reaches the server in two ways:
+
+- **At creation through the provider API (Hetzner, DigitalOcean):** the key is registered as a temporary SSH key resource and passed when the server is created. It is deleted right after creation, including when creation fails. The server keeps the key, and no keys pile up on the account. With an SSH key, the provider issues no root password. If the key can't be registered, provisioning continues with user data only and logs a warning.
+- **In user data:** every generated script writes the key to root's `authorized_keys` and installs the `00-decabill-hardening.conf` sshd drop-in (`PasswordAuthentication no`, `KbdInteractiveAuthentication no`, `PermitRootLogin prohibit-password`). It checks the config with `sshd -t` before restarting sshd. The drop-in sorts before image drop-ins such as `50-cloud-init.conf`, so its values apply. Custom templates in `user-data-template` mode are the admin's own script, and only the provider-side key applies to them.
 
 **User data limits:** Decabill submits user data to Hetzner Cloud as plain text, because Hetzner limits the submitted `user_data` string to 32768 characters and base64 would add a third. Hetzner user data above that limit is rejected before the server is created. DigitalOcean user data is limited to 64 KiB.
 

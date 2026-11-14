@@ -8736,7 +8736,10 @@ components:
           type: string
         type:
           type: string
-          enum: [integrated, custom]
+          enum: [integrated, custom, none]
+          description: |
+            `integrated` (first-party stack), `custom` (admin CloudInit template), or `none`
+            (bare server without a provisioning process; option key `none`).
         service:
           type: string
           enum: [agenstra-controller, agenstra-manager, decabill-billing]
@@ -9517,7 +9520,8 @@ components:
           description: |
             Provider defaults merged with customer requestedConfig on order.
             Provisioning-enabled plans store customer-selectable stacks in provisioningOptions
-            (integrated agenstra-controller/agenstra-manager/decabill-billing and/or custom CloudInit config ids).
+            (integrated agenstra-controller/agenstra-manager/decabill-billing, custom CloudInit config ids,
+            and/or `{ type: none }` for a bare server without a provisioning process).
             Legacy service and cloudInitConfigId keys are derived at persistence time only for single-option plans.
         orderingHighlights:
           type: array
@@ -9696,13 +9700,19 @@ components:
           type: string
           description: |
             Customer choice when the plan offers multiple provisioningOptions entries
-            (for example integrated:agenstra-controller or custom:<cloud-init-config-uuid>).
+            (for example integrated:agenstra-controller, custom:<cloud-init-config-uuid> or none).
             Required when the plan has more than one option; omitted when the plan has exactly one option.
         service:
           type: string
           enum:
-            [agenstra-controller, agenstra-manager, decabill-billing, custom]
-          description: Product service kind. Use agenstra-controller for the full Agenstra stack, agenstra-manager for the agent manager only, decabill-billing for the Decabill billing stack, or custom for admin-defined Docker templates.
+            [
+              agenstra-controller,
+              agenstra-manager,
+              decabill-billing,
+              custom,
+              none,
+            ]
+          description: Product service kind. Use agenstra-controller for the full Agenstra stack, agenstra-manager for the agent manager only, decabill-billing for the Decabill billing stack, custom for admin-defined Docker templates, or none for a bare server without a provisioning process (only when the plan offers it).
         env:
           type: object
           additionalProperties: { type: string }
@@ -10114,11 +10124,18 @@ components:
           {
             type: string,
             enum:
-              [agenstra-controller, agenstra-manager, decabill-billing, custom],
+              [
+                agenstra-controller,
+                agenstra-manager,
+                decabill-billing,
+                custom,
+                none,
+              ],
             description: Product service from config snapshot; agenstra-controller (full stack),
             agenstra-manager (agent manager only),
             decabill-billing (Decabill billing stack),
-            or custom Docker template. Defaults to agenstra-controller.,
+            custom Docker template,
+            or none (bare server without provisioning). Defaults to agenstra-controller.,
           }
         sshAccessGranted:
           {

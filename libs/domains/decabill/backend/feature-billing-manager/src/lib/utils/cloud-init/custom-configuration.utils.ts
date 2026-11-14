@@ -6,6 +6,7 @@ import {
   type CloudInitTemplateContext,
 } from './template-interpolation.utils';
 import { quoteShellLiteral, validateCloudInitWorkDir } from './work-dir.utils';
+import { buildSshdHardeningScript } from './ssh-hardening.utils';
 
 export interface CustomConfigurationCloudInitConfig {
   ssh: {
@@ -146,6 +147,7 @@ log "Configuring SSH server..."
 cat > /etc/ssh/sshd_config <<'EOF'
 ${sshConfig}
 EOF
+${buildSshdHardeningScript()}
 service ssh restart
 
 log "Installing prerequisites for Docker installation..."

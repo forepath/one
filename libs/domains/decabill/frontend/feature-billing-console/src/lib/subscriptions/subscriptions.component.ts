@@ -691,7 +691,7 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   orderRequestedConfig: {
-    service: 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' | 'custom';
+    service: 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' | 'custom' | 'none';
     authenticationMethod: IntegratedOrderAuthMethod;
     staticApiKey: string;
     disableSignup: boolean;
@@ -1906,6 +1906,10 @@ export class SubscriptionsComponent implements OnInit {
     return this.getSelectedOrderProvisioningOption()?.type === 'integrated';
   }
 
+  showNoProvisioningOrderConfiguration(_plan: ServicePlanResponse | null | undefined): boolean {
+    return this.getSelectedOrderProvisioningOption()?.type === 'none';
+  }
+
   onOrderProvisioningOptionKeyChange(optionKey: string): void {
     this.orderProvisioningOptionKey = optionKey;
     const option = this.orderProvisioningOptions.find((entry) => entry.optionKey === optionKey);
@@ -2016,6 +2020,14 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   private applyOrderProvisioningOption(option: OrderProvisioningOption): void {
+    if (option.type === 'none') {
+      this.orderRequestedConfig = { ...this.orderRequestedConfig, service: 'none' };
+      this.orderCustomOrderFields = [];
+      this.orderCustomEnv = {};
+
+      return;
+    }
+
     if (option.type === 'custom' && option.cloudInitConfigId?.trim()) {
       this.orderRequestedConfig = { ...this.orderRequestedConfig, service: 'custom' };
       this.loadCustomOrderFields(option.cloudInitConfigId.trim());
@@ -2433,6 +2445,35 @@ export class SubscriptionsComponent implements OnInit {
         service: 'custom',
         env,
       };
+
+      this.attachOrderProvider(requestedConfig);
+
+      if (this.orderGeographyFieldKey && this.orderProvisioningLocation?.trim()) {
+        requestedConfig[this.orderGeographyFieldKey] = this.orderProvisioningLocation.trim();
+      }
+
+      if (this.orderProvisioningServerType?.trim()) {
+        requestedConfig['serverType'] = this.orderProvisioningServerType.trim();
+      }
+
+      this.attachProvisioningOptionKey(requestedConfig);
+
+      const dto: CreateSubscriptionDto = this.withPromotionCode({
+        planId: this.orderPlanId.trim(),
+        addonIds: mergeMandatoryOrderAddonIds(this.orderAddonIds, this.orderAddons),
+        addonConfigs: this.buildOrderAddonConfigs(),
+        requestedConfig,
+        autoBackorder: this.orderAutoBackorder,
+      });
+
+      this.subscriptionsFacade.createSubscription(dto);
+
+      return;
+    }
+
+    if (cfg.service === 'none') {
+      // Bare server: no product stack, so no stack-specific settings are sent.
+      const requestedConfig: Record<string, unknown> = { service: 'none' };
 
       this.attachOrderProvider(requestedConfig);
 

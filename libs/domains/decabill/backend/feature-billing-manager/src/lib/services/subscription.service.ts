@@ -432,6 +432,8 @@ export class SubscriptionService {
           location: region,
           firewallId: effectiveConfig.firewallId as number | undefined,
           userData,
+          // Providers that support it also register the key at creation (no root password is issued).
+          sshPublicKey: publicKey,
         },
         credentials,
       );

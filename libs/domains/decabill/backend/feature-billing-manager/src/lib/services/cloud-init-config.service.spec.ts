@@ -391,6 +391,34 @@ describe('CloudInitConfigService', () => {
         }),
       ).resolves.toBeUndefined();
     });
+
+    it('accepts a none-only plan for provisionable service types without touching CloudInit configs', async () => {
+      await expect(
+        service.assertActiveConfigForPlanDefaults('st-1', { provisioningOptions: [{ type: 'none' }] }),
+      ).resolves.toBeUndefined();
+      expect(cloudInitConfigsRepository.findByIdOrThrow).not.toHaveBeenCalled();
+    });
+
+    it('still rejects provisionable plans whose provisioningOptions are all unparseable', async () => {
+      await expect(
+        service.assertActiveConfigForPlanDefaults('st-1', { provisioningOptions: [{ type: 'bogus' }] }),
+      ).rejects.toThrow('At least one provisioning option is required for this service type');
+    });
+  });
+
+  describe('buildOrderProvisioningOptions (none)', () => {
+    it('returns the no-provisioning option with a fixed label', async () => {
+      const options = await service.buildOrderProvisioningOptions({
+        provisioningOptions: [{ type: 'integrated', service: 'agenstra-controller' }, { type: 'none' }],
+      });
+
+      expect(options).toEqual([
+        expect.objectContaining({ optionKey: 'integrated:agenstra-controller', type: 'integrated' }),
+        expect.objectContaining({ optionKey: 'none', type: 'none', label: 'No provisioning' }),
+      ]);
+      expect(options[1].service).toBeUndefined();
+      expect(options[1].cloudInitConfigId).toBeUndefined();
+    });
   });
 
   describe('buildOrderProvisioningOptions', () => {

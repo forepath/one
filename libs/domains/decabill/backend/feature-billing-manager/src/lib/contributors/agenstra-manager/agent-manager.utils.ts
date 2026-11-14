@@ -18,6 +18,7 @@ import {
   buildPostgresBackendEnvLines,
   buildPostgresComposeService,
 } from '../../utils/cloud-init/postgres-compose.utils';
+import { buildSshdHardeningScript } from '../../utils/cloud-init/ssh-hardening.utils';
 
 /** Docker bridge shared by the manager and its agent workers (compose `name:` keeps it unprefixed). */
 export const AGENT_MANAGER_NETWORK = 'agent-manager-network';
@@ -418,6 +419,7 @@ log "Configuring SSH server..."
 cat > /etc/ssh/sshd_config <<'EOF'
 ${sshConfig}
 EOF
+${buildSshdHardeningScript()}
 service ssh restart
 
 # Set SSH password permanently

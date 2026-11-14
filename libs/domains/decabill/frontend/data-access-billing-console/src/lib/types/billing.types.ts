@@ -200,11 +200,13 @@ export interface CloudInitConfigOrderField {
 
 export type PlanProvisioningOption =
   | { type: 'integrated'; service: 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' }
-  | { type: 'custom'; cloudInitConfigId: string };
+  | { type: 'custom'; cloudInitConfigId: string }
+  /** Bare server without a provisioning process (no integrated stack, no CloudInit template). */
+  | { type: 'none' };
 
 export interface OrderProvisioningOption {
   optionKey: string;
-  type: 'integrated' | 'custom';
+  type: 'integrated' | 'custom' | 'none';
   service?: 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing';
   cloudInitConfigId?: string;
   label: string;
@@ -691,11 +693,16 @@ export interface GitConfig {
 }
 
 /** Provisioned product service kind on a subscription item or cloud-init request. */
-export type ProvisioningServiceKind = 'agenstra-controller' | 'agenstra-manager' | 'decabill-billing' | 'custom';
+export type ProvisioningServiceKind =
+  | 'agenstra-controller'
+  | 'agenstra-manager'
+  | 'decabill-billing'
+  | 'custom'
+  | 'none';
 
 /** Cloud-init related part of requestedConfig (authentication, SMTP, optional provisioning tokens). */
 export interface RequestedConfigCloudInit {
-  /** Product service - controller, manager, or custom CloudInit template. */
+  /** Product service - controller, manager, custom CloudInit template, or none (bare server). */
   service?: ProvisioningServiceKind;
   authenticationMethod?: string;
   staticApiKey?: string;

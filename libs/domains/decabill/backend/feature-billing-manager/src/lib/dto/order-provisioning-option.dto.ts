@@ -2,7 +2,7 @@ import { IntegratedProvisioningService } from '../utils/cloud-init/integrated-pr
 
 export interface OrderProvisioningOptionDto {
   optionKey: string;
-  type: 'integrated' | 'custom';
+  type: 'integrated' | 'custom' | 'none';
   service?: IntegratedProvisioningService;
   cloudInitConfigId?: string;
   label: string;

@@ -65,6 +65,12 @@ export class SubscriptionItemUpdateJobHandler {
       return;
     }
 
+    if (service === CloudInitServiceType.None) {
+      this.logger.log(`Skipping update for bare server subscription item ${item.id}`);
+
+      return;
+    }
+
     const stackKey = canonicalizeIntegratedProvisioningService(rawService ?? '');
     const stack = stackKey ? this.integratedStackRegistry.get(stackKey) : undefined;
 

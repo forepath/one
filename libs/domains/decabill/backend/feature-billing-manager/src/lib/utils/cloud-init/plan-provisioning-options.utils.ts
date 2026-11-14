@@ -7,19 +7,31 @@ import {
 
 export { IntegratedProvisioningService, CloudInitServiceType } from './integrated-provisioning-service';
 
+/**
+ * `none` provisions a bare server: no integrated stack and no admin CloudInit template.
+ * Only the platform access key (and addon scripts) are delivered as user data.
+ */
 export type PlanProvisioningOption =
   | { type: 'integrated'; service: IntegratedProvisioningService }
-  | { type: 'custom'; cloudInitConfigId: string };
+  | { type: 'custom'; cloudInitConfigId: string }
+  | { type: 'none' };
 
 export interface ResolvedOrderProvisioningSelection {
-  service: IntegratedProvisioningService | 'custom';
+  service: IntegratedProvisioningService | 'custom' | 'none';
   cloudInitConfigId?: string;
 }
+
+/** Option key and persisted service id for plans that provision a bare server. */
+export const NO_PROVISIONING_OPTION_KEY = 'none';
 
 export const DEFAULT_INTEGRATED_PROVISIONING_OPTIONS: PlanProvisioningOption[] =
   allIntegratedProvisioningServices().map((service) => ({ type: 'integrated' as const, service }));
 
 export function encodeProvisioningOptionKey(option: PlanProvisioningOption): string {
+  if (option.type === 'none') {
+    return NO_PROVISIONING_OPTION_KEY;
+  }
+
   if (option.type === 'integrated') {
     return `integrated:${option.service}`;
   }
@@ -32,6 +44,10 @@ export function parseProvisioningOptionKey(key: string): PlanProvisioningOption 
 
   if (!trimmed) {
     return null;
+  }
+
+  if (trimmed === NO_PROVISIONING_OPTION_KEY) {
+    return { type: 'none' };
   }
 
   if (trimmed.startsWith('integrated:')) {
@@ -57,6 +73,10 @@ function parseProvisioningOptionEntry(value: unknown): PlanProvisioningOption | 
 
   const entry = value as Record<string, unknown>;
   const type = entry['type'];
+
+  if (type === 'none') {
+    return { type: 'none' };
+  }
 
   if (type === 'integrated') {
     const service = entry['service'];
@@ -142,6 +162,10 @@ function inferLegacyPlanProvisioningOptions(
   }
 
   const legacyService = providerConfigDefaults['service'];
+
+  if (legacyService === NO_PROVISIONING_OPTION_KEY) {
+    return [{ type: 'none' }];
+  }
 
   if (typeof legacyService === 'string') {
     const integrated = canonicalizeIntegratedProvisioningService(legacyService);
@@ -238,7 +262,10 @@ function applyProvisioningOptionsToDefaults(
   if (options.length === 1) {
     const only = options[0];
 
-    if (only.type === 'integrated') {
+    if (only.type === 'none') {
+      normalized['service'] = NO_PROVISIONING_OPTION_KEY;
+      delete normalized['cloudInitConfigId'];
+    } else if (only.type === 'integrated') {
       normalized['service'] = only.service;
       delete normalized['cloudInitConfigId'];
     } else {
@@ -367,6 +394,10 @@ function optionsMatchSelection(
   selection: ResolvedOrderProvisioningSelection,
 ): boolean {
   return options.some((option) => {
+    if (selection.service === NO_PROVISIONING_OPTION_KEY) {
+      return option.type === 'none';
+    }
+
     if (selection.service === 'custom') {
       return option.type === 'custom' && option.cloudInitConfigId === selection.cloudInitConfigId;
     }
@@ -384,6 +415,10 @@ function resolveLegacyRequestedProvisioningSelection(
     return null;
   }
 
+  if (service === NO_PROVISIONING_OPTION_KEY) {
+    return { service: NO_PROVISIONING_OPTION_KEY };
+  }
+
   const integrated = canonicalizeIntegratedProvisioningService(service);
 
   if (integrated) {
@@ -399,6 +434,16 @@ function resolveLegacyRequestedProvisioningSelection(
   }
 
   return null;
+}
+
+function toResolvedOrderProvisioningSelection(option: PlanProvisioningOption): ResolvedOrderProvisioningSelection {
+  if (option.type === 'none') {
+    return { service: NO_PROVISIONING_OPTION_KEY };
+  }
+
+  return option.type === 'custom'
+    ? { service: 'custom', cloudInitConfigId: option.cloudInitConfigId }
+    : { service: option.service };
 }
 
 /**
@@ -423,10 +468,7 @@ export function resolveOrderProvisioningSelection(
       throw new Error('Invalid provisioning option');
     }
 
-    const selection: ResolvedOrderProvisioningSelection =
-      parsed.type === 'custom'
-        ? { service: 'custom', cloudInitConfigId: parsed.cloudInitConfigId }
-        : { service: parsed.service };
+    const selection = toResolvedOrderProvisioningSelection(parsed);
 
     if (!optionsMatchSelection(options, selection)) {
       throw new Error('Provisioning option is not available for this plan');
@@ -436,11 +478,7 @@ export function resolveOrderProvisioningSelection(
   }
 
   if (options.length === 1) {
-    const only = options[0];
-
-    return only.type === 'custom'
-      ? { service: 'custom', cloudInitConfigId: only.cloudInitConfigId }
-      : { service: only.service };
+    return toResolvedOrderProvisioningSelection(options[0]);
   }
 
   const legacySelection = resolveLegacyRequestedProvisioningSelection(requestedConfig);

@@ -3,6 +3,7 @@ import {
   DEFAULT_INTEGRATED_PROVISIONING_OPTION_KEYS,
   encodeProvisioningOptionKey,
   integratedProvisioningServiceLabel,
+  NO_PROVISIONING_OPTION_KEY,
   parsePlanProvisioningOptions,
   parseProvisioningOptionKey,
   planProvisioningOptionKeysFromDefaults,
@@ -99,5 +100,21 @@ describe('planProvisioningOptionsUtils', () => {
       { type: 'integrated', service: 'agenstra-controller' },
       { type: 'custom', cloudInitConfigId: 'cfg-1' },
     ]);
+  });
+
+  it('round-trips the no-provisioning (bare server) option', () => {
+    expect(NO_PROVISIONING_OPTION_KEY).toBe('none');
+    expect(encodeProvisioningOptionKey({ type: 'none' })).toBe('none');
+    expect(parseProvisioningOptionKey('none')).toEqual({ type: 'none' });
+    expect(buildProvisioningOptionsFromKeys(['none', 'integrated:agenstra-controller'])).toEqual([
+      { type: 'none' },
+      { type: 'integrated', service: 'agenstra-controller' },
+    ]);
+  });
+
+  it('reads none from plan defaults without falling back to agenstra-controller', () => {
+    expect(parsePlanProvisioningOptions({ provisioningOptions: [{ type: 'none' }] })).toEqual([{ type: 'none' }]);
+    expect(planProvisioningOptionKeysFromDefaults({ provisioningOptions: [{ type: 'none' }] })).toEqual(['none']);
+    expect(planProvisioningOptionKeysFromDefaults({ service: 'none' })).toEqual(['none']);
   });
 });

@@ -1143,6 +1143,14 @@
                                 </div>
                               </fieldset>
                             }
+                          } @else if (showNoProvisioningOrderConfiguration(selectedPlan)) {
+                            <p
+                              class="form-text fpc-form-text--wrap mb-0"
+                              i18n="@@featureSubscriptions-noProvisioningHint"
+                            >
+                              This server is delivered without a preinstalled software stack. Access it with the SSH key
+                              from the service page once it is provisioned.
+                            </p>
                           }
                         }
                       </div>

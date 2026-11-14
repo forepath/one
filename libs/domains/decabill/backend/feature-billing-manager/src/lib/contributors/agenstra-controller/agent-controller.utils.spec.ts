@@ -7,6 +7,7 @@ import {
   buildMergedClientEndpointAllowedHosts,
   CloudInitConfig,
 } from './agent-controller.utils';
+import { SSHD_HARDENING_DROP_IN_PATH } from '../../utils/cloud-init/ssh-hardening.utils';
 
 describe('cloud-init.utils', () => {
   describe('buildMergedClientEndpointAllowedHosts', () => {
@@ -199,6 +200,12 @@ describe('cloud-init.utils', () => {
       const script = Buffer.from(b64, 'base64').toString('utf-8');
 
       expect(script).toContain('location /api/');
+      // sshd hardening drop-in is written and validated before sshd restarts (overrides image drop-ins).
+      expect(script).toContain(`cat > ${SSHD_HARDENING_DROP_IN_PATH} <<'SSHD_HARDENING_EOF'`);
+      expect(script).toContain('PasswordAuthentication no\nKbdInteractiveAuthentication no\nSSHD_HARDENING_EOF');
+      expect(script.indexOf('sshd -t')).toBeLessThan(script.indexOf('service ssh restart'));
+      expect(script.indexOf(SSHD_HARDENING_DROP_IN_PATH)).toBeLessThan(script.indexOf('sshd -t'));
+
       expect(script).toContain('location /socket/');
       expect(script).toContain('location /socket.io/');
       expect(script).toContain('agent-controller-api');

@@ -52,6 +52,84 @@ describe('HetznerProvisioningService', () => {
     );
   });
 
+  it('registers the public key as a temporary Hetzner SSH key, passes it on create and deletes it afterwards', async () => {
+    mockedAxios.post
+      .mockResolvedValueOnce({ data: { ssh_key: { id: 777 } } })
+      .mockResolvedValueOnce({ data: { server: { id: 12345 } } });
+    mockedAxios.delete.mockResolvedValueOnce({});
+
+    const service = new HetznerProvisioningService();
+    const result = await service.provisionServer({
+      name: 'test-server',
+      serverType: 'cx11',
+      location: 'fsn1',
+      userData: '#!/bin/bash\necho hello',
+      sshPublicKey: ' ssh-ed25519 AAAATEST ',
+    });
+
+    expect(result).toEqual({ serverId: '12345' });
+    expect(mockedAxios.post).toHaveBeenNthCalledWith(
+      1,
+      'https://api.hetzner.cloud/v1/ssh_keys',
+      expect.objectContaining({
+        name: expect.stringMatching(/^decabill-test-server-/),
+        public_key: 'ssh-ed25519 AAAATEST',
+        labels: { 'managed-by': 'decabill' },
+      }),
+      expect.anything(),
+    );
+    expect(mockedAxios.post).toHaveBeenNthCalledWith(
+      2,
+      'https://api.hetzner.cloud/v1/servers',
+      expect.objectContaining({ ssh_keys: [777] }),
+      expect.anything(),
+    );
+    expect(mockedAxios.delete).toHaveBeenCalledWith('https://api.hetzner.cloud/v1/ssh_keys/777', expect.anything());
+  });
+
+  it('deletes the temporary SSH key even when server creation fails', async () => {
+    mockedAxios.post
+      .mockResolvedValueOnce({ data: { ssh_key: { id: 778 } } })
+      .mockRejectedValueOnce(Object.assign(new Error('boom'), { isAxiosError: true }));
+    mockedAxios.delete.mockResolvedValueOnce({});
+
+    const service = new HetznerProvisioningService();
+
+    await expect(
+      service.provisionServer({
+        name: 'test-server',
+        serverType: 'cx11',
+        location: 'fsn1',
+        userData: '#!/bin/bash\necho hello',
+        sshPublicKey: 'ssh-ed25519 AAAATEST',
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(mockedAxios.delete).toHaveBeenCalledWith('https://api.hetzner.cloud/v1/ssh_keys/778', expect.anything());
+  });
+
+  it('falls back to user-data-only access when the SSH key cannot be registered', async () => {
+    mockedAxios.post
+      .mockRejectedValueOnce(Object.assign(new Error('uniqueness_error'), { isAxiosError: true }))
+      .mockResolvedValueOnce({ data: { server: { id: 12346 } } });
+
+    const service = new HetznerProvisioningService();
+    const result = await service.provisionServer({
+      name: 'test-server',
+      serverType: 'cx11',
+      location: 'fsn1',
+      userData: '#!/bin/bash\necho hello',
+      sshPublicKey: 'ssh-ed25519 AAAATEST',
+    });
+
+    expect(result).toEqual({ serverId: '12346' });
+    expect(mockedAxios.post).toHaveBeenLastCalledWith(
+      'https://api.hetzner.cloud/v1/servers',
+      expect.not.objectContaining({ ssh_keys: expect.anything() }),
+      expect.anything(),
+    );
+    expect(mockedAxios.delete).not.toHaveBeenCalled();
+  });
+
   it('submits base64-encoded user data as plain text (the 32 KiB limit applies to the submitted string)', async () => {
     mockedAxios.post.mockResolvedValueOnce({ data: { server: { id: 12345 } } });
 

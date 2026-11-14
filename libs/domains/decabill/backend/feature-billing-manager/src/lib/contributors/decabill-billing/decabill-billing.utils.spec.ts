@@ -4,6 +4,7 @@ import {
   buildDecabillBillingCloudInitUserData,
   buildDecabillBillingUpdateCommand,
 } from './decabill-billing.utils';
+import { SSHD_HARDENING_DROP_IN_PATH } from '../../utils/cloud-init/ssh-hardening.utils';
 
 describe('decabill-billing.utils', () => {
   describe('buildDecabillBillingCloudInitConfigFromRequest', () => {
@@ -68,6 +69,12 @@ describe('decabill-billing.utils', () => {
       const script = Buffer.from(encoded, 'base64').toString('utf8');
 
       expect(script).toContain('#!/bin/bash');
+      // sshd hardening drop-in is written and validated before sshd restarts (overrides image drop-ins).
+      expect(script).toContain(`cat > ${SSHD_HARDENING_DROP_IN_PATH} <<'SSHD_HARDENING_EOF'`);
+      expect(script).toContain('PasswordAuthentication no\nKbdInteractiveAuthentication no\nSSHD_HARDENING_EOF');
+      expect(script.indexOf('sshd -t')).toBeLessThan(script.indexOf('service ssh restart'));
+      expect(script.indexOf(SSHD_HARDENING_DROP_IN_PATH)).toBeLessThan(script.indexOf('sshd -t'));
+
       expect(script).toContain('ghcr.io/forepath/decabill-billing-api:latest');
       expect(script).toContain('ghcr.io/forepath/decabill-billing-console-server:latest');
       expect(script).toContain('postgres:16-alpine');

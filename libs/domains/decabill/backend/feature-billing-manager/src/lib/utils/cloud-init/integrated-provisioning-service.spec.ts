@@ -39,6 +39,7 @@ describe('integrated-provisioning-service', () => {
       expect(canonicalizeCloudInitService('agenstra-manager')).toBe(CloudInitServiceType.AgenstraManager);
       expect(canonicalizeCloudInitService('decabill-billing')).toBe(CloudInitServiceType.DecabillBilling);
       expect(canonicalizeCloudInitService('custom')).toBe(CloudInitServiceType.Custom);
+      expect(canonicalizeCloudInitService('none')).toBe(CloudInitServiceType.None);
       expect(canonicalizeCloudInitService('controller')).toBe(CloudInitServiceType.AgenstraController);
       expect(canonicalizeCloudInitService('manager')).toBe(CloudInitServiceType.AgenstraManager);
       expect(canonicalizeCloudInitService(undefined)).toBe(CloudInitServiceType.AgenstraController);

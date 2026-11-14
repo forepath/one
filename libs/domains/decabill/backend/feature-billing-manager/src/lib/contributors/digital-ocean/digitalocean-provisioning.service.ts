@@ -346,8 +346,52 @@ export class DigitaloceanProvisioningService {
    * Provisions a droplet. DigitalOcean's API expects plain-text cloud-init user_data; stack builders
    * base64-encode their scripts, so the user data is decoded first (see `resolvePlainTextUserData`).
    */
+  /**
+   * Registers the droplet's public key as a temporary DigitalOcean account key so it is injected at creation.
+   * With an SSH key, DigitalOcean issues no root password. Failure falls back to the user-data key only.
+   */
+  private async createTemporarySshKey(
+    dropletName: string,
+    publicKey: string,
+    token: string,
+  ): Promise<number | undefined> {
+    try {
+      const response = await axios.post<{ ssh_key?: { id?: number } }>(
+        'https://api.digitalocean.com/v2/account/keys',
+        { name: `decabill-${dropletName}-${Date.now().toString(36)}`, public_key: publicKey },
+        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } },
+      );
+
+      return response.data?.ssh_key?.id ?? undefined;
+    } catch (error) {
+      this.logger.warn(
+        `Could not register SSH key with DigitalOcean for ${dropletName}; using the user-data key only: ${(error as AxiosError).message}`,
+      );
+
+      return undefined;
+    }
+  }
+
+  /** The key is copied into the droplet at creation, so the account-level key is removed right away. */
+  private async deleteTemporarySshKey(sshKeyId: number, token: string): Promise<void> {
+    try {
+      await axios.delete(`https://api.digitalocean.com/v2/account/keys/${sshKeyId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (error) {
+      this.logger.warn(`Failed to delete temporary DigitalOcean SSH key ${sshKeyId}: ${(error as AxiosError).message}`);
+    }
+  }
+
   async provisionServer(
-    config: { name: string; serverType: string; location: string; userData: string },
+    config: {
+      name: string;
+      serverType: string;
+      location: string;
+      userData: string;
+      /** Registered as a temporary DigitalOcean account key for creation; omitted keys fall back to user data only. */
+      sshPublicKey?: string;
+    },
     apiToken?: string,
   ) {
     const token = this.resolveApiToken(apiToken);
@@ -365,6 +409,9 @@ export class DigitaloceanProvisioningService {
       );
     }
 
+    const publicKey = config.sshPublicKey?.trim();
+    const sshKeyId = publicKey ? await this.createTemporarySshKey(config.name, publicKey, token) : undefined;
+
     try {
       const response = await axios.post<{ droplet: DigitalOceanDroplet }>(
         'https://api.digitalocean.com/v2/droplets',
@@ -374,6 +421,7 @@ export class DigitaloceanProvisioningService {
           size: config.serverType,
           image: 'ubuntu-22-04-x64',
           user_data: userDataPlain,
+          ...(sshKeyId ? { ssh_keys: [sshKeyId] } : {}),
         },
         {
           headers: {
@@ -394,6 +442,10 @@ export class DigitaloceanProvisioningService {
 
       this.logger.error(`Failed to provision DigitalOcean droplet: ${axiosError.message}`);
       throw new BadRequestException(`Failed to provision server: ${axiosError.message}`);
+    } finally {
+      if (sshKeyId) {
+        await this.deleteTemporarySshKey(sshKeyId, token);
+      }
     }
   }
 

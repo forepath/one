@@ -34,6 +34,7 @@ import {
   type ProvisionedOidcConfig,
   type ProvisionedSamlConfig,
 } from '../shared/external-auth-config.utils';
+import { buildSshdHardeningScript } from '../../utils/cloud-init/ssh-hardening.utils';
 
 export const DECABILL_BILLING_STACK_DIR = '/opt/decabill-billing';
 
@@ -564,6 +565,7 @@ log "Configuring SSH server..."
 cat > /etc/ssh/sshd_config <<'EOF'
 ${sshConfig}
 EOF
+${buildSshdHardeningScript()}
 service ssh restart
 
 log "Setting SSH password permanently..."

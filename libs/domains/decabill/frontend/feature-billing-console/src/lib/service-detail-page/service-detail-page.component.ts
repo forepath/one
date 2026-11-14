@@ -611,6 +611,10 @@ export class ServiceDetailPageComponent implements OnInit {
       return $localize`:@@featureServiceDetail-customService:Custom application`;
     }
 
+    if (service === 'none') {
+      return $localize`:@@featureServiceDetail-bareServerService:Server`;
+    }
+
     return integratedProvisioningServiceLabel('agenstra-controller');
   }
 
