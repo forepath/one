@@ -16,7 +16,6 @@ import { ClientsService } from './clients.service';
 
 const PRIMARY_CHAT_ID = 'chat-primary';
 const USER_CHAT_ID = 'chat-user';
-
 const mockAgent = {
   id: 'agent-1',
   primaryChatId: PRIMARY_CHAT_ID,
@@ -170,8 +169,8 @@ describe('AgentConsoleStatusService', () => {
       userRole: UserRole.USER,
       user: { id: 'user-1', roles: [] },
     });
-
     const chats = snapshot.environments[0].chats ?? [];
+
     expect(chats.find((c) => c.chatSessionId === PRIMARY_CHAT_ID)?.hasUnreadMessages).toBe(true);
     expect(chats.find((c) => c.chatSessionId === USER_CHAT_ID)?.hasUnreadMessages).toBe(false);
     expect(snapshot.environments[0].hasUnreadMessages).toBe(true);
@@ -218,6 +217,7 @@ describe('AgentConsoleStatusService', () => {
 
   it('computes unread after VCS so a mark-read during build is visible', async () => {
     const messageCreatedAt = new Date('2026-01-02T00:00:00.000Z');
+
     messagesProxy.getLatestAgentMessage.mockResolvedValue({
       id: 'msg-1',
       createdAt: messageCreatedAt.toISOString(),

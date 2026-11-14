@@ -1,5 +1,6 @@
-import { PublicContactRequestsController } from './public-contact-requests.controller';
 import { ContactRequestService } from '../services/contact-request.service';
+
+import { PublicContactRequestsController } from './public-contact-requests.controller';
 
 describe('PublicContactRequestsController', () => {
   let controller: PublicContactRequestsController;

@@ -55,14 +55,14 @@ import {
   take,
 } from 'rxjs';
 
-import { getBillingIntervalLabel, resolveNamedLabel } from '../billing-status-labels';
+import { formatBillingMoney } from '../billing-format';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
+import { getBillingIntervalLabel, resolveNamedLabel } from '../billing-status-labels';
 import { MonacoEditorWrapperComponent } from '../monaco-editor-wrapper/monaco-editor-wrapper.component';
 import { optionalNumberInputValue } from '../optional-number-input.util';
 import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { activeState } from '../shared/table-states';
-import { formatBillingMoney } from '../billing-format';
-import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
 
 interface EnvVariableFormRow {
   key: string;
@@ -360,6 +360,7 @@ export class AddonsPageComponent implements OnInit {
       this.createAddonMeterAttachMeterId = '';
       this.createAddonMeterAttachUnitPrice = '';
       this.createAddonMeterAttachIncludedUsage = '';
+
       return;
     }
 
@@ -386,6 +387,7 @@ export class AddonsPageComponent implements OnInit {
 
         if (!meter) {
           this.addonMeterAttachError = 'Selected meter is not available';
+
           return;
         }
 
@@ -954,6 +956,7 @@ export class AddonsPageComponent implements OnInit {
       destroyRef: this.destroyRef,
       onSuccess: () => {
         const pendingMeters = [...this.createAttachedMeters];
+
         this.createForm = this.defaultForm();
         this.createAttachedMeters = [];
         this.resetAddonMeterAttachForm('create');

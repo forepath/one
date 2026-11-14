@@ -32,14 +32,13 @@ describe('ServicePlanPriceRecalcService', () => {
     resolveForUser: jest.fn(),
   };
   const taxCalculationService = {
-    computeLines: jest.fn((lines: Array<{ quantity: number; unitPriceNet: number }>) => ({
+    computeLines: jest.fn((_lines: Array<{ quantity: number; unitPriceNet: number }>) => ({
       totalGross: 0,
     })),
   };
   const billingService = {
     applySettlement: jest.fn(),
   };
-
   const service = new ServicePlanPriceRecalcService(
     servicePlansRepository as never,
     subscriptionsRepository as never,
@@ -52,7 +51,6 @@ describe('ServicePlanPriceRecalcService', () => {
     taxCalculationService as never,
     billingService as never,
   );
-
   const changedAt = new Date('2026-03-15T00:00:00.000Z');
   const runDate = '2026-03-15';
   const plan = {

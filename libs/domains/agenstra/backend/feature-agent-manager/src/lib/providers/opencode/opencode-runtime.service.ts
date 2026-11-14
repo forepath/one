@@ -1,4 +1,3 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
 import {
   AGENSTRA_AUTOMATION_AGENT_NAME,
   AGENSTRA_AUTOMATION_TURN_STATUS_SCHEMA,
@@ -7,6 +6,7 @@ import {
   parseAgenstraAutomationTurnStatus,
   type AgenstraAutomationTurnStatus,
 } from '@forepath/agenstra/shared/util-opencode-config';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 
 import {
   isReadOnlyExploreResumeSessionSuffix,
@@ -448,7 +448,6 @@ export class OpenCodeRuntimeService {
     }
 
     const sessionId = await this.sessionService.getOrCreateSessionId(key, options);
-
     const client = await this.clientFactory.getClient(key.agentId, key.containerId);
     const abort = new AbortController();
     const toolState = createOpenCodeToolCallState(message);
@@ -459,7 +458,6 @@ export class OpenCodeRuntimeService {
     const automationSession = isUnattendedAutomationResumeSessionSuffix(key.resumeSessionSuffix);
     const automationLoop = isTicketAutomationLoopResumeSessionSuffix(key.resumeSessionSuffix);
     const readOnlySession = isReadOnlyExploreResumeSessionSuffix(key.resumeSessionSuffix);
-
     const queue: AgentResponseObject[] = [];
     const notify = (() => {
       let resolve: (() => void) | null = null;
@@ -474,7 +472,6 @@ export class OpenCodeRuntimeService {
 
       return { wait, wake };
     })();
-
     const consumer = (async () => {
       try {
         for await (const event of this.eventBridge.subscribe(key.agentId, key.containerId, sessionId, abort.signal)) {

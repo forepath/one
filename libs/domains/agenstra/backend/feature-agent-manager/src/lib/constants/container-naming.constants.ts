@@ -1,4 +1,4 @@
-import { EGRESS_GUARD_AGENT_LABEL, EGRESS_GUARD_NAME_PREFIX } from './egress-guard.constants';
+import { EGRESS_GUARD_AGENT_LABEL } from './egress-guard.constants';
 
 /**
  * Docker container naming for agent environments: `agenstra-<role>-<agentId>`.

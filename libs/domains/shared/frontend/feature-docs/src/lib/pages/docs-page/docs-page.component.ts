@@ -135,9 +135,9 @@ export class DocsPageComponent implements OnInit {
         const path = url.split('?')[0].split('#')[0];
         // Normalize the path to match navigation.json format
         let normalizedPath = path;
-
         // Convert legacy /{contentRoot}/... to /docs/... to match navigation paths
         const contentRootPrefix = `/${this.contentRoot}/`;
+
         if (normalizedPath.startsWith(contentRootPrefix)) {
           normalizedPath = normalizedPath.replace(contentRootPrefix, '/docs/');
         } else if (normalizedPath === `/${this.contentRoot}`) {
@@ -289,6 +289,7 @@ export class DocsPageComponent implements OnInit {
 
           // Check if URL incorrectly includes content root in the path
           const docsContentRootPath = `/docs/${this.contentRoot}/`;
+
           if (currentUrl.includes(docsContentRootPath)) {
             const fixedPath = currentUrl
               .replace(docsContentRootPath, '/docs/')

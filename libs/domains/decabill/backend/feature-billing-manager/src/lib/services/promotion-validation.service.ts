@@ -7,13 +7,13 @@ import {
 } from '../constants/promotion.constants';
 import type { PromotionEntity } from '../entities/promotion.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
-import { PromotionsRepository } from '../repositories/promotions.repository';
 import { PromotionRedemptionsRepository } from '../repositories/promotion-redemptions.repository';
+import { PromotionsRepository } from '../repositories/promotions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+import { isPlanEligible, normalizePromotionCode } from '../utils/promotion-advantage.util';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
-import { isPlanEligible, normalizePromotionCode } from '../utils/promotion-advantage.util';
 
 export interface PromotionValidationInput {
   userId: string;

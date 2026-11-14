@@ -2,6 +2,7 @@ import { runWithTenantId } from '@forepath/shared/backend';
 import { Injectable, Logger } from '@nestjs/common';
 
 import { ContributorJobRunsRepository } from '../repositories/contributor-job-runs.repository';
+
 import { ContributorJobRegistryService } from './contributor-job-registry.service';
 
 const GENERIC_JOB_ERROR = 'Job failed';
@@ -42,6 +43,7 @@ export class ContributorCollectJobHandler {
           }
 
           const startedAt = now;
+
           await this.jobRunsRepository.upsertRun({
             source: registered.source,
             sourceKey: registered.sourceKey,

@@ -90,7 +90,6 @@ export class CustomerProfilesService {
       numberScope: allocated.numberScope,
       vatIdValidationStatus: prepared.vatIdValidationStatus ?? VatIdValidationStatus.NONE,
     });
-
     const result = await this.applyVatValidationIfNeeded(created, null, prepared);
 
     this.billingNotificationPublisher?.publishCustomerProfile('customer_profile.created', result);

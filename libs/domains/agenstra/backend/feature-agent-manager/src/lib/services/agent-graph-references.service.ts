@@ -291,7 +291,6 @@ export class AgentGraphReferencesService implements OnModuleDestroy {
     const expired = [...this.active.entries()].filter(
       ([, turn]) => force || now - turn.lastActivity > ACTIVE_TURN_TTL_MS,
     );
-
     // Forced sweeps (map full) only drop the oldest half.
     const victims = force
       ? expired.sort((a, b) => a[1].lastActivity - b[1].lastActivity).slice(0, Math.ceil(expired.length / 2))

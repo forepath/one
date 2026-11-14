@@ -7,26 +7,26 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
-import { ClientsRepository } from '../repositories/clients.repository';
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
-import { AgentConsoleStatusService } from '../services/agent-console-status.service';
+import { ClientsRepository } from '../repositories/clients.repository';
+import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { AgenstraAttachmentsService } from '../services/agenstra-attachments.service';
+import { AgentConsoleStatusService } from '../services/agent-console-status.service';
+import { AgentContextRequestHandlerService } from '../services/agent-context-request-handler.service';
+import { AgentHandoffRequestHandlerService } from '../services/agent-handoff-request-handler.service';
+import { AgentTaskRequestHandlerService } from '../services/agent-task-request-handler.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
-import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
-import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
-import { ClientsService } from '../services/clients.service';
 import { ChatPlanChatSyncService } from '../services/chat-plan-chat-sync.service';
 import { ChatPlanOrchestratorService } from '../services/chat-plan-orchestrator.service';
 import { ChatPlanRealtimeService } from '../services/chat-plan-realtime.service';
 import { ChatPlanService } from '../services/chat-plan.service';
+import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
+import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
+import { ClientsService } from '../services/clients.service';
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketsService } from '../services/tickets.service';
-import { AgentContextRequestHandlerService } from '../services/agent-context-request-handler.service';
-import { AgentTaskRequestHandlerService } from '../services/agent-task-request-handler.service';
-import { AgentHandoffRequestHandlerService } from '../services/agent-handoff-request-handler.service';
-import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 
 import { ClientsGateway } from './clients.gateway';
 
@@ -207,7 +207,6 @@ describe('ClientsGateway', () => {
 
     return socket;
   };
-
   const mockAgentContextRequests = { attach: jest.fn() };
   const mockAgentTaskRequests = { attach: jest.fn() };
   const mockAgentHandoffRequests = { attach: jest.fn() };
@@ -329,7 +328,6 @@ describe('ClientsGateway', () => {
 
   describe('handleRefineChatPlan', () => {
     const planEntity = { id: 'plan-1', clientId: 'client-uuid', agentId: 'agent-uuid' };
-
     const setupRefine = () => {
       const socket = createMockSocket();
       const chatPlanService = (gateway as any).chatPlanService as { getEntityOrThrow: jest.Mock };

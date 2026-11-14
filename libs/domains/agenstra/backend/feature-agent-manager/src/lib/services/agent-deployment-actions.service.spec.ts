@@ -24,7 +24,6 @@ const WORKFLOW_ID = '22222222-2222-4222-8222-222222222222';
 const OTHER_WORKFLOW_ID = '66666666-6666-4666-8666-666666666666';
 const RUN_ID = '33333333-3333-4333-8333-333333333333';
 const TASK_ID = '55555555-5555-4555-8555-555555555555';
-
 const flush = () => new Promise((resolve) => setImmediate(resolve));
 
 describe('AgentDeploymentActionsService', () => {
@@ -40,7 +39,6 @@ describe('AgentDeploymentActionsService', () => {
   let workflow: DeploymentWorkflowSummary;
   let run: DeploymentRunSummary;
   let actionResponse: AgentDeploymentControllerResponse;
-
   const mint = (overrides: Partial<Parameters<AgentContextTicketsService['mint']>[0]> = {}): AgentContextTicketRecord =>
     tickets.mint({
       agentId: AGENT_ID,

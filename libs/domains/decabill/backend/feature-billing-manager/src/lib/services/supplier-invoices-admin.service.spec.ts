@@ -54,7 +54,6 @@ describe('SupplierInvoicesAdminService', () => {
     publishSupplierInvoiceCreated: jest.fn(),
     publishSupplierInvoiceIssued: jest.fn(),
   };
-
   const service = new SupplierInvoicesAdminService(
     supplierInvoicesRepository as never,
     supplierInvoiceLineItemsRepository as never,
@@ -70,7 +69,6 @@ describe('SupplierInvoicesAdminService', () => {
     billingNotificationPublisher as never,
     { registerFromBuffer: jest.fn().mockResolvedValue({}) } as never,
   );
-
   const draftInvoice = {
     id: 'inv-1',
     supplierId: 'supplier-1',

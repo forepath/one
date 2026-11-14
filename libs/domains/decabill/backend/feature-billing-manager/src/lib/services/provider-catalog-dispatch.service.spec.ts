@@ -40,6 +40,7 @@ describe('ProviderCatalogDispatchService', () => {
   it('detects provisioning-capable providers', () => {
     const modules = new ProviderModuleRegistryService();
     const metadata = new ProviderRegistryService();
+
     modules.register({ id: 'hetzner', collectMeters: async () => [], provision: async () => ({ serverId: '1' }) });
     modules.register({ id: 'meter-only', collectMeters: async () => [] });
     metadata.register({ id: 'hetzner', displayName: 'Hetzner' });

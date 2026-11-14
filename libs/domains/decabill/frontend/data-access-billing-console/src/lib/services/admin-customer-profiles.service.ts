@@ -6,7 +6,6 @@ import { Observable } from 'rxjs';
 
 import type {
   AdminCustomerProfileDetail,
-  AdminCustomerProfileListItem,
   CustomerTrustScoreDetail,
   CreateAdminCustomerProfileDto,
   CustomerProfileDto,

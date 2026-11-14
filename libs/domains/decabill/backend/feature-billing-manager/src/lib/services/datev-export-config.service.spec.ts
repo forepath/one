@@ -1,5 +1,5 @@
-import { TenantsGlobalViewsConfigService } from './tenants-global-views-config.service';
 import { DatevExportConfigService } from './datev-export-config.service';
+import { TenantsGlobalViewsConfigService } from './tenants-global-views-config.service';
 
 describe('DatevExportConfigService', () => {
   const originalEnv = process.env;

@@ -87,7 +87,6 @@ export function aggregatePricingTotalsSummaries(
       taxAmount: roundMoney(taxAmount),
     }))
     .sort((a, b) => a.taxRate - b.taxRate);
-
   const taxTotal = taxRows.reduce((sum, row) => sum + row.taxAmount, 0);
 
   return {

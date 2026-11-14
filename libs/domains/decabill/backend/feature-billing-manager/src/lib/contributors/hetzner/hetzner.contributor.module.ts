@@ -1,5 +1,5 @@
-import { Module, type OnModuleInit } from '@nestjs/common';
 import { RedisCacheModule } from '@forepath/shared/backend/util-redis-cache';
+import { Module, type OnModuleInit } from '@nestjs/common';
 
 import { ProviderModuleRegistryService } from '../../services/provider-module-registry.service';
 import { ProviderRegistryService } from '../../services/provider-registry.service';

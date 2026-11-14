@@ -1,5 +1,4 @@
 import { Route } from '@angular/router';
-import { createSharedContactRoute, createBrandContactDetails } from '@forepath/shared/frontend/feature-landingpage';
 import {
   ServicePlansFacade,
   loadCheapestServicePlanOffering$,
@@ -7,6 +6,7 @@ import {
   loadServicePlansBatch$,
   servicePlansReducer,
 } from '@forepath/agenstra/frontend/data-access-portal';
+import { createSharedContactRoute, createBrandContactDetails } from '@forepath/shared/frontend/feature-landingpage';
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 

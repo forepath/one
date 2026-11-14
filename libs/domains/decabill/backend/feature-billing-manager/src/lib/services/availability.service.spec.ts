@@ -10,7 +10,6 @@ describe('AvailabilityService', () => {
       }),
     } as any;
     const service = new AvailabilityService(repository, catalogDispatch);
-
     const result = await service.checkAvailability('hetzner', 'fsn1', 'cx23');
 
     expect(result.isAvailable).toBe(true);
@@ -36,7 +35,6 @@ describe('AvailabilityService', () => {
       }),
     } as any;
     const service = new AvailabilityService(repository, catalogDispatch);
-
     const result = await service.checkAvailability('hetzner', 'fsn1', 'missing', {
       HETZNER_API_TOKEN: 'tenant-token',
     });

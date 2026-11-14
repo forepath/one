@@ -4,11 +4,11 @@ import type { AgentProviderFactory } from '../providers/agent-provider.factory';
 import type { ChatFilterFactory } from '../providers/chat-filter.factory';
 import type { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
 import type { AgentsRepository } from '../repositories/agents.repository';
+import type { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import { AgentContextAccessService } from '../services/agent-context-access.service';
 import { AgentContextApiService } from '../services/agent-context-api.service';
 import type { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
-import type { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import type { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
 import type { AgentMessageEventsService } from '../services/agent-message-events.service';
 import type { AgentMessagesService } from '../services/agent-messages.service';
@@ -44,13 +44,11 @@ describe('AgentsGateway context MCP integration', () => {
   };
   let persistEvent: jest.Mock;
   let composer: PromptContextComposerService;
-
   const socket = (id: string, ack?: jest.Mock): Socket & { emit: jest.Mock } => {
     const timeout = jest.fn().mockReturnValue({ emitWithAck: ack ?? jest.fn() });
 
     return { id, connected: true, emit: jest.fn(), timeout } as unknown as Socket & { emit: jest.Mock };
   };
-
   const login = (s: Socket) => {
     (gateway as any).socketById.set(s.id, s);
     (gateway as any).authenticatedClients.set(s.id, agentId);

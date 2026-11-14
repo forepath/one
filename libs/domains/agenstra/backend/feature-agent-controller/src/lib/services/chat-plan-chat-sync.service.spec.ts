@@ -5,8 +5,8 @@ import { ChatPlanEntity } from '../entities/chat-plan.entity';
 import { ChatPlanPhase, ChatPlanStatus } from '../entities/chat-plan.enums';
 
 import { AgentConsoleStatusService } from './agent-console-status.service';
-import { ChatPlanRealtimeService } from './chat-plan-realtime.service';
 import { CHAT_PLAN_HYDRATE_LIMIT, ChatPlanChatSyncService } from './chat-plan-chat-sync.service';
+import { ChatPlanRealtimeService } from './chat-plan-realtime.service';
 
 describe('ChatPlanChatSyncService', () => {
   let service: ChatPlanChatSyncService;
@@ -65,7 +65,6 @@ describe('ChatPlanChatSyncService', () => {
       createdAt: new Date('2020-01-01'),
       updatedAt: new Date('2020-01-02'),
     } as ChatPlanEntity;
-
     const qb = planRepo.createQueryBuilder();
 
     qb.getMany.mockResolvedValue([plan]);
@@ -110,7 +109,6 @@ describe('ChatPlanChatSyncService', () => {
       createdAt: new Date('2020-01-01'),
       updatedAt: new Date('2020-01-02'),
     } as ChatPlanEntity;
-
     const executingPlan = {
       ...cancelledPlan,
       id: 'p3',
@@ -121,11 +119,12 @@ describe('ChatPlanChatSyncService', () => {
       finishedAt: null,
       updatedAt: new Date('2020-01-03'),
     } as ChatPlanEntity;
-
     const qb = planRepo.createQueryBuilder();
+
     qb.getMany.mockResolvedValueOnce([cancelledPlan]).mockResolvedValueOnce([executingPlan]);
 
     const socket = { connected: true, emit: jest.fn() } as never;
+
     await service.hydrateForAgentClient(socket, 'c1', 'a1');
     const cancelledPayload = (chatRealtime.emitToSocket as jest.Mock).mock.calls[0][1] as {
       actions: Array<{ type: string }>;
@@ -164,11 +163,12 @@ describe('ChatPlanChatSyncService', () => {
       createdAt: new Date('2020-01-01'),
       updatedAt: new Date('2020-01-02'),
     } as ChatPlanEntity;
-
     const qb = planRepo.createQueryBuilder();
+
     qb.getMany.mockResolvedValue([failedPlan]);
 
     const socket = { connected: true, emit: jest.fn() } as never;
+
     await service.hydrateForAgentClient(socket, 'c1', 'a1');
     const payload = (chatRealtime.emitToSocket as jest.Mock).mock.calls[0][1] as {
       actions: Array<{ type: string; label: string }>;
@@ -240,7 +240,6 @@ describe('ChatPlanChatSyncService', () => {
       createdAt: new Date('2020-01-01'),
       updatedAt: new Date('2020-01-02'),
     } as ChatPlanEntity;
-
     const qb = planRepo.createQueryBuilder();
 
     qb.getMany.mockResolvedValue([plan]);

@@ -21,7 +21,6 @@ import {
   loadDetailFailure,
   loadDetailSuccess,
   loadHistory,
-  loadHistoryFailure,
   loadHistorySuccess,
   meterSummaryPush,
   resetFilters,
@@ -46,7 +45,6 @@ describe('serviceDetailEffects', () => {
   let usageService: jest.Mocked<UsageService>;
   let adminBillingService: jest.Mocked<AdminBillingService>;
   let store: { select: jest.Mock };
-
   const detail: SubscriptionItemDetailResponse = {
     id: 'item-1',
     subscriptionId: 'sub-1',
@@ -112,8 +110,10 @@ describe('serviceDetailEffects', () => {
     actions$ = of(enterServiceDetail({ subscriptionId: 'sub-1', itemId: 'item-1' }));
 
     const emitted: unknown[] = [];
+
     TestBed.runInInjectionContext(() => enterServiceDetail$(actions$)).subscribe((action) => {
       emitted.push(action);
+
       if (emitted.length === 2) {
         expect(emitted).toEqual([
           subscribeBillingSubscriptionMeters({ subscriptionId: 'sub-1' }),
@@ -224,10 +224,12 @@ describe('serviceDetailEffects', () => {
     actions$ = of(updateDisplayName({ subscriptionId: 'sub-1', itemId: 'item-1', displayName: 'Renamed' }));
 
     const emitted: unknown[] = [];
+
     TestBed.runInInjectionContext(() =>
       updateServiceDetailDisplayName$(actions$, subscriptionItemsService, adminBillingService),
     ).subscribe((action) => {
       emitted.push(action);
+
       if (emitted.length === 2) {
         expect(emitted).toEqual([
           updateDisplayNameSuccess({ subscriptionId: 'sub-1', itemId: 'item-1', displayName: 'Renamed' }),

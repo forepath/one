@@ -64,6 +64,7 @@ export const WORKSPACE_GRAPH_STARTUP_REBUILD_ENV = 'AGENT_GRAPH_SNAPSHOT_STARTUP
 /** Delay before the startup rebuild; gives agent-managers time to rebuild their environment graphs first. */
 export const WORKSPACE_GRAPH_STARTUP_DELAY_MS_ENV = 'AGENT_GRAPH_SNAPSHOT_STARTUP_DELAY_MS';
 const DEFAULT_STARTUP_DELAY_MS = 3 * 60_000;
+
 /** Quiet period after a change signal before the snapshot is rebuilt (bursts of writes share one build). */
 export const WORKSPACE_GRAPH_DIRTY_DEBOUNCE_MS = 10_000;
 /** Manual refreshes within this window after a build (or while one runs) return the current status instead. */

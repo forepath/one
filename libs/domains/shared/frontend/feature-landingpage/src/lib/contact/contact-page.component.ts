@@ -30,12 +30,12 @@ import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/ut
 import { NgxTurnstileComponent, NgxTurnstileModule } from 'ngx-turnstile';
 
 import { SharedContactPersonComponent } from '../contact-person/contact-person.component';
-
-import type { SharedContactPageConfig, SharedContactPageHeroTheme } from './contact-page.config';
-import { SHARED_CONTACT_PAGE_DATA_KEY } from './contact-page.config';
-import { readAndClearContactMessagePrefill } from './contact-message-prefill.storage';
 import { SharedHeroMascotComponent } from '../hero-mascot/hero-mascot.component';
 import { SharedMarkStackComponent } from '../mark-stack/mark-stack.component';
+
+import { readAndClearContactMessagePrefill } from './contact-message-prefill.storage';
+import type { SharedContactPageConfig, SharedContactPageHeroTheme } from './contact-page.config';
+import { SHARED_CONTACT_PAGE_DATA_KEY } from './contact-page.config';
 
 @Component({
   selector: 'shared-contact-page',
@@ -148,6 +148,7 @@ export class SharedContactPageComponent implements OnInit {
   onSubmit(): void {
     if (this.form.invalid || !this.turnstileToken()) {
       this.form.markAllAsTouched();
+
       return;
     }
 

@@ -12,9 +12,7 @@ import type { Socket as ClientSocket } from 'socket.io-client';
 import { AgentTasksService } from './agent-tasks.service';
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
 const STRING_FIELDS = ['title', 'prompt', 'cronExpression', 'timezone', 'model'] as const;
-
 const OPS = new Set(['list', 'get', 'create', 'update', 'delete', 'run']);
 
 /**
@@ -62,11 +60,13 @@ export class AgentTaskRequestHandlerService {
       switch (request['op']) {
         case 'list':
           return { ok: true, tasks: await this.tasks.listForAgent(clientId, agentId) };
+
         case 'get': {
           const detail = await this.tasks.getForAgent(clientId, agentId, taskId);
 
           return { ok: true, task: detail.task, runs: detail.runs };
         }
+
         case 'create':
           return {
             ok: true,

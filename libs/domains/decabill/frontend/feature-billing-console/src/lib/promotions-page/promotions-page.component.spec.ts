@@ -22,7 +22,6 @@ const stub = (overrides: Record<string, unknown> = {}): Record<string, unknown> 
       return target[key];
     },
   });
-
 const redemption = (id: string, status: string): PromotionRedemptionResponse =>
   ({
     id,

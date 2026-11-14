@@ -36,6 +36,7 @@ export class ChatPlanChatSyncService {
   addLiveEvent(planId: string, payload: unknown): void {
     const event: ChatPlanLiveTimelineEventDto = { payload, timestamp: Date.now() };
     const next = [...(this.liveEventsByPlanId.get(planId) ?? []), event];
+
     this.liveEventsByPlanId.set(planId, next.slice(-100));
   }
 

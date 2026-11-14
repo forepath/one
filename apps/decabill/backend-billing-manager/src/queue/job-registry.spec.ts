@@ -16,10 +16,12 @@ describe('billing job-registry', () => {
 
     delete process.env.BILLING_DATEV_EXPORT_ENABLED;
     const withDatev = getBillingRepeatableJobs();
+
     expect(withDatev.map((job) => job.name)).toContain(BillingJobName.DATEV_EXPORT_COORDINATOR);
 
     process.env.BILLING_DATEV_EXPORT_ENABLED = 'false';
     const withoutDatev = getBillingRepeatableJobs();
+
     expect(withoutDatev.map((job) => job.name)).not.toContain(BillingJobName.DATEV_EXPORT_COORDINATOR);
     delete process.env.BILLING_DATEV_EXPORT_ENABLED;
   });
@@ -27,14 +29,17 @@ describe('billing job-registry', () => {
   it('getBillingRepeatableJobs includes optional price recalc coordinator', () => {
     delete process.env.BILLING_PRICE_RECALC_ENABLED;
     const withPriceRecalc = getBillingRepeatableJobs();
+
     expect(withPriceRecalc.map((job) => job.name)).toContain(BillingJobName.PRICE_RECALC_COORDINATOR);
 
     const priceRecalcJob = withPriceRecalc.find((job) => job.name === BillingJobName.PRICE_RECALC_COORDINATOR);
+
     expect(priceRecalcJob?.pattern).toBe('0 0 * * *');
     expect(priceRecalcJob?.tz).toBe('Europe/Berlin');
 
     process.env.BILLING_PRICE_RECALC_ENABLED = 'false';
     const withoutPriceRecalc = getBillingRepeatableJobs();
+
     expect(withoutPriceRecalc.map((job) => job.name)).not.toContain(BillingJobName.PRICE_RECALC_COORDINATOR);
     delete process.env.BILLING_PRICE_RECALC_ENABLED;
   });
@@ -43,20 +48,24 @@ describe('billing job-registry', () => {
     delete process.env.BILLING_METER_COLLECT_ENABLED;
     delete process.env.BILLING_METER_COLLECT_INTERVAL;
     const withMeterCollect = getBillingRepeatableJobs();
+
     expect(withMeterCollect.map((job) => job.name)).toContain(BillingJobName.METER_COLLECT_COORDINATOR);
 
     const meterCollectJob = withMeterCollect.find((job) => job.name === BillingJobName.METER_COLLECT_COORDINATOR);
+
     expect(meterCollectJob?.everyMs).toBe(60_000);
 
     process.env.BILLING_METER_COLLECT_INTERVAL = '120000';
     const customInterval = getBillingRepeatableJobs().find(
       (job) => job.name === BillingJobName.METER_COLLECT_COORDINATOR,
     );
+
     expect(customInterval?.everyMs).toBe(120_000);
     delete process.env.BILLING_METER_COLLECT_INTERVAL;
 
     process.env.BILLING_METER_COLLECT_ENABLED = 'false';
     const withoutMeterCollect = getBillingRepeatableJobs();
+
     expect(withoutMeterCollect.map((job) => job.name)).not.toContain(BillingJobName.METER_COLLECT_COORDINATOR);
     delete process.env.BILLING_METER_COLLECT_ENABLED;
   });
@@ -65,22 +74,26 @@ describe('billing job-registry', () => {
     delete process.env.BILLING_CONTRIBUTOR_COLLECT_ENABLED;
     delete process.env.BILLING_CONTRIBUTOR_COLLECT_INTERVAL;
     const withContributorCollect = getBillingRepeatableJobs();
+
     expect(withContributorCollect.map((job) => job.name)).toContain(BillingJobName.CONTRIBUTOR_COLLECT_COORDINATOR);
 
     const contributorCollectJob = withContributorCollect.find(
       (job) => job.name === BillingJobName.CONTRIBUTOR_COLLECT_COORDINATOR,
     );
+
     expect(contributorCollectJob?.everyMs).toBe(30_000);
 
     process.env.BILLING_CONTRIBUTOR_COLLECT_INTERVAL = '45000';
     const customInterval = getBillingRepeatableJobs().find(
       (job) => job.name === BillingJobName.CONTRIBUTOR_COLLECT_COORDINATOR,
     );
+
     expect(customInterval?.everyMs).toBe(45_000);
     delete process.env.BILLING_CONTRIBUTOR_COLLECT_INTERVAL;
 
     process.env.BILLING_CONTRIBUTOR_COLLECT_ENABLED = 'false';
     const withoutContributorCollect = getBillingRepeatableJobs();
+
     expect(withoutContributorCollect.map((job) => job.name)).not.toContain(
       BillingJobName.CONTRIBUTOR_COLLECT_COORDINATOR,
     );
@@ -106,6 +119,7 @@ describe('billing job-registry', () => {
 
     process.env.SEARCH_REINDEX_INTERVAL = '15m';
     const custom = getBillingRepeatableJobs().find((job) => job.name === BillingJobName.SEARCH_REINDEX_COORDINATOR);
+
     expect(custom?.everyMs).toBe(900_000);
     delete process.env.SEARCH_REINDEX_INTERVAL;
   });

@@ -14,8 +14,8 @@ import {
 } from 'class-validator';
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
-import { TaxCategory } from '../constants/tax-category.constants';
 import { SupplierDocumentSource } from '../constants/supplier-document-source.constants';
+import { TaxCategory } from '../constants/tax-category.constants';
 
 export class SupplierInvoiceLineItemDto {
   @IsString({ message: 'Description must be a string' })

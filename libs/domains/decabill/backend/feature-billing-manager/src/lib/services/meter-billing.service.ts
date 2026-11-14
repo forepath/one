@@ -138,7 +138,6 @@ export class MeterBillingService {
       periodEnd: row.periodEnd,
       createdAt: row.createdAt,
     }));
-
     const lines: MeterChargeLine[] = [];
     const planMeters = await this.resolveEffectivePlanMeterLinks(params.subscription.planId, params.plan.serviceTypeId);
 
@@ -187,6 +186,7 @@ export class MeterBillingService {
 
     for (const link of addonMeterLinks) {
       const list = linksByAddon.get(link.addonId) ?? [];
+
       list.push(link);
       linksByAddon.set(link.addonId, list);
     }
@@ -260,7 +260,6 @@ export class MeterBillingService {
       periodEnd: row.periodEnd,
       createdAt: row.createdAt,
     }));
-
     const summaries: SubscriptionMeterSummaryDto[] = [];
     const planMeters = await this.resolveEffectivePlanMeterLinks(params.subscription.planId);
 
@@ -308,6 +307,7 @@ export class MeterBillingService {
 
     for (const link of addonMeterLinks) {
       const list = linksByAddon.get(link.addonId) ?? [];
+
       list.push(link);
       linksByAddon.set(link.addonId, list);
     }
@@ -382,7 +382,6 @@ export class MeterBillingService {
       periodEnd: row.periodEnd,
       createdAt: row.createdAt,
     }));
-
     const meters: MeterHistorySeriesDto[] = [];
     const planMeters = await this.resolveEffectivePlanMeterLinks(params.subscription.planId);
 
@@ -419,6 +418,7 @@ export class MeterBillingService {
 
     for (const link of addonMeterLinks) {
       const list = linksByAddon.get(link.addonId) ?? [];
+
       list.push(link);
       linksByAddon.set(link.addonId, list);
     }

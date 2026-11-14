@@ -1,5 +1,5 @@
-import { ChatPlanActionType, ChatPlanPhase, ChatPlanStatus } from '../entities/chat-plan.enums';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
+import { ChatPlanActionType, ChatPlanPhase, ChatPlanStatus } from '../entities/chat-plan.enums';
 
 import { ChatPlanActivityService } from './chat-plan-activity.service';
 import { ChatPlanChatSyncService } from './chat-plan-chat-sync.service';

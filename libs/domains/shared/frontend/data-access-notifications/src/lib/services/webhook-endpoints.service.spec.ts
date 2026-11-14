@@ -10,7 +10,6 @@ describe('WebhookEndpointsService', () => {
   let service: WebhookEndpointsService;
   let httpMock: HttpTestingController;
   const baseUrl = 'http://localhost:3300/api/admin/webhooks';
-
   const mockEndpoint = (): WebhookEndpointResponseDto => ({
     id: '11111111-1111-1111-1111-111111111111',
     scopeKey: 'app',

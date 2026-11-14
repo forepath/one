@@ -1,3 +1,4 @@
+import { initialAddonsState } from './addons.reducer';
 import {
   selectActiveAddons,
   selectAddonById,
@@ -11,7 +12,6 @@ import {
   selectAddonsUpdating,
   selectSelectedAddon,
 } from './addons.selectors';
-import { initialAddonsState } from './addons.reducer';
 
 describe('addonsSelectors', () => {
   const activeAddon = {

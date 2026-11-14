@@ -7,7 +7,6 @@ import {
   PromotionSubscriptionEligibility,
   type PromotionAdvantageConfig,
 } from '../constants/promotion.constants';
-import type { PromotionEntity } from '../entities/promotion.entity';
 
 export class PromotionValidationResponseDto {
   valid!: boolean;

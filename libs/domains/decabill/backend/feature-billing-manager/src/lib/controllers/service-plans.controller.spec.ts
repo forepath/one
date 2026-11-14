@@ -1,24 +1,24 @@
-import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
-import { DeliveryTermsCode } from '../constants/document-terms.constants';
 import { BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
+import { DeliveryTermsCode } from '../constants/document-terms.constants';
+import { TaxCategory } from '../constants/tax-category.constants';
+import { ContainerManagerCatalogService } from '../contributors/container-manager/services/container-manager-catalog.service';
 import { CreateServicePlanDto } from '../dto/create-service-plan.dto';
 import { UpdateServicePlanDto } from '../dto/update-service-plan.dto';
 import { BillingIntervalType, ServicePlanEntity } from '../entities/service-plan.entity';
-import { TaxCategory } from '../constants/tax-category.constants';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
+import { PLAN_PRICE_MIGRATE_ENQUEUE } from '../queue/plan-price-migrate-enqueue.token';
+import { AddonsRepository } from '../repositories/addons.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
-import { ProviderRegistryService } from '../services/provider-registry.service';
+import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { AddonService } from '../services/addon.service';
+import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
 import { CloudInitConfigService } from '../services/cloud-init-config.service';
 import { MeterService } from '../services/meter.service';
+import { ProviderRegistryService } from '../services/provider-registry.service';
 import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
-import { AddonsRepository } from '../repositories/addons.repository';
-import { PLAN_PRICE_MIGRATE_ENQUEUE } from '../queue/plan-price-migrate-enqueue.token';
-import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-import { ContainerManagerCatalogService } from '../contributors/container-manager/services/container-manager-catalog.service';
-import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 
 import { ServicePlansController } from './service-plans.controller';
 
@@ -635,6 +635,7 @@ describe('ServicePlansController', () => {
         label: 'Agenstra Controller',
       },
     ];
+
     cloudInitConfigServiceStub.buildOrderProvisioningOptions.mockResolvedValue(options);
     const moduleRef = await setupRepositoryMock({
       findAll: jest.fn(),
@@ -651,6 +652,7 @@ describe('ServicePlansController', () => {
 
   it('returns plan-scoped cloud init order fields', async () => {
     const orderFields = [{ key: 'API_KEY', label: 'API Key', required: true, hasDefault: false }];
+
     cloudInitConfigServiceStub.getOrderFieldsForPlan.mockResolvedValue(orderFields);
     const moduleRef = await setupRepositoryMock({
       findAll: jest.fn(),
@@ -781,7 +783,6 @@ describe('ServicePlansController', () => {
       delete: jest.fn(),
     });
     const controller = moduleRef.get(ServicePlansController);
-
     const result = await controller.create({
       serviceTypeId: null,
       name: 'Billing only',
@@ -837,7 +838,6 @@ describe('ServicePlansController', () => {
       delete: jest.fn(),
     });
     const controller = moduleRef.get(ServicePlansController);
-
     const result = await controller.get(basePlanRow.id);
 
     expect(result.serviceTypeId).toBeNull();
@@ -861,6 +861,7 @@ describe('ServicePlansController', () => {
 
   it('remove blocks delete when subscriptions reference the plan', async () => {
     const deleteFn = jest.fn();
+
     subscriptionsRepositoryStub.countByPlanId.mockResolvedValue(2);
     const moduleRef = await setupRepositoryMock({
       findAll: jest.fn(),
@@ -895,6 +896,7 @@ describe('ServicePlansController', () => {
       ...basePlanRow,
       providerConfigDefaults: { allowedAddonIds: ['addon-1', 'addon-2'] },
     };
+
     addonsRepositoryStub.findByIds.mockResolvedValue([
       {
         id: 'addon-1',
@@ -927,7 +929,6 @@ describe('ServicePlansController', () => {
       delete: jest.fn(),
     });
     const controller = moduleRef.get(ServicePlansController);
-
     const result = await controller.listOrderAddons(planWithAddons.id, 'digital-ocean');
 
     expect(result).toHaveLength(1);

@@ -12,6 +12,7 @@ import { Logger } from '@nestjs/common';
 
 import type { UpdatesModuleOptions } from '../interfaces/updates-module.options';
 import type { UpdatesFullState } from '../interfaces/updates.interfaces';
+
 import { UpdatesMetricsCollector } from './updates-metrics.collector';
 import type { UpdatesQueryService } from './updates-query.service';
 
@@ -25,7 +26,6 @@ describe('UpdatesMetricsCollector', () => {
     assertAdmin: jest.fn(),
     resolveScopeKey: () => 'default',
   };
-
   const fullState: UpdatesFullState = {
     installedVersion: '2.21.0',
     latestVersion: 'v2.22.0',
@@ -69,7 +69,6 @@ describe('UpdatesMetricsCollector', () => {
       },
     ],
   };
-
   let updatesQuery: { getFullState: jest.Mock };
   let collector: UpdatesMetricsCollector;
 

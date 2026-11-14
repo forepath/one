@@ -1,5 +1,6 @@
-import { BILLING_EMAIL_EVENTS, BILLING_EMAIL_SUBJECTS } from './billing-email-subject.constants';
 import { resolveEmailSubject } from '@forepath/shared/backend/util-email';
+
+import { BILLING_EMAIL_EVENTS, BILLING_EMAIL_SUBJECTS } from './billing-email-subject.constants';
 
 describe('BILLING_EMAIL_SUBJECTS', () => {
   it('builds invoice issued subject', () => {

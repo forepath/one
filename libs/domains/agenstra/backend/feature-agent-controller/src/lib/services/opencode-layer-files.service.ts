@@ -22,6 +22,7 @@ import {
   toEmittedLayerPath,
   type OpencodeLayerFileScope,
 } from '../utils/opencode-layer-file-path.utils';
+
 import { ClientAgentFileSystemProxyService } from './client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 
@@ -119,7 +120,6 @@ export class OpencodeLayerFilesService {
         { scope: 'workspace', clientId },
       ],
     });
-
     // Directories first so mkdir -p parents exist before file writes.
     const ordered = [...files].sort((a, b) => {
       if (a.entryKind !== b.entryKind) {
@@ -214,7 +214,6 @@ export class OpencodeLayerFilesService {
     const existing = await this.fileRepo.findOne({
       where: { scope, clientId: clientId ?? IsNull(), path: storagePath },
     });
-
     let dto: OpencodeLayerFileResponseDto;
 
     if (existing) {
@@ -412,7 +411,6 @@ export class OpencodeLayerFilesService {
 
   private async listContainerPathsDeep(clientId: string, agentId: string, rootPath: string): Promise<string[]> {
     const found: string[] = [];
-
     const walk = async (dirPath: string): Promise<void> => {
       let nodes: Array<{ name: string; type: 'file' | 'directory'; path: string }>;
 
@@ -543,7 +541,6 @@ export class OpencodeLayerFilesService {
 
       const isDirectFile = sanitizeLayerRelativePath(row.path) === sanitizeLayerRelativePath(childPath);
       const entryKind: OpencodeLayerFileEntryKind = isDirectFile && row.entryKind === 'file' ? 'file' : 'directory';
-
       const existing = byName.get(segment);
 
       if (!existing || (existing.entryKind === 'file' && entryKind === 'directory')) {
@@ -574,6 +571,7 @@ export class OpencodeLayerFilesService {
     const storagePath = sanitizeLayerRelativePath(dto.path);
     const entryKind: OpencodeLayerFileEntryKind =
       dto.entryKind === 'directory' || dto.entryKind === 'file' ? dto.entryKind : inferLayerEntryKind(storagePath);
+
     await this.ensureAncestorDirectories(scope, clientId, storagePath);
 
     const existing = await this.fileRepo.findOne({
@@ -626,6 +624,7 @@ export class OpencodeLayerFilesService {
     content: string,
   ): Promise<OpencodeLayerFileEntity> {
     const storagePath = sanitizeLayerRelativePath(path);
+
     await this.ensureAncestorDirectories(scope, clientId, storagePath);
     const contentSha = sha256Hex(content);
     let file = await this.fileRepo.findOne({

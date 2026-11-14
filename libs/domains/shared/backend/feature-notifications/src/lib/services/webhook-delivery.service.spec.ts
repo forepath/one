@@ -1,3 +1,5 @@
+import { recordSharedCounter, recordSharedHistogram } from '@forepath/shared/backend/util-otel';
+
 import { WEBHOOK_CONSECUTIVE_FAILURE_DISABLE_THRESHOLD } from '../constants/notification.constants';
 import type { NotificationEventEnvelope } from '../interfaces/notification.interfaces';
 
@@ -23,8 +25,6 @@ jest.mock('@forepath/shared/backend/util-otel', () => ({
   recordSharedHistogram: jest.fn(),
 }));
 
-import { recordSharedCounter, recordSharedHistogram } from '@forepath/shared/backend/util-otel';
-
 const mockedRecordSharedCounter = recordSharedCounter as jest.MockedFunction<typeof recordSharedCounter>;
 const mockedRecordSharedHistogram = recordSharedHistogram as jest.MockedFunction<typeof recordSharedHistogram>;
 
@@ -40,7 +40,6 @@ describe('WebhookDeliveryService', () => {
     client_id: null,
     data: { object: { invoiceId: 'inv-1' } },
   };
-
   const endpoint = {
     id: 'endpoint-1',
     scopeKey: 'tenant-a',
@@ -54,28 +53,22 @@ describe('WebhookDeliveryService', () => {
     consecutiveFailures: 0,
     disabledReason: null,
   };
-
   const endpointsRepository = {
     findByIdAndScope: jest.fn(),
     save: jest.fn(),
   };
-
   const deliveriesRepository = {
     create: jest.fn(),
   };
-
   const httpClient = {
     deliver: jest.fn(),
   };
-
   const signatureService = {
     sign: jest.fn().mockReturnValue('sig-header'),
   };
-
   const deliveryRetentionService = {
     applyRetentionForEndpointFireAndForget: jest.fn(),
   };
-
   let service: WebhookDeliveryService;
 
   beforeEach(() => {

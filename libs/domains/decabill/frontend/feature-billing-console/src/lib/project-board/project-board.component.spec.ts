@@ -35,8 +35,8 @@ import {
   projectTicketHiddenMatchLabel,
   projectTicketTableColumns,
 } from './project-board-table';
-import { ProjectBoardComponent } from './project-board.component';
 import { PROJECT_BOARD_VIEW_STORAGE_KEY, projectBoardViewState } from './project-board-view';
+import { ProjectBoardComponent } from './project-board.component';
 
 function ticket(id: string, title: string, overrides: Partial<ProjectTicketResponse> = {}): ProjectTicketResponse {
   return {
@@ -284,6 +284,7 @@ describe('ProjectBoardComponent (Table | Lanes)', () => {
     const original = lanes['todo'][1];
 
     lanes['todo'][1] = { ticket: { ...tickets[2], locked: true }, depth: 0 };
+
     try {
       await create({ view: 'lanes' });
       expect(laneRows('todo').map((row) => row.getAttribute('draggable'))).toEqual(['true', null]);

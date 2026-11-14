@@ -1,3 +1,4 @@
+import { hasNestedQuantifier } from './message-filters';
 import {
   EGRESS_CONFIG_ROOT,
   isPlainPolicyObject,
@@ -6,7 +7,6 @@ import {
   type PlatformPolicyLayer,
   type PlatformPolicyLayerInput,
 } from './platform-policy';
-import { hasNestedQuantifier } from './message-filters';
 import type { JsonObject } from './types';
 
 /**
@@ -205,7 +205,6 @@ function parseIpv6(raw: string): number[] | null {
 
     return out;
   };
-
   const head = parseGroup(doubleColon[0]);
   const rest = doubleColon.length === 2 ? parseGroup(doubleColon[1]) : [];
 
@@ -327,7 +326,6 @@ function parseIpOrCidr(raw: string): ParsedIpEntry | null {
   const slash = trimmed.indexOf('/');
   const address = slash === -1 ? trimmed : trimmed.slice(0, slash);
   const prefixRaw = slash === -1 ? null : trimmed.slice(slash + 1);
-
   const v4 = parseIpv4(address);
 
   if (v4) {
@@ -393,7 +391,6 @@ const PRIVATE_IPV4_CIDRS = [
   '224.0.0.0/4',
   '240.0.0.0/4',
 ] as const;
-
 const PRIVATE_IPV6_CIDRS = ['::/128', '::1/128', 'fc00::/7', 'fe80::/10', 'ff00::/8'] as const;
 
 /** Reserved / internal ranges blocked by `block_private_networks` (also rendered into the guard). */
@@ -1113,7 +1110,6 @@ export function normalizeEffectiveEgressPolicy(raw: unknown): EffectiveEgressPol
 
     return out;
   };
-
   const patterns = Array.isArray(raw['denyUrlPatterns'])
     ? (raw['denyUrlPatterns'] as unknown[])
         .slice(0, EGRESS_MAX_URL_PATTERNS * 3)
@@ -1125,7 +1121,6 @@ export function normalizeEffectiveEgressPolicy(raw: unknown): EffectiveEgressPol
         )
         .map((item) => ({ value: item['value'] as string, source: normalizeSource(item['source']) }))
     : [];
-
   const networkAllow: EffectiveEgressNetworkRule[] = [];
 
   if (Array.isArray(raw['networkAllow'])) {

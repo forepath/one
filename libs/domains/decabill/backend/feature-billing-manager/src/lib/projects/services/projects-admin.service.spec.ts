@@ -30,7 +30,6 @@ describe('ProjectsAdminService', () => {
     publishProject: jest.fn(),
   };
   const billingSearchIndexService = { scheduleUpsert: jest.fn(), scheduleDelete: jest.fn() };
-
   let service: ProjectsAdminService;
 
   beforeEach(() => {
@@ -56,6 +55,7 @@ describe('ProjectsAdminService', () => {
 
   it('create persists optional targetHours', async () => {
     const created = { id: 'p1', targetHours: 40 };
+
     usersRepository.findByIdForTenant.mockResolvedValue({ id: 'u1' });
     projectsRepository.create.mockResolvedValue(created);
     projectsService.mapResponse.mockReturnValue(created);
@@ -68,6 +68,7 @@ describe('ProjectsAdminService', () => {
 
   it('create stores null targetHours when omitted', async () => {
     const created = { id: 'p1', targetHours: null };
+
     usersRepository.findByIdForTenant.mockResolvedValue({ id: 'u1' });
     projectsRepository.create.mockResolvedValue(created);
     projectsService.mapResponse.mockReturnValue(created);
@@ -126,6 +127,7 @@ describe('ProjectsAdminService', () => {
       to: '2026-06-01T17:00:00.000Z',
       lineItems: [{ description: 'Extra', quantity: 1, unitPriceNet: 10 }],
     };
+
     projectBillingService.billUnbilledTime.mockResolvedValue({ invoiceId: 'inv-1', billedMinutes: 60, amountNet: 110 });
 
     const result = await service.billTime('p1', 'admin-1', dto);
@@ -137,6 +139,7 @@ describe('ProjectsAdminService', () => {
   it('getUnbilledTimeBounds delegates to billing service', async () => {
     const from = new Date('2026-06-01T08:00:00.000Z');
     const to = new Date('2026-06-01T17:00:00.000Z');
+
     projectBillingService.getUnbilledTimeBounds.mockResolvedValue({ from, to, entryCount: 2 });
 
     const bounds = await service.getUnbilledTimeBounds('p1');

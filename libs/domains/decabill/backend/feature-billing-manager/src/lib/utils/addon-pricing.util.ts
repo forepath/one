@@ -1,5 +1,5 @@
-import { BillingIntervalType, type ServicePlanEntity } from '../entities/service-plan.entity';
 import type { AddonEntity } from '../entities/addon.entity';
+import { BillingIntervalType, type ServicePlanEntity } from '../entities/service-plan.entity';
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
@@ -52,7 +52,6 @@ export function convertAddonPriceToPlanPeriod(
   const addonIntervalValue = addon.priceIntervalValue ?? 1;
   const planIntervalType = plan.billingIntervalType as BillingIntervalType;
   const planIntervalValue = plan.billingIntervalValue;
-
   const addonMs = intervalToMs(addonIntervalType, addonIntervalValue);
   const planMs = intervalToMs(planIntervalType, planIntervalValue);
 

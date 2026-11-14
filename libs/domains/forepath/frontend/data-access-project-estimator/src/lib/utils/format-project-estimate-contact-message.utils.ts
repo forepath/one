@@ -21,7 +21,6 @@ export interface FormatProjectEstimateContactMessageInput {
 
 export function formatProjectEstimateContactMessage(input: FormatProjectEstimateContactMessageInput): string {
   const sections: string[] = [input.labels.intro.trim()];
-
   const trimmedDescription = input.userDescription.trim();
 
   if (trimmedDescription.length > 0) {
@@ -42,6 +41,7 @@ export function formatProjectEstimateContactMessage(input: FormatProjectEstimate
 
   if (input.estimate.assumptions.length > 0) {
     const assumptionLines = input.estimate.assumptions.map((assumption) => `- ${assumption}`);
+
     sections.push(`${input.labels.assumptionsHeading}\n${assumptionLines.join('\n')}`);
   }
 

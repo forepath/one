@@ -1,15 +1,15 @@
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
-import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
+import { BullBoardModule } from '@bull-board/nestjs';
 import { BullModule } from '@nestjs/bullmq';
 import { DynamicModule, Inject, Injectable, Module, OnApplicationShutdown } from '@nestjs/common';
 import type { QueueOptions } from 'bullmq';
 
 import { createBullBoardAuthMiddlewareFromEnv } from './bull-board-auth';
-import { createBullMqConnection, type BullMqConnectionHandle } from './queue-client';
 import { defaultRemoveOnComplete, defaultRemoveOnFail } from './job-retention';
-import { shouldEnableBullBoard, shouldRegisterRepeatableJobs, shouldRunQueueWorkers } from './queue-role';
+import { createBullMqConnection, type BullMqConnectionHandle } from './queue-client';
 import { readBullBoardPath, readQueueWorkerConcurrency, readRedisConnectionConfig } from './queue-connection.config';
+import { shouldEnableBullBoard, shouldRegisterRepeatableJobs, shouldRunQueueWorkers } from './queue-role';
 
 export const QUEUE_CONNECTION = 'QUEUE_CONNECTION';
 const QUEUE_CONNECTION_HANDLE = 'QUEUE_CONNECTION_HANDLE';
@@ -39,14 +39,12 @@ export class SharedQueueModule {
     const { connection } = handle;
     const prefix = redis.keyPrefix;
     const concurrency = options.workerConcurrency ?? readQueueWorkerConcurrency();
-
     const defaultJobOptions: QueueOptions['defaultJobOptions'] = {
       removeOnComplete: defaultRemoveOnComplete,
       removeOnFail: defaultRemoveOnFail,
       attempts: 3,
       backoff: { type: 'exponential', delay: 5000 },
     };
-
     const bullImports = [
       BullModule.forRoot({
         connection,
@@ -62,7 +60,6 @@ export class SharedQueueModule {
         }),
       ),
     ];
-
     const imports: DynamicModule['imports'] = [...bullImports];
     const moduleExports: DynamicModule['exports'] = [BullModule];
 

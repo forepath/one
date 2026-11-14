@@ -1,8 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 
+import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
 import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
-import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import type {
   CreateProjectTimeEntryDto,
   PaginatedProjectTimeEntriesResponseDto,
@@ -13,10 +13,11 @@ import type { ProjectTimeEntryEntity } from '../entities/project-time-entry.enti
 import { ProjectTicketsRepository } from '../repositories/project-tickets.repository';
 import { ProjectTimeEntriesRepository } from '../repositories/project-time-entries.repository';
 import { ProjectsRepository } from '../repositories/projects.repository';
-import { resolveProjectTimeEntryRange } from '../utils/project-time-entry-range.utils';
 import { ensureProjectAdmin, ensureProjectReadable, ensureTicketUnlocked } from '../utils/project-access.utils';
-import { ProjectBoardRealtimeService } from './project-board-realtime.service';
+import { resolveProjectTimeEntryRange } from '../utils/project-time-entry-range.utils';
+
 import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
+import { ProjectBoardRealtimeService } from './project-board-realtime.service';
 import { ProjectBoardSummaryService } from './project-board-summary.service';
 
 @Injectable()
@@ -92,7 +93,6 @@ export class ProjectTimeEntriesService {
     }
 
     const range = resolveProjectTimeEntryRange(new Date(dto.startedAt), new Date(dto.endedAt));
-
     const entry = await this.timeEntriesRepository.create({
       projectId,
       ticketId: dto.ticketId ?? null,
@@ -103,7 +103,6 @@ export class ProjectTimeEntriesService {
       endedAt: range.endedAt,
       recordedAt: range.recordedAt,
     });
-
     const mapped = this.mapEntry(entry);
 
     this.billingNotificationPublisher.publishTimeEntry('time_entry.created', project.userId, mapped);
@@ -164,7 +163,6 @@ export class ProjectTimeEntriesService {
     }
 
     const updated = await this.timeEntriesRepository.update(entryId, patch);
-
     const mapped = this.mapEntry(updated);
 
     this.billingNotificationPublisher.publishTimeEntry('time_entry.updated', project.userId, mapped);

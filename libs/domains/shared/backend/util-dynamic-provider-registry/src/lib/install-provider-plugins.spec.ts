@@ -2,8 +2,8 @@ import { spawn } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { DYNAMIC_PROVIDER_PLUGIN_INSTALL_ENV, DYNAMIC_PROVIDER_PLUGIN_PATH_ENV } from './types';
 import { installProviderPluginsFromEnv } from './install-provider-plugins';
+import { DYNAMIC_PROVIDER_PLUGIN_INSTALL_ENV, DYNAMIC_PROVIDER_PLUGIN_PATH_ENV } from './types';
 
 jest.mock('node:child_process', () => ({
   spawn: jest.fn(),

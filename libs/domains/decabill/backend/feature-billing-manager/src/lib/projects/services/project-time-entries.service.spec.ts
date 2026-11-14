@@ -1,8 +1,8 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { UserRole } from '@forepath/identity/backend';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
-import { ProjectTimeEntriesService } from './project-time-entries.service';
 import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
+import { ProjectTimeEntriesService } from './project-time-entries.service';
 
 describe('ProjectTimeEntriesService', () => {
   const projectsRepository = { findByIdOrThrow: jest.fn() };
@@ -19,13 +19,11 @@ describe('ProjectTimeEntriesService', () => {
   const billingNotificationPublisher = {
     publishTimeEntry: jest.fn(),
   };
-
   const project = { id: 'p1', userId: 'admin-1' };
   const adminReq = {
     user: { id: 'admin-1', roles: [UserRole.ADMIN] },
     apiKeyAuthenticated: false,
   } as never;
-
   let service: ProjectTimeEntriesService;
 
   beforeEach(() => {
@@ -56,6 +54,7 @@ describe('ProjectTimeEntriesService', () => {
       billedAt: null,
       createdAt: new Date(),
     };
+
     timeEntriesRepository.findAllByProject.mockResolvedValue({ items: [entry], total: 1 });
 
     const result = await service.list('p1', 10, 0, {
@@ -113,6 +112,7 @@ describe('ProjectTimeEntriesService', () => {
       billedAt: null,
       createdAt: new Date(),
     };
+
     timeEntriesRepository.create.mockResolvedValue(created);
 
     const result = await service.create(

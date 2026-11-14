@@ -15,12 +15,12 @@ import {
   buildPostgresBackendEnvLines,
   buildPostgresComposeService,
 } from '../../utils/cloud-init/postgres-compose.utils';
+import { buildSshdHardeningScript } from '../../utils/cloud-init/ssh-hardening.utils';
 import {
   VALKEY_COMPOSE_DEPENDS_ON,
   buildValkeyBackendEnvLines,
   buildValkeyComposeService,
 } from '../../utils/cloud-init/valkey-compose.utils';
-
 import {
   assertConsoleOidcConfig,
   buildConsoleAuthenticationConfig,
@@ -34,7 +34,6 @@ import {
   type ProvisionedOidcConfig,
   type ProvisionedSamlConfig,
 } from '../shared/external-auth-config.utils';
-import { buildSshdHardeningScript } from '../../utils/cloud-init/ssh-hardening.utils';
 
 export const DECABILL_BILLING_STACK_DIR = '/opt/decabill-billing';
 

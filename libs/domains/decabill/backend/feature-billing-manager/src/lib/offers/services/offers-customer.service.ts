@@ -1,5 +1,15 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 
+import { mapEffectiveDocumentTermsToResponse } from '../../dto/document-terms.dto';
+import { BillingEmailPublisher } from '../../email/billing-email.publisher';
+import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
+import { mapOfferToSearchDocument } from '../../search/billing-search-document.mapper';
+import { BillingSearchIndexService } from '../../search/billing-search-index.service';
+import { BillingAuditLogService } from '../../services/billing-audit-log.service';
+import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
+import { CustomerProfilesService } from '../../services/customer-profiles.service';
+import { documentTermsLayerFromFields } from '../../utils/document-terms.utils';
+import { getRequiredTenantId } from '../../utils/tenant-query.utils';
 import { OfferStatus } from '../constants/offer-status.constants';
 import type {
   CustomerOfferDetailResponseDto,
@@ -7,22 +17,12 @@ import type {
   OffersSummaryResponseDto,
   PaginatedCustomerOffersResponseDto,
 } from '../dto/offer.dto';
-import { OffersRepository } from '../repositories/offers.repository';
 import { OfferLineItemsRepository } from '../repositories/offer-line-items.repository';
-import { BillingAuditLogService } from '../../services/billing-audit-log.service';
-import { BillingEmailPublisher } from '../../email/billing-email.publisher';
-import { CustomerProfilesService } from '../../services/customer-profiles.service';
-import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
-import { mapOfferToSearchDocument } from '../../search/billing-search-document.mapper';
-import { BillingSearchIndexService } from '../../search/billing-search-index.service';
-import { getRequiredTenantId } from '../../utils/tenant-query.utils';
-import { mapEffectiveDocumentTermsToResponse } from '../../dto/document-terms.dto';
-import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
-import { documentTermsLayerFromFields } from '../../utils/document-terms.utils';
+import { OffersRepository } from '../repositories/offers.repository';
 import { mapOfferLineItemToResponse } from '../utils/map-offer-line-items.util';
 
-import { OfferFulfillmentService } from './offer-fulfillment.service';
 import { OfferArchiveService } from './offer-archive.service';
+import { OfferFulfillmentService } from './offer-fulfillment.service';
 
 @Injectable()
 export class OffersCustomerService {
@@ -143,7 +143,7 @@ export class OffersCustomerService {
   }
 
   async decline(userId: string, offerId: string): Promise<CustomerOfferDetailResponseDto> {
-    const offer = await this.assertCustomerOffer(userId, offerId, [OfferStatus.ARCHIVED]);
+    await this.assertCustomerOffer(userId, offerId, [OfferStatus.ARCHIVED]);
     const declined = await this.offersRepository.update(offerId, {
       status: OfferStatus.DECLINED,
       declinedAt: new Date(),

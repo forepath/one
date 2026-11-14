@@ -6,7 +6,6 @@ import { AgentContextTicketsService, type MintAgentContextTicketInput } from './
 
 describe('AgentContextTicketsService', () => {
   let service: AgentContextTicketsService;
-
   const binding = (overrides: Partial<MintAgentContextTicketInput> = {}): MintAgentContextTicketInput => ({
     agentId: 'agent-1',
     sessionKey: 'chat-1',

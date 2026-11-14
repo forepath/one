@@ -5,7 +5,6 @@ import { SubscriptionChargePeriodService } from './subscription-charge-period.se
 describe('InvoiceCreationService', () => {
   const subscriptionItemsRepository = { findBySubscription: jest.fn().mockResolvedValue([]) } as any;
   const providerServerTypesService = { getServerTypes: jest.fn().mockResolvedValue([]) } as any;
-
   const defaultPromotionApplicationService = {
     calculatePromotions: jest.fn().mockResolvedValue({ discountLines: [], applications: [], redemptionUpdates: [] }),
     commitRedemptionUpdates: jest.fn().mockResolvedValue(undefined),
@@ -294,7 +293,6 @@ describe('InvoiceCreationService', () => {
       openPositionsRepository,
       subscriptionChargePeriodService,
     });
-
     const result = await service.createInvoice('sub-1', 'user-1', 'Tiny', {
       billUntil: new Date('2024-01-01T00:02:00Z'),
       skipIfNoBillableAmount: true,
@@ -453,7 +451,6 @@ describe('InvoiceCreationService', () => {
       openPositionsRepository,
       subscriptionChargePeriodService,
     });
-
     const result = await service.createInvoice('sub-1', 'user-1', 'Below min', {
       billUntil: new Date('2024-01-01T00:02:00Z'),
       skipIfNoBillableAmount: true,
@@ -644,6 +641,7 @@ describe('InvoiceCreationService', () => {
 
     it('holds open positions when payable gross is below checkout minimum', async () => {
       const previousEnv = process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT;
+
       process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT = '1';
 
       try {
@@ -711,6 +709,7 @@ describe('InvoiceCreationService', () => {
 
     it('issues invoice when payable gross meets checkout minimum', async () => {
       const previousEnv = process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT;
+
       process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT = '1';
 
       try {
@@ -779,6 +778,7 @@ describe('InvoiceCreationService', () => {
 
     it('still issues zero-gross promotional invoices below checkout minimum', async () => {
       const previousEnv = process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT;
+
       process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT = '1';
 
       try {
@@ -892,7 +892,6 @@ describe('InvoiceCreationService', () => {
         invoicesRepository,
         itemsRepository,
       });
-
       const amount = await (service as any).calculateBaseAmountSinceLastBilling(
         await subscriptionsRepository.findByIdOrThrow('sub-1'),
         await plansRepository.findByIdOrThrow('plan-1'),
@@ -938,7 +937,6 @@ describe('InvoiceCreationService', () => {
         invoicesRepository,
         itemsRepository,
       });
-
       const amount = await (service as any).calculateBaseAmountSinceLastBilling(
         await subscriptionsRepository.findByIdOrThrow('sub-1'),
         await plansRepository.findByIdOrThrow('plan-1'),
@@ -1105,6 +1103,7 @@ describe('InvoiceCreationService', () => {
         }),
         rollbackRedemptionUpdates: jest.fn(),
       } as any;
+
       invoiceService.createAndIssue.mockImplementation(async () => {
         callOrder.push('issue');
 

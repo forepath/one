@@ -8,7 +8,6 @@ import { ServicePlansRepository } from '../repositories/service-plans.repository
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-import { CloudInitDispatchService } from './cloud-init-dispatch.service';
 import { normalizeCloudInitService } from '../utils/cloud-init/cloud-init-dispatch.utils';
 import { CloudInitServiceType } from '../utils/cloud-init/integrated-provisioning-service';
 import {
@@ -16,6 +15,7 @@ import {
   resolveOrderProvisioningSelection,
 } from '../utils/cloud-init/plan-provisioning-options.utils';
 import { validateConfigSchema } from '../utils/config-validation.utils';
+import { getProvisioningCredentials, normalizeStoredProviderDefaults } from '../utils/provider-env-defaults.utils';
 import {
   mirrorGeographyInConfig,
   readRequestedGeography,
@@ -25,13 +25,6 @@ import {
   stripGeographyFromRequestedConfig,
 } from '../utils/provider-location.utils';
 import {
-  assertServerTypeAllowed,
-  normalizeAllowedServerTypes,
-  resolveDefaultServerTypeForProvider,
-  stripServerTypeByProviderFromConfig,
-  stripServerTypeFromRequestedConfig,
-} from '../utils/provider-server-type.utils';
-import {
   assertProviderAllowed,
   resolveEffectiveProvider,
   resolvePlanAllowedProviders,
@@ -39,26 +32,33 @@ import {
   stripProviderFromRequestedConfig,
 } from '../utils/provider-selection.utils';
 import {
+  assertServerTypeAllowed,
+  normalizeAllowedServerTypes,
+  resolveDefaultServerTypeForProvider,
+  stripServerTypeByProviderFromConfig,
+  stripServerTypeFromRequestedConfig,
+} from '../utils/provider-server-type.utils';
+import {
   BILLING_BASE_PRICE_CONFIG_KEY,
   resolvePeriodTotalPrice,
   resolveServerTypePriceMonthly,
 } from '../utils/server-type-billing.utils';
-import { getProvisioningCredentials, normalizeStoredProviderDefaults } from '../utils/provider-env-defaults.utils';
 import { generateSshKeyPair } from '../utils/ssh-key.utils';
 
 import { AvailabilityService } from './availability.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { CloudInitConfigService } from './cloud-init-config.service';
+import { CloudInitDispatchService } from './cloud-init-dispatch.service';
 import { CloudflareDnsService } from './cloudflare-dns.service';
 import { HostnameReservationService } from './hostname-reservation.service';
-import { ProviderServerTypesService } from './provider-server-types.service';
+import { InvoiceTaxContextService } from './invoice-tax-context.service';
 import { PricingService } from './pricing.service';
 import { ProviderCatalogDispatchService } from './provider-catalog-dispatch.service';
 import { ProviderRegistryService } from './provider-registry.service';
+import { ProviderServerTypesService } from './provider-server-types.service';
 import { ProvisioningDispatchService } from './provisioning-dispatch.service';
-import { TaxCalculationService } from './tax-calculation.service';
-import { InvoiceTaxContextService } from './invoice-tax-context.service';
 import { SubscriptionPeriodChargeService } from './subscription-period-charge.service';
+import { TaxCalculationService } from './tax-calculation.service';
 
 @Injectable()
 export class BackorderService {
@@ -149,6 +149,7 @@ export class BackorderService {
     let sanitizedSnapshot = allowCustomerLocationSelection
       ? { ...(backorder.requestedConfigSnapshot ?? {}) }
       : stripGeographyFromRequestedConfig(backorder.requestedConfigSnapshot);
+
     sanitizedSnapshot = allowCustomerServerTypeSelection
       ? sanitizedSnapshot
       : stripServerTypeFromRequestedConfig(sanitizedSnapshot);
@@ -309,7 +310,6 @@ export class BackorderService {
       currentPeriodEnd: schedule.currentPeriodEnd,
       nextBillingAt: schedule.nextBillingAt,
     });
-
     const baseItem = await this.subscriptionItemsRepository.create({
       subscriptionId: subscription.id,
       serviceTypeId: plan.serviceTypeId,

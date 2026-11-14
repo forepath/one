@@ -19,8 +19,8 @@ import type {
   PaginatedAdminCustomerProfilesResponseDto,
 } from '../dto/admin-customer-profile.dto';
 import { AddCustomerProfileCustomDataDto, UpdateCustomerProfileCustomDataDto } from '../dto/admin-customer-profile.dto';
-import { CustomerProfileDto } from '../dto/customer-profile.dto';
 import type { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto';
+import { CustomerProfileDto } from '../dto/customer-profile.dto';
 import type { CustomerTrustScoreResponseDto } from '../dto/customer-trust-score.dto';
 import { CustomerProfilesAdminService } from '../services/customer-profiles-admin.service';
 

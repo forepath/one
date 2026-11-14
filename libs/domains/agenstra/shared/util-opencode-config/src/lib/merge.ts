@@ -1,3 +1,7 @@
+import { EGRESS_LIST_KEYS, EGRESS_SCALAR_KEYS, mergeEgressOverlays } from './egress-policy';
+import { expandExplicitLocks } from './locks';
+import { migrateConfigV1ToV2 } from './migrate-v1-to-v2';
+import { EGRESS_CONFIG_ROOT } from './platform-policy';
 import {
   ARRAY_CONCAT_ROOT_KEYS,
   MAP_MERGE_ROOT_KEYS,
@@ -7,10 +11,6 @@ import {
   type InheritedAdditiveEntry,
   type JsonObject,
 } from './types';
-import { migrateConfigV1ToV2 } from './migrate-v1-to-v2';
-import { expandExplicitLocks } from './locks';
-import { EGRESS_LIST_KEYS, EGRESS_SCALAR_KEYS, mergeEgressOverlays } from './egress-policy';
-import { EGRESS_CONFIG_ROOT } from './platform-policy';
 
 function isPlainObject(value: unknown): value is JsonObject {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -109,6 +109,7 @@ export function mergeConfigs(...layers: Array<JsonObject | null | undefined>): J
         } else {
           next[key] = structuredClone(value);
         }
+
         continue;
       }
 
@@ -120,6 +121,7 @@ export function mergeConfigs(...layers: Array<JsonObject | null | undefined>): J
       if ((MAP_MERGE_ROOT_KEYS as readonly string[]).includes(key)) {
         const base = isPlainObject(result[key]) ? (result[key] as JsonObject) : {};
         const overlay = isPlainObject(value) ? value : {};
+
         next[key] = mergeMapRoot(base, overlay);
         continue;
       }
@@ -223,7 +225,6 @@ export function computeHeredityMetadata(...parents: Array<HeredityParentLayer | 
 } {
   const locked = new Set<string>();
   const additiveByPath = new Map<string, InheritedAdditiveEntry>();
-
   const ensureAdditive = (path: string): InheritedAdditiveEntry => {
     const existing = additiveByPath.get(path);
 
@@ -232,11 +233,11 @@ export function computeHeredityMetadata(...parents: Array<HeredityParentLayer | 
     }
 
     const created: InheritedAdditiveEntry = { path };
+
     additiveByPath.set(path, created);
 
     return created;
   };
-
   const normalizeParent = (
     parent: HeredityParentLayer | JsonObject | null | undefined,
   ): { overlay: JsonObject | null; locks: readonly string[] } => {
@@ -293,6 +294,7 @@ export function computeHeredityMetadata(...parents: Array<HeredityParentLayer | 
 
             if (isPlainObject(mcp['servers'])) {
               const entry = ensureAdditive('/mcp/servers');
+
               entry.keys = [...new Set([...(entry.keys ?? []), ...Object.keys(mcp['servers'])])];
             }
           }
@@ -306,12 +308,14 @@ export function computeHeredityMetadata(...parents: Array<HeredityParentLayer | 
 
       if ((MAP_MERGE_ROOT_KEYS as readonly string[]).includes(key) && isPlainObject(normalized[key])) {
         const entry = ensureAdditive(pointer(key));
+
         entry.keys = [...new Set([...(entry.keys ?? []), ...Object.keys(normalized[key] as JsonObject)])];
         continue;
       }
 
       if ((ARRAY_CONCAT_ROOT_KEYS as readonly string[]).includes(key) && Array.isArray(normalized[key])) {
         const entry = ensureAdditive(pointer(key));
+
         entry.items = [...(entry.items ?? []), ...(normalized[key] as unknown[])];
         continue;
       }
@@ -330,6 +334,7 @@ export function computeHeredityMetadata(...parents: Array<HeredityParentLayer | 
           for (const list of EGRESS_LIST_KEYS) {
             if (Array.isArray(egress[list]) && (egress[list] as unknown[]).length > 0) {
               const entry = ensureAdditive(pointer(`${EGRESS_CONFIG_ROOT}/${list}`));
+
               entry.items = [...(entry.items ?? []), ...(egress[list] as unknown[])];
             }
           }
@@ -344,6 +349,7 @@ export function computeHeredityMetadata(...parents: Array<HeredityParentLayer | 
           locked.add(pointer(key));
         } else if (isPlainObject(normalized[key])) {
           const entry = ensureAdditive(pointer(key));
+
           entry.keys = [...new Set([...(entry.keys ?? []), ...Object.keys(normalized[key] as JsonObject)])];
         }
       }

@@ -6,19 +6,19 @@ import type { CloudInitConfigEntity } from '../entities/cloud-init-config.entity
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { DatevExportEntity } from '../entities/datev-export.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
-import type { OfferEntity } from '../offers/entities/offer.entity';
 import type { MeterEntity } from '../entities/meter.entity';
 import type { PromotionEntity } from '../entities/promotion.entity';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import type { ServiceTypeEntity } from '../entities/service-type.entity';
 import type { SubscriptionEntity } from '../entities/subscription.entity';
+import type { OfferEntity } from '../offers/entities/offer.entity';
 import type { ProjectMilestoneEntity } from '../projects/entities/project-milestone.entity';
 import type { ProjectTicketEntity } from '../projects/entities/project-ticket.entity';
 import type { ProjectTimeEntryEntity } from '../projects/entities/project-time-entry.entity';
 import type { ProjectEntity } from '../projects/entities/project.entity';
+import { resolveServiceTypeAllowedProviders } from '../utils/provider-selection.utils';
 
 import type { BillingSearchDocument, BillingSearchEntityType } from './billing-search.types';
-import { resolveServiceTypeAllowedProviders } from '../utils/provider-selection.utils';
 
 function text(value: string | number | null | undefined): string | undefined {
   if (value === null || value === undefined) {

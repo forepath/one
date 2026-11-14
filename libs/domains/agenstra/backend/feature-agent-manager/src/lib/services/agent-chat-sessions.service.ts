@@ -1,5 +1,6 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
 
 import {
@@ -9,9 +10,9 @@ import {
 } from '../constants/chat-session.constants';
 import { AgentChatSessionSummaryDto, ChatSessionResponseDto } from '../dto/chat-session-response.dto';
 import { AgentChatSessionEntity } from '../entities/agent-chat-session.entity';
-import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentChatSessionsRepository } from '../repositories/agent-chat-sessions.repository';
 import { AgentMessagesRepository } from '../repositories/agent-messages.repository';
+import { AgentsRepository } from '../repositories/agents.repository';
 
 /**
  * Service for user-visible chat sessions nested under an agent (environment).

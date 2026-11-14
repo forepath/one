@@ -18,7 +18,6 @@ describe('DatevExportRepository', () => {
       createQueryBuilder: jest.fn().mockReturnValue(qb),
     };
     const service = new DatevExportRepository(repository as never);
-
     const result = await service.findAllForAdmin({
       scope: DatevExportScope.TENANT,
       tenantId: 'default',

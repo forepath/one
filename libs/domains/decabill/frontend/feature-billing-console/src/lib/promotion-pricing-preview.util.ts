@@ -99,7 +99,6 @@ function buildFreeDaysPreview(
     options?.periodStart ?? (preview.benefitStartsAt ? new Date(preview.benefitStartsAt) : new Date());
   const { benefitStart, benefitEnd } = resolveBenefitWindow(preview, periodStart);
   const benefitEndsLabel = options?.benefitEndsLabel;
-
   let discountNet = regular;
   let duringBenefitPeriodPriceNet = 0;
 
@@ -192,8 +191,10 @@ export function buildPromotionPeriodPricingPreview(
         benefitEndsAt: preview.benefitEndsAt,
       };
     }
+
     case 'free_days':
       return buildFreeDaysPreview(preview, regular, options);
+
     case 'fixed_amount_net': {
       const credit = preview.amountNet ?? 0;
       const discountNet = roundMoney(Math.min(credit, regular));
@@ -213,6 +214,7 @@ export function buildPromotionPeriodPricingPreview(
         benefitEndsAt: preview.benefitEndsAt,
       };
     }
+
     default:
       return null;
   }

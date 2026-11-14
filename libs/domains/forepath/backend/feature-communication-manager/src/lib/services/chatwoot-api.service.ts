@@ -78,7 +78,6 @@ export class ChatwootApiService {
         ...payload,
       },
     );
-
     const contact = resolveCreatedContact(response);
 
     if (!contact?.id) {
@@ -112,7 +111,6 @@ export class ChatwootApiService {
     // Chatwoot's MessageBuilder defaults the initial message to `outgoing`, which attributes it
     // to the API token's agent instead of the contact. Mark it as incoming unless stated otherwise.
     const message = payload.message ? { message_type: 'incoming' as const, ...payload.message } : undefined;
-
     const response = await this.request<ChatwootCreateConversationResponse>(
       'POST',
       `/api/v1/accounts/${this.accountId}/conversations`,
@@ -153,6 +151,7 @@ export class ChatwootApiService {
     }
 
     const form = new FormData();
+
     form.append('content', payload.content);
     form.append('message_type', payload.message_type ?? 'incoming');
 

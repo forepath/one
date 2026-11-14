@@ -1,7 +1,6 @@
 import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 
-import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import type {
   AdminInvoiceListItemDto,
@@ -9,14 +8,15 @@ import type {
   PaginatedAdminInvoicesResponseDto,
 } from '../dto/admin-billing.dto';
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
-import { resolveCustomerNamesByUserId } from '../utils/customer-display-name.util';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
+import { resolveCustomerNamesByUserId } from '../utils/customer-display-name.util';
+import { resolvePaymentReceivedAt } from '../utils/resolve-payment-received-at.util';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { InvoiceService } from './invoice.service';
-import { resolvePaymentReceivedAt } from '../utils/resolve-payment-received-at.util';
 
 const MARK_PAID_ALLOWED: InvoiceStatus[] = [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.OVERDUE];
 

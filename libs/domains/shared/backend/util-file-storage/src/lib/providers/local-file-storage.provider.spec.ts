@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { FILE_STORAGE_INVALID_PATH_ERROR } from '../file-storage.constants';
+
 import { LocalFileStorageProvider } from './local-file-storage.provider';
 
 describe('LocalFileStorageProvider', () => {

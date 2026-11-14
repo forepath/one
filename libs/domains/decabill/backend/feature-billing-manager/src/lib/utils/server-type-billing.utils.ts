@@ -2,8 +2,9 @@ import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import type { PricingService } from '../services/pricing.service';
 import { ProviderServerTypesService } from '../services/provider-server-types.service';
 import type { TaxCalculationService } from '../services/tax-calculation.service';
-import { normalizeStoredProviderDefaults } from './provider-env-defaults.utils';
+
 import { resolvePlanTaxCategory } from './plan-tax.utils';
+import { normalizeStoredProviderDefaults } from './provider-env-defaults.utils';
 
 /**
  * Resolves provider infrastructure monthly price for a server type id (slug/name).
@@ -65,7 +66,6 @@ export function buildBackorderRequestedConfigSnapshot(
   effectiveConfig: Record<string, unknown>,
 ): Record<string, unknown> {
   const snapshot: Record<string, unknown> = { ...sanitizedRequested };
-
   const serverType = effectiveConfig['serverType'];
 
   if (typeof serverType === 'string' && serverType.trim()) {

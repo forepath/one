@@ -126,9 +126,11 @@ export function deploymentConnectionFormError(
 
   if (form.authType === 'app') {
     if (!form.appId.trim() || form.appId.trim().length > DEPLOYMENT_LIMITS.appIdMaxLength) return 'appId';
+
     if (!form.installationId.trim() || form.installationId.trim().length > DEPLOYMENT_LIMITS.appIdMaxLength) {
       return 'installationId';
     }
+
     if (
       (secretsRequired && !form.privateKey.trim()) ||
       form.privateKey.length > DEPLOYMENT_LIMITS.privateKeyMaxLength
@@ -137,6 +139,7 @@ export function deploymentConnectionFormError(
     }
   } else {
     if ((secretsRequired && !form.token.trim()) || form.token.length > DEPLOYMENT_LIMITS.tokenMaxLength) return 'token';
+
     if (
       (form.provider === 'jenkins' && !form.username.trim()) ||
       form.username.trim().length > DEPLOYMENT_LIMITS.usernameMaxLength

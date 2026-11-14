@@ -68,7 +68,6 @@ const BASE_RADIUS: Record<string, number> = {
   instruction: 5,
   symbol: 3.5,
 };
-
 const FIRST_RING = 46;
 const RING_GAP = 30;
 const NODE_SPACING = 20;

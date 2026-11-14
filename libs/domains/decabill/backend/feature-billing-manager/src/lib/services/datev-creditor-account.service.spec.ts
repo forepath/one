@@ -11,12 +11,10 @@ describe('DatevCreditorAccountService', () => {
     publishCreditorRangeExhausted: jest.fn(),
     publishSupplierCreditorAllocated: jest.fn(),
   };
-
   const service = new DatevCreditorAccountService(
     creditorAccountsRepository as never,
     billingNotificationPublisher as never,
   );
-
   const config: DatevTenantExportConfig = {
     consultantNumber: '1234567',
     clientNumber: '56789',

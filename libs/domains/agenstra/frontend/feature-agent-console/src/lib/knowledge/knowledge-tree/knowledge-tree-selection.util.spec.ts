@@ -18,9 +18,7 @@ describe('knowledge-tree-selection.util', () => {
     c: 'folder',
     page: null,
   };
-
   const resolveParentId = (id: string): string | null => parentMap[id] ?? null;
-
   const tree: KnowledgeTreeSelectableNode[] = [
     {
       id: 'folder',

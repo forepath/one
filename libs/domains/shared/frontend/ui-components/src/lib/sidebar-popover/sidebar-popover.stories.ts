@@ -3,6 +3,7 @@ import { moduleMetadata } from '@storybook/angular';
 import { action } from 'storybook/actions';
 
 import { FpcSidebarNavItemComponent } from '../sidebar-nav-item/sidebar-nav-item.component';
+
 import { FpcSidebarPopoverComponent } from './sidebar-popover.component';
 
 /** Storybook does not derive the implicit `Change` output of `model()` inputs, so it is declared here. */

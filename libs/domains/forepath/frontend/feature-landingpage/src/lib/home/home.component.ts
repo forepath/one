@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnIn
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import {
   SharedContactPersonComponent,
   SharedLogoGridComponent,
@@ -11,13 +10,15 @@ import {
   SharedHeroMascotComponent,
   SharedMarkStackComponent,
 } from '@forepath/shared/frontend/feature-landingpage';
-import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
+import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { catchError, of } from 'rxjs';
 
 import { GhostContentApiService } from '../blog/ghost-content-api.service';
-import { HeroCollageComponent } from './hero-collage.component';
 import type { GhostPost } from '../blog/ghost.types';
+
+import { HeroCollageComponent } from './hero-collage.component';
 
 const PLATFORM_LOGO_SLOTS: readonly (readonly SharedLogoGridLogo[])[] = [
   [

@@ -2,7 +2,6 @@ import { ForepathEstimateParserService } from './forepath-estimate-parser.servic
 
 describe('ForepathEstimateParserService', () => {
   const service = new ForepathEstimateParserService();
-
   const validBreakdown = {
     summary: 'Portal project',
     lineItems: [

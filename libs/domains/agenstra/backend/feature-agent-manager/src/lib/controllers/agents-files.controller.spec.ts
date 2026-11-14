@@ -96,7 +96,6 @@ describe('AgentsFilesController', () => {
     it('should return StreamableFile with metadata headers', async () => {
       service.readFile.mockResolvedValue(mockFileReadResult);
       const res = createMockResponse();
-
       const result = await controller.readFile(mockAgentId, mockFilePath, res, undefined, undefined, undefined);
 
       expect(result).toBeInstanceOf(StreamableFile);
@@ -119,7 +118,6 @@ describe('AgentsFilesController', () => {
     it('should return 206 for satisfiable Range', async () => {
       service.readFile.mockResolvedValue(mockFileReadResult);
       const res = createMockResponse();
-
       const result = await controller.readFile(mockAgentId, mockFilePath, res, 'bytes=0-4', undefined, undefined);
 
       expect(result).toBeInstanceOf(StreamableFile);

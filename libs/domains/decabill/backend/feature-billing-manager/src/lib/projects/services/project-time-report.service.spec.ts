@@ -19,14 +19,11 @@ describe('ProjectTimeReportService', () => {
   const billingIssuerConfig = {
     getConfig: jest.fn().mockReturnValue({ name: 'Forepath GmbH' }),
   };
-
   let service: ProjectTimeReportService;
-
   const project = {
     id: 'p1',
     name: 'Website redesign',
   };
-
   const from = '2026-06-01T08:00:00.000Z';
   const to = '2026-06-01T17:00:00.000Z';
 

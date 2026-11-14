@@ -4,7 +4,6 @@ describe('AgentToolCallsService', () => {
   const agentId = 'agent-1';
   const ticket = 'ctx-AbCdEfGhIjKlMnOpQrStUvWx';
   let calls: AgentToolCallsService;
-
   const message = (id: string, sessionID: string, role: 'user' | 'assistant', parentID?: string) => ({
     type: 'message.updated',
     properties: { info: { id, sessionID, role, ...(parentID ? { parentID } : {}) } },
@@ -35,7 +34,6 @@ describe('AgentToolCallsService', () => {
   });
   const getInput = { ticket, ref: 'item:1' };
   const isGet = (input: Record<string, unknown>) => input['ticket'] === ticket && input['ref'] === 'item:1';
-
   /** The platform's prompt carrying the ticket, and the agent's answer to it. */
   const platformTurn = () => {
     calls.observe(agentId, message('msg-root', 'ses-task', 'user'));

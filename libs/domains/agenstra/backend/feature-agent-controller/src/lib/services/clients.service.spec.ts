@@ -16,14 +16,13 @@ import { createTestPki } from '../../../../../../identity/backend/util-auth/src/
 import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientsRepository } from '../repositories/clients.repository';
-import { validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
+import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
+import { validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 
 import { ClientAgentProxyService } from './client-agent-proxy.service';
-import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
-import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
-
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
 

@@ -31,7 +31,6 @@ describe('StatisticsService', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
   const securityRepository = {
     insertEgressEvents: jest.fn(),
   };

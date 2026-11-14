@@ -29,11 +29,11 @@ import {
 } from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, firstValueFrom, skip } from 'rxjs';
 
-import { getMeterAggregatorLabel } from '../billing-status-labels';
+import { formatBillingMoney } from '../billing-format';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { getMeterAggregatorLabel } from '../billing-status-labels';
 import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { activeState } from '../shared/table-states';
-import { formatBillingMoney } from '../billing-format';
 
 interface MeterForm {
   key: string;

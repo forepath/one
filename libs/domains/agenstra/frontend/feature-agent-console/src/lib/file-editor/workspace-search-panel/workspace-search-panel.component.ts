@@ -38,6 +38,7 @@ import {
 } from 'rxjs';
 
 import { fileIconNameForName } from '../file-icon.util';
+
 import { buildPathPrefixSuggestions } from './path-prefix-suggestions.util';
 
 @Component({

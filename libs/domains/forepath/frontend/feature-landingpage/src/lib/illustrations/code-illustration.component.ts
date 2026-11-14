@@ -20,7 +20,6 @@ interface CodeFile {
 }
 
 const ROTATION_INTERVAL_MS = 5000;
-
 const FILES: readonly CodeFile[] = [
   {
     id: 'php',
@@ -107,7 +106,9 @@ function highlight(source: string, keywords: readonly string[]): string[] {
       .split(/(\b[A-Za-z_]\w*\b|'[^']*')/)
       .map((part) => {
         if (/^'.*'$/.test(part)) return `<span class="sai-tok-str">${escape(part)}</span>`;
+
         if (keywordSet.has(part)) return `<span class="sai-tok-key">${part}</span>`;
+
         if (/^[A-Z]\w*$/.test(part)) return `<span class="sai-tok-fn">${part}</span>`;
 
         return escape(part);

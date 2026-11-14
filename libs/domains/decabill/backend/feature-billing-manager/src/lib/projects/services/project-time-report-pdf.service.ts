@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
 import { getTenantIdOrDefault } from '@forepath/shared/backend';
 import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
+import { Injectable } from '@nestjs/common';
 
 import type { InvoiceEntity } from '../../entities/invoice.entity';
 import { InvoicePdfHtmlRendererService } from '../../services/invoice-pdf-html-renderer.service';
@@ -35,6 +35,7 @@ export class ProjectTimeReportPdfService {
         FileStorageScope.customerTimesheets,
         storageKey,
       );
+
       stampedViewModel.authenticityShortSha = reserved.shas.short;
     }
 

@@ -19,11 +19,11 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 import { ClientsRepository } from '../repositories/clients.repository';
 import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
 import { AgentConsoleStatusService } from './agent-console-status.service';
 import { ClientsService } from './clients.service';
-import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 /**
  * Service for proxying agent VCS requests to client endpoints.

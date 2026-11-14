@@ -1,6 +1,7 @@
+import type { BillingAddonModule } from '../../services/addon-module-registry.service';
 import { clampContributorJobIntervalMs } from '../../utils/contributor-job.types';
 import { CONTAINER_MANAGER_MODULE_KEY } from '../../utils/plan-addons.utils';
-import type { BillingAddonModule } from '../../services/addon-module-registry.service';
+
 import type { ContainerManagerCollectService } from './services/container-manager-collect.service';
 
 const DEFAULT_COLLECT_INTERVAL_MS = 60_000;

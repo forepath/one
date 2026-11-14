@@ -1,3 +1,5 @@
+import { resolveAgentChatToolDisplay } from '../chat/agent-chat-tool-display';
+
 import {
   AGENT_GRAPH_HIDDEN_ATTRIBUTES,
   agentGraphAttributeLabel,
@@ -7,7 +9,6 @@ import {
   agentGraphToolLabel,
   humanizeAgentGraphId,
 } from './graph-labels';
-import { resolveAgentChatToolDisplay } from '../chat/agent-chat-tool-display';
 
 describe('graph labels', () => {
   const formatDate = (value: string) => `date(${value})`;

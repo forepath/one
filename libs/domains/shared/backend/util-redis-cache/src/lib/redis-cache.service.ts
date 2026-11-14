@@ -1,5 +1,5 @@
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { recordSharedCounter, recordSharedHistogram } from '@forepath/shared/backend/util-otel/metrics';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 
 import { createKeyValueClient } from './key-value-client/create-key-value-client';
 import type { KeyValueClient } from './key-value-client/key-value-client';

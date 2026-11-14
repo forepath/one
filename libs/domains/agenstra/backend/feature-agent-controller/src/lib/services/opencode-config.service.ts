@@ -32,6 +32,7 @@ import { Repository } from 'typeorm';
 import { OpencodeConfigResponseDto, UpsertOpencodeConfigDto } from '../dto/opencode-config.dto';
 import { ClientOpencodeConfigEntity } from '../entities/client-opencode-config.entity';
 import { GlobalOpencodeConfigEntity } from '../entities/global-opencode-config.entity';
+
 import { OpencodeMcpServersCatalogService } from './opencode-mcp-servers-catalog.service';
 
 function parseSecrets(raw: string | null | undefined): Record<string, string> {
@@ -103,6 +104,7 @@ export class OpencodeConfigService {
   async getGlobal(): Promise<OpencodeConfigResponseDto> {
     const row = await this.globalRepo.find({ take: 1, order: { updatedAt: 'DESC' } }).then((r) => r[0]);
     const response = this.toResponse(row?.config, row?.overrides, row?.locks, row?.secrets, row?.updatedAt);
+
     // Owning (global) layer still needs `effective` for draft-lock display fallbacks.
     response.effective = this.composeStoredLayer(row?.config, row?.overrides);
     response.platformPolicy = this.resolvePlatformPolicy({ global: response.effective });
@@ -112,7 +114,6 @@ export class OpencodeConfigService {
 
   async putGlobal(dto: UpsertOpencodeConfigDto): Promise<OpencodeConfigResponseDto> {
     let row = await this.globalRepo.find({ take: 1, order: { updatedAt: 'DESC' } }).then((r) => r[0]);
-
     const sanitized = await this.sanitizeUpsertAgainstAllowDeny(dto, {
       parentOverlaysLowToHigh: [],
       inheritedAdditive: [],
@@ -174,9 +175,7 @@ export class OpencodeConfigService {
     const globalRow = await this.globalRepo.find({ take: 1, order: { updatedAt: 'DESC' } }).then((r) => r[0]);
     const globalLayer = this.toHeredityParent(globalRow);
     const heredity = computeHeredityMetadata(globalLayer);
-
     let row = await this.clientRepo.findOne({ where: { clientId } });
-
     const sanitized = await this.sanitizeUpsertAgainstAllowDeny(dto, {
       parentOverlaysLowToHigh: [globalLayer.overlay ?? {}],
       inheritedAdditive: heredity.inheritedAdditive,
@@ -369,7 +368,6 @@ export class OpencodeConfigService {
       ...collectMcpRegistryClaims(options.existingOverrides as JsonObject | undefined),
     ];
     const catalogByName = await this.loadMcpCatalogByNames(claimedNames);
-
     const verifiedConfig = stripUnverifiedMcpRegistryClaims(
       (dto.config !== undefined ? dto.config : options.existingConfig) as JsonObject,
       catalogByName,
@@ -378,7 +376,6 @@ export class OpencodeConfigService {
       (dto.overrides !== undefined ? dto.overrides : options.existingOverrides) as JsonObject,
       catalogByName,
     ) as JsonObject;
-
     const nextConfig = asOverlay(verifiedConfig);
     const nextOverrides = asOverlay(verifiedOverrides);
     const composed = this.composeStoredLayer(nextConfig, nextOverrides);

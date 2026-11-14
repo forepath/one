@@ -1,6 +1,7 @@
 import { Directive, inject } from '@angular/core';
 
 import { FPC_CONTROL_SIZE } from '../control-size/control-size';
+
 import { FpcTruncateTitleDirective } from './truncate-title.directive';
 
 /**

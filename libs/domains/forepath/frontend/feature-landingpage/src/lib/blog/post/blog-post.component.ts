@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal,
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DomSanitizer, Meta, SafeHtml, Title } from '@angular/platform-browser';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { SharedHeroMascotComponent } from '@forepath/shared/frontend/feature-landingpage';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import {
@@ -13,7 +14,6 @@ import {
 } from '@forepath/shared/frontend/util-meta';
 import { catchError, of, switchMap } from 'rxjs';
 
-import { GhostContentApiService } from '../ghost-content-api.service';
 import {
   GHOST_AI_GENERATED_LABEL_SRC,
   GHOST_AI_MODIFIED_LABEL_SRC,
@@ -22,6 +22,7 @@ import {
   resolveGhostPrimaryDisplayTag,
   type GhostAiMarkers,
 } from '../ghost-ai-tags.util';
+import { GhostContentApiService } from '../ghost-content-api.service';
 import {
   resolveGhostPostAuthorName,
   resolveGhostPostDescription,
@@ -29,7 +30,6 @@ import {
   resolveGhostPostKeywords,
 } from '../ghost-post-meta.util';
 import type { GhostPost, GhostTag } from '../ghost.types';
-import { SharedHeroMascotComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 function isGhostNotFoundError(error: unknown): boolean {
   if (!error || typeof error !== 'object') {
@@ -37,6 +37,7 @@ function isGhostNotFoundError(error: unknown): boolean {
   }
 
   const ghostError = error as { type?: string; name?: string };
+
   return ghostError.type === 'NotFoundError' || ghostError.name === 'NotFoundError';
 }
 
@@ -90,6 +91,7 @@ export class ForepathBlogPostComponent implements OnInit {
       .pipe(
         switchMap((params) => {
           const slug = params.get('slug')?.trim() ?? '';
+
           this.loading.set(true);
           this.notFound.set(false);
           this.errorMessage.set(null);
@@ -100,6 +102,7 @@ export class ForepathBlogPostComponent implements OnInit {
             this.loading.set(false);
             this.notFound.set(true);
             this.applyMissingMeta();
+
             return of(null);
           }
 
@@ -114,6 +117,7 @@ export class ForepathBlogPostComponent implements OnInit {
                 );
                 this.applyMissingMeta();
               }
+
               return of(null);
             }),
           );
@@ -122,6 +126,7 @@ export class ForepathBlogPostComponent implements OnInit {
       )
       .subscribe((post) => {
         this.loading.set(false);
+
         if (!post) {
           return;
         }

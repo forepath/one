@@ -14,11 +14,6 @@ import {
   reloadLocalModelAfterStartOver$,
   requestGpuAccess$,
 } from '@forepath/forepath/frontend/data-access-project-estimator';
-import { provideEffects } from '@ngrx/effects';
-import { provideState } from '@ngrx/store';
-
-import { createForepathLocalLlmWorker } from './workers/create-forepath-local-llm-worker';
-
 import {
   CONTENT_REPORT_FEATURE_KEY,
   ContentReportFacade,
@@ -30,6 +25,8 @@ import {
   vulnerabilityReportReducer,
 } from '@forepath/shared/frontend/data-access-communication';
 import { createSharedContactRoute, createBrandContactDetails } from '@forepath/shared/frontend/feature-landingpage';
+import { provideEffects } from '@ngrx/effects';
+import { provideState } from '@ngrx/store';
 
 import { ForepathAboutComponent } from './about/about.component';
 import { blogLocaleGuard } from './blog/blog-locale.guard';
@@ -55,6 +52,7 @@ import { ForepathOneComponent } from './one/one.component';
 import { ForepathProjectEstimateComponent } from './pricing/estimate/project-estimate.component';
 import { ForepathPricingComponent } from './pricing/pricing.component';
 import { ForepathSoftwareDevelopmentComponent } from './software-development/software-development.component';
+import { createForepathLocalLlmWorker } from './workers/create-forepath-local-llm-worker';
 
 export const forepathRoutes: Route[] = [
   {

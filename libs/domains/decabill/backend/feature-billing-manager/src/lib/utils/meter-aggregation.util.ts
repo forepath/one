@@ -100,7 +100,6 @@ export function aggregateMeterValues(entries: MeterUsageEntry[], aggregator: Met
 
     return a.id.localeCompare(b.id);
   });
-
   const values = sorted.map((entry) => parseNumeric(entry.value)).filter((value): value is number => value !== null);
 
   if (values.length === 0) {

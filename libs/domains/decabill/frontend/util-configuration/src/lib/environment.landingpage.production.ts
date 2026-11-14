@@ -1,7 +1,7 @@
 import { CLOUDFLARE_TURNSTILE_TEST_SITE_KEY } from '@forepath/shared/frontend/util-configuration';
 
-import { createDecabillShell } from './shell';
 import type { DecabillLandingEnvironment } from './environment.interface';
+import { createDecabillShell } from './shell';
 
 export const environment: DecabillLandingEnvironment = {
   ...createDecabillShell({

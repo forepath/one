@@ -43,17 +43,16 @@ import {
 } from '../search/agenstra-search-list.util';
 import { mergeDeploymentInputs, normalizeDeploymentInputs } from '../utils/deployment-inputs.utils';
 
+import { AgentDeploymentSourcesService } from './agent-deployment-sources.service';
 import {
   DEPLOYMENT_CONNECTION_NOT_AVAILABLE_MESSAGE,
   DeploymentConnectionsService,
 } from './deployment-connections.service';
-import { AgentDeploymentSourcesService } from './agent-deployment-sources.service';
 import { DeploymentRealtimeService } from './deployment-realtime.service';
 import { DeploymentWorkflowsService } from './deployment-workflows.service';
 import { StatisticsService } from './statistics.service';
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
 /** Provider job ids (GitHub / GitLab numeric ids, Jenkins stage ids). */
 const JOB_ID_PATTERN = /^[A-Za-z0-9_.:#-]{1,255}$/;
 
@@ -68,7 +67,6 @@ export const DEPLOYMENT_UNRESOLVED_RUN_TIMEOUT_MS = 60 * 60_000;
 
 /** Tolerated clock skew between the controller and the provider when matching dispatched runs. */
 const DISPATCH_MATCH_SKEW_MS = 30_000;
-
 /** Upper bound of OpenSearch ids considered for one run list search. */
 const RUN_SEARCH_ID_LIMIT = 1_000;
 

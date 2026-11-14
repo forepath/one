@@ -1,5 +1,5 @@
-import { WEBHOOK_MAX_RESPONSE_BODY_CHARS } from './webhook-response.util';
 import { WebhookHttpClient } from './webhook-http.client';
+import { WEBHOOK_MAX_RESPONSE_BODY_CHARS } from './webhook-response.util';
 
 describe('WebhookHttpClient', () => {
   const originalFetch = global.fetch;

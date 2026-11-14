@@ -128,7 +128,6 @@ describe('agent graphs effects', () => {
 
   const first = (effect: () => Observable<Action>): Promise<Action> =>
     new Promise((resolve) => TestBed.runInInjectionContext(() => effect().pipe(take(1)).subscribe(resolve)));
-
   const collect = (effect: () => Observable<Action>): Action[] => {
     const emitted: Action[] = [];
 

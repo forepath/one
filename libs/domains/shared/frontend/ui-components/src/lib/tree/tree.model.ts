@@ -44,13 +44,13 @@ export function fpcTreeExpandable(node: FpcTreeNode): boolean {
 /** The rows a user sees: depth-first, children only below expanded nodes. */
 export function fpcFlattenTree<T>(nodes: readonly FpcTreeNode<T>[], expanded: ReadonlySet<string>): FpcTreeRow<T>[] {
   const rows: FpcTreeRow<T>[] = [];
-
   const walk = (list: readonly FpcTreeNode<T>[], level: number, parentId: string | null): void => {
     list.forEach((node, index) => {
       const expandable = fpcTreeExpandable(node);
       const isExpanded = expandable && expanded.has(node.id);
 
       rows.push({ node, level, expandable, expanded: isExpanded, parentId, setSize: list.length, posInSet: index + 1 });
+
       if (isExpanded && node.children) {
         walk(node.children, level + 1, node.id);
       }
@@ -144,6 +144,7 @@ export function fpcScrollIntoView(index: number, scrollTop: number, viewportHeig
   const bottom = top + rowHeight;
 
   if (top < scrollTop) return top;
+
   if (bottom > scrollTop + viewportHeight) return Math.max(0, bottom - viewportHeight);
 
   return scrollTop;

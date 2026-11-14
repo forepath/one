@@ -56,7 +56,6 @@ describe('AgentContentChangesService', () => {
     longSha: planSha,
     updatedAt: new Date(revision),
   };
-
   const handle = (change: Record<string, unknown>, source: Record<string, unknown> = { kind: 'chat' }) =>
     service.handle(clientId, agentId, change, source);
 

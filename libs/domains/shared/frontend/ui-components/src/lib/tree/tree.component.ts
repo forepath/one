@@ -15,6 +15,7 @@ import {
 
 import { FpcDensityService } from '../density/density.service';
 import { FpcLongPressDirective } from '../long-press/long-press.directive';
+
 import {
   FpcTreeNode,
   FpcTreeRow,
@@ -32,7 +33,6 @@ export interface FpcTreeContextMenuEvent<T = unknown> {
 }
 
 const ROW_HEIGHT = { compact: 28, comfortable: 34 } as const;
-
 let nextTreeId = 0;
 
 /**
@@ -184,8 +184,10 @@ export class FpcTreeComponent<T = unknown> {
       if (!element) return;
 
       this.viewportHeight.set(element.clientHeight || 600);
+
       if (typeof ResizeObserver !== 'undefined') {
         const observer = new ResizeObserver(() => this.viewportHeight.set(element.clientHeight || 600));
+
         observer.observe(element);
         destroyRef.onDestroy(() => observer.disconnect());
       }
@@ -202,6 +204,7 @@ export class FpcTreeComponent<T = unknown> {
     const missing = ancestors.filter((ancestor) => !this.expandedSet().has(ancestor));
 
     if (missing.length > 0) this.expanded.set([...this.expanded(), ...missing]);
+
     this.selectedId.set(id);
     this.activeId.set(id);
     this.scrollToId(id);
@@ -228,6 +231,7 @@ export class FpcTreeComponent<T = unknown> {
   protected onFocus(): void {
     if (this.activeId() === null) {
       const rows = this.rows();
+
       this.activeId.set(this.selectedId() ?? rows[0]?.node.id ?? null);
     }
   }
@@ -261,6 +265,7 @@ export class FpcTreeComponent<T = unknown> {
       this.expanded.set(this.expanded().filter((id) => id !== row.node.id));
     } else {
       this.expanded.set([...this.expanded(), row.node.id]);
+
       if (row.node.hasChildren && row.node.children === undefined) this.expandRequest.emit(row.node);
     }
   }
@@ -292,13 +297,17 @@ export class FpcTreeComponent<T = unknown> {
         break;
       case 'ArrowRight':
         event.preventDefault();
+
         if (row?.expandable && !row.expanded) this.toggle(row);
         else if (row?.expanded) this.moveTo(index + 1);
+
         break;
       case 'ArrowLeft':
         event.preventDefault();
+
         if (row?.expanded) this.toggle(row);
         else if (row?.parentId) this.moveTo(this.indexById().get(row.parentId) ?? index);
+
         break;
       case 'Enter':
       case ' ':
@@ -306,14 +315,17 @@ export class FpcTreeComponent<T = unknown> {
           event.preventDefault();
           this.activate(row);
         }
+
         break;
       case 'ContextMenu':
       case 'F10':
         if (row && (event.key === 'ContextMenu' || event.shiftKey)) {
           event.preventDefault();
           const rect = this.viewport()?.nativeElement.getBoundingClientRect();
+
           this.emitMenu(row.node, (rect?.left ?? 0) + 24, (rect?.top ?? 0) + this.rowTop(row) - this.scrollTop() + 24);
         }
+
         break;
     }
   }
@@ -332,6 +344,7 @@ export class FpcTreeComponent<T = unknown> {
 
     this.activeId.set(row.node.id);
     this.scrollToId(row.node.id);
+
     if (this.selectOnFocus() && !row.node.disabled) {
       this.selectedId.set(row.node.id);
       this.nodeActivate.emit(row.node);

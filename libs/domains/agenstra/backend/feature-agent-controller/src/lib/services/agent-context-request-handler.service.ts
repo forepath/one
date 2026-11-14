@@ -227,6 +227,7 @@ export class AgentContextRequestHandlerService {
 
           break;
         }
+
         case 'knowledge': {
           const node = await this.findKnowledgeNode(clientId, ref.sha);
 
@@ -236,6 +237,7 @@ export class AgentContextRequestHandlerService {
 
           break;
         }
+
         case 'plan': {
           const plan = agentId ? await this.chatPlanService.findForAgentBySha(clientId, agentId, ref.sha) : null;
 

@@ -1,5 +1,5 @@
-import { chmodSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { chmodSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -77,7 +77,6 @@ describe('static-memory-cache', () => {
       const warn = jest.fn();
       const log = jest.fn();
       const fileRoot = join(root, 'app.js');
-
       const stats = await warmStaticMemoryCache([join(root, 'missing'), fileRoot, root], {}, { log, warn });
 
       expect(warn).toHaveBeenCalledWith(expect.stringContaining('root not found'));
@@ -176,6 +175,7 @@ describe('static-memory-cache', () => {
 
       const htmlHeaders: Record<string, string | number> = {};
       let htmlBody: Buffer | undefined;
+
       writeCachedStaticFileToNodeResponse(
         {
           writeHead(_code, headers) {
@@ -193,6 +193,7 @@ describe('static-memory-cache', () => {
       expect(String(htmlBody)).toContain('home');
 
       const stableHeaders: Record<string, string | number> = {};
+
       writeCachedStaticFileToNodeResponse(
         {
           writeHead(_code, headers) {
@@ -208,6 +209,7 @@ describe('static-memory-cache', () => {
       expect(stableHeaders['ETag']).toBe(stableJs!.etag);
 
       const hashedHeaders: Record<string, string | number> = {};
+
       writeCachedStaticFileToNodeResponse(
         {
           writeHead(_code, headers) {
@@ -267,6 +269,7 @@ describe('static-memory-cache', () => {
       expect(after.etag).not.toBe(before.etag);
 
       let status = 0;
+
       writeCachedStaticFileToNodeResponse(
         {
           writeHead(code) {
@@ -335,7 +338,6 @@ describe('static-memory-cache', () => {
         statusCode: 200,
         headers: {},
       };
-
       const res = {
         get statusCode() {
           return state.statusCode;

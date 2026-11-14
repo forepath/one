@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 
 import type { CloudInitConfigOrderFieldDto } from '../dto/cloud-init-config-response.dto';
 import type { CloudInitConfigEnvVariableDefinition } from '../entities/cloud-init-config.entity';
+
 import { CloudInitTemplateContext, interpolateCloudInitTemplate } from './cloud-init/template-interpolation.utils';
 import { generateSecureRandomString, normalizeRandomDefaultLength } from './generate-secure-random.utils';
 

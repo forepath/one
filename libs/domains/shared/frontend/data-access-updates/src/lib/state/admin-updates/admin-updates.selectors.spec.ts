@@ -1,9 +1,9 @@
+import { initialAdminUpdatesState } from './admin-updates.reducer';
 import {
   selectAdminUpdatesFullState,
   selectAdminUpdatesHasAttention,
   selectAdminUpdatesStatus,
 } from './admin-updates.selectors';
-import { initialAdminUpdatesState } from './admin-updates.reducer';
 
 describe('adminUpdatesSelectors', () => {
   it('selects status and full state', () => {

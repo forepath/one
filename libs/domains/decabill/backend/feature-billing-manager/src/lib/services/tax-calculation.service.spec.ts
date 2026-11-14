@@ -1,14 +1,14 @@
 import { TaxCategory } from '../constants/tax-category.constants';
 import { TaxMode } from '../constants/tax-mode.constants';
+import { EinvoiceTaxCategoryCode } from '../constants/tax-mode.constants';
+
 import { TaxCalculationService } from './tax-calculation.service';
 import { TaxRateConfigService } from './tax-rate-config.service';
 import type { TaxTreatmentResult } from './tax-treatment.service';
-import { EinvoiceTaxCategoryCode } from '../constants/tax-mode.constants';
 
 describe('TaxCalculationService with tax treatment', () => {
   const rateConfig = new TaxRateConfigService();
   const service = new TaxCalculationService(rateConfig);
-
   const reverseCharge: TaxTreatmentResult = {
     taxMode: TaxMode.EU_REVERSE_CHARGE,
     taxCountryCode: 'FR',
@@ -40,7 +40,6 @@ describe('TaxCalculationService with tax treatment', () => {
       invoiceNote: '',
       issuerIsInEu: true,
     };
-
     const totals = service.computeLines(
       [{ description: 'SaaS', quantity: 1, unitPriceNet: 100, taxCategory: TaxCategory.STANDARD }],
       { taxTreatment: treatment },
@@ -61,7 +60,6 @@ describe('TaxCalculationService with tax treatment', () => {
       invoiceNote: '',
       issuerIsInEu: true,
     };
-
     const totals = service.computeLines(
       [{ description: 'Item', quantity: 1, unitPriceNet: 100, taxCategory: TaxCategory.REDUCED }],
       { taxTreatment: treatment },
@@ -80,7 +78,6 @@ describe('TaxCalculationService with tax treatment', () => {
       invoiceNote: '',
       issuerIsInEu: true,
     };
-
     const totals = service.computeLines(
       [
         {

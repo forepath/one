@@ -7,6 +7,7 @@ describe('FpcOtpInputComponent labelling', () => {
     const fixture = TestBed.createComponent(FpcOtpInputComponent);
 
     for (const [name, value] of Object.entries(inputs)) fixture.componentRef.setInput(name, value);
+
     fixture.detectChanges();
 
     return fixture.nativeElement as HTMLElement;

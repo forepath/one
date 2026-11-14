@@ -98,6 +98,7 @@ export function projectTicketStatusState(status: ProjectTicketStatus): FpcTableS
 
 export function projectTicketStatusFilterLabel(value: ProjectTicketStatusFilter): string {
   if (value === 'board') return $localize`:@@featureProjectBoard-filterStatusBoard:On the board (without closed)`;
+
   if (value === 'all') return $localize`:@@featureProjectBoard-filterStatusAll:All statuses`;
 
   return projectTicketLaneStatusLabel(value);

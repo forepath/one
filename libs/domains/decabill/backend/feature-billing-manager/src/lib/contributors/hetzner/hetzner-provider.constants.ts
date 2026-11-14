@@ -1,7 +1,6 @@
 import { applyProviderConfigFieldScopes } from '../../utils/provider-config-schema.utils';
 import { HETZNER_ENV_DEFAULT_FIELDS } from '../../utils/provider-env-defaults.utils';
 import { HOST_CLOUD_INIT_COMPATIBILITY_GROUP } from '../../utils/provider-selection.utils';
-
 import { HOST_PROVIDER_CONFIG_PROPERTIES } from '../shared/host-provider-config.properties';
 
 export const HETZNER_PROVIDER_ID = 'hetzner';

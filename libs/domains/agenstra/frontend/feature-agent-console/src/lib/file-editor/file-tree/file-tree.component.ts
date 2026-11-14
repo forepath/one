@@ -64,6 +64,7 @@ import {
 } from 'rxjs';
 
 import { fileIconClassForName } from '../file-icon.util';
+
 import { FileTreeClipboardService } from './file-tree-clipboard.service';
 import {
   buildClipboardEntries,
@@ -422,9 +423,11 @@ export class FileTreeComponent implements OnInit {
 
                 return next;
               });
+
               if (listing !== null) {
                 this.updateTreeCache(path, listing);
               }
+
               this.rebuildTree();
             });
 
@@ -2237,7 +2240,6 @@ export class FileTreeComponent implements OnInit {
   private readAllDirectoryEntries(reader: DroppedFileSystemDirectoryReader): Promise<DroppedFileSystemEntry[]> {
     return new Promise((resolve, reject) => {
       const allEntries: DroppedFileSystemEntry[] = [];
-
       const readBatch = (): void => {
         reader.readEntries(
           (entries) => {
@@ -2499,7 +2501,6 @@ export class FileTreeComponent implements OnInit {
     );
     const pendingCreatePaths: string[] = [];
     const expandedDirectoryPaths: string[] = [];
-
     // Replace early top-level placeholders with the full nested path set once known.
     const nestedPending = [
       ...sortedDirectories.map((relativeDirectory) => ({

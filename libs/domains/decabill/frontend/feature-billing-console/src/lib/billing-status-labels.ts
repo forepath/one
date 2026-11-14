@@ -5,11 +5,11 @@ import type {
   PromotionRedemptionStatus,
   ProviderDetail,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import type { FpcBadgeTone } from '@forepath/shared/frontend/ui-components';
 
 import { getCountryDisplayName } from './billing-country-options';
 import { formatBillingMoney } from './billing-format';
 import { getUnavailableLabel } from './named-label.util';
-import type { FpcBadgeTone } from '@forepath/shared/frontend/ui-components';
 
 export { getUnavailableLabel, resolveNamedLabel } from './named-label.util';
 

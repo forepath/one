@@ -110,6 +110,19 @@ import {
 } from 'rxjs';
 
 import {
+  BILLING_COUNTRY_OPTIONS,
+  DEFAULT_BILLING_COUNTRY_CODE,
+  withOptionalCountry,
+  type BillingCountryOption,
+} from '../billing-country-options';
+import {
+  formatBillingDate,
+  formatBillingDateRange,
+  formatBillingDateTime,
+  formatBillingMoney,
+} from '../billing-format';
+import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import {
   getBackorderStatusBadgeTone,
   getBackorderStatusLabel,
   getBillingIntervalDurationLabel,
@@ -126,13 +139,23 @@ import {
   getVatIdValidationStatusLabel,
   resolveNamedLabel,
 } from '../billing-status-labels';
+import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
 import {
-  BILLING_COUNTRY_OPTIONS,
-  DEFAULT_BILLING_COUNTRY_CODE,
-  withOptionalCountry,
-  type BillingCountryOption,
-} from '../billing-country-options';
-import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+  buildOrderAuthProviderConfig,
+  createDefaultOidcOrderConfig,
+  createDefaultSamlOrderConfig,
+  isOrderAuthMethodSupported,
+  type IntegratedOrderAuthMethod,
+  type IntegratedOrderOidcConfig,
+  type IntegratedOrderSamlConfig,
+} from '../plan-order-configurator/plan-order-requested-config.util';
+import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
+import {
+  buildPricingTotalsSummary,
+  type PricingTotalsLeadingRow,
+  type PricingTotalsSummary,
+} from '../pricing-totals-summary/pricing-totals.util';
+import { buildPromotionAdjustedOrderPricing } from '../promotion-pricing-preview.util';
 import {
   dbBulkSummary,
   dbCopyIdItem,
@@ -145,29 +168,6 @@ import {
 } from '../shared/data-list';
 import { dbPagerTotal, dbServerPaging } from '../shared/server-paging';
 import { backorderState, provisioningState, subscriptionState } from '../shared/table-states';
-import {
-  buildOrderAuthProviderConfig,
-  createDefaultOidcOrderConfig,
-  createDefaultSamlOrderConfig,
-  isOrderAuthMethodSupported,
-  type IntegratedOrderAuthMethod,
-  type IntegratedOrderOidcConfig,
-  type IntegratedOrderSamlConfig,
-} from '../plan-order-configurator/plan-order-requested-config.util';
-import { buildPromotionAdjustedOrderPricing } from '../promotion-pricing-preview.util';
-import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
-import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
-import {
-  buildPricingTotalsSummary,
-  type PricingTotalsLeadingRow,
-  type PricingTotalsSummary,
-} from '../pricing-totals-summary/pricing-totals.util';
-import {
-  formatBillingDate,
-  formatBillingDateRange,
-  formatBillingDateTime,
-  formatBillingMoney,
-} from '../billing-format';
 
 type CustomerPlansMobilePanel = 'subscriptions' | 'backorders';
 
@@ -511,6 +511,7 @@ export class SubscriptionsComponent implements OnInit {
 
         return;
       }
+
       if (panel === 'backorders') untracked(() => this.backordersPaging.reload());
     });
   }
@@ -945,7 +946,6 @@ export class SubscriptionsComponent implements OnInit {
       serverTypeId?.trim() && this.orderServerTypeOptions.length > 0
         ? (this.orderServerTypeOptions.find((st) => st.id === serverTypeId) ?? null)
         : null;
-
     const total = this.getPlanTotalPrice(plan, serverType);
 
     if (total === null) return '-';
@@ -1795,12 +1795,14 @@ export class SubscriptionsComponent implements OnInit {
 
   private syncOrderAddons(): void {
     const planId = this.orderPlanId.trim();
+
     this.orderAddons = [];
     this.orderAddonIds = new Set();
     this.orderAddonConfigs = {};
 
     if (!planId) {
       this.orderAddonsLoading = false;
+
       return;
     }
 
@@ -2385,6 +2387,7 @@ export class SubscriptionsComponent implements OnInit {
 
         this.orderServerTypesLoading = true;
         const allowed = new Set(normalizeAllowedServerTypeIds(plan.allowedServerTypes));
+
         this.serviceTypesService.getProviderServerTypes(providerId, plan.serviceTypeId ?? undefined).subscribe({
           next: (types) => {
             if (requestId !== this.orderServerTypesRequestId) {

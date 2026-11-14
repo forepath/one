@@ -13,7 +13,6 @@ const labels: ProjectEstimateContactMessageLabels = {
   subtotalLabel: 'Subtotal (net):',
   assumptionsHeading: 'Assumptions',
 };
-
 const sampleEstimate: ProjectEstimate = {
   summary: 'Workshop and discovery for a new platform.',
   lineItems: [

@@ -1,11 +1,11 @@
 import type { AgentEgressDetailsDto } from '@forepath/agenstra/backend/feature-agent-manager';
+import { evaluateEgressDestination } from '@forepath/agenstra/shared/util-opencode-config';
 import {
   ClientUsersRepository,
   RequireScopes,
   ensureWorkspaceManagementAccess,
   type RequestWithUser,
 } from '@forepath/identity/backend';
-import { evaluateEgressDestination } from '@forepath/agenstra/shared/util-opencode-config';
 import { BadRequestException, Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
 
 import { EgressEvaluationResponseDto, EvaluateEgressDestinationDto } from '../dto/opencode-config.dto';

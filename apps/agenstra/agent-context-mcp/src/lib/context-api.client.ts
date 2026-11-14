@@ -128,7 +128,9 @@ export class ContextApiClient {
     const params = new URLSearchParams();
 
     if (options.query) params.set('query', options.query);
+
     if (options.kinds?.length) params.set('kinds', options.kinds.join(','));
+
     if (options.limit !== undefined) params.set('limit', String(options.limit));
 
     const query = params.toString();
@@ -242,6 +244,7 @@ export class ContextApiClient {
     const params = new URLSearchParams();
 
     if (options.workflowId) params.set('workflowId', options.workflowId);
+
     if (options.limit !== undefined) params.set('limit', String(options.limit));
 
     const query = params.toString();

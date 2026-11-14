@@ -2,8 +2,9 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
 import { action } from 'storybook/actions';
 
-import { FpcListItemComponent } from '../list-item/list-item.component';
 import { FpcListComponent } from '../list/list.component';
+import { FpcListItemComponent } from '../list-item/list-item.component';
+
 import { FpcListSearchComponent } from './list-search.component';
 
 /** Storybook does not derive the implicit `Change` output of `model()` inputs, so it is declared here. */

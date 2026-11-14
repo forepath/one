@@ -1,5 +1,5 @@
-import { MODULE_METADATA, PATH_METADATA } from '@nestjs/common/constants';
 import type { Type } from '@nestjs/common';
+import { MODULE_METADATA, PATH_METADATA } from '@nestjs/common/constants';
 
 import { CONTRIBUTOR_JOB_KEY_PATTERN, type ContributorJobSource } from './contributor-job.types';
 

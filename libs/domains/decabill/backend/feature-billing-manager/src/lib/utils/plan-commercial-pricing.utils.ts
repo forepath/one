@@ -1,7 +1,8 @@
 import type { TaxCategory } from '../constants/tax-category.constants';
-import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import type { UpdateServicePlanDto } from '../dto/update-service-plan.dto';
+import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import type { PlanCommercialPricingSnapshot } from '../queue/plan-price-migrate.payload';
+
 import { resolvePlanTaxCategory } from './plan-tax.utils';
 
 function normalizePriceField(value?: string | null): string {

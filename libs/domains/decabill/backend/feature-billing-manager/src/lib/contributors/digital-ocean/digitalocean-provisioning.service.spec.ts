@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import axios from 'axios';
 
 import { waitForTcpPort } from '../../utils/wait-for-tcp-port.util';
+
 import { DigitaloceanProvisioningService } from './digitalocean-provisioning.service';
 
 jest.mock('axios');
@@ -339,6 +340,7 @@ describe('DigitaloceanProvisioningService', () => {
 
       mockedAxios.post.mockImplementation(async (_url: string, body: { type?: string }) => {
         const id = mockedAxios.post.mock.calls.length;
+
         actionStatus.set(id, 'completed');
 
         if (body?.type === 'shutdown') {
@@ -412,6 +414,7 @@ describe('DigitaloceanProvisioningService', () => {
       });
       mockedAxios.post.mockImplementation(async (_url: string, body: { type?: string }) => {
         const id = mockedAxios.post.mock.calls.length;
+
         actionStatus.set(id, 'completed');
 
         if (body?.type === 'resize') {
@@ -503,6 +506,7 @@ describe('DigitaloceanProvisioningService', () => {
       });
       mockedAxios.post.mockImplementation(async (_url: string, body: { type?: string }) => {
         const id = mockedAxios.post.mock.calls.length;
+
         actionStatus.set(id, 'completed');
 
         if (body?.type === 'shutdown' || body?.type === 'power_off') {
@@ -518,6 +522,7 @@ describe('DigitaloceanProvisioningService', () => {
 
       // After the initial "new" read, become active on subsequent polls.
       const originalGet = mockedAxios.get.getMockImplementation()!;
+
       mockedAxios.get.mockImplementation(async (url: string) => {
         const result = await originalGet(url);
 
@@ -564,6 +569,7 @@ describe('DigitaloceanProvisioningService', () => {
 
     it('skips SSH wait after resize when droplet has no public IP', async () => {
       let dropletStatus = 'off';
+
       mockedAxios.get.mockImplementation(async (url: string) => {
         if (url.includes('/actions/')) {
           return { data: { action: { id: Number(url.split('/').pop()), status: 'completed' } } };
@@ -591,6 +597,7 @@ describe('DigitaloceanProvisioningService', () => {
 
       const service = new DigitaloceanProvisioningService();
       const promise = service.changeServerType('98765', 's-2vcpu-2gb');
+
       await jest.runAllTimersAsync();
       await promise;
 
@@ -603,6 +610,7 @@ describe('DigitaloceanProvisioningService', () => {
 
       const service = new DigitaloceanProvisioningService();
       const promise = service.changeServerType('98765', 's-2vcpu-2gb');
+
       await jest.runAllTimersAsync();
       await expect(promise).resolves.toBeUndefined();
     });
@@ -625,6 +633,7 @@ describe('DigitaloceanProvisioningService', () => {
         response: { status: 422, data: { id: 'unprocessable', message: 'size unavailable' } },
         message: 'Request failed',
       });
+
       mockedAxios.post.mockRejectedValue(axiosError);
 
       const service = new DigitaloceanProvisioningService();
@@ -634,6 +643,7 @@ describe('DigitaloceanProvisioningService', () => {
 
     it('skips guest SSH poweroff when droplet has no public IP', async () => {
       let dropletStatus = 'active';
+
       mockedAxios.get.mockImplementation(async (url: string) => {
         if (url.includes('/actions/')) {
           return { data: { action: { id: Number(url.split('/').pop()), status: 'completed' } } };
@@ -673,6 +683,7 @@ describe('DigitaloceanProvisioningService', () => {
       };
       const service = new DigitaloceanProvisioningService(sshExecutor as never);
       const promise = service.changeServerType('98765', 's-2vcpu-2gb', { sshPrivateKey: 'key' });
+
       await jest.runAllTimersAsync();
       await promise;
 

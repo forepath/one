@@ -8,8 +8,8 @@ import {
   PromotionRedemptionStatus,
 } from '../constants/promotion.constants';
 import type { PromotionRedemptionResponseDto, PromotionValidationResponseDto } from '../dto/promotion.dto';
-import type { PromotionEntity } from '../entities/promotion.entity';
 import type { PromotionRedemptionEntity } from '../entities/promotion-redemption.entity';
+import type { PromotionEntity } from '../entities/promotion.entity';
 import { PromotionRedemptionsRepository } from '../repositories/promotion-redemptions.repository';
 import { PromotionsRepository } from '../repositories/promotions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
@@ -26,8 +26,8 @@ import {
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { PricingService } from './pricing.service';
 import { PromotionValidationService } from './promotion-validation.service';
-import { SubscriptionChargePeriodService } from './subscription-charge-period.service';
 import type { ResolvedPromotionTarget } from './promotion-validation.service';
+import { SubscriptionChargePeriodService } from './subscription-charge-period.service';
 
 @Injectable()
 export class PromotionRedemptionService {

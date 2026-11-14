@@ -60,7 +60,6 @@ export class BillingAuditLogsRepository {
       .orderBy('log.created_at', 'DESC')
       .take(limit)
       .skip(offset);
-
     const [items, total] = await qb.getManyAndCount();
 
     return { items, total };

@@ -31,6 +31,7 @@ export function parseAgentDeploymentActionSource(raw: unknown): AgentDeploymentA
       return { kind: 'chat' };
     case 'automation':
       return { kind: 'automation' };
+
     case 'task': {
       const taskId = typeof source['taskId'] === 'string' ? source['taskId'].trim().toLowerCase() : '';
 

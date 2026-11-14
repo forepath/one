@@ -28,7 +28,6 @@ export class WebhookDeliveryRetentionService {
     const policy = resolveWebhookDeliveryLogRetentionPolicy(endpoint);
     const cutoff = resolveRetentionCutoff(policy.retentionDays);
     const deletedByAge = await this.deliveriesRepository.deleteOlderThan(endpoint.id, cutoff);
-
     const remaining = await this.deliveriesRepository.countByEndpointId(endpoint.id);
     let deletedByCount = 0;
 

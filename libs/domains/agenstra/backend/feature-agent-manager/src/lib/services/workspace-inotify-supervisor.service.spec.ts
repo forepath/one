@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 
 import { AgentsRepository } from '../repositories/agents.repository';
+
 import { DockerService } from './docker.service';
 import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 import { WorkspaceInotifySupervisor } from './workspace-inotify-supervisor.service';
@@ -33,6 +34,7 @@ describe('WorkspaceInotifySupervisor.parseInotifyLine', () => {
             useValue: {
               startStreamingExec: jest.fn(async (_containerId, _args, callback: (line: string) => void) => {
                 onLine = callback;
+
                 return { stop };
               }),
             },
@@ -43,6 +45,7 @@ describe('WorkspaceInotifySupervisor.parseInotifyLine', () => {
       const notifier = module.get(WorkspaceChangeNotifierService);
       const invalidate = jest.fn().mockResolvedValue(undefined);
       const broadcast = jest.fn();
+
       notifier.registerTreeInvalidator(invalidate);
       notifier.registerIndexBroadcaster(broadcast);
 

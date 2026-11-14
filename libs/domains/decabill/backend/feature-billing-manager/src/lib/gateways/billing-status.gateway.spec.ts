@@ -1,5 +1,5 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { SocketAuthService, UserRole, UsersRepository } from '@forepath/identity/backend';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import type { Socket } from 'socket.io';
 

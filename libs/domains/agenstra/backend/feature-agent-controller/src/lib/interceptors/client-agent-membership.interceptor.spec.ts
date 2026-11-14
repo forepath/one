@@ -6,7 +6,6 @@ import { ClientAgentMembershipInterceptor } from './client-agent-membership.inte
 describe('ClientAgentMembershipInterceptor', () => {
   let membership: { isMember: jest.Mock };
   let interceptor: ClientAgentMembershipInterceptor;
-
   const http = (path: string, params: Record<string, string>) =>
     ({
       getType: () => 'http',

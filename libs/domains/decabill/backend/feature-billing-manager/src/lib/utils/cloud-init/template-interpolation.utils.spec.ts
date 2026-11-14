@@ -86,7 +86,6 @@ describe('template-interpolation.utils', () => {
       hostPort: 80,
       environment: {},
     };
-
     const rendered = interpolateCloudInitTemplate(DEFAULT_USER_DATA_TEMPLATE, context, [], 'shell');
 
     expect(rendered).toContain('#!/bin/bash');

@@ -128,7 +128,6 @@ export class AdminFileManagerPageComponent implements OnInit {
 
     const expanded = new Set(state.expandedPaths);
     const nodes: TreeNodeView[] = [];
-
     const walk = (path: string, depth: number): void => {
       const cacheKey = buildAdminFileManagerCacheKey(state.view, state.viewTenantId, path);
       const entries = state.directoriesByPath[cacheKey] ?? [];

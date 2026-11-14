@@ -1,9 +1,9 @@
+import { initialAdminSupplierProfilesState } from './admin-supplier-profiles.reducer';
 import {
   selectAdminSupplierProfiles,
   selectAdminSupplierProfilesCreating,
   selectAdminSupplierProfilesLoading,
 } from './admin-supplier-profiles.selectors';
-import { initialAdminSupplierProfilesState } from './admin-supplier-profiles.reducer';
 
 describe('adminSupplierProfilesSelectors', () => {
   const profile = {

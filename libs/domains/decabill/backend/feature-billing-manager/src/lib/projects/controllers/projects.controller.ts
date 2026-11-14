@@ -1,6 +1,7 @@
 import { RequireScopes } from '@forepath/identity/backend';
 import { BadRequestException, Controller, Get, Param, ParseIntPipe, ParseUUIDPipe, Query, Req } from '@nestjs/common';
 
+import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
 import type {
   PaginatedProjectsResponseDto,
   ProjectResponseDto,
@@ -8,7 +9,6 @@ import type {
   ProjectsCatalogSummaryResponseDto,
 } from '../dto/project.dto';
 import { ProjectsService } from '../services/projects.service';
-import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
 
 @Controller('projects')
 @RequireScopes('projects:read')

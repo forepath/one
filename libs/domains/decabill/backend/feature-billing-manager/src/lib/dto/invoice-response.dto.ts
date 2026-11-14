@@ -1,5 +1,5 @@
-import { InvoiceStatus } from '../constants/invoice-status.constants';
 import type { AutoPaymentStatus } from '../constants/auto-payment-status.constants';
+import { InvoiceStatus } from '../constants/invoice-status.constants';
 
 export class InvoiceResponseDto {
   id!: string;

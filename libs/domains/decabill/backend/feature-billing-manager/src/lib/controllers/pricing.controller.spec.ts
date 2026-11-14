@@ -1,16 +1,16 @@
 import { Test } from '@nestjs/testing';
 
 import { BillingIntervalType, ServicePlanEntity } from '../entities/service-plan.entity';
+import { AddonsRepository } from '../repositories/addons.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
+import { AddonService } from '../services/addon.service';
 import { InvoiceTaxContextService } from '../services/invoice-tax-context.service';
 import { PricingService } from '../services/pricing.service';
 import { ProviderServerTypesService } from '../services/provider-server-types.service';
 import { TaxCalculationService } from '../services/tax-calculation.service';
 import { TaxPreviewService } from '../services/tax-preview.service';
-import { AddonService } from '../services/addon.service';
 import { TaxRateConfigService } from '../services/tax-rate-config.service';
-import { AddonsRepository } from '../repositories/addons.repository';
 
 import { PricingController } from './pricing.controller';
 
@@ -29,9 +29,7 @@ describe('PricingController', () => {
     taxCategory: 'standard',
     providerConfigDefaults: { serverType: 'cx11' },
   } as unknown as ServicePlanEntity;
-
   const authReq = { user: { id: 'user-1', roles: ['user'] } };
-
   let controller: PricingController;
   let findPlanById: jest.Mock;
   let findServiceTypeById: jest.Mock;

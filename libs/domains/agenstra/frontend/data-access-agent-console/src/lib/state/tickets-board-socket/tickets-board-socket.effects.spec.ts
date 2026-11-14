@@ -1,10 +1,10 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { OidcAuthService } from '@forepath/identity/frontend';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from '@ngrx/store';
 import { provideMockStore } from '@ngrx/store/testing';
-import { OidcAuthService } from '@forepath/identity/frontend';
 import { Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 

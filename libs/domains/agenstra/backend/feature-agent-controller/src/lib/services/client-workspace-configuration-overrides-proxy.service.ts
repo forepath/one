@@ -9,10 +9,10 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 import { ClientsRepository } from '../repositories/clients.repository';
 import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
 import { ClientsService } from './clients.service';
-import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 @Injectable()
 export class ClientWorkspaceConfigurationOverridesProxyService {

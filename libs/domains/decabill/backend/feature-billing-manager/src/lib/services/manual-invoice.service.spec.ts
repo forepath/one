@@ -61,7 +61,6 @@ describe('ManualInvoiceService', () => {
       issuerCountry: 'DE',
     }),
   };
-
   const service = new ManualInvoiceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -74,7 +73,6 @@ describe('ManualInvoiceService', () => {
     auditLog as never,
     invoiceTaxContextService as never,
   );
-
   const draftInvoice = {
     id: 'inv-1',
     userId: 'user-1',

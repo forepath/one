@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 
 import { ClientsRepository } from '../repositories/clients.repository';
+
 import { ClientAgentOpencodeConfigProxyService } from './client-agent-opencode-config-proxy.service';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 import { OpencodeConfigService } from './opencode-config.service';
@@ -9,7 +10,6 @@ import { OpencodeEffectiveConfigSyncService } from './opencode-effective-config-
 describe('OpencodeEffectiveConfigSyncService', () => {
   const clientId = '11111111-1111-4111-8111-111111111111';
   const agentId = '22222222-2222-4222-8222-222222222222';
-
   const createService = async () => {
     const opencodeConfigService = {
       getLayerConfigs: jest.fn().mockResolvedValue({ global: { a: 1 }, workspace: { b: 2 } }),
@@ -28,7 +28,6 @@ describe('OpencodeEffectiveConfigSyncService', () => {
     const clientsRepository = {
       findAllIds: jest.fn().mockResolvedValue([clientId]),
     };
-
     const moduleRef = await Test.createTestingModule({
       providers: [
         OpencodeEffectiveConfigSyncService,
@@ -50,7 +49,6 @@ describe('OpencodeEffectiveConfigSyncService', () => {
 
   it('syncAgent merges layers and calls syncEffective', async () => {
     const { svc, agentConfigProxy, opencodeConfigService } = await createService();
-
     const result = await svc.syncAgent(clientId, agentId);
 
     expect(result).toEqual({ ok: true, platformPolicy: expect.objectContaining({ messageFilters: [] }) });

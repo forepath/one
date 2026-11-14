@@ -125,7 +125,6 @@ describe('notificationsReducer', () => {
         },
       }),
     );
-
     const cleared = notificationsReducer(
       withUnread,
       markChatSessionRead({ clientId: 'c1', agentId: 'a1', chatSessionId: 'chat-1' }),
@@ -163,7 +162,6 @@ describe('notificationsReducer', () => {
       withUnread,
       markChatSessionRead({ clientId: 'c1', agentId: 'a1', chatSessionId: 'chat-1' }),
     );
-
     const stale = notificationsReducer(
       cleared,
       statusPatchReceived({

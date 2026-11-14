@@ -7,7 +7,6 @@ import type {
   SubscriptionMeterSummary,
 } from '../../types/billing.types';
 
-import { DEFAULT_METER_HISTORY_FILTERS } from './service-detail.constants';
 import {
   applyFilters,
   clearServiceDetail,
@@ -24,6 +23,7 @@ import {
   updateDisplayNameFailure,
   updateDisplayNameSuccess,
 } from './service-detail.actions';
+import { DEFAULT_METER_HISTORY_FILTERS } from './service-detail.constants';
 
 export interface ServiceDetailState {
   subscriptionId: string | null;

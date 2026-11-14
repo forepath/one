@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
 import type { FpcFilterChip } from '../filter-chips/filter-chips.component';
+
 import { fpcDecodeFilterParam, fpcEncodeFilterParam, fpcListQueryState } from './list-query-state';
 import { FpcListToolbarComponent } from './list-toolbar.component';
 
@@ -48,6 +49,7 @@ class HostComponent {
 function setup() {
   TestBed.configureTestingModule({ providers: [provideRouter([])] });
   const fixture = TestBed.createComponent(HostComponent);
+
   fixture.detectChanges();
   const el = fixture.nativeElement as HTMLElement;
   const toggle = () => el.querySelector('[data-testid="fpc-list-toolbar-toggle"]') as HTMLButtonElement;
@@ -68,6 +70,7 @@ describe('FpcListToolbarComponent', () => {
     toggle().click();
     fixture.detectChanges();
     const body = el.querySelector('.fpc-list-toolbar__body') as HTMLElement;
+
     expect(toggle().getAttribute('aria-controls')).toBe(body.id);
     expect(body.querySelector('.fpc-filter-grid .status')).not.toBeNull();
     // Live filters: no Apply button / footer.
@@ -83,6 +86,7 @@ describe('FpcListToolbarComponent', () => {
     fixture.detectChanges();
     expect(toggle().textContent).not.toContain('1');
     const select = el.querySelector('.status') as HTMLSelectElement;
+
     select.value = 'failed';
     select.dispatchEvent(new Event('change', { bubbles: true }));
     fixture.detectChanges();
@@ -143,8 +147,10 @@ describe('fpcListQueryState', () => {
   it('seeds from and writes the applied filters + search to the URL', async () => {
     TestBed.configureTestingModule({ providers: [provideRouter([])] });
     const router = TestBed.inject(Router);
+
     await router.navigateByUrl('/?f=status%3Dfailed&q=web');
     const fixture = TestBed.createComponent(HostComponent);
+
     fixture.detectChanges();
     const host = fixture.componentInstance;
 
@@ -197,8 +203,10 @@ describe('fpcListQueryState paging', () => {
   it('seeds page / size / sort from the URL, writes them back and resets the page on Apply / search', async () => {
     TestBed.configureTestingModule({ providers: [provideRouter([])] });
     const router = TestBed.inject(Router);
+
     await router.navigateByUrl('/?p=3&n=50&s=name:desc');
     const fixture = TestBed.createComponent(PagedHostComponent);
+
     fixture.detectChanges();
     const host = fixture.componentInstance;
 

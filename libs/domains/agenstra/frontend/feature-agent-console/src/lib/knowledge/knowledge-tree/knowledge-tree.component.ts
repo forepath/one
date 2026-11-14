@@ -204,6 +204,7 @@ export class KnowledgeTreeComponent implements OnChanges {
     const walk = (nodes: KnowledgeNodeDto[]) => {
       for (const node of nodes) {
         if (node.nodeType === 'folder') folderIds.add(node.id);
+
         walk(node.children ?? []);
       }
     };

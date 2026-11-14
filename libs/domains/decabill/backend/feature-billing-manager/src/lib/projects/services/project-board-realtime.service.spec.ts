@@ -1,5 +1,5 @@
-import { ProjectBoardRealtimeService } from './project-board-realtime.service';
 import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
+import { ProjectBoardRealtimeService } from './project-board-realtime.service';
 
 describe('ProjectBoardRealtimeService', () => {
   it('projectRoom formats room name', () => {

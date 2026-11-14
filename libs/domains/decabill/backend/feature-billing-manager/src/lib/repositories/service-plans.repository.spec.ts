@@ -1,5 +1,5 @@
-import { NotFoundException } from '@nestjs/common';
 import { runWithTenantId } from '@forepath/shared/backend';
+import { NotFoundException } from '@nestjs/common';
 
 import { ServicePlansRepository } from './service-plans.repository';
 
@@ -84,6 +84,7 @@ describe('ServicePlansRepository', () => {
     mockGetMany.mockResolvedValue([]);
 
     const repository = new ServicePlansRepository(mockRepository as never);
+
     await runWithTenantId('default', () => repository.findActiveWithServiceType(10, 0, 'type-1'));
 
     expect(mockAndWhere).toHaveBeenCalledWith('plan.service_type_id = :serviceTypeId', { serviceTypeId: 'type-1' });
@@ -93,6 +94,7 @@ describe('ServicePlansRepository', () => {
     mockGetMany.mockResolvedValue([]);
 
     const repository = new ServicePlansRepository(mockRepository as never);
+
     await runWithTenantId('default', () => repository.findActiveWithServiceType(10, 0, ''));
 
     expect(mockAndWhere).toHaveBeenCalledWith('plan.service_type_id IS NULL');
@@ -132,6 +134,7 @@ describe('ServicePlansRepository', () => {
     mockGetOne.mockResolvedValue(existing);
 
     const repository = new ServicePlansRepository(mockRepository as never);
+
     await runWithTenantId('default', () => repository.delete('plan-1'));
 
     expect(mockRepository.remove).toHaveBeenCalledWith(existing);

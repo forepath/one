@@ -63,11 +63,12 @@ import {
 } from 'rxjs';
 
 import { resolveNamedDisplayLabel } from '../display-name.util';
-import { KnowledgeEditorComponent } from './knowledge-editor/knowledge-editor.component';
-import { KnowledgeTreeComponent } from './knowledge-tree/knowledge-tree.component';
 import { AttachmentChipsComponent } from '../shared/attachment-chips.component';
 import { WorkspaceChipComponent } from '../shared/workspace-chip.component';
 import { WorkspaceSwitchTableComponent } from '../shared/workspace-switch-table.component';
+
+import { KnowledgeEditorComponent } from './knowledge-editor/knowledge-editor.component';
+import { KnowledgeTreeComponent } from './knowledge-tree/knowledge-tree.component';
 
 @Component({
   selector: 'framework-knowledge-board',
@@ -654,6 +655,7 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
   private saveBlob(blob: Blob, filename: string): void {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
+
     anchor.href = url;
     anchor.download = filename;
     anchor.click();

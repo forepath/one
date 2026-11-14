@@ -21,6 +21,7 @@ describe('ProviderServerTypesService', () => {
 
   it('delegates to catalog dispatch', async () => {
     const serverTypes = [{ id: 'cx11', name: 'CX11', cores: 1, memory: 2, disk: 20 }];
+
     catalogDispatch.getServerTypes.mockResolvedValue(serverTypes);
 
     await expect(service.getServerTypes('hetzner')).resolves.toEqual(serverTypes);

@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,7 +9,6 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
 
 /** One fact of `fpc-key-value-list`. */
 export interface FpcKeyValueItem {

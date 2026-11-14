@@ -17,6 +17,7 @@ describe('outbound-correlation', () => {
     const instance = axios.create({
       adapter: async (config) => {
         expect(config.headers?.get?.('X-Correlation-Id')).toBe('abc-123');
+
         return {
           data: {},
           status: 200,
@@ -26,6 +27,7 @@ describe('outbound-correlation', () => {
         };
       },
     });
+
     registerAxiosCorrelationIdPropagation(instance);
 
     await runWithCorrelationId('abc-123', async () => {
@@ -37,6 +39,7 @@ describe('outbound-correlation', () => {
     const instance = axios.create({
       adapter: async (config) => {
         expect(config.headers?.get?.('X-Correlation-Id')).toBe('preset');
+
         return {
           data: {},
           status: 200,
@@ -46,6 +49,7 @@ describe('outbound-correlation', () => {
         };
       },
     });
+
     registerAxiosCorrelationIdPropagation(instance);
 
     await runWithCorrelationId('from-als', async () => {
@@ -58,6 +62,7 @@ describe('outbound-correlation', () => {
     const instance = axios.create({
       adapter: async (config) => {
         correlationOnRequest = config.headers?.get?.('X-Correlation-Id') as string | undefined;
+
         return {
           data: {},
           status: 200,
@@ -67,6 +72,7 @@ describe('outbound-correlation', () => {
         };
       },
     });
+
     registerAxiosCorrelationIdPropagation(instance);
 
     await instance.get('http://example.test/n');
@@ -78,6 +84,7 @@ describe('outbound-correlation', () => {
     const instance = axios.create({
       adapter: async (config) => {
         expect(config.headers?.get?.('x-correlation-id')).toBe('already');
+
         return {
           data: {},
           status: 200,
@@ -87,6 +94,7 @@ describe('outbound-correlation', () => {
         };
       },
     });
+
     registerAxiosCorrelationIdPropagation(instance);
 
     await runWithCorrelationId('from-als', async () => {
@@ -101,11 +109,13 @@ describe('outbound-correlation', () => {
         request: {
           use: (fn: (c: InternalAxiosRequestConfig) => InternalAxiosRequestConfig) => {
             registered = fn;
+
             return 0;
           },
         },
       },
     };
+
     registerAxiosCorrelationIdPropagation(stub as Parameters<typeof registerAxiosCorrelationIdPropagation>[0]);
 
     runWithCorrelationId('plain-merge', () => {
@@ -113,6 +123,7 @@ describe('outbound-correlation', () => {
         headers: { Accept: 'application/json' },
       } as unknown as InternalAxiosRequestConfig;
       const result = registered?.(config);
+
       expect((result?.headers as Record<string, string>)['X-Correlation-Id']).toBe('plain-merge');
     });
   });
@@ -124,16 +135,19 @@ describe('outbound-correlation', () => {
         request: {
           use: (fn: (c: InternalAxiosRequestConfig) => InternalAxiosRequestConfig) => {
             registered = fn;
+
             return 0;
           },
         },
       },
     };
+
     registerAxiosCorrelationIdPropagation(stub as Parameters<typeof registerAxiosCorrelationIdPropagation>[0]);
 
     runWithCorrelationId('no-headers', () => {
       const config = {} as InternalAxiosRequestConfig;
       const result = registered?.(config);
+
       expect((result?.headers as Record<string, string>)['X-Correlation-Id']).toBe('no-headers');
     });
   });
@@ -160,6 +174,7 @@ describe('outbound-correlation', () => {
           transports: ['websocket'],
           extraHeaders: { Authorization: 'Bearer b' },
         });
+
         expect(out.extraHeaders).toEqual({
           Authorization: 'Bearer b',
           'X-Correlation-Id': 'ws-2',

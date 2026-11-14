@@ -74,6 +74,7 @@ export function mapOfferFormLinesToDto(lines: OfferFormLineItem[]): OfferLineInp
 
         return { lineType: 'project_template', payload };
       }
+
       case 'plan_template': {
         const payload: OfferPlanTemplateLineDto = {
           description: line.description.trim(),
@@ -108,6 +109,7 @@ export function mapOfferFormLinesToDto(lines: OfferFormLineItem[]): OfferLineInp
 
         return { lineType: 'plan_template', payload };
       }
+
       default: {
         const payload: OfferStandardLineDto = {
           description: line.description.trim(),

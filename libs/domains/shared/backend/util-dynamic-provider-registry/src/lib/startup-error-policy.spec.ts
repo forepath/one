@@ -1,5 +1,5 @@
-import { DYNAMIC_PROVIDERS_FAIL_FAST_ENV } from './types';
 import { handleDynamicProviderError, shouldFailFastOnError } from './startup-error-policy';
+import { DYNAMIC_PROVIDERS_FAIL_FAST_ENV } from './types';
 
 describe('startup-error-policy', () => {
   const originalEnv = process.env[DYNAMIC_PROVIDERS_FAIL_FAST_ENV];

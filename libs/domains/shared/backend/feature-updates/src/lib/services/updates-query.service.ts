@@ -1,9 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import { UPDATES_MODULE_OPTIONS } from '../constants/updates.constants';
-import type { ScopedChangelog, UpdatesFullState, UpdatesStatusSummary } from '../interfaces/updates.interfaces';
 import type { UpdatesModuleOptions } from '../interfaces/updates-module.options';
+import type { ScopedChangelog, UpdatesFullState, UpdatesStatusSummary } from '../interfaces/updates.interfaces';
 import { getInstalledVersion, resolveUpdateState } from '../utils/version.utils';
+
 import { UpdatesRedisStore } from './updates-redis.store';
 
 @Injectable()
@@ -41,7 +42,6 @@ export class UpdatesQueryService {
       this.store.getRelease(),
       this.store.listInstances(),
     ]);
-
     const scopedChangelog: ScopedChangelog = release?.scopedChangelog ?? {
       product: [],
       shared: [],

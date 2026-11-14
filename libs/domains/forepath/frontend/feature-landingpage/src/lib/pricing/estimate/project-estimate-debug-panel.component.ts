@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-
 import {
   PROJECT_ESTIMATOR_DEBUG_PRESETS,
   type ProjectEstimatorDebugPreset,

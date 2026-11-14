@@ -1,7 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
 
 import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
-
 import type { ProjectTimeEntryResponse } from '../../types/projects.types';
 import { closeProjectTicketDetail } from '../project-tickets/project-tickets.actions';
 

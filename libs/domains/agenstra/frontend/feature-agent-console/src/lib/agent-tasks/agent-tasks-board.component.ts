@@ -82,13 +82,13 @@ import { AgentChatHandoffNavigationService } from '../chat/agent-chat-handoff-na
 import type { AgentChatHandoffCardView, AgentChatHandoffLink } from '../chat/agent-chat-handoff-view';
 import { sanitizeAndTrustMarkdownHtml } from '../chat/chat-markdown-html';
 import { resolveNamedDisplayLabel } from '../display-name.util';
-import { agBulkSummary, agCopyIdItem, agOpenItem, AG_DL_DELETE, AG_DL_EDIT, AG_DL_RUN_NOW } from '../shared/data-list';
 import { agentContentWriteLabel } from '../shared/agent-content-write-labels';
 import {
   agentDeploymentOperationLabel,
   agentDeploymentOperationsHeading,
   agentDeploymentOperationsHint,
 } from '../shared/agent-deployment-operation-labels';
+import { agBulkSummary, agCopyIdItem, agOpenItem, AG_DL_DELETE, AG_DL_EDIT, AG_DL_RUN_NOW } from '../shared/data-list';
 import { WorkspaceChipComponent } from '../shared/workspace-chip.component';
 import { WorkspaceSwitchTableComponent } from '../shared/workspace-switch-table.component';
 

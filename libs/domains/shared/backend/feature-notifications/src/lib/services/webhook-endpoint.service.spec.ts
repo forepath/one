@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 
 import { WebhookAuthType, WebhookHttpMethod } from '../entities/webhook-endpoint.entity';
+
 import { WebhookEndpointService } from './webhook-endpoint.service';
 
 describe('WebhookEndpointService', () => {
@@ -13,7 +14,6 @@ describe('WebhookEndpointService', () => {
     resolveScopeKey: () => 'tenant-a',
     assertAdmin: () => undefined,
   };
-
   const endpointsRepository = {
     findAllByScope: jest.fn(),
     findByIdAndScope: jest.fn(),
@@ -21,15 +21,12 @@ describe('WebhookEndpointService', () => {
     save: jest.fn(),
     delete: jest.fn(),
   };
-
   const deliveriesRepository = {
     deleteAllByEndpointId: jest.fn(),
   };
-
   const deliveryRetentionService = {
     applyRetentionForEndpointFireAndForget: jest.fn(),
   };
-
   let service: WebhookEndpointService;
 
   beforeEach(() => {
@@ -85,6 +82,7 @@ describe('WebhookEndpointService', () => {
 
   it('allows localhost webhook URLs in development', async () => {
     const previousNodeEnv = process.env.NODE_ENV;
+
     process.env.NODE_ENV = 'development';
 
     endpointsRepository.create.mockResolvedValue({

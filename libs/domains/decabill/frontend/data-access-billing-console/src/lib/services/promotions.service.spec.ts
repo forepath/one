@@ -44,6 +44,7 @@ describe('PromotionsService', () => {
     });
 
     const req = httpMock.expectOne(`${apiUrl}/promotions/validate`);
+
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(dto);
     req.flush(response);
@@ -64,6 +65,7 @@ describe('PromotionsService', () => {
     });
 
     const req = httpMock.expectOne(`${apiUrl}/promotions/redeem`);
+
     expect(req.request.body).toEqual(dto);
     req.flush(response);
   });
@@ -77,6 +79,7 @@ describe('PromotionsService', () => {
     });
 
     const req = httpMock.expectOne((request) => request.url === `${apiUrl}/promotions/active`);
+
     expect(req.request.params.get('limit')).toBe('10');
     expect(req.request.params.get('offset')).toBe('0');
     req.flush(response);

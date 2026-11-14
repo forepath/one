@@ -5,7 +5,6 @@ import { CustomerType } from '../constants/customer-type.constants';
 import { DeliveryTermsCode } from '../constants/document-terms.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { EinvoiceTaxCategoryCode, TaxMode } from '../constants/tax-mode.constants';
-
 import { ProjectEntity } from '../projects/entities/project.entity';
 
 import { InvoiceLineItemEntity } from './invoice-line-item.entity';

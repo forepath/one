@@ -2,7 +2,6 @@ import {
   createAdminCustomerProfile,
   createAdminCustomerProfileFailure,
   createAdminCustomerProfileSuccess,
-  deleteAdminCustomerProfile,
   deleteAdminCustomerProfileFailure,
   deleteAdminCustomerProfileSuccess,
   loadAdminCustomerProfiles,
@@ -17,7 +16,6 @@ import {
   saveAdminCustomerProfileCustomData,
   saveAdminCustomerProfileCustomDataFailure,
   saveAdminCustomerProfileCustomDataSuccess,
-  updateAdminCustomerProfile,
   updateAdminCustomerProfileFailure,
   updateAdminCustomerProfileSuccess,
 } from './admin-customer-profiles.actions';

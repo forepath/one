@@ -197,6 +197,7 @@ describe('InvoicesEffects', () => {
       reloadInvoicesAfterCreate$(actions$, store as never).subscribe({
         next: (result) => {
           emitted.push(result);
+
           if (emitted.length === 4) {
             expect(emitted).toEqual([
               loadInvoices({ subscriptionId }),

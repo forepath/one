@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 
-import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { computePublicWithdrawalExpiresAt } from '../constants/public-withdrawal.config';
 import type { ConfirmPublicWithdrawalDto } from '../dto/confirm-public-withdrawal.dto';
 import type {
@@ -12,6 +11,7 @@ import type {
 } from '../dto/public-withdrawal-response.dto';
 import type { RequestPublicWithdrawalDto } from '../dto/request-public-withdrawal.dto';
 import type { VerifyPublicWithdrawalCodeDto } from '../dto/verify-public-withdrawal-code.dto';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { PublicWithdrawalRequestsRepository } from '../repositories/public-withdrawal-requests.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
@@ -115,7 +115,6 @@ export class PublicWithdrawalService {
     const code = generateWithdrawalConfirmationCode();
     const expiresAt = computePublicWithdrawalExpiresAt(now);
     const request = await this.publicWithdrawalRequestsRepository.createRequest(match.subscription.id, code, expiresAt);
-
     const profileEmail = match.profile.email?.trim();
 
     if (profileEmail) {

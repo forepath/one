@@ -1,5 +1,5 @@
-import { addons } from 'storybook/preview-api';
 import { SET_GLOBALS, UPDATE_GLOBALS } from 'storybook/internal/core-events';
+import { addons } from 'storybook/preview-api';
 
 import { applyFpcDocumentGlobals } from './apply-document-globals';
 
@@ -11,18 +11,23 @@ const DEFAULT_GLOBALS: GlobalsMap = { theme: 'light', colorSet: 'bootstrap' };
 /** Storybook encodes toolbar globals as `globals=theme:dark;colorSet:decabill` in the preview URL. */
 export function readGlobalsFromUrl(): GlobalsMap {
   const raw = new URLSearchParams(window.location.search).get('globals');
+
   if (!raw) {
     return {};
   }
 
   const parsed: GlobalsMap = {};
+
   for (const part of raw.split(';')) {
     const sep = part.indexOf(':');
+
     if (sep <= 0) {
       continue;
     }
+
     parsed[part.slice(0, sep)] = decodeURIComponent(part.slice(sep + 1));
   }
+
   return parsed;
 }
 
@@ -43,6 +48,7 @@ export function getPreviewGlobals(): GlobalsMap {
 /** Subscribe to toolbar global commits (docs container Storybook theme, etc.). */
 export function subscribePreviewGlobals(listener: GlobalsListener): () => void {
   listeners.add(listener);
+
   return () => {
     listeners.delete(listener);
   };
@@ -51,6 +57,7 @@ export function subscribePreviewGlobals(listener: GlobalsListener): () => void {
 function commitGlobals(patch: GlobalsMap, replace = false): void {
   previewGlobals = replace ? { ...DEFAULT_GLOBALS, ...patch } : { ...previewGlobals, ...patch };
   applyFpcDocumentGlobals(previewGlobals);
+
   for (const listener of listeners) {
     listener(previewGlobals);
   }

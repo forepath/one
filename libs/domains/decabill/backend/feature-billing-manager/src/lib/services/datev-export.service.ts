@@ -1,13 +1,14 @@
-import { ZipArchive } from 'archiver';
 import { PassThrough } from 'stream';
 
 import { DEFAULT_TENANT, runWithTenantId } from '@forepath/shared/backend';
 import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
 import { Injectable, Logger } from '@nestjs/common';
+import { ZipArchive } from 'archiver';
 
 import { DatevExportScope, DatevExportStatus } from '../constants/datev-export.constants';
 import type { DatevExportEntity } from '../entities/datev-export.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { DatevExportRepository } from '../repositories/datev-export.repository';
 import { InvoiceCreditDocumentsRepository } from '../repositories/invoice-credit-documents.repository';
@@ -16,7 +17,8 @@ import { InvoicesRepository } from '../repositories/invoices.repository';
 import { SupplierInvoicesRepository } from '../repositories/supplier-invoices.repository';
 import { SupplierProfilesRepository } from '../repositories/supplier-profiles.repository';
 import { buildDatevExportFileName, buildDatevStorageKey, formatDatevHeaderDate } from '../utils/datev-format.util';
-import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
+
+import { BillingTenantService } from './billing-tenant.service';
 import { DatevBookingMapperService } from './datev-booking-mapper.service';
 import { DatevCreditorAccountService } from './datev-creditor-account.service';
 import { DatevCreditorMapperService } from './datev-creditor-mapper.service';
@@ -26,7 +28,6 @@ import { DatevDocumentArchiveService } from './datev-document-archive.service';
 import type { DatevTenantExportConfig } from './datev-export-config.service';
 import { DatevExportConfigService } from './datev-export-config.service';
 import { DatevExtfCsvService } from './datev-extf-csv.service';
-import { BillingTenantService } from './billing-tenant.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { StoredFileRegistryService } from './stored-file-registry.service';
 
@@ -154,7 +155,6 @@ export class DatevExportService {
         includedTenantIds: result.includedTenantIds,
         completedAt: new Date(),
       });
-
       const completed = updated ?? exportRecord;
 
       this.billingNotificationPublisher.publishDatevExport('datev_export.completed', completed);
@@ -170,7 +170,6 @@ export class DatevExportService {
         errorMessage: message,
         completedAt: new Date(),
       });
-
       const failedRecord = failed ?? exportRecord;
 
       this.billingNotificationPublisher.publishDatevExport('datev_export.failed', {
@@ -356,7 +355,6 @@ export class DatevExportService {
           input.scope === DatevExportScope.UNIFIED
             ? (this.configService.resolveForTenant(invoiceTenantId) ?? input.config)
             : input.config;
-
         const debtorKey = `${invoiceTenantId}:${invoice.userId}`;
         let debtorNumber = debtorNumbers.get(debtorKey);
 
@@ -435,12 +433,10 @@ export class DatevExportService {
 
       await runWithTenantId(invoiceTenantId, async () => {
         const profile = invoice.supplier ?? (await this.supplierProfilesRepository.findByIdOrThrow(invoice.supplierId));
-
         const tenantConfig =
           input.scope === DatevExportScope.UNIFIED
             ? (this.configService.resolveForTenant(invoiceTenantId) ?? input.config)
             : input.config;
-
         const creditorKey = `${invoiceTenantId}:${invoice.supplierId}`;
         let creditorNumber = creditorNumbers.get(creditorKey);
 
@@ -538,7 +534,6 @@ export class DatevExportService {
           input.scope === DatevExportScope.UNIFIED
             ? (this.configService.resolveForTenant(creditTenantId) ?? input.config)
             : input.config;
-
         const debtorKey = `${creditTenantId}:${invoice.userId}`;
         let debtorNumber = debtorNumbers.get(debtorKey);
 
@@ -665,7 +660,6 @@ export class DatevExportService {
     const archive = new ZipArchive({ zlib: { level: 9 } });
     const stream = new PassThrough();
     const chunks: Buffer[] = [];
-
     const done = new Promise<Buffer>((resolve, reject) => {
       stream.on('data', (chunk: Buffer) => chunks.push(chunk));
       stream.on('end', () => resolve(Buffer.concat(chunks)));

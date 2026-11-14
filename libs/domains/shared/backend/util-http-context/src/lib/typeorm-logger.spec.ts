@@ -1,3 +1,4 @@
+import { recordSharedCounter, recordSharedHistogram } from '@forepath/shared/backend/util-otel/metrics';
 import { Logger as NestLogger } from '@nestjs/common';
 
 import { CorrelationAwareTypeOrmLogger } from './typeorm-logger';
@@ -6,8 +7,6 @@ jest.mock('@forepath/shared/backend/util-otel/metrics', () => ({
   recordSharedCounter: jest.fn(),
   recordSharedHistogram: jest.fn(),
 }));
-
-import { recordSharedCounter, recordSharedHistogram } from '@forepath/shared/backend/util-otel/metrics';
 
 const mockedRecordSharedCounter = recordSharedCounter as jest.MockedFunction<typeof recordSharedCounter>;
 const mockedRecordSharedHistogram = recordSharedHistogram as jest.MockedFunction<typeof recordSharedHistogram>;
@@ -37,13 +36,16 @@ describe('CorrelationAwareTypeOrmLogger', () => {
     logSpy.mockRestore();
     warnSpy.mockRestore();
     errorSpy.mockRestore();
+
     for (const key of Object.keys(prevEnv)) {
       const value = prevEnv[key];
+
       if (value === undefined) {
         delete process.env[key];
       } else {
         process.env[key] = value;
       }
+
       delete prevEnv[key];
     }
   });
@@ -60,6 +62,7 @@ describe('CorrelationAwareTypeOrmLogger', () => {
   it('logs query errors with sanitized error payload', () => {
     const logger = new CorrelationAwareTypeOrmLogger();
     const err = new Error('boom');
+
     (err as unknown as { token?: string }).token = 'secret-token';
 
     logger.logQueryError(err, 'select 2', [{ authorization: 'Bearer abc.def.ghi' }] as unknown[]);
@@ -71,6 +74,7 @@ describe('CorrelationAwareTypeOrmLogger', () => {
     });
     // Ensure token isn't leaked
     const firstPayload = errorSpy.mock.calls[0][0] as unknown as Record<string, unknown>;
+
     expect(JSON.stringify(firstPayload)).not.toContain('secret-token');
   });
 
@@ -105,6 +109,7 @@ describe('CorrelationAwareTypeOrmLogger', () => {
     process.env['TYPEORM_LOG_QUERY_MAXLEN'] = '12';
 
     const logger = new CorrelationAwareTypeOrmLogger();
+
     logger.logQuery('', [{ password: 's' }] as unknown[]);
     logger.logQuery('select-very-long-query-text', undefined);
 

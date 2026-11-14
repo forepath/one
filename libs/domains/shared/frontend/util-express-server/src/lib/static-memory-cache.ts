@@ -82,9 +82,7 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
   '.xml': 'application/xml',
   '.wasm': 'application/wasm',
 };
-
 const ONE_YEAR_SECONDS = 31536000;
-
 /**
  * Detect Angular/webpack content hashes in filenames so long-lived `immutable`
  * caching is only applied when a deploy changes the URL (safe cache bust).
@@ -92,7 +90,6 @@ const ONE_YEAR_SECONDS = 31536000;
  */
 const FINGERPRINT_DASH_HASH = /-[A-Za-z0-9]{8,}\.[^.]+$/;
 const FINGERPRINT_DOT_HASH = /\.[a-f0-9]{8,}\.[^.]+$/i;
-
 /** Process-wide absolute-path → buffer cache populated by {@link warmStaticMemoryCache}. */
 const staticMemoryCache = new Map<string, CachedStaticFile>();
 
@@ -434,7 +431,6 @@ export function resolveStaticPathAgainstRoot(
   }
 
   const normalizedRelative = relativeToRoot === '' ? '' : relativeToRoot.split(sep).join('/');
-
   // Prefer exact file in cache
   const exact = getCachedStaticFile(candidate);
 

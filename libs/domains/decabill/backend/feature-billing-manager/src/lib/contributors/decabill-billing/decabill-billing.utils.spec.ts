@@ -1,10 +1,11 @@
+import { SSHD_HARDENING_DROP_IN_PATH } from '../../utils/cloud-init/ssh-hardening.utils';
+
 import {
   DECABILL_BILLING_STACK_DIR,
   buildDecabillBillingCloudInitConfigFromRequest,
   buildDecabillBillingCloudInitUserData,
   buildDecabillBillingUpdateCommand,
 } from './decabill-billing.utils';
-import { SSHD_HARDENING_DROP_IN_PATH } from '../../utils/cloud-init/ssh-hardening.utils';
 
 describe('decabill-billing.utils', () => {
   describe('buildDecabillBillingCloudInitConfigFromRequest', () => {

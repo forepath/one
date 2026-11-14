@@ -1,5 +1,5 @@
-import { NETWORK_SECRET_KEYS, OpencodeConfigValidationError, type JsonObject } from './types';
 import { sanitizeMcpWireServer } from './mcp-wire';
+import { NETWORK_SECRET_KEYS, OpencodeConfigValidationError, type JsonObject } from './types';
 
 const CREDENTIAL_KEY_PATTERN = /(password|secret|token|apikey|api_key|accesskey|private[_-]?key|credential)/i;
 /**
@@ -8,7 +8,6 @@ const CREDENTIAL_KEY_PATTERN = /(password|secret|token|apikey|api_key|accesskey|
  */
 const MCP_SECRET_NAME_LIST_KEYS = new Set(['secretEnv', 'secretHeaders']);
 const NETWORK_SECRET_KEY_SET = new Set<string>(NETWORK_SECRET_KEYS);
-
 /** Primary credential env names used as OpenCode ApiAuth `key`. */
 const API_KEY_ENV_PATTERN = /(API_KEY|ACCESS_TOKEN|SECRET_KEY|SECRET|TOKEN)$/i;
 
@@ -118,6 +117,7 @@ export function resolveProviderAuthSecrets(
     }
 
     const envNames = ensureStringList(entry['env']);
+
     envNamesByProvider.set(providerId, envNames);
 
     for (const name of envNames) {
@@ -127,7 +127,6 @@ export function resolveProviderAuthSecrets(
 
   // providerId → { envName or '' (direct) → value }
   const collected = new Map<string, Map<string, string>>();
-
   const addSecret = (providerId: string, envName: string, value: string): void => {
     if (!value) {
       return;

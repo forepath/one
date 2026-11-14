@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { of } from 'rxjs';
 
 import { DocsSearchService, type SearchResult } from '../../services';
+
 import { DocsSearchComponent } from './docs-search.component';
 
 describe('DocsSearchComponent', () => {

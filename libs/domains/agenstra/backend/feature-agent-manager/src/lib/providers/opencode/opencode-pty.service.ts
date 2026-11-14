@@ -67,11 +67,9 @@ export class OpenCodePtyService {
 
     const { baseUrl, authorization } = await this.clientFactory.resolveConnection(agentId, containerId);
     const shell = options.shell?.trim() || undefined;
-
     const pty = await this.createPty(baseUrl, authorization, shell, options.cols, options.rows);
     const ticket = await this.createConnectToken(baseUrl, authorization, pty.id);
     const ws = await this.connectWebSocket(baseUrl, pty.id, ticket.ticket, callbacks.onOutput);
-
     const session: ActivePtySession = {
       ptyID: pty.id,
       agentId,

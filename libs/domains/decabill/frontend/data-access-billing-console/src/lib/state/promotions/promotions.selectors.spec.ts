@@ -1,10 +1,10 @@
+import { initialPromotionsState } from './promotions.reducer';
 import {
   selectActivePromotions,
   selectCanRedeemPromotion,
   selectPromotionValidationErrorForContext,
   selectPromotionValidationPreviewForContext,
 } from './promotions.selectors';
-import { initialPromotionsState } from './promotions.reducer';
 
 describe('promotions selectors', () => {
   const state = {

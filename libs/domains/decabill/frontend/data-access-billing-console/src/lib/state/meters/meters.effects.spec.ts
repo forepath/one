@@ -8,7 +8,6 @@ import type { MeterResponse } from '../../types/billing.types';
 
 import {
   createMeter,
-  createMeterFailure,
   createMeterSuccess,
   deleteMeter,
   deleteMeterFailure,
@@ -21,7 +20,6 @@ import {
   loadMetersSuccess,
   loadMeterSuccess,
   updateMeter,
-  updateMeterFailure,
   updateMeterSuccess,
 } from './meters.actions';
 import { createMeter$, deleteMeter$, loadMeter$, loadMeters$, loadMetersBatch$, updateMeter$ } from './meters.effects';
@@ -68,6 +66,7 @@ describe('metersEffects', () => {
 
   it('starts a batch when the first page is full', (done) => {
     const page = Array.from({ length: 10 }, (_, index) => ({ ...meter, id: `meter-${index}` }));
+
     actions$ = of(loadMeters({}));
     service.listMeters.mockReturnValue(of(page));
 
@@ -80,6 +79,7 @@ describe('metersEffects', () => {
   it('continues batching until the last page', (done) => {
     const firstPage = Array.from({ length: 10 }, (_, index) => ({ ...meter, id: `meter-${index}` }));
     const lastPage = [{ ...meter, id: 'meter-10' }];
+
     actions$ = of(loadMetersBatch({ offset: 10, accumulatedMeters: firstPage }));
     service.listMeters.mockReturnValue(of(lastPage));
 

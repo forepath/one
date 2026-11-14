@@ -31,6 +31,7 @@ describe('FpcCommandPaletteComponent', () => {
 
   it('renders non-empty groups and updates the query', () => {
     const options = document.querySelectorAll('[role="option"]');
+
     expect(options).toHaveLength(3);
     expect(document.querySelectorAll('[role="group"]')).toHaveLength(2);
 
@@ -41,6 +42,7 @@ describe('FpcCommandPaletteComponent', () => {
 
   it('moves with the arrow keys (wrapping) and activates with Enter', () => {
     const events: FpcCommandActivateEvent[] = [];
+
     fixture.componentInstance.itemActivate.subscribe((event) => events.push(event));
 
     input().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
@@ -58,6 +60,7 @@ describe('FpcCommandPaletteComponent', () => {
 
   it('activates an entry on click', () => {
     const events: FpcCommandActivateEvent[] = [];
+
     fixture.componentInstance.itemActivate.subscribe((event) => events.push(event));
     (document.querySelector('[data-item-id="logs"]') as HTMLElement).click();
     expect(events[0].item.id).toBe('logs');

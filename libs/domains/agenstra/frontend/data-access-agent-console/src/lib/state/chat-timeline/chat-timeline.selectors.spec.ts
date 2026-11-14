@@ -23,7 +23,6 @@ const primarySession = {
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
-
 const userSession = {
   id: 'chat-user',
   agentId: 'a1',
@@ -32,7 +31,6 @@ const userSession = {
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
-
 const sessionsMap = {
   'c1:a1': [primarySession, userSession],
 };
@@ -244,7 +242,6 @@ describe('selectChatTimelineOrdered', () => {
 
   it('shows automation cards on the primary chat session only', () => {
     const automations = [automationRow('a1', 500)];
-
     const onPrimary = selectChatTimelineOrdered.projector(
       [],
       automations,
@@ -273,7 +270,6 @@ describe('selectChatTimelineOrdered', () => {
   it('merges chat-scoped plan cards and keeps automation primary-only', () => {
     const plans = [planRow('a1', userSession.id, 700)];
     const automations = [automationRow('a1', 500)];
-
     const onUser = selectChatTimelineOrdered.projector(
       [chatMessageRow('hi', 1000, userSession.id)],
       automations,

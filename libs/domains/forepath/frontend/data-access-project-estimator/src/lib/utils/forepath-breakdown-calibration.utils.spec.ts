@@ -1,5 +1,6 @@
-import { calibrateProjectBreakdown, shouldIncludeTravelInBreakdown } from './forepath-breakdown-calibration.utils';
 import { ForepathPricingCalculatorService } from '../services/forepath-pricing-calculator.service';
+
+import { calibrateProjectBreakdown, shouldIncludeTravelInBreakdown } from './forepath-breakdown-calibration.utils';
 
 const MISSING_PERSONS_PROMPT =
   'I want to build a somewhat complex software. The public should be able to support police and emts when searching for missing people. Therefore a map like what3words build on top of openstreetmap with an overlay should allow to mark quadrants if searched by a person. Double quadrant checks can be required. I need the public facing app with an interface and an interface for administrators as well as people who create searches. This app should be available as Webapp, iOS app and Android app. It must comply with German law!';
@@ -81,7 +82,6 @@ describe('forepath breakdown calibration utils', () => {
 
   it('should inject software-development when a lite model returns only consulting or travel', () => {
     const pricingCalculator = new ForepathPricingCalculatorService();
-
     const calibrated = calibrateProjectBreakdown(
       {
         summary: 'Missing persons coordination platform',
@@ -102,7 +102,6 @@ describe('forepath breakdown calibration utils', () => {
       },
       MISSING_PERSONS_PROMPT,
     );
-
     const estimate = pricingCalculator.calculateEstimate(calibrated);
 
     expect(calibrated.lineItems.some((item) => item.serviceId === 'software-development')).toBe(true);
@@ -113,7 +112,6 @@ describe('forepath breakdown calibration utils', () => {
 
   it('should raise under-scoped development totals for complex multi-platform prompts', () => {
     const pricingCalculator = new ForepathPricingCalculatorService();
-
     const calibrated = calibrateProjectBreakdown(
       {
         summary: 'Search coordination app',
@@ -129,7 +127,6 @@ describe('forepath breakdown calibration utils', () => {
       },
       MISSING_PERSONS_PROMPT,
     );
-
     const estimate = pricingCalculator.calculateEstimate(calibrated);
 
     expect(calibrated.lineItems[0]?.billingUnits).toBe(1600);
@@ -140,7 +137,6 @@ describe('forepath breakdown calibration utils', () => {
     const pricingCalculator = new ForepathPricingCalculatorService();
     const prompt =
       'We need cloud and security consulting with discovery workshops, architecture review, and a prioritized roadmap for ISO 27001 readiness.';
-
     const calibrated = calibrateProjectBreakdown(
       {
         summary: 'Consulting request',
@@ -156,7 +152,6 @@ describe('forepath breakdown calibration utils', () => {
       },
       prompt,
     );
-
     const estimate = pricingCalculator.calculateEstimate(calibrated);
 
     expect(calibrated.lineItems.some((item) => item.serviceId === 'consulting')).toBe(true);
@@ -168,7 +163,6 @@ describe('forepath breakdown calibration utils', () => {
     const pricingCalculator = new ForepathPricingCalculatorService();
     const prompt =
       'We need managed IT for network monitoring, backup operations, and Microsoft 365 administration for about 80 workstations.';
-
     const calibrated = calibrateProjectBreakdown(
       {
         summary: 'Managed IT request',
@@ -184,7 +178,6 @@ describe('forepath breakdown calibration utils', () => {
       },
       prompt,
     );
-
     const estimate = pricingCalculator.calculateEstimate(calibrated);
 
     expect(calibrated.lineItems.some((item) => item.serviceId === 'it-systems')).toBe(true);

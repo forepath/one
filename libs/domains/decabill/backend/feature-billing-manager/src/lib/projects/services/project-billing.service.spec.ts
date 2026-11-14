@@ -45,9 +45,7 @@ describe('ProjectBillingService', () => {
   const projectTimeReportService = {
     generateAndStoreForBilling: jest.fn().mockResolvedValue('sub-1/inv-1-time-report.pdf'),
   };
-
   let service: ProjectBillingService;
-
   const project = {
     id: 'p1',
     userId: 'u1',
@@ -55,7 +53,6 @@ describe('ProjectBillingService', () => {
     hourlyRateNet: 100,
     currency: 'EUR',
   };
-
   const from = '2026-06-01T08:00:00.000Z';
   const to = '2026-06-01T17:00:00.000Z';
 

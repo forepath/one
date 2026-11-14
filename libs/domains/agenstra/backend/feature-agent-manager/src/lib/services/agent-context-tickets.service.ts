@@ -1,10 +1,11 @@
+import { randomBytes } from 'crypto';
+
 import {
   agentContextShaMatches,
   isAgentContextElementKind,
   type AgentContextElementKind,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { randomBytes } from 'crypto';
 
 import {
   AGENT_CONTEXT_MAX_TICKETS_PER_AGENT,

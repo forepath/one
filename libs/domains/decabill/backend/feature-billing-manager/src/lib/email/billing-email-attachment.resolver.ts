@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
 import type { EmailAttachmentRef, EmailAttachmentResolver } from '@forepath/shared/backend';
+import { Injectable } from '@nestjs/common';
 
+import { ProjectTimeReportPdfService } from '../projects/services/project-time-report-pdf.service';
 import { InvoiceCreditDocumentsRepository } from '../repositories/invoice-credit-documents.repository';
 import { InvoiceVoidDocumentsRepository } from '../repositories/invoice-void-documents.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
-import { ProjectTimeReportPdfService } from '../projects/services/project-time-report-pdf.service';
 import { InvoicePdfService } from '../services/invoice-pdf.service';
 
 /**
@@ -26,6 +26,7 @@ export class BillingEmailAttachmentResolver implements EmailAttachmentResolver {
 
     for (const ref of refs) {
       const content = await this.readAuthorizedAttachment(ref);
+
       attachments.push({ filename: ref.filename, content });
     }
 

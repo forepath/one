@@ -21,6 +21,7 @@ describe('ProviderLocationsService', () => {
 
   it('delegates to catalog dispatch for known providers', async () => {
     const locations = [{ id: 'fsn1', name: 'Falkenstein' }];
+
     catalogDispatch.getLocations.mockResolvedValue(locations);
 
     await expect(service.getLocations('hetzner', { HETZNER_API_TOKEN: 'token' })).resolves.toEqual(locations);

@@ -41,6 +41,7 @@ export class SubscriptionPeriodChargeService {
     });
 
     const meterCharges = await this.resolveMeterCharges(subscription, plan, periodStart, periodEnd);
+
     this.billingNotificationPublisher.publishPeriodCharged(
       subscription,
       plan,
@@ -68,7 +69,6 @@ export class SubscriptionPeriodChargeService {
       plan.billingDayOfMonth,
       scheduleAnchor,
     );
-
     const billUntil = billInAdvance ? schedule.currentPeriodEnd : (subscription.nextBillingAt ?? now);
     const periodStart = billInAdvance
       ? schedule.currentPeriodStart
@@ -84,6 +84,7 @@ export class SubscriptionPeriodChargeService {
     });
 
     const meterCharges = await this.resolveMeterCharges(subscription, plan, periodStart, periodEnd);
+
     this.billingNotificationPublisher.publishPeriodCharged(
       subscription,
       plan,

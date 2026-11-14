@@ -6,7 +6,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
 import { ChatPlanActionType, ChatPlanActorType, ChatPlanPhase, ChatPlanStatus } from '../entities/chat-plan.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
-
 import { createAgentContentWriter } from '../utils/agent-content-writer.utils';
 import { buildChatPlanContextSection } from '../utils/chat-plan-mappers';
 

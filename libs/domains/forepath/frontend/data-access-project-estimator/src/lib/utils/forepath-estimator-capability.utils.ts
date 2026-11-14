@@ -1,6 +1,7 @@
 import type { ForepathLlmMemoryProfileId } from '../constants/forepath-llm-memory.constants';
 import type { ForepathLlmMemoryProfileService } from '../services/forepath-llm-memory-profile.service';
 import { ProjectEstimatorActions } from '../state/project-estimator/project-estimator.actions';
+
 import type { DeviceCapabilityResult } from './forepath-device-capability.utils';
 import {
   readGpuAccessGranted,

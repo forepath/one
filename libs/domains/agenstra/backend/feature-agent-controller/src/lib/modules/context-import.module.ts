@@ -14,11 +14,11 @@ import { ExternalImportProviderFactory } from '../providers/external-import-prov
 import type { ExternalContextImportProvider } from '../providers/external-import-provider.interface';
 import { CONTEXT_IMPORT_PROVIDERS } from '../providers/external-import-provider.tokens';
 import { AtlassianImportProvider } from '../providers/import/atlassian-external-import.provider';
+import { AgenstraSearchModule } from '../search/agenstra-search.module';
 import { AtlassianSiteConnectionService } from '../services/atlassian-site-connection.service';
 import { ContextImportOrchestratorService } from '../services/context-import-orchestrator.service';
 import { ExternalImportConfigService } from '../services/external-import-config.service';
 import { ExternalImportSyncMarkerService } from '../services/external-import-sync-marker.service';
-import { AgenstraSearchModule } from '../search/agenstra-search.module';
 
 import { ClientsModule } from './clients.module';
 

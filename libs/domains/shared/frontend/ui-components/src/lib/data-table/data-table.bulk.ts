@@ -44,7 +44,6 @@ export async function fpcRunBulk<T>(
 ): Promise<FpcBulkResult<T>> {
   const results: FpcBulkItemResult<T>[] = new Array(items.length);
   let next = 0;
-
   const worker = async (): Promise<void> => {
     while (next < items.length) {
       const index = next++;
@@ -94,7 +93,9 @@ export function fpcBulkSummary<T>(
   const count = (template: string, n: number) => template.replace('{count}', String(n));
 
   if (result.succeeded.length) parts.push(count(labels.succeeded, result.succeeded.length));
+
   if (result.denied.length) parts.push(count(labels.denied, result.denied.length));
+
   if (result.failed.length) parts.push(count(labels.failed, result.failed.length));
 
   const problems = result.results

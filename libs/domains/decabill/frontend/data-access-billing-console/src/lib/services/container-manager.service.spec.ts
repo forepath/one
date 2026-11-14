@@ -15,7 +15,6 @@ describe('ContainerManagerService', () => {
   let service: ContainerManagerService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3200/api';
-
   const containersResponse: ContainerManagerContainersResponse = {
     containers: [],
     collectedAt: '2026-08-13T12:00:00.000Z',

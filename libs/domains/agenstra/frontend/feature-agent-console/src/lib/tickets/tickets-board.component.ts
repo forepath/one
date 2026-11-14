@@ -149,15 +149,25 @@ import {
   showAgentModal,
   swapToOverlayAgentModal,
 } from '../agent-modal';
-import { getGitRepositoryDisplayLabel, isLocalGitRepository } from '../git-repository-display';
+import { AgentSelectComponent } from '../agent-select/agent-select.component';
 import { resolveNamedDisplayLabel } from '../display-name.util';
+import { getGitRepositoryDisplayLabel, isLocalGitRepository } from '../git-repository-display';
+import { agentContentWriteLabel } from '../shared/agent-content-write-labels';
+import {
+  agentDeploymentOperationLabel,
+  agentDeploymentOperationsHeading,
+  agentDeploymentOperationsHint,
+} from '../shared/agent-deployment-operation-labels';
+import { AttachmentChipsComponent } from '../shared/attachment-chips.component';
+import { agBulkSummary, agCopyIdItem, agOpenItem, AG_DL_CANCEL, AG_DL_DELETE } from '../shared/data-list';
+import { WorkspaceChipComponent } from '../shared/workspace-chip.component';
+import { WorkspaceSwitchTableComponent } from '../shared/workspace-switch-table.component';
 
 import {
   automationBranchEnvironmentId as pickAutomationBranchEnvironment,
   automationBranchLoader as buildAutomationBranchLoader,
 } from './automation-branch-reference';
 import { storeAgentConsoleChatDraft } from './chat-draft-storage';
-import { AgentSelectComponent } from '../agent-select/agent-select.component';
 import {
   ticketAutomationCancellationReasonLabel,
   ticketAutomationFailureCodeLabel,
@@ -165,8 +175,11 @@ import {
   ticketAutomationRunStatusLabel,
   ticketAutomationRunStepKindLabel,
 } from './ticket-automation-run-labels';
+import { ticketBoardViewState, type TicketBoardView } from './ticket-board-view';
 import { buildTicketBodyHierarchyContext } from './ticket-body-hierarchy-context';
 import { TicketEditorComponent } from './ticket-editor/ticket-editor.component';
+import { ticketLaneStatusLabel } from './ticket-lane-status-label';
+import { ticketModelPlaceholder } from './ticket-model-placeholder';
 import {
   bulkDeleteTickets,
   bulkUpdateTickets,
@@ -184,19 +197,6 @@ import {
   ticketTableColumns,
   type TicketStatusFilter,
 } from './ticket-table';
-import { agentContentWriteLabel } from '../shared/agent-content-write-labels';
-import {
-  agentDeploymentOperationLabel,
-  agentDeploymentOperationsHeading,
-  agentDeploymentOperationsHint,
-} from '../shared/agent-deployment-operation-labels';
-import { AttachmentChipsComponent } from '../shared/attachment-chips.component';
-import { agBulkSummary, agCopyIdItem, agOpenItem, AG_DL_CANCEL, AG_DL_DELETE } from '../shared/data-list';
-import { WorkspaceChipComponent } from '../shared/workspace-chip.component';
-import { WorkspaceSwitchTableComponent } from '../shared/workspace-switch-table.component';
-import { ticketModelPlaceholder } from './ticket-model-placeholder';
-import { ticketBoardViewState, type TicketBoardView } from './ticket-board-view';
-import { ticketLaneStatusLabel } from './ticket-lane-status-label';
 
 const ALL_TICKET_STATUSES: TicketStatus[] = ['draft', 'todo', 'in_progress', 'prototype', 'done', 'closed'];
 
@@ -294,7 +294,6 @@ const AUTOMATION_RUN_TONE: Record<TicketAutomationRunStatus, FpcBadgeTone> = {
   escalated: 'warning',
   cancelled: 'neutral',
 };
-
 const AUTOMATION_RUN_ICON: Record<TicketAutomationRunStatus, string> = {
   pending: 'hourglass-split',
   running: 'arrow-repeat',
@@ -2129,6 +2128,7 @@ export class TicketsBoardComponent implements OnInit {
       this.createTicketModalOpen() ||
       this.deleteTicketConfirmModalOpen() ||
       this.ticketAutomationRunModalOpen();
+
     hideAgentModal(this.ticketRelationsModalOpen);
     hideAgentModal(this.ticketMigrateModalOpen);
     hideAgentModal(this.createTicketModalOpen);
@@ -3022,6 +3022,7 @@ export class TicketsBoardComponent implements OnInit {
   private saveBlob(blob: Blob, filename: string): void {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
+
     anchor.href = url;
     anchor.download = filename;
     anchor.click();

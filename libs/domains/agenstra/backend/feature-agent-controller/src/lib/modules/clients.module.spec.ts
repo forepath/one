@@ -18,35 +18,39 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { ClientsController } from '../controllers/clients.controller';
-import { EgressEventIngestCursorEntity } from '../entities/egress-event-ingest-cursor.entity';
-import { ClientIsolationSnapshotEntity } from '../entities/client-isolation-snapshot.entity';
-import { WorkspaceGraphSnapshotEntity } from '../entities/workspace-graph-snapshot.entity';
-import { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
 import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
+import { AgentHandoffEntity } from '../entities/agent-handoff.entity';
+import { AgentTaskRunEntity } from '../entities/agent-task-run.entity';
+import { AgentTaskEntity } from '../entities/agent-task.entity';
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
+import { ChatPlanActivityEntity } from '../entities/chat-plan-activity.entity';
+import { ChatPlanEntity } from '../entities/chat-plan.entity';
+import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
+import { ClientIsolationSnapshotEntity } from '../entities/client-isolation-snapshot.entity';
+import { ClientOpencodeConfigEntity } from '../entities/client-opencode-config.entity';
 import { DeploymentConnectionEntity } from '../entities/deployment-connection.entity';
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
 import { DeploymentWorkflowEntity } from '../entities/deployment-workflow.entity';
-import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
+import { EgressEventIngestCursorEntity } from '../entities/egress-event-ingest-cursor.entity';
 import { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
+import { GlobalOpencodeConfigEntity } from '../entities/global-opencode-config.entity';
 import { KnowledgeNodeEmbeddingEntity } from '../entities/knowledge-node-embedding.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { KnowledgePageActivityEntity } from '../entities/knowledge-page-activity.entity';
 import { KnowledgeRelationEntity } from '../entities/knowledge-relation.entity';
+import { OpencodeConfigSyncTargetEntity } from '../entities/opencode-config-sync-target.entity';
+import { OpencodeLayerFileSyncTargetEntity } from '../entities/opencode-layer-file-sync-target.entity';
+import { OpencodeLayerFileEntity } from '../entities/opencode-layer-file.entity';
+import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
+import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
 import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import { StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsChatIoEntity } from '../entities/statistics-chat-io.entity';
-import { GlobalOpencodeConfigEntity } from '../entities/global-opencode-config.entity';
-import { OpencodeLayerFileEntity } from '../entities/opencode-layer-file.entity';
-import { OpencodeLayerFileSyncTargetEntity } from '../entities/opencode-layer-file-sync-target.entity';
-import { OpencodeConfigSyncTargetEntity } from '../entities/opencode-config-sync-target.entity';
-import { ClientOpencodeConfigEntity } from '../entities/client-opencode-config.entity';
-import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
-import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
 import { StatisticsClientUserEntity } from '../entities/statistics-client-user.entity';
 import { StatisticsClientEntity } from '../entities/statistics-client.entity';
+import { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
 import { StatisticsEntityEventEntity } from '../entities/statistics-entity-event.entity';
 import { StatisticsProvisioningReferenceEntity } from '../entities/statistics-provisioning-reference.entity';
 import { StatisticsUserEntity } from '../entities/statistics-user.entity';
@@ -55,29 +59,25 @@ import { TicketAutomationLeaseEntity } from '../entities/ticket-automation-lease
 import { TicketAutomationRunStepEntity } from '../entities/ticket-automation-run-step.entity';
 import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.entity';
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
-import { AgentTaskRunEntity } from '../entities/agent-task-run.entity';
-import { AgentTaskEntity } from '../entities/agent-task.entity';
-import { AgentHandoffEntity } from '../entities/agent-handoff.entity';
-import { ChatPlanActivityEntity } from '../entities/chat-plan-activity.entity';
-import { ChatPlanEntity } from '../entities/chat-plan.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { UserChatSessionReadStateEntity } from '../entities/user-chat-session-read-state.entity';
 import { UserEnvironmentReadStateEntity } from '../entities/user-environment-read-state.entity';
+import { WorkspaceGraphSnapshotEntity } from '../entities/workspace-graph-snapshot.entity';
 import { ClientsGateway } from '../gateways/clients.gateway';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
+import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { ExternalImportSyncMarkerService } from '../services/external-import-sync-marker.service';
 
-import { ClientsModule } from './clients.module';
 import { AgenstraNotificationsModule, AGENSTRA_CONTROLLER_QUEUE_NAME } from './agenstra-notifications.module';
+import { ClientsModule } from './clients.module';
 import { ContextImportModule } from './context-import.module';
-import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
-import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
-import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 
 @Module({
   providers: [
@@ -143,6 +143,7 @@ describe('ClientsModule', () => {
       getMany: jest.fn().mockResolvedValue([]),
     }),
   };
+
   beforeEach(async () => {
     const moduleBuilder = Test.createTestingModule({
       imports: [ClientsModule],

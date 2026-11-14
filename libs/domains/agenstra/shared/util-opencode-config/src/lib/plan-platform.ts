@@ -219,6 +219,7 @@ export function injectPlatformPlanConfig(config: JsonObject): JsonObject {
 
   const skills = normalizeSkillsRoot(next['skills']);
   const paths = new Set(skills.paths);
+
   paths.add(AGENSTRA_CHAT_PLAN_SKILL_ABS_DIR);
   paths.add(AGENSTRA_CHAT_PLAN_SKILL_REL_DIR);
   next['skills'] = { paths: [...paths], urls: skills.urls };

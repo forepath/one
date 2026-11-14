@@ -1,6 +1,7 @@
 import { RequireScopes } from '@forepath/identity/backend';
 import { BadRequestException, Controller, Get, Param, ParseUUIDPipe, Query, Req } from '@nestjs/common';
 
+import { getUserFromRequest, type RequestWithUser } from '../../../utils/billing-access.utils';
 import type {
   ContainerManagerContainersResponseDto,
   ContainerManagerLogsResponseDto,
@@ -8,7 +9,6 @@ import type {
   ContainerManagerStatsHistoryResponseDto,
 } from '../dto/container-manager.dto';
 import { ContainerManagerService } from '../services/container-manager.service';
-import { getUserFromRequest, type RequestWithUser } from '../../../utils/billing-access.utils';
 
 @Controller('subscriptions/:subscriptionId/items/:itemId/container-manager')
 export class ContainerManagerController {

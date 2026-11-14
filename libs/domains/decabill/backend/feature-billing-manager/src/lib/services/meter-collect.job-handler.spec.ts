@@ -1,9 +1,9 @@
 import { METER_COLLECT_USAGE_SOURCE } from '../dto/meter-collect.types';
+
 import { MeterCollectJobHandler } from './meter-collect.job-handler';
 
 describe('MeterCollectJobHandler', () => {
   const now = new Date('2026-08-06T12:00:00.000Z');
-
   const subscriptionsRepository = {
     findActiveArrearForMeterCollect: jest.fn(),
     findByIdOrThrow: jest.fn(),
@@ -41,7 +41,6 @@ describe('MeterCollectJobHandler', () => {
   const addonModuleRegistry = {
     get: jest.fn(),
   };
-
   const handler = new MeterCollectJobHandler(
     subscriptionsRepository as never,
     servicePlansRepository as never,
@@ -298,6 +297,7 @@ describe('MeterCollectJobHandler', () => {
   it('pages through subscription batches until exhausted', async () => {
     const firstPage = Array.from({ length: 2 }, (_, index) => activeSub({ id: `sub-${index}` }));
     const originalBatchSize = (handler as unknown as { batchSize: number }).batchSize;
+
     Object.defineProperty(handler, 'batchSize', { value: 2, configurable: true });
     subscriptionsRepository.findActiveArrearForMeterCollect
       .mockResolvedValueOnce(firstPage)
@@ -318,6 +318,7 @@ describe('MeterCollectJobHandler', () => {
 
   it('clamps collector periodEnd to nextBillingAt when collect runs after period end', async () => {
     const nextBillingAt = new Date('2026-08-06T11:00:00.000Z');
+
     subscriptionsRepository.findActiveArrearForMeterCollect.mockResolvedValue([activeSub({ nextBillingAt })]);
     subscriptionItemsRepository.findBySubscription.mockResolvedValue([
       {

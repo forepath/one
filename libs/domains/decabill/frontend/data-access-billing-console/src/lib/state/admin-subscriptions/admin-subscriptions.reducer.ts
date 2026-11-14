@@ -1,8 +1,8 @@
 import { createReducer, on } from '@ngrx/store';
 
+import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
 import type { AdminSubscriptionListItem } from '../../types/billing.types';
 import { patchSubscriptionItemDisplayName } from '../../utils/patch-subscription-item-display-name.util';
-import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
 import { updateDisplayNameSuccess } from '../service-detail/service-detail.actions';
 
 import {

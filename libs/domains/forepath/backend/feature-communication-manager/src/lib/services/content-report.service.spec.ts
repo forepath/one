@@ -1,6 +1,7 @@
 import { BadGatewayException, BadRequestException } from '@nestjs/common';
 
 import { CreateContentReportDto } from '../dto/create-content-report.dto';
+
 import { ChatwootApiError, ChatwootApiService } from './chatwoot-api.service';
 import { ContentReportService } from './content-report.service';
 
@@ -15,7 +16,6 @@ describe('ContentReportService', () => {
     goodFaithConfirmed: true,
     csamAnonymous: false,
   } as CreateContentReportDto;
-
   const tcoDto = {
     reportType: 'tco',
     turnstileToken: 'token',
@@ -34,14 +34,12 @@ describe('ContentReportService', () => {
     emergencyCase: false,
     authorityAttestation: true,
   } as CreateContentReportDto;
-
   const validPdf = {
     originalname: 'order.pdf',
     mimetype: 'application/pdf',
     size: 12,
     buffer: Buffer.from('%PDF-1.4 rest'),
   };
-
   let chatwootApiService: jest.Mocked<
     Pick<
       ChatwootApiService,

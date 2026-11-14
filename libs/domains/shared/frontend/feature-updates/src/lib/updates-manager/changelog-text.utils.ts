@@ -73,7 +73,6 @@ export function parseChangelogEntry(raw: string): ChangelogEntryView {
   let scope: string | null = null;
   let type: string | null = null;
   let breaking = false;
-
   const bold = /^\*\*([^*]+?)(?::\*\*|\*\*:)\s*(.*)$/s.exec(text);
 
   if (bold) {

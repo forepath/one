@@ -7,11 +7,13 @@ import {
   ClientsFacade,
   NotificationsFacade,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import { LocaleService } from '@forepath/agenstra/frontend/util-configuration';
 import {
   IDENTITY_AUTH_ENVIRONMENT,
   IdentityLogoutConfirmModalComponent,
   usesStaticCredential,
 } from '@forepath/identity/frontend';
+import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { AdminUpdatesFacade } from '@forepath/shared/frontend/data-access-updates';
 import {
   FpcButtonComponent,
@@ -24,8 +26,6 @@ import {
   FpcSidebarPopoverComponent,
   FpcThemeSwitcherComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { LocaleService } from '@forepath/agenstra/frontend/util-configuration';
-import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { combineLatest, distinctUntilChanged, filter, map, pairwise, startWith } from 'rxjs';
 
 import { ThemeService } from '../theme.service';

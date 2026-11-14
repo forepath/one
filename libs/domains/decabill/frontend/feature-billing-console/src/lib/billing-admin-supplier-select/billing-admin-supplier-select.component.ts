@@ -103,6 +103,7 @@ export class BillingAdminSupplierSelectComponent {
 
     if (term.length > 0 || this.showSuggestionsOnFocus()) {
       this.suggestionsOpen.set(true);
+
       if (term.length > 0) {
         this.loading.set(true);
         this.searchResults.set([]);

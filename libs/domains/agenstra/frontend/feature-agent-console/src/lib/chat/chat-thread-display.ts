@@ -33,7 +33,6 @@ import {
   toolPairOutcomeToBadgeColor,
   type AgentChatEventDisplayRow,
 } from './agent-chat-event-display';
-import { resolveAgentChatToolDisplay } from './agent-chat-tool-display';
 import {
   extractInteractionQueryPreviewText,
   extractThinkingPreviewText,
@@ -41,6 +40,7 @@ import {
   parseAgentResponseObjectsFromString,
   stripHiddenPromptBlocks,
 } from './agent-chat-response-markdown';
+import { resolveAgentChatToolDisplay } from './agent-chat-tool-display';
 
 /** Mirrors chat.component `ChatMessageWithFilter` without importing the component. */
 export type ChatMessageWithFilter = {
@@ -333,6 +333,7 @@ export function appendAgentResponseToSegments(
 
   if (row) {
     segments.push({ kind: 'row', row });
+
     return;
   }
 
@@ -537,6 +538,7 @@ export function mapAgentResponseObjectToDisplayRow(
 
   if (t === 'thinking') {
     const preview = extractThinkingPreviewText(r);
+
     // OpenCode step-start used to emit phase "step"; ignore legacy noise.
     if (preview.trim().toLowerCase() === 'step') {
       return null;

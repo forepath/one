@@ -8,9 +8,9 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import axios, { AxiosError } from 'axios';
 
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientsRepository } from '../repositories/clients.repository';
 
-import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientAgentEnvironmentVariablesProxyService } from './client-agent-environment-variables-proxy.service';
 import { ClientsService } from './clients.service';
 

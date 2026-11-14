@@ -1,5 +1,5 @@
-import { TaxCategory } from '../constants/tax-category.constants';
 import { DatevExportScope, DATEV_BOOKING_ROW_FIELD_COUNT } from '../constants/datev-export.constants';
+import { TaxCategory } from '../constants/tax-category.constants';
 import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 
@@ -38,7 +38,6 @@ describe('DatevBookingMapperService', () => {
     dictationAbbr: 'DEC',
     fiscalYearStartMonth: 1,
   };
-
   const line = (overrides: Partial<InvoiceLineItemEntity> = {}): InvoiceLineItemEntity =>
     ({
       description: 'Hosting subscription',
@@ -46,7 +45,6 @@ describe('DatevBookingMapperService', () => {
       taxCategory: TaxCategory.STANDARD,
       ...overrides,
     }) as InvoiceLineItemEntity;
-
   const invoice = (overrides: Partial<InvoiceEntity> = {}): InvoiceEntity =>
     ({
       id: 'inv-1',
@@ -171,7 +169,6 @@ describe('DatevBookingMapperService', () => {
       createdAt: new Date('2026-01-15T12:00:00Z'),
       taxMode: undefined,
     } as never;
-
     const row = service.mapIssuedSupplierLineItem({
       line: supplierLine as never,
       invoice: supplierInvoice,

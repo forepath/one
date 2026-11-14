@@ -22,6 +22,7 @@ import type { GraphSnapshot } from './graph-model';
 export const NODE_BUDGET = 12_000;
 /** A view this many times over the node budget switches to the overview even while panning. */
 const SAFETY_FACTOR = 4;
+
 /** Overview cells are at least this wide on screen. */
 export const OVERVIEW_CELL_PX = 12;
 /** Lines drawn per frame at most (at budget scale 1). */
@@ -569,7 +570,6 @@ export class GraphRenderer {
     }
 
     const edges = this.drawDetailEdges(ctx, scene, state, rect, total);
-
     // Nodes: grouped per type (one path of disks, small ones as squares).
     const byType: number[][] = palette.types.map(() => []);
     const missing: number[] = [];
@@ -937,7 +937,6 @@ export class GraphRenderer {
     });
 
     const edges = this.drawOverviewEdges(ctx, state, rect, level);
-
     // Cells: type slices (heaviest first) batched per type; single-node cells as the node itself.
     const whole: number[][] = palette.types.map(() => []);
     const slices: number[][] = palette.types.map(() => []);

@@ -7,13 +7,13 @@ import {
 import { Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
 
 import { ClientsRepository } from '../repositories/clients.repository';
-import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import type {
   WorkspaceIndexStatusDto,
   WorkspaceSearchMode,
   WorkspaceSearchResponseDto,
 } from '../search/workspace-search.types';
+import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 
 /**
  * Workspace code search against controller-owned OpenSearch corpora (per clientId+agentId).

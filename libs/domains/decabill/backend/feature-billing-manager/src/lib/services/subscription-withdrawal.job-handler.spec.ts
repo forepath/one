@@ -7,7 +7,6 @@ describe('SubscriptionWithdrawalJobHandler', () => {
   const subscriptionTeardownService = {
     processWithdrawal: jest.fn(),
   };
-
   const handler = new SubscriptionWithdrawalJobHandler(
     subscriptionsRepository as never,
     subscriptionTeardownService as never,

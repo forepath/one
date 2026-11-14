@@ -32,7 +32,6 @@ export function isTcpPortOpen(host: string, port: number, connectTimeoutMs: numb
   return new Promise((resolve) => {
     const socket = new Socket();
     let settled = false;
-
     const finish = (result: boolean): void => {
       if (settled) {
         return;

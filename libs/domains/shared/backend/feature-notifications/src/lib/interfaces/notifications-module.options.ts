@@ -1,5 +1,5 @@
-import type { Request } from 'express';
 import type { EmailSubjectRegistry } from '@forepath/shared/backend/util-email';
+import type { Request } from 'express';
 
 import type { EmailCompanyFrom } from '../email/resolve-email-company-name';
 

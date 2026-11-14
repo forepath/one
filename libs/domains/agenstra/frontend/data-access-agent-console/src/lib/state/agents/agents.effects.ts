@@ -24,13 +24,13 @@ import {
   type OpencodeConfigDto,
 } from '../../services/opencode-config.service';
 import { refreshClientIsolation } from '../clients/clients.actions';
-import { setContainerRunningStatus } from '../stats/stats.actions';
 import {
   forwardedEventReceived,
   remoteReconnected,
   setClientSuccess,
 } from '../container-socket/container-socket.actions';
 import { selectSelectedClientId } from '../container-socket/container-socket.selectors';
+import { setContainerRunningStatus } from '../stats/stats.actions';
 
 import {
   createClientAgent,

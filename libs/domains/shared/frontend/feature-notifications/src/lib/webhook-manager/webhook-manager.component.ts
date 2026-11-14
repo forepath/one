@@ -50,7 +50,6 @@ import {
   sharedBulkSummary,
   sharedCopyIdItem,
 } from '../data-list';
-
 import {
   hideNotificationModal,
   showNotificationModal,
@@ -597,6 +596,7 @@ export class WebhookManagerComponent implements OnInit {
   toggleSubscribedEvent(form: WebhookFormState, eventType: string, checked: boolean): void {
     if (checked) {
       form.subscribedEvents = [...new Set([...form.subscribedEvents, eventType])];
+
       return;
     }
 

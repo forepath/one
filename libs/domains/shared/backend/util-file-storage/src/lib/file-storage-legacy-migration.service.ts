@@ -8,8 +8,8 @@ import {
   readActiveFileStorageProviderType,
   resolvePreviousSegmentRoot,
 } from './file-storage-path.config';
-import { FILE_STORAGE_LOCAL_PROVIDER } from './file-storage.constants';
 import { FILE_STORAGE_PREVIOUS_SCOPE_SEGMENTS } from './file-storage-scope.constants';
+import { FILE_STORAGE_LOCAL_PROVIDER } from './file-storage.constants';
 
 interface ScopeMigrationSummary {
   segment: string;

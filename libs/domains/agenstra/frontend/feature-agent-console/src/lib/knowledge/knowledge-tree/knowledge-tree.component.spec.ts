@@ -11,7 +11,6 @@ describe('KnowledgeTreeComponent selection', () => {
   let fixture: ComponentFixture<KnowledgeTreeComponent>;
   let component: KnowledgeTreeComponent;
   let selectNodeSpy: jest.Mock;
-
   const knowledgeFacadeStub = {
     deleteNode: jest.fn(),
     duplicateNode: jest.fn(),

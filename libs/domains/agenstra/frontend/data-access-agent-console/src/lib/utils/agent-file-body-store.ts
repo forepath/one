@@ -283,6 +283,7 @@ export class AgentFileBodyStoreImpl {
           db.createObjectStore(IDB_STORE);
         }
       };
+
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error ?? new Error('IndexedDB open failed'));
     });
@@ -341,6 +342,7 @@ export class AgentFileBodyStoreImpl {
 
         resolve(null);
       };
+
       request.onerror = () => reject(request.error ?? new Error('IndexedDB get failed'));
     });
   }

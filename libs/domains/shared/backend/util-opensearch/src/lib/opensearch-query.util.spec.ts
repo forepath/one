@@ -31,6 +31,7 @@ describe('opensearch-query.util', () => {
     });
 
     const must = (body as { query: { bool: { must: unknown[] } } }).query.bool.must;
+
     expect(must).toHaveLength(1);
     expect(must[0]).toMatchObject({
       bool: {

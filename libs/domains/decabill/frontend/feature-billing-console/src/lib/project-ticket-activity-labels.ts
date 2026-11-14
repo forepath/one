@@ -1,4 +1,5 @@
 import type { FpcBadgeTone } from '@forepath/shared/frontend/ui-components';
+
 export function projectTicketActivityActionLabel(actionType: string): string {
   switch (actionType) {
     case 'CREATED':

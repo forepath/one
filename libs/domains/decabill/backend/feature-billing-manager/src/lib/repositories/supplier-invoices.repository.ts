@@ -63,6 +63,7 @@ export class SupplierInvoicesRepository {
 
     if (params.search?.trim()) {
       const term = `%${params.search.trim().toLowerCase()}%`;
+
       qb.andWhere(
         `(LOWER(COALESCE(invoice.invoice_number, '')) LIKE :term
           OR LOWER(invoice.id::text) LIKE :term
@@ -249,7 +250,6 @@ export class SupplierInvoicesRepository {
       `,
       [tenantId],
     );
-
     const row = rows?.[0] ?? {};
 
     return {

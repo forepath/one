@@ -1,6 +1,6 @@
+import { recordSharedCounter, recordSharedHistogram } from '@forepath/shared/backend/util-otel/metrics';
 import { Logger as NestLogger } from '@nestjs/common';
 import type { Logger as TypeOrmLogger, QueryRunner } from 'typeorm';
-import { recordSharedCounter, recordSharedHistogram } from '@forepath/shared/backend/util-otel/metrics';
 
 import { sanitizeLogPayload } from './sanitize-log-payload';
 
@@ -19,6 +19,7 @@ export class CorrelationAwareTypeOrmLogger implements TypeOrmLogger {
     if (!query) {
       return '';
     }
+
     return query.length > this.queryMaxLength ? `${query.slice(0, this.queryMaxLength)}…` : query;
   }
 
@@ -26,13 +27,15 @@ export class CorrelationAwareTypeOrmLogger implements TypeOrmLogger {
     if (!this.logParameters) {
       return undefined;
     }
+
     return sanitizeLogPayload(parameters) as unknown[] | undefined;
   }
 
-  logQuery(query: string, parameters?: unknown[], queryRunner?: QueryRunner): void {
+  logQuery(query: string, parameters?: unknown[], _queryRunner?: QueryRunner): void {
     if (!this.logQueries) {
       return;
     }
+
     this.logger.debug({
       msg: 'typeorm_query',
       query: this.truncateQuery(query),
@@ -40,7 +43,7 @@ export class CorrelationAwareTypeOrmLogger implements TypeOrmLogger {
     });
   }
 
-  logQueryError(error: string | Error, query: string, parameters?: unknown[], queryRunner?: QueryRunner): void {
+  logQueryError(error: string | Error, query: string, parameters?: unknown[], _queryRunner?: QueryRunner): void {
     this.logger.error(
       {
         msg: 'typeorm_query_error',
@@ -52,7 +55,7 @@ export class CorrelationAwareTypeOrmLogger implements TypeOrmLogger {
     );
   }
 
-  logQuerySlow(time: number, query: string, parameters?: unknown[], queryRunner?: QueryRunner): void {
+  logQuerySlow(time: number, query: string, parameters?: unknown[], _queryRunner?: QueryRunner): void {
     recordSharedCounter('typeorm.query.slow_total');
     recordSharedHistogram('typeorm.query.slow_duration_ms', time);
     this.logger.warn({
@@ -63,20 +66,23 @@ export class CorrelationAwareTypeOrmLogger implements TypeOrmLogger {
     });
   }
 
-  logSchemaBuild(message: string, queryRunner?: QueryRunner): void {
+  logSchemaBuild(message: string, _queryRunner?: QueryRunner): void {
     this.logger.log({ msg: 'typeorm_schema_build', message: sanitizeLogPayload(message) });
   }
 
-  logMigration(message: string, queryRunner?: QueryRunner): void {
+  logMigration(message: string, _queryRunner?: QueryRunner): void {
     this.logger.log({ msg: 'typeorm_migration', message: sanitizeLogPayload(message) });
   }
 
-  log(level: 'log' | 'info' | 'warn', message: unknown, queryRunner?: QueryRunner): void {
+  log(level: 'log' | 'info' | 'warn', message: unknown, _queryRunner?: QueryRunner): void {
     const payload = { msg: 'typeorm_log', level, message: sanitizeLogPayload(message) };
+
     if (level === 'warn') {
       this.logger.warn(payload);
+
       return;
     }
+
     this.logger.log(payload);
   }
 }

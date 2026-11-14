@@ -1,6 +1,6 @@
+import { ChatPlanRealtimeService } from './chat-plan-realtime.service';
 import { KNOWLEDGE_BOARD_EVENTS } from './knowledge-board-realtime.constants';
 import { KnowledgeBoardRealtimeService } from './knowledge-board-realtime.service';
-import { ChatPlanRealtimeService } from './chat-plan-realtime.service';
 import { WorkspaceGraphChangeNotifierService } from './workspace-graph-change-notifier.service';
 
 describe('WorkspaceGraphChangeNotifierService', () => {

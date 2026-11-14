@@ -30,6 +30,7 @@ describe('ContributorMigrationService', () => {
     const addons = new AddonModuleRegistryService();
     const stacks = new IntegratedStackRegistryService();
     const cloudInit = new CloudInitModuleRegistryService();
+
     addons.register(createAddon([SamplePluginMigration]));
 
     const query = jest.fn(async (sql: string) => {
@@ -50,7 +51,6 @@ describe('ContributorMigrationService', () => {
     const dataSource = {
       createQueryRunner: jest.fn(() => queryRunner),
     };
-
     const service = new ContributorMigrationService(dataSource as never, addons, stacks, cloudInit, providers);
 
     return { service, query, queryRunner };

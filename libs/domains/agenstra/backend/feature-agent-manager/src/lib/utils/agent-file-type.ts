@@ -18,7 +18,6 @@ const IMAGE_EXT_MIME: Record<string, string> = {
   '.ico': 'image/x-icon',
   '.webp': 'image/webp',
 };
-
 const VIDEO_EXT_MIME: Record<string, string> = {
   '.mp4': 'video/mp4',
   '.webm': 'video/webm',
@@ -26,7 +25,6 @@ const VIDEO_EXT_MIME: Record<string, string> = {
   '.mov': 'video/quicktime',
   '.m4v': 'video/x-m4v',
 };
-
 const AUDIO_EXT_MIME: Record<string, string> = {
   '.mp3': 'audio/mpeg',
   '.wav': 'audio/wav',

@@ -31,7 +31,6 @@ describe('SubscriptionConfigChangesRepository', () => {
     save: jest.fn(),
     createQueryBuilder: jest.fn(),
   };
-
   const repository = new SubscriptionConfigChangesRepository(typeorm as never);
 
   beforeEach(() => {

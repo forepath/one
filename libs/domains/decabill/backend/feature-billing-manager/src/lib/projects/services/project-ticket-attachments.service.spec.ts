@@ -1,7 +1,8 @@
-import { BadRequestException } from '@nestjs/common';
 import { UserRole } from '@forepath/identity/backend';
+import { BadRequestException } from '@nestjs/common';
 
 import { ProjectTicketActionType } from '../entities/project.enums';
+
 import { ProjectTicketAttachmentsService } from './project-ticket-attachments.service';
 
 jest.mock('../../utils/tenant-query.utils', () => ({ getRequiredTenantId: jest.fn(() => 'tenant-1') }));

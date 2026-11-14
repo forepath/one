@@ -12,6 +12,7 @@ describe('form check / switch hint', () => {
     const fixture = TestBed.createComponent(component);
 
     for (const [name, value] of Object.entries(inputs)) fixture.componentRef.setInput(name, value);
+
     fixture.detectChanges();
 
     return fixture.nativeElement as HTMLElement;

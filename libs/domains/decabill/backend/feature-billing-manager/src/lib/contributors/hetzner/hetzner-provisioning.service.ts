@@ -1,6 +1,6 @@
+import { resolveHetznerLocationNameFromMetadata } from '@forepath/shared/backend/util-provisioning-geography';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
-import { resolveHetznerLocationNameFromMetadata } from '@forepath/shared/backend/util-provisioning-geography';
 
 import { resolvePlainTextUserData } from '../../utils/cloud-init/user-data.utils';
 import { ServerInfo } from '../../utils/provisioning.utils';

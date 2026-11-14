@@ -38,7 +38,6 @@ describe('CustomerProfilesAdminService', () => {
       revoked: 0,
     }),
   };
-
   const service = new CustomerProfilesAdminService(
     customerProfilesRepository as never,
     customerProfilesService as never,
@@ -51,7 +50,6 @@ describe('CustomerProfilesAdminService', () => {
     billingSearchIndexService as never,
     offerProfileSummaryService as never,
   );
-
   const profile = {
     id: 'profile-1',
     userId: 'user-1',

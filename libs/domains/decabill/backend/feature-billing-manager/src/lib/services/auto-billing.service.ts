@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { getTenantIdOrDefault } from '@forepath/shared/backend';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
 import {
   AUTO_PAYMENT_MAX_ATTEMPTS,
@@ -9,6 +9,7 @@ import {
 } from '../constants/auto-payment-status.constants';
 import { InvoiceStatus, OPEN_OVERDUE_INVOICE_STATUSES } from '../constants/invoice-status.constants';
 import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { PaymentAttemptStatus } from '../entities/payment-attempt.entity';
@@ -17,12 +18,11 @@ import { PaymentProcessorFactory } from '../payment-processors/payment-processor
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { PaymentAttemptsRepository } from '../repositories/payment-attempts.repository';
+import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 import { resolveTenantFrontendBaseUrl } from '../utils/tenant-frontend-url.utils';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { CustomerProfilesService } from './customer-profiles.service';
-import { BillingEmailPublisher } from '../email/billing-email.publisher';
-import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 
 export interface AutoBillingSetupResult {
   setupUrl: string;

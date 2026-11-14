@@ -273,6 +273,7 @@ export class GitBranchModalComponent {
     const parts: string[] = [];
 
     if ((b.aheadCount ?? 0) > 0) parts.push(`+${b.aheadCount}`);
+
     if ((b.behindCount ?? 0) > 0) parts.push(`−${b.behindCount}`);
 
     return parts.join(' / ');

@@ -164,6 +164,7 @@ export async function callContextTool(
         return json(await client.list(ticket));
       case AGENSTRA_CONTEXT_MCP_TOOL_NAMES.mounts:
         return json(await client.mounts(ticket, stringArg(args, 'resolve')));
+
       case AGENSTRA_CONTEXT_MCP_TOOL_NAMES.search: {
         const limit = typeof args['limit'] === 'number' ? args['limit'] : undefined;
 
@@ -171,6 +172,7 @@ export async function callContextTool(
           await client.search(ticket, { query: stringArg(args, 'query'), kinds: stringArrayArg(args, 'kinds'), limit }),
         );
       }
+
       case AGENSTRA_CONTEXT_MCP_TOOL_NAMES.get: {
         const ref = stringArg(args, 'ref');
 
@@ -179,7 +181,6 @@ export async function callContextTool(
         }
 
         const item = await client.get(ticket, ref);
-
         // Content changes (agenstra_content_*) need the element's full ref and its revision.
         const meta = [
           ...(item.sha && item.ref.startsWith('item:') ? [`ref: ${item.kind}:${item.sha}`] : []),
@@ -188,6 +189,7 @@ export async function callContextTool(
 
         return text(`# ${item.title} (${item.ref})\n${meta.length ? `${meta.join('\n')}\n` : ''}\n${item.content}`);
       }
+
       case AGENSTRA_CONTEXT_MCP_TOOL_NAMES.requestAccess: {
         const requestId = stringArg(args, 'requestId');
 
@@ -203,6 +205,7 @@ export async function callContextTool(
 
         return json(await client.requestAccess(ticket, refs, stringArg(args, 'reason')));
       }
+
       default:
         return text(`Unknown tool: ${name}`, true);
     }

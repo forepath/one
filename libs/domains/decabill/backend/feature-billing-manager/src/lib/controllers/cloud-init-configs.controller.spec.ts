@@ -24,7 +24,6 @@ describe('CloudInitConfigsController', () => {
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01'),
   };
-
   const createModule = async (repository: Record<string, jest.Mock>, configService: Record<string, jest.Mock>) => {
     const moduleRef = await Test.createTestingModule({
       controllers: [CloudInitConfigsController],
@@ -85,7 +84,6 @@ describe('CloudInitConfigsController', () => {
         getOrderFields: jest.fn(),
       };
       const controller = await createModule(repository, configService);
-
       const result = await controller.create({
         key: 'my-app',
         name: 'My App',
@@ -128,7 +126,6 @@ describe('CloudInitConfigsController', () => {
         assertNotReferencedByActivePlans: jest.fn().mockResolvedValue(undefined),
       };
       const controller = await createModule(repository, configService);
-
       const result = await controller.update('cfg-1', { name: 'Renamed' } as any);
 
       expect(repository.update).toHaveBeenCalledWith('cfg-1', { name: 'Renamed' });

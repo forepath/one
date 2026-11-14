@@ -84,7 +84,6 @@ describe('chatTimelineReducer', () => {
       loadingOlder: true,
       chatEnhancementPendingCorrelationId: 'c1',
     };
-
     const state = chatTimelineReducer(prev, chatTimelineClear());
 
     expect(state).toEqual(initialChatTimelineState);
@@ -128,7 +127,6 @@ describe('chatTimelineReducer', () => {
         },
       ],
     };
-
     const state = chatTimelineReducer(
       prev,
       chatTimelineBatchReceived({
@@ -190,7 +188,6 @@ describe('chatTimelineReducer', () => {
         oldestMessageId: 'm2',
       }),
     );
-
     const state = chatTimelineReducer(
       prev,
       chatTimelineBatchReceived({
@@ -330,7 +327,6 @@ describe('chatTimelineReducer', () => {
       },
       actions: [],
     };
-
     let state = chatTimelineReducer(initialChatTimelineState, chatTimelineAutomationUpsert({ payload: basePayload }));
 
     state = chatTimelineReducer(
@@ -376,7 +372,6 @@ describe('chatTimelineReducer', () => {
       },
       actions: [] as [],
     };
-
     let state = chatTimelineReducer(initialChatTimelineState, chatTimelinePlanUpsert({ payload: basePayload }));
 
     state = chatTimelineReducer(

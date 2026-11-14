@@ -6,12 +6,12 @@ import axios, { AxiosError } from 'axios';
 import { CreateClientVncSessionResponseDto } from '../dto/create-client-vnc-session-response.dto';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 import { buildRemoteVncWsUrl } from '../utils/remote-manager-url.utils';
 
 import { ClientsService } from './clients.service';
 import { ControllerVncTicketService } from './controller-vnc-ticket.service';
-import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 @Injectable()
 export class ClientAgentVncProxyService {
@@ -40,7 +40,6 @@ export class ClientAgentVncProxyService {
     const authHeader = await this.getAuthHeader(clientId);
     const baseUrl = this.buildAgentApiUrl(clientEntity.endpoint);
     const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
-
     let managerSession: CreateVncSessionResponseDto;
 
     try {

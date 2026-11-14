@@ -1,8 +1,8 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import { Queue } from 'bullmq';
-import { enqueueUnitJob } from '@forepath/shared/backend/util-queue';
 import { EmailService } from '@forepath/shared/backend/util-email';
 import { recordSharedCounter } from '@forepath/shared/backend/util-otel';
+import { enqueueUnitJob } from '@forepath/shared/backend/util-queue';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { Queue } from 'bullmq';
 
 import {
   EMAIL_DELIVER_JOB_NAME,

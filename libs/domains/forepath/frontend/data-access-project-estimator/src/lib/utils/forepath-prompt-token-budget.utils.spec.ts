@@ -68,7 +68,6 @@ describe('forepath-prompt-token-budget.utils', () => {
       contextWindowSize: FOREPATH_LLM_MEMORY_PROFILE_BALANCED.contextWindowSize,
       systemPrompt: compactSystemPrompt,
     });
-
     const totalPromptTokens = estimatePromptTokenCount(compactSystemPrompt) + estimatePromptTokenCount(fittedPrompt);
 
     expect(totalPromptTokens).toBeLessThanOrEqual(FOREPATH_LLM_MEMORY_PROFILE_BALANCED.contextWindowSize);
@@ -77,7 +76,6 @@ describe('forepath-prompt-token-budget.utils', () => {
   it('should cap output tokens to remaining context window space', () => {
     const compactSystemPrompt = buildSystemPrompt(true);
     const userPrompt = 'Need a complex multi-platform application with maps and admin tools.';
-
     const maxOutputTokens = computeMaxOutputTokens({
       contextWindowSize: FOREPATH_LLM_MEMORY_PROFILE_BALANCED.contextWindowSize,
       systemPrompt: compactSystemPrompt,

@@ -36,6 +36,8 @@ import {
   type WriteFileDto,
   utf8ToArrayBuffer,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import { LocaleService } from '@forepath/agenstra/frontend/util-configuration';
+import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import {
   FpcBadgeComponent,
   FpcButtonComponent,
@@ -51,8 +53,6 @@ import {
   FpcTabComponent,
   FpcTabGroupComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { StandaloneLoadingService } from '@forepath/shared/frontend';
-import { LocaleService } from '@forepath/agenstra/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { combineLatest, debounceTime, filter, map, Observable, of, Subject, switchMap, take } from 'rxjs';
 
@@ -574,7 +574,6 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
     // Get content from editorContent signal (updated by contentChange events)
     const contentToSave = this.editorContent();
-
     // Check if there are rejected file updates for this file
     const rejectedTimestamp = this.rejectedFileUpdates().get(filePath);
 
@@ -1319,6 +1318,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
             if (saved !== undefined) {
               contents.push(saved);
             }
+
             if (pending !== undefined) {
               contents.push(pending);
             }

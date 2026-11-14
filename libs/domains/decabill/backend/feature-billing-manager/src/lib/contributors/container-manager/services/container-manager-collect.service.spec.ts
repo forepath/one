@@ -18,7 +18,6 @@ describe('ContainerManagerCollectService', () => {
     collectLiveContainersForItem: jest.fn(),
     notifyCollectionFailed: jest.fn().mockResolvedValue(undefined),
   };
-
   const eligibleItem = {
     id: 'item-1',
     subscriptionId: 'sub-1',
@@ -26,12 +25,10 @@ describe('ContainerManagerCollectService', () => {
     sshPrivateKey: 'KEY',
     serverInfoSnapshot: { publicIp: '1.2.3.4' },
   };
-
   const activeAddon = {
     status: 'active',
     addon: { implementationType: 'module', moduleKey: 'container-manager' },
   };
-
   const service = new ContainerManagerCollectService(
     subscriptionItemsRepository as never,
     subscriptionAddonsRepository as never,
@@ -39,7 +36,6 @@ describe('ContainerManagerCollectService', () => {
     summariesRepository as never,
     containerManagerService as never,
   );
-
   const ctx = {
     tenantId: 'default',
     now: new Date('2026-08-17T12:00:00.000Z'),

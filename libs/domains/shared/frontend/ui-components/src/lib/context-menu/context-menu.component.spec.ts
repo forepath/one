@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FpcMenuItem } from '../menu/menu.types';
+
 import { FpcContextMenuComponent, fpcClampMenuPosition } from './context-menu.component';
 
 describe('FpcContextMenuComponent', () => {
@@ -32,10 +33,12 @@ describe('FpcContextMenuComponent', () => {
     open();
     const chosen: string[] = [];
     let closed = 0;
+
     fixture.componentInstance.itemSelect.subscribe((item) => chosen.push(item.id));
     fixture.componentInstance.closed.subscribe(() => closed++);
 
     const buttons = host.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]');
+
     expect(buttons).toHaveLength(3);
     expect(buttons[1].disabled).toBe(true);
     expect(host.querySelector('.dropdown-divider')).not.toBeNull();
@@ -50,6 +53,7 @@ describe('FpcContextMenuComponent', () => {
   it('closes on Escape and on an outside click', () => {
     open();
     const menu = host.querySelector('[data-testid="fpc-context-menu"]') as HTMLElement;
+
     menu.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(fixture.componentInstance.position()).toBeNull();
 
@@ -62,6 +66,7 @@ describe('FpcContextMenuComponent', () => {
     open();
     const menu = host.querySelector('[data-testid="fpc-context-menu"]') as HTMLElement;
     const buttons = host.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]');
+
     buttons[0].focus();
     buttons[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
     expect(document.activeElement).toBe(buttons[2]);

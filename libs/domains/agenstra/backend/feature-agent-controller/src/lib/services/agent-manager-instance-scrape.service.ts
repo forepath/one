@@ -69,7 +69,6 @@ export class AgentManagerInstanceScrapeService implements OnModuleInit, OnModule
           const authHeader = `Bearer ${client.apiKey}`;
           const baseUrl = client.endpoint.replace(/\/$/, '');
           const url = `${baseUrl}/api/instance-status`;
-
           const response = await axios.get<InstanceStatusResponse>(url, {
             headers: buildClientProxyRequestHeaders({}, authHeader),
             validateStatus: (status) => status < 500,

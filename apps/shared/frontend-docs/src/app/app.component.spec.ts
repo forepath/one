@@ -3,6 +3,7 @@ import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { provideNgcCookieConsent } from 'ngx-cookieconsent';
 
 import { environment } from '../docs-environment';
+
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {

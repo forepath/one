@@ -7,6 +7,7 @@ describe('FpcBadgeComponent tone', () => {
     const fixture = TestBed.createComponent(FpcBadgeComponent);
 
     for (const [name, value] of Object.entries(inputs)) fixture.componentRef.setInput(name, value);
+
     fixture.detectChanges();
 
     return fixture.nativeElement as HTMLElement;

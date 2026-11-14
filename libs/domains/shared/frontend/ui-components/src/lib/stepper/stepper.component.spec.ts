@@ -35,6 +35,7 @@ describe('FpcStepperComponent', () => {
 
   it('finishes on the last step once every step is valid', () => {
     const finished: number[] = [];
+
     fixture.componentInstance.finished.subscribe(() => finished.push(1));
     fixture.componentRef.setInput(
       'steps',

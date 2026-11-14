@@ -203,6 +203,7 @@ export const projectTicketsReducer = createReducer(
   on(projectTicketAttachmentAdded, (state, { ticketId, attachment }) => {
     const append = (attachments: NonNullable<ProjectTicketResponse['attachments']>) => {
       const withoutDup = attachments.filter((a) => a.id !== attachment.id);
+
       return [...withoutDup, attachment];
     };
     const list = state.list.map((ticket) => updateTicketAttachments(ticket, ticketId, append));

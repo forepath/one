@@ -7,6 +7,7 @@ import { OpencodeLayerFileSyncTargetEntity } from '../entities/opencode-layer-fi
 import { OpencodeLayerFileEntity } from '../entities/opencode-layer-file.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { sha256Hex } from '../utils/opencode-layer-file-path.utils';
+
 import { ClientAgentFileSystemProxyService } from './client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 import { OpencodeLayerFilesService } from './opencode-layer-files.service';
@@ -15,7 +16,6 @@ describe('OpencodeLayerFilesService', () => {
   const clientId = '11111111-1111-4111-8111-111111111111';
   const agentId = '22222222-2222-4222-8222-222222222222';
   const fileId = '33333333-3333-4333-8333-333333333333';
-
   const createService = async (
     deps: {
       fileRepo?: Record<string, unknown>;
@@ -57,7 +57,6 @@ describe('OpencodeLayerFilesService', () => {
       writeSystemFile: jest.fn().mockResolvedValue(undefined),
       ...deps.fileSystemProxy,
     };
-
     const moduleRef = await Test.createTestingModule({
       providers: [
         OpencodeLayerFilesService,
@@ -81,7 +80,6 @@ describe('OpencodeLayerFilesService', () => {
 
   it('putWorkspace persists path as-is and fans out writeSystemFile', async () => {
     const { svc, fileRepo, fileSystemProxy, agentProxy } = await createService();
-
     const dto = await svc.putWorkspace(clientId, 'skills/a.md', '# skill');
 
     expect(fileRepo.create).toHaveBeenCalledWith(
@@ -132,7 +130,7 @@ describe('OpencodeLayerFilesService', () => {
   });
 
   it('listWorkspace returns immediate children', async () => {
-    const { svc, fileRepo } = await createService({
+    const { svc } = await createService({
       fileRepo: {
         find: jest.fn().mockResolvedValue([
           { path: 'skills/a.md', entryKind: 'file' },
@@ -142,7 +140,6 @@ describe('OpencodeLayerFilesService', () => {
         findOne: jest.fn().mockResolvedValue({ path: 'skills', entryKind: 'directory' }),
       },
     });
-
     const listed = await svc.listWorkspace(clientId, 'skills');
 
     expect(listed.path).toBe('skills');
@@ -159,7 +156,6 @@ describe('OpencodeLayerFilesService', () => {
         ]),
       },
     });
-
     const listed = await svc.listGlobal('.');
 
     expect(listed.entries).toEqual(
@@ -184,21 +180,18 @@ describe('OpencodeLayerFilesService', () => {
     const testDir = { id: 'd1', path: '/opt/skills/test', entryKind: 'directory' as const };
     const skillsDir = { id: 'd2', path: '/opt/skills', entryKind: 'directory' as const };
     const optDir = { id: 'd3', path: '/opt', entryKind: 'directory' as const };
-
     const findOne = jest
       .fn()
       .mockResolvedValueOnce(leaf) // remove: find leaf
       .mockResolvedValueOnce(testDir) // prune /opt/skills/test
       .mockResolvedValueOnce(skillsDir) // prune /opt/skills
       .mockResolvedValueOnce(optDir); // prune /opt
-
     const find = jest
       .fn()
       .mockResolvedValueOnce([]) // descendants of leaf
       .mockResolvedValueOnce([]) // children of /opt/skills/test
       .mockResolvedValueOnce([]) // children of /opt/skills
       .mockResolvedValueOnce([]); // children of /opt
-
     const remove = jest.fn().mockResolvedValue(undefined);
     const { svc } = await createService({ fileRepo: { findOne, find, remove } });
 
@@ -222,15 +215,12 @@ describe('OpencodeLayerFilesService', () => {
     };
     const testDir = { id: 'd1', path: '/opt/skills/test', entryKind: 'directory' as const };
     const sibling = { id: 'sib', path: '/opt/skills/other.md', entryKind: 'file' as const };
-
     const findOne = jest.fn().mockResolvedValueOnce(leaf).mockResolvedValueOnce(testDir);
-
     const find = jest
       .fn()
       .mockResolvedValueOnce([]) // descendants of leaf
       .mockResolvedValueOnce([]) // children of /opt/skills/test → empty, prune
       .mockResolvedValueOnce([sibling]); // children of /opt/skills → keep
-
     const remove = jest.fn().mockResolvedValue(undefined);
     const { svc } = await createService({ fileRepo: { findOne, find, remove } });
 
@@ -249,7 +239,6 @@ describe('OpencodeLayerFilesService', () => {
 
   it('ensureGlobal treats . as a virtual directory root', async () => {
     const { svc, fileRepo } = await createService();
-
     const dto = await svc.ensureGlobal('.');
 
     expect(dto.path).toBe('.');
@@ -261,7 +250,6 @@ describe('OpencodeLayerFilesService', () => {
     const deleteSystemFileOrDirectory = jest.fn().mockResolvedValue(undefined);
     const createSystemFileOrDirectory = jest.fn().mockResolvedValue(undefined);
     const writeSystemFile = jest.fn().mockResolvedValue(undefined);
-
     const store = new Map<string, Record<string, unknown>>();
     const findOne = jest.fn().mockImplementation(async ({ where }: { where: { path?: string; scope?: string } }) => {
       if (!where.path) {
@@ -291,7 +279,6 @@ describe('OpencodeLayerFilesService', () => {
 
       return saved;
     });
-
     const { svc } = await createService({
       fileRepo: { findOne, find, create, save },
       fileSystemProxy: {
@@ -329,7 +316,6 @@ describe('OpencodeLayerFilesService', () => {
       contentSha: sha256Hex(''),
       updatedAt: new Date('2026-01-01T00:00:00.000Z'),
     };
-
     const deleteSystemFileOrDirectory = jest.fn().mockResolvedValue(undefined);
     const createSystemFileOrDirectory = jest.fn().mockResolvedValue(undefined);
     const writeSystemFile = jest.fn().mockResolvedValue(undefined);
@@ -337,7 +323,6 @@ describe('OpencodeLayerFilesService', () => {
       { name: 'keep.md', type: 'file', path: '/opt/skills/keep.md' },
       { name: 'orphan.md', type: 'file', path: '/opt/skills/orphan.md' },
     ]);
-
     const findOne = jest.fn().mockResolvedValue(workspaceDir);
     const find = jest.fn().mockImplementation(async ({ where }: { where: { path?: unknown } }) => {
       if (where.path === '/opt/skills') {
@@ -346,7 +331,6 @@ describe('OpencodeLayerFilesService', () => {
 
       return [globalFile];
     });
-
     const { svc } = await createService({
       fileRepo: { findOne, find },
       fileSystemProxy: {

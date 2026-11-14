@@ -42,7 +42,6 @@ describe('containerManagerEffects', () => {
   let actions$: Actions;
   let containerManagerService: jest.Mocked<ContainerManagerService>;
   let store: { select: jest.Mock };
-
   const containersResponse: ContainerManagerContainersResponse = {
     containers: [
       {

@@ -1,6 +1,12 @@
 import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 
+import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
+import { CustomerProfilesRepository } from '../../repositories/customer-profiles.repository';
+import { mapProjectToSearchDocument } from '../../search/billing-search-document.mapper';
+import { BillingSearchIndexService } from '../../search/billing-search-index.service';
+import { resolveCustomerNamesByUserId } from '../../utils/customer-display-name.util';
+import { getRequiredTenantId } from '../../utils/tenant-query.utils';
 import type {
   AdminProjectListItemDto,
   BillProjectTimeDto,
@@ -15,12 +21,7 @@ import type {
 } from '../dto/project.dto';
 import type { ProjectEntity } from '../entities/project.entity';
 import { ProjectsRepository } from '../repositories/projects.repository';
-import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
-import { mapProjectToSearchDocument } from '../../search/billing-search-document.mapper';
-import { BillingSearchIndexService } from '../../search/billing-search-index.service';
-import { CustomerProfilesRepository } from '../../repositories/customer-profiles.repository';
-import { resolveCustomerNamesByUserId } from '../../utils/customer-display-name.util';
-import { getRequiredTenantId } from '../../utils/tenant-query.utils';
+
 import { ProjectBillingService } from './project-billing.service';
 import { ProjectTimeReportService } from './project-time-report.service';
 import { ProjectsService } from './projects.service';

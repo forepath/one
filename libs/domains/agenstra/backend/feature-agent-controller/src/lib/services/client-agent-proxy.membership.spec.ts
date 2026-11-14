@@ -18,7 +18,6 @@ describe('ClientAgentProxyService workspace membership', () => {
   let membership: ClientAgentMembershipService;
   let credentials: { saveCredentials: jest.Mock; deleteCredentials: jest.Mock };
   let service: ClientAgentProxyService;
-
   const respond = (data: unknown) =>
     mockedAxios.request.mockResolvedValueOnce({
       data,

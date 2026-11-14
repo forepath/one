@@ -62,7 +62,6 @@ describe('VncBridgeService', () => {
   const openCodeClientFactory = {
     resolveConnection: jest.fn(),
   };
-
   let service: VncBridgeService;
   let latestSocket: MockWebSocket;
 
@@ -86,7 +85,6 @@ describe('VncBridgeService', () => {
     const onMessage = jest.fn();
     const onClose = jest.fn();
     const onError = jest.fn();
-
     const openPromise = service.open('session-1', 'agent-1', 'container-1', {
       onMessage,
       onClose,

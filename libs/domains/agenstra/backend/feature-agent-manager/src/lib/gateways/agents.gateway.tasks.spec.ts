@@ -32,7 +32,6 @@ describe('AgentsGateway agent tasks bridge', () => {
   let gateway: AgentsGateway;
   let tasksApi: AgentTasksApiService;
   let provider: { sendMessage: jest.Mock; getCapabilities: jest.Mock; toParseableStrings: jest.Mock };
-
   const socket = (id: string, ack: jest.Mock = jest.fn()): Socket & { emitWithAckMock: jest.Mock } => {
     const timeout = jest.fn().mockReturnValue({ emitWithAck: ack });
 
@@ -40,7 +39,6 @@ describe('AgentsGateway agent tasks bridge', () => {
       emitWithAckMock: jest.Mock;
     };
   };
-
   const login = (s: Socket, id = agentId) => {
     (gateway as any).socketById.set(s.id, s);
     (gateway as any).authenticatedClients.set(s.id, id);

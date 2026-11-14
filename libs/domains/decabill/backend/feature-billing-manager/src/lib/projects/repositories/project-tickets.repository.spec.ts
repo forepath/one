@@ -1,8 +1,8 @@
-import { NotFoundException } from '@nestjs/common';
 import { runWithTenantId } from '@forepath/shared/backend';
+import { NotFoundException } from '@nestjs/common';
 
-import { ProjectTicketStatus } from '../entities/project.enums';
 import { ProjectTicketEntity } from '../entities/project-ticket.entity';
+import { ProjectTicketStatus } from '../entities/project.enums';
 
 import { ProjectTicketsRepository } from './project-tickets.repository';
 

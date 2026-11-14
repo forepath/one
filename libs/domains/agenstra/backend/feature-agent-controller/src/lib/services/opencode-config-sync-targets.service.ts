@@ -15,7 +15,6 @@ import {
   OpencodeConfigSyncStatus,
   OpencodeConfigSyncTargetEntity,
 } from '../entities/opencode-config-sync-target.entity';
-
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 
 import { ClientAgentProxyService } from './client-agent-proxy.service';
@@ -111,7 +110,6 @@ export class OpencodeConfigSyncTargetsService {
       agentId,
     );
     const desiredRevision = OpencodeConfigSyncTargetsService.hashRevision(effective, secrets, platformPolicy);
-
     let target = await this.targetsRepo.findOne({ where: { agentId } });
 
     if (!target) {

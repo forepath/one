@@ -4,7 +4,6 @@ import { ProjectBoardSummaryService } from './project-board-summary.service';
 describe('ProjectBoardSummaryService', () => {
   const projectsService = { buildSummary: jest.fn() };
   const projectBoardRealtime = { emitToProject: jest.fn() };
-
   let service: ProjectBoardSummaryService;
 
   beforeEach(() => {

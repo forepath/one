@@ -11,13 +11,11 @@ const MEMORY_PROFILES: Record<ForepathLlmMemoryProfileId, ForepathLlmMemoryProfi
   balanced: FOREPATH_LLM_MEMORY_PROFILE_BALANCED,
   standard: FOREPATH_LLM_MEMORY_PROFILE_STANDARD,
 };
-
 const MEMORY_PROFILE_RANK: Record<ForepathLlmMemoryProfileId, number> = {
   lite: 1,
   balanced: 2,
   standard: 3,
 };
-
 const PROFILE_ORDER: ForepathLlmMemoryProfileId[] = ['lite', 'balanced', 'standard'];
 
 export interface MemoryProfileSwitcherOption {

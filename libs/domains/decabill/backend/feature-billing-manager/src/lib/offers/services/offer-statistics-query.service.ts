@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
+import { fillMeterHistoryPeriodSeries } from '../../utils/meter-history-date.util';
 import { OfferStatus } from '../constants/offer-status.constants';
 import type { OfferStatisticsResponseDto } from '../dto/offer.dto';
 import { OffersRepository } from '../repositories/offers.repository';
-import { fillMeterHistoryPeriodSeries } from '../../utils/meter-history-date.util';
 
 @Injectable()
 export class OfferStatisticsQueryService {
@@ -78,7 +78,6 @@ export class OfferStatisticsQueryService {
         userId: params.userId,
       }),
     ]);
-
     const from = params.from.toISOString().slice(0, 10);
     const to = params.to.toISOString().slice(0, 10);
     const archivedByPeriod = new Map(archivedSeries.map((row) => [row.period, row.count]));

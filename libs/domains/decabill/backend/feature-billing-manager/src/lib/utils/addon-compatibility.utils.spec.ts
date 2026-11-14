@@ -28,7 +28,6 @@ describe('addon-compatibility.utils', () => {
         { id: 'a2', compatibleProviders: [] },
         { id: 'a3', compatibleProviders: ['digital-ocean'] },
       ];
-
       const result = partitionAddonsByProviderCompatibility(addons, 'hetzner');
 
       expect(result.compatible.map((addon) => addon.id)).toEqual(['a1', 'a2']);

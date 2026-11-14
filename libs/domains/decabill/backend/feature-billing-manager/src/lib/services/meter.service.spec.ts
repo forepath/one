@@ -52,7 +52,6 @@ describe('MeterService', () => {
     getProvider: jest.fn(),
   };
   const billingSearchIndexService = { scheduleUpsert: jest.fn(), scheduleDelete: jest.fn() };
-
   const service = new MeterService(
     metersRepository as never,
     servicePlanMetersRepository as never,
@@ -64,7 +63,6 @@ describe('MeterService', () => {
     providerRegistry as never,
     billingSearchIndexService as never,
   );
-
   const catalogMeter = {
     id: 'meter-1',
     key: 'traffic',

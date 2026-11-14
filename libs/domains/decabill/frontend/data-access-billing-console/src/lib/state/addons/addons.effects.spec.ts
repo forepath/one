@@ -69,6 +69,7 @@ describe('addonsEffects', () => {
 
   it('starts a batch when the first page is full', (done) => {
     const page = Array.from({ length: 10 }, (_, index) => ({ ...addon, id: `addon-${index}` }));
+
     actions$ = of(loadAddons({}));
     service.listAddons.mockReturnValue(of(page));
 
@@ -81,6 +82,7 @@ describe('addonsEffects', () => {
   it('continues batching until the last page', (done) => {
     const firstPage = Array.from({ length: 10 }, (_, index) => ({ ...addon, id: `addon-${index}` }));
     const lastPage = [{ ...addon, id: 'addon-10' }];
+
     actions$ = of(loadAddonsBatch({ offset: 10, accumulatedAddons: firstPage }));
     service.listAddons.mockReturnValue(of(lastPage));
 

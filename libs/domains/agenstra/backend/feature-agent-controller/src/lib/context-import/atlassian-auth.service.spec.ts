@@ -12,7 +12,6 @@ describe('AtlassianAuthService', () => {
   const repo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
   const updatedAt = new Date('2026-01-01T00:00:00Z');
   let service: AtlassianAuthService;
-
   const appConnection = (overrides: Record<string, unknown> = {}) =>
     ({
       id: 'conn-1',

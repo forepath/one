@@ -274,6 +274,7 @@ export class OpenSearchService implements OnModuleDestroy {
     }
 
     const config = readOpenSearchConnectionConfig();
+
     this.client = new Client({
       node: config.node,
       ...(config.username || config.password

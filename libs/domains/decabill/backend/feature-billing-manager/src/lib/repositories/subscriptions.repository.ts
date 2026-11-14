@@ -2,8 +2,8 @@ import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
+import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
 import { hydrateEntitiesBySearchIds } from '../search/billing-search-hydrate.util';
 import { applyBillingSearchIlike } from '../search/billing-search-ilike.util';
 import { BillingSearchIndexService } from '../search/billing-search-index.service';
@@ -136,7 +136,6 @@ export class SubscriptionsRepository {
         offset: params.offset,
         extraFilters: params.userId ? { userId: params.userId } : undefined,
       });
-
       const hydrated = await hydrateEntitiesBySearchIds(this.repository, lookup);
 
       if (hydrated) {

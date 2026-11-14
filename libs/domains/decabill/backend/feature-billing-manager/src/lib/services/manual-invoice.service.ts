@@ -3,18 +3,18 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 
 import type { CreateManualInvoiceDto, IssueManualInvoiceDto, UpdateManualInvoiceDto } from '../dto/manual-invoice.dto';
 import type { ManualInvoiceDetailResponseDto } from '../dto/manual-invoice.dto';
-import { mapManualInvoiceLineItemsToInputs } from '../utils/map-manual-invoice-line-items.util';
 import { InvoiceLineItemsRepository } from '../repositories/invoice-line-items.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { normalizeDeliveryTermsInput, normalizePaymentDueDaysInput } from '../utils/document-terms.utils';
 import { assertDraftEditable } from '../utils/invoice-mutability.util';
+import { mapManualInvoiceLineItemsToInputs } from '../utils/map-manual-invoice-line-items.util';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { CustomerProfilesService } from './customer-profiles.service';
 import { InvoiceIssuanceService } from './invoice-issuance.service';
-import { InvoiceService, type CreateInvoiceDraftParams } from './invoice.service';
 import { InvoiceTaxContextService } from './invoice-tax-context.service';
+import { InvoiceService, type CreateInvoiceDraftParams } from './invoice.service';
 import { TaxCalculationService } from './tax-calculation.service';
 
 @Injectable()
@@ -54,7 +54,6 @@ export class ManualInvoiceService {
       lineInputs,
       currency: dto.currency,
     };
-
     const draft = await this.invoiceService.createDraft(draftParams);
 
     await this.auditLog.log({

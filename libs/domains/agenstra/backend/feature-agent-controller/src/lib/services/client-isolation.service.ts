@@ -48,7 +48,6 @@ type EnhancedIsolationLevel = Exclude<IsolationLevel, 'standard'>;
 const ENHANCED_ISOLATION_LEVELS = ISOLATION_LEVELS.filter(
   (level): level is EnhancedIsolationLevel => level !== 'standard',
 );
-
 /** Transition events of the levels above the floor (`sandboxed` keeps its original event names). */
 const LEVEL_TRANSITIONS: Readonly<
   Record<EnhancedIsolationLevel, { available: IsolationHostTransitionType; unavailable: IsolationHostTransitionType }>

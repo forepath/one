@@ -10,7 +10,6 @@ import {
   deleteAdminProjectFailure,
   deleteAdminProjectSuccess,
   loadAdminProjectDetail,
-  loadAdminProjectDetailFailure,
   loadAdminProjectDetailSuccess,
   loadAdminProjects,
   loadAdminProjectsFailure,

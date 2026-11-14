@@ -30,7 +30,6 @@ describe('AddonLifecycleService', () => {
     exec: jest.fn(),
     waitUntilReachable: jest.fn().mockResolvedValue(undefined),
   };
-
   const service = new AddonLifecycleService(
     subscriptionAddonsRepository as never,
     addonModuleRegistry as never,
@@ -40,7 +39,6 @@ describe('AddonLifecycleService', () => {
     provisioningService as never,
     sshExecutor as never,
   );
-
   const scriptAddon = {
     id: 'a-1',
     key: 'script',
@@ -134,6 +132,7 @@ describe('AddonLifecycleService', () => {
 
   it('marks addon active and notifies after successful module provision', async () => {
     const provision = jest.fn().mockResolvedValue(undefined);
+
     addonModuleRegistry.get.mockReturnValue({ key: 'av', displayName: 'AV', provision, teardown: jest.fn() });
     subscriptionAddonsRepository.findBySubscriptionId.mockResolvedValue([
       {
@@ -254,6 +253,7 @@ describe('AddonLifecycleService', () => {
 
   it('tears down module addons and notifies deactivation', async () => {
     const teardown = jest.fn().mockResolvedValue(undefined);
+
     addonModuleRegistry.get.mockReturnValue({ key: 'av', displayName: 'AV', provision: jest.fn(), teardown });
     subscriptionAddonsRepository.findBySubscriptionId.mockResolvedValue([
       {
@@ -424,10 +424,12 @@ describe('AddonLifecycleService', () => {
 
     it('marks the remaining pending rows failed when the batch aborts', async () => {
       const secondAddon = { ...scriptAddon, id: 'a-2', key: 'script-2' };
+
       addonsRepository.findByIds.mockResolvedValue([scriptAddon, secondAddon]);
       sshExecutor.exec.mockResolvedValue({ stdout: '', stderr: '', code: 1 });
 
       const savedRows: { addonId: string; status: string }[] = [];
+
       subscriptionAddonsRepository.save.mockImplementation(async (row: { addonId: string; status: string }) => {
         savedRows.push({ ...row });
 
@@ -476,6 +478,7 @@ describe('AddonLifecycleService', () => {
         configSnapshot: { API_KEY: 'secret' },
         addon: scriptAddon,
       };
+
       subscriptionAddonsRepository.findBySubscriptionId.mockResolvedValue([row]);
       sshExecutor.exec.mockResolvedValue({ stdout: '', stderr: '', code: 0 });
 
@@ -544,6 +547,7 @@ describe('AddonLifecycleService', () => {
 
     it('tears down module addons through the registry', async () => {
       const teardown = jest.fn().mockResolvedValue(undefined);
+
       addonModuleRegistry.get.mockReturnValue({ key: 'av', displayName: 'AV', provision: jest.fn(), teardown });
       subscriptionAddonsRepository.findBySubscriptionId.mockResolvedValue([
         {

@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, IsNull, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 
 import { OpenPositionEntity } from '../entities/open-position.entity';
 import {
   configChangeCarrySourceRef,
   configChangePrimarySourceRef,
 } from '../utils/config-change-billing-source-ref.util';
-import { applyUserTenantFilter, getRequiredTenantId } from '../utils/tenant-query.utils';
 import { isUniqueConstraintViolation } from '../utils/postgres-unique-violation.util';
+import { applyUserTenantFilter, getRequiredTenantId } from '../utils/tenant-query.utils';
 
 @Injectable()
 export class OpenPositionsRepository {

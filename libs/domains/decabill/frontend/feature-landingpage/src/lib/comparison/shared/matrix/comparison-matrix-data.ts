@@ -61,7 +61,6 @@ export const COMPARISON_MATRIX_ROW_LABELS: readonly ComparisonMatrixRowLabel[] =
 ];
 
 const DECABILL_SCORES: readonly MatrixStrength[] = Array(13).fill('strong') as MatrixStrength[];
-
 const DECABILL_TOOLTIPS: readonly string[] = [
   $localize`:@@featureDecabillComparison-decabillT1:Single catalog for SaaS subscriptions, agency-style services, and managed hosting in one billing core and console.`,
   $localize`:@@featureDecabillComparison-decabillT2:Multi-tenant deployment with X-Tenant scoping and per-tenant URLs so agencies can run multiple brands and clients from one stack.`,
@@ -77,7 +76,6 @@ const DECABILL_TOOLTIPS: readonly string[] = [
   $localize`:@@featureDecabillComparison-decabillT12:Supports any OIDC or SAML identity provider plus built-in users and API-key based automation for agency and enterprise setups.`,
   $localize`:@@featureDecabillComparison-decabillT13:OpenAPI-described REST API for customers, subscriptions, invoices, and admin workflows enables deep integration without scraping UIs.`,
 ];
-
 const COMPETITOR_SCORES: Record<ComparisonSlug, readonly MatrixStrength[]> = {
   whmcs: [
     'weak',
@@ -155,7 +153,6 @@ const COMPETITOR_SCORES: Record<ComparisonSlug, readonly MatrixStrength[]> = {
     'partial',
   ],
 };
-
 const COMPETITOR_TOOLTIPS: Record<ComparisonSlug, readonly string[]> = {
   whmcs: [
     $localize`:@@featureDecabillComparison-whmcsT1:Optimized for classic hosting, domains, and add-ons. SaaS and project or service billing require custom products and workflows rather than a unified model.`,

@@ -1,5 +1,5 @@
-import React, { useEffect, useState, type PropsWithChildren, type ReactElement } from 'react';
 import { DocsContainer, type DocsContainerProps } from '@storybook/addon-docs/blocks';
+import React, { useEffect, useState, type PropsWithChildren, type ReactElement } from 'react';
 
 import { getPreviewGlobals, subscribePreviewGlobals } from './fpc-globals-channel';
 import { createFpcStorybookTheme } from './fpc-storybook-theme';

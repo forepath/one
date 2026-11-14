@@ -870,7 +870,6 @@ describe('enforceAllowDenyOnOverlay', () => {
       ),
       { seedMissingInheritedDisables: true },
     );
-
     // Local blocked entry is deleted; inherited denied server is force-disabled via parent deny list.
     // Re-run with inherited identity on the deny list:
     const withInheritedDeny = enforceAllowDenyOnOverlay(
@@ -1035,7 +1034,6 @@ describe('enforceAllowDenyOnOverlay', () => {
         },
       },
     };
-
     const result = enforceAllowDenyOnOverlay(
       input,
       buildAllowDenyContext(input, [{ path: '/providers', keys: ['google'] }]),

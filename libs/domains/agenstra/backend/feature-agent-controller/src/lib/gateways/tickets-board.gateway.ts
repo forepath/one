@@ -148,6 +148,7 @@ export class TicketsBoardGateway implements OnGatewayInit, OnGatewayConnection, 
       for (const room of this.clientRooms(socket, clientId)) {
         await socket.join(room);
       }
+
       this.selectedClientBySocket.set(socket.id, clientId);
       socket.emit('setClientSuccess', { message: 'Client context set', clientId });
     } catch (error: unknown) {

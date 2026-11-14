@@ -94,6 +94,7 @@ export function ticketStatusState(status: TicketStatus): FpcTableState {
 
 export function ticketStatusFilterLabel(value: TicketStatusFilter): string {
   if (value === 'open') return $localize`:@@featureTicketsBoard-filterStatusOpen:Open (draft to prototype)`;
+
   if (value === 'all') return $localize`:@@featureTicketsBoard-filterStatusAll:All statuses`;
 
   return ticketLaneStatusLabel(value);

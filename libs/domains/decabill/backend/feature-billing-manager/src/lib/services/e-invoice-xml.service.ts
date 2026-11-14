@@ -5,12 +5,12 @@ import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import { deliveryTermsFromColumns, formatDeliveryTerms, formatPaymentTerms } from '../utils/document-terms.utils';
 
 import type { BillingIssuerConfig } from './billing-issuer-config.service';
 import { assertCustomerPostalAddress, resolveCustomerPostalAddress } from './customer-postal-address.util';
 import type { EInvoiceDocumentOptions } from './e-invoice-document-options';
 import type { InvoicingPeriod } from './invoicing-period.util';
-import { deliveryTermsFromColumns, formatDeliveryTerms, formatPaymentTerms } from '../utils/document-terms.utils';
 
 @Injectable()
 export class EInvoiceXmlService {
@@ -54,7 +54,6 @@ export class EInvoiceXmlService {
       .txt(issueDate.replace(/-/g, ''))
       .up()
       .up();
-
     const deliveryTermsNote = documentOptions.includeDocumentTerms
       ? formatDeliveryTerms(deliveryTermsFromColumns(invoice))
       : undefined;
@@ -76,6 +75,7 @@ export class EInvoiceXmlService {
 
     for (const line of lineItems) {
       const categoryCode = String(invoice.einvoiceTaxCategoryCode ?? 'S');
+
       doc
         .ele('ram:IncludedSupplyChainTradeLineItem')
         .ele('ram:AssociatedDocumentLineDocument')
@@ -209,7 +209,6 @@ export class EInvoiceXmlService {
     const headerCategory = String(invoice.einvoiceTaxCategoryCode ?? 'S');
     const headerRate =
       invoice.resolvedTaxRate != null ? String(invoice.resolvedTaxRate) : String(lineItems[0]?.taxRate ?? 0);
-
     let taxBlock = chain
       .ele('ram:ApplicableTradeTax')
       .ele('ram:CalculatedAmount')
@@ -255,7 +254,6 @@ export class EInvoiceXmlService {
       .ele('ram:GrandTotalAmount')
       .txt(this.formatAmount(invoice.totalGross))
       .up();
-
     // BR-CO-16: amount due = total − paid amount; promotions / earlier payments / voids reduce the amount due.
     const grandTotalCents = this.toCents(invoice.totalGross);
     const dueCents = this.toCents(documentOptions.duePayableAmount);

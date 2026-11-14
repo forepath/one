@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { CustomerType } from '../constants/customer-type.constants';
 import { VatIdValidationStatus } from '../constants/vat-id-validation.constants';

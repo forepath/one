@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, NotFoundException } from '@nest
 
 import { ProvisioningStatus } from '../entities/subscription-item.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
+
 import { SubscriptionItemServerService } from './subscription-item-server.service';
 
 describe('SubscriptionItemServerService', () => {
@@ -253,6 +254,7 @@ describe('SubscriptionItemServerService', () => {
 
     it('merges CloudInit entity and code-module tabs for custom items', async () => {
       const configId = '11111111-1111-4111-8111-111111111111';
+
       subscriptionItemsRepository.findByIdAndSubscriptionId.mockResolvedValue({
         ...activeItem,
         configSnapshot: { service: 'custom', cloudInitConfigId: configId },

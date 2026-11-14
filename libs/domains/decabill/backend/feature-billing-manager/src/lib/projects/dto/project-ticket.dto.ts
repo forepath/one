@@ -1,6 +1,7 @@
 import { IsEnum, IsOptional, IsString, IsUUID, Length, MaxLength } from 'class-validator';
 
 import { ProjectTicketPriority, ProjectTicketStatus } from '../entities/project.enums';
+
 import { ProjectTicketAttachmentResponseDto } from './project-ticket-attachment.dto';
 
 export class CreateProjectTicketDto {

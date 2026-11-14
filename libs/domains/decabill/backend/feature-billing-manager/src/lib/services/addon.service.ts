@@ -9,6 +9,7 @@ import { AddonsRepository } from '../repositories/addons.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { SubscriptionAddonsRepository } from '../repositories/subscription-addons.repository';
+import { partitionAddonsByProviderCompatibility } from '../utils/addon-compatibility.utils';
 import {
   getAddonOrderFields,
   mergeAddonDefaultValues,
@@ -16,10 +17,10 @@ import {
   sanitizeAddonConfigFields,
   type SanitizedAddonConfigResult,
 } from '../utils/addon-config.utils';
-import { partitionAddonsByProviderCompatibility } from '../utils/addon-compatibility.utils';
 import { assertNonNegativeAddonPrice } from '../utils/addon-pricing.util';
 import { parsePlanMandatoryAddonIds, planReferencesAddonId } from '../utils/plan-addons.utils';
 import { resolveEffectiveProvider, resolveServiceTypeAllowedProviders } from '../utils/provider-selection.utils';
+
 import { AddonModuleRegistryService } from './addon-module-registry.service';
 import { ProviderRegistryService } from './provider-registry.service';
 

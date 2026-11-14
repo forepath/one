@@ -1,5 +1,6 @@
-import { IDENTITY_EMAIL_SUBJECTS } from './email-subject.constants';
 import { resolveEmailSubject } from '@forepath/shared/backend/util-email';
+
+import { IDENTITY_EMAIL_SUBJECTS } from './email-subject.constants';
 
 describe('IDENTITY_EMAIL_SUBJECTS', () => {
   it('resolves confirmation and reset subjects', () => {

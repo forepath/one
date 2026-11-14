@@ -36,6 +36,7 @@ export function filterGhostDisplayTags(tags: GhostTag[] | null | undefined): Gho
 
 export function resolveGhostPrimaryDisplayTag(post: Pick<GhostPost, 'primary_tag' | 'tags'>): GhostTag | null {
   const primaryTag = post.primary_tag;
+
   if (primaryTag && !isGhostAiMarkerTag(primaryTag.name)) {
     return primaryTag;
   }

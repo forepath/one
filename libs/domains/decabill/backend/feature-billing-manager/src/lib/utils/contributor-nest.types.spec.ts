@@ -42,6 +42,9 @@ class AcmeOpsNestModule {}
 @Module({ controllers: [HijackInvoicesController] })
 class HijackNestModule {}
 
+@Module({ controllers: [HijackAdminBillingController] })
+class HijackAdminBillingNestModule {}
+
 @Module({ controllers: [RootController] })
 class RootNestModule {}
 
@@ -132,6 +135,13 @@ describe('contributor-nest.types', () => {
         source: 'addon',
         sourceKey: 'acme-ops',
         nestModule: AdminOnlyNestModule,
+      }),
+    ).toThrow('Contributor controller path is not allowed');
+    expect(() =>
+      validateContributorNestModule({
+        source: 'addon',
+        sourceKey: 'acme-ops',
+        nestModule: HijackAdminBillingNestModule,
       }),
     ).toThrow('Contributor controller path is not allowed');
   });

@@ -19,7 +19,6 @@ import type {
 import { normalizeProjectBreakdown } from './forepath-breakdown-normalizer.utils';
 
 const TRAVEL_SERVICE_IDS = new Set<ForepathServiceId>(['travel-km', 'travel-short', 'travel-long']);
-
 const BILLING_SERVICE_IDS: readonly ForepathBillableServiceId[] = ['consulting', 'it-systems', 'software-development'];
 
 export function shouldIncludeTravelInBreakdown(normalizedUserPrompt: string): boolean {
@@ -113,7 +112,6 @@ function reconcileServiceMinimum(
       (item.billingUnits ?? 0) > (items[bestIndex]?.billingUnits ?? 0) ? index : bestIndex,
     0,
   );
-
   const reconciledServiceItems = calibratedServiceItems.map((item, index) => {
     if (index !== largestItemIndex) {
       return item;
@@ -188,14 +186,11 @@ function appendSizingAssumption(
 
 export function calibrateProjectBreakdown(breakdown: ProjectBreakdown, normalizedUserPrompt: string): ProjectBreakdown {
   const includeTravel = shouldIncludeTravelInBreakdown(normalizedUserPrompt);
-
   const filteredLineItems = breakdown.lineItems.filter(
     (item) => includeTravel || !TRAVEL_SERVICE_IDS.has(item.serviceId),
   );
-
   const reconciledLineItems = reconcileAllServiceMinimums(filteredLineItems, normalizedUserPrompt);
   const calibratedLineItems = finalizeCalibratedLineItems(reconciledLineItems, normalizedUserPrompt);
-
   const assumptions = [...breakdown.assumptions];
 
   if (!includeTravel && breakdown.lineItems.some((item) => TRAVEL_SERVICE_IDS.has(item.serviceId))) {

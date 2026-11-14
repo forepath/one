@@ -7,7 +7,6 @@ describe('BillingMeterRealtimeService', () => {
   const meterBillingService = {
     buildSubscriptionMeterSummaries: jest.fn(),
   };
-
   let service: BillingMeterRealtimeService;
   let mockServer: { to: jest.Mock };
 

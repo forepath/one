@@ -3,6 +3,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import type { AgentEntity } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
+import { DEFAULT_AGENT_WORKSPACE_ROOT, normalizeWorkspaceRoot } from '../utils/agent-file-path.utils';
 import type { AgentGraphListedEntry, AgentGraphParsedFile } from '../utils/agent-graph-builder.utils';
 import {
   AGENT_GRAPH_ARCHIVE_ACCEPTED_EXIT_CODES,
@@ -22,7 +23,6 @@ import {
 } from '../utils/agent-graph-files.utils';
 import { parseAgentGraphManifest } from '../utils/agent-graph-manifests.utils';
 import { scanAgentGraphDocument, scanAgentGraphSource } from '../utils/agent-graph-scanners.utils';
-import { DEFAULT_AGENT_WORKSPACE_ROOT, normalizeWorkspaceRoot } from '../utils/agent-file-path.utils';
 
 import { DockerService } from './docker.service';
 
