@@ -3,7 +3,11 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnIn
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
-import { SharedContactPersonComponent } from '@forepath/shared/frontend/feature-landingpage';
+import {
+  SharedContactPersonComponent,
+  SharedHeroMascotComponent,
+  SharedMarkStackComponent,
+} from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
@@ -16,7 +20,15 @@ export const FOREPATH_INDUSTRY_ROUTE_DATA_KEY = 'industry';
 /** Landing page for one industry: its challenges and the ForePath offerings that answer them. */
 @Component({
   selector: 'framework-forepath-industry',
-  imports: [SharedContactPersonComponent, FpcButtonComponent, CommonModule, RouterModule, ForepathOneTeaserComponent],
+  imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
+    SharedContactPersonComponent,
+    FpcButtonComponent,
+    CommonModule,
+    RouterModule,
+    ForepathOneTeaserComponent,
+  ],
   styleUrls: ['./industry.component.scss'],
   templateUrl: './industry.component.html',
   standalone: true,

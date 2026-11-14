@@ -83,7 +83,6 @@ export const appConfig: ApplicationConfig = {
       provide: IDENTITY_AUTH_ENVIRONMENT,
       useFactory: (env: Environment) => ({
         productName: env.application.productName,
-        authMarketing: env.authentication.marketing,
         authLayout: env.authentication.layout,
         apiUrl: env.billing.urls.restApi,
         additionalApiUrls: [],
@@ -92,6 +91,7 @@ export const appConfig: ApplicationConfig = {
         controllerApiUrl: env.billing.urls.restApi,
         termsUrl: env.cookieConsent.urls.terms,
         privacyPolicyUrl: env.cookieConsent.urls.privacyPolicy,
+        legalDisclosureUrl: env.cookieConsent.urls.legalDisclosure,
       }),
       deps: [ENVIRONMENT],
     },

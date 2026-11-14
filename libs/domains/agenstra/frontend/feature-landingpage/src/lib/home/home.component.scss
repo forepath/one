@@ -80,12 +80,22 @@
   opacity: 0.2;
 }
 
-// Drawn product scene: below the hero copy on tablets, in the right column from lg up (see below).
+// Drawn product scene: below the hero copy (on the section's bottom edge) below lg, in the right
+// column from lg up (see below).
 .hero-illustration {
   position: relative;
   z-index: 3;
   max-width: 68rem;
   margin: 3rem auto 0;
+}
+
+// Below lg: the brand character hangs from the window's top-right corner, in front of the window.
+.hero-mascot-corner {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  width: clamp(5.5rem, 18vw, 8rem);
 }
 
 // The hero window sits on the section edge, so only its top corners are rounded.
@@ -138,7 +148,8 @@
 // right column holds the product window over the brand mark stack (`shared-mark-stack`).
 // The window is taken out of the flow (the copy sets the height) and sized from the column's height:
 // it starts `--hero-scene-top` below the hero's top edge and runs `--hero-scene-overhang` past its
-// bottom edge, its width follows the scene's aspect ratio (1200 x 680 plus the 2.25rem address bar),
+// bottom edge, its width follows the scene's aspect ratio (1200 x 680 plus the address bar, at most
+// 2.25rem: it shrinks with the window, which only shortens the overhang),
 // and whatever does not fit runs off the right edge; the hero's `overflow: hidden` crops both.
 @media (min-width: 992px) {
   #hero {
@@ -173,5 +184,20 @@
     width: calc((var(--hero-scene-height) - 2.25rem - 2px) * 1200 / 680);
     max-width: none;
     margin: 0;
+  }
+}
+
+// Wide screens: the brand character (`shared-hero-mascot`) stands on the hero's bottom edge (its box
+// ends at the soles), just left of the product window, and points up at it. Positioned in the visual column like the window: its
+// right edge a little short of the window's left edge.
+@media (min-width: 992px) {
+  .hero-mascot {
+    --hero-mascot-width: clamp(8rem, 11vw, 12rem);
+
+    position: absolute;
+    z-index: 4;
+    bottom: calc(-1 * var(--hero-padding));
+    left: calc(6rem - var(--bs-gutter-x, 1.5rem) / 2 - var(--hero-mascot-width) - 0.5rem);
+    width: var(--hero-mascot-width);
   }
 }

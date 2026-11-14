@@ -1,27 +1,13 @@
-<fpc-section-row class="fpc-density-comfortable" [marketingHidden]="!showAuthMarketingPanel">
-  <fpc-section-column
-    variant="marketing"
-    class="d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
-  >
-    <div class="p-4" style="width: 700px; max-width: 100%">
-      <h1 class="display-5 fw-bold mb-3">{{ productName }}</h1>
-      <p class="lead mb-4">{{ authMarketing.loginDescription }}</p>
-      <ul class="list-unstyled">
-        @for (feature of authMarketing.features; track feature.title) {
-          <li class="mb-2 d-flex align-items-center gap-2 py-2 px-3 rounded-2 border bg-body">
-            <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
-            <div class="d-flex flex-column">
-              <strong>{{ feature.title }}</strong>
-              <span class="text-body-secondary small">{{ feature.description }}</span>
-            </div>
-          </li>
-        }
-      </ul>
-    </div>
-  </fpc-section-column>
+<fpc-section-row data-hero-mascot-track data-mark-stack-area class="fpc-density-comfortable">
+  <!-- The brand mark stack off the form column's top-right corner, as on the landing heroes (hidden with
+       layout.showMarkStack: false). -->
+  <identity-auth-mark-stack />
   <fpc-section-column variant="form" [scroll]="true" class="d-flex align-items-center">
     <div class="p-4 my-auto" style="width: 500px; max-width: 100%">
-      <h2 class="section__column-title mb-4" i18n="@@featureLogin-title">Login</h2>
+      <div class="fpc-auth-card__header">
+        <h2 class="section__column-title" i18n="@@featureLogin-title">Login</h2>
+        <i class="bi bi-box-arrow-in-right text-primary" aria-hidden="true"></i>
+      </div>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
         <!-- Success Alert -->
@@ -234,5 +220,10 @@
         </div>
       </form>
     </div>
+    <!-- The legal links (as configured) right below the card. -->
+    <identity-auth-legal-links />
   </fpc-section-column>
+  <!-- The brand character peeking up from the bottom of the form column, centred, like the landing
+       footers' (hidden with layout.showMascot: false). -->
+  <identity-auth-mascot />
 </fpc-section-row>

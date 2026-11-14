@@ -1,0 +1,163 @@
+// Auth-style pages (a row with a form column: sign-in, registration, password reset, the public
+// withdrawal form and the like): the landing heroes' background behind the form, the form on a card.
+//
+// - The contour field: the heroes' brand-tinted grain (a seamless 240px tile used as a mask, so it takes
+//   `--bs-primary` in every brand and colour mode), drifting very slowly, under a wash in the page
+//   surface that keeps the form clear and lets the lines gather towards the edges. It sits on the row:
+//   the form column is its own scroll area, so a layer in it would scroll away with the form.
+// - The form card: the form column's one wrapper on the page surface with a hairline border, so it
+//   reads cleanly over the field, the brand mark stack and anything else behind it.
+@use 'contours' as *;
+@use 'action-footer';
+
+fpc-section-row:has(> .section__column--form) {
+  --fpc-auth-contour: color-mix(in srgb, var(--bs-primary) 34%, transparent);
+  position: relative;
+  isolation: isolate;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  // The contours, oversized by one tile so the drift loops seamlessly (as the heroes').
+  &::before {
+    inset: (-$fpc-contour-tile-height) 0 0 (-$fpc-contour-tile-size);
+    background-color: var(--fpc-auth-contour);
+    mask: $fpc-contour-tile left 0 bottom 0 / #{$fpc-contour-tile-size} #{$fpc-contour-tile-height} repeat;
+    opacity: $fpc-contour-chrome-opacity;
+    animation: fpc-auth-drift 240s linear infinite;
+    will-change: transform;
+  }
+
+  // The clearing wash: solid around the form, fading out towards the edges.
+  &::after {
+    inset: 0;
+    background: radial-gradient(ellipse 75% 70% at 50% 50%, var(--bs-body-bg) 40%, transparent 95%);
+  }
+
+  // The form column keeps room above and below the card, so a card taller than the screen scrolls
+  // clear of the top bar and the bottom edge: above it as much as the card's gutter at the sides on
+  // phones, below it a little more (pages that add artwork there, like the character, widen that).
+  > .section__column--form {
+    padding-top: 1rem;
+    padding-bottom: 1.5rem;
+  }
+
+  // The form card: the form column's one wrapper (the pages size it, e.g. 500px). On phones it keeps a
+  // gutter to the screen edges.
+  > .section__column--form > :first-child {
+    background-color: var(--bs-body-bg);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+
+    @media (max-width: 767.98px) {
+      max-width: calc(100% - 2rem) !important;
+    }
+  }
+
+  // The legal links right below the card (`identity-auth-legal-links`): the card and the links centre
+  // as one group in the column (the card's own auto margin below would push the links to the bottom).
+  > .section__column--form > :first-child:has(+ identity-auth-legal-links) {
+    margin-bottom: 0 !important;
+  }
+
+  > .section__column--form > identity-auth-legal-links {
+    margin-bottom: auto;
+  }
+
+  // The card's header (`.fpc-auth-card__header`: the title, then the page's icon in the brand colour):
+  // across the full width (out of the card's 1.5rem padding) on the card's own surface, the title on
+  // the left, the icon on the right. Like a modal header, no line between it and the form (the footer
+  // keeps its own); 1.5rem from the title to the first field, as the card's padding.
+  .fpc-auth-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: -1.5rem -1.5rem 0.5rem;
+    padding: 1rem 1.5rem;
+
+    // The title in proportion to the icon beside it (1rem, semibold; over the pages' own title sizes,
+    // e.g. the withdrawal page's fs-5).
+    > h2 {
+      margin: 0;
+      min-width: 0;
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+    }
+
+    > .bi {
+      flex-shrink: 0;
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+  }
+
+  // A footer action that has to be a button (it runs logic, e.g. cancelling a pending sign-in) but
+  // reads like the other cards' plain links (Back to login): the link colour, no button chrome.
+  .fpc-auth-card__link-button {
+    padding: 0;
+    color: var(--bs-link-color);
+    background: none;
+    border: 0;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--bs-link-hover-color);
+    }
+
+    &:disabled {
+      color: var(--bs-secondary-color);
+      cursor: default;
+    }
+  }
+
+  // The form's actions (its last row: links, buttons) as the card's footer, in a modal footer's chrome
+  // (`action-footer`: the tertiary strip with a soft lift on the actions side, a hairline above; the
+  // top bar's dark chrome in dark mode). As far below the fields as the card's padding (1.5rem; the
+  // margin collapses with the last field's own), across the full width and down to the card's bottom
+  // edge (out of its 1.5rem padding), its corners rounded with the card's. The row's own layout
+  // utilities (links left, button right) keep their place over the mixin's.
+  > .section__column--form > :first-child form > :last-child {
+    @include action-footer.action-footer(1rem);
+    margin: 1.5rem -1.5rem -1.5rem;
+    padding: 1rem 1.5rem;
+    border-radius: 0 0 calc(var(--bs-border-radius-lg) - var(--bs-border-width))
+      calc(var(--bs-border-radius-lg) - var(--bs-border-width));
+
+    &::before {
+      border-radius: inherit;
+    }
+  }
+}
+
+[data-bs-theme='dark']
+  fpc-section-row:has(> .section__column--form)
+  > .section__column--form
+  > :first-child
+  form
+  > :last-child {
+  @include action-footer.action-footer-dark;
+}
+
+// Light mode: the heroes' light tint.
+[data-bs-theme='light'] fpc-section-row:has(> .section__column--form) {
+  --fpc-auth-contour: color-mix(in srgb, var(--bs-primary) 36%, transparent);
+}
+
+@keyframes fpc-auth-drift {
+  to {
+    transform: translate(#{$fpc-contour-tile-size}, #{$fpc-contour-tile-height});
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  fpc-section-row:has(> .section__column--form)::before {
+    animation: none;
+  }
+}

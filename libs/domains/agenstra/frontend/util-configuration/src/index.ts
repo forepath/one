@@ -1,4 +1,3 @@
-export * from './lib/auth-marketing';
 export * from './lib/environment.interface';
 export * from './lib/environment';
 export * from './lib/load-runtime-environment';
@@ -12,7 +11,6 @@ export {
 } from '@forepath/shared/frontend/util-configuration';
 export type {
   BaseEnvironment,
-  AuthMarketing,
   AuthLayoutConfig,
   ApiConfig,
   ApiConfigWithWebsocket,

@@ -12,7 +12,7 @@ import {
 import { RouterModule } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
 import { AuthenticationFacade, registerSuccess } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT, isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
+import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import {
   FpcAlertComponent,
   FpcButtonComponent,
@@ -26,9 +26,16 @@ import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
 
+import { IdentityAuthLegalLinksComponent } from '../auth-legal-links/auth-legal-links.component';
+import { IdentityAuthMarkStackComponent } from '../auth-mark-stack/auth-mark-stack.component';
+import { IdentityAuthMascotComponent } from '../auth-mascot/auth-mascot.component';
+
 @Component({
   selector: 'identity-auth-register',
   imports: [
+    IdentityAuthMascotComponent,
+    IdentityAuthLegalLinksComponent,
+    IdentityAuthMarkStackComponent,
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
@@ -59,8 +66,6 @@ export class IdentityRegisterComponent implements OnInit {
   /** Shown on the registration form when both URLs are configured (e.g. from {@code cookieConsent}). */
   protected readonly termsUrl = this.environment.termsUrl;
   protected readonly privacyPolicyUrl = this.environment.privacyPolicyUrl;
-  protected readonly registerDescription = this.environment.authMarketing.registerDescription;
-  protected readonly showAuthMarketingPanel = isAuthMarketingPanelVisible(this.environment.authLayout);
 
   get isUsersAuth(): boolean {
     return this.environment.authentication.type === 'users';

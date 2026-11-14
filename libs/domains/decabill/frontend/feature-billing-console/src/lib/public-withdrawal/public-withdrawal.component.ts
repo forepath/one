@@ -21,7 +21,11 @@ import {
   FpcSectionColumnComponent,
   FpcFormTextDirective,
 } from '@forepath/shared/frontend/ui-components';
-import { isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
+import {
+  IdentityAuthLegalLinksComponent,
+  IdentityAuthMarkStackComponent,
+  IdentityAuthMascotComponent,
+} from '@forepath/identity/frontend';
 import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 import type { Observable } from 'rxjs';
 
@@ -45,6 +49,9 @@ type AcknowledgeForm = {
 @Component({
   selector: 'framework-public-withdrawal',
   imports: [
+    IdentityAuthMascotComponent,
+    IdentityAuthLegalLinksComponent,
+    IdentityAuthMarkStackComponent,
     FpcFormTextDirective,
     FpcSectionRowComponent,
     FpcSectionColumnComponent,
@@ -75,9 +82,6 @@ export class PublicWithdrawalComponent implements OnInit {
   acknowledgeForm!: FormGroup;
   formSubmitted = false;
 
-  protected readonly productName = this.environment.application.productName;
-  protected readonly authMarketing = this.environment.authentication.marketing;
-  protected readonly showAuthMarketingPanel = isAuthMarketingPanelVisible(this.environment.authentication.layout);
   protected readonly requestId = toSignal(this.publicWithdrawalFacade.requestId$, { initialValue: null });
 
   readonly step$: Observable<PublicWithdrawalStep> = this.publicWithdrawalFacade.step$;

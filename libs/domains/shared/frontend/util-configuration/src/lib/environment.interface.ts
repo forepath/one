@@ -7,8 +7,6 @@ import type {
   UsersAuthenticationConfig,
 } from '@forepath/identity/frontend';
 
-import type { AuthMarketing } from './auth-marketing.interface';
-
 // Re-export auth config types from identity for backward compatibility
 export type {
   ApiKeyAuthenticationConfig,
@@ -21,10 +19,15 @@ export type {
 
 export interface AuthLayoutConfig {
   /**
-   * When false, hides the left marketing panel on login-like pages so the form area spans full width.
+   * When false, hides the brand character peeking up at the bottom of login-like pages.
    * Defaults to true when omitted.
    */
-  showMarketingPanel?: boolean;
+  showMascot?: boolean;
+  /**
+   * When false, hides the brand mark stack running off the top-right corner of login-like pages (as on
+   * the landing heroes). Defaults to true when omitted.
+   */
+  showMarkStack?: boolean;
 }
 
 /** Former top-level production + productName + appVersion. */
@@ -35,12 +38,10 @@ export interface ApplicationEnvironment {
   version?: string;
 }
 
-/** Former top-level authentication + authMarketing + authLayout. */
+/** Former top-level authentication + authLayout. */
 export interface AuthenticationEnvironment {
   /** Provider/method config (users | oidc | saml | api-key | mtls) — former top-level `authentication`. */
   config: AuthenticationConfig;
-  /** Brand copy for login/register screens — former `authMarketing`. */
-  marketing: AuthMarketing;
   /** Optional layout flags for public auth screens — former `authLayout`. */
   layout?: AuthLayoutConfig;
 }
@@ -48,6 +49,8 @@ export interface AuthenticationEnvironment {
 export interface CookieConsentUrls {
   privacyPolicy: string;
   terms: string;
+  /** Optional legal disclosure (imprint) page; linked under the public auth pages' card when set. */
+  legalDisclosure?: string;
 }
 
 export interface CookieConsentConfig {

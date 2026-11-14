@@ -16,6 +16,9 @@ export { IdentityUserManagerComponent } from './lib/user-manager/user-manager.co
 export { IdentityAppManagerComponent } from './lib/app-manager/app-manager.component';
 export { IdentityAuthorizedAppsComponent } from './lib/authorized-apps/authorized-apps.component';
 export { IdentityAppAuthorizeComponent } from './lib/app-authorize/app-authorize.component';
+export { IdentityAuthMascotComponent } from './lib/auth-mascot/auth-mascot.component';
+export { IdentityAuthMarkStackComponent } from './lib/auth-mark-stack/auth-mark-stack.component';
+export { IdentityAuthLegalLinksComponent } from './lib/auth-legal-links/auth-legal-links.component';
 
 // Guards
 export { adminGuard } from './lib/guards/admin.guard';

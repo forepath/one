@@ -12,7 +12,11 @@ import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend
 import { OverviewIllustrationComponent } from '../illustrations/overview-illustration.component';
 import { BillingTimelineIllustrationComponent } from '../illustrations/billing-timeline-illustration.component';
 import { PlanConfigIllustrationComponent } from '../illustrations/plan-config-illustration.component';
-import { SharedContactPersonComponent, SharedMarkStackComponent } from '@forepath/shared/frontend/feature-landingpage';
+import {
+  SharedContactPersonComponent,
+  SharedHeroMascotComponent,
+  SharedMarkStackComponent,
+} from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-portal-home',
@@ -25,6 +29,7 @@ import { SharedContactPersonComponent, SharedMarkStackComponent } from '@forepat
     OverviewIllustrationComponent,
     PlanConfigIllustrationComponent,
     BillingTimelineIllustrationComponent,
+    SharedHeroMascotComponent,
     SharedMarkStackComponent,
   ],
   styleUrls: ['./home.component.scss'],

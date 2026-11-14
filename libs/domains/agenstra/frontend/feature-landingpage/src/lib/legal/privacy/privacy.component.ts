@@ -5,10 +5,18 @@ import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
+import { SharedHeroMascotComponent, SharedMarkStackComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-portal-legal-privacy',
-  imports: [FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule],
+  imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    CommonModule,
+    RouterModule,
+  ],
   styleUrls: ['./privacy.component.scss'],
   templateUrl: './privacy.component.html',
   standalone: true,

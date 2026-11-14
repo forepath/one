@@ -4,6 +4,11 @@
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
+
+  // From lg up the copy sits on the left, like the other heroes.
+  @media (min-width: 992px) {
+    margin-left: 0;
+  }
 }
 
 .hero-lead {
@@ -22,6 +27,20 @@
   z-index: 3;
   max-width: 72rem;
   margin: 3rem auto 0;
+
+  // From lg up it spans the content, so it shares the left-aligned copy's edge.
+  @media (min-width: 992px) {
+    max-width: none;
+  }
+}
+
+// The brand character hanging from the scene's top-right corner (inside the column's half gutter).
+.hero-mascot-corner {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: calc(var(--bs-gutter-x, 1.5rem) / 2);
+  width: clamp(6rem, 11vw, 9rem);
 }
 
 // The scene sits on the section edge, so only its top corners are rounded.
@@ -393,6 +412,28 @@ code.hiw-meta {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem 1rem;
+}
+
+// Below md the cards centre their content (`_landing.scss`): the step numbers, and the badge and its
+// checks too.
+@media (max-width: 767.98px) {
+  .hiw-step-head,
+  .hiw-mitigation {
+    justify-content: center;
+  }
+
+  .hiw-limits-link {
+    align-self: center;
+  }
+
+  // Inline, so a check that wraps keeps its tick in front of the centred text, not at the far left.
+  .hiw-mitigation__item {
+    display: inline;
+
+    .bi {
+      margin-inline-end: 0.25rem;
+    }
+  }
 }
 
 // Each mitigation on its own, checked off after the badge.

@@ -106,7 +106,18 @@
         font-style: italic;
       }
 
-      // Tables
+      // Tables: each in its own sideways scroll box (`docs-table-scroll`, added around every table), so a
+      // wide one scrolls by itself instead of widening the page.
+      .docs-table-scroll {
+        max-width: 100%;
+        margin-bottom: 1rem;
+        overflow-x: auto;
+
+        > table {
+          margin-bottom: 0;
+        }
+      }
+
       table {
         width: 100%;
         margin-bottom: 1rem;
@@ -137,23 +148,6 @@
         margin: 2rem 0;
         border: none;
         border-top: 1px solid var(--bs-border-color);
-      }
-
-      table {
-        width: 100%;
-        margin-bottom: 1rem;
-        border-collapse: collapse;
-
-        th,
-        td {
-          padding: 0.75rem;
-          border: 1px solid var(--bs-border-color);
-        }
-
-        th {
-          background-color: var(--bs-secondary-bg);
-          font-weight: 600;
-        }
       }
     }
   }

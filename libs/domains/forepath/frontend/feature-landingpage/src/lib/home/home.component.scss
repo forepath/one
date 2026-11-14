@@ -32,6 +32,32 @@
   }
 }
 
+// Below lg: the fact cards centred under the copy, as wide as they are at most (they narrow with the
+// screen). Below xl the brand character stands on the top card, so the gap above is its height (its
+// viewBox is 148 x 129) plus 2.5rem clear of the call-to-action buttons, less the row gap
+// (`row-gap-5`, 3rem) already there.
+.home-hero__collage {
+  --home-hero-mascot-perch-width: clamp(5.5rem, 18vw, 7.5rem);
+
+  position: relative;
+  width: min(26rem, 100%);
+  margin: calc(var(--home-hero-mascot-perch-width) * 129 / 148 + 2.5rem - 3rem) auto 0;
+}
+
+// Below xl, where the pointing character is hidden: it stands on the top card at its right end (not
+// hanging in front of it like on the other brands: the card is the brand colour, like its body).
+.home-hero__mascot-perch {
+  position: absolute;
+  z-index: 4;
+  right: 0;
+  bottom: 100%;
+  width: var(--home-hero-mascot-perch-width);
+
+  @media (min-width: 1200px) {
+    display: none;
+  }
+}
+
 // Wide screens: the fact cards sit in the hero's bottom-right corner, out of the flow and positioned
 // on the hero's grid container: their right edge on the content edge (the same line as the
 // navigation's call to action), their bottom on the end of the content. They stack above the blog
@@ -43,6 +69,8 @@
     right: 0.75rem;
     bottom: 0;
     z-index: 3;
+    width: auto;
+    margin: 0;
   }
 }
 
@@ -396,5 +424,34 @@
   &:hover {
     filter: grayscale(0);
     opacity: 1;
+  }
+}
+
+// From xl up: the brand character (`shared-hero-mascot`) stands on the hero's bottom edge (the cards end
+// the content, the section's bottom padding lies below them; its box ends at the soles), just left of
+// the cards (`framework-forepath-hero-collage`, 26rem wide), tall enough to point up at them. The blog
+// teaser in the copy column ends 1.5rem short of it. Below xl the copy column is too narrow: without a
+// teaser the call-to-action buttons end the content and would run into it.
+.home-hero__mascot {
+  display: none;
+}
+
+@media (min-width: 1200px) {
+  .home-hero {
+    --home-hero-mascot-width: clamp(9rem, 12vw, 13rem);
+  }
+
+  .home-hero__mascot {
+    display: block;
+    position: absolute;
+    right: calc(100% + 0.5rem);
+    bottom: calc(-1 * var(--grid-section-padding-bottom));
+    width: var(--home-hero-mascot-width);
+  }
+
+  // The row spans the content plus half a gutter on each side; the collage sits on the content's right
+  // edge with the character 0.5rem left of it, so this leaves 1.5rem between the pill and the character.
+  .home-hero__teaser > [class*='col-'] {
+    width: min(58.333333%, calc(100% - 26rem - 0.5rem - var(--home-hero-mascot-width) - 1.5rem));
   }
 }

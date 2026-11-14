@@ -33,6 +33,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   host: {
     class: 'fpc-top-bar',
     '[class.fpc-top-bar--compact]': 'compact()',
+    '[class.fpc-top-bar--landing]': 'appearance() === "landing"',
   },
   template: `
     <div class="fpc-top-bar__brand">
@@ -66,6 +67,12 @@ export class FpcTopBarComponent {
    * padding. When false, brand sits on the left and actions on the right.
    */
   readonly compact = input(false);
+  /**
+   * `console` (default): the signed-in product chrome, a dark (light: tertiary grey) bar with a soft wash.
+   * `landing`: the landing pages' header colours, the page surface with its emphasis ink and no wash, for
+   * the public pages (sign-in, registration, public forms) while nobody is signed in.
+   */
+  readonly appearance = input<'console' | 'landing'>('console');
 
   protected readonly showDefaultBrand = computed(() => !this.compact() && !!this.brandSrc());
 }

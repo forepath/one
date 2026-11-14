@@ -6,11 +6,23 @@ import { ForepathOneTeaserComponent } from '../forepath-one-teaser/forepath-one-
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
-import { SharedContactPersonComponent } from '@forepath/shared/frontend/feature-landingpage';
+import {
+  SharedContactPersonComponent,
+  SharedHeroMascotComponent,
+  SharedMarkStackComponent,
+} from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-forepath-consulting',
-  imports: [SharedContactPersonComponent, FpcButtonComponent, CommonModule, RouterModule, ForepathOneTeaserComponent],
+  imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
+    SharedContactPersonComponent,
+    FpcButtonComponent,
+    CommonModule,
+    RouterModule,
+    ForepathOneTeaserComponent,
+  ],
   styleUrls: ['./consulting.component.scss'],
   templateUrl: './consulting.component.html',
   standalone: true,

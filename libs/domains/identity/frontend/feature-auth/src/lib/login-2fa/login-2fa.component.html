@@ -1,16 +1,13 @@
-<fpc-section-row class="fpc-density-comfortable" [marketingHidden]="!showAuthMarketingPanel">
-  <fpc-section-column
-    variant="marketing"
-    class="d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
-  >
-    <div class="p-4" style="width: 700px; max-width: 100%">
-      <h1 class="display-5 fw-bold mb-3" i18n="@@featureLogin2fa-title">Two-Factor Authentication</h1>
-      <p class="lead mb-4" i18n="@@featureLogin2fa-description">Enter the verification code to finish signing in.</p>
-    </div>
-  </fpc-section-column>
+<fpc-section-row data-hero-mascot-track data-mark-stack-area class="fpc-density-comfortable">
+  <!-- The brand mark stack off the form column's top-right corner, as on the landing heroes (hidden with
+       layout.showMarkStack: false). -->
+  <identity-auth-mark-stack />
   <fpc-section-column variant="form" [scroll]="true" class="d-flex align-items-center">
     <div class="p-4 my-auto" style="width: 500px; max-width: 100%">
-      <h2 class="section__column-title mb-4" i18n="@@featureLogin2fa-formTitle">Verify Sign-In</h2>
+      <div class="fpc-auth-card__header">
+        <h2 class="section__column-title" i18n="@@featureLogin2fa-formTitle">Verify Sign-In</h2>
+        <i class="bi bi-shield-check text-primary" aria-hidden="true"></i>
+      </div>
 
       @if (!isUsersAuth) {
         <fpc-alert variant="info">
@@ -46,61 +43,56 @@
             }
           </p>
 
-          <div class="border rounded-3 p-3 mb-3">
-            <fpc-form-field
-              forId="verificationCode"
-              i18n-label="@@featureLogin2fa-codeLabel"
-              label="Verification code"
-              [required]="true"
-            >
-              <fpc-otp-input
-                controlId="verificationCode"
-                i18n-ariaLabel="@@featureLogin2fa-codeLabel"
-                ariaLabel="Verification code"
-                formControlName="code"
-                [invalid]="
-                  (form.get('code')?.invalid &&
-                    form.get('code')?.touched &&
-                    ((form.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)) ??
-                  false
-                "
-                [disabled]="(loading$ | async) ?? false"
-              />
-              @if (
-                form.get('code')?.invalid &&
-                form.get('code')?.touched &&
-                ((form.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)
-              ) {
-                <div fpcFormFieldError>
-                  @if (form.get('code')?.errors?.['required']) {
-                    <ng-container i18n="@@featureLogin2fa-codeRequired">Verification code is required.</ng-container>
-                  } @else if (form.get('code')?.errors?.['pattern']) {
-                    @if (isTotpMethod) {
-                      <ng-container i18n="@@featureLogin2fa-codePatternTotp"
-                        >Code must be exactly 6 digits.</ng-container
-                      >
-                    } @else {
-                      <ng-container i18n="@@featureLogin2fa-codePatternEmail"
-                        >Code must be exactly 6 characters (uppercase letters and numbers).</ng-container
-                      >
-                    }
+          <fpc-form-field
+            forId="verificationCode"
+            i18n-label="@@featureLogin2fa-codeLabel"
+            label="Verification code"
+            [required]="true"
+          >
+            <fpc-otp-input
+              controlId="verificationCode"
+              i18n-ariaLabel="@@featureLogin2fa-codeLabel"
+              ariaLabel="Verification code"
+              formControlName="code"
+              [invalid]="
+                (form.get('code')?.invalid &&
+                  form.get('code')?.touched &&
+                  ((form.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)) ??
+                false
+              "
+              [disabled]="(loading$ | async) ?? false"
+            />
+            @if (
+              form.get('code')?.invalid &&
+              form.get('code')?.touched &&
+              ((form.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)
+            ) {
+              <div fpcFormFieldError>
+                @if (form.get('code')?.errors?.['required']) {
+                  <ng-container i18n="@@featureLogin2fa-codeRequired">Verification code is required.</ng-container>
+                } @else if (form.get('code')?.errors?.['pattern']) {
+                  @if (isTotpMethod) {
+                    <ng-container i18n="@@featureLogin2fa-codePatternTotp">Code must be exactly 6 digits.</ng-container>
+                  } @else {
+                    <ng-container i18n="@@featureLogin2fa-codePatternEmail"
+                      >Code must be exactly 6 characters (uppercase letters and numbers).</ng-container
+                    >
                   }
-                </div>
-              }
-            </fpc-form-field>
-          </div>
+                }
+              </div>
+            }
+          </fpc-form-field>
 
           <div class="d-flex gap-2 justify-content-between align-items-center">
-            <fpc-button
-              variant="link"
-              size="sm"
-              class="text-decoration-none small p-0 align-self-start"
-              (clicked)="onCancel()"
+            <button
+              type="button"
+              class="fpc-auth-card__link-button small"
+              (click)="onCancel()"
               [disabled]="(loading$ | async) ?? false"
             >
               <i class="bi bi-arrow-left me-2"></i>
               <span i18n="@@featureLogin2fa-cancel">Back to login</span>
-            </fpc-button>
+            </button>
             <fpc-button
               type="submit"
               variant="primary"
@@ -117,5 +109,10 @@
         </form>
       }
     </div>
+    <!-- The legal links (as configured) right below the card. -->
+    <identity-auth-legal-links />
   </fpc-section-column>
+  <!-- The brand character peeking up from the bottom of the form column, centred, like the landing
+       footers' (hidden with layout.showMascot: false). -->
+  <identity-auth-mascot />
 </fpc-section-row>

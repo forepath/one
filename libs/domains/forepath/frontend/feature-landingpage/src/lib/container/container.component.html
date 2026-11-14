@@ -362,9 +362,14 @@
   class="footer bg-body text-body-emphasis position-relative grid-section grid-section--deep grid-section--footer pt-10"
 >
   <div class="container grid-section__container grid-section__container--footer-top">
-    <div class="row">
+    <div class="row text-center text-md-start">
       <div class="col-lg-4 mb-5 mb-lg-0">
-        <img src="assets/images/favicon.svg" i18n-alt="@@featureForepath-brandAlt" alt="ForePath" class="brand-icon" />
+        <img
+          src="assets/images/favicon.svg"
+          i18n-alt="@@featureForepath-brandAlt"
+          alt="ForePath"
+          class="brand-icon mx-auto mx-md-0"
+        />
         <h5 class="fw-bold my-3" i18n="@@featureForepath-footerBrand">ForePath</h5>
         <p class="fs-6 mb-4" i18n="@@featureForepath-footerTagline">
           Practical consulting and engineering for teams that need reliable infrastructure, modern software delivery,
@@ -393,7 +398,7 @@
           </li>
         </ul>
         <div
-          class="d-flex align-items-center gap-3 mb-4 forepath-social-links"
+          class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 mb-4 forepath-social-links"
           i18n-aria-label="@@featureForepath-socialLinksAriaLabel"
           aria-label="ForePath on social media"
         >
@@ -589,9 +594,11 @@
     </div>
   </div>
   <div class="py-5">
-    <div class="container grid-section__container grid-section__container--footer-bottom">
+    <div class="container grid-section__container grid-section__container--footer-bottom position-relative">
+      <!-- The brand character peeking up from the footer's bottom edge, centred under the copyright line. -->
+      <shared-hero-mascot brand="forepath" pose="peek" class="footer-mascot" />
       <div class="row">
-        <div class="col-md-12 text-center">
+        <div class="col-md-12 text-center footer-copyright">
           <p class="mb-0 small" i18n="@@featureForepath-footerCopyright">
             &copy; {{ currentYear }} IPvX UG (haftungsbeschränkt). All rights reserved.
           </p>

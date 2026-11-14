@@ -100,3 +100,11 @@ section {
   position: relative;
   z-index: 1;
 }
+
+// From lg up the hero copy sits on the left (the brand character holds the hero's right edge): keep the
+// title to a readable width.
+@media (min-width: 992px) {
+  #hero .hero-title {
+    max-width: 900px;
+  }
+}

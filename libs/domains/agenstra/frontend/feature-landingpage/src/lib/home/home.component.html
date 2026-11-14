@@ -1,5 +1,5 @@
 <!-- Hero Section -->
-<section id="hero" class="pt-10 pb-10 pb-md-0 py-lg-6 bg-body text-body-emphasis grid-section grid-section--deep">
+<section id="hero" class="pt-10 pb-0 py-lg-6 bg-body text-body-emphasis grid-section grid-section--deep">
   <shared-mark-stack brand="agenstra" />
   <div class="container hero-content grid-section__container">
     <div class="row justify-content-center">
@@ -66,11 +66,16 @@
         </div>
       </div>
       <!--
-        The product window: under the copy on tablets, in the right column from lg up (out of the flow,
-        sized from the hero's height and running off the bottom and right edges, like the mark stack).
+        The product window: under the copy (on the section's bottom edge) below lg, in the right column
+        from lg up (out of the flow, sized from the hero's height and running off the bottom and right
+        edges, like the mark stack).
       -->
-      <div class="col-12 col-lg-5 d-none d-md-block hero-visual">
+      <div class="col-12 col-lg-5 hero-visual">
+        <!-- From lg up: the brand character left of the window, pointing up at it. -->
+        <shared-hero-mascot brand="agenstra" class="hero-mascot d-none d-lg-block" />
         <div class="hero-illustration">
+          <!-- Below lg: the brand character hangs from the window's top-right corner, pointing into it. -->
+          <shared-hero-mascot brand="agenstra" pose="corner" class="hero-mascot-corner d-lg-none" />
           <framework-portal-console-illustration
             label="Agenstra console with workspaces, agents and an agent chat"
             i18n-label="@@featurePortalHome-heroIllustration"

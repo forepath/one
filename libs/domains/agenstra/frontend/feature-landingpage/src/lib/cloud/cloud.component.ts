@@ -22,6 +22,8 @@ import {
   SharedContactPersonComponent,
   SharedLogoGridComponent,
   type SharedLogoGridLogo,
+  SharedHeroMascotComponent,
+  SharedMarkStackComponent,
 } from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
@@ -40,6 +42,8 @@ export interface CloudInfrastructureProvider {
 @Component({
   selector: 'framework-portal-cloud',
   imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
     SharedContactPersonComponent,
     FpcBadgeComponent,
     FpcButtonComponent,

@@ -14,7 +14,7 @@ import {
   FpcLanguageSwitcherComponent,
   type FpcLocaleOption,
 } from '@forepath/shared/frontend/ui-components';
-import { LandingThemeToggleComponent } from '@forepath/shared/frontend/feature-landingpage';
+import { LandingThemeToggleComponent, SharedHeroMascotComponent } from '@forepath/shared/frontend/feature-landingpage';
 import { filter, map, startWith } from 'rxjs';
 import { FOREPATH_CONTACT, FOREPATH_SOCIAL_LINKS } from '../forepath-contact.config';
 import { FOREPATH_INDUSTRIES } from '../industries/industries';
@@ -58,6 +58,7 @@ function isIndustriesDropdownRoutePath(path: string): boolean {
     FpcDropdownItemComponent,
     FpcLanguageSwitcherComponent,
     LandingThemeToggleComponent,
+    SharedHeroMascotComponent,
   ],
   styleUrls: ['./container.component.scss'],
   templateUrl: './container.component.html',

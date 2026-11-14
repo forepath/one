@@ -9,3 +9,4 @@ export * from './lib/contact-person/contact-person.component';
 export * from './lib/theme/landing-theme.service';
 export * from './lib/theme/landing-theme-toggle.component';
 export * from './lib/mark-stack/mark-stack.component';
+export * from './lib/hero-mascot/hero-mascot.component';

@@ -1,9 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-/**
- * Horizontal page columns host. When `marketingHidden` is set, marketing columns collapse and
- * the form column expands - matching identity auth split layouts.
- */
+/** Horizontal page columns host. */
 @Component({
   selector: 'fpc-section-row',
   standalone: true,
@@ -12,7 +9,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     class: 'section__row fpc-section-row',
     '[class.fpc-section-row--nowrap]': 'nowrap()',
     '[class.fpc-section-row--stacked]': 'stacked()',
-    '[class.section__row--marketing-hidden]': 'marketingHidden()',
   },
   template: `<ng-content />`,
   styleUrl: './section-row.component.scss',
@@ -22,6 +18,4 @@ export class FpcSectionRowComponent {
   readonly nowrap = input(false);
   /** Below md the columns stack vertically (sidebar + detail layouts without phone lane tabs). */
   readonly stacked = input(false);
-  /** Hides marketing columns and expands the form column (auth layouts). */
-  readonly marketingHidden = input(false);
 }

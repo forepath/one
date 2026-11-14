@@ -1,0 +1,189 @@
+// The limbs, shoes, glove outlines and eyes use the avatar's near-black ink in both themes; the gloves
+// stay white. The body is the brand colour.
+:host {
+  --shared-hero-mascot-ink: #1d1d1f;
+  --shared-hero-mascot-eye-ink: #1d1d1f;
+
+  display: block;
+  pointer-events: none;
+}
+
+// Hanging from a corner: the grip sits 24 of the viewBox's 140 units in from its right edge and 6 of
+// its 170 below its top (see the component), so this shift puts the grip on the box's own top-right
+// corner, and `top: 0; right: 0` on the containing block's. Perched needs no shift: the box ends at the
+// soles.
+:host(.shared-hero-mascot--corner) {
+  translate: calc(24 / 140 * 100%) calc(-6 / 170 * 100%);
+  // Its own stacking context, so the halo below stays behind the figure but in front of what it hangs on.
+  isolation: isolate;
+}
+
+// Hanging, the figure overlaps what it hangs on: a soft halo in the page surface behind it, mostly solid
+// in the middle and fading out, quiets what shows through. A circle of 78 units' radius around the
+// leaning body's centre (about 69, 70 in the viewBox, i.e. 61% across and 59% down the box): 111% of
+// the box's width across, its left edge at 5%, its top at 13% of the box's height.
+:host(.shared-hero-mascot--corner)::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 13%;
+  left: 5%;
+  width: 111%;
+  aspect-ratio: 1;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--bs-body-bg) 85%, transparent),
+    color-mix(in srgb, var(--bs-body-bg) 70%, transparent) 55%,
+    transparent
+  );
+}
+
+.shared-hero-mascot__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+// Peeking: the host clips the figure at its bottom edge (place that on the edge to peek over), where the
+// hands hold on (they stay put). The figure sinks behind them: at rest only the top of the body and the
+// eyes show; while the pointer is in the footer or `[data-hero-mascot-area]` around it it pulls itself up
+// to show more. Without hover (touch) it is always pulled up. The hero variant (`peek-point`) stays
+// pulled up, only its eyes move. In viewBox units (its height is 111).
+:host(.shared-hero-mascot--peek) {
+  overflow: hidden;
+}
+
+.shared-hero-mascot__svg--peek .shared-hero-mascot__figure {
+  translate: 0 58px;
+  transition: translate 0.6s cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+
+:host-context(footer:hover) .shared-hero-mascot__svg--peek .shared-hero-mascot__figure,
+:host-context([data-hero-mascot-area]:hover) .shared-hero-mascot__svg--peek .shared-hero-mascot__figure {
+  translate: 0 31px;
+}
+
+.shared-hero-mascot__svg--peek-still .shared-hero-mascot__figure {
+  translate: 0 31px;
+}
+
+@media (hover: none) {
+  .shared-hero-mascot__svg--peek .shared-hero-mascot__figure {
+    translate: 0 31px;
+  }
+}
+
+// On a section's bottom edge: `class="shared-hero-mascot--section-end"` on a peeking mascot placed as a
+// direct child of a positioned section. Below lg, where the hero copy is centred, it peeks up in the
+// middle (the body centred, about 59% across the `peek-point` viewBox, whose left part is the arm); the
+// hero reserves room for it in its bottom padding (`_landing.scss`, which repeats the width). From lg
+// up it sits at the content's right edge (the Bootstrap container's: 960 / 1140 / 1320px wide).
+:host(.shared-hero-mascot--section-end) {
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  left: 50%;
+  translate: -59% 0;
+  // Sized for the hero variant (`peek-point`), whose viewBox is wider than the footer's peek for the arm.
+  // Its viewBox (139 units) is as wide as the hanging pose's (140) around the same body, so this matches
+  // the mascots hanging from a hero's scene (How it works) in body size.
+  width: clamp(6rem, 11vw, 9rem);
+
+  @media (min-width: 992px) {
+    left: auto;
+    translate: none;
+    right: calc((100% - 960px) / 2 + 0.75rem);
+  }
+
+  @media (min-width: 1200px) {
+    right: calc((100% - 1140px) / 2 + 0.75rem);
+  }
+
+  @media (min-width: 1400px) {
+    right: calc((100% - 1320px) / 2 + 0.75rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shared-hero-mascot__svg--peek .shared-hero-mascot__figure {
+    transition: none;
+  }
+}
+
+.shared-hero-mascot__limbs {
+  fill: none;
+  stroke: var(--shared-hero-mascot-ink);
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.shared-hero-mascot__shoe {
+  fill: var(--shared-hero-mascot-ink);
+}
+
+.shared-hero-mascot__backing {
+  fill: var(--bs-body-bg);
+  opacity: 0.9;
+}
+
+.shared-hero-mascot__body {
+  fill: var(--bs-primary);
+  fill-rule: evenodd;
+}
+
+.shared-hero-mascot__eye {
+  fill: #fff;
+  stroke: var(--shared-hero-mascot-eye-ink);
+}
+
+// The pupil and its glint: at the rest gaze (towards the finger), or following the pointer while it
+// is over the hero (set by the component). Quick to follow, slower to settle back.
+.shared-hero-mascot__gaze {
+  translate: var(--shared-hero-mascot-gaze-x, var(--shared-hero-mascot-rest-x))
+    var(--shared-hero-mascot-gaze-y, var(--shared-hero-mascot-rest-y));
+  transition: translate 0.9s cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+
+:host(.shared-hero-mascot--tracking) .shared-hero-mascot__gaze {
+  transition-duration: 0.25s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shared-hero-mascot__gaze {
+    transition: none;
+  }
+}
+
+.shared-hero-mascot__pupil {
+  fill: var(--shared-hero-mascot-eye-ink);
+}
+
+.shared-hero-mascot__glint {
+  fill: #fff;
+}
+
+.shared-hero-mascot__glove {
+  fill: #fff;
+  stroke: var(--shared-hero-mascot-ink);
+  stroke-width: 2;
+}
+
+// The index finger: an outlined capsule out of the glove (the outline stroke below the glove, the white
+// core above it, so the glove's outline opens into the finger).
+.shared-hero-mascot__finger-outline,
+.shared-hero-mascot__finger {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.shared-hero-mascot__finger-outline {
+  stroke: var(--shared-hero-mascot-ink);
+  stroke-width: 7;
+}
+
+.shared-hero-mascot__finger {
+  stroke: #fff;
+  stroke-width: 3;
+}

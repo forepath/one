@@ -8,6 +8,11 @@
   // The stack's width; the front copy is about 52% of it and sits in the top-right corner.
   --shared-mark-stack-width: 99.7rem;
 
+  // How far the front copy leans towards the pointer at the hero's edge, in the SVG's user units (one
+  // is about 2.6 CSS px at the full width, so this is roughly 26px); the copies behind lean less.
+  --shared-mark-stack-reach: 10px;
+  --shared-mark-stack-ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+
   position: absolute;
   z-index: 0;
   top: -18rem;
@@ -33,6 +38,45 @@
   display: block;
   width: 100%;
   height: auto;
+  overflow: visible;
+}
+
+// The pointer pull (set by the component while a fine pointer hovers the hero). It sits on a group
+// around each copy so it never fights the copy's own build-in `translate`.
+.shared-mark-stack__layer {
+  translate: calc(var(--shared-mark-stack-pull-x, 0) * var(--shared-mark-stack-reach) * var(--shared-mark-stack-depth))
+    calc(var(--shared-mark-stack-pull-y, 0) * var(--shared-mark-stack-reach) * var(--shared-mark-stack-depth));
+  transition: translate 1s var(--shared-mark-stack-ease);
+}
+
+// Easing back to rest once the pointer leaves the hero: slower than following it.
+:host(.shared-mark-stack--settling) .shared-mark-stack__layer {
+  transition-duration: 1.8s;
+}
+
+// Build-in, as on the presentations' title slides: the copies settle into place from the corner, front
+// first. `translate` composes with the SVG transform attribute that positions each copy.
+.shared-mark-stack__mark {
+  animation: shared-mark-stack-in 1.4s var(--shared-mark-stack-ease) both;
+  animation-delay: calc(var(--shared-mark-stack-layer, 0) * 110ms + 150ms);
+}
+
+@keyframes shared-mark-stack-in {
+  from {
+    opacity: 0;
+    translate: 60px -60px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shared-mark-stack__mark {
+    animation: none;
+  }
+
+  .shared-mark-stack__layer {
+    translate: none;
+    transition: none;
+  }
 }
 
 // Front copy: outline only, so the copies and the hero behind show through it.

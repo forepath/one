@@ -3,6 +3,7 @@ import { Component, DestroyRef, effect, inject, LOCALE_ID, OnInit, PLATFORM_ID, 
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
+import { SharedHeroMascotComponent, type SharedHeroMascotBrand } from '@forepath/shared/frontend/feature-landingpage';
 import { FpcAlertComponent, FpcSpinnerComponent } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type EnvironmentWithDocs } from '@forepath/shared/frontend/util-configuration';
 import { DocMetadata, NavigationNode } from '@forepath/shared/frontend/util-docs-parser';
@@ -21,9 +22,17 @@ import { DocsBreadcrumbsComponent, DocsContentComponent, DocsTableOfContentsComp
 import { DocsContentService, DocsNavigationService } from '../../services';
 import { getDocsMetaDescriptionFallback, getDocsMetaKeywords } from '../../utils/docs-seo-metadata';
 
+/** The docs serve one product each; its brand character, when it has one. */
+const DOCS_MASCOT_BRANDS: Record<string, SharedHeroMascotBrand> = {
+  agenstra: 'agenstra',
+  decabill: 'decabill',
+  forepath: 'forepath',
+};
+
 @Component({
   selector: 'framework-docs-page',
   imports: [
+    SharedHeroMascotComponent,
     CommonModule,
     RouterModule,
     DocsBreadcrumbsComponent,
@@ -46,6 +55,7 @@ export class DocsPageComponent implements OnInit {
   private readonly metaService = inject(Meta);
   private readonly environment = inject<EnvironmentWithDocs>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
+  protected readonly mascotBrand = DOCS_MASCOT_BRANDS[this.environment.application.productName.toLowerCase()] ?? null;
 
   private get contentRoot(): string {
     return this.environment.docs.contentRoot;

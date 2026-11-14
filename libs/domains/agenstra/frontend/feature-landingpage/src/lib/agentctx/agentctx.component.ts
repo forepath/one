@@ -7,6 +7,8 @@ import {
   SharedContactPersonComponent,
   SharedLogoGridComponent,
   type SharedLogoGridLogo,
+  SharedHeroMascotComponent,
+  SharedMarkStackComponent,
 } from '@forepath/shared/frontend/feature-landingpage';
 import { AgentctxIllustrationComponent } from '../illustrations/agentctx-illustration.component';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
@@ -15,6 +17,8 @@ import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend
 @Component({
   selector: 'framework-portal-agentctx',
   imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
     SharedContactPersonComponent,
     FpcBadgeComponent,
     FpcButtonComponent,

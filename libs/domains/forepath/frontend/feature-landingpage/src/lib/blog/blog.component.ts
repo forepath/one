@@ -24,10 +24,13 @@ import {
   type GhostAiMarkers,
 } from './ghost-ai-tags.util';
 import type { GhostPagination, GhostPost, GhostTag } from './ghost.types';
+import { SharedHeroMascotComponent, SharedMarkStackComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-forepath-blog',
   imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
     CommonModule,
     RouterModule,
     ReactiveFormsModule,

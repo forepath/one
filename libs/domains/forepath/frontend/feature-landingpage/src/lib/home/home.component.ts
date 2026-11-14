@@ -8,6 +8,7 @@ import {
   SharedContactPersonComponent,
   SharedLogoGridComponent,
   type SharedLogoGridLogo,
+  SharedHeroMascotComponent,
   SharedMarkStackComponent,
 } from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
@@ -49,6 +50,7 @@ const PLATFORM_LOGO_SLOTS: readonly (readonly SharedLogoGridLogo[])[] = [
     RouterModule,
     DatePipe,
     SharedLogoGridComponent,
+    SharedHeroMascotComponent,
     SharedMarkStackComponent,
     HeroCollageComponent,
   ],

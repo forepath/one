@@ -5623,9 +5623,6 @@
       <trans-unit id="featureAuthorizedApps-colLastUsed" datatype="html">
         <source>Last used</source>
         </trans-unit>
-      <trans-unit id="featureConfirmEmail-title" datatype="html">
-        <source>Confirm Your Email</source>
-        </trans-unit>
       <trans-unit id="featureConfirmEmail-formTitle" datatype="html">
         <source>Email Confirmation</source>
         </trans-unit>
@@ -5736,12 +5733,6 @@
         </trans-unit>
       <trans-unit id="featureAuth-securityPage" datatype="html">
         <source>Security settings</source>
-        </trans-unit>
-      <trans-unit id="featureLogin2fa-title" datatype="html">
-        <source>Two-Factor Authentication</source>
-        </trans-unit>
-      <trans-unit id="featureLogin2fa-description" datatype="html">
-        <source>Enter the verification code to finish signing in.</source>
         </trans-unit>
       <trans-unit id="featureLogin2fa-formTitle" datatype="html">
         <source>Verify Sign-In</source>
@@ -5874,9 +5865,6 @@
       <trans-unit id="identityLogoutConfirm-logoutAllSessionsHint" datatype="html">
         <source>For security, this ends every active session for your account.</source>
         </trans-unit>
-      <trans-unit id="featureRegister-title" datatype="html">
-        <source>Create an Account</source>
-        </trans-unit>
       <trans-unit id="featureRegister-formTitle" datatype="html">
         <source>Register</source>
         </trans-unit>
@@ -5939,9 +5927,6 @@
         </trans-unit>
       <trans-unit id="featureRegister-submit" datatype="html">
         <source>Register</source>
-        </trans-unit>
-      <trans-unit id="featureResetPasswordConfirmation-title" datatype="html">
-        <source>Check Your Email</source>
         </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-formTitle" datatype="html">
         <source>Reset Password</source>
@@ -6018,9 +6003,6 @@
       <trans-unit id="featureResetPasswordConfirmation-submit" datatype="html">
         <source>Reset Password</source>
         </trans-unit>
-      <trans-unit id="featureRequestPasswordReset-title" datatype="html">
-        <source>Reset Your Password</source>
-        </trans-unit>
       <trans-unit id="featureRequestPasswordReset-formTitle" datatype="html">
         <source>Request Password Reset</source>
         </trans-unit>
@@ -6050,9 +6032,6 @@
         </trans-unit>
       <trans-unit id="featureRequestPasswordReset-submit" datatype="html">
         <source>Send Reset Link</source>
-        </trans-unit>
-      <trans-unit id="featureResetPassword-title" datatype="html">
-        <source>Set New Password</source>
         </trans-unit>
       <trans-unit id="featureResetPassword-formTitle" datatype="html">
         <source>Reset Password</source>
@@ -8528,6 +8507,18 @@
       <trans-unit id="featureDeployments-approvalFilterApproved" datatype="html">
         <source>Approved</source>
         </trans-unit>
+      <trans-unit id="identityAuthLegalLinks-label" datatype="html">
+        <source>Legal</source>
+      </trans-unit>
+      <trans-unit id="identityAuthLegalLinks-disclosure" datatype="html">
+        <source>Legal Disclosure</source>
+      </trans-unit>
+      <trans-unit id="identityAuthLegalLinks-terms" datatype="html">
+        <source>Terms of Service</source>
+      </trans-unit>
+      <trans-unit id="identityAuthLegalLinks-privacy" datatype="html">
+        <source>Privacy Policy</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

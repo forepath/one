@@ -7,22 +7,28 @@
   [class.grid-section--deep]="heroTheme === 'dark'"
   [class.text-body-emphasis]="heroTheme === 'dark'"
 >
+  @if (mascotBrand) {
+    <!-- The brand mark stack, as on the home heroes (it runs off the top-right corner). -->
+    <shared-mark-stack [brand]="mascotBrand" />
+    <!-- The brand character peeking up from the hero's bottom edge, at the content's right edge. -->
+    <shared-hero-mascot [brand]="mascotBrand" pose="peek-point" class="shared-hero-mascot--section-end" />
+  }
   <div class="container grid-section__container">
-    <div class="text-center">
+    <div class="text-center text-lg-start">
       <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@sharedFeatureLandingpageContact-heroTitle">
         <span class="text-primary">Contact</span> us
       </h1>
-      <p class="lead mx-auto hero-lead section-lead mb-0" i18n="@@sharedFeatureLandingpageContact-heroLead">
+      <p class="lead mx-auto mx-lg-0 hero-lead section-lead mb-0" i18n="@@sharedFeatureLandingpageContact-heroLead">
         Tell us about your project or question. We typically reply within one business day.
       </p>
       @if (contactPerson) {
-        <shared-contact-person class="mt-5 mb-0" [brand]="contactPerson" />
+        <shared-contact-person class="mt-5 mb-0 mx-lg-0" [brand]="contactPerson" />
       }
     </div>
   </div>
 </section>
 
-<section class="py-10 bg-body grid-section">
+<section class="py-10 bg-body grid-section landing-align-start">
   <div class="container grid-section__container">
     <div class="row g-4 justify-content-center align-items-stretch">
       <div class="col-lg-8 col-xl-7">

@@ -1,4 +1,6 @@
-<div class="docs-content-area-container">
+<!-- The brand character at the end (below) watches the pointer over all of the content, the table of
+     contents included. -->
+<div class="docs-content-area-container" data-hero-mascot-track>
   <main class="docs-content-area">
     @if (loading()) {
       <div class="d-flex justify-content-center align-items-center p-5">
@@ -21,4 +23,11 @@
       </div>
     }
   </main>
+  @if (mascotBrand && metadata()) {
+    <!-- The brand character peeking up from the bottom of the content, centred (like the landing footers):
+         it pulls itself up while the pointer is in this end area. -->
+    <div class="docs-page-end" data-hero-mascot-area>
+      <shared-hero-mascot [brand]="mascotBrand" pose="peek" class="docs-page-end__mascot" />
+    </div>
+  }
 </div>

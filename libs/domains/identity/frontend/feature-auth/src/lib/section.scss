@@ -14,20 +14,7 @@
   height: 100%;
   min-height: 0; // Critical for flex scrolling
   overflow: hidden; // Prevent page-level overflow
-
-  &--marketing-hidden {
-    .section__column--marketing {
-      display: none;
-    }
-
-    .section__column--form {
-      flex: 1 1 100%;
-    }
-  }
 }
-
-// `.section__column--marketing` visuals live in the shared global styles
-// (`ui-components/styles/_section-marketing.scss`).
 
 .section__row .section__column--form {
   @media (max-width: 767.98px) {

@@ -10,6 +10,8 @@
   align-items: stretch;
   gap: 1rem;
   width: 26rem;
+  // On small screens the home hero narrows the group to the screen.
+  max-width: 100%;
 }
 
 .forepath-hero-collage__card {
@@ -72,9 +74,13 @@
     height: 100%;
   }
 
-  // Each label on one line.
+  // Each label on one line, except on phones, where the group narrows to the screen.
   .forepath-hero-collage__label {
     white-space: nowrap;
+
+    @media (max-width: 575.98px) {
+      white-space: normal;
+    }
   }
 }
 

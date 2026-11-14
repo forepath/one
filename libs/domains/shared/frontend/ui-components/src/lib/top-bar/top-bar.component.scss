@@ -36,6 +36,14 @@
   --fpc-top-bar-shade-angle: 245deg;
 }
 
+// Public pages (`appearance="landing"`, nobody signed in): the landing headers' colours in both modes, the
+// page surface with its emphasis ink (white in dark mode) and no wash; every control is drawn from the ink.
+:host(.fpc-top-bar--landing) {
+  --fpc-top-bar-ink-rgb: var(--bs-emphasis-color-rgb);
+  --fpc-top-bar-bg: var(--bs-body-bg);
+  --fpc-top-bar-shade: transparent;
+}
+
 :host::before {
   content: '';
   position: absolute;

@@ -1,4 +1,7 @@
-<fpc-section-row class="fpc-density-comfortable" [marketingHidden]="true">
+<fpc-section-row data-hero-mascot-track data-mark-stack-area class="fpc-density-comfortable">
+  <!-- The brand mark stack off the form column's top-right corner, as on the landing heroes (hidden with
+       layout.showMarkStack: false). -->
+  <identity-auth-mark-stack />
   <fpc-section-column variant="form" [scroll]="true" class="d-flex align-items-center">
     <div class="p-4 my-auto" style="width: 500px; max-width: 100%" data-testid="app-authorize">
       @if (loading() || redirecting()) {
@@ -153,5 +156,10 @@
         </div>
       }
     </div>
+    <!-- The legal links (as configured) right below the card. -->
+    <identity-auth-legal-links />
   </fpc-section-column>
+  <!-- The brand character peeking up from the bottom of the form column, centred, like the landing
+       footers' (hidden with layout.showMascot: false). -->
+  <identity-auth-mascot />
 </fpc-section-row>

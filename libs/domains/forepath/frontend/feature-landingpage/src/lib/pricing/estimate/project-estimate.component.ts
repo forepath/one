@@ -28,6 +28,8 @@ import {
 import {
   SharedContactPersonComponent,
   storeContactMessagePrefill,
+  SharedHeroMascotComponent,
+  SharedMarkStackComponent,
 } from '@forepath/shared/frontend/feature-landingpage';
 import { FpcAlertComponent, FpcButtonComponent, FpcFormTextDirective } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
@@ -41,6 +43,8 @@ import { ForepathProjectEstimateLoadingPanelComponent } from './project-estimate
 @Component({
   selector: 'framework-forepath-project-estimate',
   imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
     SharedContactPersonComponent,
     AsyncPipe,
     CurrencyPipe,

@@ -20,11 +20,23 @@ import { formatPublicOfferingPrice, ServicePlansFacade } from '@forepath/decabil
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
-import { SharedContactPersonComponent } from '@forepath/shared/frontend/feature-landingpage';
+import {
+  SharedContactPersonComponent,
+  SharedHeroMascotComponent,
+  SharedMarkStackComponent,
+} from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-portal-pricing',
-  imports: [SharedContactPersonComponent, CommonModule, RouterModule, FpcBadgeComponent, FpcButtonComponent],
+  imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
+    SharedContactPersonComponent,
+    CommonModule,
+    RouterModule,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+  ],
   styleUrls: ['./pricing.component.scss'],
   templateUrl: './pricing.component.html',
   standalone: true,

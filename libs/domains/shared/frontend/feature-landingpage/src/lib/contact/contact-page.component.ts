@@ -34,10 +34,14 @@ import { SharedContactPersonComponent } from '../contact-person/contact-person.c
 import type { SharedContactPageConfig, SharedContactPageHeroTheme } from './contact-page.config';
 import { SHARED_CONTACT_PAGE_DATA_KEY } from './contact-page.config';
 import { readAndClearContactMessagePrefill } from './contact-message-prefill.storage';
+import { SharedHeroMascotComponent } from '../hero-mascot/hero-mascot.component';
+import { SharedMarkStackComponent } from '../mark-stack/mark-stack.component';
 
 @Component({
   selector: 'shared-contact-page',
   imports: [
+    SharedMarkStackComponent,
+    SharedHeroMascotComponent,
     CommonModule,
     ReactiveFormsModule,
     RouterLink,
@@ -90,6 +94,8 @@ export class SharedContactPageComponent implements OnInit {
   private readonly pageConfig = this.route.snapshot.data[SHARED_CONTACT_PAGE_DATA_KEY] as SharedContactPageConfig;
 
   readonly heroTheme: SharedContactPageHeroTheme = this.pageConfig.heroTheme;
+  /** The brand character in the hero: the brand the contact person speaks for. */
+  readonly mascotBrand = this.pageConfig.contactPerson ?? null;
   readonly contactDetails = this.pageConfig.contactDetails;
   readonly contactPerson = this.pageConfig.contactPerson ?? null;
 

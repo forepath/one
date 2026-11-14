@@ -1,14 +1,21 @@
 <!-- Hero -->
-<section class="py-10 py-lg-6 bg-body grid-section--deep text-body-emphasis comparison-hero grid-section" id="hero">
+<section
+  class="py-10 py-lg-6 bg-body grid-section--deep text-body-emphasis comparison-hero grid-section position-relative"
+  id="hero"
+>
+  <!-- The brand mark stack, as on the home heroes (it runs off the top-right corner). -->
+  <shared-mark-stack brand="decabill" />
+  <!-- The brand character peeking up from the hero's bottom edge, at the content's right edge. -->
+  <shared-hero-mascot brand="decabill" pose="peek-point" class="shared-hero-mascot--section-end" />
   <div class="container grid-section__container">
-    <div class="row justify-content-center">
-      <div class="col-lg-10 text-center">
+    <div class="row justify-content-center justify-content-lg-start">
+      <div class="col-lg-10 text-center text-lg-start">
         <h1 class="display-4 fw-semibold mb-4 hero-title">
           <span class="text-primary">{{ page.competitorDisplayName }}</span>
           <span class="text-body-emphasis" i18n="@@featureDecabillComparison-heroVs"> vs. </span>
           <span class="text-body-emphasis">Decabill</span>
         </h1>
-        <p class="lead hero-lead mx-auto section-lead mb-0">{{ page.heroSubtitle }}</p>
+        <p class="lead hero-lead mx-auto mx-lg-0 section-lead mb-0">{{ page.heroSubtitle }}</p>
       </div>
     </div>
   </div>

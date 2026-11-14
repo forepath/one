@@ -16,7 +16,7 @@
 // - section-outlet: fill routed hosts under `fpc-section-container` (crosses encapsulation)
 // - utilities: `min-h-0` / `min-w-0` flex helpers used across feature templates
 // - charts: ApexCharts tooltip / slice border / grid chrome on Bootstrap tokens (light + dark)
-// - section-marketing: `.section__column--marketing` wash + brand contour pattern (auth / public pages)
+// - section-auth: auth-style pages (sign-in, public forms): landing-hero contour field behind the form, form card
 // - controls: shared control-height scale (`--fpc-control-height-sm/-md/-lg/-header`, compact steps)
 //   applied to `.btn`, `.form-control`, `.form-select`, `.input-group-text`, `.pagination`
 // - density: compact spacing on `body.fpc-density-compact` (set by `FpcDensityService`)
@@ -33,7 +33,7 @@
 @forward 'section-outlet';
 @forward 'utilities';
 @forward 'charts';
-@forward 'section-marketing';
+@forward 'section-auth';
 @forward 'landing';
 @forward 'controls';
 @forward 'density';

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, computed, inject, LOCALE_ID, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import { LandingThemeToggleComponent } from '@forepath/shared/frontend/feature-landingpage';
+import { LandingThemeToggleComponent, SharedHeroMascotComponent } from '@forepath/shared/frontend/feature-landingpage';
 import {
   ENVIRONMENT,
   LocaleService,
@@ -54,6 +54,7 @@ function isComparisonDropdownRoutePath(path: string): boolean {
     FpcDropdownItemComponent,
     FpcLanguageSwitcherComponent,
     LandingThemeToggleComponent,
+    SharedHeroMascotComponent,
   ],
   styleUrls: ['./container.component.scss'],
   templateUrl: './container.component.html',
