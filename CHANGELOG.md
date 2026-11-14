@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.2.0](https://github.com/forepath/one/compare/v5.1.0...v5.2.0) (2026-11-14)
+
+
+### Features
+
+* **shared:** dynamic hero mascots ([#746](https://github.com/forepath/one/issues/746)) ([576d86c](https://github.com/forepath/one/commit/576d86caa5462142715584c7b6df739dfb63715f))
+
 ## [5.1.0](https://github.com/forepath/one/compare/v5.0.1...v5.1.0) (2026-11-12)
 
 
