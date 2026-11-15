@@ -1,3 +1,4 @@
+import { initialCloudInitConfigsState } from './cloud-init-configs.reducer';
 import {
   selectActiveCloudInitConfigs,
   selectCloudInitConfigById,
@@ -11,7 +12,6 @@ import {
   selectCloudInitConfigsUpdating,
   selectSelectedCloudInitConfig,
 } from './cloud-init-configs.selectors';
-import { initialCloudInitConfigsState } from './cloud-init-configs.reducer';
 
 describe('cloudInitConfigsSelectors', () => {
   const state = {

@@ -1,9 +1,9 @@
+import { initialAdminSupplierInvoiceManagerState } from './admin-supplier-invoice-manager.reducer';
 import {
   selectAdminSupplierInvoiceManagerInvoices,
   selectAdminSupplierInvoiceManagerLoading,
   selectAdminSupplierInvoiceSummary,
 } from './admin-supplier-invoice-manager.selectors';
-import { initialAdminSupplierInvoiceManagerState } from './admin-supplier-invoice-manager.reducer';
 
 describe('adminSupplierInvoiceManagerSelectors', () => {
   const invoice = {

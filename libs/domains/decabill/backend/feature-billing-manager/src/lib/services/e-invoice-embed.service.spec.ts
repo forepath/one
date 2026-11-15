@@ -5,7 +5,6 @@ import { EInvoiceEmbedService, FACTUR_X_FILENAME, FACTUR_X_NAMESPACE } from './e
 describe('EInvoiceEmbedService', () => {
   const service = new EInvoiceEmbedService();
   const xml = '<?xml version="1.0"?><rsm:CrossIndustryInvoice xmlns:rsm="urn:x"/>';
-
   const embed = async (title = 'Invoice INV-2026-00001', author = 'Müller & Söhne <GmbH>') => {
     const basePdf = await PDFDocument.create();
 

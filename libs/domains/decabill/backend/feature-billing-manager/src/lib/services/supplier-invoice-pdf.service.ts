@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
 import { getTenantIdOrDefault } from '@forepath/shared/backend';
 import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
+import { Injectable } from '@nestjs/common';
 
-import { SupplierDocumentSource } from '../constants/supplier-document-source.constants';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
-import type { InvoiceEntity } from '../entities/invoice.entity';
 import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity';
+import type { InvoiceEntity } from '../entities/invoice.entity';
 import type { SupplierInvoiceLineItemEntity } from '../entities/supplier-invoice-line-item.entity';
 import type { SupplierInvoiceEntity } from '../entities/supplier-invoice.entity';
 import type { SupplierProfileEntity } from '../entities/supplier-profile.entity';
@@ -86,7 +85,7 @@ export class SupplierInvoicePdfService {
     };
   }
 
-  private recipientAsBuyer(recipient: BillingIssuerConfig, invoice: SupplierInvoiceEntity): CustomerProfileEntity {
+  private recipientAsBuyer(recipient: BillingIssuerConfig, _invoice: SupplierInvoiceEntity): CustomerProfileEntity {
     return {
       company: recipient.name,
       vatId: recipient.vatId,

@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 
 import { FpcDensityService } from '../density/density.service';
 import { FpcMenuItem } from '../menu/menu.types';
+
 import { FpcObjectHeaderComponent } from './object-header.component';
 
 describe('FpcObjectHeaderComponent', () => {
@@ -26,6 +27,7 @@ describe('FpcObjectHeaderComponent', () => {
   it('renders crumbs as breadcrumb items with links except the current object', () => {
     fixture.detectChanges();
     const items = host.querySelectorAll('fpc-breadcrumb-item');
+
     expect(items).toHaveLength(3);
     expect(items[0].querySelector('a')?.getAttribute('href')).toBe('/resources/cluster');
     expect(items[1].querySelector('a')?.getAttribute('href')).toBe('/resources/site/eu');
@@ -49,9 +51,11 @@ describe('FpcObjectHeaderComponent', () => {
     ]);
     fixture.detectChanges();
     const list = host.querySelector('.fpc-breadcrumbs__list') as HTMLElement;
+
     expect(list.querySelectorAll(':scope > button, .fpc-breadcrumb-item > button')).toHaveLength(0);
     expect(host.querySelectorAll('fpc-breadcrumb-item')).toHaveLength(2);
     const plain = list.querySelector(':scope > span.fpc-breadcrumb-item') as HTMLElement;
+
     expect(plain.textContent?.trim()).toBe('Unassigned');
     expect(plain.getAttribute('role')).toBe('listitem');
     expect(plain.getAttribute('title')).toBe('Unassigned');
@@ -77,6 +81,7 @@ describe('FpcObjectHeaderComponent', () => {
       { id: 'leave', label: 'Leave', danger: true, dividerBefore: true },
     ];
     const chosen: string[] = [];
+
     fixture.componentRef.setInput('moreItems', items);
     fixture.componentInstance.moreSelect.subscribe((item) => chosen.push(item.id));
     fixture.detectChanges();
@@ -93,6 +98,7 @@ describe('FpcObjectHeaderComponent', () => {
     fixture.detectChanges();
 
     const head = host.querySelector('.fpc-object-header__head');
+
     expect(head?.querySelector('fpc-breadcrumbs')).not.toBeNull();
     expect(head?.querySelector('h1')).not.toBeNull();
     // The tab slot is a sibling of the padded head (full-bleed), not inside it.
@@ -100,6 +106,7 @@ describe('FpcObjectHeaderComponent', () => {
     expect(head?.contains(host.querySelector('.fpc-object-header__tabs'))).toBe(false);
 
     const more = host.querySelector('[data-testid="fpc-object-header-more"] button') as HTMLButtonElement;
+
     expect(more.getAttribute('aria-label')).toBe('More actions');
     expect(more.getAttribute('title')).toBe('More actions');
     expect(more.textContent?.trim()).toBe('');

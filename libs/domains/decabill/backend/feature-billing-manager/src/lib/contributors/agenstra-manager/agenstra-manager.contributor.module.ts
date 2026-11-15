@@ -6,6 +6,7 @@ import {
   integratedProvisioningServiceLabel,
 } from '../../utils/cloud-init/integrated-provisioning-service';
 import type { RegisteredContributorNestModule } from '../../utils/contributor-nest.types';
+
 import {
   buildAgentManagerCloudInitConfigFromRequest,
   buildAgentManagerCloudInitUserData,

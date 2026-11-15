@@ -84,8 +84,30 @@ import { NgApexchartsModule } from 'ng-apexcharts';
 import { finalize, firstValueFrom, type Observable, of, switchMap } from 'rxjs';
 
 import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/billing-admin-user-select.component';
-import { getOfferStatusBadgeTone, getOfferStatusLabel, getUnavailableLabel } from '../billing-status-labels';
+import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart';
+import {
+  DEFAULT_BILLING_CURRENCY,
+  formatBillingDateRange,
+  formatBillingDateTime,
+  formatBillingMoney,
+} from '../billing-format';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { getOfferStatusBadgeTone, getOfferStatusLabel, getUnavailableLabel } from '../billing-status-labels';
+import { DocumentTermsFieldsComponent } from '../document-terms/document-terms-fields.component';
+import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
+import {
+  documentTermsFormFromTerms,
+  documentTermsFormToInput,
+  emptyDocumentTermsForm,
+  isDocumentTermsFormValid,
+  type DocumentTermsFormModel,
+} from '../document-terms/document-terms.util';
+import {
+  getCustomerLabel,
+  getCustomerSecondaryLabel,
+  getUnnumberedOfferLabel,
+  type CustomerLabelSource,
+} from '../named-label.util';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import {
   DB_DL_DELETE,
@@ -100,16 +122,7 @@ import {
 import { invoiceTaxItems } from '../shared/invoice-totals';
 import { dbServerPaging } from '../shared/server-paging';
 import { offerState } from '../shared/table-states';
-import { AdminOfferLineEditorComponent } from './admin-offer-line-editor.component';
-import { DocumentTermsFieldsComponent } from '../document-terms/document-terms-fields.component';
-import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
-import {
-  documentTermsFormFromTerms,
-  documentTermsFormToInput,
-  emptyDocumentTermsForm,
-  isDocumentTermsFormValid,
-  type DocumentTermsFormModel,
-} from '../document-terms/document-terms.util';
+
 import {
   createEmptyOfferFormLine,
   isOfferFormValid,
@@ -117,19 +130,7 @@ import {
   mapOfferFormLinesToDto,
   type OfferFormLineItem,
 } from './admin-offer-form.util';
-import {
-  getCustomerLabel,
-  getCustomerSecondaryLabel,
-  getUnnumberedOfferLabel,
-  type CustomerLabelSource,
-} from '../named-label.util';
-import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart';
-import {
-  DEFAULT_BILLING_CURRENCY,
-  formatBillingDateRange,
-  formatBillingDateTime,
-  formatBillingMoney,
-} from '../billing-format';
+import { AdminOfferLineEditorComponent } from './admin-offer-line-editor.component';
 
 type AdminOffersTab = 'offers' | 'statistics';
 

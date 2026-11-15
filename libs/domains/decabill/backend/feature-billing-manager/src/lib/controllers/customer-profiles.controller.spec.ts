@@ -3,8 +3,8 @@ import { Test } from '@nestjs/testing';
 
 import { CustomerType } from '../constants/customer-type.constants';
 import { VatIdValidationSource, VatIdValidationStatus } from '../constants/vat-id-validation.constants';
-import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
 import { OfferProfileSummaryService } from '../offers/services/offer-profile-summary.service';
+import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
 import { CustomerProfilesService } from '../services/customer-profiles.service';
 
 import { CustomerProfilesController } from './customer-profiles.controller';
@@ -21,7 +21,6 @@ describe('CustomerProfilesController', () => {
   const offerProfileSummaryService = {
     getCustomerCounts: jest.fn().mockResolvedValue({ pendingOffersCount: 0, actionRequiredOffersCount: 0 }),
   };
-
   let controller: CustomerProfilesController;
 
   beforeEach(async () => {

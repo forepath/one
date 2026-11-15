@@ -2,10 +2,10 @@ import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { applyProjectTenantFilter, getRequiredTenantId } from '../../utils/tenant-query.utils';
 import { hydrateEntitiesBySearchIds } from '../../search/billing-search-hydrate.util';
 import { applyBillingSearchIlike } from '../../search/billing-search-ilike.util';
 import { BillingSearchIndexService } from '../../search/billing-search-index.service';
+import { applyProjectTenantFilter, getRequiredTenantId } from '../../utils/tenant-query.utils';
 import { ProjectEntity } from '../entities/project.entity';
 import { ProjectStatus } from '../entities/project.enums';
 
@@ -90,7 +90,6 @@ export class ProjectsRepository {
         offset,
         extraFilters: options.userId ? { userId: options.userId } : undefined,
       });
-
       const hydrated = await hydrateEntitiesBySearchIds(this.repository, lookup);
 
       if (hydrated) {

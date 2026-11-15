@@ -1,5 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
+
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 
 import { VNC_TICKET_TTL_MS } from '../constants/vnc.constants';
 

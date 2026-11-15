@@ -45,7 +45,6 @@ export const AGENT_GRAPH_EXCLUDED_DIRECTORIES = [
 ] as const;
 
 const EXCLUDED_DIRECTORY_SET = new Set<string>(AGENT_GRAPH_EXCLUDED_DIRECTORIES);
-
 /**
  * Files whose content is never read (credentials / secrets). They still appear in the paths layer by name, like in a
  * directory listing, but nothing of their content reaches the graph.
@@ -136,7 +135,6 @@ const LANGUAGE_BY_EXTENSION: Record<string, string> = {
   proto: 'protobuf',
   tf: 'terraform',
 };
-
 const LANGUAGE_BY_NAME: Record<string, string> = {
   dockerfile: 'dockerfile',
   makefile: 'make',

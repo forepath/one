@@ -1,5 +1,5 @@
-import { NotFoundException } from '@nestjs/common';
 import { runWithTenantId } from '@forepath/shared/backend';
+import { NotFoundException } from '@nestjs/common';
 
 import { CustomerProfilesRepository } from './customer-profiles.repository';
 
@@ -73,7 +73,6 @@ describe('CustomerProfilesRepository', () => {
 
   it('create saves profile', async () => {
     const dto = { userId: 'user-1', firstName: 'Jane' };
-
     const result = await repository.create(dto);
 
     expect(result).toEqual(dto);

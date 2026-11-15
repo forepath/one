@@ -16,7 +16,6 @@ describe('SubscriptionChargePeriodService', () => {
       currentPeriodStart: new Date('2026-02-01T00:00:00Z'),
     } as never;
     const plan = { billingIntervalType: 'day', billInAdvance: false, billingIntervalValue: 1 } as never;
-
     const result = await service.resolveChargePeriod(subscription, plan, 30, new Date('2026-02-01T00:00:00Z'));
 
     expect(result).toBeNull();
@@ -43,7 +42,6 @@ describe('SubscriptionChargePeriodService', () => {
       autoRecalculatePriceDaily: false,
       billingIntervalValue: 1,
     } as never;
-
     const result = await service.resolveChargePeriod(subscription, plan, 31, billUntil);
 
     expect(result).toEqual(
@@ -77,7 +75,6 @@ describe('SubscriptionChargePeriodService', () => {
       billingIntervalValue: 1,
       billingDayOfMonth: 1,
     } as never;
-
     const result = await service.resolveChargePeriod(subscription, plan, 30, billUntil);
 
     expect(result?.periodStart).toEqual(lastInvoiceAt);
@@ -107,7 +104,6 @@ describe('SubscriptionChargePeriodService', () => {
       billingIntervalValue: 1,
       billingDayOfMonth: 1,
     } as never;
-
     const result = await service.resolveChargePeriod(subscription, plan, 30, billUntil);
 
     expect(result?.periodStart).toEqual(lastInvoiceAt);
@@ -128,7 +124,6 @@ describe('SubscriptionChargePeriodService', () => {
       currentPeriodStart: periodStart,
     } as never;
     const plan = { billingIntervalType: 'day', billInAdvance: false, billingIntervalValue: 1 } as never;
-
     const result = await service.resolveChargePeriod(subscription, plan, 31, billUntil);
 
     expect(result).toEqual(
@@ -158,7 +153,6 @@ describe('SubscriptionChargePeriodService', () => {
       withdrawnAt: new Date('2026-01-05T00:00:00Z'),
     } as never;
     const plan = { billingIntervalType: 'day', billInAdvance: false, billingIntervalValue: 1 } as never;
-
     const result = await service.resolveChargePeriod(subscription, plan, 30, new Date('2026-01-05T00:00:00Z'));
 
     expect(result).toBeNull();
@@ -178,7 +172,6 @@ describe('SubscriptionChargePeriodService', () => {
       cancelEffectiveAt: new Date('2026-01-10T00:00:00Z'),
     } as never;
     const plan = { billingIntervalType: 'day', billInAdvance: false, billingIntervalValue: 1 } as never;
-
     const result = await service.resolveChargePeriod(subscription, plan, 10, new Date('2026-01-20T00:00:00Z'));
 
     expect(result?.periodEnd).toEqual(new Date('2026-01-10T00:00:00Z'));

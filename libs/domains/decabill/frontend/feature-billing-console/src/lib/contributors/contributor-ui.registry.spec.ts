@@ -1,10 +1,10 @@
-import type { ContributorUiModule } from './contributor-ui.types';
 import {
   collectContributorNavItems,
   collectContributorNgrx,
   collectContributorRoutes,
   collectContributorTabComponents,
 } from './contributor-ui.registry';
+import type { ContributorUiModule } from './contributor-ui.types';
 
 describe('contributor UI registry merge', () => {
   const extraTab = class ExtraTab {
@@ -12,7 +12,6 @@ describe('contributor UI registry merge', () => {
     itemId = '';
     adminMode = false;
   };
-
   const extra: ContributorUiModule = {
     tabComponents: { 'extra-tab': extraTab },
     ngrx: {

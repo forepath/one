@@ -1,8 +1,9 @@
-import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
-import { BadRequestException, NotFoundException, StreamableFile } from '@nestjs/common';
 import 'reflect-metadata';
 
 import { USERS_ROLES_KEY, UserRole } from '@forepath/identity/backend';
+import { BadRequestException, NotFoundException, StreamableFile } from '@nestjs/common';
+
+import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
 
 import { AdminBillingController } from './admin-billing.controller';
 

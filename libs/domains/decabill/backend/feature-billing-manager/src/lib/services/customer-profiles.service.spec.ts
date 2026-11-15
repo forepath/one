@@ -1,8 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 
-import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { CustomerType } from '../constants/customer-type.constants';
 import { VatIdValidationSource, VatIdValidationStatus } from '../constants/vat-id-validation.constants';
+import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 
 import { CustomerProfilesService } from './customer-profiles.service';
 
@@ -22,7 +22,6 @@ describe('CustomerProfilesService', () => {
       country: 'DE',
       vatIdValidationStatus: VatIdValidationStatus.NONE,
     }) as CustomerProfileEntity;
-
   const vatIdValidationService = {
     validateOnProfileChange: jest.fn().mockResolvedValue({
       status: VatIdValidationStatus.NONE,
@@ -33,11 +32,9 @@ describe('CustomerProfilesService', () => {
     markValidatedByAdmin: jest.fn(),
     validateAsync: jest.fn(),
   };
-
   const customerNumberSequencesRepository = {
     nextCustomerNumber: jest.fn().mockResolvedValue({ number: 'CUS-000001', numberScope: '__shared__' }),
   };
-
   const createService = (repository: any) =>
     new CustomerProfilesService(
       repository,
@@ -149,6 +146,7 @@ describe('CustomerProfilesService', () => {
       }),
       update: jest.fn().mockImplementation((_id, patch) => Promise.resolve({ id: 'p1', userId: 'user-1', ...patch })),
     } as any;
+
     vatIdValidationService.validateOnProfileChange.mockResolvedValue({
       status: VatIdValidationStatus.VALID,
       source: VatIdValidationSource.VIES_SYNC,
@@ -219,6 +217,7 @@ describe('CustomerProfilesService', () => {
       findByUserId: jest.fn().mockResolvedValue(profile),
       update: jest.fn().mockResolvedValue({ ...profile, vatIdValidationStatus: VatIdValidationStatus.VALID }),
     } as any;
+
     vatIdValidationService.validateOnProfileChange.mockResolvedValue({
       status: VatIdValidationStatus.VALID,
       source: VatIdValidationSource.VIES_SYNC,
@@ -251,6 +250,7 @@ describe('CustomerProfilesService', () => {
       findByIdOrThrow: jest.fn().mockResolvedValue(profile),
       update: jest.fn().mockResolvedValue({ ...profile, vatIdValidationStatus: VatIdValidationStatus.VALID }),
     } as any;
+
     vatIdValidationService.markValidatedByAdmin.mockReturnValue({
       status: VatIdValidationStatus.VALID,
       source: VatIdValidationSource.ADMIN,

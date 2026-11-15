@@ -2,9 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 
 import type { InvoiceEntity } from '../../entities/invoice.entity';
 import { BillingIssuerConfigService } from '../../services/billing-issuer-config.service';
-import type { ProjectEntity } from '../entities/project.entity';
-import type { ProjectTimeEntryEntity } from '../entities/project-time-entry.entity';
 import type { ProjectTimeReportRequestDto } from '../dto/project.dto';
+import type { ProjectTimeEntryEntity } from '../entities/project-time-entry.entity';
+import type { ProjectEntity } from '../entities/project.entity';
 import { ProjectTicketsRepository } from '../repositories/project-tickets.repository';
 import { ProjectTimeEntriesRepository } from '../repositories/project-time-entries.repository';
 import { ProjectsRepository } from '../repositories/projects.repository';
@@ -15,8 +15,8 @@ import {
   formatProjectTimeReportRange,
 } from '../utils/project-time-report-format.util';
 
-import { ProjectTimeReportPdfService } from './project-time-report-pdf.service';
 import type { ProjectTimeReportEntryView, ProjectTimeReportViewModel } from './project-time-report-pdf-view.model';
+import { ProjectTimeReportPdfService } from './project-time-report-pdf.service';
 
 @Injectable()
 export class ProjectTimeReportService {

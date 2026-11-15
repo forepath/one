@@ -22,7 +22,6 @@ describe('container-manager-host-network.utils', () => {
       addr_info: [{ family: 'inet', local: '172.18.0.1', prefixlen: 16 }],
     },
   ]);
-
   const routeSample = JSON.stringify([
     { dst: 'default', gateway: '203.0.113.1', dev: 'eth0' },
     { dst: '172.18.0.0/16', dev: 'br-abc123' },

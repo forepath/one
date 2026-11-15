@@ -19,9 +19,7 @@ import { DeploymentRunsService } from './deployment-runs.service';
 import { DeploymentWorkflowsService } from './deployment-workflows.service';
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
 const JOB_ID_PATTERN = /^[A-Za-z0-9_.:#-]{1,255}$/;
-
 const OPS = new Set<string>(AGENT_DEPLOYMENT_CONTROLLER_OPS);
 
 type AgentDeploymentOp = AgentDeploymentControllerRequest['op'];
@@ -107,6 +105,7 @@ export class AgentDeploymentRequestHandlerService {
           ok: true,
           ...(await this.runs.syncForAgent(clientId, agentId, this.requireId(request['workflowId']))),
         };
+
       case 'listRuns': {
         const workflowId = request['workflowId'] === undefined ? undefined : this.requireId(request['workflowId']);
 
@@ -118,11 +117,13 @@ export class AgentDeploymentRequestHandlerService {
           }),
         };
       }
+
       case 'getRun': {
         const detail = await this.runs.getForAgent(clientId, agentId, this.requireId(request['runId'], 'run'));
 
         return { ok: true, run: detail.run, jobs: detail.jobs };
       }
+
       case 'getRunLogs':
         return {
           ok: true,
@@ -133,6 +134,7 @@ export class AgentDeploymentRequestHandlerService {
             this.parseJobId(request['jobId']),
           ),
         };
+
       case 'trigger': {
         const source = parseAgentDeploymentActionSource(request['source']);
 
@@ -147,6 +149,7 @@ export class AgentDeploymentRequestHandlerService {
           ),
         };
       }
+
       case 'cancelRun': {
         const source = parseAgentDeploymentActionSource(request['source']);
 
@@ -156,6 +159,7 @@ export class AgentDeploymentRequestHandlerService {
           cancelled: true,
         };
       }
+
       case 'describeWorkflow':
         return {
           ok: true,
@@ -172,6 +176,7 @@ export class AgentDeploymentRequestHandlerService {
             this.parseWorkflowInput(request['input'], true) as AgentDeploymentWorkflowInput,
           ),
         };
+
       case 'updateWorkflow': {
         const workflowId = this.requireId(request['workflowId']);
 
@@ -185,6 +190,7 @@ export class AgentDeploymentRequestHandlerService {
           ),
         };
       }
+
       case 'deleteWorkflow':
         await this.workflows.deleteForAgent(clientId, agentId, this.requireId(request['workflowId']));
 

@@ -6,7 +6,6 @@ describe('resolveProjectTimeEntryRange', () => {
   it('computes duration across multiple days', () => {
     const startedAt = new Date('2024-06-01T22:00:00.000Z');
     const endedAt = new Date('2024-06-03T10:30:00.000Z');
-
     const result = resolveProjectTimeEntryRange(startedAt, endedAt);
 
     expect(result.durationMinutes).toBe(2190);

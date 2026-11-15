@@ -1,7 +1,7 @@
 import * as dns from 'node:dns';
+import { promises as dnsPromises } from 'node:dns';
 import * as http from 'node:http';
 import * as https from 'node:https';
-import { promises as dnsPromises } from 'node:dns';
 import type { LookupFunction } from 'node:net';
 import * as net from 'node:net';
 

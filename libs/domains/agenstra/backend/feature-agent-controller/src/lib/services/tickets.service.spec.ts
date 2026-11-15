@@ -4,14 +4,16 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
-import { TicketActivityEntity } from '../entities/ticket-activity.entity';
 import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
+import { TicketActivityEntity } from '../entities/ticket-activity.entity';
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActorType, TicketPriority, TicketStatus } from '../entities/ticket.enums';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
 import { createAgentContentWriter } from '../utils/agent-content-writer.utils';
 
 import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
@@ -19,9 +21,6 @@ import { ClientsService } from './clients.service';
 import { ExternalImportSyncMarkerService } from './external-import-sync-marker.service';
 import { TicketAutomationService } from './ticket-automation.service';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
-import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
-import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
-
 import { TicketsService } from './tickets.service';
 
 jest.mock('@forepath/identity/backend', () => {

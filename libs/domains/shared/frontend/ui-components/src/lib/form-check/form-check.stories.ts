@@ -3,6 +3,7 @@ import { moduleMetadata } from '@storybook/angular';
 import { action } from 'storybook/actions';
 
 import { FpcFormCheckGroupComponent } from '../form-check-group/form-check-group.component';
+
 import { FpcFormCheckComponent } from './form-check.component';
 
 type FormCheckStoryArgs = FpcFormCheckComponent & { checkedChange: (value: boolean) => void };

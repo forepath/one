@@ -5,6 +5,7 @@ import { Store } from '@ngrx/store';
 import { catchError, filter, forkJoin, map, of, switchMap, withLatestFrom } from 'rxjs';
 
 import { ProjectTicketsService } from '../../services/project-tickets.service';
+import type { ProjectTicketActivityResponse } from '../../types/projects.types';
 
 import {
   addProjectTicketComment,
@@ -27,7 +28,6 @@ import {
   updateProjectTicketSuccess,
 } from './project-tickets.actions';
 import { selectProjectTicketsProjectId } from './project-tickets.selectors';
-import type { ProjectTicketActivityResponse } from '../../types/projects.types';
 
 function normalizeError(error: unknown): string {
   if (error instanceof HttpErrorResponse) {

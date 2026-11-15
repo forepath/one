@@ -132,7 +132,6 @@ describe('EmailDeliveryService', () => {
     const attachmentResolver = {
       resolve: jest.fn().mockResolvedValue([{ filename: 'INV-1.pdf', content: pdf }]),
     };
-
     const service = new EmailDeliveryService(
       emailService as never,
       templateRenderer as never,

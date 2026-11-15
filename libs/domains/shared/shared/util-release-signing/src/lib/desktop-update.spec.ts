@@ -18,7 +18,6 @@ const COMMIT = 'c'.repeat(40);
 const BASE = 'https://downloads.example.com';
 const pair = generateReleaseKeyPair();
 const other = generateReleaseKeyPair();
-
 const macZip = (version: string): ReleaseFile => ({
   path: `desktop/app-darwin-arm64-${version}.zip`,
   sha256: 'd'.repeat(64),

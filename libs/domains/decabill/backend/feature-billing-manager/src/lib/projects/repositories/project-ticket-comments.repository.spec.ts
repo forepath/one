@@ -1,5 +1,5 @@
-import { NotFoundException } from '@nestjs/common';
 import { runWithTenantId } from '@forepath/shared/backend';
+import { NotFoundException } from '@nestjs/common';
 
 import { ProjectTicketCommentEntity } from '../entities/project-ticket-comment.entity';
 
@@ -28,9 +28,11 @@ describe('ProjectTicketCommentsRepository', () => {
 
   it('findByIdOrThrow returns comment', async () => {
     const comment = { id: 'c1' } as ProjectTicketCommentEntity;
+
     mockGetOne.mockResolvedValue(comment);
 
     const repository = new ProjectTicketCommentsRepository(mockRepository as never);
+
     await expect(runWithTenantId('default', () => repository.findByIdOrThrow('c1'))).resolves.toEqual(comment);
   });
 
@@ -38,6 +40,7 @@ describe('ProjectTicketCommentsRepository', () => {
     mockGetOne.mockResolvedValue(null);
 
     const repository = new ProjectTicketCommentsRepository(mockRepository as never);
+
     await expect(runWithTenantId('default', () => repository.findByIdOrThrow('missing'))).rejects.toThrow(
       NotFoundException,
     );
@@ -45,9 +48,11 @@ describe('ProjectTicketCommentsRepository', () => {
 
   it('findAllByTicket returns comments', async () => {
     const comments = [{ id: 'c1' }] as ProjectTicketCommentEntity[];
+
     mockGetMany.mockResolvedValue(comments);
 
     const repository = new ProjectTicketCommentsRepository(mockRepository as never);
+
     await expect(runWithTenantId('default', () => repository.findAllByTicket('t1'))).resolves.toEqual(comments);
   });
 

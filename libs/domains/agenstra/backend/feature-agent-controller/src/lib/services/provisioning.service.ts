@@ -170,7 +170,6 @@ export class ProvisioningService {
       `AGENT_CONTEXT_MCP_MANAGER_URL: http://agent-manager-api:3000/api`,
       `AGENT_CONTEXT_TOKEN_SECRET: ${randomBytes(32).toString('base64url')}`,
     ];
-
     // Combine all environment variables (dynamic variables take precedence)
     const allEnvVars = [...authEnvVars, ...gitEnvVars, ...agentEnvVars, ...contextEnvVars];
 

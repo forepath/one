@@ -17,6 +17,7 @@ import { SubscriptionItemsRepository } from '../../repositories/subscription-ite
 import { SubscriptionsRepository } from '../../repositories/subscriptions.repository';
 import { AddonModuleRegistryService } from '../../services/addon-module-registry.service';
 import type { RegisteredContributorNestModule } from '../../utils/contributor-nest.types';
+
 import { createBuiltinAddonModules } from './builtin-addon-modules';
 import { AdminContainerManagerController } from './controllers/admin-container-manager.controller';
 import { ContainerManagerController } from './controllers/container-manager.controller';

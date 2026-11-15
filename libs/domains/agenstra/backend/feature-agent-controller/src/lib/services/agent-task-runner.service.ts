@@ -26,15 +26,14 @@ import { AGENSTRA_CONTROLLER_QUEUE_NAME } from '../modules/agenstra-notification
 import { enqueueAgentHandoff, isAgentHandoffDeliveryAccepted } from '../utils/agent-handoff-queue.utils';
 import { buildAgentTaskRunPrompt, truncateAgentTaskOutput } from '../utils/agent-task-prompt.utils';
 import type { AgentTaskOccurrence } from '../utils/agent-task-queue.utils';
-import { appendAgentTaskTranscriptEvent, type AgentTaskTranscriptEvent } from '../utils/agent-task-transcript.utils';
 import { computeNextAgentTaskRunAt } from '../utils/agent-task-schedule.utils';
+import { appendAgentTaskTranscriptEvent, type AgentTaskTranscriptEvent } from '../utils/agent-task-transcript.utils';
 
 import { AgentTaskChatSyncService } from './agent-task-chat-sync.service';
 import { AgentTasksService } from './agent-tasks.service';
 import { RemoteAgentsSessionService, type RemoteChatStreamingParams } from './remote-agents-session.service';
 
 const FAILURE_MESSAGE_MAX_LENGTH = 512;
-
 /** In-flight transcript snapshots so the session history fills while a long run is still working. */
 const AGENT_TASK_TRANSCRIPT_SAVE_INTERVAL_MS = 5_000;
 

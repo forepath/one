@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-14T20:15:11.227Z",
+  "generatedAt": "2026-11-14T22:25:06.442Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -37868,16 +37868,26 @@
     },
     {
       "from": "project:agenstra-frontend-feature-agent-config",
-      "to": "project:agenstra-shared-util-opencode-providers",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-feature-agent-config",
       "to": "project:agenstra-shared-util-opencode-mcp-servers",
       "type": "depends_on"
     },
     {
       "from": "project:agenstra-frontend-feature-agent-config",
+      "to": "project:agenstra-shared-util-opencode-providers",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-config",
+      "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-landingpage",
+      "to": "project:shared-frontend-feature-landingpage",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-landingpage",
       "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
@@ -37888,17 +37898,7 @@
     },
     {
       "from": "project:agenstra-frontend-feature-landingpage",
-      "to": "project:shared-frontend-feature-landingpage",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-feature-landingpage",
       "to": "project:shared-frontend-util-meta",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-feature-landingpage",
-      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
@@ -37908,12 +37908,7 @@
     },
     {
       "from": "project:decabill-frontend-feature-landingpage",
-      "to": "project:shared-frontend-util-configuration",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-feature-landingpage",
-      "to": "project:shared-frontend-util-meta",
+      "to": "project:shared-frontend-feature-landingpage",
       "type": "depends_on"
     },
     {
@@ -37923,7 +37918,12 @@
     },
     {
       "from": "project:decabill-frontend-feature-landingpage",
-      "to": "project:shared-frontend-feature-landingpage",
+      "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-feature-landingpage",
+      "to": "project:shared-frontend-util-meta",
       "type": "depends_on"
     },
     {
@@ -37933,22 +37933,22 @@
     },
     {
       "from": "project:forepath-frontend-feature-landingpage",
-      "to": "project:shared-frontend-util-configuration",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:forepath-frontend-feature-landingpage",
       "to": "project:shared-frontend-feature-landingpage",
       "type": "depends_on"
     },
     {
       "from": "project:forepath-frontend-feature-landingpage",
-      "to": "project:shared-frontend-util-meta",
+      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
       "from": "project:forepath-frontend-feature-landingpage",
-      "to": "project:shared-frontend-ui-components",
+      "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:forepath-frontend-feature-landingpage",
+      "to": "project:shared-frontend-util-meta",
       "type": "depends_on"
     },
     {
@@ -38233,12 +38233,12 @@
     },
     {
       "from": "project:agenstra-backend-agent-controller",
-      "to": "project:shared-backend-util-webhook",
+      "to": "project:shared-backend-util-otel",
       "type": "depends_on"
     },
     {
       "from": "project:agenstra-backend-agent-controller",
-      "to": "project:shared-backend-util-otel",
+      "to": "project:shared-backend-util-webhook",
       "type": "depends_on"
     },
     {
@@ -38363,12 +38363,12 @@
     },
     {
       "from": "project:decabill-backend-billing-manager",
-      "to": "project:shared-backend-util-webhook",
+      "to": "project:shared-backend-util-otel",
       "type": "depends_on"
     },
     {
       "from": "project:decabill-backend-billing-manager",
-      "to": "project:shared-backend-util-otel",
+      "to": "project:shared-backend-util-webhook",
       "type": "depends_on"
     },
     {

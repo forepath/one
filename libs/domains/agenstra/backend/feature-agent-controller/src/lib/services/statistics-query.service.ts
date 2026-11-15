@@ -14,8 +14,8 @@ import {
   StatisticsSummaryDto,
 } from '../dto/statistics';
 import { ChatDirection, StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
-import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import type { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
+import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { StatisticsSecurityRepository } from '../repositories/statistics-security.repository';
 import { StatisticsRepository } from '../repositories/statistics.repository';
 

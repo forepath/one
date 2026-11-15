@@ -44,7 +44,6 @@ export interface ResolvedDocumentTerms {
 }
 
 const DELIVERY_TERMS_CODES = new Set<string>(Object.values(DeliveryTermsCode));
-
 /** C0/C1 control characters except tab and line feed — they are invalid in XML 1.0 or break the PDF layout. */
 // eslint-disable-next-line no-control-regex
 const MULTILINE_CONTROL_CHARS = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F]/g;

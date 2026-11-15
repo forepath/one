@@ -3,6 +3,7 @@ import { spawnSync } from 'child_process';
 import { buildGvisorHostScript } from '@forepath/shared/backend/util-container-runtime';
 
 import { quoteYamlScalar } from '../../utils/cloud-init/env.utils';
+import { SSHD_HARDENING_DROP_IN_PATH } from '../../utils/cloud-init/ssh-hardening.utils';
 
 import {
   buildAgentManagerCloudInitConfigFromRequest,
@@ -10,7 +11,6 @@ import {
   buildAgentManagerUpdateCommand,
   AgentManagerCloudInitConfig,
 } from './agent-manager.utils';
-import { SSHD_HARDENING_DROP_IN_PATH } from '../../utils/cloud-init/ssh-hardening.utils';
 
 describe('agent-manager.utils', () => {
   describe('buildAgentManagerCloudInitConfigFromRequest', () => {

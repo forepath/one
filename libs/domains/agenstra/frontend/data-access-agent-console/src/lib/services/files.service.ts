@@ -375,7 +375,6 @@ export class FilesService {
   ): Promise<void> {
     const params = this.contextParams(context, { download: 'true' });
     const fileName = filePath.includes('/') ? filePath.slice(filePath.lastIndexOf('/') + 1) : filePath;
-
     let first: HttpResponse<ArrayBuffer>;
 
     try {
@@ -440,7 +439,6 @@ export class FilesService {
           })
           .subscribe({ next: resolve, error: reject });
       });
-
       const partBytes = part.body ?? new ArrayBuffer(0);
 
       parts.push(partBytes);

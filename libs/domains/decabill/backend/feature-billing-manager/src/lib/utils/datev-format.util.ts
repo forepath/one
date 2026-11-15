@@ -1,7 +1,6 @@
 import * as iconv from 'iconv-lite';
 
 const LINE_ENDING = '\r\n';
-
 /** DATEV ignores column header row 2; ASCII labels avoid mojibake in UTF-8 editors. */
 const GERMAN_UMLAUT_TRANSLITERATION: Readonly<Record<string, string>> = {
   ä: 'ae',
@@ -147,7 +146,6 @@ export function resolvePreviousCalendarMonth(timezone: string, reference = new D
   const parts = formatter.formatToParts(reference);
   const year = Number(parts.find((part) => part.type === 'year')?.value);
   const month = Number(parts.find((part) => part.type === 'month')?.value);
-
   let targetYear = year;
   let targetMonth = month - 1;
 

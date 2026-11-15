@@ -36,10 +36,10 @@ import {
   parseAgentGraphQuery,
   parseAgentGraphRelativePath,
 } from '../dto/agent-graph.dto';
+import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentGraphCollectorService } from '../services/agent-graph-collector.service';
 import { AgentGraphReferencesService } from '../services/agent-graph-references.service';
 import { AgentGraphService } from '../services/agent-graph.service';
-import { AgentsRepository } from '../repositories/agents.repository';
 
 /**
  * Environment graphs for the agent-controller (user-facing API; protected by the manager's global auth guards).

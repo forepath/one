@@ -93,14 +93,15 @@ import {
   take,
 } from 'rxjs';
 
+import { formatBillingMoney } from '../billing-format';
+import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
 import {
   getBillingIntervalLabel,
   getBillingIntervalTypeLabel,
   getProviderDisplayName,
   getUnavailableLabel,
 } from '../billing-status-labels';
-import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
-import { optionalNumberInputValue } from '../optional-number-input.util';
 import { DocumentTermsFieldsComponent } from '../document-terms/document-terms-fields.component';
 import {
   documentTermsFormFromTerms,
@@ -109,10 +110,9 @@ import {
   isDocumentTermsFormValid,
   type DocumentTermsFormModel,
 } from '../document-terms/document-terms.util';
+import { optionalNumberInputValue } from '../optional-number-input.util';
 import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { activeState } from '../shared/table-states';
-import { formatBillingMoney } from '../billing-format';
-import { BILLING_MULTI_SELECT_LABELS } from '../billing-multi-select';
 
 /** Schema property: type, description, and optional enum for pre-defined values. */
 interface ConfigSchemaProperty {
@@ -577,6 +577,7 @@ export class ServicePlansPageComponent implements OnInit {
     }
 
     const target = form === 'create' ? this.createForm : this.editForm;
+
     target.providerConfigDefaults = target.providerConfigDefaults ?? {};
     const current = Array.isArray(target.providerConfigDefaults['allowedAddonIds'])
       ? (target.providerConfigDefaults['allowedAddonIds'] as unknown[]).filter(
@@ -606,6 +607,7 @@ export class ServicePlansPageComponent implements OnInit {
 
   toggleMandatoryAddon(form: 'create' | 'edit', addonId: string, checked: boolean): void {
     const target = form === 'create' ? this.createForm : this.editForm;
+
     target.providerConfigDefaults = target.providerConfigDefaults ?? {};
 
     if (checked) {
@@ -732,6 +734,7 @@ export class ServicePlansPageComponent implements OnInit {
       this.createPlanMeterAttachMeterId = '';
       this.createPlanMeterAttachUnitPrice = '';
       this.createPlanMeterAttachIncludedUsage = '';
+
       return;
     }
 
@@ -758,6 +761,7 @@ export class ServicePlansPageComponent implements OnInit {
 
         if (!meter) {
           this.planMeterAttachError = 'Selected meter is not available';
+
           return;
         }
 
@@ -1475,7 +1479,6 @@ export class ServicePlansPageComponent implements OnInit {
     const defaults = (
       form === 'create' ? this.createForm.providerConfigDefaults : this.editForm.providerConfigDefaults
     ) as Record<string, unknown>;
-
     const existingEnv = defaults['env'];
 
     if (!existingEnv || typeof existingEnv !== 'object' || Array.isArray(existingEnv)) {
@@ -1528,7 +1531,6 @@ export class ServicePlansPageComponent implements OnInit {
     const defaults = (
       form === 'create' ? this.createForm.providerConfigDefaults : this.editForm.providerConfigDefaults
     ) as Record<string, unknown>;
-
     const existing = defaults[parentKey];
 
     if (!existing || typeof existing !== 'object' || Array.isArray(existing)) {
@@ -1551,6 +1553,7 @@ export class ServicePlansPageComponent implements OnInit {
 
   setProductNestedValue(form: 'create' | 'edit', parentKey: string, nestedKey: string, value: string | number): void {
     const nested = this.ensureProductNestedDefaults(form, parentKey);
+
     nested[nestedKey] = value;
   }
 
@@ -2252,6 +2255,7 @@ export class ServicePlansPageComponent implements OnInit {
 
   onAllowedServerTypesChangeCreate(selectedIds: unknown): void {
     const normalized = normalizeAllowedServerTypeIds(selectedIds);
+
     this.createAllowedServerTypes = normalized;
     this.createForm.allowedServerTypes = [...normalized];
 
@@ -2286,6 +2290,7 @@ export class ServicePlansPageComponent implements OnInit {
 
   onAllowedServerTypesChangeEdit(selectedIds: unknown): void {
     const normalized = normalizeAllowedServerTypeIds(selectedIds);
+
     this.editAllowedServerTypes = normalized;
     this.editForm.allowedServerTypes = [...normalized];
 
@@ -2989,6 +2994,7 @@ export class ServicePlansPageComponent implements OnInit {
     if (form === 'create') {
       this.createProductDefaultsExpanded.set(false);
       document.getElementById('createProductDefaults')?.classList.remove('show');
+
       return;
     }
 
@@ -3025,6 +3031,7 @@ export class ServicePlansPageComponent implements OnInit {
       destroyRef: this.destroyRef,
       onSuccess: () => {
         const pendingMeters = [...this.createAttachedMeters];
+
         this.resetCreateForm();
         this.flushPendingCreatePlanMeters(pendingMeters);
       },

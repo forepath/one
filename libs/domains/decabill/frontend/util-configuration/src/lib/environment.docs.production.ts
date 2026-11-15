@@ -1,5 +1,5 @@
-import { createDecabillShell } from './shell';
 import type { DecabillDocsEnvironment } from './environment.interface';
+import { createDecabillShell } from './shell';
 
 export const environment: DecabillDocsEnvironment = {
   ...createDecabillShell({

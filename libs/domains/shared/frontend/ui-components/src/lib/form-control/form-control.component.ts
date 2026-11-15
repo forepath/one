@@ -224,9 +224,11 @@ export class FpcFormControlComponent implements ControlValueAccessor {
 
     if (this.multiple()) {
       const selected = Array.from(select.selectedOptions).map((option) => option.value);
+
       this.valuesChange.emit(selected);
       this.value.set(selected.join(','));
       this.onChange(this.value());
+
       return;
     }
 
@@ -240,6 +242,7 @@ export class FpcFormControlComponent implements ControlValueAccessor {
     }
 
     const inputEl = event.target as HTMLInputElement;
+
     this.filesChange.emit(inputEl.files);
   }
 

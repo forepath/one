@@ -413,6 +413,7 @@ describe('AdminBillingService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/admin/billing/subscriptions/sub-1/meter-entries?limit=25&offset=25`);
+
       expect(req.request.method).toBe('GET');
       req.flush(page);
     });
@@ -432,6 +433,7 @@ describe('AdminBillingService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/admin/billing/subscriptions/sub-1/meter-entries`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(entry);
@@ -444,6 +446,7 @@ describe('AdminBillingService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/admin/billing/subscriptions/sub-1/meter-entries/entry-1`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ value: 60 });
       req.flush({ ...entry, value: 60 });
@@ -453,6 +456,7 @@ describe('AdminBillingService', () => {
       service.deleteSubscriptionMeterEntry('sub-1', 'entry-1').subscribe(() => done());
 
       const req = httpMock.expectOne(`${apiUrl}/admin/billing/subscriptions/sub-1/meter-entries/entry-1`);
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });

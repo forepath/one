@@ -29,6 +29,7 @@ describe('ProjectsFacade', () => {
 
   it('createAdminProject dispatches createAdminProject', () => {
     const dto = { userId: 'u-1', name: 'Alpha', hourlyRateNet: 100 };
+
     facade.createAdminProject(dto);
     expect(store.dispatch).toHaveBeenCalledWith(createAdminProject({ dto }));
   });
@@ -39,6 +40,7 @@ describe('ProjectsFacade', () => {
       to: '2026-06-01T17:00:00.000Z',
       lineItems: [{ description: 'Extra', quantity: 1, unitPriceNet: 10 }],
     };
+
     facade.billProjectTime('p-1', dto);
     expect(store.dispatch).toHaveBeenCalledWith(billProjectTime({ projectId: 'p-1', dto }));
   });

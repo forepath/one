@@ -8,6 +8,7 @@ import {
   joinDatevLines,
   joinDatevRow,
 } from '../utils/datev-format.util';
+
 import type { DatevTenantExportConfig } from './datev-export-config.service';
 
 export interface DatevExtfBookingBatchParams {
@@ -56,7 +57,6 @@ export class DatevExtfCsvService {
       '',
       '03',
     ];
-
     const lines = [
       joinDatevRow(headerFields),
       joinDatevRow(buildDatevBookingColumnHeaders()),
@@ -87,8 +87,8 @@ export class DatevExtfCsvService {
       formatDatevHeaderDate(new Date(new Date().getUTCFullYear(), params.config.fiscalYearStartMonth - 1, 1)),
       String(params.config.accountLength),
     ];
-
     const debtorHeaders = Array.from({ length: DATEV_DEBTOR_ROW_FIELD_COUNT }, () => '');
+
     debtorHeaders[0] = 'Konto';
     debtorHeaders[1] = 'Name (Adressattyp Unternehmen)';
     debtorHeaders[2] = 'Unternehmensgegenstand';

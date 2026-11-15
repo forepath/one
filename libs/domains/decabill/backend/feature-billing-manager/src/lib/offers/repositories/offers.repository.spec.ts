@@ -8,6 +8,7 @@ function queryBuilder(items: unknown[], total: number) {
   for (const method of ['innerJoin', 'where', 'andWhere', 'orderBy', 'take', 'skip']) {
     qb[method] = jest.fn(() => qb);
   }
+
   qb['getCount'] = jest.fn().mockResolvedValue(total);
   qb['getMany'] = jest.fn().mockResolvedValue(items);
 
@@ -18,7 +19,6 @@ describe('OffersRepository customer pages', () => {
   it('pages the pending offers of one user with the total (user + tenant scoped)', async () => {
     const qb = queryBuilder([{ id: 'o-1' }], 42);
     const repository = new OffersRepository({ createQueryBuilder: jest.fn(() => qb) } as never);
-
     const result = await repository.findPendingByUserId('user-1', { limit: 25, offset: 50 });
 
     expect(result).toEqual({ items: [{ id: 'o-1' }], total: 42 });

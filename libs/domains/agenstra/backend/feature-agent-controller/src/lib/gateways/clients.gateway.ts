@@ -4,7 +4,6 @@ import {
   AGENT_TASK_REQUEST_EVENT,
   isAgentTaskResumeSessionSuffix,
 } from '@forepath/agenstra/shared/util-opencode-config';
-import { createCorrelationAwareSocketIoClient } from '@forepath/shared/backend/util-http-context';
 import {
   AuthenticationType,
   ClientAgentCredentialsRepository,
@@ -21,6 +20,7 @@ import {
   socketRoomsForUser,
   socketScopeDeniedMessage,
 } from '@forepath/identity/backend';
+import { createCorrelationAwareSocketIoClient } from '@forepath/shared/backend/util-http-context';
 import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
 import { BadRequestException, Logger, Optional } from '@nestjs/common';
 import {
@@ -42,36 +42,36 @@ import {
   CLIENTS_SOCKET_INBOUND_SCOPES,
   CLIENTS_SOCKET_OUTBOUND_SCOPES,
 } from '../auth/agenstra-websocket.scopes';
+import type { ChatPlanContextInjectionJson } from '../entities/chat-plan.entity';
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
-import type { ChatPlanContextInjectionJson } from '../entities/chat-plan.entity';
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
-import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AgenstraAttachmentsService } from '../services/agenstra-attachments.service';
-import { AgentHandoffRequestHandlerService } from '../services/agent-handoff-request-handler.service';
-import { AgentTaskChatSyncService } from '../services/agent-task-chat-sync.service';
-import { AgentTaskRealtimeService } from '../services/agent-task-realtime.service';
-import { AgentDeploymentRequestHandlerService } from '../services/agent-deployment-request-handler.service';
-import { DeploymentRealtimeRelayService } from '../services/deployment-realtime-relay.service';
-import { DeploymentRealtimeService } from '../services/deployment-realtime.service';
-import { AgentTaskRequestHandlerService } from '../services/agent-task-request-handler.service';
+import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import {
   AGENT_CONTEXT_REQUEST_EVENT,
   AgentContextRequestHandlerService,
 } from '../services/agent-context-request-handler.service';
+import { AgentDeploymentRequestHandlerService } from '../services/agent-deployment-request-handler.service';
+import { AgentHandoffRequestHandlerService } from '../services/agent-handoff-request-handler.service';
+import { AgentTaskChatSyncService } from '../services/agent-task-chat-sync.service';
+import { AgentTaskRealtimeService } from '../services/agent-task-realtime.service';
+import { AgentTaskRequestHandlerService } from '../services/agent-task-request-handler.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
-import { ClientAgentMembershipService } from '../services/client-agent-membership.service';
-import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
-import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
-import { ClientsService } from '../services/clients.service';
 import { ChatPlanChatSyncService } from '../services/chat-plan-chat-sync.service';
 import { ChatPlanOrchestratorService } from '../services/chat-plan-orchestrator.service';
 import { ChatPlanRealtimeService } from '../services/chat-plan-realtime.service';
 import { ChatPlanService } from '../services/chat-plan.service';
+import { ClientAgentMembershipService } from '../services/client-agent-membership.service';
+import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { CLIENT_CHAT_PLAN_EVENTS } from '../services/client-chat-plan.constants';
+import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
+import { ClientsService } from '../services/clients.service';
+import { DeploymentRealtimeRelayService } from '../services/deployment-realtime-relay.service';
+import { DeploymentRealtimeService } from '../services/deployment-realtime.service';
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
@@ -82,8 +82,8 @@ import {
   getClientEndpointTlsPolicy,
   validateClientEndpointWithDnsOrThrow,
 } from '../utils/client-endpoint-security';
-import { buildRemoteAgentsSocketUrl } from '../utils/remote-manager-url.utils';
 import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
+import { buildRemoteAgentsSocketUrl } from '../utils/remote-manager-url.utils';
 
 type ChatOutputUsage = {
   inputTokens?: number;
@@ -1442,6 +1442,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
       const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string; isApiKeyAuth?: boolean } } }).data
         ?.userInfo;
+
       await this.chatPlanService.cancel(clientId, agentId, planId, undefined, userInfo?.userId ?? null);
       socket.emit('forwardAck', { received: true, event: CLIENT_CHAT_PLAN_EVENTS.cancelChatPlan, planId });
     } catch (error: unknown) {
@@ -1896,11 +1897,9 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     // PAT / app tokens: context categories the token cannot read over REST never reach the agent.
     const typed = { ...original, contextInjection: this.capContextInjectionToScopes(original.contextInjection, req) };
     const contextInjection = typed.contextInjection;
-
     const attachmentIds = Array.from(
       new Set((contextInjection.attachmentIds ?? []).map((id) => id.trim()).filter((id) => id.length > 0)),
     );
-
     const promptForAutoContext = (
       (typed as { message?: string; title?: string }).message ??
       (typed as { message?: string; title?: string }).title ??
@@ -1946,7 +1945,6 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     const knowledgeShas = Array.from(
       new Set((resolvedContextInjection.knowledgeShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
     );
-
     const planShas = Array.from(
       new Set(
         (resolvedContextInjection.planShas ?? [])

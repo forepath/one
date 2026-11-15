@@ -13,13 +13,13 @@ import { AgentEntity } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentsRepository } from '../repositories/agents.repository';
 
+import { AgentDirectoryIndexService } from './agent-directory-index.service';
 import { AGENT_SYSTEM_FS_SCRIPT } from './agent-file-system.scripts';
 import { AgentFileSystemService } from './agent-file-system.service';
-import { AgentDirectoryIndexService } from './agent-directory-index.service';
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
-import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
+import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 
 type SendCommandArgs = [string, string | string[], string | undefined, boolean | undefined, { user?: string }?];
 type FsCommandHandler = (
@@ -88,7 +88,6 @@ describe('AgentFileSystemService', () => {
   const mockGitStateBroadcast = {
     notifyGitStateMayHaveChanged: jest.fn(),
   };
-
   /** Root commands run through `env -i` with a fixed system PATH. */
   const ROOT_COMMAND_PREFIX = ['/usr/bin/env', '-i', 'PATH=/usr/sbin:/usr/bin:/sbin:/bin'];
   /** Strip the root `env -i` wrapper so assertions can inspect the actual command argv. */
@@ -146,7 +145,6 @@ describe('AgentFileSystemService', () => {
     true,
     user === '0' ? ROOT_EXEC_OPTIONS : { user },
   ];
-
   const isSystemScriptCall = (call: unknown[]): boolean => {
     const argv = unwrapRoot(call[1]);
 
@@ -170,7 +168,6 @@ describe('AgentFileSystemService', () => {
     true,
     ROOT_EXEC_OPTIONS,
   ];
-
   /**
    * Make `sendCommandToContainer` answer containment-script calls via `containment`
    * (default: always inside), privileged system-script calls via `systemScript`

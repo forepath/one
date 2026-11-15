@@ -1,6 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
-import { readFileSync } from 'node:fs';
 
 import { resolveProviderLoadTarget } from './resolve-provider-load-target';
 import type { LoadProviderModuleOptions, ProviderLoadTarget, ProviderPackageEntry } from './types';

@@ -1,11 +1,8 @@
 import type { ChangelogEntry, ProductScope, ScopedChangelog } from '../interfaces/updates.interfaces';
 
 const BULLET_LINE_PATTERN = /^\s*(?:[-*]|\d+\.)\s+(.+)$/;
-
 const CONVENTIONAL_SCOPE_PATTERN = /(?:^|\s)(?:\w+)?\((agenstra|decabill)\)/i;
-
 const LEADING_PRODUCT_PATTERN = /^(agenstra|decabill)\b/i;
-
 const SECTION_HEADER_PATTERN = /^#{1,6}\s+(.+)$/;
 
 function normalizeProduct(value: string): ProductScope | undefined {

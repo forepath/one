@@ -247,7 +247,6 @@ describe('InvoicesRepository', () => {
 
   it('create persists new invoice', async () => {
     const dto = { userId: 'user-1', status: InvoiceStatus.DRAFT };
-
     const result = await repository.create(dto);
 
     expect(result).toEqual(dto);

@@ -154,6 +154,7 @@ export class FpcDockPanelComponent {
     const view = this.document.defaultView;
 
     this.dragging.set(true);
+
     const move = (moveEvent: PointerEvent): void => {
       this.height.set(fpcClampSize(start + origin - moveEvent.clientY, this.min(), this.max()));
     };

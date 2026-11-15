@@ -26,6 +26,8 @@ import {
 import { validateConfigSchema } from '../../utils/config-validation.utils';
 import { mergeOrderAddonIds, parsePlanAllowedAddonIds } from '../../utils/plan-addons.utils';
 import { resolvePlanTaxCategory } from '../../utils/plan-tax.utils';
+import { enrichPricingWithTax } from '../../utils/pricing-tax.utils';
+import { normalizeStoredProviderDefaults } from '../../utils/provider-env-defaults.utils';
 import {
   mirrorGeographyInConfig,
   readRequestedGeography,
@@ -35,6 +37,13 @@ import {
   stripGeographyFromRequestedConfig,
 } from '../../utils/provider-location.utils';
 import {
+  assertProviderAllowed,
+  resolveEffectiveProvider,
+  resolvePlanAllowedProviders,
+  resolveServiceTypeAllowedProviders,
+  stripProviderFromRequestedConfig,
+} from '../../utils/provider-selection.utils';
+import {
   assertServerTypeAllowed,
   normalizeAllowedServerTypes,
   resolveDefaultServerTypeForProvider,
@@ -42,19 +51,10 @@ import {
   stripServerTypeFromRequestedConfig,
 } from '../../utils/provider-server-type.utils';
 import {
-  assertProviderAllowed,
-  resolveEffectiveProvider,
-  resolvePlanAllowedProviders,
-  resolveServiceTypeAllowedProviders,
-  stripProviderFromRequestedConfig,
-} from '../../utils/provider-selection.utils';
-import { enrichPricingWithTax } from '../../utils/pricing-tax.utils';
-import {
   BILLING_BASE_PRICE_CONFIG_KEY,
   resolvePeriodTotalPrice,
   resolveServerTypePriceMonthly,
 } from '../../utils/server-type-billing.utils';
-import { normalizeStoredProviderDefaults } from '../../utils/provider-env-defaults.utils';
 
 export interface PreparedPlanOrderResult {
   effectiveConfig: Record<string, unknown>;
@@ -227,6 +227,7 @@ export class SubscriptionOrderPreparationService {
     let sanitizedRequested = allowCustomerLocationSelection
       ? { ...(dto.requestedConfig ?? {}) }
       : stripGeographyFromRequestedConfig(dto.requestedConfig);
+
     sanitizedRequested = allowCustomerServerTypeSelection
       ? sanitizedRequested
       : stripServerTypeFromRequestedConfig(sanitizedRequested);
@@ -367,6 +368,7 @@ export class SubscriptionOrderPreparationService {
         serverType,
         providerDefaults,
       );
+
       availabilityCheckedAt = new Date();
       availability = {
         isAvailable: availabilityResult.isAvailable,
@@ -392,6 +394,7 @@ export class SubscriptionOrderPreparationService {
 
     if (allowCustomerServerTypeSelectionForPricing) {
       const requestedServerType = effectiveConfig['serverType'];
+
       serverTypeId =
         typeof requestedServerType === 'string' && requestedServerType.trim() ? requestedServerType.trim() : '';
     }

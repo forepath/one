@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
+import type { ChatPlanResponse } from '../container-socket/container-socket.types';
+
 import {
   clearChatPlansError,
   clearSelectedChatPlan,
@@ -22,8 +24,6 @@ import {
   selectSelectedChatPlan,
   selectSelectedChatPlanLoading,
 } from './chat-plans.selectors';
-import type { ChatPlanResponse } from '../container-socket/container-socket.types';
-
 import type { ChatPlanActivityDto, ChatPlansQuery, UpdateChatPlanDto } from './chat-plans.types';
 
 @Injectable({

@@ -33,6 +33,7 @@ const imageRepository = z
   .string()
   .max(255)
   .regex(/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?(:\d{1,5})?(\/[a-z0-9]+([._-][a-z0-9]+)*)+$/, 'invalid image repository');
+
 /** A relative, `/`-separated path: no absolute paths, no `.` / `..` segments, no backslashes or control characters. */
 export const releaseFilePathSchema = z
   .string()

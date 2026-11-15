@@ -14,7 +14,6 @@ describe('TaxPreviewService', () => {
   const taxRateConfig = {
     resolveRate: jest.fn(),
   };
-
   const service = new TaxPreviewService(
     invoiceTaxContextService as never,
     taxCalculationService as never,

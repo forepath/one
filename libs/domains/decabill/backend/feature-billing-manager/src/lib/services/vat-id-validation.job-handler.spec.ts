@@ -10,7 +10,6 @@ describe('VatIdValidationJobHandler', () => {
     findByIdOrThrow: jest.fn(),
     update: jest.fn(),
   };
-
   const handler = new VatIdValidationJobHandler(vatIdValidationService as never, customerProfilesRepository as never);
 
   beforeEach(() => {

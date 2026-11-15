@@ -1034,6 +1034,7 @@ export class DeploymentsBoardComponent implements AfterViewInit {
     switch (action) {
       case 'logs':
         if (run) this.onViewLogs(run.id, job.id);
+
         break;
       case 'provider':
         this.openExternal(job.url);

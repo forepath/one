@@ -287,14 +287,19 @@ function parseWorkflowFields(raw: unknown, create: boolean): AgentDeploymentWork
   const enabled = optionalBoolean(body, 'enabled');
 
   if (description !== undefined) fields.description = description;
+
   if (workflow !== undefined) fields.workflow = workflow;
+
   if (defaultRef !== undefined) fields.defaultRef = defaultRef;
+
   if (body['defaultInputs'] !== undefined && body['defaultInputs'] !== null) {
     fields.defaultInputs = parseInputs(body['defaultInputs'], 'defaultInputs');
   } else if (body['defaultInputs'] === null) {
     fields.defaultInputs = {};
   }
+
   if (agentTriggerEnabled !== undefined) fields.agentTriggerEnabled = agentTriggerEnabled;
+
   if (enabled !== undefined) fields.enabled = enabled;
 
   return fields;

@@ -3,8 +3,8 @@ import * as path from 'path';
 
 import { Injectable } from '@nestjs/common';
 
-import { FILE_STORAGE_INVALID_PATH_ERROR, FILE_STORAGE_LOCAL_PROVIDER } from '../file-storage.constants';
 import type { FileStorageProvider } from '../file-storage-provider.interface';
+import { FILE_STORAGE_INVALID_PATH_ERROR, FILE_STORAGE_LOCAL_PROVIDER } from '../file-storage.constants';
 
 /**
  * Local filesystem storage. Requires a shared volume across api/worker/scheduler.

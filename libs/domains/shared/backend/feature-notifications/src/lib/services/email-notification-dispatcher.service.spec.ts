@@ -4,6 +4,7 @@ import {
   EMAIL_DELIVER_REMOVE_ON_COMPLETE,
   EMAIL_DELIVER_REMOVE_ON_FAIL,
 } from '../constants/notification.constants';
+
 import { EmailNotificationDispatcherService } from './email-notification-dispatcher.service';
 
 describe('EmailNotificationDispatcherService', () => {
@@ -133,6 +134,7 @@ describe('EmailNotificationDispatcherService', () => {
   it('publishFireAndForget swallows enqueue errors', async () => {
     const { Logger } = await import('@nestjs/common');
     const warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+
     queue.add.mockRejectedValueOnce(new Error('redis down'));
     const service = new EmailNotificationDispatcherService(options, queue as never, emailService as never);
 

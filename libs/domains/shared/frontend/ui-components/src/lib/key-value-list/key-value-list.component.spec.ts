@@ -25,6 +25,7 @@ class HostComponent {
 describe('FpcKeyValueListComponent', () => {
   it('renders values, templates and the empty text', () => {
     const fixture = TestBed.createComponent(HostComponent);
+
     fixture.detectChanges();
     const host = fixture.nativeElement as HTMLElement;
 

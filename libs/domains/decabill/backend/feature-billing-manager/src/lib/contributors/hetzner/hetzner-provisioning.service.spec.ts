@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import axios from 'axios';
 
 import { waitForTcpPort } from '../../utils/wait-for-tcp-port.util';
+
 import { HetznerProvisioningService } from './hetzner-provisioning.service';
 
 jest.mock('axios');
@@ -597,6 +598,7 @@ describe('HetznerProvisioningService', () => {
           },
         },
       });
+
       mockedAxios.get
         .mockResolvedValueOnce(noIpPayload('off'))
         .mockResolvedValueOnce(noIpPayload('running'))
@@ -605,6 +607,7 @@ describe('HetznerProvisioningService', () => {
 
       const service = new HetznerProvisioningService();
       const promise = service.changeServerType('12345', 'cx21');
+
       await jest.runAllTimersAsync();
       await promise;
 
@@ -621,6 +624,7 @@ describe('HetznerProvisioningService', () => {
 
       const service = new HetznerProvisioningService();
       const promise = service.changeServerType('12345', 'cx21');
+
       await jest.runAllTimersAsync();
       await expect(promise).resolves.toBeUndefined();
     });

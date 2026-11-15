@@ -19,6 +19,7 @@ class HostComponent {
 describe('FpcSectionColumnComponent', () => {
   it("keeps a consumer's own flex-basis binding while no grow is set (the sidebar width of resizable trees)", () => {
     const fixture = TestBed.createComponent(HostComponent);
+
     fixture.detectChanges();
     const sized = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('.sized');
 
@@ -31,6 +32,7 @@ describe('FpcSectionColumnComponent', () => {
 
   it('applies the grow shorthand and drops it again', () => {
     const fixture = TestBed.createComponent(HostComponent);
+
     fixture.detectChanges();
     const grown = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('.grown');
 

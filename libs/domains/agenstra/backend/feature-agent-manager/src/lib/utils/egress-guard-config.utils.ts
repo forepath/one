@@ -301,7 +301,6 @@ function renderSquidConfig(
     'acl agenstra_drop src all',
     'deny_info TCP_RESET agenstra_drop',
   ];
-
   const allowDomains = hosts.allow.domains.length > 0;
   const allowIps = hosts.allow.ips.length > 0;
   const denyDomains = hosts.deny.domains.length > 0;

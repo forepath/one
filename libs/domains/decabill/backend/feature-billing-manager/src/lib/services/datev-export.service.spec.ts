@@ -110,13 +110,11 @@ describe('DatevExportService', () => {
   };
   const customerProfilesRepository = { findByUserId: jest.fn() };
   const voidDocumentsRepository = { findByInvoiceId: jest.fn() };
-
   const creditDocumentsRepository = { findWithdrawnInPeriod: jest.fn().mockResolvedValue([]) };
   const invoicePdfService = { readPdf: jest.fn() };
   const billingNotificationPublisher = {
     publishDatevExport: jest.fn(),
   };
-
   const service = new DatevExportService(
     configService as never,
     billingTenantService as never,
@@ -312,6 +310,7 @@ describe('DatevExportService', () => {
     });
 
     const tenantIds = documentArchiveService.buildDocumentRelativePath.mock.calls.map((call) => call[1]);
+
     expect(tenantIds).toContain('default');
     expect(tenantIds).toContain('acme');
   });

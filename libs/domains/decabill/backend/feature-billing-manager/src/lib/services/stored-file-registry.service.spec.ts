@@ -2,6 +2,7 @@ import { FileStorageScope } from '@forepath/shared/backend/util-file-storage';
 
 import { StoredFileEntity } from '../entities/stored-file.entity';
 import { deriveStoredFileLongSha } from '../utils/stored-file-hash.util';
+
 import { StoredFileRegistryService } from './stored-file-registry.service';
 
 describe('StoredFileRegistryService', () => {
@@ -45,11 +46,12 @@ describe('StoredFileRegistryService', () => {
         if (!row.id) {
           row.id = '11111111-1111-1111-1111-111111111111';
         }
+
         saved.push({ ...row });
+
         return row;
       }),
     });
-
     const row = await service.registerFromBuffer({
       tenantId: 'default',
       scope: FileStorageScope.customerInvoices,
@@ -73,10 +75,10 @@ describe('StoredFileRegistryService', () => {
       readFile: jest.fn().mockResolvedValue(content),
       save: jest.fn(async (row: StoredFileEntity) => {
         row.id = '11111111-1111-1111-1111-111111111111';
+
         return row;
       }),
     });
-
     const registered = await service.registerFromBuffer({
       tenantId: 'default',
       scope: FileStorageScope.customerInvoices,
@@ -97,11 +99,9 @@ describe('StoredFileRegistryService', () => {
       longSha: 'a'.repeat(40),
       tenantId: 'default',
     } as StoredFileEntity;
-
     const { service } = createService({
       find: jest.fn().mockResolvedValue([row]),
     });
-
     const map = await service.findMapForKeys([
       { scope: FileStorageScope.customerOffers, storageKey: 'user/offer.pdf' },
     ]);
@@ -119,7 +119,6 @@ describe('StoredFileRegistryService', () => {
         return row;
       }),
     });
-
     const reserved = await service.reserve('default', FileStorageScope.customerInvoices, 'sub/a.pdf');
 
     expect(reserved.id).toBe('22222222-2222-2222-2222-222222222222');
@@ -132,10 +131,10 @@ describe('StoredFileRegistryService', () => {
     const { service, fileStorage } = createService({
       save: jest.fn(async (row: StoredFileEntity) => {
         row.id = '11111111-1111-1111-1111-111111111111';
+
         return row;
       }),
     });
-
     const registered = await service.registerFromBuffer({
       tenantId: 'default',
       scope: FileStorageScope.customerInvoices,

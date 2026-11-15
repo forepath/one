@@ -5,6 +5,7 @@ import { Queue } from 'bullmq';
 
 import { OPENCODE_MCP_SERVERS_REFRESH_JOB_NAME } from '../constants/opencode-mcp-servers.constants';
 import { AGENSTRA_CONTROLLER_QUEUE_NAME } from '../modules/agenstra-notifications.module';
+
 import { OpencodeMcpServersCatalogService } from './opencode-mcp-servers-catalog.service';
 
 /**

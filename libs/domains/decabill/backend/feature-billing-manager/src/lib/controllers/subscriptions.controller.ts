@@ -19,8 +19,8 @@ import { ConfigChangeResponseDto } from '../dto/config-change-response.dto';
 import { CreateSubscriptionDto } from '../dto/create-subscription.dto';
 import { SubscriptionMeterHistoryDto } from '../dto/meter-history.dto';
 import { SubscriptionMeterSummaryDto } from '../dto/meter-response.dto';
-import { SubscriptionMeterHistoryQueryDto } from '../dto/subscription-meter-history-query.dto';
 import { ResumeSubscriptionDto } from '../dto/resume-subscription.dto';
+import { SubscriptionMeterHistoryQueryDto } from '../dto/subscription-meter-history-query.dto';
 import { SubscriptionResponseDto } from '../dto/subscription-response.dto';
 import { SubscriptionsSummaryResponseDto } from '../dto/subscriptions-summary-response.dto';
 import { WithdrawSubscriptionDto } from '../dto/withdraw-subscription.dto';
@@ -187,7 +187,6 @@ export class SubscriptionsController {
     }
 
     const { subscription, withdrawalResult } = await this.subscriptionService.withdrawSubscription(id, userInfo.userId);
-
     const [mapped] = await this.subscriptionService.mapManyToResponses([subscription]);
 
     return { ...mapped, withdrawalResult };

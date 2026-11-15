@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException, StreamableFile } from '@nestjs/
 import { Test } from '@nestjs/testing';
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
+import { OfferProfileSummaryService } from '../offers/services/offer-profile-summary.service';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { UsersBillingDayRepository } from '../repositories/users-billing-day.repository';
@@ -9,7 +10,6 @@ import { InvoiceCreationService } from '../services/invoice-creation.service';
 import { InvoiceService } from '../services/invoice.service';
 import { PaymentOrchestrationService } from '../services/payment-orchestration.service';
 import { SubscriptionService } from '../services/subscription.service';
-import { OfferProfileSummaryService } from '../offers/services/offer-profile-summary.service';
 
 import { InvoicesController } from './invoices.controller';
 

@@ -1,11 +1,11 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 
-import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
-import type { InvoiceEntity } from '../entities/invoice.entity';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
-import type { ServicePlanEntity } from '../entities/service-plan.entity';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
+import type { InvoiceEntity } from '../entities/invoice.entity';
 import { PaymentRefundStatus } from '../entities/payment-refund.entity';
 import type { SubscriptionEntity } from '../entities/subscription.entity';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoiceCreditDocumentsRepository } from '../repositories/invoice-credit-documents.repository';
@@ -22,7 +22,6 @@ import { resolveSubscriptionBillingBaseOverride } from '../utils/server-type-bil
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
 import { BillingScheduleService } from './billing-schedule.service';
-import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { InvoiceTaxContextService } from './invoice-tax-context.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
@@ -216,7 +215,6 @@ export class WithdrawalRefundService {
     const items = await this.subscriptionItemsRepository.findBySubscription(subscription.id);
     const basePriceOverride = await resolveSubscriptionBillingBaseOverride(items, this.providerServerTypesService);
     const pricing = this.pricingService.calculate(plan, basePriceOverride);
-    const periodStart = subscription.currentPeriodStart ?? subscription.createdAt;
     const refundNet = calculateProratedAmount(
       plan,
       pricing.totalPrice,

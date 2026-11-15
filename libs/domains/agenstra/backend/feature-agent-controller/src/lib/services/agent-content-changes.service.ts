@@ -235,6 +235,7 @@ export class AgentContentChangesService {
         return { kind: 'chat' };
       case 'automation':
         return { kind: 'automation' };
+
       case 'task': {
         const taskId = typeof source['taskId'] === 'string' ? source['taskId'].trim().toLowerCase() : '';
 
@@ -357,6 +358,7 @@ export class AgentContentChangesService {
 
         return this.ticketResult(await this.findTicketById(writer.clientId, created.id));
       }
+
       case 'ticket.update': {
         const ticket = await this.findTicket(writer.clientId, change.sha as string, change.revision);
 
@@ -373,6 +375,7 @@ export class AgentContentChangesService {
 
         return this.ticketResult(await this.findTicketById(writer.clientId, ticket.id));
       }
+
       case 'ticket.comment': {
         const ticket = await this.findTicket(writer.clientId, change.sha as string);
 
@@ -380,6 +383,7 @@ export class AgentContentChangesService {
 
         return this.ticketResult(await this.findTicketById(writer.clientId, ticket.id));
       }
+
       case 'ticket.delete': {
         const ticket = await this.findTicket(writer.clientId, change.sha as string, change.revision);
 
@@ -387,6 +391,7 @@ export class AgentContentChangesService {
 
         return { kind: 'ticket', sha: ticket.longSha as string, title: ticket.title, deleted: true };
       }
+
       case 'page.create': {
         const parent = change.parentSha ? await this.findNode(writer.clientId, change.parentSha) : undefined;
         const nodeType = change.nodeType ?? KnowledgeNodeType.PAGE;
@@ -408,6 +413,7 @@ export class AgentContentChangesService {
 
         return this.nodeResult(await this.findNodeById(writer.clientId, created.id));
       }
+
       case 'page.update': {
         const node = await this.findNode(writer.clientId, change.sha as string, change.revision);
 
@@ -422,6 +428,7 @@ export class AgentContentChangesService {
 
         return this.nodeResult(await this.findNodeById(writer.clientId, node.id));
       }
+
       case 'page.delete': {
         const node = await this.findNode(writer.clientId, change.sha as string, change.revision);
 
@@ -429,6 +436,7 @@ export class AgentContentChangesService {
 
         return { kind: 'knowledge', sha: node.longSha as string, title: node.title, deleted: true };
       }
+
       case 'plan.update': {
         // Plans of the agent's own environment only; executed / drafting plans are refused by the plan service.
         const plan = await this.chatPlanService.findForAgentBySha(

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { OfferNumberSequenceEntity } from '../entities/offer-number-sequence.entity';
 import { resolveNumberScopeKey } from '../../utils/number-scope.utils';
+import { OfferNumberSequenceEntity } from '../entities/offer-number-sequence.entity';
 
 @Injectable()
 export class OfferNumberSequencesRepository {
@@ -26,7 +26,6 @@ export class OfferNumberSequencesRepository {
         `,
         [tenantId, year],
       );
-
       const lastValue = Number(rows?.[0]?.last_value);
 
       if (!Number.isFinite(lastValue) || lastValue < 1) {

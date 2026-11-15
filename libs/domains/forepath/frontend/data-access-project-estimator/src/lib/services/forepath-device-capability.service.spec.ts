@@ -5,7 +5,6 @@ import { ForepathDeviceCapabilityService } from './forepath-device-capability.se
 
 describe('ForepathDeviceCapabilityService', () => {
   const originalNavigator = globalThis.navigator;
-
   const setup = (platformId: object) => {
     TestBed.configureTestingModule({
       providers: [{ provide: PLATFORM_ID, useValue: platformId }],
@@ -13,7 +12,6 @@ describe('ForepathDeviceCapabilityService', () => {
 
     return TestBed.inject(ForepathDeviceCapabilityService);
   };
-
   const mockNavigator = (overrides: Record<string, unknown>): void => {
     Object.defineProperty(globalThis, 'navigator', {
       configurable: true,

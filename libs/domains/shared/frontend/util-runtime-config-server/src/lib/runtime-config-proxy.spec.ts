@@ -305,7 +305,6 @@ describe('fetchRuntimeConfigFromEnv', () => {
       NODE_ENV: 'production',
       CONFIG_CACHE_TTL_MS: '60000',
     };
-
     const first = await fetchRuntimeConfigFromEnv(env);
     const second = await fetchRuntimeConfigFromEnv(env);
 

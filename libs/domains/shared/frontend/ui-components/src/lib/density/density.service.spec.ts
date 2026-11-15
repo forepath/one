@@ -17,6 +17,7 @@ describe('FpcDensityService', () => {
 
   function create(): FpcDensityService {
     const service = TestBed.inject(FpcDensityService);
+
     TestBed.tick();
 
     return service;

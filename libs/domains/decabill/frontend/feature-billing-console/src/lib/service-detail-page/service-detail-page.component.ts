@@ -74,8 +74,6 @@ import {
 } from '@forepath/shared/frontend/ui-components';
 import type { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexStroke, ApexXAxis } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
-
-import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart';
 import {
   catchError,
   distinctUntilChanged,
@@ -89,8 +87,10 @@ import {
   withLatestFrom,
 } from 'rxjs';
 
+import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart';
 import { hideBillingModal, showBillingModal } from '../billing-modal';
 import { getProvisioningStatusBadgeTone, getProvisioningStatusLabel } from '../billing-status-labels';
+
 import { resolveServiceDetailAddonTabComponent } from './service-detail-addon-tab.registry';
 import {
   DETAILS_TAB_ID,
@@ -700,6 +700,7 @@ export class ServiceDetailPageComponent implements OnInit {
         error: (error: unknown) => {
           const status =
             error && typeof error === 'object' && 'status' in error ? Number((error as { status: unknown }).status) : 0;
+
           this.sshRevealError.set(
             status === 409
               ? $localize`:@@featureOverview-sshAccessAlreadyRevealed:The SSH access key has already been revealed for this service.`

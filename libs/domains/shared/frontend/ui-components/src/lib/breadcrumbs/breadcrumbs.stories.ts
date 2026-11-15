@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
 
 import { FpcBreadcrumbItemComponent } from '../breadcrumb-item/breadcrumb-item.component';
+
 import { FpcBreadcrumbsComponent } from './breadcrumbs.component';
 
 const meta: Meta<FpcBreadcrumbsComponent> = {

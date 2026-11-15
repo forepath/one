@@ -1,4 +1,5 @@
 import { billingChartTimeAxis } from './billing-chart';
+import { DEFAULT_BILLING_COUNTRY_CODE, withOptionalCountry } from './billing-country-default';
 import {
   formatBillingClockRange,
   formatBillingDate,
@@ -6,7 +7,6 @@ import {
   formatBillingDateTime,
   formatBillingMoney,
 } from './billing-format';
-import { nextBillingDate, NextBillingDayPipe } from './pipes/next-billing-day.pipe';
 import {
   formatProjectHourlyRate,
   formatProjectOpenBillableAmount,
@@ -17,7 +17,7 @@ import {
   getPromotionFreeDaysLabel,
   getPromotionFreePeriodsLabel,
 } from './billing-status-labels';
-import { DEFAULT_BILLING_COUNTRY_CODE, withOptionalCountry } from './billing-country-default';
+import { nextBillingDate, NextBillingDayPipe } from './pipes/next-billing-day.pipe';
 
 // The country list registers i18n-iso-countries locales (JSON import), not needed here.
 jest.mock('./billing-country-options', () => ({ getCountryDisplayName: (code: string) => code }));

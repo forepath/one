@@ -68,13 +68,13 @@ import {
 import type { Subscription } from 'rxjs';
 
 import { BillingAdminSubscriptionSelectComponent } from '../billing-admin-subscription-select/billing-admin-subscription-select.component';
+import { formatBillingClockRange } from '../billing-format';
 import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { isProjectTimeEntryBilled } from '../billing-status-labels';
-import { formatBillingClockRange } from '../billing-format';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import { buildPricingTotalsSummary, type PricingTotalsSummary } from '../pricing-totals-summary/pricing-totals.util';
-import { ProjectBoardComponent } from '../project-board/project-board.component';
 import { projectBoardViewState, type ProjectBoardView } from '../project-board/project-board-view';
+import { ProjectBoardComponent } from '../project-board/project-board.component';
 import { ProjectMilestonesPanelComponent } from '../project-milestones-panel/project-milestones-panel.component';
 import {
   computeProjectMilestonesCompleteProgress,

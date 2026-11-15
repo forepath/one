@@ -1,5 +1,3 @@
-import { createReducer, on } from '@ngrx/store';
-
 import {
   clearPromotionValidation,
   loadActivePromotions,
@@ -97,6 +95,7 @@ describe('promotionsReducer', () => {
       initialPromotionsState,
       validatePromotion({ request: { code: 'SAVE10', redemptionContext: 'new', planId: 'plan-1' } }),
     );
+
     expect(validating.validationLoading).toBe(true);
     expect(validating.validationContext).toBe('new');
 
@@ -107,20 +106,25 @@ describe('promotionsReducer', () => {
         preview: { valid: false, message: 'Invalid' },
       }),
     );
+
     expect(invalid.validationError).toBe('Invalid');
     expect(invalid.validatedTargetKey).toBeNull();
 
     const failed = promotionsReducer(validating, validatePromotionFailure({ error: 'Network error' }));
+
     expect(failed.validationError).toBe('Network error');
 
     const redeeming = promotionsReducer(invalid, redeemPromotion());
+
     expect(redeeming.redeeming).toBe(true);
 
     const redeemed = promotionsReducer(redeeming, redeemPromotionSuccess({ redemption: { id: 'red-1' } as never }));
+
     expect(redeemed.redeeming).toBe(false);
     expect(redeemed.validationPreview).toBeNull();
 
     const redeemFailed = promotionsReducer(redeeming, redeemPromotionFailure({ error: 'Redeem failed' }));
+
     expect(redeemFailed.redeemError).toBe('Redeem failed');
   });
 
@@ -129,12 +133,14 @@ describe('promotionsReducer', () => {
       initialPromotionsState,
       loadActivePromotionsFailure({ error: 'active fail' }),
     );
+
     expect(activeFailed.error).toBe('active fail');
 
     const historyFailed = promotionsReducer(
       initialPromotionsState,
       loadPromotionRedemptionsFailure({ error: 'history fail' }),
     );
+
     expect(historyFailed.error).toBe('history fail');
   });
 });

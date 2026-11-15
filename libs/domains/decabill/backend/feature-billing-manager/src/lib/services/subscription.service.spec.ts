@@ -2,6 +2,8 @@ import { BadRequestException } from '@nestjs/common';
 
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
+import { SubscriptionOrderPreparationService } from '../offers/services/subscription-order-preparation.service';
+import { BackordersRepository } from '../repositories/backorders.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
@@ -13,14 +15,12 @@ import { AvailabilityService } from './availability.service';
 import { BackorderService } from './backorder.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { CancellationPolicyService } from './cancellation-policy.service';
-import { WithdrawalPolicyService } from './withdrawal-policy.service';
-import { WithdrawalRefundService } from './withdrawal-refund.service';
-import { PricingService } from './pricing.service';
 import { CloudInitConfigService } from './cloud-init-config.service';
 import { CustomerProfilesService } from './customer-profiles.service';
+import { PricingService } from './pricing.service';
 import { SubscriptionService } from './subscription.service';
-import { BackordersRepository } from '../repositories/backorders.repository';
-import { SubscriptionOrderPreparationService } from '../offers/services/subscription-order-preparation.service';
+import { WithdrawalPolicyService } from './withdrawal-policy.service';
+import { WithdrawalRefundService } from './withdrawal-refund.service';
 
 jest.mock('../utils/config-validation.utils', () => ({
   validateConfigSchema: jest.fn().mockReturnValue([]),
@@ -593,6 +593,7 @@ describe('SubscriptionService', () => {
 
   it('resolves custom CloudInit config and env when service is custom', async () => {
     const customTemplate = { id: 'cfg-1', isActive: true };
+
     (cloudInitConfigService.findByIdForProvisioning as jest.Mock).mockResolvedValue(customTemplate);
     (cloudInitConfigService.resolveEnvironmentVariables as jest.Mock).mockReturnValue({ API_KEY: 'resolved' });
     plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
@@ -639,6 +640,7 @@ describe('SubscriptionService', () => {
 
   it('resolves custom config from provisioningOptionKey when plan offers multiple options', async () => {
     const customTemplate = { id: 'cfg-2', isActive: true };
+
     (cloudInitConfigService.findByIdForProvisioning as jest.Mock).mockResolvedValue(customTemplate);
     (cloudInitConfigService.resolveEnvironmentVariables as jest.Mock).mockReturnValue({ API_KEY: 'resolved' });
     plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
@@ -1068,6 +1070,7 @@ describe('SubscriptionService', () => {
       isActive: true,
       compatibleProviders: ['hetzner'],
     };
+
     plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
       id: 'plan-1',
       serviceTypeId: 'stype-1',
@@ -1403,6 +1406,7 @@ describe('SubscriptionService', () => {
         .mockResolvedValueOnce({ stdout: '', stderr: '', code: 0 });
 
       const promise = service.provisionSubscriptionItem('item-1');
+
       await jest.runAllTimersAsync();
       await promise;
 
@@ -1436,6 +1440,7 @@ describe('SubscriptionService', () => {
       sshExecutor.exec.mockResolvedValue({ stdout: '', stderr: 'Permission denied', code: 255 });
 
       const promise = service.provisionSubscriptionItem('item-1');
+
       await jest.runAllTimersAsync();
       await promise;
 

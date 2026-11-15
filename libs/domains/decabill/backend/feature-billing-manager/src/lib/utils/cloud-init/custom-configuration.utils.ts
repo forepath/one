@@ -1,12 +1,13 @@
 import { CloudInitConfigEntity } from '../../entities/cloud-init-config.entity';
+
 import { formatEnvLines, quoteComposeValue } from './env.utils';
+import { buildSshdHardeningScript } from './ssh-hardening.utils';
 import {
   DEFAULT_COMPOSE_TEMPLATE,
   interpolateCloudInitTemplate,
   type CloudInitTemplateContext,
 } from './template-interpolation.utils';
 import { quoteShellLiteral, validateCloudInitWorkDir } from './work-dir.utils';
-import { buildSshdHardeningScript } from './ssh-hardening.utils';
 
 export interface CustomConfigurationCloudInitConfig {
   ssh: {

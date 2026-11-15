@@ -37,6 +37,7 @@ export class SupplierProfilesRepository {
 
     if (search?.trim()) {
       const term = `%${search.trim().toLowerCase()}%`;
+
       qb.andWhere(
         `(LOWER(COALESCE(supplier.email, '')) LIKE :term
                   OR LOWER(COALESCE(supplier.company, '')) LIKE :term

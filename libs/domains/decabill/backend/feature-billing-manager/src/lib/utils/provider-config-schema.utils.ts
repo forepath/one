@@ -18,7 +18,6 @@ export interface ConfigSchemaPropertyDefinition {
 }
 
 const INTERNAL_PROVIDER_KEYS = new Set(['service', 'cloudInitConfigId', 'cloudInitConfigIds', 'provisioningOptions']);
-
 const ALL_INTEGRATED_PRODUCT_SERVICES = allIntegratedProvisioningServices();
 
 export function getProviderConfigFieldScope(

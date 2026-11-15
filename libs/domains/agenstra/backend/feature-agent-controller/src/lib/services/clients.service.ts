@@ -29,14 +29,14 @@ import { CreateClientResponseDto } from '../dto/create-client-response.dto';
 import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
 import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
-import { ClientsRepository } from '../repositories/clients.repository';
-import { createPublicAddressLookup, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
-import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
-
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
+import { ClientsRepository } from '../repositories/clients.repository';
+import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 import { mapClientToSearchDocument } from '../search/agenstra-search-document.mapper';
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
 import { sanitizeListSearch, tryAgenstraSearchIds } from '../search/agenstra-search-list.util';
+import { createPublicAddressLookup, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 import { ClientIsolationService } from './client-isolation.service';
 import { StatisticsService } from './statistics.service';
@@ -215,7 +215,6 @@ export class ClientsService {
         }),
       );
     };
-
     const loadWithSearch = async (clientIds?: string[]): Promise<ClientEntity[]> => {
       const openSearchIds = await tryAgenstraSearchIds(
         this.searchIndex,
@@ -445,7 +444,6 @@ export class ClientsService {
 
     const effectiveType = updateClientDto.authenticationType ?? clientBeforeUpdate?.authenticationType;
     const mtlsUpdate = this.resolveMtlsUpdate(updateClientDto, clientBeforeUpdate?.authenticationType, effectiveType);
-
     // Prepare update data (including API key and OIDC credentials if provided)
     const updateData: Partial<ClientEntity> = {
       name: updateClientDto.name,

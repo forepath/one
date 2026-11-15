@@ -3,8 +3,8 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideRouter, withInMemoryScrolling, withRouterConfig } from '@angular/router';
-import { getBillingTenantInterceptor } from '@forepath/decabill/frontend/data-access-billing-console';
 import { environment, provideLocale } from '@forepath/agenstra/frontend/util-configuration';
+import { getBillingTenantInterceptor } from '@forepath/decabill/frontend/data-access-billing-console';
 import { createCookieConsentConfig } from '@forepath/shared/frontend/util-cookie-consent';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';

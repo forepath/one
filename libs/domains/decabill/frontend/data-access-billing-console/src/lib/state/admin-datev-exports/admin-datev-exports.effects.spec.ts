@@ -36,7 +36,6 @@ describe('AdminDatevExportsEffects', () => {
   let service: jest.Mocked<
     Pick<AdminBillingService, 'listDatevExports' | 'triggerDatevExport' | 'downloadDatevExport'>
   >;
-
   const listItem = {
     id: 'exp-1',
     scope: 'tenant' as const,

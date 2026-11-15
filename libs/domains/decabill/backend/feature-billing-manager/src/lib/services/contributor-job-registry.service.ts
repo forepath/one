@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import type { ContributorJobDefinition, RegisteredContributorJob } from '../utils/contributor-job.types';
 import { sanitizeContributorJobDefinition } from '../utils/contributor-job.types';
+
 import { AddonModuleRegistryService } from './addon-module-registry.service';
 import { CloudInitModuleRegistryService } from './cloud-init-module-registry.service';
 import { IntegratedStackRegistryService } from './integrated-stack-registry.service';

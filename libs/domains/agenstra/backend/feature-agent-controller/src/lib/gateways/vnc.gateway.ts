@@ -1,9 +1,10 @@
+import type { Server as HttpServer } from 'http';
+import { parse as parseUrl } from 'url';
+
 import { ClientUsersRepository, ensureClientAccess, type RequestWithUser, UserRole } from '@forepath/identity/backend';
 import { resolveWebsocketCorsOriginEnv } from '@forepath/shared/shared/util-network-address';
 import { Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
-import type { Server as HttpServer } from 'http';
 import type { Server as SocketIoServer } from 'socket.io';
-import { parse as parseUrl } from 'url';
 import WebSocket = require('ws');
 
 import { VNC_TICKET_SUBPROTOCOL_PREFIX, VNC_WEBSOCKET_PATH } from '../constants/vnc.constants';
@@ -123,6 +124,7 @@ export class VncGateway implements OnApplicationBootstrap, OnModuleDestroy {
         },
         onError: (error) => {
           this.logger.warn(`Upstream manager VNC error: ${error.message}`);
+
           if (client.readyState === WebSocket.OPEN || client.readyState === WebSocket.CONNECTING) {
             client.close();
           }
@@ -213,12 +215,10 @@ export class VncGateway implements OnApplicationBootstrap, OnModuleDestroy {
         cleanup();
         resolve(upstream);
       };
-
       const onError = (error: Error) => {
         cleanup();
         reject(error);
       };
-
       const cleanup = () => {
         upstream.off('open', onOpen);
         upstream.off('error', onError);

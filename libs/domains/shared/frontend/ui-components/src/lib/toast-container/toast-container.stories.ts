@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
 
 import { FpcToastComponent } from '../toast/toast.component';
+
 import { FpcToastContainerComponent } from './toast-container.component';
 
 const meta: Meta<FpcToastContainerComponent> = {

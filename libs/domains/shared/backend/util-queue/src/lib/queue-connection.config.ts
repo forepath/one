@@ -1,5 +1,5 @@
-import type { QueueOptions } from 'bullmq';
 import { readKeyValueClientDriver } from '@forepath/shared/backend/util-redis-cache';
+import type { QueueOptions } from 'bullmq';
 
 export interface RedisConnectionConfig {
   host: string;

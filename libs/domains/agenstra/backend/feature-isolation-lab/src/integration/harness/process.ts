@@ -26,10 +26,12 @@ export function runProcess(
     child.stderr.on('data', (chunk: Buffer) => stderr.push(chunk));
     child.on('error', (error) => {
       if (timer) clearTimeout(timer);
+
       reject(error);
     });
     child.on('close', (code) => {
       if (timer) clearTimeout(timer);
+
       resolve({
         code,
         stdout: Buffer.concat(stdout).toString('utf-8'),

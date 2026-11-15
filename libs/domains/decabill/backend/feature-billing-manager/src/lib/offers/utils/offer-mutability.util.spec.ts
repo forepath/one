@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 
 import { OfferStatus } from '../constants/offer-status.constants';
 import type { OfferEntity } from '../entities/offer.entity';
+
 import { assertOfferDeletable, assertOfferDraftEditable } from './offer-mutability.util';
 
 describe('offer-mutability.util', () => {

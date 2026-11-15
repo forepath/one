@@ -3,14 +3,14 @@ import {
   WorkspaceConfigurationOverrideEntity,
   type WorkspaceConfigurationSettingKey,
 } from '@forepath/agenstra/backend/feature-agent-manager';
+import { configureTrustProxy, createOriginAllowlistMiddleware, getMtlsHttpsOptions } from '@forepath/identity/backend';
+import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import {
   CorrelationAwareConsoleLogger,
   CorrelationAwareSocketIoAdapter,
   createCorrelationIdMiddleware,
   registerAxiosCorrelationIdPropagation,
 } from '@forepath/shared/backend/util-http-context';
-import { configureTrustProxy, createOriginAllowlistMiddleware, getMtlsHttpsOptions } from '@forepath/identity/backend';
-import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
 import {
   getOtelMetricsGlobalPrefixExcludes,
   isOtelEffectivelyEnabled,
@@ -89,6 +89,7 @@ export async function bootstrap(): Promise<void> {
   registerAxiosCorrelationIdPropagation(axios);
 
   const otelConfig = resolveOtelRuntimeConfig(process.env, 'agenstra-agent-manager');
+
   logOtelStartupStatus(appLogger, otelConfig);
 
   if (isOtelEffectivelyEnabled(otelConfig)) {

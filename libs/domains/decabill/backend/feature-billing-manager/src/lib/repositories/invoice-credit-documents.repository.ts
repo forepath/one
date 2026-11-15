@@ -5,8 +5,8 @@ import { EntityManager, Repository } from 'typeorm';
 import { TaxCategory } from '../constants/tax-category.constants';
 import { InvoiceCreditDocumentEntity } from '../entities/invoice-credit-document.entity';
 import { configChangePrimarySourceRef } from '../utils/config-change-billing-source-ref.util';
-import { applyUserTenantFilter } from '../utils/tenant-query.utils';
 import { isUniqueConstraintViolation } from '../utils/postgres-unique-violation.util';
+import { applyUserTenantFilter } from '../utils/tenant-query.utils';
 
 @Injectable()
 export class InvoiceCreditDocumentsRepository {

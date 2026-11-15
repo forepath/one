@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { FpcButtonComponent } from '../button/button.component';
 import { provideFpcControlSize } from '../control-size/control-size';
+
 import { FpcModalFooterDirective } from './modal-footer.directive';
 import { FpcModalComponent, fpcModalContentAtCap } from './modal.component';
 
@@ -108,6 +109,7 @@ describe('FpcModalComponent bodyScroll', () => {
     const fixture = TestBed.createComponent(FpcModalComponent);
 
     if (bodyScroll !== undefined) fixture.componentRef.setInput('bodyScroll', bodyScroll);
+
     fixture.componentRef.setInput('scrollable', true);
     fixture.componentInstance.open.set(true);
     fixture.detectChanges();

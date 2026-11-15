@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { SharedHeroMascotComponent, SharedMarkStackComponent } from '@forepath/shared/frontend/feature-landingpage';
 import {
   FpcBadgeComponent,
   FpcButtonComponent,
@@ -13,7 +14,6 @@ import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forep
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { Subject, catchError, debounceTime, distinctUntilChanged, finalize, of, switchMap, tap } from 'rxjs';
 
-import { GhostContentApiService } from './ghost-content-api.service';
 import {
   GHOST_AI_GENERATED_LABEL_ON_IMAGE_SRC,
   GHOST_AI_GENERATED_LABEL_SRC,
@@ -23,8 +23,8 @@ import {
   getGhostAiMarkers,
   type GhostAiMarkers,
 } from './ghost-ai-tags.util';
+import { GhostContentApiService } from './ghost-content-api.service';
 import type { GhostPagination, GhostPost, GhostTag } from './ghost.types';
-import { SharedHeroMascotComponent, SharedMarkStackComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-forepath-blog',
@@ -80,6 +80,7 @@ export class ForepathBlogComponent implements OnInit {
     this.applyListMeta();
 
     const initialQuery = this.route.snapshot.queryParamMap.get('q') ?? '';
+
     this.searchControl.setValue(initialQuery, { emitEvent: false });
     this.activeQuery.set(initialQuery.trim());
 
@@ -87,6 +88,7 @@ export class ForepathBlogComponent implements OnInit {
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe((value) => {
         const query = value.trim();
+
         void this.router.navigate([], {
           relativeTo: this.route,
           queryParams: query ? { q: query } : {},
@@ -100,6 +102,7 @@ export class ForepathBlogComponent implements OnInit {
       .pipe(
         tap(({ append }) => {
           this.errorMessage.set(null);
+
           if (append) {
             this.loadingMore.set(true);
           } else {
@@ -116,10 +119,12 @@ export class ForepathBlogComponent implements OnInit {
               this.errorMessage.set(
                 $localize`:@@featureForepathBlog-loadError:We could not load blog posts right now. Please try again later.`,
               );
+
               if (!append) {
                 this.posts.set([]);
                 this.pagination.set(null);
               }
+
               return of(null);
             }),
             finalize(() => {
@@ -137,6 +142,7 @@ export class ForepathBlogComponent implements OnInit {
 
   loadMore(): void {
     const nextPage = this.pagination()?.next;
+
     if (nextPage == null || this.loading() || this.loadingMore()) {
       return;
     }

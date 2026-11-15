@@ -20,9 +20,9 @@ jest.mock('archiver', () => ({
   }),
 }));
 
-import { BadRequestException, ForbiddenException, NotFoundException, PayloadTooLargeException } from '@nestjs/common';
 import { runWithTenantId } from '@forepath/shared/backend';
 import { FileStorageScope } from '@forepath/shared/backend/util-file-storage';
+import { BadRequestException, ForbiddenException, NotFoundException, PayloadTooLargeException } from '@nestjs/common';
 
 import { AdminFileManagerView } from '../constants/admin-file-manager.constants';
 import { DatevExportScope, DatevExportStatus } from '../constants/datev-export.constants';
@@ -56,7 +56,6 @@ describe('AdminFileManagerService', () => {
   const storedFileSigningConfig = {
     getSecret: jest.fn().mockReturnValue(null),
   };
-
   const service = new AdminFileManagerService(
     dataSource as never,
     fileStorage as never,

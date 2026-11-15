@@ -113,6 +113,7 @@ export class FpcDropdownItemComponent {
     if (this.disabled()) {
       event.preventDefault();
       event.stopPropagation();
+
       return;
     }
 

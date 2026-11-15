@@ -44,6 +44,7 @@ describe('CloudInitDispatchService', () => {
 
   it('uses the registered stack buildUserData for each first-party key', () => {
     const registry = new IntegratedStackRegistryService();
+
     registry.register({
       key: 'agenstra-controller',
       displayName: 'Agenstra Controller',
@@ -74,6 +75,7 @@ describe('CloudInitDispatchService', () => {
 
   it('maps legacy controller and manager aliases to registered stacks', () => {
     const registry = new IntegratedStackRegistryService();
+
     registry.register({
       key: 'agenstra-controller',
       displayName: 'Agenstra Controller',
@@ -92,6 +94,7 @@ describe('CloudInitDispatchService', () => {
 
   it('throws for unknown integrated keys instead of falling back to controller', () => {
     const registry = new IntegratedStackRegistryService();
+
     registry.register({
       key: 'agenstra-controller',
       displayName: 'Agenstra Controller',
@@ -109,6 +112,7 @@ describe('CloudInitDispatchService', () => {
 
   it('throws when the stack is registered without buildUserData', () => {
     const registry = new IntegratedStackRegistryService();
+
     registry.register({
       key: 'agenstra-manager',
       displayName: 'Agenstra Manager',

@@ -13,7 +13,6 @@ const promotion = (code: string, name: string): AdminPromotionResponse =>
 
 describe('BillingAdminPromotionSelectComponent', () => {
   let list: jest.Mock;
-
   const create = (selectedCode = '') => {
     const fixture = TestBed.createComponent(BillingAdminPromotionSelectComponent);
 

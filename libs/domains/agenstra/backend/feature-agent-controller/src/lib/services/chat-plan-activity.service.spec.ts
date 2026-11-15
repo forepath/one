@@ -1,5 +1,5 @@
-import { ChatPlanActionType, ChatPlanActorType } from '../entities/chat-plan.enums';
 import type { ChatPlanActivityEntity } from '../entities/chat-plan-activity.entity';
+import { ChatPlanActionType, ChatPlanActorType } from '../entities/chat-plan.enums';
 
 import { ChatPlanActivityService, chatPlanUserActor } from './chat-plan-activity.service';
 

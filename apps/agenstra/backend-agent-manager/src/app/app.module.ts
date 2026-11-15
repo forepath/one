@@ -1,11 +1,11 @@
 import { AgentsModule, AgenstraOtelModule } from '@forepath/agenstra/backend/feature-agent-manager';
-import { MonitoringModule } from '@forepath/shared/backend';
 import {
   getAuthenticationMethod,
   getHybridAuthGuards,
   getRateLimitConfig,
   OidcModule,
 } from '@forepath/identity/backend';
+import { MonitoringModule } from '@forepath/shared/backend';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';

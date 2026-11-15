@@ -7,8 +7,8 @@ import {
   type FreeDaysAdvantageConfig,
   type PromotionAdvantageConfig,
 } from '../constants/promotion.constants';
-import type { PromotionEntity } from '../entities/promotion.entity';
 import type { PromotionRedemptionEntity } from '../entities/promotion-redemption.entity';
+import type { PromotionEntity } from '../entities/promotion.entity';
 
 export function normalizePromotionCode(code: string): string {
   return code.trim().toUpperCase();
@@ -56,16 +56,19 @@ export function buildAdvantageSummary(promotion: PromotionEntity, currency = 'EU
 
       return `${amount.toFixed(2)} ${currency} credit`;
     }
+
     case PromotionAdvantageType.FREE_DAYS: {
       const days = (config as FreeDaysAdvantageConfig).days;
 
       return days === 1 ? '1 day free' : `${days} days free`;
     }
+
     case PromotionAdvantageType.FREE_BILLING_PERIODS: {
       const periods = (config as FreeBillingPeriodsAdvantageConfig).periods;
 
       return periods === 1 ? '1 billing period free' : `${periods} billing periods free`;
     }
+
     default:
       return 'Promotion benefit';
   }
@@ -103,6 +106,7 @@ export function computeBenefitWindow(
 
       return { benefitStartsAt: now, remainingAmountNet: amount };
     }
+
     case PromotionAdvantageType.FREE_DAYS: {
       const days = (promotion.advantageConfig as FreeDaysAdvantageConfig).days;
       const benefitEndsAt = new Date(now);
@@ -111,11 +115,13 @@ export function computeBenefitWindow(
 
       return { benefitStartsAt: now, benefitEndsAt };
     }
+
     case PromotionAdvantageType.FREE_BILLING_PERIODS: {
       const periods = (promotion.advantageConfig as FreeBillingPeriodsAdvantageConfig).periods;
 
       return { benefitStartsAt: now, remainingBillingPeriods: periods };
     }
+
     default:
       return { benefitStartsAt: now };
   }
@@ -138,6 +144,7 @@ export function validateAdvantageConfig(type: PromotionAdvantageType, config: Pr
 
       return;
     }
+
     case PromotionAdvantageType.FREE_DAYS: {
       const days = Number((config as FreeDaysAdvantageConfig).days);
 
@@ -149,6 +156,7 @@ export function validateAdvantageConfig(type: PromotionAdvantageType, config: Pr
 
       return;
     }
+
     case PromotionAdvantageType.FREE_BILLING_PERIODS: {
       const periods = Number((config as FreeBillingPeriodsAdvantageConfig).periods);
 
@@ -160,6 +168,7 @@ export function validateAdvantageConfig(type: PromotionAdvantageType, config: Pr
 
       return;
     }
+
     default:
       throw new BadRequestException('Unsupported advantage type');
   }

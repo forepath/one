@@ -199,7 +199,6 @@ export class AgentTasksService {
     await this.assertAccess(clientId, req);
 
     const task = await this.findTaskOrThrow(clientId, agentId, taskId);
-
     const reviewed = new Date(reviewedUpdatedAt);
 
     if (Number.isNaN(reviewed.getTime()) || task.updatedAt.toISOString() !== reviewed.toISOString()) {

@@ -1,9 +1,10 @@
-import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 import {
   WORKSPACE_INDEX_CHANGED_EVENT,
   WORKSPACE_INDEX_REBUILD_REQUIRED_EVENT,
   WORKSPACE_SYSTEM_SOCKET_ID,
 } from '../constants/workspace-index.constants';
+
+import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 
 describe('WorkspaceChangeNotifierService', () => {
   let service: WorkspaceChangeNotifierService;
@@ -54,6 +55,7 @@ describe('WorkspaceChangeNotifierService', () => {
   it('invalidates directory listings for ignored paths without broadcasting them', async () => {
     const invalidate = jest.fn().mockResolvedValue(undefined);
     const unregister = service.registerTreeInvalidator(invalidate);
+
     service.notifyPathChanges('agent-1', [{ path: '.env', op: 'upsert' }], 'inotify');
     expect(invalidate).toHaveBeenCalledWith('agent-1');
     expect(indexEvents).toHaveLength(0);

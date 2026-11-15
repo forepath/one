@@ -39,7 +39,6 @@ export class InvoiceTaxContextService {
     const buyerCountry = profile?.country ?? null;
     const buyerCustomerType = profile?.customerType ?? null;
     const buyerVatId = normalizeVatId(profile?.vatId ?? null);
-
     const treatment = this.taxTreatmentService.resolve({
       issuerCountry,
       customerCountry: buyerCountry,
@@ -49,7 +48,6 @@ export class InvoiceTaxContextService {
       ossDestinationApplies: oss.ossDestinationApplies,
       forceChargeNonEuIssuerEuB2b,
     });
-
     const isEuCrossBorderNonReverseCharge =
       treatment.issuerIsInEu &&
       Boolean(buyerCountry) &&

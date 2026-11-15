@@ -7,6 +7,7 @@ describe('FpcButtonComponent', () => {
     const fixture = TestBed.createComponent(FpcButtonComponent);
 
     for (const [name, value] of Object.entries(inputs)) fixture.componentRef.setInput(name, value);
+
     fixture.detectChanges();
 
     return (fixture.nativeElement as HTMLElement).querySelector('button') as HTMLButtonElement;

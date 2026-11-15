@@ -74,6 +74,7 @@ export type AxiosRequestConfigLike = {
 function applyOutboundCorrelationHeader(config: AxiosRequestConfigLike, correlationId: string): void {
   if (!config.headers) {
     config.headers = { [CORRELATION_ID_HEADER_OUTBOUND]: correlationId };
+
     return;
   }
 
@@ -83,6 +84,7 @@ function applyOutboundCorrelationHeader(config: AxiosRequestConfigLike, correlat
 
   if (typeof h.set === 'function') {
     h.set(CORRELATION_ID_HEADER_OUTBOUND, correlationId);
+
     return;
   }
 

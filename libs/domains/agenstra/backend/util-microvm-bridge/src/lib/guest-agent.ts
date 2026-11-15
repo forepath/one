@@ -10,9 +10,9 @@ import {
   MICROVM_INSTALL_DIR,
 } from './constants';
 import { DataChannel, Frame, FrameType, decodeData, decodeJson, decodeResize } from './frame';
+import { ResolvedUser, buildProcessEnv, resolveUserSpec, wrapForUser } from './guest-users';
 import { CONTROL_STREAM, WORKLOAD_STREAM } from './host-daemon';
 import { BootConfig, parseBootConfig, parseExecRequest, parseOpenTcp, parseSignal } from './messages';
-import { ResolvedUser, buildProcessEnv, resolveUserSpec, wrapForUser } from './guest-users';
 
 export interface GuestAgentOptions {
   /** Writes encoded frames to the virtio-serial port. */
@@ -319,6 +319,7 @@ export class GuestAgent {
       case FrameType.Eof:
         session.child.stdin?.end();
         break;
+
       case FrameType.Resize: {
         const { cols, rows } = decodeResize(frame.payload);
 

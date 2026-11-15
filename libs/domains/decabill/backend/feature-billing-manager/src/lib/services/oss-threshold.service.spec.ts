@@ -8,7 +8,6 @@ describe('OssThresholdService', () => {
   const notifications = {
     publish: jest.fn(),
   };
-
   const service = new OssThresholdService(ledgersRepository as never, notifications as never);
 
   beforeEach(() => {

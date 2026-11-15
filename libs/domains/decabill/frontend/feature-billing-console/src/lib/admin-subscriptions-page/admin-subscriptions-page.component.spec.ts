@@ -38,7 +38,6 @@ function facadeStub(overrides: Record<string, unknown> = {}): Record<string, unk
 
 const sub = (id: string, status: string): AdminSubscriptionListItem =>
   ({ id, number: `SUB-${id}`, status, planName: `Plan ${id}`, items: [] }) as unknown as AdminSubscriptionListItem;
-
 const entry = (id: string): UsageMeterEntryResponse =>
   ({
     id,

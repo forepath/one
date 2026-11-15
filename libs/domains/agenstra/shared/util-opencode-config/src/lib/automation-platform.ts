@@ -123,6 +123,7 @@ export function injectPlatformAutomationConfig(config: JsonObject): JsonObject {
 
   const skills = normalizeSkillsRoot(next['skills']);
   const paths = new Set(skills.paths);
+
   paths.add(AGENSTRA_TICKET_AUTOMATION_SKILL_ABS_DIR);
   next['skills'] = { paths: [...paths], urls: skills.urls };
 

@@ -5,7 +5,6 @@
  */
 
 const TRC_SAMPLES = 1024;
-
 /** sRGB primaries chromatically adapted to the D50 profile connection space (Bradford). */
 const SRGB_D50_PRIMARIES: Readonly<Record<'r' | 'g' | 'b', readonly [number, number, number]>> = {
   r: [0.4360747, 0.2225045, 0.0139322],

@@ -11,9 +11,9 @@ import {
 
 import type { ContextInjectionPayload } from '../types/context-injection.types';
 
+import { deriveAgentContextItems } from './agent-context-items.utils';
 import type { AgentGraphLayerData } from './agent-graph-builder.utils';
 import { assignAgentGraphCommunities } from './agent-graph-builder.utils';
-import { deriveAgentContextItems } from './agent-context-items.utils';
 
 /**
  * Prompt reference graphs: which context a prompt had explicitly (attached), implicitly (available) and what the turn

@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 
 import { UPDATES_ADMIN_ENVIRONMENT } from '../tokens/updates-admin-environment';
+
 import { UpdatesService } from './updates.service';
 
 describe('UpdatesService', () => {

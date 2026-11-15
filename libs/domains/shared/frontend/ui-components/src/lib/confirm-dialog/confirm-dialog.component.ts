@@ -112,6 +112,7 @@ export class FpcConfirmDialogComponent {
     }
 
     const target = event.target;
+
     if (!(target instanceof Element)) {
       return;
     }

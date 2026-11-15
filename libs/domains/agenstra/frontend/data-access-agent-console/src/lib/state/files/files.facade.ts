@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
+import type { FileUpdateNotificationData } from '../container-socket/container-socket.types';
+
 import {
   clearDirectoryListing,
   clearFileContent,
@@ -45,7 +47,6 @@ import type {
   MoveFileDto,
   WriteFileDto,
 } from './files.types';
-import type { FileUpdateNotificationData } from '../container-socket/container-socket.types';
 
 function withOptionalFileContext<T extends object>(
   payload: T,

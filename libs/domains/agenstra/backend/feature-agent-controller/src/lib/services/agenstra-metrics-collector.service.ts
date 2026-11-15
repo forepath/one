@@ -139,7 +139,6 @@ export class AgenstraMetricsCollectorService implements OnModuleInit, OnModuleDe
       .groupBy('ticket.client_id')
       .addGroupBy('ticket.status')
       .getRawMany<{ clientId: string; status: string; count: string }>();
-
     const result = new Map<string, number>();
 
     for (const row of rows) {

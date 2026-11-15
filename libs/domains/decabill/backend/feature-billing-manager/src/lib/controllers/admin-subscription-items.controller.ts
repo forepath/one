@@ -9,8 +9,8 @@ import {
 } from '../dto/subscription-item-response.dto';
 import { UpdateSubscriptionItemDisplayNameDto } from '../dto/update-subscription-item-display-name.dto';
 import { SubscriptionItemServerService } from '../services/subscription-item-server.service';
-import { toServerInfoResponse } from '../utils/subscription-item-response.utils';
 import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
+import { toServerInfoResponse } from '../utils/subscription-item-response.utils';
 
 @Controller('admin/billing/subscriptions/:subscriptionId/items')
 @UsersRoles(UserRole.ADMIN)
@@ -25,6 +25,7 @@ export class AdminSubscriptionItemsController {
     @Req() req?: RequestWithUser,
   ): Promise<SubscriptionItemDetailResponseDto> {
     const userInfo = getUserFromRequest(req ?? ({} as RequestWithUser));
+
     ensureAdmin(userInfo);
 
     return await this.subscriptionItemServerService.getItemDetailAsAdmin(subscriptionId, itemId);
@@ -57,6 +58,7 @@ export class AdminSubscriptionItemsController {
     @Req() req?: RequestWithUser,
   ): Promise<SubscriptionItemResponseDto> {
     const userInfo = getUserFromRequest(req ?? ({} as RequestWithUser));
+
     ensureAdmin(userInfo);
 
     return await this.subscriptionItemServerService.updateDisplayNameAsAdmin(
@@ -74,6 +76,7 @@ export class AdminSubscriptionItemsController {
     @Req() req?: RequestWithUser,
   ): Promise<ServerInfoResponseDto> {
     const userInfo = getUserFromRequest(req ?? ({} as RequestWithUser));
+
     ensureAdmin(userInfo);
 
     const info = await this.subscriptionItemServerService.getServerInfoAsAdmin(subscriptionId, itemId);

@@ -103,6 +103,7 @@ describe('SubscriptionsEffects', () => {
 
     it('should request one extra row and set hasMore when a next page exists', (done) => {
       const subscriptions = Array(11).fill(mockSubscription);
+
       actions$ = of(loadSubscriptions({ params: { limit: 10, offset: 20 } }));
       subscriptionsService.listSubscriptions.mockReturnValue(of(subscriptions));
 

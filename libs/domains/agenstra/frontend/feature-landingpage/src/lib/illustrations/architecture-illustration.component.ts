@@ -86,15 +86,12 @@ interface Chip {
 const NODE_HEIGHT = 64;
 const SCENE_WIDTH = 1200;
 const SCENE_HEIGHT = 600;
-
 const PHASES = ['Sign in', 'Provision', 'Prompt', 'Egress', 'Audit'];
-
 const COLUMNS = [
   { label: 'Your team', x: 20 },
   { label: 'Control plane', x: 212 },
   { label: 'Internet', x: 1016 },
 ];
-
 const FRAMES_LAYOUT: readonly ArchFrame[] = [
   {
     id: 'host',
@@ -131,7 +128,6 @@ const FRAMES_LAYOUT: readonly ArchFrame[] = [
     muted: true,
   },
 ];
-
 const NODES: readonly ArchNode[] = [
   {
     id: 'console',
@@ -276,7 +272,6 @@ const NODES: readonly ArchNode[] = [
     show: 'always',
   },
 ];
-
 const EDGES: readonly ArchEdge[] = [
   { from: 'console', to: 'controller', show: 'always' },
   { from: 'desktop', to: 'controller', show: 'always', dashed: true },
@@ -292,7 +287,6 @@ const EDGES: readonly ArchEdge[] = [
   { from: 'guard', to: 'github', show: 'guard' },
   { from: 'guard', to: 'paste', show: 'guard' },
 ];
-
 const INITIAL: FlowState = {
   phase: 0,
   bubble: 'none',
@@ -307,7 +301,6 @@ const INITIAL: FlowState = {
   pulses: [],
   durationMs: 1000,
 };
-
 /**
  * The loop: a developer signs in through the console (Sign in), the controller asks the host's agent
  * manager for an environment, which probes gVisor, locks the network down behind a new egress guard and
@@ -353,7 +346,6 @@ const FRAMES: readonly FlowState[] = buildFrames([
   { bubble: 'reply', pulses: [{ edge: 'console-controller', reverse: true }], durationMs: 1400 },
   { durationMs: 3200 },
 ]);
-
 /** Shown without animation (reduced motion): the whole round trip, finished. */
 const STATIC_FRAME = FRAMES.length - 1;
 

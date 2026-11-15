@@ -1,5 +1,5 @@
-import { createServer, request as httpRequest } from 'node:http';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { createServer, request as httpRequest } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -151,6 +151,7 @@ describe('create-delegating-server', () => {
 
       try {
         const home = await httpGet(port, '/');
+
         expect(home.status).toBe(200);
         expect(home.body).toContain('en-home');
         expect(home.body).toContain('id="runtime-config"');
@@ -159,10 +160,12 @@ describe('create-delegating-server', () => {
         expect(home.headers['last-modified']).toBeTruthy();
 
         const pricing = await httpGet(port, '/en/pricing');
+
         expect(pricing.status).toBe(200);
         expect(pricing.body).toContain('pricing');
 
         const asset = await httpGet(port, '/en/app.js');
+
         expect(asset.status).toBe(200);
         expect(asset.body).toContain('console.log');
         expect(String(asset.headers['cache-control'])).toBe('public, max-age=0, must-revalidate');
@@ -170,12 +173,14 @@ describe('create-delegating-server', () => {
         expect(asset.headers['last-modified']).toBeTruthy();
 
         const hashed = await httpGet(port, '/en/main-ABCDEFGH.js');
+
         expect(hashed.status).toBe(200);
         expect(String(hashed.headers['cache-control'])).toBe('public, max-age=31536000, immutable');
 
         const revalidated = await httpGet(port, '/en/app.js', {
           'if-none-match': String(asset.headers['etag']),
         });
+
         expect(revalidated.status).toBe(304);
         expect(revalidated.body).toBe('');
         expect(String(revalidated.headers['etag'])).toBe(String(asset.headers['etag']));
@@ -216,16 +221,19 @@ describe('create-delegating-server', () => {
         await warmStaticMemoryCache([join(serverRoot, 'browser')]);
 
         const htmlAfter = await httpGet(port, '/', { 'if-none-match': htmlEtag });
+
         expect(htmlAfter.status).toBe(200);
         expect(htmlAfter.body).toContain('en-home-v2');
         expect(String(htmlAfter.headers['etag'])).not.toBe(htmlEtag);
 
         const monacoAfter = await httpGet(port, '/en/monaco-editor.js', { 'if-none-match': monacoEtag });
+
         expect(monacoAfter.status).toBe(200);
         expect(monacoAfter.body).toContain('v2 patched');
         expect(String(monacoAfter.headers['etag'])).not.toBe(monacoEtag);
 
         const newHashed = await httpGet(port, '/en/main-NEWHASH2.js');
+
         expect(newHashed.status).toBe(200);
         expect(String(newHashed.headers['cache-control'])).toBe('public, max-age=31536000, immutable');
       } finally {
@@ -320,22 +328,27 @@ describe('create-delegating-server', () => {
 
       try {
         const overview = await httpGet(port, '/de/blog');
+
         expect(overview.status).toBe(302);
         expect(overview.headers['location']).toBe('/en/blog');
 
         const post = await httpGet(port, '/de/blog/my-post?ref=newsletter');
+
         expect(post.status).toBe(302);
         expect(post.headers['location']).toBe('/en/blog/my-post?ref=newsletter');
 
         const unprefixed = await httpGet(port, '/blog/my-post', { 'accept-language': 'de-DE,de;q=0.9' });
+
         expect(unprefixed.status).toBe(200);
         expect(unprefixed.body).toBe('ssr-en:/blog/my-post');
 
         const english = await httpGet(port, '/en/blog/my-post');
+
         expect(english.status).toBe(200);
         expect(english.body).toBe('ssr-en:/blog/my-post');
 
         const otherGermanPage = await httpGet(port, '/de/contact');
+
         expect(otherGermanPage.status).toBe(200);
         expect(otherGermanPage.body).toBe('ssr-de:/contact');
       } finally {
@@ -475,7 +488,6 @@ describe('create-delegating-server', () => {
       });
       const blockerAddress = blocker.address();
       const busyPort = typeof blockerAddress === 'object' && blockerAddress ? blockerAddress.port : 0;
-
       const handle = createDelegatingServer({
         serverRoot,
         availableLocales: ['en'],
@@ -559,7 +571,6 @@ describe('create-delegating-server', () => {
       });
       const blockerAddress = blocker.address();
       const busyPort = typeof blockerAddress === 'object' && blockerAddress ? blockerAddress.port : 0;
-
       const exitSpy = jest.spyOn(process, 'exit').mockImplementation((() => undefined) as never);
       const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
 

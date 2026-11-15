@@ -2,9 +2,9 @@ import { RequireScopes, UserRole, getUserFromRequest, type RequestWithUser } fro
 import { Body, Controller, ForbiddenException, Get, Logger, Optional, Put, Req } from '@nestjs/common';
 
 import { OpencodeConfigResponseDto, UpsertOpencodeConfigDto } from '../dto/opencode-config.dto';
-import { OpencodeConfigService } from '../services/opencode-config.service';
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
+import { OpencodeConfigService } from '../services/opencode-config.service';
 import { hasAgentConfigChanges, summarizeAgentConfigChange } from '../utils/agent-config-change.utils';
 
 @Controller('admin/opencode/config')

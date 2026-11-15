@@ -1,3 +1,5 @@
+import type { UpdatesFullState, UpdatesStatusSummary } from '../../types/updates.types';
+
 import {
   clearAdminUpdatesError,
   loadAdminUpdatesFull,
@@ -11,7 +13,6 @@ import {
   triggerAdminUpdateCheckSuccess,
 } from './admin-updates.actions';
 import { adminUpdatesReducer, initialAdminUpdatesState } from './admin-updates.reducer';
-import type { UpdatesFullState, UpdatesStatusSummary } from '../../types/updates.types';
 
 describe('adminUpdatesReducer', () => {
   const baseStatus = (over: Partial<UpdatesStatusSummary> = {}): UpdatesStatusSummary => ({
@@ -24,7 +25,6 @@ describe('adminUpdatesReducer', () => {
     outdatedInstanceCount: 0,
     ...over,
   });
-
   const baseFullState = (over: Partial<UpdatesFullState> = {}): UpdatesFullState => ({
     ...baseStatus(),
     release: null,

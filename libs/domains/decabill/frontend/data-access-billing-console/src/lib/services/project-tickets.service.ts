@@ -103,7 +103,9 @@ export class ProjectTicketsService {
 
   uploadAttachment(projectId: string, ticketId: string, file: File): Observable<ProjectTicketAttachmentResponse> {
     const form = new FormData();
+
     form.append('file', file, file.name);
+
     return this.http.post<ProjectTicketAttachmentResponse>(
       `${this.ticketsUrl(projectId)}/${ticketId}/attachments`,
       form,

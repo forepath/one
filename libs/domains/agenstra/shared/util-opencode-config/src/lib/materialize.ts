@@ -1,9 +1,10 @@
-import type { JsonObject } from './types';
-import { migrateConfigV1ToV2 } from './migrate-v1-to-v2';
-import { wireMcpOauthForOpenCode } from './mcp-wire';
 import { isMcpServerAllowed, resolveMcpAllowDenyIdentity } from '@forepath/agenstra/shared/util-opencode-mcp-servers';
+
 import { injectPlatformAutomationConfig } from './automation-platform';
+import { wireMcpOauthForOpenCode } from './mcp-wire';
+import { migrateConfigV1ToV2 } from './migrate-v1-to-v2';
 import { injectPlatformPlanConfig } from './plan-platform';
+import type { JsonObject } from './types';
 
 /** Platform / UI-only roots that OpenCode Config rejects or silently drops. */
 const UNSUPPORTED_WIRE_ROOTS = [
@@ -50,10 +51,12 @@ function renameRootKey(config: JsonObject, from: string, to: string): void {
   }
 
   const incoming = config[from];
+
   delete config[from];
 
   if (!(to in config)) {
     config[to] = incoming;
+
     return;
   }
 
@@ -61,6 +64,7 @@ function renameRootKey(config: JsonObject, from: string, to: string): void {
 
   if (isPlainObject(existing) && isPlainObject(incoming)) {
     config[to] = { ...incoming, ...existing };
+
     return;
   }
 
@@ -168,8 +172,8 @@ export function permissionsRulesToWire(rules: unknown): JsonObject | undefined {
 
     const action = rawAction.trim() === 'shell' ? 'bash' : rawAction.trim();
     const resource = typeof rule['resource'] === 'string' && rule['resource'].trim() ? rule['resource'].trim() : '*';
-
     const resources = byAction.get(action) ?? {};
+
     resources[resource] = effect;
     byAction.set(action, resources);
   }
@@ -519,7 +523,6 @@ function wireMcp(config: JsonObject): void {
   const nextMcp: JsonObject = {};
   const servers = isPlainObject(mcp['servers']) ? (mcp['servers'] as JsonObject) : null;
   let mcpTimeoutMs: number | undefined;
-
   const timeoutRoot = mcp['timeout'];
 
   if (isPlainObject(timeoutRoot)) {
@@ -586,7 +589,6 @@ export function materializeModelAllowDeny(input: JsonObject): JsonObject {
   let disabledProviders = Array.isArray(config['disabled_providers'])
     ? [...(config['disabled_providers'] as string[])]
     : [];
-
   const allowProviders = new Set(
     allow
       .map(parseModelRef)
@@ -629,6 +631,7 @@ export function materializeModelAllowDeny(input: JsonObject): JsonObject {
     }
 
     const list = blacklistByProvider.get(parsed.provider) ?? [];
+
     pushUnique(list, parsed.model);
     blacklistByProvider.set(parsed.provider, list);
   }
@@ -646,6 +649,7 @@ export function materializeModelAllowDeny(input: JsonObject): JsonObject {
     }
 
     const list = whitelistByProvider.get(parsed.provider) ?? [];
+
     pushUnique(list, parsed.model);
     whitelistByProvider.set(parsed.provider, list);
   }
@@ -775,7 +779,6 @@ export function materializeMcpAllowDeny(input: JsonObject): JsonObject {
  */
 export function toOpencodeWireConfig(input: JsonObject): JsonObject {
   const config: JsonObject = structuredClone(input);
-
   // Skills: string[] → { paths, urls }
   const skills = wireSkills(config['skills']);
 
@@ -836,6 +839,7 @@ export function toOpencodeWireConfig(input: JsonObject): JsonObject {
   // Permissions rules → permission object
   if ('permissions' in config) {
     const permission = permissionsRulesToWire(config['permissions']);
+
     delete config['permissions'];
 
     if (permission) {
@@ -863,6 +867,7 @@ export function toOpencodeWireConfig(input: JsonObject): JsonObject {
 
   if ('update' in config) {
     const autoupdate = mapAutoupdate(config['update']);
+
     delete config['update'];
 
     if (autoupdate !== undefined && config['autoupdate'] === undefined) {
@@ -907,7 +912,6 @@ export function applyMcpRemovalTombstones(
   const wire = isPlainObject(wireConfig) ? { ...wireConfig } : {};
   const desiredMcp = isPlainObject(wire['mcp']) ? { ...(wire['mcp'] as JsonObject) } : {};
   const current = isPlainObject(currentMcp) ? currentMcp : {};
-
   const nextMcp: JsonObject = { ...desiredMcp };
   let changed = false;
 
@@ -922,11 +926,13 @@ export function applyMcpRemovalTombstones(
 
   for (const key of Object.keys(desiredMcp)) {
     const desired = desiredMcp[key];
+
     if (!isPlainObject(desired) || desired['enabled'] === false) {
       continue;
     }
 
     const existing = current[key];
+
     if (!isPlainObject(existing) || existing['enabled'] !== false) {
       continue;
     }

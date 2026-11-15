@@ -29,9 +29,7 @@ describe('PublicWithdrawalService', () => {
   const billingEmailPublisher = {
     publishWithdrawalConfirmation: jest.fn(),
   };
-
   let service: PublicWithdrawalService;
-
   const baseDto = {
     subscriptionNumber: 'SUB-000001',
     customerName: 'Jane Doe',

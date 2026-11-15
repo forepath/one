@@ -2,8 +2,8 @@ import { assertPatScopes, getUserFromRequest, type RequestWithUser } from '@fore
 import { getTenantIdOrDefault, UpdatesModule } from '@forepath/shared/backend';
 import { Module } from '@nestjs/common';
 
-import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import type { BillingNotificationEventType } from '../notifications/billing-notification.events';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { BILLING_QUEUE_NAME } from '../queue/billing-queue.constants';
 import { ensureAdmin } from '../utils/billing-access.utils';
 

@@ -8,7 +8,6 @@ import { catchError, delay, EMPTY, fromEvent, map, merge, of, switchMap, tap, wi
 import { io, Socket } from 'socket.io-client';
 
 import { resolveBillingTenantId } from '../../interceptors/tenant.interceptor';
-import { projectSummaryChanged } from '../projects/projects.actions';
 import {
   projectBoardMilestoneRemoved,
   projectBoardMilestoneUpsert,
@@ -23,6 +22,7 @@ import {
   projectBoardTimeEntryRemoved,
   projectBoardTimeEntryUpsert,
 } from '../project-time-entries/project-time-entries.actions';
+import { projectSummaryChanged } from '../projects/projects.actions';
 
 import {
   connectProjectBoardSocket,

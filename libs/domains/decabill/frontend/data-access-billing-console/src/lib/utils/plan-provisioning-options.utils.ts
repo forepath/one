@@ -7,7 +7,6 @@ const INTEGRATED_SERVICES = new Set<IntegratedProvisioningService>([
   'agenstra-manager',
   'decabill-billing',
 ]);
-
 const LEGACY_INTEGRATED_SERVICE_ALIASES: Record<string, IntegratedProvisioningService> = {
   controller: 'agenstra-controller',
   manager: 'agenstra-manager',

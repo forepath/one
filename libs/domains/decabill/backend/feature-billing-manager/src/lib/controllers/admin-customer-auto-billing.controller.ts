@@ -3,9 +3,9 @@ import { Controller, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@n
 
 import type { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto';
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
+import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
 import { AutoBillingService } from '../services/auto-billing.service';
 import { CustomerProfilesAdminService } from '../services/customer-profiles-admin.service';
-import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
 
 @Controller('admin/billing/customer-profiles/:id/auto-billing')
 @UsersRoles(UserRole.ADMIN)

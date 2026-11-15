@@ -2,23 +2,24 @@ import { isPlatformBrowser } from '@angular/common';
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 
 import {
-  FOREPATH_ESTIMATE_LLM_TEMPERATURE,
-  FOREPATH_ESTIMATE_LLM_TOP_P,
-} from '../constants/forepath-estimate-llm.constants';
-import {
   FOREPATH_ESTIMATE_CALCULATION_GUIDELINES,
   FOREPATH_ESTIMATE_CALCULATION_GUIDELINES_COMPACT,
   FOREPATH_ESTIMATE_JSON_SCHEMA_DESCRIPTION,
 } from '../constants/forepath-estimate-guidelines.constants';
+import {
+  FOREPATH_ESTIMATE_LLM_TEMPERATURE,
+  FOREPATH_ESTIMATE_LLM_TOP_P,
+} from '../constants/forepath-estimate-llm.constants';
 import { FOREPATH_PROJECT_BREAKDOWN_JSON_SCHEMA } from '../constants/forepath-project-breakdown.schema';
+import { PROJECT_ESTIMATE_PROMPT_TEMPLATE_OVERHEAD_TOKENS } from '../constants/forepath-prompt-input.constants';
 import {
   FOREPATH_LOCAL_LLM_MODEL_BASE_URL,
   FOREPATH_LOCAL_LLM_MODEL_ID_STANDARD,
 } from '../constants/forepath-service-catalog.constants';
-import type { ProjectBreakdown } from '../types/project-estimator.types';
 import { FOREPATH_LOCAL_LLM_WORKER_FACTORY } from '../tokens/forepath-local-llm-worker.token';
-import { cloneProjectBreakdown } from '../utils/forepath-breakdown-clone.utils';
+import type { ProjectBreakdown } from '../types/project-estimator.types';
 import { calibrateProjectBreakdown } from '../utils/forepath-breakdown-calibration.utils';
+import { cloneProjectBreakdown } from '../utils/forepath-breakdown-clone.utils';
 import { isSelfHostedModelAvailable, toModelLoadErrorMessage } from '../utils/forepath-model-assets.utils';
 import { hashStringToSeed, normalizeProjectDescription } from '../utils/forepath-prompt-hash.utils';
 import {
@@ -26,7 +27,6 @@ import {
   computeMaxOutputTokens,
   estimatePromptTokenCount,
 } from '../utils/forepath-prompt-token-budget.utils';
-import { PROJECT_ESTIMATE_PROMPT_TEMPLATE_OVERHEAD_TOKENS } from '../constants/forepath-prompt-input.constants';
 
 import { ForepathEstimateParserService } from './forepath-estimate-parser.service';
 import { ForepathLlmMemoryProfileService } from './forepath-llm-memory-profile.service';
@@ -94,7 +94,6 @@ export class ForepathLocalLlmService {
     const messages = this.buildMessages(fittedUserPrompt, systemPrompt);
     const completionParams = this.buildCompletionParams(messages, normalizedPrompt, systemPrompt, fittedUserPrompt);
     const response = await engine.chat.completions.create(completionParams);
-
     const content = response.choices[0]?.message?.content;
 
     if (typeof content !== 'string' || content.trim().length === 0) {
@@ -103,6 +102,7 @@ export class ForepathLocalLlmService {
 
     try {
       const breakdown = calibrateProjectBreakdown(this.parser.parseModelOutput(content), normalizedPrompt);
+
       this.breakdownCache.set(cacheKey, breakdown);
 
       return cloneProjectBreakdown(breakdown);
@@ -118,11 +118,9 @@ export class ForepathLocalLlmService {
             'Your previous answer was invalid. Respond with only valid JSON matching the requested schema. Do not include markdown fences or commentary.',
         },
       ];
-
       const retryResponse = await engine.chat.completions.create({
         ...this.buildCompletionParams(retryMessages, normalizedPrompt, systemPrompt, fittedUserPrompt),
       });
-
       const retryContent = retryResponse.choices[0]?.message?.content;
 
       if (typeof retryContent !== 'string' || retryContent.trim().length === 0) {
@@ -130,6 +128,7 @@ export class ForepathLocalLlmService {
       }
 
       const breakdown = calibrateProjectBreakdown(this.parser.parseModelOutput(retryContent), normalizedPrompt);
+
       this.breakdownCache.set(cacheKey, breakdown);
 
       return cloneProjectBreakdown(breakdown);
@@ -254,6 +253,7 @@ export class ForepathLocalLlmService {
 
     try {
       const modelRecord = await this.resolveModelRecord(webLlm, profile.modelId);
+
       this.llmWorker = this.createWorker();
 
       const engine = await webLlm.CreateWebWorkerMLCEngine(

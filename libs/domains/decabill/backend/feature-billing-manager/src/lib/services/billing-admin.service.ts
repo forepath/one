@@ -1,17 +1,17 @@
 import { UsersRepository } from '@forepath/identity/backend';
 import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 
-import type { SubscriptionResponseDto } from '../dto/subscription-response.dto';
 import type {
   AdminBillingSummaryResponseDto,
   AdminSubscriptionListItemDto,
   PaginatedAdminSubscriptionsResponseDto,
 } from '../dto/admin-billing.dto';
+import type { SubscriptionResponseDto } from '../dto/subscription-response.dto';
 import { SubscriptionStatus, type SubscriptionEntity } from '../entities/subscription.entity';
+import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
-import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { resolveCustomerNamesByUserId } from '../utils/customer-display-name.util';
 

@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
 import {
   AGENSTRA_AUTOMATION_AGENT_NAME,
   AGENSTRA_AUTOMATION_SESSION_PERMISSION_RULESET,
   AGENSTRA_PLAN_AGENT_NAME,
   AGENSTRA_PLAN_SESSION_PERMISSION_RULESET,
 } from '@forepath/agenstra/shared/util-opencode-config';
+import { Injectable, Logger } from '@nestjs/common';
 
 import {
   isReadOnlyExploreResumeSessionSuffix,

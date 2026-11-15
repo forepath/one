@@ -22,6 +22,19 @@ import {
   type ServicePlanResponse,
   type TaxPreviewRates,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcButtonComponent,
+  FpcFormCheckComponent,
+  FpcFormCheckGroupComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcItemCardComponent,
+} from '@forepath/shared/frontend/ui-components';
+
+import { BillingAdminPromotionSelectComponent } from '../billing-admin-promotion-select/billing-admin-promotion-select.component';
+import { PlanOrderConfiguratorComponent } from '../plan-order-configurator/plan-order-configurator.component';
+import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
+import type { PricingTotalsLeadingRow } from '../pricing-totals-summary/pricing-totals.util';
 
 import { createEmptyOfferFormLine, type OfferFormLineItem } from './admin-offer-form.util';
 import {
@@ -33,19 +46,6 @@ import {
   type OfferLineTotals,
   type PricingTotalsSummary,
 } from './admin-offer-totals.util';
-import { BillingAdminPromotionSelectComponent } from '../billing-admin-promotion-select/billing-admin-promotion-select.component';
-import { PlanOrderConfiguratorComponent } from '../plan-order-configurator/plan-order-configurator.component';
-import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
-import {
-  FpcButtonComponent,
-  FpcFormCheckComponent,
-  FpcFormCheckGroupComponent,
-  FpcFormControlComponent,
-  FpcFormFieldComponent,
-  FpcItemCardComponent,
-} from '@forepath/shared/frontend/ui-components';
-
-import type { PricingTotalsLeadingRow } from '../pricing-totals-summary/pricing-totals.util';
 
 @Component({
   selector: 'framework-admin-offer-line-editor',
@@ -207,6 +207,7 @@ export class AdminOfferLineEditorComponent implements OnInit, OnChanges {
     switch (line.lineType) {
       case 'project_template':
         return computeProjectTemplateOfferLineTotals(line, taxRates);
+
       case 'plan_template': {
         if (!line.planId.trim()) {
           const taxRate = rateForTaxCategory(taxRates, 'standard');
@@ -218,6 +219,7 @@ export class AdminOfferLineEditorComponent implements OnInit, OnChanges {
 
         return computePlanTemplateOfferLineTotals(configurator?.pricingPreview() ?? null);
       }
+
       default:
         return computeStandardOfferLineTotals(line, taxRates);
     }

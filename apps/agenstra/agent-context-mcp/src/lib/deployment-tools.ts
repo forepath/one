@@ -15,18 +15,15 @@ const WORKFLOW_ID_PROPERTY = {
   maxLength: 64,
   description: 'Deployment workflow id from deployments_list_workflows.',
 };
-
 const TICKET_PROPERTY = {
   type: 'string',
   description: 'Context ticket from the prompt hint (starts with "ctx-").',
 };
-
 const RUN_ACTION_DECISIONS =
   'The result is a decision: "applied" (run describes the run), "pending" (the user has not decided yet: call ' +
   'deployments_action_status with the requestId), "denied" (not allowed in this session or rejected by the user) or ' +
   '"failed" (message says why). In a chat with the user they approve each action; scheduled tasks and ticket ' +
   'automation may only do it when a workspace user allowed it for that task / automation; plans never can.';
-
 const WORKFLOW_FIELD_PROPERTIES = {
   connectionId: {
     type: 'string',
@@ -70,7 +67,6 @@ const WORKFLOW_FIELD_PROPERTIES = {
   },
   enabled: { type: 'boolean', description: 'Disabled workflows cannot run (default true).' },
 };
-
 const RUN_ID_PROPERTY = {
   type: 'string',
   maxLength: 64,
@@ -407,6 +403,7 @@ export async function callDeploymentTool(
     switch (name) {
       case AGENSTRA_DEPLOYMENTS_MCP_TOOL_NAMES.listWorkflows:
         return json(await client.listDeploymentWorkflows());
+
       case AGENSTRA_DEPLOYMENTS_MCP_TOOL_NAMES.listRuns: {
         const limit = args['limit'];
 
@@ -427,12 +424,14 @@ export async function callDeploymentTool(
           }),
         );
       }
+
       case AGENSTRA_DEPLOYMENTS_MCP_TOOL_NAMES.getRun:
         if (!runId) {
           return text('Missing "runId": use deployments_list_runs to find it.', true);
         }
 
         return json(await client.getDeploymentRun(runId));
+
       case AGENSTRA_DEPLOYMENTS_MCP_TOOL_NAMES.getRunLogs: {
         if (!runId) {
           return text('Missing "runId": use deployments_list_runs to find it.', true);
@@ -442,6 +441,7 @@ export async function callDeploymentTool(
 
         return json(await client.getDeploymentRunLogs(runId, jobId || undefined));
       }
+
       case AGENSTRA_DEPLOYMENTS_MCP_TOOL_NAMES.trigger: {
         if (!ticket) {
           return missingTicket();
@@ -470,6 +470,7 @@ export async function callDeploymentTool(
 
         return json(await client.triggerDeployment(ticket, workflowId, input));
       }
+
       case AGENSTRA_DEPLOYMENTS_MCP_TOOL_NAMES.cancelRun:
         if (!ticket) {
           return missingTicket();
@@ -480,6 +481,7 @@ export async function callDeploymentTool(
         }
 
         return json(await client.cancelDeploymentRun(ticket, runId));
+
       case AGENSTRA_DEPLOYMENTS_MCP_TOOL_NAMES.actionStatus: {
         const requestId = trimmedString(args['requestId']);
 
@@ -493,8 +495,10 @@ export async function callDeploymentTool(
 
         return json(await client.deploymentActionStatus(ticket, requestId));
       }
+
       case AGENSTRA_DEPLOYMENTS_MCP_TOOL_NAMES.listConnections:
         return json(await client.listDeploymentConnections());
+
       case AGENSTRA_DEPLOYMENTS_MCP_TOOL_NAMES.createWorkflow: {
         const fields = workflowFields(args);
 
@@ -518,6 +522,7 @@ export async function callDeploymentTool(
           }),
         );
       }
+
       case AGENSTRA_DEPLOYMENTS_MCP_TOOL_NAMES.updateWorkflow: {
         if (!workflowId) {
           return text('Missing "workflowId": use deployments_list_workflows to find it.', true);
@@ -535,6 +540,7 @@ export async function callDeploymentTool(
 
         return json(await client.updateDeploymentWorkflow(workflowId, fields));
       }
+
       case AGENSTRA_DEPLOYMENTS_MCP_TOOL_NAMES.getWorkflow:
         if (!workflowId) {
           return text('Missing "workflowId": use deployments_list_workflows to find it.', true);

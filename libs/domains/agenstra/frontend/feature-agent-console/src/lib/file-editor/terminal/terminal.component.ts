@@ -54,7 +54,6 @@ const XTERM_THEME_DARK: ITheme = {
   brightCyan: '#29b8db',
   brightWhite: '#ffffff',
 };
-
 const XTERM_THEME_LIGHT: ITheme = {
   background: '#ffffff',
   foreground: '#383a42',

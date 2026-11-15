@@ -3,6 +3,7 @@ import { moduleMetadata } from '@storybook/angular';
 
 import { FpcSummaryCardValueDirective } from '../summary-card/summary-card-value.directive';
 import { FpcSummaryCardComponent } from '../summary-card/summary-card.component';
+
 import { FpcSummaryBarComponent } from './summary-bar.component';
 
 const meta: Meta<FpcSummaryBarComponent> = {

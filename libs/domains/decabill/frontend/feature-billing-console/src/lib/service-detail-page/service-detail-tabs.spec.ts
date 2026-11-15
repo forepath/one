@@ -2,6 +2,7 @@ import { CONTAINER_MANAGER_TAB_ID } from '@forepath/decabill/frontend/data-acces
 
 import { collectContributorTabComponents } from '../contributors/contributor-ui.registry';
 import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from '../contributors/first-party-contributor-ui.modules';
+
 import { SERVICE_DETAIL_TAB_REGISTRY } from './service-detail-addon-tab.registry';
 import { DETAILS_TAB_ID, resolveServiceDetailTabLabel } from './service-detail-tabs';
 

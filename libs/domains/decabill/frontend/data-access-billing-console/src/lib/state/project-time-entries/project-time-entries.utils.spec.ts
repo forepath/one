@@ -22,7 +22,6 @@ describe('projectTimeEntries.utils', () => {
       recordedAt: '2024-01-01T09:00:00.000Z',
       createdAt: '2024-01-01',
     };
-
     const next = syncTicketScopeOnUpsert(scope, entry);
 
     expect(next.entries).toEqual([entry]);
@@ -47,7 +46,6 @@ describe('projectTimeEntries.utils', () => {
       loading: false,
       error: null,
     };
-
     const next = syncTicketScopeOnUpsert(scope, entry);
 
     expect(next.entries).toEqual([]);
@@ -78,7 +76,6 @@ describe('projectTimeEntriesReducer ticket scope', () => {
         error: null,
       },
     };
-
     const next = projectTimeEntriesReducer(state, projectBoardTimeEntryUpsert({ entry }));
 
     expect(next.ticketScope.entries).toEqual([entry]);

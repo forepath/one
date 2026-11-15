@@ -117,6 +117,7 @@ describe('AgentsService', () => {
     resolveBaseUrl: jest.fn(),
     invalidate: jest.fn(),
   };
+
   beforeEach(async () => {
     mockAgentChatSessionsService.ensurePrimarySession.mockResolvedValue(mockPrimaryChatSession);
     mockAgentChatSessionsService.getSummariesByAgentIds.mockImplementation(async (agentIds: string[]) => {
@@ -302,6 +303,7 @@ describe('AgentsService', () => {
         containerId,
         volumePath,
       };
+
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -440,6 +442,7 @@ describe('AgentsService', () => {
         createdAt: mockAgent.createdAt,
         updatedAt: mockAgent.updatedAt,
       };
+
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1024,6 +1027,7 @@ describe('AgentsService', () => {
         containerId,
         gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
       };
+
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1089,6 +1093,7 @@ describe('AgentsService', () => {
       const createDto: CreateAgentDto = {
         name: 'Empty Agent Env Default',
       };
+
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue('hashed-password');
       dockerService.createContainer.mockResolvedValue('container-id-empty-env');
@@ -1125,6 +1130,7 @@ describe('AgentsService', () => {
         gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
       };
       const containerId = 'container-id-init-fail';
+
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue('hashed-password');
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -2404,6 +2410,7 @@ describe('AgentsService', () => {
 
     it('should surface host-key preparation failures', async () => {
       const privateKey = sshpk.generatePrivateKey('ed25519').toString('openssh');
+
       dockerService.sendCommandToContainer
         .mockResolvedValueOnce('')
         .mockResolvedValueOnce('')

@@ -14,33 +14,27 @@ const TICKET_PROPERTY = {
   type: 'string',
   description: 'Context ticket from the prompt hint (starts with "ctx-").',
 };
-
 const REASON_PROPERTY = {
   type: 'string',
   maxLength: AGENT_CONTENT_LIMITS.reasonMaxLength,
   description: 'Why the change is needed (shown to the user who approves it).',
 };
-
 const REVISION_PROPERTY = {
   type: 'string',
   description: 'Revision returned by context_get for this element; the change fails when it was changed since.',
 };
-
 const TITLE_PROPERTY = { type: 'string', maxLength: AGENT_CONTENT_LIMITS.titleMaxLength, description: 'Title.' };
-
 const CONTENT_PROPERTY = {
   type: 'string',
   maxLength: AGENT_CONTENT_LIMITS.contentMaxLength,
   description: 'Full markdown content (replaces the current content).',
 };
-
 const TICKET_FIELD_PROPERTIES = {
   title: TITLE_PROPERTY,
   content: CONTENT_PROPERTY,
   priority: { type: 'string', enum: [...AGENT_CONTENT_TICKET_PRIORITIES] },
   status: { type: 'string', enum: [...AGENT_CONTENT_TICKET_STATUSES] },
 };
-
 const APPROVAL_NOTE =
   'In chats the user approves every change (the call waits); unattended runs only make changes a user allowed for ' +
   'them. If the result is "pending", call content_change_status with the returned requestId to keep waiting.';

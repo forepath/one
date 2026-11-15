@@ -5,7 +5,6 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import type { PublicServicePlanOffering } from '@forepath/agenstra/frontend/data-access-portal';
 import { formatPublicOfferingPrice, ServicePlansFacade } from '@forepath/agenstra/frontend/data-access-portal';
-import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import {
   SharedContactPersonComponent,
   SharedLogoGridComponent,
@@ -13,8 +12,9 @@ import {
   SharedMarkStackComponent,
   type SharedLogoGridLogo,
 } from '@forepath/shared/frontend/feature-landingpage';
-import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
+import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 
 import { ConsoleIllustrationComponent } from '../illustrations/console-illustration.component';
 import { IdeIllustrationComponent } from '../illustrations/ide-illustration.component';

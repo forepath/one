@@ -1,12 +1,12 @@
+import { recordSharedCounter } from '@forepath/shared/backend/util-otel';
 import { Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { recordSharedCounter } from '@forepath/shared/backend/util-otel';
 
 import { readPluginPathFromEnv } from './install-provider-plugins';
 import { loadProviderModule } from './load-provider-module';
 import { parseProviderPackageSpec } from './parse-provider-package-spec';
-import { resolveProviderLoadTarget } from './resolve-provider-load-target';
 import { instantiateResolvedProvider, resolveProviderExport, resolveProviderMetadata } from './resolve-provider-export';
+import { resolveProviderLoadTarget } from './resolve-provider-load-target';
 import { handleDynamicProviderError } from './startup-error-policy';
 import type {
   LoadProviderModuleOptions,

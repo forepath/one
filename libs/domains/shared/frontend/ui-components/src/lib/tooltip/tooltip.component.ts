@@ -96,6 +96,7 @@ export class FpcTooltipComponent implements OnDestroy {
     effect(() => {
       if (!this.open()) {
         this.detachScrollListeners();
+
         return;
       }
 
@@ -206,7 +207,6 @@ export class FpcTooltipComponent implements OnDestroy {
 
     const naturalHeight = bubble.offsetHeight;
     const naturalWidth = Math.ceil(bubble.getBoundingClientRect().width);
-
     // Prefer room inside the nearest scroll area so tips do not sit under sticky siblings (search strips), clamped
     // into the viewport. When the bubble fits on neither side there (short table bodies, modals), it may use the whole
     // viewport instead of being squeezed: it is portaled to <body>, so nothing clips it.
@@ -223,7 +223,6 @@ export class FpcTooltipComponent implements OnDestroy {
     const spaceBelow = space.below;
     const spaceStart = space.start;
     const spaceEnd = space.end;
-
     let top = 0;
     let left = 0;
     let maxHeight: number | null = null;

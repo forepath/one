@@ -20,7 +20,6 @@ describe('AgentsContextDeploymentsController', () => {
   const runId = '33333333-3333-4333-8333-333333333333';
   const connectionId = '44444444-4444-4444-8444-444444444444';
   const auth = 'Bearer good-token';
-  const ticket = 'ctx-abc';
   let contextMcp: { verifyAgentToken: jest.Mock };
   let deployments: {
     listWorkflows: jest.Mock;
@@ -39,7 +38,6 @@ describe('AgentsContextDeploymentsController', () => {
   let toolCalls: { claim: jest.Mock };
   let controller: AgentsContextDeploymentsController;
   let record: ReturnType<AgentContextTicketsService['mint']>;
-
   const mint = (accessMode: 'ask' | 'auto' | 'deny', sessionKey = 'chat-1') =>
     tickets.mint({
       agentId,

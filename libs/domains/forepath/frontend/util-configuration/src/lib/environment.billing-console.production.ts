@@ -1,5 +1,5 @@
-import { createForepathShell } from './shell';
 import type { ForepathBillingConsoleEnvironment } from './environment.interface';
+import { createForepathShell } from './shell';
 
 export const environment: ForepathBillingConsoleEnvironment = {
   ...createForepathShell({

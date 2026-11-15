@@ -60,6 +60,7 @@ describe('AddonsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/addons`);
+
       expect(req.request.method).toBe('GET');
       req.flush([mockAddon]);
     });
@@ -71,6 +72,7 @@ describe('AddonsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/addons?limit=10&offset=20`);
+
       expect(req.request.params.get('limit')).toBe('10');
       expect(req.request.params.get('offset')).toBe('20');
       req.flush([mockAddon]);
@@ -85,6 +87,7 @@ describe('AddonsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/addons/addon-1`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockAddon);
     });
@@ -105,6 +108,7 @@ describe('AddonsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/addons`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(mockAddon);
@@ -121,6 +125,7 @@ describe('AddonsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/addons/addon-1`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(mockAddon);
@@ -135,6 +140,7 @@ describe('AddonsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/addons/addon-1`);
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
@@ -160,6 +166,7 @@ describe('AddonsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/addons/addon-1/meters`);
+
       expect(req.request.method).toBe('GET');
       req.flush([attachedMeter]);
     });
@@ -171,6 +178,7 @@ describe('AddonsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/addons/addon-1/meters`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ meterId: 'meter-1', includedUsage: 10 });
       req.flush({ ...attachedMeter, effectiveIncludedUsage: 10 });
@@ -183,6 +191,7 @@ describe('AddonsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/addons/addon-1/meters/meter-1`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ unitPriceNet: 0.05, includedUsage: 5 });
       req.flush({ ...attachedMeter, effectiveUnitPriceNet: 0.05, effectiveIncludedUsage: 5 });
@@ -192,6 +201,7 @@ describe('AddonsService', () => {
       service.detachAddonMeter('addon-1', 'meter-1').subscribe(() => done());
 
       const req = httpMock.expectOne(`${apiUrl}/addons/addon-1/meters/meter-1`);
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
@@ -213,6 +223,7 @@ describe('AddonsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/addons/modules`);
+
       expect(req.request.method).toBe('GET');
       req.flush(modules);
     });

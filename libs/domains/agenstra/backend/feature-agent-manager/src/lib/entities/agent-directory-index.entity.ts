@@ -1,6 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 
 import type { FileNodeDto } from '../dto/file-node.dto';
+
 import { AgentEntity } from './agent.entity';
 
 @Entity('agent_directory_index')

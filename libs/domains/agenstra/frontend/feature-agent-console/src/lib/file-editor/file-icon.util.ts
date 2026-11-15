@@ -21,7 +21,6 @@ const FILE_EXTENSION_ICON_MAP: Record<string, string> = {
   ogg: 'bi-file-earmark-music',
   opus: 'bi-file-earmark-music',
 };
-
 const DEFAULT_FILE_ICON_CLASS = 'bi-file-earmark';
 
 /**

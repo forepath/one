@@ -4,6 +4,7 @@ import type { CustomerProfileEntity } from '../entities/customer-profile.entity'
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 
+import { TrustScoreProviderRegistry } from './trust-score-provider.registry';
 import {
   CUSTOMER_TRUST_SCORE_BASE,
   CUSTOMER_TRUST_SCORE_MAX,
@@ -11,7 +12,6 @@ import {
   CUSTOMER_TRUST_SCORE_SNAPSHOT_TTL_MS,
   CUSTOMER_TRUST_SCORE_THRESHOLDS,
 } from './trust-score.constants';
-import { TrustScoreProviderRegistry } from './trust-score-provider.registry';
 import { CustomerTrustLevel, type CustomerTrustScoreSummary } from './trust-score.types';
 
 @Injectable()

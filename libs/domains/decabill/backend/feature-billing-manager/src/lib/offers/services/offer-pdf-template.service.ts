@@ -4,13 +4,14 @@ import * as Handlebars from 'handlebars';
 import type { CustomerProfileEntity } from '../../entities/customer-profile.entity';
 import type { InvoiceLineItemEntity } from '../../entities/invoice-line-item.entity';
 import type { InvoiceEntity } from '../../entities/invoice.entity';
-import type { OfferEntity } from '../entities/offer.entity';
-import type { OfferLineItemEntity } from '../entities/offer-line-item.entity';
-import { loadOfferPdfTemplate } from '../templates/offer-pdf-template.loader';
-import { resolveCountryDisplayName } from '../../utils/country-display-name.util';
 import type { BillingIssuerConfig } from '../../services/billing-issuer-config.service';
 import { formatAmount, formatDate, toAmount } from '../../services/invoice-pdf-amount.util';
+import { resolveCountryDisplayName } from '../../utils/country-display-name.util';
 import { deliveryTermsFromColumns, formatDeliveryTerms, formatPaymentTerms } from '../../utils/document-terms.utils';
+import type { OfferLineItemEntity } from '../entities/offer-line-item.entity';
+import type { OfferEntity } from '../entities/offer.entity';
+import { loadOfferPdfTemplate } from '../templates/offer-pdf-template.loader';
+
 import type { OfferPdfPresentationOptions } from './offer-pdf-presentation.util';
 import { buildOfferPdfPresentation } from './offer-pdf-presentation.util';
 

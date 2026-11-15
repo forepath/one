@@ -296,11 +296,13 @@ export class BillingJobsProcessor extends WorkerHost {
 
   private async runWebhookDeliver(job: Job<WebhookDeliverJobPayload>): Promise<void> {
     const payload = resolveWebhookDeliverJobPayload(job);
+
     await runWithTenantId(payload.scopeKey, () => this.webhookDeliveryService.deliver(payload));
   }
 
   private async runEmailDeliver(job: Job<EmailDeliverJobPayload>): Promise<void> {
     const payload = resolveEmailDeliverJobPayload(job);
+
     await runWithTenantId(payload.scopeKey, () => this.emailDeliveryService.deliver(payload));
   }
 

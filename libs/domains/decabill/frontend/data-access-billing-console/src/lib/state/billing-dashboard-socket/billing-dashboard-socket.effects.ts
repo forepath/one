@@ -6,12 +6,13 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, filter, from, fromEvent, map, merge, mergeMap, of, switchMap, take, takeUntil, tap } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 
+import { resolveBillingTenantId } from '../../interceptors/tenant.interceptor';
 import type { BillingDashboardStatusUpdatePayload, BillingMeterSummaryUpdatePayload } from '../../types/billing.types';
+import { meterSummaryPush } from '../service-detail/service-detail.actions';
 import {
   billingDashboardStatusPush,
   loadOverviewServerInfo,
 } from '../subscription-server-info/subscription-server-info.actions';
-import { meterSummaryPush } from '../service-detail/service-detail.actions';
 
 import {
   billingDashboardSocketApplicationError,
@@ -24,7 +25,6 @@ import {
   subscribeBillingSubscriptionMeters,
   unsubscribeBillingSubscriptionMeters,
 } from './billing-dashboard-socket.actions';
-import { resolveBillingTenantId } from '../../interceptors/tenant.interceptor';
 
 let billingDashboardSocketInstance: Socket | null = null;
 

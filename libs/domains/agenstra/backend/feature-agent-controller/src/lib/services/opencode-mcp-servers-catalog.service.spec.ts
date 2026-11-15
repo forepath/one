@@ -2,6 +2,7 @@ import { Repository } from 'typeorm';
 
 import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
 import type { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
+
 import { OpencodeMcpServersCatalogService } from './opencode-mcp-servers-catalog.service';
 
 function pageResponse(servers: unknown[], nextCursor?: string): Response {

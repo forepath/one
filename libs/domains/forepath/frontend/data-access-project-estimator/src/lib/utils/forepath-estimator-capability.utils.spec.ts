@@ -1,7 +1,7 @@
+import { FOREPATH_ESTIMATOR_STORAGE_MEMORY_PROFILE_KEY } from '../constants/forepath-estimator-persistence.constants';
 import { FOREPATH_LLM_MEMORY_PROFILE_STANDARD } from '../constants/forepath-llm-memory.constants';
 import type { ForepathLlmMemoryProfileService } from '../services/forepath-llm-memory-profile.service';
 import { ProjectEstimatorActions } from '../state/project-estimator/project-estimator.actions';
-import { FOREPATH_ESTIMATOR_STORAGE_MEMORY_PROFILE_KEY } from '../constants/forepath-estimator-persistence.constants';
 
 import { buildCapabilityCheckSuccessAction } from './forepath-estimator-capability.utils';
 

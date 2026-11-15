@@ -19,8 +19,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-import { TICKET_AUTOMATION_BRANCH_STRATEGIES } from '../../utils/ticket-automation-branch.constants';
 import { PREFERRED_MODEL_PATTERN } from '../../utils/preferred-model.utils';
+import { TICKET_AUTOMATION_BRANCH_STRATEGIES } from '../../utils/ticket-automation-branch.constants';
 
 /** Single verifier command; mirrors {@link parseAndValidateVerifierProfile} bounds. */
 export class VerifierCommandEntryDto {

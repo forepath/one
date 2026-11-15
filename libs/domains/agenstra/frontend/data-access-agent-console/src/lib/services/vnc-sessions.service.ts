@@ -12,7 +12,6 @@ export interface CreateVncSessionResponse {
 /** Resolves the raw VNC WebSocket base URL from frontend environment config. */
 export function resolveVncWebsocketUrl(environment: Environment): string | null {
   const websocket = environment.console.urls.websocket;
-
   // Only the object-form `vnc` key is an explicit override; string-form derivation still needs http→ws.
   const explicit = typeof websocket === 'object' && typeof websocket.vnc === 'string' ? websocket.vnc.trim() : '';
 

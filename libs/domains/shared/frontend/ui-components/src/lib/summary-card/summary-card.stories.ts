@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
 
 import { FpcButtonComponent } from '../button/button.component';
+
 import { FpcSummaryCardValueDirective } from './summary-card-value.directive';
 import { FpcSummaryCardComponent } from './summary-card.component';
 

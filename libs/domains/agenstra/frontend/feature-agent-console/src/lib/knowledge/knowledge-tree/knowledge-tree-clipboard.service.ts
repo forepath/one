@@ -25,6 +25,7 @@ import {
 } from 'rxjs';
 
 import { suggestNumberedTitle } from '../../file-editor/file-tree/file-tree-selection.util';
+
 import {
   type KnowledgeTreeClipboardEntry,
   type KnowledgeTreeClipboardState,

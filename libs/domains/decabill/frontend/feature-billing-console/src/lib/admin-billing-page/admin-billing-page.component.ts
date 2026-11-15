@@ -107,9 +107,30 @@ import { BillingAdminSubscriptionSelectComponent } from '../billing-admin-subscr
 import { BillingAdminSupplierContractSelectComponent } from '../billing-admin-supplier-contract-select/billing-admin-supplier-contract-select.component';
 import { BillingAdminSupplierSelectComponent } from '../billing-admin-supplier-select/billing-admin-supplier-select.component';
 import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/billing-admin-user-select.component';
-import { getInvoiceStatusBadgeTone, getInvoiceStatusLabel, getUnavailableLabel } from '../billing-status-labels';
+import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart';
+import { formatBillingDate, formatBillingDateRange, formatBillingMoney } from '../billing-format';
 import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { getInvoiceStatusBadgeTone, getInvoiceStatusLabel, getUnavailableLabel } from '../billing-status-labels';
+import { DocumentTermsFieldsComponent } from '../document-terms/document-terms-fields.component';
+import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
+import {
+  documentTermsFormToInput,
+  emptyDocumentTermsForm,
+  isDocumentTermsFormValid,
+  type DocumentTermsFormModel,
+} from '../document-terms/document-terms.util';
+import {
+  getCustomerLabel,
+  getCustomerSecondaryLabel,
+  getUnnumberedInvoiceLabel,
+  type CustomerLabelSource,
+} from '../named-label.util';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
+import {
+  aggregatePricingTotalsSummaries,
+  buildPricingTotalsSummary,
+  type PricingTotalsSummary,
+} from '../pricing-totals-summary/pricing-totals.util';
 import {
   dbBulkSummary,
   dbCopyIdItem,
@@ -131,28 +152,7 @@ import {
 import { invoiceSummaryItems, invoiceTaxItems } from '../shared/invoice-totals';
 import { dbServerPaging } from '../shared/server-paging';
 import { invoiceState } from '../shared/table-states';
-import {
-  aggregatePricingTotalsSummaries,
-  buildPricingTotalsSummary,
-  type PricingTotalsSummary,
-} from '../pricing-totals-summary/pricing-totals.util';
-import {
-  getCustomerLabel,
-  getCustomerSecondaryLabel,
-  getUnnumberedInvoiceLabel,
-  type CustomerLabelSource,
-} from '../named-label.util';
-import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart';
-import { formatBillingDate, formatBillingDateRange, formatBillingMoney } from '../billing-format';
 import { ThemeService } from '../theme.service';
-import { DocumentTermsFieldsComponent } from '../document-terms/document-terms-fields.component';
-import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
-import {
-  documentTermsFormToInput,
-  emptyDocumentTermsForm,
-  isDocumentTermsFormValid,
-  type DocumentTermsFormModel,
-} from '../document-terms/document-terms.util';
 
 const FILTERS_STORAGE_KEY = 'billing-console-admin-billing-filters';
 
@@ -649,18 +649,25 @@ export class AdminBillingPageComponent implements OnInit {
       );
     } else {
       if (this.canPreviewInvoice(inv)) menu.push({ id: 'preview', label: DB_DL_PREVIEW, icon: 'eye' });
+
       if (this.canMarkPaid(inv)) menu.push({ id: 'markPaid', label: DB_DL_MARK_PAID, icon: 'check2-circle' });
+
       if (this.canMarkUnpaid(inv))
         menu.push({ id: 'markUnpaid', label: DB_DL_MARK_UNPAID, icon: 'arrow-counterclockwise' });
+
       if (inv.canDownload) menu.push({ id: 'download', label: DB_DL_DOWNLOAD_PDF, icon: 'file-earmark-pdf' });
+
       if (inv.canDownloadVoidDocument) {
         menu.push({ id: 'download-void', label: DB_DL_VOID_PDF, icon: 'file-earmark-x' });
       }
+
       if (inv.canDownloadTimeReport) {
         menu.push({ id: 'download-time', label: DB_DL_TIME_REPORT, icon: 'file-earmark-text' });
       }
+
       if (this.canVoid(inv))
         menu.push({ id: 'void', label: DB_DL_VOID, icon: 'x-octagon', danger: true, dividerBefore: true });
+
       menu.push({ id: 'history', label: DB_DL_HISTORY, icon: 'clock-history', dividerBefore: true });
     }
 
@@ -677,20 +684,27 @@ export class AdminBillingPageComponent implements OnInit {
         { id: 'edit', label: DB_DL_EDIT, icon: 'pencil' },
         { id: 'issue', label: DB_DL_ARCHIVE, icon: 'archive' },
       );
+
       if (this.canDownloadSupplierInvoice(inv)) {
         menu.push({ id: 'download', label: DB_DL_DOWNLOAD, icon: 'file-earmark-arrow-down' });
       }
+
       menu.push({ id: 'delete', label: DB_DL_DELETE, icon: 'trash', danger: true, dividerBefore: true });
     } else {
       if (this.canPreviewSupplierInvoice(inv)) menu.push({ id: 'preview', label: DB_DL_PREVIEW, icon: 'eye' });
+
       if (this.canMarkPaid(inv)) menu.push({ id: 'markPaid', label: DB_DL_MARK_PAID, icon: 'check2-circle' });
+
       if (this.canMarkUnpaid(inv))
         menu.push({ id: 'markUnpaid', label: DB_DL_MARK_UNPAID, icon: 'arrow-counterclockwise' });
+
       if (this.canDownloadSupplierInvoice(inv)) {
         menu.push({ id: 'download', label: DB_DL_DOWNLOAD, icon: 'file-earmark-arrow-down' });
       }
+
       if (this.canVoid(inv))
         menu.push({ id: 'void', label: DB_DL_VOID, icon: 'x-octagon', danger: true, dividerBefore: true });
+
       menu.push({ id: 'history', label: DB_DL_HISTORY, icon: 'clock-history', dividerBefore: true });
     }
 
@@ -943,6 +957,7 @@ export class AdminBillingPageComponent implements OnInit {
       }
 
       this.supplierInvoiceManagerFacade.createInvoice(formData);
+
       return;
     }
 
@@ -1178,6 +1193,7 @@ export class AdminBillingPageComponent implements OnInit {
   submitEdit(): void {
     if (this.editSupplierInvoiceId) {
       this.submitEditSupplier();
+
       return;
     }
 
@@ -1191,6 +1207,7 @@ export class AdminBillingPageComponent implements OnInit {
   submitIssue(): void {
     if (this.issueSupplierInvoiceId) {
       this.submitIssueSupplier();
+
       return;
     }
 
@@ -1206,6 +1223,7 @@ export class AdminBillingPageComponent implements OnInit {
   confirmDelete(): void {
     if (this.deleteSupplierInvoice) {
       this.confirmDeleteSupplier();
+
       return;
     }
 
@@ -1226,6 +1244,7 @@ export class AdminBillingPageComponent implements OnInit {
   confirmAction(): void {
     if (this.pendingSupplierInvoice()) {
       this.confirmSupplierAction();
+
       return;
     }
 
@@ -1480,6 +1499,7 @@ export class AdminBillingPageComponent implements OnInit {
   private refreshDashboard(): void {
     if (this.billingPerspective() === 'supplier') {
       this.loadSupplierDashboard();
+
       return;
     }
 
@@ -1496,6 +1516,7 @@ export class AdminBillingPageComponent implements OnInit {
   private reloadActiveStatistics(): void {
     if (this.billingPerspective() === 'supplier') {
       this.loadSupplierStatistics();
+
       return;
     }
 
@@ -1770,6 +1791,7 @@ export class AdminBillingPageComponent implements OnInit {
     if (!userId) {
       this.createInvoiceSubscriptions.set([]);
       this.createInvoiceSubscriptionsLoading.set(false);
+
       return;
     }
 

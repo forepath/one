@@ -6,7 +6,6 @@ import {
   IdentityStatisticsBridgeModule,
   AGENSTRA_PAT_SCOPES,
 } from '@forepath/agenstra/backend/feature-agent-controller';
-import { MonitoringModule } from '@forepath/shared/backend';
 import {
   BullBoardSkippingThrottlerGuard,
   getAuthenticationMethod,
@@ -16,6 +15,7 @@ import {
   SamlAuthModule,
   UsersAuthModule,
 } from '@forepath/identity/backend';
+import { MonitoringModule } from '@forepath/shared/backend';
 import { getTypeOrmOptionsForQueueRole } from '@forepath/shared/backend';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';

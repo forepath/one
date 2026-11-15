@@ -76,6 +76,7 @@ import {
 import { Actions, ofType } from '@ngrx/effects';
 import { filter, firstValueFrom, pairwise, take } from 'rxjs';
 
+import { formatBillingClockRange } from '../billing-format';
 import {
   BILLING_MODAL_TRANSITION_MS,
   hideBillingModal,
@@ -85,17 +86,17 @@ import {
   watchBillingMutationModalClose,
   type BillingModalSwapState,
 } from '../billing-modal';
-import { formatBillingClockRange } from '../billing-format';
 import { getUnavailableLabel, isProjectTimeEntryBilled } from '../billing-status-labels';
+import { ProjectMilestoneSelectComponent } from '../project-milestone-select/project-milestone-select.component';
 import {
   projectTicketActivityActionBadgeTone,
   projectTicketActivityActionLabel,
 } from '../project-ticket-activity-labels';
-import { ProjectMilestoneSelectComponent } from '../project-milestone-select/project-milestone-select.component';
 import { ProjectTicketEditorComponent } from '../project-ticket-editor/project-ticket-editor.component';
 import { projectTicketLaneStatusLabel } from '../project-ticket-lane-status-label';
 import { dbBulkSummary, dbCopyIdItem, dbOpenItem, DB_DL_DELETE, type DbBulkResult } from '../shared/data-list';
 import { timeEntryBillingState } from '../shared/table-states';
+
 import {
   bulkDeleteProjectTickets,
   bulkUpdateProjectTickets,
@@ -116,7 +117,6 @@ import {
 import { projectBoardViewState, type ProjectBoardView } from './project-board-view';
 
 const ALL_TICKET_STATUSES: ProjectTicketStatus[] = ['draft', 'todo', 'in_progress', 'prototype', 'done', 'closed'];
-
 const PRIORITY_OPTIONS: ProjectTicketPriority[] = ['low', 'medium', 'high', 'critical'];
 
 interface ProjectTicketDetailSubtaskRow {
@@ -784,6 +784,7 @@ export class ProjectBoardComponent implements OnInit {
 
     this.detailModalSwap.suspended = false;
     const closingOverlay = this.createModalOpen() || this.createTimeModalOpen() || this.deleteTicketConfirmModalOpen();
+
     hideBillingModal(this.createModalOpen);
     hideBillingModal(this.createTimeModalOpen);
     hideBillingModal(this.deleteTicketConfirmModalOpen);
@@ -1126,6 +1127,7 @@ export class ProjectBoardComponent implements OnInit {
   private saveBlob(blob: Blob, filename: string): void {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
+
     anchor.href = url;
     anchor.download = filename;
     anchor.click();
@@ -1148,6 +1150,7 @@ export class ProjectBoardComponent implements OnInit {
     const ticket = event.row.ticket;
 
     if (!(this.lanes as readonly string[]).includes(status) || ticket.status === status) return;
+
     if (!this.isTicketDraggable(ticket)) return;
 
     this.ticketsFacade.update(this.projectId, ticket.id, { status });

@@ -1,9 +1,8 @@
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 
-import { OfferStatus } from '../constants/offer-status.constants';
-
-import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
 import { DeliveryTermsCode } from '../../constants/document-terms.constants';
+import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
+import { OfferStatus } from '../constants/offer-status.constants';
 
 import { OffersCustomerService } from './offers-customer.service';
 
@@ -27,7 +26,6 @@ describe('OffersCustomerService status guards', () => {
   const billingNotificationPublisher = { publishOffer: jest.fn() };
   const billingSearchIndexService = { scheduleUpsert: jest.fn() };
   const auditLog = { log: jest.fn() };
-
   const service = new OffersCustomerService(
     offersRepository as never,
     offerLineItemsRepository as never,

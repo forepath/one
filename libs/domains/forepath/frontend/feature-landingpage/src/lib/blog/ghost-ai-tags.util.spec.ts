@@ -1,4 +1,3 @@
-import type { GhostPost, GhostTag } from './ghost.types';
 import {
   filterGhostDisplayTags,
   getGhostAiMarkers,
@@ -6,6 +5,7 @@ import {
   isGhostAiMarkerTag,
   resolveGhostPrimaryDisplayTag,
 } from './ghost-ai-tags.util';
+import type { GhostPost, GhostTag } from './ghost.types';
 
 function tag(name: string, id = name): GhostTag {
   return {

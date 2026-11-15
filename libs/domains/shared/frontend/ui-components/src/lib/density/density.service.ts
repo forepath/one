@@ -27,6 +27,7 @@ export class FpcDensityService {
   constructor() {
     effect(() => {
       const compact = this.state() === 'compact';
+
       this.document.body?.classList.toggle(FPC_DENSITY_COMPACT_CLASS, compact);
     });
   }
@@ -42,6 +43,7 @@ export class FpcDensityService {
 
   toggle(): FpcDensity {
     const next: FpcDensity = this.state() === 'compact' ? 'comfortable' : 'compact';
+
     this.set(next);
 
     return next;

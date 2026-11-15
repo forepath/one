@@ -36,7 +36,6 @@ export type ConsoleAuthenticationMethod = 'users' | 'api-key' | 'oidc' | 'saml';
 export type ManagerAuthenticationMethod = 'api-key' | 'oidc';
 
 const CONSOLE_METHODS: readonly ConsoleAuthenticationMethod[] = ['users', 'api-key', 'oidc', 'saml'];
-
 // eslint-disable-next-line no-control-regex
 const CONTROL_CHARACTER_RUN = /[ ]*[\u0000-\u001f\u007f]+[ ]*/g;
 

@@ -1,3 +1,5 @@
+import { randomBytes } from 'crypto';
+
 import {
   AGENT_CONTENT_LIMITS,
   AGENT_CONTENT_TICKET_PRIORITIES,
@@ -12,7 +14,6 @@ import {
   type AgentContentWriteOperation,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { randomBytes } from 'crypto';
 
 import {
   AGENT_CONTEXT_ACCESS_REQUEST_TTL_MS,
@@ -31,7 +32,6 @@ type ContentKind = 'ticket' | 'knowledge' | 'plan';
 
 /** Session key of tickets minted for hidden sessions (see the agents gateway). */
 const AUTO_SESSION_KEY_PREFIX = 'suffix:';
-
 const REVISION_MAX_LENGTH = 64;
 
 /** A change waiting for the user (interactive chats). */
@@ -179,6 +179,7 @@ export class AgentContextChangesService {
 
     switch (operation) {
       case 'ticket.create':
+
       case 'page.create': {
         const parent = parseRef('parentRef');
         const title = requiredText(input['title'], 'title', AGENT_CONTENT_LIMITS.titleMaxLength);
@@ -210,8 +211,10 @@ export class AgentContextChangesService {
           parent,
         };
       }
+
       case 'ticket.update':
       case 'page.update':
+
       case 'plan.update': {
         const target = parseRef('ref') as { kind: ContentKind; sha: string };
         const fields = ticketFields();
@@ -241,6 +244,7 @@ export class AgentContextChangesService {
           target,
         };
       }
+
       case 'ticket.comment': {
         const target = parseRef('ref');
 
@@ -257,6 +261,7 @@ export class AgentContextChangesService {
           target,
         };
       }
+
       default: {
         const target = parseRef('ref');
 
@@ -566,15 +571,20 @@ export class AgentContextChangesService {
     }
 
     if (fields.title !== undefined) lines.push(`Title: ${quote(fields.title, 200)}`);
+
     if (fields.status !== undefined) lines.push(`Status: ${fields.status}`);
+
     if (fields.priority !== undefined) lines.push(`Priority: ${fields.priority}`);
+
     if (fields.content !== undefined) {
       lines.push(
         isCreate(request.operation) ? 'Content:' : 'New content (replaces the current one):',
         preview(fields.content),
       );
     }
+
     if (fields.body !== undefined) lines.push('Comment:', preview(fields.body));
+
     if (request.reason) lines.push(`Reason: ${request.reason.replace(/\s+/g, ' ').trim()}`);
 
     return lines.join('\n');

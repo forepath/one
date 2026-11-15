@@ -61,6 +61,7 @@ const preview: Preview = {
     (storyFn, context) => {
       // Canvas stories: context.globals is current; keeps attrs aligned if channel missed a beat.
       applyFpcDocumentGlobals(context.globals as Record<string, unknown>);
+
       return storyFn();
     },
   ],

@@ -15,6 +15,15 @@ import Docker = require('dockerode');
 import { v4 as uuidv4 } from 'uuid';
 
 import {
+  ISOLATION_PROBE_LABEL,
+  ISOLATION_PROBE_NAME_PREFIX,
+  IsolationReasonCode,
+  MICROVM_GUEST_ROOT,
+  MICROVM_KVM_DEVICE,
+  MICROVM_LAUNCHER_CAPABILITIES,
+  STANDARD_ISOLATION_RUNTIME,
+} from '../constants/container-isolation.constants';
+import {
   AGENT_ENVIRONMENT_FILE_MAX_BYTES,
   AGENT_ENVIRONMENT_FILE_NAME,
   AGENT_ENVIRONMENT_FILE_PATH,
@@ -32,15 +41,6 @@ import {
   serializeEnvironmentFile,
   toDockerEnvList,
 } from '../utils/agent-environment-file.utils';
-import {
-  ISOLATION_PROBE_LABEL,
-  ISOLATION_PROBE_NAME_PREFIX,
-  IsolationReasonCode,
-  MICROVM_GUEST_ROOT,
-  MICROVM_KVM_DEVICE,
-  MICROVM_LAUNCHER_CAPABILITIES,
-  STANDARD_ISOLATION_RUNTIME,
-} from '../constants/container-isolation.constants';
 import { mapGvisorRuntimeForNetwork } from '../utils/container-isolation.utils';
 import { DockerPullProgressAggregator, type DockerPullProgressEvent } from '../utils/docker-pull-progress.utils';
 
@@ -443,7 +443,6 @@ export class DockerService {
     if (migrateToEnvironmentMount) {
       // Image defaults stay in Config.Env; everything else moves into the managed env file.
       const imageEnv = parseDockerEnvList(imageInfo.Config?.Env);
-
       const migratedOverlay = Object.fromEntries(
         Object.entries(mergedEnv).filter(([key, value]) => imageEnv[key] !== value),
       );
@@ -1768,6 +1767,7 @@ export class DockerService {
             extractedOutput = decodeOutput();
           } catch (error) {
             rejectOnce(error);
+
             return;
           }
 
@@ -1788,6 +1788,7 @@ export class DockerService {
             finalOutput = decodeOutput();
           } catch (error) {
             rejectOnce(error);
+
             return;
           }
 
@@ -1887,11 +1888,9 @@ export class DockerService {
       hijack: true,
       stdin: false,
     })) as NodeJS.ReadableStream;
-
     let frameBuffer = Buffer.alloc(0);
     let lineLeftover = '';
     let stopped = false;
-
     const onData = (chunk: Buffer): void => {
       if (stopped) {
         return;
@@ -3075,6 +3074,7 @@ export class DockerService {
       since: Math.max(0, Math.floor(sinceSeconds)),
     })) as unknown as Buffer | string;
     const buffer = Buffer.isBuffer(raw) ? raw : Buffer.from(String(raw), 'utf-8');
+
     if (buffer.length <= maxBytes) {
       return buffer.toString('utf-8');
     }
@@ -3232,7 +3232,6 @@ export class DockerService {
 
       const inspect = await container.inspect();
       const actualRuntime = (inspect.HostConfig as { Runtime?: string } | undefined)?.Runtime || 'runc';
-
       const expectedRuntime = options.expectedRuntime ?? options.runtime ?? 'runc';
 
       if (actualRuntime !== expectedRuntime || inspect.State?.Running !== true) {

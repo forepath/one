@@ -83,7 +83,6 @@ describe('AgentTaskRunnerService', () => {
   let chatSync: { emitLiveRunUpdate: jest.Mock };
   let queue: { getJob: jest.Mock; add: jest.Mock };
   let runner: AgentTaskRunnerService;
-
   const run = (overrides: Partial<AgentTaskRunEntity> = {}): AgentTaskRunEntity =>
     ({
       id: 'run-1',
@@ -97,7 +96,6 @@ describe('AgentTaskRunnerService', () => {
       transcript: [],
       ...overrides,
     }) as AgentTaskRunEntity;
-
   const handoff = (overrides: Partial<AgentHandoffEntity> = {}): AgentHandoffEntity =>
     ({
       id: 'handoff-1',
@@ -113,7 +111,6 @@ describe('AgentTaskRunnerService', () => {
       deliveryFailureMessage: null,
       ...overrides,
     }) as AgentHandoffEntity;
-
   const event = (kind: string, payload: Record<string, unknown>, correlationId?: string) => ({
     success: true,
     data: { eventId: `e-${kind}`, kind, payload, ...(correlationId ? { correlationId } : {}) },

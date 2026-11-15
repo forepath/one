@@ -3,6 +3,7 @@ import { moduleMetadata } from '@storybook/angular';
 import { action } from 'storybook/actions';
 
 import { FpcButtonComponent } from '../button/button.component';
+
 import { FpcAlertComponent } from './alert.component';
 
 const meta: Meta<FpcAlertComponent> = {

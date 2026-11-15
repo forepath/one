@@ -2,15 +2,8 @@ import {
   assertProductionClientEndpointAllowlistConfigured,
   getMcpOAuthCallbackGlobalPrefixExcludes,
 } from '@forepath/agenstra/backend/feature-agent-controller';
-import {
-  CorrelationAwareConsoleLogger,
-  CorrelationAwareSocketIoAdapter,
-  createCorrelationIdMiddleware,
-  registerAxiosCorrelationIdPropagation,
-} from '@forepath/shared/backend/util-http-context';
 import { configureTrustProxy, createOriginAllowlistMiddleware, getMtlsHttpsOptions } from '@forepath/identity/backend';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
-import { assertProductionWebhookEscapeHatchesDisabled } from '@forepath/shared/backend/util-webhook';
 import {
   assertBullBoardAuthConfigured,
   getBullBoardGlobalPrefixExcludes,
@@ -22,6 +15,12 @@ import {
   shouldRunApiHttp,
 } from '@forepath/shared/backend';
 import {
+  CorrelationAwareConsoleLogger,
+  CorrelationAwareSocketIoAdapter,
+  createCorrelationIdMiddleware,
+  registerAxiosCorrelationIdPropagation,
+} from '@forepath/shared/backend/util-http-context';
+import {
   getOtelMetricsGlobalPrefixExcludes,
   isOtelEffectivelyEnabled,
   logOtelStartupStatus,
@@ -29,6 +28,7 @@ import {
   shutdownOtelSdk,
   startOtelSdk,
 } from '@forepath/shared/backend/util-otel';
+import { assertProductionWebhookEscapeHatchesDisabled } from '@forepath/shared/backend/util-webhook';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import axios from 'axios';
@@ -58,6 +58,7 @@ export async function bootstrap(): Promise<void> {
   registerAxiosCorrelationIdPropagation(axios);
 
   const otelConfig = resolveOtelRuntimeConfig(process.env, 'agenstra-agent-controller');
+
   logOtelStartupStatus(appLogger, otelConfig);
 
   if (isOtelEffectivelyEnabled(otelConfig)) {

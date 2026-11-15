@@ -69,6 +69,7 @@ describe('MetersFacade', () => {
   describe('Actions', () => {
     it('dispatches loadMeters', () => {
       const params: ListParams = { limit: 10 };
+
       facade.loadMeters(params);
       expect(store.dispatch).toHaveBeenCalledWith(loadMeters({ params }));
     });
@@ -85,12 +86,14 @@ describe('MetersFacade', () => {
         aggregator: 'max',
         defaultUnitPriceNet: 0.01,
       };
+
       facade.createMeter(dto);
       expect(store.dispatch).toHaveBeenCalledWith(createMeter({ meter: dto }));
     });
 
     it('dispatches updateMeter', () => {
       const dto: UpdateMeterDto = { name: 'Updated' };
+
       facade.updateMeter('meter-1', dto);
       expect(store.dispatch).toHaveBeenCalledWith(updateMeter({ id: 'meter-1', meter: dto }));
     });

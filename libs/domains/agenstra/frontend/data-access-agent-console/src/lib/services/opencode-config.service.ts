@@ -1,12 +1,12 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 import type {
   EffectiveEgressPolicy,
   EffectiveMessageFilterRule,
   EffectivePlatformSecurityPolicy,
 } from '@forepath/agenstra/shared/util-opencode-config';
-import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 import { Observable } from 'rxjs';
 
 export interface InheritedAdditiveDto {

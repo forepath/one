@@ -3,8 +3,8 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { writeHtmlFileWithRuntimeConfigToNodeResponse, warmRuntimeConfigCache } from './runtime-config-html';
 import { stripLocalePrefixFromPath } from './localized-browser-dist';
+import { writeHtmlFileWithRuntimeConfigToNodeResponse, warmRuntimeConfigCache } from './runtime-config-html';
 import {
   createCachedStaticFile,
   getCachedStaticFile,
@@ -133,6 +133,7 @@ function sendStaticFile(res: ServerResponse, filePath: string, req?: IncomingMes
   if (isHtmlStaticPath(filePath)) {
     void writeHtmlFileWithRuntimeConfigToNodeResponse(res, filePath, req).catch((error: unknown) => {
       console.error('Failed to send HTML with runtime config:', error);
+
       if (!res.headersSent) {
         res.writeHead(500, { 'Content-Type': 'text/plain' });
         res.end('Internal Server Error');
@@ -208,7 +209,6 @@ export function createDelegatingServer(options: CreateDelegatingServerOptions): 
   const { serverRoot, shouldBypassStatic, resolveForcedLocale } = options;
   const loadLocaleServerModule = options.loadLocaleServerModule ?? defaultLoadLocaleServerModule;
   let localeServers = new Map<string, LocaleExpressHandler>();
-
   const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     try {
       const requestUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
@@ -255,6 +255,7 @@ export function createDelegatingServer(options: CreateDelegatingServerOptions): 
       }
 
       const previousUrl = req.url;
+
       req.url = `${pathnameForLocale}${requestUrl.search}`;
 
       try {
@@ -264,6 +265,7 @@ export function createDelegatingServer(options: CreateDelegatingServerOptions): 
       }
     } catch (error: unknown) {
       console.error('Error handling request:', error);
+
       if (!res.headersSent) {
         res.writeHead(500, { 'Content-Type': 'text/plain' });
         res.end('Internal Server Error');

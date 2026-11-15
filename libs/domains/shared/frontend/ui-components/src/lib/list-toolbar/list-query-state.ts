@@ -74,6 +74,7 @@ function isDefault(value: FpcFilterValue, fallback: FpcFilterValue): boolean {
 
 function toParam(value: FpcFilterValue): string[] {
   if (value === null || value === undefined || value === '' || value === false) return [];
+
   if (Array.isArray(value)) return [...value];
 
   return [String(value)];
@@ -81,7 +82,9 @@ function toParam(value: FpcFilterValue): string[] {
 
 function fromParam(raw: readonly string[], fallback: FpcFilterValue): FpcFilterValue {
   if (Array.isArray(fallback)) return [...raw];
+
   if (typeof fallback === 'boolean') return raw[0] === 'true';
+
   if (typeof fallback === 'number') {
     const n = Number(raw[0]);
 
@@ -193,10 +196,13 @@ export function fpcListQueryState<F extends FpcFilterValues>(
 
     effect(() => {
       options.search?.();
+
       if (firstSearch) {
         firstSearch = false;
+
         return;
       }
+
       toFirstPage();
     });
   }
@@ -210,12 +216,10 @@ export function fpcListQueryState<F extends FpcFilterValues>(
   });
   const activeKeys = computed(() => {
     const values = applied();
-
     const current = defaultsNow();
 
     return keys.filter((key) => !isDefault(values[key], current[key]));
   });
-
   const syncDraft = (): void => draft.set({ ...untracked(applied) });
 
   if (url && router) {
@@ -231,10 +235,12 @@ export function fpcListQueryState<F extends FpcFilterValues>(
 
       if (first) {
         first = false;
+
         return;
       }
 
       if (timer) clearTimeout(timer);
+
       timer = setTimeout(() => {
         timer = null;
         const current = untracked(defaultsNow);
@@ -266,10 +272,8 @@ export function fpcListQueryState<F extends FpcFilterValues>(
       if (key in values) signals[key].set(values[key] as F[typeof key]);
     }
   };
-
   const same = (a: FpcFilterValue, b: FpcFilterValue): boolean =>
     Array.isArray(a) && Array.isArray(b) ? a.length === b.length && a.every((v, i) => v === b[i]) : a === b;
-
   // Live apply (user, 2026-10-29: no Apply button): drawer changes apply immediately; the toolbar's `applied` may
   // repeat the same values, so an unchanged draft is a no-op (no duplicate reloads).
   const apply = (): void => {
@@ -295,6 +299,7 @@ export function fpcListQueryState<F extends FpcFilterValues>(
   };
   const cancelApply = (): void => {
     if (applyTimer) clearTimeout(applyTimer);
+
     applyTimer = null;
   };
 
@@ -308,6 +313,7 @@ export function fpcListQueryState<F extends FpcFilterValues>(
     patch: (values) => {
       draft.update((current) => ({ ...current, ...values }));
       cancelApply();
+
       if (typing()) {
         applyTimer = setTimeout(() => {
           applyTimer = null;

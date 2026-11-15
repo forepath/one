@@ -34,14 +34,14 @@ import {
 } from '@forepath/shared/frontend/ui-components';
 import { BehaviorSubject, firstValueFrom, map, of, switchMap } from 'rxjs';
 
-import { canCustomerRespondToOffer, getOfferStatusBadgeTone, getOfferStatusLabel } from '../billing-status-labels';
+import { formatBillingDate, formatBillingMoney } from '../billing-format';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { canCustomerRespondToOffer, getOfferStatusBadgeTone, getOfferStatusLabel } from '../billing-status-labels';
+import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
+import { getUnnumberedOfferLabel } from '../named-label.util';
 import { dbBulkSummary, type DbBulkResult, DB_DL_PREVIEW, DB_DL_DOWNLOAD_PDF } from '../shared/data-list';
 import { dbServerPaging } from '../shared/server-paging';
 import { offerState } from '../shared/table-states';
-import { getUnnumberedOfferLabel } from '../named-label.util';
-import { formatBillingDate, formatBillingMoney } from '../billing-format';
-import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
 
 type CustomerOffersTab = 'pending' | 'history';
 
@@ -199,6 +199,7 @@ export class OffersPageComponent implements OnInit {
 
         return;
       }
+
       untracked(() => (tab === 'history' ? this.historyPaging : this.pendingPaging).reload());
     });
   }

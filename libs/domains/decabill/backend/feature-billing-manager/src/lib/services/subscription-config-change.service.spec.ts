@@ -2,11 +2,11 @@ import { BadRequestException } from '@nestjs/common';
 
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
+
 import { PricingService } from './pricing.service';
 import { SubscriptionConfigChangeService } from './subscription-config-change.service';
 
 const HALF_PERIOD_MS = 15 * 24 * 60 * 60 * 1000;
-
 const SERVER_TYPES = [
   { id: 'cx11', name: 'CX11', cores: 1, memory: 2, disk: 20, priceMonthly: 5 },
   { id: 'cx21', name: 'CX21', cores: 2, memory: 4, disk: 40, priceMonthly: 10 },
@@ -39,7 +39,6 @@ describe('SubscriptionConfigChangeService', () => {
   const addonService = { providerSupportsAddons: jest.fn() };
   const billingNotificationPublisher = { publishConfigChangeRequested: jest.fn() };
   const billingEmailPublisher = { publishConfigChangeRequested: jest.fn() };
-
   const service = new SubscriptionConfigChangeService(
     subscriptionsRepository as never,
     servicePlansRepository as never,
@@ -518,6 +517,7 @@ describe('SubscriptionConfigChangeService', () => {
     expect(preview.amounts.immediateAdjustmentNet).toBeCloseTo(-2.5, 2);
     // Pending period (new) + elapsed credit equals old×elapsed + new×remaining.
     const elapsed = 1 - preview.amounts.remainingPeriodRatio;
+
     expect(preview.amounts.newPeriodNet + preview.amounts.immediateAdjustmentNet).toBeCloseTo(
       preview.amounts.currentPeriodNet * elapsed + preview.amounts.newPeriodNet * preview.amounts.remainingPeriodRatio,
       2,

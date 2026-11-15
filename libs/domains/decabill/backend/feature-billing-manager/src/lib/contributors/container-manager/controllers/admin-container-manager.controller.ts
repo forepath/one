@@ -1,6 +1,7 @@
 import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import { BadRequestException, Controller, Get, Param, ParseUUIDPipe, Query, Req } from '@nestjs/common';
 
+import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../../../utils/billing-access.utils';
 import type {
   ContainerManagerContainersResponseDto,
   ContainerManagerLogsResponseDto,
@@ -8,7 +9,6 @@ import type {
   ContainerManagerStatsHistoryResponseDto,
 } from '../dto/container-manager.dto';
 import { ContainerManagerService } from '../services/container-manager.service';
-import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../../../utils/billing-access.utils';
 
 @Controller('admin/billing/subscriptions/:subscriptionId/items/:itemId/container-manager')
 @UsersRoles(UserRole.ADMIN)
@@ -23,6 +23,7 @@ export class AdminContainerManagerController {
     @Req() req?: RequestWithUser,
   ): Promise<ContainerManagerContainersResponseDto> {
     const userInfo = getUserFromRequest(req ?? ({} as RequestWithUser));
+
     ensureAdmin(userInfo);
 
     return await this.containerManagerService.listContainers(subscriptionId, itemId, { asAdmin: true });
@@ -37,6 +38,7 @@ export class AdminContainerManagerController {
     @Req() req?: RequestWithUser,
   ): Promise<ContainerManagerStatsHistoryResponseDto> {
     const userInfo = getUserFromRequest(req ?? ({} as RequestWithUser));
+
     ensureAdmin(userInfo);
 
     return await this.containerManagerService.getStatsHistory(subscriptionId, itemId, containerId, {
@@ -54,6 +56,7 @@ export class AdminContainerManagerController {
     @Req() req?: RequestWithUser,
   ): Promise<ContainerManagerLogsResponseDto> {
     const userInfo = getUserFromRequest(req ?? ({} as RequestWithUser));
+
     ensureAdmin(userInfo);
 
     return await this.containerManagerService.getLogs(subscriptionId, itemId, containerId, {
@@ -70,6 +73,7 @@ export class AdminContainerManagerController {
     @Req() req?: RequestWithUser,
   ): Promise<ContainerManagerNetworksResponseDto> {
     const userInfo = getUserFromRequest(req ?? ({} as RequestWithUser));
+
     ensureAdmin(userInfo);
 
     return await this.containerManagerService.listNetworks(subscriptionId, itemId, { asAdmin: true });

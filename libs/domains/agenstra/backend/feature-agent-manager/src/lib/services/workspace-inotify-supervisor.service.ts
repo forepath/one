@@ -50,14 +50,12 @@ export class WorkspaceInotifySupervisor implements OnModuleDestroy {
 
     const debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
     const pendingOps = new Map<string, WorkspaceIndexChangeOp>();
-
     const flushPath = (relativePath: string): void => {
       const op = pendingOps.get(relativePath) ?? 'upsert';
 
       pendingOps.delete(relativePath);
       this.changeNotifier.notifyPathChanges(agentId, [{ path: relativePath, op }], 'inotify');
     };
-
     const schedule = (relativePath: string, op: WorkspaceIndexChangeOp): void => {
       pendingOps.set(relativePath, op);
       const existing = debounceTimers.get(relativePath);

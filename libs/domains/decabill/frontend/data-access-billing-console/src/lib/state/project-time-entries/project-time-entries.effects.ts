@@ -6,9 +6,9 @@ import { catchError, filter, map, of, switchMap, withLatestFrom } from 'rxjs';
 import { billingPageWindow } from '../../constants/list-paging.constants';
 import { ProjectTimeEntriesService } from '../../services/project-time-entries.service';
 import type { ProjectTimeEntryResponse } from '../../types/projects.types';
-import { loadProjectSummary } from '../projects/projects.actions';
 import { closeProjectTicketDetail, openProjectTicketDetail } from '../project-tickets/project-tickets.actions';
 import { selectProjectTicketsProjectId } from '../project-tickets/project-tickets.selectors';
+import { loadProjectSummary } from '../projects/projects.actions';
 
 import {
   clearProjectTicketTimeEntries,

@@ -41,24 +41,6 @@ import {
   type JsonObject,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import {
-  isDraftLockActive,
-  isRowVisible as computeRowVisible,
-  isTabLockedByParent as computeTabLockedByParent,
-  isTabVisible as computeTabVisible,
-  sectionVisible as computeSectionVisible,
-} from './lock-visibility.util';
-import {
-  filterBuiltinProvidersByAllowDeny,
-  formatProviderModelRef,
-  getBuiltinProvider,
-  isProviderAllowed,
-  parseProviderModelRef,
-  providersForKnownModelPicker,
-  unusedBuiltinModelsForProvider,
-  unusedBuiltinProviders,
-  type OpencodeBuiltinProvider,
-} from '@forepath/agenstra/shared/util-opencode-providers';
-import {
   CUSTOM_MCP_ALLOW_DENY_TOKEN,
   builtinMcpServerLabel,
   filterBuiltinMcpServersByAllowDeny,
@@ -74,6 +56,17 @@ import {
   type OpencodeBuiltinMcpRemote,
   type OpencodeBuiltinMcpServer,
 } from '@forepath/agenstra/shared/util-opencode-mcp-servers';
+import {
+  filterBuiltinProvidersByAllowDeny,
+  formatProviderModelRef,
+  getBuiltinProvider,
+  isProviderAllowed,
+  parseProviderModelRef,
+  providersForKnownModelPicker,
+  unusedBuiltinModelsForProvider,
+  unusedBuiltinProviders,
+  type OpencodeBuiltinProvider,
+} from '@forepath/agenstra/shared/util-opencode-providers';
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
@@ -115,6 +108,19 @@ import { commandAgentLoader as buildCommandAgentLoader } from '../reference-comb
 import { AgentConfigSettingsRowComponent } from '../settings-row/settings-row.component';
 
 import {
+  agentConfigAgentModeLabel,
+  agentConfigDefaultOptionLabel,
+  agentConfigShareLabel,
+  agentConfigUpdateLabel,
+} from './config-option-labels';
+import {
+  isDraftLockActive,
+  isRowVisible as computeRowVisible,
+  isTabLockedByParent as computeTabLockedByParent,
+  isTabVisible as computeTabVisible,
+  sectionVisible as computeSectionVisible,
+} from './lock-visibility.util';
+import {
   draftEgressPolicy,
   draftMessageFilterRules,
   editorLayerSource,
@@ -123,12 +129,6 @@ import {
   testEgressDestination,
   testMessageFilters,
 } from './security-policy-editor.util';
-import {
-  agentConfigAgentModeLabel,
-  agentConfigDefaultOptionLabel,
-  agentConfigShareLabel,
-  agentConfigUpdateLabel,
-} from './config-option-labels';
 
 type EditorLayer = 'global' | 'workspace' | 'agent';
 type EditorMode = 'structured' | 'raw';
@@ -713,6 +713,7 @@ export class AgentConfigEditorComponent implements OnInit {
     if (this.isCustomProviderMode()) {
       this.draftBuiltinProviderId.set('');
       this.draftCustomProviderId.set('');
+
       return;
     }
 
@@ -827,6 +828,7 @@ export class AgentConfigEditorComponent implements OnInit {
     }
 
     const hasQuery = this.providerTypeaheadQueryFor(target).trim().length > 0;
+
     this.setProviderTypeaheadOpen(target, hasQuery && this.filteredProviderTypeaheadResultsFor(target).length > 0);
   }
 
@@ -988,6 +990,7 @@ export class AgentConfigEditorComponent implements OnInit {
     if (this.isCustomMcpMode()) {
       this.draftBuiltinMcpServerName.set('');
       this.draftCustomMcpServerId.set('');
+
       return;
     }
 
@@ -1023,6 +1026,7 @@ export class AgentConfigEditorComponent implements OnInit {
     }
 
     const hasQuery = this.mcpTypeaheadQueryFor(target).trim().length > 0;
+
     this.setMcpTypeaheadOpen(target, hasQuery && this.filteredMcpTypeaheadResultsFor(target).length > 0);
   }
 
@@ -1640,12 +1644,14 @@ export class AgentConfigEditorComponent implements OnInit {
     } else {
       this.secretDrafts.update((current) => {
         const copy = { ...current };
+
         delete copy[envKey];
 
         return copy;
       });
       this.clearSecretKeys.update((current) => {
         const cleared = new Set(current);
+
         cleared.delete(envKey);
 
         return cleared;
@@ -1670,7 +1676,6 @@ export class AgentConfigEditorComponent implements OnInit {
     const deletedKeys = Object.keys(baselineLocal)
       .filter((key) => !(key in local) && !inherited.has(key))
       .sort((a, b) => a.localeCompare(b));
-
     const active = activeKeys.map((key) => {
       const localEntry = key in local ? local[key] : undefined;
       const value = localEntry !== undefined ? localEntry : effectiveMap?.[key];
@@ -1689,7 +1694,6 @@ export class AgentConfigEditorComponent implements OnInit {
             : $localize`:@@featureAgentConfig-inheritedEntrySummary:Inherited from a higher layer`,
       };
     });
-
     const deleted = deletedKeys.map((key) => ({
       key,
       inherited: false,
@@ -2513,18 +2517,21 @@ export class AgentConfigEditorComponent implements OnInit {
     }
 
     const current = isPlainObject(this.getPath(path)) ? { ...(this.getPath(path) as JsonObject) } : {};
+
     delete current[key];
     this.patchPath(path, Object.keys(current).length ? current : undefined);
 
     if (path === 'mcp.servers') {
       // Manual remove should not be auto-restored by allow/deny reconcile.
       const stash = new Map(this.mcpAllowDenyRemovalStash());
+
       stash.delete(key);
       this.mcpAllowDenyRemovalStash.set(stash);
     }
 
     if (path === 'providers') {
       const stash = new Map(this.providerAllowDenyRemovalStash());
+
       stash.delete(key);
       this.providerAllowDenyRemovalStash.set(stash);
     }
@@ -2836,12 +2843,14 @@ export class AgentConfigEditorComponent implements OnInit {
     if (field === 'disabled') {
       if (path === 'mcp.servers') {
         const autoDisabled = new Set(this.mcpAllowDenyAutoDisabledKeys());
+
         autoDisabled.delete(key);
         this.mcpAllowDenyAutoDisabledKeys.set(autoDisabled);
       }
 
       if (path === 'providers') {
         const autoDisabled = new Set(this.providerAllowDenyAutoDisabledKeys());
+
         autoDisabled.delete(key);
         this.providerAllowDenyAutoDisabledKeys.set(autoDisabled);
       }
@@ -2860,6 +2869,7 @@ export class AgentConfigEditorComponent implements OnInit {
 
   setMapEntryNumber(path: string, key: string, field: string, value: string): void {
     const trimmed = value.trim();
+
     this.patchMapEntryField(path, key, field, trimmed === '' ? undefined : Number(trimmed));
   }
 
@@ -2982,6 +2992,7 @@ export class AgentConfigEditorComponent implements OnInit {
     }
 
     const current = this.objectArray('experimental.policies');
+
     this.patchPath('experimental.policies', [...current, { effect: 'deny', action: 'provider.use', resource: '*' }]);
   }
 
@@ -3006,6 +3017,7 @@ export class AgentConfigEditorComponent implements OnInit {
     }
 
     const rules = this.objectArray(path).filter((_, ruleIndex) => ruleIndex !== index);
+
     this.patchPath(path, rules.length ? rules : undefined);
   }
 
@@ -3022,6 +3034,7 @@ export class AgentConfigEditorComponent implements OnInit {
     }
 
     const [item] = rules.splice(index, 1);
+
     rules.splice(target, 0, item);
     this.patchPath(path, rules);
   }
@@ -3169,15 +3182,12 @@ export class AgentConfigEditorComponent implements OnInit {
     const baselineRaw = this.readPath(this.baselineConfig(), 'plugins');
     const baselineArr = Array.isArray(baselineRaw) ? baselineRaw : [];
     const currentArr = Array.isArray(value) ? value : [];
-
     const inherited = inheritedItems.map((item, index) => this.toPluginEntryView(item, -1 - index, true, false, false));
-
     const current = currentArr.map((item, index) => {
       const dirty = !this.valuesEqual(baselineArr[index], item);
 
       return this.toPluginEntryView(item, index, false, dirty, false);
     });
-
     const deleted = baselineArr
       .slice(currentArr.length)
       .map((item, offset) => this.toPluginEntryView(item, currentArr.length + offset, false, true, true));
@@ -3203,14 +3213,12 @@ export class AgentConfigEditorComponent implements OnInit {
     const current = locked ? this.displayObjectArray(arrayPath) : this.objectArray(arrayPath);
     const baselineRaw = this.readPath(this.baselineConfig(), arrayPath);
     const baseline = Array.isArray(baselineRaw) ? baselineRaw.filter(isPlainObject) : [];
-
     const active = current.map((rule, index) => ({
       ...rule,
       __index: index,
       __dirty: locked ? false : this.isRuleEntryDirty(arrayPath, index),
       __deleted: false,
     }));
-
     const deleted = locked
       ? []
       : baseline.slice(current.length).map((rule, offset) => ({
@@ -3271,6 +3279,7 @@ export class AgentConfigEditorComponent implements OnInit {
     }
 
     const current = Array.isArray(this.getPath(configPath)) ? [...(this.getPath(configPath) as string[])] : [];
+
     current.push(trimmed);
     this.patchPath(configPath, current);
   }
@@ -3348,6 +3357,7 @@ export class AgentConfigEditorComponent implements OnInit {
     }
 
     const current = Array.isArray(this.getPath('plugins')) ? [...(this.getPath('plugins') as unknown[])] : [];
+
     current.push('');
     this.patchPath('plugins', current);
   }
@@ -3406,6 +3416,7 @@ export class AgentConfigEditorComponent implements OnInit {
     }
 
     const current = Array.isArray(this.getPath('plugins')) ? [...(this.getPath('plugins') as unknown[])] : [];
+
     current.splice(index, 1);
     this.patchPath('plugins', current.length ? current : undefined);
   }
@@ -4057,6 +4068,7 @@ export class AgentConfigEditorComponent implements OnInit {
     }
 
     const current = isPlainObject(this.getPath(path)) ? { ...(this.getPath(path) as JsonObject) } : {};
+
     current[key] = entry;
     this.patchPath(path, current);
   }
@@ -4077,6 +4089,7 @@ export class AgentConfigEditorComponent implements OnInit {
     if (inherited) {
       const localMap = isPlainObject(this.getPath(path)) ? { ...(this.getPath(path) as JsonObject) } : {};
       const priorLocal = isPlainObject(localMap[key]) ? { ...(localMap[key] as JsonObject) } : {};
+
       this.setNested(priorLocal, field, value);
 
       for (const entryKey of Object.keys(priorLocal)) {
@@ -4088,15 +4101,18 @@ export class AgentConfigEditorComponent implements OnInit {
       if (Object.keys(priorLocal).length === 0) {
         delete localMap[key];
         this.patchPath(path, Object.keys(localMap).length ? localMap : undefined);
+
         return;
       }
 
       localMap[key] = priorLocal;
       this.patchPath(path, localMap);
+
       return;
     }
 
     const entry = { ...this.mapEntryObject(path, key) };
+
     this.setNested(entry, field, value);
     this.replaceMapEntry(path, key, entry);
   }

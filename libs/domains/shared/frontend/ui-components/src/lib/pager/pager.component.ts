@@ -23,6 +23,7 @@ export function fpcPagerWindow(page: number, pages: number, max = 7): FpcPagerEn
   const middle = slots - 4; // 1 … [middle] … N
 
   if (page <= slots - 3) return [...range(1, slots - 2), 'gap', total];
+
   if (page >= total - (slots - 4)) return [1, 'gap', ...range(total - (slots - 3), total)];
 
   const start = page - Math.floor((middle - 1) / 2);

@@ -3,9 +3,9 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
 import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
 import { ensureAdmin } from '../../utils/billing-access.utils';
-import type { ProjectEntity } from '../entities/project.entity';
 import type { ProjectMilestoneEntity } from '../entities/project-milestone.entity';
 import type { ProjectTicketEntity } from '../entities/project-ticket.entity';
+import type { ProjectEntity } from '../entities/project.entity';
 
 export type ProjectAdminScope =
   | 'projects:admin'

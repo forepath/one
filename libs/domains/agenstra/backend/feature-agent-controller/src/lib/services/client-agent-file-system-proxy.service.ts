@@ -18,10 +18,10 @@ import axios, {
 
 import { ClientsRepository } from '../repositories/clients.repository';
 import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
 import { ClientsService } from './clients.service';
-import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 
 /**
  * Proxied binary file read result from a client's agent-manager.
@@ -401,17 +401,15 @@ export class ClientAgentFileSystemProxyService {
     clientId: string,
     agentId: string,
     filePath: string,
-    context: AgentFileManagerContext = 'app',
+    _context: AgentFileManagerContext = 'app',
   ): Promise<Pick<ClientAgentFileProxyReadResult, 'fileType' | 'contentType' | 'size' | 'acceptRanges'>> {
     const encodedPath = encodeAgentFilePath(filePath);
     const params: Record<string, string> = {};
-
     const response = await this.makeBinaryRequest(clientId, agentId, {
       method: 'HEAD',
       url: `/${encodedPath}`,
       params: Object.keys(params).length ? params : undefined,
     });
-
     const fileTypeHeader = getResponseHeader(response.headers, 'x-file-type');
     const contentTypeHeader = getResponseHeader(response.headers, 'content-type') || 'application/octet-stream';
     const contentLength = getResponseHeader(response.headers, 'content-length');
@@ -442,7 +440,7 @@ export class ClientAgentFileSystemProxyService {
     clientId: string,
     agentId: string,
     filePath: string,
-    context: AgentFileManagerContext = 'app',
+    _context: AgentFileManagerContext = 'app',
     options?: ClientAgentFileProxyReadOptions,
   ): Promise<ClientAgentFileProxyReadResult> {
     const encodedPath = encodeAgentFilePath(filePath);
@@ -464,7 +462,6 @@ export class ClientAgentFileSystemProxyService {
       params: Object.keys(params).length ? params : undefined,
       headers: Object.keys(headers).length ? headers : undefined,
     });
-
     const buffer = Buffer.from(response.data);
     const contentTypeHeader = getResponseHeader(response.headers, 'content-type') || 'application/octet-stream';
     const fileTypeHeader = getResponseHeader(response.headers, 'x-file-type');
@@ -472,7 +469,6 @@ export class ClientAgentFileSystemProxyService {
     const contentRange = getResponseHeader(response.headers, 'content-range');
     const contentDisposition = getResponseHeader(response.headers, 'content-disposition');
     const acceptRanges = getResponseHeader(response.headers, 'accept-ranges');
-
     const fileType: AgentFileType =
       fileTypeHeader === 'text' ||
       fileTypeHeader === 'binary' ||
@@ -504,7 +500,7 @@ export class ClientAgentFileSystemProxyService {
     agentId: string,
     filePath: string,
     buffer: Buffer,
-    context: AgentFileManagerContext = 'app',
+    _context: AgentFileManagerContext = 'app',
     options?: ClientAgentFileProxyWriteOptions,
   ): Promise<void> {
     const encodedPath = encodeAgentFilePath(filePath);
@@ -547,7 +543,7 @@ export class ClientAgentFileSystemProxyService {
     clientId: string,
     agentId: string,
     path?: string,
-    context: AgentFileManagerContext = 'app',
+    _context: AgentFileManagerContext = 'app',
     refresh = false,
   ): Promise<FileNodeDto[]> {
     const params: Record<string, string> = {};
@@ -575,7 +571,7 @@ export class ClientAgentFileSystemProxyService {
     agentId: string,
     filePath: string,
     createFileDto: CreateFileDto,
-    context: AgentFileManagerContext = 'app',
+    _context: AgentFileManagerContext = 'app',
   ): Promise<void> {
     const encodedPath = encodeAgentFilePath(filePath);
 
@@ -597,7 +593,7 @@ export class ClientAgentFileSystemProxyService {
     clientId: string,
     agentId: string,
     filePath: string,
-    context: AgentFileManagerContext = 'app',
+    _context: AgentFileManagerContext = 'app',
   ): Promise<void> {
     const encodedPath = encodeAgentFilePath(filePath);
 
@@ -620,7 +616,7 @@ export class ClientAgentFileSystemProxyService {
     agentId: string,
     sourcePath: string,
     moveFileDto: MoveFileDto,
-    context: AgentFileManagerContext = 'app',
+    _context: AgentFileManagerContext = 'app',
   ): Promise<void> {
     const encodedPath = encodeAgentFilePath(sourcePath);
 

@@ -158,7 +158,6 @@ export class OpenCodeClientFactory {
     const createOpencodeClient = await this.loadCreateClient();
     const username = process.env.OPENCODE_SERVER_USERNAME || OPENCODE_SERVER_USERNAME_DEFAULT;
     const authorization = this.basicAuthHeader(username, password);
-
     const client = createOpencodeClient({
       baseUrl,
       headers: {
@@ -284,7 +283,6 @@ export class OpenCodeClientFactory {
       normalized.password && normalized.timeoutMs !== undefined ? null : await this.agentsRepository.findById(agentId);
     const timeoutMs = normalized.timeoutMs ?? resolveOpencodeHealthTimeoutMs(agent?.isolationLevel);
     const startedAt = Date.now();
-
     const password = normalized.password ?? agent?.opencodeServerPassword;
 
     if (!password) {
@@ -303,6 +301,7 @@ export class OpenCodeClientFactory {
     while (Date.now() < deadline) {
       try {
         const baseUrl = await this.resolveBaseUrl(containerId);
+
         lastBaseUrl = baseUrl;
         const remainingMs = Math.max(1_000, deadline - Date.now());
         const response = await fetch(`${baseUrl}/global/health`, {

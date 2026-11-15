@@ -8,8 +8,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-import { TaxCategory } from '../constants/tax-category.constants';
 import { DeliveryTermsCode } from '../constants/document-terms.constants';
+import { TaxCategory } from '../constants/tax-category.constants';
 
 import { ServiceTypeEntity } from './service-type.entity';
 

@@ -3,6 +3,7 @@ import { moduleMetadata } from '@storybook/angular';
 import { action } from 'storybook/actions';
 
 import { FpcDropdownItemComponent } from '../dropdown-item/dropdown-item.component';
+
 import { FpcDropdownComponent } from './dropdown.component';
 
 /** Storybook does not derive the implicit `Change` output of `model()` inputs, so it is declared here. */

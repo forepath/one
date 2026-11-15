@@ -1,5 +1,5 @@
-import type { ChatPlanPhase, ChatPlanStatus } from '../../entities/chat-plan.enums';
 import type { ChatPlanContextInjectionJson } from '../../entities/chat-plan.entity';
+import type { ChatPlanPhase, ChatPlanStatus } from '../../entities/chat-plan.enums';
 
 export class ChatPlanResponseDto {
   id!: string;

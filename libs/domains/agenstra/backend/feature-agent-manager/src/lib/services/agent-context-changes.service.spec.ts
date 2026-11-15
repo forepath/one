@@ -28,7 +28,6 @@ describe('AgentContextChangesService', () => {
   let service: AgentContextChangesService;
   let bridge: jest.Mocked<AgentContextGatewayBridge>;
   let changeResponse: AgentContextControllerResponse;
-
   const mint = (overrides: Partial<Parameters<AgentContextTicketsService['mint']>[0]> = {}): AgentContextTicketRecord =>
     tickets.mint({
       agentId: 'agent-1',

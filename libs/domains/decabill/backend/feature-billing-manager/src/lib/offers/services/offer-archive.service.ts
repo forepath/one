@@ -1,32 +1,32 @@
+import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
-import { OfferStatus } from '../constants/offer-status.constants';
-import type { OfferEntity } from '../entities/offer.entity';
-import { OfferLineType } from '../constants/offer-line-type.constants';
-import type { AdminOfferDetailResponseDto } from '../dto/offer.dto';
-import { OfferLineItemsRepository } from '../repositories/offer-line-items.repository';
-import { OfferNumberSequencesRepository } from '../repositories/offer-number-sequences.repository';
-import { OffersRepository } from '../repositories/offers.repository';
-import { BillingAuditLogService } from '../../services/billing-audit-log.service';
-import { BillingIssuerConfigService } from '../../services/billing-issuer-config.service';
-import { CustomerProfilesService } from '../../services/customer-profiles.service';
-import { InvoiceTaxContextService } from '../../services/invoice-tax-context.service';
-import { TaxCalculationService } from '../../services/tax-calculation.service';
 import { BillingEmailPublisher } from '../../email/billing-email.publisher';
 import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import { mapOfferToSearchDocument } from '../../search/billing-search-document.mapper';
 import { BillingSearchIndexService } from '../../search/billing-search-index.service';
-import { getRequiredTenantId } from '../../utils/tenant-query.utils';
-import { assertOfferHasPdf, offerCapabilityFlags } from '../utils/offer-capabilities.util';
-import { assertOfferDraftEditable } from '../utils/offer-mutability.util';
-import { mapAdminOfferDocumentTerms } from '../utils/offer-document-terms.util';
+import { BillingAuditLogService } from '../../services/billing-audit-log.service';
 import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
+import { BillingIssuerConfigService } from '../../services/billing-issuer-config.service';
+import { CustomerProfilesService } from '../../services/customer-profiles.service';
+import { InvoiceTaxContextService } from '../../services/invoice-tax-context.service';
+import { TaxCalculationService } from '../../services/tax-calculation.service';
 import { documentTermsLayerFromFields, toDocumentTermsColumns } from '../../utils/document-terms.utils';
+import { getRequiredTenantId } from '../../utils/tenant-query.utils';
+import { OfferLineType } from '../constants/offer-line-type.constants';
+import { OfferStatus } from '../constants/offer-status.constants';
+import type { AdminOfferDetailResponseDto } from '../dto/offer.dto';
+import type { OfferEntity } from '../entities/offer.entity';
+import { OfferLineItemsRepository } from '../repositories/offer-line-items.repository';
+import { OfferNumberSequencesRepository } from '../repositories/offer-number-sequences.repository';
+import { OffersRepository } from '../repositories/offers.repository';
 import { mapOfferLineItemToResponse } from '../utils/map-offer-line-items.util';
+import { assertOfferHasPdf, offerCapabilityFlags } from '../utils/offer-capabilities.util';
+import { mapAdminOfferDocumentTerms } from '../utils/offer-document-terms.util';
+import { assertOfferDraftEditable } from '../utils/offer-mutability.util';
 
 import { OfferPdfService } from './offer-pdf.service';
 import { SubscriptionOrderPreparationService } from './subscription-order-preparation.service';
-import { UsersRepository } from '@forepath/identity/backend';
 
 @Injectable()
 export class OfferArchiveService {
@@ -62,6 +62,7 @@ export class OfferArchiveService {
     this.billingIssuerConfig.assertConfigured();
 
     const lines = offer.lineItems ?? (await this.offerLineItemsRepository.findByOfferId(id));
+
     await this.repreparePlanLines(offer.userId, lines, adminUserId, id);
 
     const taxContext = await this.invoiceTaxContextService.resolveForUser(offer.userId);
@@ -119,7 +120,6 @@ export class OfferArchiveService {
       // Freeze the terms the customer is offered (draft override, else global default); they carry over to the invoice.
       ...toDocumentTermsColumns(this.documentTermsConfig.resolve(documentTermsLayerFromFields(offer))),
     });
-
     const refreshedLines = await this.offerLineItemsRepository.findByOfferId(id);
     const pdfStorageKey = await this.offerPdfService.generateAndStore(
       updated,

@@ -111,10 +111,8 @@ const SHARED_HERO_MASCOT_BODIES: Record<SharedHeroMascotBrand, SharedHeroMascotB
     peekHands: [14, 89],
   },
 };
-
 /** Standing: where the shoes stand, in the body box; the viewBox ends at their soles (GROUND + 1 + ry 4). */
 const GROUND = 122;
-
 /**
  * Hanging: the grip (the corner, overhead and to the right of the body), how far the whole figure
  * swings out (degrees around the grip; negative swings the feet away from what it hangs on) and where
@@ -124,10 +122,8 @@ const GROUND = 122;
 const GRIP: Point = [100, -24];
 const LEAN = -12;
 const HANG = 122;
-
 /** Perched: where the shoes stand on the edge below (the viewBox ends at their soles). */
 const PERCH = 118;
-
 /**
  * Per pose: the viewBox and the rest gaze (towards the finger: up and to the right standing, inwards
  * and a little down hanging, down and inwards perched).
@@ -139,7 +135,6 @@ const POSES: Record<SharedHeroMascotPose, { viewBox: string; gaze: number }> = {
   peek: { viewBox: '-4 -4 111 111', gaze: (-135 * Math.PI) / 180 },
   'peek-point': { viewBox: '-32 -4 139 111', gaze: (-135 * Math.PI) / 180 },
 };
-
 /**
  * Peeking: the edge (the viewBox's bottom), where on it the hands hold on (mostly above it, the rest
  * curled over) and how big they are (larger than elsewhere: the peeking figure is drawn small).
@@ -149,12 +144,9 @@ const PEEK_HAND_R = 7.5;
 const PEEK_HAND_Y = PEEK_EDGE - PEEK_HAND_R + 2;
 /** Peeking and pointing: how far the figure leans in (degrees, around the middle of the edge). */
 const PEEK_LEAN = -7;
-
 /** How far a pupil moves off the eye's centre, as a share of the eye's radius. */
 const GAZE_REACH = 0.38;
-
 const add = ([x, y]: Point, [dx, dy]: Point): Point => [x + dx, y + dy];
-
 /** A media query, false where there is no `matchMedia` (jsdom in the consuming apps' specs). */
 const mediaMatches = (query: string): boolean => typeof matchMedia === 'function' && matchMedia(query).matches;
 const pt = ([x, y]: Point): string => `${+x.toFixed(2)},${+y.toFixed(2)}`;
@@ -262,7 +254,6 @@ export class SharedHeroMascotComponent {
     const [leftHip, rightHip] = body.hips;
     const right = body.pointShoulder;
     const left = body.hipShoulder;
-
     // Standing: the right arm points up and to the right (slightly bent, index finger out), the left
     // hand rests on the hip. Hanging: the right arm reaches up to the grip (the elbow bowed out a
     // little), the left points inwards. Perched: the right hand on the hip, the left points down and
@@ -309,7 +300,6 @@ export class SharedHeroMascotComponent {
 
     const hand = pointArm[2];
     const restHand = restArm[2];
-
     // Legs: standing, straight down with a slight stance and the shoes pointing outwards; hanging,
     // dangling (one a little shorter), the shoes (seen from the front) right under them; perched, like
     // standing, on the edge below.
@@ -405,7 +395,6 @@ export class SharedHeroMascotComponent {
 
       let frame = 0;
       let pointer: { x: number; y: number } | null = null;
-
       // Each pupil moves towards the pointer, the full reach once the pointer is more than a few eye
       // radii away, less when it is right over the eye (so it never jumps across at the centre).
       const apply = () => {
@@ -436,7 +425,6 @@ export class SharedHeroMascotComponent {
         });
         host.classList.add('shared-hero-mascot--tracking');
       };
-
       const onMove = (event: PointerEvent) => {
         if (event.pointerType !== 'mouse') {
           return;
@@ -445,14 +433,12 @@ export class SharedHeroMascotComponent {
         pointer = { x: event.clientX, y: event.clientY };
         frame ||= requestAnimationFrame(apply);
       };
-
       // Content scrolling under a resting pointer moves the character relative to it: look again.
       const onScroll = () => {
         if (pointer) {
           frame ||= requestAnimationFrame(apply);
         }
       };
-
       const onLeave = () => {
         pointer = null;
         cancelAnimationFrame(frame);
@@ -497,12 +483,10 @@ export class SharedHeroMascotComponent {
     const scroller = document.scrollingElement ?? document.documentElement;
     let frame = 0;
     let until = 0;
-
     const follow = () => {
       scroller.scrollTop = scroller.scrollHeight;
       frame = performance.now() < until ? requestAnimationFrame(follow) : 0;
     };
-
     const onEnter = () => {
       if (Math.ceil(scroller.scrollTop + scroller.clientHeight) < scroller.scrollHeight - 2) {
         return;

@@ -1,5 +1,5 @@
-import { createAgenstraShell } from './shell';
 import type { AgenstraDocsEnvironment } from './environment.interface';
+import { createAgenstraShell } from './shell';
 
 export const environment: AgenstraDocsEnvironment = {
   ...createAgenstraShell({

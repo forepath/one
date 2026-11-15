@@ -1,12 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
 import { getTenantIdOrDefault } from '@forepath/shared/backend';
+import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
+import { Injectable } from '@nestjs/common';
 
+import { TaxCategory } from '../constants/tax-category.constants';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import { InvoicePromotionApplicationsRepository } from '../repositories/invoice-promotion-applications.repository';
+import { buildInvoicePdfStorageKey } from '../utils/invoice-pdf-storage.util';
 
-import { TaxCategory } from '../constants/tax-category.constants';
 import type { BillingIssuerConfig } from './billing-issuer-config.service';
 import {
   buildCreditNoteDocumentOptions,
@@ -26,8 +28,6 @@ import {
 } from './invoice-pdf-presentation.util';
 import { InvoicePdfTemplateService } from './invoice-pdf-template.service';
 import type { InvoicingPeriod } from './invoicing-period.util';
-import { buildInvoicePdfStorageKey } from '../utils/invoice-pdf-storage.util';
-import { InvoicePromotionApplicationsRepository } from '../repositories/invoice-promotion-applications.repository';
 import { StoredFileRegistryService } from './stored-file-registry.service';
 
 /** Factur-X title / author: "Invoice INV-2026-00001", issuer name. */
@@ -93,8 +93,8 @@ export class InvoicePdfService {
       xml,
       facturXMetadata(presentation.documentTitle, presentation.documentNumber, issuer),
     );
-
     const content = Buffer.from(embedded);
+
     await this.fileStorage.writeCustomerInvoiceFile(storageKey, content);
     await this.storedFileRegistry.registerFromBuffer({
       tenantId: getTenantIdOrDefault(),
@@ -146,8 +146,8 @@ export class InvoicePdfService {
       xml,
       facturXMetadata(presentation.documentTitle, documentNumber, issuer),
     );
-
     const content = Buffer.from(embedded);
+
     await this.fileStorage.writeCustomerInvoiceFile(storageKey, content);
     await this.storedFileRegistry.registerFromBuffer({
       tenantId: getTenantIdOrDefault(),
@@ -238,8 +238,8 @@ export class InvoicePdfService {
       xml,
       facturXMetadata(presentation.documentTitle, documentNumber, issuer),
     );
-
     const content = Buffer.from(embedded);
+
     await this.fileStorage.writeCustomerInvoiceFile(storageKey, content);
     await this.storedFileRegistry.registerFromBuffer({
       tenantId: getTenantIdOrDefault(),

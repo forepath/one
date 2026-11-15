@@ -124,10 +124,8 @@ export class FpcSidebarPopoverComponent {
     // Unconstrained border-box height (includes borders; matches `box-sizing: border-box`).
     const naturalHeight = panel.offsetHeight;
     const panelWidth = panel.offsetWidth;
-
     const spaceBelow = viewportHeight - hostRect.top;
     const spaceAbove = hostRect.bottom;
-
     let top: number;
 
     if (naturalHeight <= spaceBelow) {
@@ -149,7 +147,6 @@ export class FpcSidebarPopoverComponent {
     // Only cap + scroll when content cannot fit; a standing max-height causes ~border-width phantom scroll.
     const needsScroll = naturalHeight > availableHeight + 0.5;
     const renderedHeight = needsScroll ? availableHeight : naturalHeight;
-
     let left = hostRect.right;
 
     if (left + panelWidth > viewportWidth) {

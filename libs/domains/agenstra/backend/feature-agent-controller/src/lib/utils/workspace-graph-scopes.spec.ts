@@ -20,7 +20,6 @@ const only =
   (scope) =>
     scopes.includes(scope);
 const FILES_AND_CHATS = only('agent_files:read', 'agent_chats:read');
-
 const file: AgentGraphNode = { id: 'file:a.ts', type: 'file', label: 'a.ts' };
 const prompt: AgentGraphNode = { id: 'prompt:p1', type: 'prompt', label: 'Fix it' };
 const ticket: AgentGraphNode = { id: 'ticket:t1', type: 'ticket', label: 'Secret ticket title' };

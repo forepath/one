@@ -26,6 +26,8 @@ import {
   type SubscriptionWithServerInfo,
   integratedProvisioningServiceLabel,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import type { Environment } from '@forepath/decabill/frontend/util-configuration';
+import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/decabill/frontend/util-configuration';
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
@@ -50,16 +52,14 @@ import {
   type FpcBadgeTone,
   FpcFormTextDirective,
 } from '@forepath/shared/frontend/ui-components';
-import type { Environment } from '@forepath/decabill/frontend/util-configuration';
-import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/decabill/frontend/util-configuration';
 import { combineLatest, distinctUntilChanged, filter, finalize, firstValueFrom, map, pairwise, take } from 'rxjs';
 
+import { hideBillingModal, showBillingModal } from '../billing-modal';
 import {
   getProfileCompleteLabel,
   getProvisioningStatusBadgeTone,
   getProvisioningStatusLabel,
 } from '../billing-status-labels';
-import { hideBillingModal, showBillingModal } from '../billing-modal';
 import {
   dbBulkSummary,
   dbCopyIdItem,
@@ -543,6 +543,7 @@ export class OverviewComponent implements OnInit {
         error: (error: unknown) => {
           const status =
             error && typeof error === 'object' && 'status' in error ? Number((error as { status: unknown }).status) : 0;
+
           this.sshRevealError =
             status === 409
               ? $localize`:@@featureOverview-sshAccessAlreadyRevealed:The SSH access key has already been revealed for this service.`

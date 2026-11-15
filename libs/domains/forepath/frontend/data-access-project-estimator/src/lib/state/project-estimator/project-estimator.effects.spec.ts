@@ -1,14 +1,15 @@
 import { TestBed } from '@angular/core/testing';
-import { provideMockActions } from '@ngrx/effects/testing';
 import { Actions } from '@ngrx/effects';
+import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
 
-import { ForepathDeviceCapabilityService } from '../../services/forepath-device-capability.service';
-import { ForepathLocalLlmService } from '../../services/forepath-local-llm.service';
-import { ForepathLlmMemoryProfileService } from '../../services/forepath-llm-memory-profile.service';
-import { ForepathPricingCalculatorService } from '../../services/forepath-pricing-calculator.service';
 import { FOREPATH_LLM_MEMORY_PROFILE_STANDARD } from '../../constants/forepath-llm-memory.constants';
+import { ForepathDeviceCapabilityService } from '../../services/forepath-device-capability.service';
+import { ForepathLlmMemoryProfileService } from '../../services/forepath-llm-memory-profile.service';
+import { ForepathLocalLlmService } from '../../services/forepath-local-llm.service';
+import { ForepathPricingCalculatorService } from '../../services/forepath-pricing-calculator.service';
+import { shouldAutoRequestGpuAccess } from '../../utils/forepath-estimator-capability.utils';
 
 import { ProjectEstimatorActions } from './project-estimator.actions';
 import {
@@ -18,7 +19,6 @@ import {
   preloadModel$,
   requestGpuAccess$,
 } from './project-estimator.effects';
-import { shouldAutoRequestGpuAccess } from '../../utils/forepath-estimator-capability.utils';
 
 jest.mock('../../utils/forepath-estimator-capability.utils', () => ({
   ...jest.requireActual('../../utils/forepath-estimator-capability.utils'),
@@ -209,10 +209,12 @@ describe('projectEstimatorEffects', () => {
 
     estimateProject$(actions$, localLlmService, pricingCalculator).subscribe((action) => {
       expect(action.type).toBe('[Project Estimator] Estimate Project Success');
+
       if (action.type === '[Project Estimator] Estimate Project Success') {
         expect(action.estimate).toEqual(estimate);
         expect(action.userMessage.content).toBe('Build a custom app');
       }
+
       done();
     });
   });

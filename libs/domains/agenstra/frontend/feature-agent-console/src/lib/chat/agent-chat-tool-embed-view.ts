@@ -340,7 +340,6 @@ function extractArgs(record: Record<string, unknown> | undefined): Record<string
 
   const fromArgs =
     coerceArgsRecord(record['args']) ?? coerceArgsRecord(record['input']) ?? coerceArgsRecord(record['rawInput']) ?? {};
-
   // Some payloads flatten tool fields onto the envelope/part root.
   const fromTop: Record<string, unknown> = {};
 
@@ -843,6 +842,7 @@ export function buildToolEmbedView(
     case 'todoread':
     case 'todo_write':
     case 'todo_read':
+
     case 'todos': {
       const todos =
         parseTodosFromArgsOrResult(args, result) ??
@@ -854,6 +854,7 @@ export function buildToolEmbedView(
 
     case 'bash':
     case 'shell':
+
     case 'execute': {
       const command =
         asString(args['command']) ?? asString(args['cmd']) ?? (title && title !== name ? title : undefined);
@@ -919,6 +920,7 @@ export function buildToolEmbedView(
     }
 
     case 'grep':
+
     case 'search': {
       const pattern = asString(args['pattern']) ?? asString(args['query']) ?? asString(args['q']) ?? '';
       const all = parseGrepHits(result);
@@ -941,6 +943,7 @@ export function buildToolEmbedView(
 
     case 'edit':
     case 'str_replace':
+
     case 'strreplace': {
       const filePath =
         asString(args['filePath']) ?? asString(args['path']) ?? asString(args['file_path']) ?? asString(args['file']);
@@ -987,6 +990,7 @@ export function buildToolEmbedView(
 
     case 'apply_patch':
     case 'applypatch':
+
     case 'patch': {
       const patchText = asString(args['patchText']) ?? asString(args['patch']) ?? coerceResultText(result);
 
@@ -1004,6 +1008,7 @@ export function buildToolEmbedView(
     }
 
     case 'webfetch':
+
     case 'web_fetch': {
       const url = asString(args['url']);
 
@@ -1025,6 +1030,7 @@ export function buildToolEmbedView(
     }
 
     case 'websearch':
+
     case 'web_search': {
       const query =
         asString(args['query']) ?? asString(args['q']) ?? asString(args['search']) ?? asString(args['prompt']) ?? '';
@@ -1047,6 +1053,7 @@ export function buildToolEmbedView(
     }
 
     case 'task':
+
     case 'subagent': {
       const description = asString(args['description']) ?? '';
       const prompt = asString(args['prompt']) ?? '';
@@ -1093,6 +1100,7 @@ export function buildToolEmbedView(
       return buildHandoffCreateEmbed(args, result, isError);
 
     case 'agenstra_handoff_respond':
+
     case 'handoff_respond': {
       const response = asString(args['response']);
 

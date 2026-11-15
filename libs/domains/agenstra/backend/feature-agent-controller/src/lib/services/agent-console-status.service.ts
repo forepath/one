@@ -583,7 +583,6 @@ export class AgentConsoleStatusService {
             const readState = chatReadByKey.get(`${item.clientId}:${item.agentId}:${chat.id}`);
             const lastReadAt = readState?.lastReadAt ?? null;
             const lastReadMessageId = readState?.lastReadAgentMessageId ?? null;
-
             // Prefer message-id equality so clock skew / auto-clear races cannot revive unread.
             let messageUnread = false;
 

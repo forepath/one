@@ -1,8 +1,8 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 
-import { assertAllowlistedSpecifier } from './assert-runtime-dependency';
 import { assertPathUnderPluginRoot } from './assert-plugin-path';
+import { assertAllowlistedSpecifier } from './assert-runtime-dependency';
 import type { ProviderLoadTarget } from './types';
 import { DEFAULT_SPECIFIER_ALLOWLIST_PREFIXES } from './types';
 

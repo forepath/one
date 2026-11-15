@@ -40,7 +40,6 @@ export class AgentMessageEventsRepository {
       ...(opts?.kinds?.length ? { kind: In(opts.kinds) } : {}),
       ...(eventTimestamp ? { eventTimestamp } : {}),
     };
-
     // Newest-first under the cap so late status markers (e.g. answered questions) survive
     // tool-heavy windows; reverse to chronological order for restore consumers.
     const newestFirst = await this.repository.find({

@@ -1,9 +1,9 @@
-import { BadRequestException } from '@nestjs/common';
 import {
   FILE_STORAGE_SCOPE_SEGMENTS,
   FileStorageScope,
   type FileStorageScope as FileStorageScopeType,
 } from '@forepath/shared/backend/util-file-storage';
+import { BadRequestException } from '@nestjs/common';
 
 import {
   AdminFileManagerView,

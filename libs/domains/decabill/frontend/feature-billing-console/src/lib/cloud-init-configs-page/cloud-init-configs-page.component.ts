@@ -32,8 +32,8 @@ import {
 } from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, firstValueFrom, skip, take } from 'rxjs';
 
-import { getUnavailableLabel } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { getUnavailableLabel } from '../billing-status-labels';
 import { MonacoEditorWrapperComponent } from '../monaco-editor-wrapper/monaco-editor-wrapper.component';
 import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { activeState } from '../shared/table-states';
@@ -62,7 +62,6 @@ const DEFAULT_COMPOSE_TEMPLATE = `services:
       - "{{HOST_PORT}}:{{CONTAINER_PORT}}"
     environment: {}
 `;
-
 const DEFAULT_USER_DATA_TEMPLATE = `#!/bin/bash
 set -euo pipefail
 
@@ -101,7 +100,6 @@ docker compose up -d
 
 log "Provisioning completed"
 `;
-
 const PROVISIONING_MODE_OPTIONS: Array<{ value: CloudInitProvisioningMode; label: string }> = [
   { value: 'simple', label: $localize`:@@featureCloudInitConfigs-modeSimple:Simple (single Docker image)` },
   { value: 'compose-template', label: $localize`:@@featureCloudInitConfigs-modeCompose:Docker Compose template` },
@@ -110,7 +108,6 @@ const PROVISIONING_MODE_OPTIONS: Array<{ value: CloudInitProvisioningMode; label
     label: $localize`:@@featureCloudInitConfigs-modeUserData:Full cloud-init user-data`,
   },
 ];
-
 const MIN_RANDOM_DEFAULT_LENGTH = 21;
 
 @Component({

@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { FpcContextMenuComponent, FpcContextMenuPosition } from '../context-menu/context-menu.component';
 import { FpcDropdownComponent } from '../dropdown/dropdown.component';
 import { FpcModalComponent } from '../modal/modal.component';
+
 import { FpcBodyPortal, provideFpcOverlayPortal } from './body-portal';
 
 describe('FpcBodyPortal', () => {
@@ -12,10 +13,12 @@ describe('FpcBodyPortal', () => {
     const before = document.createElement('i');
     const el = document.createElement('div');
     const after = document.createElement('b');
+
     parent.append(before, el, after);
     document.body.appendChild(parent);
 
     const portal = new FpcBodyPortal(document);
+
     portal.attach(el);
     expect(el.parentNode).toBe(document.body);
     expect(portal.attached).toBe(true);
@@ -56,6 +59,7 @@ describe('overlays with provideFpcOverlayPortal()', () => {
 
   it('renders the open modal, context menu and appendTo="body" dropdown at <body> level', async () => {
     const fixture = TestBed.createComponent(OverlayHostComponent);
+
     fixture.autoDetectChanges();
     const host = fixture.componentInstance;
     const frame = fixture.nativeElement.querySelector('.frame') as HTMLElement;
@@ -66,10 +70,12 @@ describe('overlays with provideFpcOverlayPortal()', () => {
     await fixture.whenStable();
 
     const modal = document.body.querySelector(':scope > fpc-modal') as HTMLElement;
+
     expect(modal?.querySelector('.modal-text')).not.toBeNull();
     expect(frame.querySelector('fpc-modal')).toBeNull();
     expect(document.body.querySelector(':scope > .fpc-context-menu__menu')).not.toBeNull();
     const menu = document.body.querySelector(':scope > .fpc-dropdown__menu') as HTMLElement;
+
     expect(menu?.querySelector('.item-x')).not.toBeNull();
     expect(menu.style.position).toBe('fixed');
 
@@ -85,12 +91,14 @@ describe('overlays with provideFpcOverlayPortal()', () => {
   it('keeps overlays inline without the provider', async () => {
     TestBed.resetTestingModule();
     const fixture = TestBed.createComponent(OverlayHostComponent);
+
     fixture.autoDetectChanges();
     fixture.componentInstance.open.set(true);
     fixture.componentInstance.menuOpen.set(true);
     await fixture.whenStable();
 
     const frame = fixture.nativeElement.querySelector('.frame') as HTMLElement;
+
     expect(frame.querySelector('fpc-modal .modal-text')).not.toBeNull();
     expect(frame.querySelector('.fpc-dropdown__menu .item-x')).not.toBeNull();
     fixture.destroy();

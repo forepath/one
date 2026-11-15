@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
+
+import { Injectable } from '@nestjs/common';
 import { AFRelationship, PDFDocument, PDFHexString, PDFName, PDFString } from 'pdf-lib';
 
 import { buildSrgbIccProfile, SRGB_ICC_PROFILE_DESCRIPTION } from '../utils/srgb-icc-profile.util';

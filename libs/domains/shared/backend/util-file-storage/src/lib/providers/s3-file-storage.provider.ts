@@ -8,10 +8,10 @@ import {
 } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
 
-import { FILE_STORAGE_S3_PROVIDER } from '../file-storage.constants';
 import { buildScopedObjectKey } from '../file-storage-object-key.util';
 import type { FileStorageProvider } from '../file-storage-provider.interface';
 import { applyS3KeyPrefix, readFileStorageS3Config, type FileStorageS3Config } from '../file-storage-s3.config';
+import { FILE_STORAGE_S3_PROVIDER } from '../file-storage.constants';
 
 /**
  * Builds an S3 client for any S3-compatible API (AWS, R2, Backblaze B2, Ceph, MinIO, …).

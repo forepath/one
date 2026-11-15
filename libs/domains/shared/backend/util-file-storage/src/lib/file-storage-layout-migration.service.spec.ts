@@ -19,6 +19,7 @@ describe('FileStorageLayoutMigrationService', () => {
 
   it('copies previous segments into customer/supplier/export layout', async () => {
     const storageRoot = path.join(tempRoot, 'data');
+
     await fs.promises.mkdir(path.join(storageRoot, 'invoices', 'sub-1'), { recursive: true });
     await fs.promises.mkdir(path.join(storageRoot, 'invoices', 'offers', 'user-1'), { recursive: true });
     await fs.promises.mkdir(path.join(storageRoot, 'supplier-invoices'), { recursive: true });
@@ -62,6 +63,7 @@ describe('FileStorageLayoutMigrationService', () => {
 
   it('is idempotent when destination already exists', async () => {
     const storageRoot = path.join(tempRoot, 'data');
+
     await fs.promises.mkdir(path.join(storageRoot, 'invoices'), { recursive: true });
     await fs.promises.mkdir(path.join(storageRoot, 'customer', 'invoices'), { recursive: true });
     await fs.promises.writeFile(path.join(storageRoot, 'invoices', 'a.pdf'), Buffer.from('src'));

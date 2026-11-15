@@ -109,6 +109,7 @@ describe('ServiceTypesService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/service-types/st-1/meters`);
+
       expect(req.request.method).toBe('GET');
       req.flush([attachedMeter]);
     });
@@ -122,6 +123,7 @@ describe('ServiceTypesService', () => {
         });
 
       const req = httpMock.expectOne(`${apiUrl}/service-types/st-1/meters`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ meterId: 'meter-1', unitPriceNet: 0.02, includedUsage: 50 });
       req.flush(attachedMeter);
@@ -136,6 +138,7 @@ describe('ServiceTypesService', () => {
         });
 
       const req = httpMock.expectOne(`${apiUrl}/service-types/st-1/meters/meter-1`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ unitPriceNet: 0.05, includedUsage: 25 });
       req.flush({ ...attachedMeter, effectiveUnitPriceNet: 0.05, effectiveIncludedUsage: 25 });
@@ -145,6 +148,7 @@ describe('ServiceTypesService', () => {
       service.detachServiceTypeMeter('st-1', 'meter-1').subscribe(() => done());
 
       const req = httpMock.expectOne(`${apiUrl}/service-types/st-1/meters/meter-1`);
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });

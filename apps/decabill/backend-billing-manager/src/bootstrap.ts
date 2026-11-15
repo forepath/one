@@ -1,13 +1,6 @@
-import {
-  CorrelationAwareConsoleLogger,
-  createCorrelationIdMiddleware,
-  createTenantIdMiddleware,
-  registerAxiosCorrelationIdPropagation,
-  TenantAwareSocketIoAdapter,
-} from '@forepath/shared/backend/util-http-context';
+import { ContributorMigrationService, loadContributorNestModulesFromEnv } from '@forepath/decabill/backend';
 import { configureTrustProxy, createOriginAllowlistMiddleware, getMtlsHttpsOptions } from '@forepath/identity/backend';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
-import { assertProductionWebhookEscapeHatchesDisabled } from '@forepath/shared/backend/util-webhook';
 import {
   assertBullBoardAuthConfigured,
   getBullBoardGlobalPrefixExcludes,
@@ -20,6 +13,13 @@ import {
   shouldRunMigrations,
 } from '@forepath/shared/backend';
 import {
+  CorrelationAwareConsoleLogger,
+  createCorrelationIdMiddleware,
+  createTenantIdMiddleware,
+  registerAxiosCorrelationIdPropagation,
+  TenantAwareSocketIoAdapter,
+} from '@forepath/shared/backend/util-http-context';
+import {
   getOtelMetricsGlobalPrefixExcludes,
   isOtelEffectivelyEnabled,
   logOtelStartupStatus,
@@ -27,7 +27,7 @@ import {
   shutdownOtelSdk,
   startOtelSdk,
 } from '@forepath/shared/backend/util-otel';
-import { ContributorMigrationService, loadContributorNestModulesFromEnv } from '@forepath/decabill/backend';
+import { assertProductionWebhookEscapeHatchesDisabled } from '@forepath/shared/backend/util-webhook';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import axios from 'axios';
@@ -43,6 +43,7 @@ export async function bootstrap(): Promise<void> {
   registerAxiosCorrelationIdPropagation(axios);
 
   const otelConfig = resolveOtelRuntimeConfig(process.env, 'decabill-billing-manager');
+
   logOtelStartupStatus(appLogger, otelConfig);
 
   if (isOtelEffectivelyEnabled(otelConfig)) {
@@ -60,7 +61,6 @@ export async function bootstrap(): Promise<void> {
   assertBullBoardAuthConfigured(appLogger);
 
   const runHttp = shouldRunApiHttp(role) || shouldEnableBullBoard(role);
-
   const extra = await loadContributorNestModulesFromEnv();
   const appModule = AppModule.register(extra);
 

@@ -1,5 +1,3 @@
-import { scanAgentGraphDocument, scanAgentGraphSource } from './agent-graph-scanners.utils';
-import { parseAgentGraphManifest } from './agent-graph-manifests.utils';
 import {
   agentGraphInstructionKindOf,
   agentGraphLanguageOf,
@@ -7,6 +5,8 @@ import {
   normalizeAgentGraphRelativePath,
   shouldParseAgentGraphFile,
 } from './agent-graph-files.utils';
+import { parseAgentGraphManifest } from './agent-graph-manifests.utils';
+import { scanAgentGraphDocument, scanAgentGraphSource } from './agent-graph-scanners.utils';
 
 describe('agent graph scanners', () => {
   it('extracts TypeScript imports and top-level declarations', () => {

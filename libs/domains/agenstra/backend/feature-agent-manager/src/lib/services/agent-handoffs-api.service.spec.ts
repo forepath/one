@@ -28,7 +28,6 @@ describe('AgentHandoffsApiService', () => {
   let agentRows: Record<string, Record<string, unknown>>;
   let requestControllerHandoffs: jest.Mock;
   let endTurn: () => void;
-
   const build = () =>
     new AgentHandoffsApiService(
       turns,

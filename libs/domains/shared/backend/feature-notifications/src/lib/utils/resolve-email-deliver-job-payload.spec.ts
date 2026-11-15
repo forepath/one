@@ -2,6 +2,7 @@ import type { Job } from 'bullmq';
 
 import { EMAIL_DELIVER_MAX_ATTEMPTS } from '../constants/notification.constants';
 import type { EmailDeliverJobPayload } from '../interfaces/notification.interfaces';
+
 import { resolveEmailDeliverJobPayload } from './resolve-email-deliver-job-payload';
 
 describe('resolveEmailDeliverJobPayload', () => {

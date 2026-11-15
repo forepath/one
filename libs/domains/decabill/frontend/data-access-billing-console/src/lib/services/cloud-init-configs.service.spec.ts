@@ -66,6 +66,7 @@ describe('CloudInitConfigsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/cloud-init-configs`);
+
       expect(req.request.method).toBe('GET');
       req.flush([mockConfig]);
     });
@@ -79,6 +80,7 @@ describe('CloudInitConfigsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/cloud-init-configs?limit=10&offset=20`);
+
       expect(req.request.params.get('limit')).toBe('10');
       expect(req.request.params.get('offset')).toBe('20');
       req.flush([mockConfig]);
@@ -93,6 +95,7 @@ describe('CloudInitConfigsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/cloud-init-configs/cfg-1`);
+
       expect(req.request.method).toBe('GET');
       req.flush(mockConfig);
     });
@@ -111,6 +114,7 @@ describe('CloudInitConfigsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/cloud-init-configs`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(mockConfig);
@@ -127,6 +131,7 @@ describe('CloudInitConfigsService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/cloud-init-configs/cfg-1`);
+
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);
       req.flush(mockConfig);
@@ -138,6 +143,7 @@ describe('CloudInitConfigsService', () => {
       service.deleteCloudInitConfig('cfg-1').subscribe(() => done());
 
       const req = httpMock.expectOne(`${apiUrl}/cloud-init-configs/cfg-1`);
+
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
-import { PromotionAdvantageType, PromotionSubscriptionEligibility } from '../constants/promotion.constants';
+import { PromotionSubscriptionEligibility } from '../constants/promotion.constants';
 import type {
   AdminPromotionResponseDto,
   CreateAdminPromotionDto,

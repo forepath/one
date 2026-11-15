@@ -30,6 +30,7 @@ export class FpcLongPressDirective implements OnDestroy {
     this.origin = { x: touch.clientX, y: touch.clientY };
     this.timer = setTimeout(() => {
       this.timer = null;
+
       if (this.origin) this.fpcLongPress.emit(this.origin);
     }, this.fpcLongPressDelay());
   }
@@ -44,6 +45,7 @@ export class FpcLongPressDirective implements OnDestroy {
 
   protected cancel(): void {
     if (this.timer) clearTimeout(this.timer);
+
     this.timer = null;
   }
 

@@ -14,11 +14,11 @@ import {
   RefundPaymentResult,
   SetupStatusUpdate,
 } from '../payment-processor.interface';
-import { isStripeCheckoutFraudProtectionEnabled } from '../stripe-checkout.config';
 import {
   buildStripeCheckoutSessionCreateParams,
   buildStripeSetupSessionCreateParams,
 } from '../stripe-checkout-session.utils';
+import { isStripeCheckoutFraudProtectionEnabled } from '../stripe-checkout.config';
 
 type StripeClient = ReturnType<typeof StripeCtor>;
 
@@ -143,7 +143,6 @@ export class StripePaymentProcessor implements PaymentProcessor {
         },
         { idempotencyKey: params.idempotencyKey },
       );
-
       const status =
         paymentIntent.status === 'succeeded'
           ? 'succeeded'

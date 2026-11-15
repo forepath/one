@@ -1,5 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { Server, Socket } from 'socket.io';
 
 import { AgentEntity } from '../entities/agent.entity';
@@ -8,19 +8,19 @@ import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentProvider, AgentResponseObject } from '../providers/agent-provider.interface';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import { ChatFilter, FilterDirection } from '../providers/chat-filter.interface';
+import { OpenCodeConfigSyncService } from '../providers/opencode/opencode-config-sync.service';
+import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
-import { EnvironmentProgressService } from '../services/environment-progress.service';
-import { WorkspaceChangeNotifierService } from '../services/workspace-change-notifier.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
 import { AgentsService } from '../services/agents.service';
-import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
-import { OpenCodeConfigSyncService } from '../providers/opencode/opencode-config-sync.service';
 import { DockerService } from '../services/docker.service';
+import { EnvironmentProgressService } from '../services/environment-progress.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
+import { WorkspaceChangeNotifierService } from '../services/workspace-change-notifier.service';
 
 import { AgentsGateway } from './agents.gateway';
 
@@ -4152,6 +4152,7 @@ describe('AgentsGateway', () => {
 
     it('emits terminalCreated before buffered initial output and preserves later output', async () => {
       let output: ((data: string) => void) | undefined;
+
       mockOpenCodePtyService.open.mockImplementationOnce(async (_agent, _container, _session, _options, callbacks) => {
         output = callbacks.onOutput;
         callbacks.onOutput('initial ');
@@ -4164,6 +4165,7 @@ describe('AgentsGateway', () => {
       const events = (mockSocket.emit as jest.Mock).mock.calls.filter(
         ([event]) => event === 'terminalCreated' || event === 'terminalOutput',
       );
+
       expect(events.map(([event]) => event)).toEqual([
         'terminalCreated',
         'terminalOutput',

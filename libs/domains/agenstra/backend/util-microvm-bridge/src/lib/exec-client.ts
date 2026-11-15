@@ -31,7 +31,6 @@ export function runExecClient(socket: net.Socket, args: ExecClientArguments, io:
     let settled = false;
     let exitCode: number | null = null;
     const pendingWrites = new Set<Promise<void>>();
-
     const finish = (code: number): void => {
       if (settled) {
         return;
@@ -50,12 +49,10 @@ export function runExecClient(socket: net.Socket, args: ExecClientArguments, io:
         resolve(code);
       });
     };
-
     const fail = (message: string): void => {
       io.stderr.write(`vm-exec: ${message}\n`);
       finish(MICROVM_EXEC_BRIDGE_FAILURE_EXIT_CODE);
     };
-
     const connection = new FrameConnection({
       write: (bytes) => {
         if (!socket.destroyed) {
@@ -101,7 +98,6 @@ export function runExecClient(socket: net.Socket, args: ExecClientArguments, io:
       },
       onProtocolError: (error) => fail(`bridge protocol error: ${error.message}`),
     });
-
     const unsubscribe = io.onSignal((signal) => {
       if (signal === 'SIGWINCH') {
         connection.send(FrameType.Resize, CLIENT_STREAM, encodeResize(io.stdout.columns ?? 80, io.stdout.rows ?? 24));

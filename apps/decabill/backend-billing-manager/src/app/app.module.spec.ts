@@ -9,6 +9,7 @@ import {
 } from '@forepath/decabill/backend';
 
 import { BillingQueueModule } from '../queue/billing-queue.module';
+
 import { AppModule } from './app.module';
 
 function findBillingDynamicModule(

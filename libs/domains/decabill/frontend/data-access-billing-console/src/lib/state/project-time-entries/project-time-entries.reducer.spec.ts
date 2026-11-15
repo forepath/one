@@ -3,7 +3,6 @@ import {
   createProjectTimeEntry,
   createProjectTimeEntryFailure,
   createProjectTimeEntrySuccess,
-  deleteProjectTimeEntry,
   deleteProjectTimeEntryFailure,
   deleteProjectTimeEntrySuccess,
   loadProjectTicketTimeEntries,
@@ -15,7 +14,6 @@ import {
   loadProjectTimeEntriesSuccess,
   projectBoardTimeEntryRemoved,
   projectBoardTimeEntryUpsert,
-  updateProjectTimeEntry,
   updateProjectTimeEntryFailure,
   updateProjectTimeEntrySuccess,
 } from './project-time-entries.actions';
