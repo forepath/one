@@ -4,6 +4,12 @@ export const IDENTITY_PAT_SCOPE_CATALOG = 'IDENTITY_PAT_SCOPE_CATALOG';
 export const PAT_TOKEN_PREFIX = 'fp_pat_';
 
 /**
+ * Injection token: request paths (with global prefix, without query) on which a raw personal access token is accepted
+ * as `Authorization: Bearer fp_pat_…` and exchanged in-process (see PatBearerExchangeMiddleware). Empty by default.
+ */
+export const IDENTITY_RAW_PAT_BEARER_PATHS = 'IDENTITY_RAW_PAT_BEARER_PATHS';
+
+/**
  * Prefix length for DB lookup: `fp_pat_` (7) + first 8 chars of the random base64url body.
  * Unique index on token_prefix; collisions are rejected at insert.
  */

@@ -4,6 +4,7 @@ import {
   agentContextShaMatches,
   isAgentContextElementKind,
   type AgentContextElementKind,
+  type ClientToolDefinition,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
@@ -26,6 +27,8 @@ export interface MintAgentContextTicketInput extends AgentContextTicketBinding {
   attachments?: AgentContextAttachmentRef[];
   workspace?: { mountPath: string };
   environments?: AgentContextEnvironmentRef[];
+  /** Client tools of the turn (OpenAI-compatible API); only for visible chat turns. */
+  clientTools?: ClientToolDefinition[];
 }
 
 function normalizeShas(values: readonly string[] | undefined): string[] {
@@ -86,6 +89,7 @@ export class AgentContextTicketsService {
       createdRefs: [],
       changeCount: 0,
       deploymentActionCount: 0,
+      ...(input.clientTools?.length ? { clientTools: input.clientTools, clientToolCallIds: [] } : {}),
       createdAt: now,
       lastUsedAt: now,
     };

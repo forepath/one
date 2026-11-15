@@ -52,6 +52,24 @@ export class IoRedisKeyValueClient implements KeyValueClient {
     return this.client.scan(cursor, 'MATCH', match, 'COUNT', count);
   }
 
+  async rpush(key: string, values: string[], ttlSeconds?: number): Promise<number> {
+    const length = await this.client.rpush(key, ...values);
+
+    if (ttlSeconds !== undefined) {
+      await this.client.expire(key, ttlSeconds);
+    }
+
+    return length;
+  }
+
+  async lpop(key: string, count: number): Promise<string[]> {
+    return (await this.client.lpop(key, count)) ?? [];
+  }
+
+  async del(key: string): Promise<void> {
+    await this.client.del(key);
+  }
+
   async close(): Promise<void> {
     await this.client.quit();
   }

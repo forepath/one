@@ -13,7 +13,7 @@ import { AgentsContextController } from './agents-context.controller';
 describe('AgentsContextController', () => {
   const agentId = '11111111-1111-4111-8111-111111111111';
   const auth = 'Bearer good-token';
-  let contextMcp: { verifyAgentToken: jest.Mock };
+  let contextMcp: { verifyAgentToken: jest.Mock; recordFeatures: jest.Mock };
   let tickets: AgentContextTicketsService;
   let api: { list: jest.Mock; search: jest.Mock; get: jest.Mock; requestAccess: jest.Mock; accessStatus: jest.Mock };
   let changes: { parse: jest.Mock; requestChange: jest.Mock; changeStatus: jest.Mock };
@@ -23,6 +23,7 @@ describe('AgentsContextController', () => {
   beforeEach(() => {
     contextMcp = {
       verifyAgentToken: jest.fn(async (id: string, token: string) => id === agentId && token === 'good-token'),
+      recordFeatures: jest.fn(),
     };
     tickets = new AgentContextTicketsService();
     api = {
@@ -66,6 +67,17 @@ describe('AgentsContextController', () => {
     await expect(controller.health('not-a-uuid', auth)).rejects.toBeInstanceOf(UnauthorizedException);
     await expect(controller.health(agentId, 'Basic good-token')).rejects.toBeInstanceOf(UnauthorizedException);
     await expect(controller.health(undefined, undefined)).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('records the capabilities the MCP server announces on the health probe (authenticated only)', async () => {
+    await controller.health(agentId, auth, 'client-tools');
+    expect(contextMcp.recordFeatures).toHaveBeenCalledWith(agentId, 'client-tools');
+
+    contextMcp.recordFeatures.mockClear();
+    await expect(controller.health(agentId, 'Bearer wrong', 'client-tools')).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+    expect(contextMcp.recordFeatures).not.toHaveBeenCalled();
   });
 
   it('resolves the ticket for the authenticated agent before delegating', async () => {

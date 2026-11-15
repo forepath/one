@@ -8,8 +8,13 @@ const AGENT_TOOL_CALL_TTL_MS = 2 * 60 * 60_000;
 /** Per agent: one busy worker can never evict another agent's state. */
 const AGENT_TOOL_CALLS_MAX_PER_AGENT = 500;
 const AGENT_RELATIONS_MAX_PER_AGENT = 5_000;
-/** Only platform context / content / deployment tools authorize anything (auto tickets of unattended runs). */
-const TRACKED_TOOL_PREFIXES = ['agenstra_context_', 'agenstra_content_', 'agenstra_deployments_'];
+/** Only platform context / content / deployment / client tools authorize anything (see the claiming controllers). */
+const TRACKED_TOOL_PREFIXES = [
+  'agenstra_context_',
+  'agenstra_content_',
+  'agenstra_deployments_',
+  'agenstra_client_tools_',
+];
 /** Unknown answer messages are looked up in their session at most this often (claims poll every 100 ms). */
 const MESSAGE_LOOKUP_INTERVAL_MS = 1_000;
 /** Subagents of subagents: bounded walk up the chain. */

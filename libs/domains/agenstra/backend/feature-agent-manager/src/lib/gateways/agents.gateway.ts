@@ -2,7 +2,17 @@ import {
   AGENSTRA_WORKSPACE_MOUNT_ROOT,
   AGENT_DEPLOYMENT_REQUEST_EVENT,
   AGENT_HANDOFF_REQUEST_EVENT,
+  AGENT_CLIENT_TOOL_REQUEST_EVENT,
   AGENT_TASK_REQUEST_EVENT,
+  buildClientToolsPromptSection,
+  CLIENT_TOOL_WAIT_MS,
+  ClientToolsValidationError,
+  normalizeClientToolChoice,
+  normalizeClientTools,
+  type AgentClientToolRequest,
+  type AgentClientToolResponse,
+  type ClientToolChoice,
+  type ClientToolDefinition,
   type AgentDeploymentControllerRequest,
   type AgentDeploymentControllerResponse,
   type AgentHandoffControllerRequest,
@@ -57,6 +67,7 @@ import { OpenCodeConfigSyncService } from '../providers/opencode/opencode-config
 import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
+import { AgentClientToolsApiService } from '../services/agent-client-tools-api.service';
 import { AgentContextApiService } from '../services/agent-context-api.service';
 import { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
@@ -118,6 +129,13 @@ interface ChatPayload {
   chatId?: string;
   contextInjection?: ContextInjectionPayload;
   attachments?: AgentMessageAttachmentJson[];
+  /**
+   * Client tools of an OpenAI-compatible API turn (function calling). Only the agent-controller's API path sets them;
+   * browser forwards strip them. Visible chat turns only; requires the platform MCP server.
+   */
+  clientTools?: unknown;
+  clientToolChoice?: unknown;
+  parallelToolCalls?: boolean;
 }
 
 interface RestoreChatPayload {
@@ -402,6 +420,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     @Optional() private readonly oidcVerifier?: OidcTokenVerifier,
     @Optional() private readonly graphReferences?: AgentGraphReferencesService,
     @Optional() private readonly agentDeploymentsApi?: AgentDeploymentsApiService,
+    @Optional() private readonly agentClientToolsApi?: AgentClientToolsApiService,
   ) {}
 
   /**
@@ -466,6 +485,9 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     });
     this.agentDeploymentsApi?.registerBridge({
       requestControllerDeployments: (agentId, request) => this.requestControllerDeployments(agentId, request),
+    });
+    this.agentClientToolsApi?.registerBridge({
+      requestControllerClientTool: (record, request) => this.requestControllerClientTool(record, request),
     });
   }
 
@@ -621,9 +643,10 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   private async prepareContextTicket(
     agentUuid: string,
     contextInjection: ContextInjectionPayload | undefined,
+    clientTools: ClientToolDefinition[] | undefined,
     binding: Omit<AgentContextTicketBinding, 'agentId'>,
   ): Promise<AgentContextTicketRecord | undefined> {
-    if (!contextInjection || !this.contextTickets || !this.contextMcp?.isConfigured()) {
+    if ((!contextInjection && !clientTools?.length) || !this.contextTickets || !this.contextMcp?.isConfigured()) {
       return undefined;
     }
 
@@ -639,11 +662,11 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         agentId: agentUuid,
         items: deriveAgentContextItems(contextInjection),
         grants: {
-          ticket: contextInjection.ticketShas,
-          knowledge: contextInjection.knowledgeShas,
-          plan: contextInjection.planShas,
+          ticket: contextInjection?.ticketShas,
+          knowledge: contextInjection?.knowledgeShas,
+          plan: contextInjection?.planShas,
         },
-        attachments: (contextInjection.attachmentContexts ?? [])
+        attachments: (contextInjection?.attachmentContexts ?? [])
           .filter((attachment) => typeof attachment.agentPath === 'string' && attachment.agentPath.trim())
           .map((attachment) => ({
             fileName: attachment.fileName,
@@ -651,8 +674,9 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
             byteSize: attachment.byteSize,
             agentPath: attachment.agentPath as string,
           })),
-        ...(contextInjection.includeWorkspace ? { workspace: { mountPath: AGENSTRA_WORKSPACE_MOUNT_ROOT } } : {}),
-        environments: (contextInjection.environmentIds ?? []).map((id) => ({ id })),
+        ...(contextInjection?.includeWorkspace ? { workspace: { mountPath: AGENSTRA_WORKSPACE_MOUNT_ROOT } } : {}),
+        environments: (contextInjection?.environmentIds ?? []).map((id) => ({ id })),
+        ...(clientTools?.length ? { clientTools } : {}),
       });
     } catch (error) {
       const err = error as { message?: string };
@@ -681,6 +705,86 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     }
 
     return hidden ? 'deny' : 'ask';
+  }
+
+  /**
+   * Client tools of an API turn: visible chat turns only, valid definitions, and a worker that serves the platform MCP
+   * server (calls go through it). Checked before anything of the turn is persisted.
+   */
+  private async validateClientTools(
+    agentUuid: string,
+    data: ChatPayload,
+    ephemeral: boolean,
+  ): Promise<
+    | { value: { tools: ClientToolDefinition[]; choice: ClientToolChoice; parallel: boolean } }
+    | { error: string; code: string }
+  > {
+    if (ephemeral || typeof data.resumeSessionSuffix === 'string') {
+      return { error: 'Client tools are only available in visible chat sessions', code: 'CLIENT_TOOLS_INVALID' };
+    }
+
+    let tools: ClientToolDefinition[];
+    let choice: ClientToolChoice;
+
+    try {
+      tools = normalizeClientTools(data.clientTools);
+      choice = normalizeClientToolChoice(data.clientToolChoice, tools);
+    } catch (error) {
+      const message = error instanceof ClientToolsValidationError ? error.message : 'Invalid client tools';
+
+      return { error: message, code: 'CLIENT_TOOLS_INVALID' };
+    }
+
+    if (!this.contextTickets || !this.contextMcp?.isConfigured()) {
+      return { error: 'Client tools are not available for this agent', code: 'CLIENT_TOOLS_UNAVAILABLE' };
+    }
+
+    const entity = await this.agentsRepository.findById(agentUuid);
+
+    if (!entity?.containerId || !(await this.contextMcp.isAvailable(agentUuid, entity.containerId))) {
+      return { error: 'Client tools are not available for this agent', code: 'CLIENT_TOOLS_UNAVAILABLE' };
+    }
+
+    if (!this.contextMcp.supportsFeature(agentUuid, 'client-tools')) {
+      return {
+        error: 'The environment runs a worker image without client tool support; restart or recreate it to update',
+        code: 'CLIENT_TOOLS_UNAVAILABLE',
+      };
+    }
+
+    return { value: { tools, choice, parallel: data.parallelToolCalls !== false } };
+  }
+
+  /**
+   * Hand a client tool call (or another wait for its result) to the controller connection that sent the turn. Never
+   * another socket: only that connection belongs to the API client that defined the tools.
+   */
+  private async requestControllerClientTool(
+    record: AgentContextTicketRecord,
+    request: AgentClientToolRequest,
+  ): Promise<AgentClientToolResponse> {
+    const socket = record.socketId ? this.socketById.get(record.socketId) : undefined;
+
+    if (!socket || this.authenticatedClients.get(socket.id) !== record.agentId) {
+      return { ok: false, error: 'The API client of this turn is no longer connected' };
+    }
+
+    try {
+      const response = (await socket
+        .timeout(CLIENT_TOOL_WAIT_MS + 5_000)
+        .emitWithAck(AGENT_CLIENT_TOOL_REQUEST_EVENT, request)) as AgentClientToolResponse | undefined;
+
+      if (response && typeof response === 'object' && typeof response.ok === 'boolean') {
+        return response;
+      }
+    } catch (error) {
+      this.logger.debug(`Client tool request via socket ${socket.id} failed: ${(error as Error).message}`);
+
+      // No answer in time: the agent keeps waiting with the result tool.
+      return { ok: true, status: 'pending' };
+    }
+
+    return { ok: false, error: 'Invalid client tool response' };
   }
 
   /**
@@ -2067,6 +2171,20 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     const suppressUserMessage = data.suppressUserMessage === true;
     const { chatSessionId, chatId } = chatContext;
     const chatIdFields = chatId ? { chatId } : {};
+    let clientTools: { tools: ClientToolDefinition[]; choice: ClientToolChoice; parallel: boolean } | undefined;
+
+    if (data.clientTools !== undefined && data.clientTools !== null) {
+      const rejection = await this.validateClientTools(agentUuid, data, ephemeral);
+
+      if ('error' in rejection) {
+        socket.emit('error', createErrorResponse(rejection.error, rejection.code));
+
+        return;
+      }
+
+      clientTools = rejection.value;
+    }
+
     // Apply incoming filters before processing (single hook point for incoming messages)
     const incomingFilterResult = await this.applyFilters(message, FilterDirection.INCOMING, {
       agentId: agentUuid,
@@ -2124,7 +2242,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     const messageWithHydration = this.prependHiddenHydrationContext(filteredMessage, pendingHydrationSummary);
     const contextInjection = await this.normalizeContextInjection(agentUuid, data.contextInjection);
     const chatAttachments = this.normalizeChatAttachments(data.attachments ?? contextInjection?.attachmentContexts);
-    const contextTicket = await this.prepareContextTicket(agentUuid, contextInjection, {
+    const contextTicket = await this.prepareContextTicket(agentUuid, contextInjection, clientTools?.tools, {
       sessionKey:
         chatSessionId ??
         (chatContext.resumeSessionSuffix ? `suffix:${chatContext.resumeSessionSuffix}` : `ephemeral:${correlationId}`),
@@ -2135,11 +2253,29 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       correlationId,
       accessMode: this.resolveContextAccessMode(chatContext.hidden, chatContext.resumeSessionSuffix, data),
     });
-    const messageToUse = this.promptContextComposer.composeChatMessage(
+
+    if (clientTools && !contextTicket?.clientTools) {
+      // Checked before the turn started; the worker MCP server became unavailable meanwhile.
+      socket.emit(
+        'error',
+        createErrorResponse('Client tools are not available for this agent right now', 'CLIENT_TOOLS_UNAVAILABLE'),
+      );
+
+      return;
+    }
+
+    const composedMessage = this.promptContextComposer.composeChatMessage(
       messageWithHydration,
       contextInjection,
       contextTicket,
     );
+    const messageToUse =
+      clientTools && contextTicket
+        ? `${buildClientToolsPromptSection(contextTicket.ticket, clientTools.tools, {
+            choice: clientTools.choice,
+            parallel: clientTools.parallel,
+          })}\n\n${composedMessage}`
+        : composedMessage;
     const enrichmentTranscriptParts = this.buildEnrichmentTranscriptParts(contextInjection, correlationId);
 
     this.beginGraphTurn(agentUuid, correlationId, {

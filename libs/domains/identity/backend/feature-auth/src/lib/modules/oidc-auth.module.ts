@@ -31,7 +31,7 @@ export class OidcAuthModule {
       module: OidcAuthModule,
       imports: [
         OidcModule,
-        PatAuthModule.register({ patScopeCatalog: options.patScopeCatalog }),
+        PatAuthModule.register(options),
         TypeOrmModule.forFeature([UserEntity]),
         JwtModule.register({
           global: true,

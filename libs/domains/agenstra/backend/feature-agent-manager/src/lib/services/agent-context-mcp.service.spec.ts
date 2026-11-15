@@ -163,4 +163,18 @@ describe('AgentContextMcpService', () => {
       expect(fetchMock).not.toHaveBeenCalled();
     });
   });
+
+  it('remembers announced MCP capabilities per agent (unknown features are ignored)', () => {
+    expect(service.supportsFeature('agent-a', 'client-tools')).toBe(false);
+
+    service.recordFeatures('agent-a', 'client-tools, something-else');
+    service.recordFeatures('agent-b', undefined);
+
+    expect(service.supportsFeature('agent-a', 'client-tools')).toBe(true);
+    expect(service.supportsFeature('agent-b', 'client-tools')).toBe(false);
+
+    // A restarted worker with an older image no longer announces it.
+    service.recordFeatures('agent-a', '');
+    expect(service.supportsFeature('agent-a', 'client-tools')).toBe(false);
+  });
 });

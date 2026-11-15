@@ -53,6 +53,7 @@ Feature documentation:
 - [Web IDE](./features/web-ide.md) Monaco Editor integration for code editing
 - [Chat Interface](./features/chat-interface.md) AI chat functionality and message flow
 - [Authentication](./features/authentication.md) Multiple authentication methods with configurable user registration
+- [OpenAI-compatible API](./features/openai-compatible-api.md) Call agents with OpenAI SDKs and tools (Chat Completions, Responses, Conversations)
 - [Atlassian import](./features/atlassian-import.md) Jira and Confluence imports into controller tickets and knowledge (admin)
 - [Deployments](./features/deployment.md) Workspace deployment workflows on CI/CD connections (GitHub Actions, GitLab CI, Jenkins)
 - [Dynamic provider plugins](./features/dynamic-provider-plugins.md) Runtime provider extensions for controller and manager (baked-in or mounted)

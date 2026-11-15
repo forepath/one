@@ -9,6 +9,10 @@ const glideInstance = {
   set: jest.fn().mockResolvedValue('OK'),
   mget: jest.fn(),
   scan: jest.fn(),
+  rpush: jest.fn().mockResolvedValue(2),
+  expire: jest.fn().mockResolvedValue(true),
+  lpopCount: jest.fn(),
+  del: jest.fn().mockResolvedValue(1),
   close: jest.fn(),
 };
 
@@ -57,6 +61,28 @@ describe('GlideKeyValueClient', () => {
 
   it('rejects commands before connect', async () => {
     await expect(createClient().get('k')).rejects.toThrow('not connected');
+  });
+
+  it('maps list commands to GLIDE', async () => {
+    const client = createClient();
+
+    await client.connect();
+    await expect(client.rpush('l', ['a', 'b'], 30)).resolves.toBe(2);
+    expect(glideInstance.rpush).toHaveBeenCalledWith('l', ['a', 'b']);
+    expect(glideInstance.expire).toHaveBeenCalledWith('l', 30);
+
+    glideInstance.expire.mockClear();
+    await client.rpush('l', ['c']);
+    expect(glideInstance.expire).not.toHaveBeenCalled();
+
+    glideInstance.lpopCount.mockResolvedValueOnce(['a', 'b']);
+    await expect(client.lpop('l', 5)).resolves.toEqual(['a', 'b']);
+    expect(glideInstance.lpopCount).toHaveBeenCalledWith('l', 5);
+    glideInstance.lpopCount.mockResolvedValueOnce(null);
+    await expect(client.lpop('missing', 5)).resolves.toEqual([]);
+
+    await client.del('l');
+    expect(glideInstance.del).toHaveBeenCalledWith(['l']);
   });
 
   it('maps commands to GLIDE', async () => {
