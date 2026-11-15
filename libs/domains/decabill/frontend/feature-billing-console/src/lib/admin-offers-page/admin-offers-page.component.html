@@ -322,6 +322,7 @@
     [lines]="createLineItems"
     [customerUserId]="createUserId"
   ></framework-admin-offer-line-editor>
+  <framework-document-note-field class="d-block mt-3" controlId="createOfferNote" [(value)]="createNote" />
   <div *fpcModalFooter class="d-flex flex-column align-items-stretch gap-3 w-100">
     <framework-pricing-totals-summary
       variant="primary"
@@ -379,6 +380,7 @@
       [lines]="editLineItems"
       [customerUserId]="editForm.userId"
     ></framework-admin-offer-line-editor>
+    <framework-document-note-field class="d-block mt-3" controlId="editOfferNote" [(value)]="editNote" />
   }
   <div *fpcModalFooter class="d-flex flex-column align-items-stretch gap-3 w-100">
     @if (!editDetailLoading) {
@@ -490,6 +492,8 @@
       </div>
 
       <framework-document-terms-summary [terms]="detail.effectiveDocumentTerms ?? detail" />
+
+      <framework-document-note-summary [note]="detail.note" />
 
       <div class="card">
         <fpc-lane-header>

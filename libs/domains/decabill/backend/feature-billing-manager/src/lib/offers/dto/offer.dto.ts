@@ -18,6 +18,7 @@ import {
 import { DeliveryTermsCode } from '../../constants/document-terms.constants';
 import { TaxCategory } from '../../constants/tax-category.constants';
 import { CreateSubscriptionDto } from '../../dto/create-subscription.dto';
+import { IsOptionalDocumentNote } from '../../dto/document-note.dto';
 import { DocumentTermsInputDto, EffectiveDocumentTermsResponseDto } from '../../dto/document-terms.dto';
 import { ProjectPricingModel } from '../../projects/entities/project.enums';
 import { OfferLineType } from '../constants/offer-line-type.constants';
@@ -145,6 +146,13 @@ export class CreateAdminOfferDto extends DocumentTermsInputDto {
   @ValidateNested({ each: true })
   @Type(() => OfferLineInputDto)
   lineItems!: OfferLineInputDto[];
+
+  /**
+   * Optional document note printed on the offer and embedded as document note (BT-22). Offer notes stay on the
+   * offer; they do not carry over to the invoice created on acceptance.
+   */
+  @IsOptionalDocumentNote()
+  note?: string | null;
 }
 
 export class UpdateAdminOfferDto extends CreateAdminOfferDto {}
@@ -206,6 +214,8 @@ export class AdminOfferDetailResponseDto extends AdminOfferListItemDto {
   deliveryTermsText!: string | null;
   /** Terms printed on the offer / applied to its invoice (stored terms, else global default). */
   effectiveDocumentTerms!: EffectiveDocumentTermsResponseDto;
+  /** Free-text document note printed on the offer; null when none. */
+  note!: string | null;
 }
 
 export class PaginatedAdminOffersResponseDto {
@@ -267,4 +277,6 @@ export class CustomerOfferDetailResponseDto extends CustomerOfferListItemDto {
   deliveryTermsCode!: DeliveryTermsCode | null;
   deliveryTermsPlace!: string | null;
   deliveryTermsText!: string | null;
+  /** Free-text document note printed on the offer; null when none. */
+  note!: string | null;
 }

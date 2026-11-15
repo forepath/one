@@ -279,6 +279,18 @@ describe('EInvoiceXmlService', () => {
       expect(xml).toContain('&lt;script&gt;alert(1)&lt;/script&gt; &amp; access');
     });
 
+    it('drops XML-invalid code units from stored delivery terms', () => {
+      const xml = build({
+        ...termsInvoice,
+        deliveryTermsCode: DeliveryTermsCode.CUSTOM,
+        deliveryTermsPlace: null,
+        deliveryTermsText: 'Online\uD800 access\uFFFF 😀',
+      } as InvoiceEntity);
+
+      expect(xml).toContain('<ram:Content>Online access 😀</ram:Content>');
+      expect(xml).not.toMatch(/[\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/);
+    });
+
     it('omits terms on credit notes', () => {
       const xml = build(
         termsInvoice,
@@ -336,6 +348,98 @@ describe('EInvoiceXmlService', () => {
 
       expect(xml).toContain('<ram:Description>Payable immediately without deduction.</ram:Description>');
       expect(xml).not.toContain('<ram:DueDateDateTime>');
+    });
+  });
+
+  describe('document note (BT-22)', () => {
+    const build = (doc: InvoiceEntity, options = buildInvoiceDocumentOptions(doc)) =>
+      service.buildEn16931Xml(doc, lineItems, issuer, buyer, purchaseOrderReference, invoicingPeriod, options);
+    const exchangedDocument = (xml: string) =>
+      xml.match(/<rsm:ExchangedDocument>[\s\S]*?<\/rsm:ExchangedDocument>/)?.[0] ?? '';
+
+    it('embeds the invoice note without a subject code after the issue date', () => {
+      const xml = build({ ...invoice, note: 'Thank you for your order.\nProject phase 1.' } as InvoiceEntity);
+
+      expect(exchangedDocument(xml)).toMatch(
+        /<ram:IssueDateTime>[\s\S]*<\/ram:IssueDateTime>\s*<ram:IncludedNote>\s*<ram:Content>Thank you for your order.\nProject phase 1.<\/ram:Content>\s*<\/ram:IncludedNote>\s*<\/rsm:ExchangedDocument>/,
+      );
+    });
+
+    it('keeps the note next to the AAR delivery terms note', () => {
+      const xml = build({
+        ...invoice,
+        note: 'General remark',
+        deliveryTermsCode: DeliveryTermsCode.EXW,
+        deliveryTermsPlace: null,
+      } as InvoiceEntity);
+      const notes = exchangedDocument(xml).match(/<ram:IncludedNote>[\s\S]*?<\/ram:IncludedNote>/g) ?? [];
+
+      expect(notes).toHaveLength(2);
+      expect(notes[0]).toContain('<ram:Content>General remark</ram:Content>');
+      expect(notes[0]).not.toContain('<ram:SubjectCode>');
+      expect(notes[1]).toContain('<ram:SubjectCode>AAR</ram:SubjectCode>');
+    });
+
+    it('escapes markup and strips control characters that are invalid in XML 1.0', () => {
+      const xml = build({ ...invoice, note: '<b>bold</b> & co\u0000\u0007 ]]>' } as InvoiceEntity);
+
+      expect(xml).not.toContain('<b>');
+      expect(xml).toContain('<ram:Content>&lt;b&gt;bold&lt;/b&gt; &amp; co ]]&gt;</ram:Content>');
+      // eslint-disable-next-line no-control-regex
+      expect(xml).not.toMatch(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/);
+    });
+
+    it('omits blank notes', () => {
+      expect(build({ ...invoice, note: '  \n\t ' } as InvoiceEntity)).not.toContain('<ram:IncludedNote>');
+      expect(build({ ...invoice, note: null } as InvoiceEntity)).not.toContain('<ram:IncludedNote>');
+    });
+
+    it('embeds the note on promotional zero-balance invoices', () => {
+      const promo = { ...invoice, note: 'Promo note' } as InvoiceEntity;
+
+      expect(build(promo, buildZeroBalancePromotionalInvoiceDocumentOptions(promo))).toContain(
+        '<ram:Content>Promo note</ram:Content>',
+      );
+    });
+
+    it('embeds only the credit note note on void credit notes, not the invoice note', () => {
+      const noted = { ...invoice, note: 'Invoice note' } as InvoiceEntity;
+      const withNote = build(
+        noted,
+        buildCreditNoteDocumentOptions('INV-2026-00001-CN', new Date(), 'INV-2026-00001', 'Cancelled on request'),
+      );
+      const withoutNote = build(
+        noted,
+        buildCreditNoteDocumentOptions('INV-2026-00001-CN', new Date(), 'INV-2026-00001'),
+      );
+
+      expect(withNote).toContain('<ram:Content>Cancelled on request</ram:Content>');
+      expect(withNote).not.toContain('Invoice note');
+      expect(withoutNote).not.toContain('<ram:IncludedNote>');
+    });
+
+    it('never embeds the invoice note on partial credit notes', () => {
+      const xml = build(
+        { ...invoice, note: 'Invoice note' } as InvoiceEntity,
+        buildPartialCreditNoteDocumentOptions('INV-2026-00001-CN-x', new Date(), 'INV-2026-00001', 11.9),
+      );
+
+      expect(xml).not.toContain('<ram:IncludedNote>');
+    });
+
+    it('embeds the offer note', () => {
+      const xml = build(
+        invoice,
+        buildOfferDocumentOptions({
+          id: 'off-1',
+          offerNumber: 'OFF-1',
+          createdAt: new Date(),
+          totalGross: 119,
+          note: 'Valid while stock lasts',
+        }),
+      );
+
+      expect(xml).toContain('<ram:Content>Valid while stock lasts</ram:Content>');
     });
   });
 

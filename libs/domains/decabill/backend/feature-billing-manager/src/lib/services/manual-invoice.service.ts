@@ -6,6 +6,7 @@ import type { ManualInvoiceDetailResponseDto } from '../dto/manual-invoice.dto';
 import { InvoiceLineItemsRepository } from '../repositories/invoice-line-items.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+import { normalizeDocumentNote } from '../utils/document-note.utils';
 import { normalizeDeliveryTermsInput, normalizePaymentDueDaysInput } from '../utils/document-terms.utils';
 import { assertDraftEditable } from '../utils/invoice-mutability.util';
 import { mapManualInvoiceLineItemsToInputs } from '../utils/map-manual-invoice-line-items.util';
@@ -53,6 +54,7 @@ export class ManualInvoiceService {
       userId: dto.userId,
       lineInputs,
       currency: dto.currency,
+      note: dto.note,
     };
     const draft = await this.invoiceService.createDraft(draftParams);
 
@@ -115,6 +117,7 @@ export class ManualInvoiceService {
       buyerCustomerType: taxContext.buyerCustomerType,
       issuerCountry: taxContext.issuerCountry,
       issuerIsInEu: taxContext.treatment.issuerIsInEu,
+      ...(dto.note !== undefined ? { note: normalizeDocumentNote(dto.note) } : {}),
     });
 
     await this.auditLog.log({

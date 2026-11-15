@@ -35,6 +35,7 @@ export class InvoiceVoidDocumentsRepository {
     invoiceId: string;
     documentNumber: string;
     pdfStorageKey: string;
+    note?: string | null;
   }): Promise<InvoiceVoidDocumentEntity> {
     const entity = this.repository.create(dto);
 

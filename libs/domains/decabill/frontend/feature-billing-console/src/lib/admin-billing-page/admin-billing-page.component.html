@@ -645,6 +645,15 @@
       />
     </fpc-form-field>
   }
+  @if (pendingAction() === 'void' && !pendingSupplierInvoice()) {
+    <framework-document-note-field
+      controlId="actionCreditNoteNote"
+      i18n-label="@@featureAdminBilling-creditNoteNote"
+      label="Note on the credit note (optional)"
+      [value]="actionNote()"
+      (valueChange)="actionNote.set($event)"
+    />
+  }
   <fpc-form-field forId="actionReason" i18n-label="@@featureAdminBilling-reasonOptional" label="Reason (optional)">
     <fpc-form-control
       controlType="textarea"
@@ -740,6 +749,8 @@
       </div>
 
       <framework-document-terms-summary [terms]="detail.terms" />
+
+      <framework-document-note-summary [note]="detail.note" />
 
       <div class="card">
         <fpc-lane-header>
@@ -896,6 +907,7 @@
       <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
       <span i18n="@@featureAdminInvoices-addLineItem">Add line item</span>
     </fpc-button>
+    <framework-document-note-field class="d-block mt-3" controlId="createInvoiceNote" [(value)]="createNote" />
   } @else {
     <fpc-form-field forId="createSupplier" i18n-label="@@featureAdminSupplierInvoices-supplier" label="Supplier">
       <framework-billing-admin-supplier-select
@@ -1109,6 +1121,7 @@
       <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
       <span i18n="@@featureAdminInvoices-addLineItem">Add line item</span>
     </fpc-button>
+    <framework-document-note-field class="d-block mt-3" controlId="editInvoiceNote" [(value)]="editNote" />
   }
   <div *fpcModalFooter class="d-flex flex-column align-items-stretch gap-3 w-100">
     <framework-pricing-totals-summary

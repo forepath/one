@@ -109,6 +109,10 @@ export class OfferEntity {
   @Column({ type: 'text', nullable: true, name: 'delivery_terms_text' })
   deliveryTermsText?: string | null;
 
+  /** Optional free-text note printed on the offer and embedded as document note (BT-22); frozen on archive. */
+  @Column({ type: 'text', nullable: true, name: 'note' })
+  note?: string | null;
+
   @Column({ type: 'varchar', length: 512, nullable: true, name: 'pdf_storage_key' })
   pdfStorageKey?: string | null;
 

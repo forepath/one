@@ -63,7 +63,7 @@ Customer invoice PDFs also print the **service period** (`Service period` / `Ser
 | `POST /admin/billing/invoices/:invoiceRefId/issue`            | `dueInDays` (payment terms), `deliveryTermsCode`, `deliveryTermsPlace`, `deliveryTermsText`                                      |
 | Invoice detail (customer and admin)                           | Stored terms (`null` for drafts and legacy invoices)                                                                             |
 
-Validation: `CUSTOM` requires `deliveryTermsText`; an Incoterms rule drops any text and a `CUSTOM` code drops any place. Control characters are stripped, whitespace in the place is collapsed.
+Validation: `CUSTOM` requires `deliveryTermsText`; an Incoterms rule drops any text and a `CUSTOM` code drops any place. Control characters and code units that are invalid in XML 1.0 (lone surrogates, U+FFFE / U+FFFF) are stripped, also from values stored earlier when they are printed or embedded; whitespace in the place is collapsed.
 
 ## Billing console
 

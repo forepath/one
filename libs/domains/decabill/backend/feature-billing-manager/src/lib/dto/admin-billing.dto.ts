@@ -2,6 +2,7 @@ import { IsDateString, IsOptional, IsString, IsUUID } from 'class-validator';
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 
+import { IsOptionalDocumentNote } from './document-note.dto';
 import { InvoiceResponseDto } from './invoice-response.dto';
 import { SubscriptionResponseDto } from './subscription-response.dto';
 
@@ -55,6 +56,12 @@ export class PaginatedAdminSubscriptionsResponseDto {
   total!: number;
   limit!: number;
   offset!: number;
+}
+
+/** Optional note printed on the credit note (void document) and embedded as invoice note (BT-22). */
+export class VoidInvoiceDto {
+  @IsOptionalDocumentNote()
+  note?: string | null;
 }
 
 export class MarkInvoicePaymentStatusDto {

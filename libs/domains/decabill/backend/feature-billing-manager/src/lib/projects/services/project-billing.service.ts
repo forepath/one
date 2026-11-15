@@ -142,6 +142,7 @@ export class ProjectBillingService {
       subscriptionId: dto.subscriptionId,
       currency: project.currency,
       lineInputs,
+      note: dto.note,
     });
     const issued = await this.invoiceIssuanceService.issueDraft(draft.id, { skipNotification: true });
     const billedAt = new Date();

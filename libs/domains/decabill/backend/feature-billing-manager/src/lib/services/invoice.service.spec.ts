@@ -217,6 +217,7 @@ describe('InvoiceService', () => {
         invoiceId: 'inv-1',
         documentNumber: 'INV-2026-00001-CN',
         pdfStorageKey: 'sub-1/inv-1-void.pdf',
+        note: null,
       });
       expect(auditLog.log).toHaveBeenCalledWith(expect.objectContaining({ process: 'invoice.void' }));
       expect(billingEmailPublisher.publishVoidDocument).toHaveBeenCalledWith(
@@ -321,6 +322,86 @@ describe('InvoiceService', () => {
       expect(invoicePdfService.generateVoidDocumentAndStore).not.toHaveBeenCalled();
       expect(billingEmailPublisher.publishVoidDocument).not.toHaveBeenCalled();
       expect(invoicesRepository.update).toHaveBeenCalled();
+    });
+
+    describe('credit note note', () => {
+      const invoice = {
+        id: 'inv-1',
+        subscriptionId,
+        userId,
+        invoiceNumber: 'INV-2026-00001',
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 119,
+        note: 'Invoice note',
+      } as InvoiceEntity;
+
+      beforeEach(() => {
+        invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue(invoice);
+        invoiceVoidDocumentsRepository.findByInvoiceId.mockResolvedValue(null);
+        invoiceLineItemsRepository.findByInvoiceId.mockResolvedValue([]);
+        customerProfilesRepository.findByUserId.mockResolvedValue({ userId, firstName: 'A' });
+        invoicePdfService.generateVoidDocumentAndStore.mockResolvedValue({
+          storageKey: 'sub-1/inv-1-void.pdf',
+          documentNumber: 'INV-2026-00001-CN',
+        });
+        invoicesRepository.update.mockResolvedValue({ ...invoice, status: InvoiceStatus.VOID, balanceDue: 0 });
+      });
+
+      it('prints and stores the normalized note on the credit note', async () => {
+        await service.voidInvoice('inv-1', subscriptionId, 'admin-1', undefined, {
+          note: '  Cancelled\u0000 on request ',
+        });
+
+        expect(invoicePdfService.generateVoidDocumentAndStore.mock.calls[0]?.[7]).toBe('Cancelled on request');
+        expect(invoiceVoidDocumentsRepository.create).toHaveBeenCalledWith(
+          expect.objectContaining({ note: 'Cancelled on request' }),
+        );
+        expect(auditLog.log).toHaveBeenCalledWith(
+          expect.objectContaining({
+            process: 'invoice.void',
+            context: expect.objectContaining({ hasCreditNoteNote: true }),
+          }),
+        );
+      });
+
+      it('never copies the invoice note onto the credit note', async () => {
+        await service.voidInvoice('inv-1', subscriptionId, 'admin-1');
+
+        expect(invoicePdfService.generateVoidDocumentAndStore.mock.calls[0]?.[7]).toBeNull();
+      });
+
+      it('stores the credit note right away when a note is given without notification', async () => {
+        await service.voidInvoice('inv-1', subscriptionId, 'admin-1', undefined, {
+          skipNotification: true,
+          note: 'Duplicate',
+        });
+
+        expect(invoiceVoidDocumentsRepository.create).toHaveBeenCalledWith(
+          expect.objectContaining({ note: 'Duplicate' }),
+        );
+        expect(billingEmailPublisher.publishVoidDocument).not.toHaveBeenCalled();
+      });
+
+      it('regenerates a missing credit note PDF with its stored note', async () => {
+        invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue({
+          ...invoice,
+          status: InvoiceStatus.VOID,
+          voidedAt: new Date('2026-06-10'),
+        });
+        invoiceVoidDocumentsRepository.findByInvoiceId.mockResolvedValue({
+          pdfStorageKey: 'sub-1/inv-1-void.pdf',
+          note: 'Stored note',
+        });
+        invoicePdfService.readPdf
+          .mockRejectedValueOnce(new Error('missing'))
+          .mockRejectedValueOnce(new Error('missing'));
+        invoicePdfService.readPdf.mockResolvedValueOnce(Buffer.from('pdf'));
+
+        await service.getVoidPdfBuffer('inv-1', subscriptionId);
+
+        expect(invoicePdfService.generateVoidDocumentAndStore.mock.calls[0]?.[7]).toBe('Stored note');
+        expect(invoiceVoidDocumentsRepository.create).not.toHaveBeenCalled();
+      });
     });
   });
 

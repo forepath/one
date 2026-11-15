@@ -6431,6 +6431,12 @@ paths:
           in: path
           required: true
           schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoidInvoiceDto'
       responses:
         '200':
           description: Voided invoice
@@ -9307,6 +9313,14 @@ components:
       maxLength: 1000
       nullable: true
       description: Free-text delivery terms; required when deliveryTermsCode is CUSTOM (ignored otherwise).
+    DocumentNote:
+      type: string
+      maxLength: 2000
+      nullable: true
+      description: >-
+        Optional free-text document note. Printed on the PDF and embedded in the e-invoice XML as invoice note
+        (EN 16931 BG-1 / BT-22, CII ExchangedDocument/IncludedNote without subject code). Line breaks are kept;
+        control characters are stripped; blank means no note.
     EffectiveDocumentTerms:
       type: object
       description: Terms after the cascade (document / service plan → global default). Payment terms are always set.
@@ -10912,6 +10926,8 @@ components:
           $ref: '#/components/schemas/DeliveryTermsPlace'
         deliveryTermsText:
           $ref: '#/components/schemas/DeliveryTermsText'
+        note:
+          $ref: '#/components/schemas/DocumentNote'
         paidAt: { type: string, format: date-time, nullable: true }
         createdAt: { type: string, format: date-time }
         canPay: { type: boolean }
@@ -11664,6 +11680,12 @@ components:
         quantity: { type: number }
         unitPriceNet: { type: number }
         taxCategory: { type: string, enum: [standard, reduced] }
+    VoidInvoiceDto:
+      type: object
+      properties:
+        note:
+          $ref: '#/components/schemas/DocumentNote'
+          description: Printed on the credit note (void document); the invoice's own note is not copied.
     CreateManualInvoiceDto:
       type: object
       required: [userId, lineItems]
@@ -11676,6 +11698,8 @@ components:
           items:
             $ref: '#/components/schemas/ManualInvoiceLineItemDto'
         currency: { type: string }
+        note:
+          $ref: '#/components/schemas/DocumentNote'
     UpdateManualInvoiceDto:
       type: object
       required: [lineItems]
@@ -11685,6 +11709,9 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/ManualInvoiceLineItemDto'
+        note:
+          $ref: '#/components/schemas/DocumentNote'
+          description: Omitted keeps the stored note; null or blank removes it.
     IssueManualInvoiceDto:
       type: object
       description: Payment terms (dueInDays) and delivery terms for this invoice; omitted values inherit (subscription service plan → global default).
@@ -12415,6 +12442,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ManualInvoiceLineItemDto'
+        note:
+          $ref: '#/components/schemas/DocumentNote'
     ProjectUnbilledTimeBounds:
       type: object
       required: [entryCount]
@@ -12834,6 +12863,9 @@ components:
           $ref: '#/components/schemas/DeliveryTermsPlace'
         deliveryTermsText:
           $ref: '#/components/schemas/DeliveryTermsText'
+        note:
+          $ref: '#/components/schemas/DocumentNote'
+          description: Printed on the offer; does not carry over to the invoice created on acceptance.
     UpdateAdminOfferDto:
       allOf:
         - $ref: '#/components/schemas/CreateAdminOfferDto'
@@ -12900,6 +12932,8 @@ components:
               $ref: '#/components/schemas/DeliveryTermsText'
             effectiveDocumentTerms:
               $ref: '#/components/schemas/EffectiveDocumentTerms'
+            note:
+              $ref: '#/components/schemas/DocumentNote'
     PaginatedAdminOffersResponseDto:
       type: object
       properties:
@@ -12987,6 +13021,8 @@ components:
               $ref: '#/components/schemas/DeliveryTermsPlace'
             deliveryTermsText:
               $ref: '#/components/schemas/DeliveryTermsText'
+            note:
+              $ref: '#/components/schemas/DocumentNote'
     CreateAdminPromotionDto:
       type: object
       required:

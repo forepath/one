@@ -242,6 +242,14 @@
         overflow-wrap: anywhere;
       }
 
+      .document-note {
+        margin: 0;
+        font-size: 13px;
+        color: var(--body-color);
+        white-space: pre-line;
+        overflow-wrap: anywhere;
+      }
+
       .authenticity-mark {
         margin-top: 28px;
         font-size: 10px;
@@ -371,7 +379,12 @@
         </div>
       </div>
 
-      {{#if taxNote}}
+      {{#if note}}
+      <section class="payment-details">
+        <h2 class="payment-heading">Notes</h2>
+        <p class="document-note">{{note}}</p>
+      </section>
+      {{/if}} {{#if taxNote}}
       <section class="payment-details">
         <h2 class="payment-heading">Tax note</h2>
         <p class="address-line">{{taxNote}}</p>

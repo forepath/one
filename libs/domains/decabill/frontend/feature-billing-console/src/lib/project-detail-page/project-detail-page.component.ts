@@ -72,6 +72,8 @@ import { BillingAdminSubscriptionSelectComponent } from '../billing-admin-subscr
 import { formatBillingClockRange, formatBillingMoney } from '../billing-format';
 import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { isProjectTimeEntryBilled } from '../billing-status-labels';
+import { DocumentNoteFieldComponent } from '../document-note/document-note-field.component';
+import { documentNoteToInput } from '../document-note/document-note.util';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import { buildPricingTotalsSummary, type PricingTotalsSummary } from '../pricing-totals-summary/pricing-totals.util';
 import { projectBoardViewState, type ProjectBoardView } from '../project-board/project-board-view';
@@ -112,6 +114,7 @@ interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
     ProjectBoardComponent,
     ProjectMilestonesPanelComponent,
     BillingAdminSubscriptionSelectComponent,
+    DocumentNoteFieldComponent,
     PricingTotalsSummaryComponent,
     FpcAlertComponent,
     FpcPageHeaderComponent,
@@ -312,6 +315,8 @@ export class ProjectDetailPageComponent implements OnInit {
   readonly billRemainingPriceNet = signal<number | null>(null);
   private readonly billCurrency = signal('EUR');
   billCustomLineItems: BillTimeFormLineItem[] = [];
+  /** Document note printed on the project invoice. */
+  billNote = '';
   readonly billBoundsLoading = signal(false);
   readonly billBoundsEntryCount = signal(0);
   readonly billTimeSubscriptions = signal<SubscriptionResponse[]>([]);
@@ -585,6 +590,12 @@ export class ProjectDetailPageComponent implements OnInit {
         unitPriceNet: line.unitPriceNet,
         taxCategory: line.taxCategory,
       }));
+    }
+
+    const note = documentNoteToInput(this.billNote);
+
+    if (note) {
+      dto.note = note;
     }
 
     this.projectsFacade.billProjectTime(this.projectId, dto);
@@ -926,6 +937,7 @@ export class ProjectDetailPageComponent implements OnInit {
     this.billAmountNet = null;
     this.billSubscriptionId = '';
     this.billCustomLineItems = [];
+    this.billNote = '';
     this.billTimeSubscriptions.set([]);
     this.billTimeSubscriptionsLoading.set(false);
     this.billTimeSubscriptionsRequest?.unsubscribe();

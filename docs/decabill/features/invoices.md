@@ -106,6 +106,8 @@ Issued invoices (and credit notes) also enqueue customer emails via BullMQ; see 
 
 Invoice PDFs print the service period and the invoice's payment and delivery terms; the XML embeds them as BG-14, BT-20 / BT-9 and an `AAR` note. Terms resolve from the document, the subscription's service plan, or the `BILLING_DEFAULT_*` environment and are frozen on issue. See [Payment and delivery terms](./document-terms.md).
 
+Manual and project invoices, and credit notes created by an admin void, can carry an optional free-text note: printed in a "Notes" section and embedded as invoice note (BT-22). See [Document notes](./document-notes.md).
+
 ## Usage on Invoices
 
 When the subscription’s plan or billable addons have meter attachments, invoice creation emits a **separate line per attachment** (plan vs each addon). Each line bills `max(0, aggregatedValue - effectiveIncludedUsage) × effectiveUnitPriceNet`. Same catalog meter on plan and addons does not merge into one line. See [Usage meters](./usage-meters.md).
@@ -141,8 +143,8 @@ See **[Projects](./projects.md)** for KPIs, reassignment rules, and minimum bill
 
 ## Manual Invoice Workflow (Admin)
 
-1. `POST /admin/billing/invoices/manual` - Create draft with user, optional subscription, custom line items
-2. `POST /admin/billing/invoices/{invoiceRefId}` - Update draft line items
+1. `POST /admin/billing/invoices/manual` - Create draft with user, optional subscription, custom line items, optional `note`
+2. `POST /admin/billing/invoices/{invoiceRefId}` - Update draft line items (and `note`; omitted keeps it)
 3. `POST /admin/billing/invoices/{invoiceRefId}/issue` - Issue draft (requires complete customer profile); optional `dueInDays` and delivery terms override the plan / global defaults
 4. `DELETE /admin/billing/invoices/{invoiceRefId}` - Delete draft only
 

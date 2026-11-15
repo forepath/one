@@ -346,10 +346,6 @@
         <source>IT Systems</source>
         <target>IT-Systeme</target>
       </trans-unit>
-      <trans-unit id="featureForepath-navItSystemsCaption" datatype="html">
-        <source>Run and support platforms with operators</source>
-        <target>Plattformen betreiben und Betriebsteams unterstützen</target>
-      </trans-unit>
       <trans-unit id="featureForepath-navSoftwareDevelopment" datatype="html">
         <source>Software Development</source>
         <target>Softwareentwicklung</target>
@@ -1526,7 +1522,7 @@
       </trans-unit>
       <trans-unit id="featureForepathOneTeaser-link" datatype="html">
         <source>Explore ForePath One <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
-            &gt;"/></source>
+      &gt;"/></source>
         <target>ForePath One entdecken <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
             &gt;"/></target>
       </trans-unit>
@@ -2366,10 +2362,6 @@
         <source>Instant quote</source>
         <target>Sofortangebot</target>
       </trans-unit>
-      <trans-unit id="featureForepath-navProjectEstimateCaption" datatype="html">
-        <source>From your project description, in seconds</source>
-        <target>Aus Ihrer Projektbeschreibung, in Sekunden</target>
-      </trans-unit>
       <trans-unit id="featureForepathHome-heroEstimate" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get an instant quote </source>
         <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Sofortangebot erhalten</target>
@@ -2983,7 +2975,10 @@
                 &gt;"/> veröffentlicht </target>
       </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesSecurityMd" datatype="html">
-        <source> The repository policy is in <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://github.com/forepath/one/blob/main/SECURITY.md&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
+        <source> The repository policy is in <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                  href=&quot;https://github.com/forepath/one/blob/main/SECURITY.md&quot;
+                  target=&quot;_blank&quot;
+                  rel=&quot;noopener noreferrer&quot;
                   &gt;"/>SECURITY.md<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
                 &gt;"/></source>
         <target> Die Repository-Richtlinie finden Sie in <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://github.com/forepath/one/blob/main/SECURITY.md&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;
@@ -3600,37 +3595,37 @@
       </trans-unit>
       <trans-unit id="featureForepathItSystems-domainNetworkLink" datatype="html">
         <source>Learn more <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
-          &gt;"/></source>
+            &gt;"/></source>
         <target>Mehr erfahren <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
           &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureForepathItSystems-domainComputeLink" datatype="html">
         <source>Learn more <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
-          &gt;"/></source>
+            &gt;"/></source>
         <target>Mehr erfahren <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
           &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureForepathItSystems-domainEndpointsLink" datatype="html">
         <source>Learn more <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
-          &gt;"/></source>
+            &gt;"/></source>
         <target>Mehr erfahren <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
           &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureForepathItSystems-domainIdentityLink" datatype="html">
         <source>Learn more <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
-          &gt;"/></source>
+            &gt;"/></source>
         <target>Mehr erfahren <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
           &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureForepathItSystems-domainSecurityLink" datatype="html">
         <source>Learn more <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
-          &gt;"/></source>
+            &gt;"/></source>
         <target>Mehr erfahren <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
           &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureForepathItSystems-domainResilienceLink" datatype="html">
         <source>Learn more <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
-          &gt;"/></source>
+            &gt;"/></source>
         <target>Mehr erfahren <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
           &gt;"/></target>
       </trans-unit>

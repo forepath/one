@@ -114,6 +114,10 @@ export class InvoiceEntity {
   @Column({ type: 'text', nullable: true, name: 'delivery_terms_text' })
   deliveryTermsText?: string | null;
 
+  /** Optional free-text note printed on the invoice and embedded as invoice note (BT-22); frozen at issuance. */
+  @Column({ type: 'text', nullable: true, name: 'note' })
+  note?: string | null;
+
   @Column({ type: 'varchar', length: 512, nullable: true, name: 'pdf_storage_key' })
   pdfStorageKey?: string;
 

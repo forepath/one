@@ -31,6 +31,8 @@ export const INCOTERMS_2020_CODES: readonly Exclude<DeliveryTermsCode, 'CUSTOM'>
 export const DELIVERY_TERMS_PLACE_MAX_LENGTH = 255;
 export const DELIVERY_TERMS_TEXT_MAX_LENGTH = 1000;
 export const PAYMENT_DUE_DAYS_MAX = 365;
+/** Free-text document note on invoices, credit notes and offers (printed on the PDF, embedded as BT-22). */
+export const DOCUMENT_NOTE_MAX_LENGTH = 2000;
 
 /** Payment / delivery terms as stored on plans, offers and invoices (`null` = inherit, or none on legacy documents). */
 export interface DocumentTerms {

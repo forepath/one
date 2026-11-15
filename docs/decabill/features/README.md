@@ -123,6 +123,10 @@ Admin-composed draft quotations with standard, project-template, and plan-templa
 
 Payment terms (payable within N days) and delivery terms (Incoterms® 2020 or custom text) per service plan, offer, and manual invoice, with an environment default. Frozen on issue / archive, printed on PDFs, and embedded in the e-invoice XML.
 
+### [Document notes](./document-notes.md)
+
+Optional free-text notes on manual and project invoices, credit notes, and offers. Printed on PDFs and embedded as EN 16931 invoice note (BT-22).
+
 ### [Invoices](./invoices.md)
 
 Issue, preview, download, void, and pay invoices. Open positions accumulate until each user's billing day.

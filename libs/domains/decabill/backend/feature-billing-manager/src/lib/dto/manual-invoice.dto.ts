@@ -16,6 +16,7 @@ import {
 import { PAYMENT_DUE_DAYS_MAX } from '../constants/document-terms.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 
+import { IsOptionalDocumentNote } from './document-note.dto';
 import { DeliveryTermsInputDto } from './document-terms.dto';
 import { InvoiceDetailResponseDto } from './invoice-detail-response.dto';
 
@@ -52,6 +53,10 @@ export class CreateManualInvoiceDto {
   @IsOptional()
   @IsString({ message: 'Currency must be a string' })
   currency?: string;
+
+  /** Optional document note printed on the invoice and embedded as invoice note (BT-22). */
+  @IsOptionalDocumentNote()
+  note?: string | null;
 }
 
 export class UpdateManualInvoiceDto {
@@ -60,6 +65,10 @@ export class UpdateManualInvoiceDto {
   @ValidateNested({ each: true })
   @Type(() => ManualInvoiceLineItemDto)
   lineItems!: ManualInvoiceLineItemDto[];
+
+  /** Document note; omitted keeps the stored note, null or blank removes it. */
+  @IsOptionalDocumentNote()
+  note?: string | null;
 }
 
 /**

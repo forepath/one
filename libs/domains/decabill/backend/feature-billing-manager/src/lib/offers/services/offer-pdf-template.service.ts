@@ -7,6 +7,7 @@ import type { InvoiceEntity } from '../../entities/invoice.entity';
 import type { BillingIssuerConfig } from '../../services/billing-issuer-config.service';
 import { formatAmount, formatDate, toAmount } from '../../services/invoice-pdf-amount.util';
 import { resolveCountryDisplayName } from '../../utils/country-display-name.util';
+import { normalizeDocumentNote } from '../../utils/document-note.utils';
 import { deliveryTermsFromColumns, formatDeliveryTerms, formatPaymentTerms } from '../../utils/document-terms.utils';
 import type { OfferLineItemEntity } from '../entities/offer-line-item.entity';
 import type { OfferEntity } from '../entities/offer.entity';
@@ -57,6 +58,8 @@ export interface OfferPdfViewModel {
   paymentTerms?: string;
   deliveryTerms?: string;
   showDocumentTerms: boolean;
+  /** Free-text document note (also embedded as BT-22 document note). */
+  note?: string;
   authenticityShortSha?: string;
 }
 
@@ -87,6 +90,7 @@ export class OfferPdfTemplateService {
   ): OfferPdfViewModel {
     const paymentTerms = formatPaymentTerms(offer.paymentDueDays);
     const deliveryTerms = formatDeliveryTerms(deliveryTermsFromColumns(offer));
+    const note = normalizeDocumentNote(offer.note);
 
     return {
       documentTitle: presentation.documentTitle,
@@ -120,6 +124,7 @@ export class OfferPdfTemplateService {
       ...(paymentTerms ? { paymentTerms } : {}),
       ...(deliveryTerms ? { deliveryTerms } : {}),
       showDocumentTerms: Boolean(paymentTerms || deliveryTerms),
+      ...(note ? { note } : {}),
       ...(authenticityShortSha ? { authenticityShortSha } : {}),
     };
   }

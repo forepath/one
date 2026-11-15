@@ -7,6 +7,7 @@ import type {
   ManualInvoiceDetailResponse,
   MarkInvoicePaymentStatusDto,
   UpdateManualInvoiceDto,
+  VoidInvoiceDto,
 } from '../../types/billing.types';
 
 export const loadAdminInvoiceManager = createAction(
@@ -75,7 +76,7 @@ export const deleteManualInvoiceFailure = createAction(
 
 export const adminInvoiceManagerVoid = createAction(
   '[AdminInvoiceManager] Void Invoice',
-  props<{ invoiceRefId: string }>(),
+  props<{ invoiceRefId: string; dto?: VoidInvoiceDto }>(),
 );
 export const adminInvoiceManagerVoidSuccess = createAction(
   '[AdminInvoiceManager] Void Invoice Success',

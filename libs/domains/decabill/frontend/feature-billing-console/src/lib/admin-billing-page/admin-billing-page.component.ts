@@ -111,6 +111,9 @@ import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart
 import { formatBillingDate, formatBillingDateRange, formatBillingMoney } from '../billing-format';
 import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { getInvoiceStatusBadgeTone, getInvoiceStatusLabel, getUnavailableLabel } from '../billing-status-labels';
+import { DocumentNoteFieldComponent } from '../document-note/document-note-field.component';
+import { DocumentNoteSummaryComponent } from '../document-note/document-note-summary.component';
+import { documentNoteToInput } from '../document-note/document-note.util';
 import { DocumentTermsFieldsComponent } from '../document-terms/document-terms-fields.component';
 import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
 import {
@@ -204,6 +207,8 @@ interface InvoicePreviewView {
   balanceDue: number;
   /** Payment / delivery terms frozen on the invoice (customer invoices only). */
   terms?: Partial<DocumentTerms> | null;
+  /** Document note (customer invoices only). */
+  note?: string | null;
 }
 
 type AdminBillingMobilePanel = 'overview' | 'invoices';
@@ -217,6 +222,8 @@ type AdminBillingPerspective = 'customer' | 'supplier';
     FpcDatePipe,
     DocumentTermsFieldsComponent,
     DocumentTermsSummaryComponent,
+    DocumentNoteFieldComponent,
+    DocumentNoteSummaryComponent,
     FpcBoardLaneComponent,
     FpcSectionRowComponent,
     FpcSectionColumnComponent,
@@ -394,6 +401,8 @@ export class AdminBillingPageComponent implements OnInit {
     }
   });
   readonly actionReason = signal('');
+  /** Note printed on the credit note when voiding a customer invoice. */
+  readonly actionNote = signal('');
   readonly actionPaidAt = signal('');
   readonly pendingInvoice = signal<AdminInvoiceListItem | null>(null);
   readonly pendingSupplierInvoice = signal<AdminSupplierInvoiceListItem | null>(null);
@@ -768,8 +777,11 @@ export class AdminBillingPageComponent implements OnInit {
   issueSupplierDueDate = '';
   deleteSupplierInvoice: AdminSupplierInvoiceListItem | null = null;
   createLineItems: InvoiceFormLineItem[] = [this.emptyLineItem()];
+  /** Document note of the manual invoice (printed on the PDF, embedded as BT-22). */
+  createNote = '';
   editInvoiceId = '';
   editLineItems: InvoiceFormLineItem[] = [this.emptyLineItem()];
+  editNote = '';
   issueInvoiceId = '';
   /** Payment terms (`dueInDays`) and delivery terms for the manual invoice; empty fields inherit. */
   issueTermsForm: DocumentTermsFormModel = emptyDocumentTermsForm();
@@ -907,6 +919,7 @@ export class AdminBillingPageComponent implements OnInit {
                 taxCategory: line.taxCategory as 'standard' | 'reduced',
               }))
             : [this.emptyLineItem()];
+        this.editNote = detail.note ?? '';
         showBillingModal(this.editModalOpen);
       },
     });
@@ -967,6 +980,7 @@ export class AdminBillingPageComponent implements OnInit {
       userId: this.createUserId,
       subscriptionId: this.createSubscriptionId.trim() || undefined,
       lineItems: this.mapLineItemsForSubmit(this.createLineItems),
+      note: documentNoteToInput(this.createNote),
     });
   }
 
@@ -1201,6 +1215,7 @@ export class AdminBillingPageComponent implements OnInit {
 
     this.invoiceManagerFacade.updateManualInvoice(this.editInvoiceId, {
       lineItems: this.mapLineItemsForSubmit(this.editLineItems),
+      note: documentNoteToInput(this.editNote),
     });
   }
 
@@ -1237,6 +1252,7 @@ export class AdminBillingPageComponent implements OnInit {
     this.pendingInvoice.set(invoice);
     this.pendingSupplierInvoice.set(null);
     this.actionReason.set('');
+    this.actionNote.set('');
     this.actionPaidAt.set(action === 'markPaid' ? this.defaultPaidAtLocalInput() : '');
     showBillingModal(this.actionConfirmModalOpen);
   }
@@ -1256,7 +1272,9 @@ export class AdminBillingPageComponent implements OnInit {
     const reason = this.actionReason().trim() || undefined;
 
     if (action === 'void') {
-      this.invoiceManagerFacade.voidInvoice(invoice.id);
+      const note = documentNoteToInput(this.actionNote());
+
+      this.invoiceManagerFacade.voidInvoice(invoice.id, note ? { note } : undefined);
     } else if (action === 'markPaid') {
       this.invoiceManagerFacade.markPaid(invoice.id, {
         reason,
@@ -1777,6 +1795,7 @@ export class AdminBillingPageComponent implements OnInit {
     this.createDueDate = '';
     this.createSupplierFile = null;
     this.createLineItems = [this.emptyLineItem()];
+    this.createNote = '';
     this.createSupplierLineItems = [this.emptySupplierLineItem()];
     this.supplierInvoiceManagerFacade.clearParsePreview();
     this.createInvoiceSubscriptions.set([]);
@@ -1808,6 +1827,7 @@ export class AdminBillingPageComponent implements OnInit {
   private resetEditForm(): void {
     this.editInvoiceId = '';
     this.editLineItems = [this.emptyLineItem()];
+    this.editNote = '';
   }
 
   private registerModalCloseWatchers(): void {
@@ -2056,6 +2076,7 @@ export class AdminBillingPageComponent implements OnInit {
       totalGross: detail.totalGross,
       balanceDue: detail.balanceDue,
       terms: detail,
+      note: detail.note ?? null,
     };
   }
 

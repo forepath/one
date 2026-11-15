@@ -11,8 +11,8 @@
         <target>Hinzufügen</target>
       </trans-unit>
       <trans-unit id="featureAdminBilling-billNow" datatype="html">
-        <source>Bill</source>
-        <target>Abrechnen</target>
+        <source>Bill now</source>
+        <target>Jetzt abrechnen</target>
       </trans-unit>
       <trans-unit id="featureAdminBilling-activeSubscriptions" datatype="html">
         <source>Active subscriptions</source>
@@ -111,12 +111,16 @@
         <target>Abrechnung für <x id="INTERPOLATION" equiv-text="{{ result.userCount }}"/> Kunden eingereiht. Anfrage-ID: <x id="INTERPOLATION_1" equiv-text="{{ result.requestId }}"/>.</target>
       </trans-unit>
       <trans-unit id="featureAdminBilling-confirmBillNow" datatype="html">
-        <source>Bill now</source>
-        <target>Jetzt abrechnen</target>
+        <source>Bill</source>
+        <target>Abrechnen</target>
       </trans-unit>
       <trans-unit id="featureAdminBilling-confirmActionTitle" datatype="html">
         <source>Confirm action</source>
         <target>Aktion bestätigen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-creditNoteNote" datatype="html">
+        <source>Note on the credit note (optional)</source>
+        <target>Hinweis auf der Gutschrift (optional)</target>
       </trans-unit>
       <trans-unit id="featureAdminBilling-reasonOptional" datatype="html">
         <source>Reason (optional)</source>
@@ -5478,6 +5482,10 @@
         <source>contact, support, <x id="productName" equiv-text="productName"/></source>
         <target> Kontakt, Support, <x id="productName" equiv-text="productName"/> </target>
       </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageTheme-toggleAriaLabel" datatype="html">
+        <source>Toggle dark mode</source>
+        <target>Dunkelmodus ein-/ausschalten</target>
+      </trans-unit>
       <trans-unit id="featureNotifications-webhooksPage" datatype="html">
         <source>Webhooks</source>
         <target>Webhooks</target>
@@ -8654,10 +8662,6 @@
         <source>Leave empty to keep current</source>
         <target>Leer lassen, um den aktuellen Wert zu behalten</target>
       </trans-unit>
-      <trans-unit id="featureProjectDetail-targetTime" datatype="html">
-        <source>Target: <x id="PH" equiv-text="formatted"/></source>
-        <target>Ziel: <x id="PH" equiv-text="formatted"/></target>
-      </trans-unit>
       <trans-unit id="featureContainer-appsTitle" datatype="html">
         <source>App management</source>
         <target>App-Verwaltung</target>
@@ -9241,6 +9245,18 @@
       <trans-unit id="featureDocumentTerms-deliveryTermsLabel" datatype="html">
         <source>Delivery terms</source>
         <target>Lieferbedingungen</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentNote-label" datatype="html">
+        <source>Note (optional)</source>
+        <target>Hinweis (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentNote-hint" datatype="html">
+        <source>Printed on the document and embedded in its e-invoice data.</source>
+        <target>Wird auf das Dokument gedruckt und in dessen E-Rechnungsdaten übernommen.</target>
+      </trans-unit>
+      <trans-unit id="featureDocumentNote-title" datatype="html">
+        <source>Notes</source>
+        <target>Hinweise</target>
       </trans-unit>
       <trans-unit id="featureDocumentTerms-title" datatype="html">
         <source>Terms</source>

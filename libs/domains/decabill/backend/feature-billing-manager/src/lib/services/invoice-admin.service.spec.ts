@@ -122,8 +122,14 @@ describe('InvoiceAdminService', () => {
     invoicesRepository.findByIdOrThrow.mockResolvedValue(baseInvoice);
     invoiceService.voidInvoice.mockResolvedValue(baseInvoice);
 
-    await service.voidInvoice('inv-1', 'admin-1');
+    await service.voidInvoice('inv-1', 'admin-1', { note: 'Cancelled' });
 
-    expect(invoiceService.voidInvoice).toHaveBeenCalledWith('inv-1', 'sub-1', 'admin-1', { adminUserId: 'admin-1' });
+    expect(invoiceService.voidInvoice).toHaveBeenCalledWith(
+      'inv-1',
+      'sub-1',
+      'admin-1',
+      { adminUserId: 'admin-1' },
+      { note: 'Cancelled' },
+    );
   });
 });

@@ -7,6 +7,7 @@ import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { loadInvoicePdfTemplate } from '../templates/invoice-pdf-template.loader';
 import { resolveCountryDisplayName } from '../utils/country-display-name.util';
+import { normalizeDocumentNote } from '../utils/document-note.utils';
 import { deliveryTermsFromColumns, formatDeliveryTerms, formatPaymentTerms } from '../utils/document-terms.utils';
 import { buildEpcQrDataUri } from '../utils/epc-qr.util';
 
@@ -64,6 +65,7 @@ export class InvoicePdfTemplateService {
     const deliveryTerms = presentation.includeDocumentTerms
       ? formatDeliveryTerms(deliveryTermsFromColumns(invoice))
       : undefined;
+    const note = normalizeDocumentNote(presentation.note);
 
     return {
       documentTitle: presentation.documentTitle,
@@ -99,6 +101,7 @@ export class InvoicePdfTemplateService {
       ...(paymentTerms ? { paymentTerms } : {}),
       ...(deliveryTerms ? { deliveryTerms } : {}),
       showDocumentTerms: Boolean(paymentTerms || deliveryTerms),
+      ...(note ? { note } : {}),
       ...(epcQrDataUri ? { epcQrDataUri } : {}),
       ...(authenticityShortSha ? { authenticityShortSha } : {}),
     };

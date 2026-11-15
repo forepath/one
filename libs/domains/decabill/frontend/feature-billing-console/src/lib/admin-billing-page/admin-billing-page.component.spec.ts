@@ -157,6 +157,42 @@ describe('AdminBillingPageComponent (bulk actions)', () => {
     expect(component.bulkResult()?.message).toContain('1 not allowed');
   });
 
+  it('void confirm: sends the trimmed credit note note, none when blank', () => {
+    const managerFacade = TestBed.inject(AdminInvoiceManagerFacade) as unknown as Record<string, jest.Mock>;
+    const issued = invoice('i1', 'issued') as never;
+
+    component.openActionModal('void', issued);
+    component.actionNote.set('  Cancelled on request  ');
+    component.confirmAction();
+    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', { note: 'Cancelled on request' });
+
+    component.openActionModal('void', issued);
+    expect(component.actionNote()).toBe('');
+    component.actionNote.set('   ');
+    component.confirmAction();
+    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', undefined);
+  });
+
+  it('manual invoice: create and edit submit the note (null when blank)', () => {
+    const managerFacade = TestBed.inject(AdminInvoiceManagerFacade) as unknown as Record<string, jest.Mock>;
+    const line = { description: 'Consulting', quantity: 1, unitPriceNet: 100, taxCategory: 'standard' as const };
+
+    component.createInvoiceType = 'customer';
+    component.createUserId = 'u1';
+    component.createLineItems = [line];
+    component.createNote = '  Phase 1 \n Thanks ';
+    component.submitCreate();
+    expect(managerFacade['createManualInvoice']).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'u1', note: 'Phase 1 \n Thanks' }),
+    );
+
+    component.editInvoiceId = 'd1';
+    component.editLineItems = [line];
+    component.editNote = '  ';
+    component.submitEdit();
+    expect(managerFacade['updateManualInvoice']).toHaveBeenCalledWith('d1', expect.objectContaining({ note: null }));
+  });
+
   it('audit history: loads page 1 on open, then the requested page / size (replace-page, server total)', () => {
     component.openAuditHistory(invoice('i1', 'issued') as never);
     TestBed.tick();

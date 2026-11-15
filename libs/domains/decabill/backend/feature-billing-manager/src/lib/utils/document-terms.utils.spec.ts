@@ -63,6 +63,50 @@ describe('document-terms.utils', () => {
       expect(sanitizeMultiLineTermsValue('a\n\n\n\nb', 100)).toBe('a\n\nb');
       expect(sanitizeSingleLineTermsValue('x'.repeat(300), 255)).toHaveLength(255);
     });
+
+    it('drops lone surrogates and U+FFFE / U+FFFF but keeps valid astral characters', () => {
+      const dirty = 'a\uD800b\uDC00c\uFFFEd\uFFFFe 😀';
+
+      expect(sanitizeMultiLineTermsValue(dirty, 100)).toBe('abcde 😀');
+      expect(sanitizeSingleLineTermsValue(dirty, 100)).toBe('abcde 😀');
+    });
+
+    it('never splits a surrogate pair when truncating', () => {
+      expect(sanitizeSingleLineTermsValue(`${'x'.repeat(254)}😀`, 255)).toBe('x'.repeat(254));
+      expect(sanitizeMultiLineTermsValue(`${'x'.repeat(999)}😀`, 1000)).toBe('x'.repeat(999));
+    });
+
+    it('returns null when only invalid code units remain', () => {
+      expect(sanitizeMultiLineTermsValue('\uD800\uFFFF', 100)).toBeNull();
+      expect(sanitizeSingleLineTermsValue('\uDC00', 100)).toBeNull();
+    });
+  });
+
+  describe('delivery terms with XML-invalid code units', () => {
+    it('normalizes custom text and named place on input and when read back', () => {
+      expect(
+        normalizeDeliveryTermsInput({
+          deliveryTermsCode: DeliveryTermsCode.CUSTOM,
+          deliveryTermsText: 'Online\uD800 access',
+        }),
+      ).toEqual({ code: DeliveryTermsCode.CUSTOM, place: null, text: 'Online access' });
+      expect(
+        normalizeDeliveryTermsInput({ deliveryTermsCode: DeliveryTermsCode.DAP, deliveryTermsPlace: 'Berlin\uFFFE' }),
+      ).toEqual({ code: DeliveryTermsCode.DAP, place: 'Berlin', text: null });
+      // Rows stored before this fix are cleaned when printed / embedded.
+      expect(
+        deliveryTermsFromColumns({
+          deliveryTermsCode: DeliveryTermsCode.CUSTOM,
+          deliveryTermsText: 'Legacy\uDC00 text',
+        }),
+      ).toEqual({ code: DeliveryTermsCode.CUSTOM, place: null, text: 'Legacy text' });
+    });
+
+    it('rejects custom terms whose text is only invalid code units', () => {
+      expect(() =>
+        normalizeDeliveryTermsInput({ deliveryTermsCode: DeliveryTermsCode.CUSTOM, deliveryTermsText: '\uD800' }),
+      ).toThrow(BadRequestException);
+    });
   });
 
   describe('normalizePaymentDueDaysInput', () => {

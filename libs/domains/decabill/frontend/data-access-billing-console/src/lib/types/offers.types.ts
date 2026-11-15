@@ -68,6 +68,8 @@ export interface CustomerOfferDetailResponse extends CustomerOfferListItem {
   deliveryTermsCode?: DeliveryTermsCode | null;
   deliveryTermsPlace?: string | null;
   deliveryTermsText?: string | null;
+  /** Free-text document note printed on the offer; null when none. */
+  note?: string | null;
 }
 
 export interface AdminOfferListItem {
@@ -103,6 +105,8 @@ export interface AdminOfferDetailResponse extends AdminOfferListItem {
   deliveryTermsText?: string | null;
   /** Terms printed on the offer / applied to its invoice. */
   effectiveDocumentTerms?: EffectiveDocumentTerms;
+  /** Free-text document note printed on the offer; null when none. */
+  note?: string | null;
 }
 
 export interface OfferStandardLineDto {
@@ -151,6 +155,8 @@ export interface CreateAdminOfferDto extends DocumentTermsInput {
   expiresAt?: string;
   billToOpenPositions?: boolean;
   lineItems: OfferLineInputDto[];
+  /** Optional document note printed on the offer (max 2000 characters); not carried to the resulting invoice. */
+  note?: string | null;
 }
 
 export type UpdateAdminOfferDto = CreateAdminOfferDto;

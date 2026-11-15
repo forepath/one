@@ -21,7 +21,7 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 
-import { MarkInvoicePaymentStatusDto } from '../dto/admin-billing.dto';
+import { MarkInvoicePaymentStatusDto, VoidInvoiceDto } from '../dto/admin-billing.dto';
 import {
   AdminBillNowDto,
   type AdminBillNowResponseDto,
@@ -296,6 +296,7 @@ export class AdminBillingController {
   @Post('invoices/:invoiceRefId/void')
   async voidInvoice(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Body() dto: VoidInvoiceDto,
     @Req() req?: RequestWithUser,
   ): Promise<AdminInvoiceListItemDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
@@ -304,7 +305,7 @@ export class AdminBillingController {
       throw new BadRequestException('User not authenticated');
     }
 
-    return await this.invoiceAdminService.voidInvoice(invoiceRefId, userInfo.userId);
+    return await this.invoiceAdminService.voidInvoice(invoiceRefId, userInfo.userId, dto);
   }
 
   @RequireScopes('invoices:admin')

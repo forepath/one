@@ -363,9 +363,9 @@ describe('AdminBillingController', () => {
   it('voidInvoice passes admin user id', async () => {
     invoiceAdminService.voidInvoice.mockResolvedValue({ id: 'inv-1', status: 'void' });
 
-    await controller.voidInvoice('inv-1', { user: { id: 'admin-1' } } as never);
+    await controller.voidInvoice('inv-1', { note: 'Cancelled' }, { user: { id: 'admin-1' } } as never);
 
-    expect(invoiceAdminService.voidInvoice).toHaveBeenCalledWith('inv-1', 'admin-1');
+    expect(invoiceAdminService.voidInvoice).toHaveBeenCalledWith('inv-1', 'admin-1', { note: 'Cancelled' });
   });
 
   it('markPaid passes admin user id', async () => {

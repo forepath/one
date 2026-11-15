@@ -30,6 +30,7 @@ import type {
   SubscriptionResponse,
   SubscriptionSshAccessKeyResponse,
   UpdateManualInvoiceDto,
+  VoidInvoiceDto,
   CreateUsageMeterEntryDto,
   MeterHistoryFilters,
   SubscriptionMeterHistory,
@@ -84,8 +85,11 @@ export class AdminBillingService {
     });
   }
 
-  voidInvoice(invoiceRefId: string): Observable<AdminInvoiceListItem> {
-    return this.http.post<AdminInvoiceListItem>(`${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/void`, {});
+  voidInvoice(invoiceRefId: string, dto?: VoidInvoiceDto): Observable<AdminInvoiceListItem> {
+    return this.http.post<AdminInvoiceListItem>(
+      `${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/void`,
+      dto ?? {},
+    );
   }
 
   markPaid(invoiceRefId: string, dto?: MarkInvoicePaymentStatusDto): Observable<AdminInvoiceListItem> {
