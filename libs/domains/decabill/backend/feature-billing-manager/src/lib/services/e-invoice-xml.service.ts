@@ -5,6 +5,7 @@ import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import { normalizeDocumentNote } from '../utils/document-note.utils';
 import { deliveryTermsFromColumns, formatDeliveryTerms, formatPaymentTerms } from '../utils/document-terms.utils';
 
 import type { BillingIssuerConfig } from './billing-issuer-config.service';
@@ -54,6 +55,13 @@ export class EInvoiceXmlService {
       .txt(issueDate.replace(/-/g, ''))
       .up()
       .up();
+    const documentNote = normalizeDocumentNote(documentOptions.note);
+
+    if (documentNote) {
+      // BG-1 invoice note: BT-22 free text, without a subject code (BT-21 is optional).
+      exchangedDocument.ele('ram:IncludedNote').ele('ram:Content').txt(documentNote).up().up();
+    }
+
     const deliveryTermsNote = documentOptions.includeDocumentTerms
       ? formatDeliveryTerms(deliveryTermsFromColumns(invoice))
       : undefined;

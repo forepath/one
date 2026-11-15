@@ -49,23 +49,42 @@ const DELIVERY_TERMS_CODES = new Set<string>(Object.values(DeliveryTermsCode));
 const MULTILINE_CONTROL_CHARS = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F]/g;
 // eslint-disable-next-line no-control-regex
 const SINGLE_LINE_CONTROL_CHARS = /[\u0000-\u001F\u007F-\u009F]/g;
+/** Lone UTF-16 surrogates and the noncharacters U+FFFE / U+FFFF: not allowed in XML 1.0 documents. */
+const XML_INVALID_CODE_UNITS = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[\uFFFE\uFFFF]/g;
+
+/** Caps the length without leaving half of a surrogate pair behind (it would be invalid in the e-invoice XML). */
+function truncateXmlSafe(value: string, maxLength: number): string | null {
+  const truncated = value.slice(0, maxLength).replace(XML_INVALID_CODE_UNITS, '').trim();
+
+  return truncated || null;
+}
 
 export function isDeliveryTermsCode(value: unknown): value is DeliveryTermsCode {
   return typeof value === 'string' && DELIVERY_TERMS_CODES.has(value);
 }
 
-/** Single-line value (named place): control characters become spaces, whitespace is collapsed. */
+/**
+ * Single-line value (named place): control characters become spaces, whitespace is collapsed, code units that are
+ * invalid in XML 1.0 are dropped.
+ */
 export function sanitizeSingleLineTermsValue(value: string | null | undefined, maxLength: number): string | null {
   if (value == null) {
     return null;
   }
 
-  const cleaned = value.replace(SINGLE_LINE_CONTROL_CHARS, ' ').replace(/\s+/g, ' ').trim();
+  const cleaned = value
+    .replace(XML_INVALID_CODE_UNITS, '')
+    .replace(SINGLE_LINE_CONTROL_CHARS, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 
-  return cleaned ? cleaned.slice(0, maxLength) : null;
+  return cleaned ? truncateXmlSafe(cleaned, maxLength) : null;
 }
 
-/** Multi-line value (custom delivery terms): keeps line breaks, drops other control characters. */
+/**
+ * Multi-line value (custom delivery terms, document notes): keeps line breaks, drops other control characters and code
+ * units that are invalid in XML 1.0.
+ */
 export function sanitizeMultiLineTermsValue(value: string | null | undefined, maxLength: number): string | null {
   if (value == null) {
     return null;
@@ -73,6 +92,7 @@ export function sanitizeMultiLineTermsValue(value: string | null | undefined, ma
 
   const cleaned = value
     .replace(/\r\n?/g, '\n')
+    .replace(XML_INVALID_CODE_UNITS, '')
     .replace(MULTILINE_CONTROL_CHARS, '')
     .split('\n')
     .map((line) => line.replace(/[^\S\n]+/g, ' ').trim())
@@ -80,7 +100,7 @@ export function sanitizeMultiLineTermsValue(value: string | null | undefined, ma
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 
-  return cleaned ? cleaned.slice(0, maxLength) : null;
+  return cleaned ? truncateXmlSafe(cleaned, maxLength) : null;
 }
 
 /**

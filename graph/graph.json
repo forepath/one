@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-15T09:30:02.231Z",
+  "generatedAt": "2026-11-15T10:47:02.319Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -8281,6 +8281,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/document-note.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/document-note.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/document-terms.dto.ts",
       "type": "dto",
       "attrs": {
@@ -15822,6 +15831,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/decabill/features/dashboard-and-server-control.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/features/document-notes.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/document-notes.md",
         "languageOrKind": "md"
       }
     },
@@ -34265,6 +34282,66 @@
       }
     },
     {
+      "id": "concept:decabill-document-notes",
+      "type": "concept",
+      "attrs": {
+        "title": "Document notes",
+        "docPath": "docs/decabill/features/document-notes.md",
+        "sectionAnchor": "document-notes",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-where-a-note-is-set",
+      "type": "concept",
+      "attrs": {
+        "title": "Where a note is set",
+        "docPath": "docs/decabill/features/document-notes.md",
+        "sectionAnchor": "where-a-note-is-set",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-freezing",
+      "type": "concept",
+      "attrs": {
+        "title": "Freezing",
+        "docPath": "docs/decabill/features/document-notes.md",
+        "sectionAnchor": "freezing",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-validation",
+      "type": "concept",
+      "attrs": {
+        "title": "Validation",
+        "docPath": "docs/decabill/features/document-notes.md",
+        "sectionAnchor": "validation",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-output",
+      "type": "concept",
+      "attrs": {
+        "title": "Output",
+        "docPath": "docs/decabill/features/document-notes.md",
+        "sectionAnchor": "output",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-api-responses",
+      "type": "concept",
+      "attrs": {
+        "title": "API responses",
+        "docPath": "docs/decabill/features/document-notes.md",
+        "sectionAnchor": "api-responses",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-payment-and-delivery-terms",
       "type": "concept",
       "attrs": {
@@ -34291,16 +34368,6 @@
         "title": "Where they are set (cascade)",
         "docPath": "docs/decabill/features/document-terms.md",
         "sectionAnchor": "where-they-are-set-cascade",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-freezing",
-      "type": "concept",
-      "attrs": {
-        "title": "Freezing",
-        "docPath": "docs/decabill/features/document-terms.md",
-        "sectionAnchor": "freezing",
         "domain": "decabill"
       }
     },
@@ -43444,6 +43511,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/declared-meter.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/document-note.dto.ts",
       "type": "contains"
     },
     {
@@ -57624,6 +57696,36 @@
     {
       "from": "file:docs/decabill/features/dashboard-and-server-control.md",
       "to": "concept:decabill-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/document-notes.md",
+      "to": "concept:decabill-document-notes",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/document-notes.md",
+      "to": "concept:decabill-where-a-note-is-set",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/document-notes.md",
+      "to": "concept:decabill-freezing",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/document-notes.md",
+      "to": "concept:decabill-validation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/document-notes.md",
+      "to": "concept:decabill-output",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/document-notes.md",
+      "to": "concept:decabill-api-responses",
       "type": "contains"
     },
     {
@@ -84892,6 +84994,41 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-where-a-note-is-set",
+      "to": "api:HTTP:GET:/admin/billing/invoices",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-where-a-note-is-set",
+      "to": "api:HTTP:POST:/admin/billing/invoices/manual",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-where-a-note-is-set",
+      "to": "api:HTTP:GET:/admin/billing/offers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-where-a-note-is-set",
+      "to": "api:HTTP:POST:/admin/billing/offers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-where-a-note-is-set",
+      "to": "api:HTTP:GET:/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-where-a-note-is-set",
+      "to": "api:HTTP:GET:/admin/billing/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-where-a-note-is-set",
+      "to": "api:HTTP:POST:/admin/billing/projects",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-where-they-are-set-cascade",
       "to": "api:HTTP:GET:/service-plans",
       "type": "documents"
@@ -88913,6 +89050,11 @@
     },
     {
       "from": "file:docs/decabill/features/dashboard-and-server-control.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/features/document-notes.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -93192,6 +93334,36 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:decabill-document-notes",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-where-a-note-is-set",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-freezing",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-validation",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-output",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-api-responses",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:decabill-payment-and-delivery-terms",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -93203,11 +93375,6 @@
     },
     {
       "from": "concept:decabill-where-they-are-set-cascade",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-freezing",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

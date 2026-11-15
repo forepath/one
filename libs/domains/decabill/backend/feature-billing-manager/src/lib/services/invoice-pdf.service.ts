@@ -114,6 +114,7 @@ export class InvoicePdfService {
     buyer: CustomerProfileEntity,
     purchaseOrderReference: string,
     invoicingPeriod: InvoicingPeriod,
+    note?: string | null,
   ): Promise<VoidDocumentGenerationResult> {
     const originalInvoiceNumber = invoice.invoiceNumber;
 
@@ -122,7 +123,7 @@ export class InvoicePdfService {
     }
 
     const documentNumber = buildCreditNoteNumber(originalInvoiceNumber);
-    const documentOptions = buildCreditNoteDocumentOptions(documentNumber, voidedAt, originalInvoiceNumber);
+    const documentOptions = buildCreditNoteDocumentOptions(documentNumber, voidedAt, originalInvoiceNumber, note);
     const xml = this.eInvoiceXmlService.buildEn16931Xml(
       invoice,
       lineItems,
@@ -137,6 +138,7 @@ export class InvoicePdfService {
       voidedAt,
       originalInvoiceNumber,
       invoicingPeriod,
+      note,
     );
     const storageKey = buildInvoicePdfStorageKey(invoice, '-void.pdf');
     const authenticityShortSha = await this.reserveAuthenticityShortSha(storageKey);

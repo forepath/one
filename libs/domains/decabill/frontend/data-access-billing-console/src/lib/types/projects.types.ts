@@ -110,6 +110,8 @@ export interface BillProjectTimeDto {
   /** Fixed-price projects only: instalment to bill (defaults to the remaining fixed price). */
   amountNet?: number;
   lineItems?: ManualInvoiceLineItemDto[];
+  /** Optional document note printed on the project invoice. */
+  note?: string | null;
 }
 
 export interface ProjectTimeReportRequestDto {

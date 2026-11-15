@@ -83,6 +83,8 @@ Offer PDFs mirror invoice layout (`offer-pdf.template.html`). Embedded ZUGFeRD u
 
 Offers carry optional payment and delivery terms (offer editor; empty = global default). They are frozen on archive, printed on the PDF, embedded in the XML, and carried over to the invoice created on acceptance. See [Payment and delivery terms](./document-terms.md).
 
+Offers can also carry an optional free-text note (offer editor), printed on the PDF and embedded as document note (BT-22). Unlike the terms, the note is not carried over to the invoice. See [Document notes](./document-notes.md).
+
 ## Notifications and email
 
 Webhook events: `offer.created`, `offer.updated`, `offer.archived`, `offer.revoked`, `offer.accepted`, `offer.declined`, `offer.expired`, `offer.line.fulfilled`, `offer.line.fulfillment_failed`.

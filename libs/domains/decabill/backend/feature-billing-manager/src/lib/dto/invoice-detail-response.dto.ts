@@ -45,6 +45,8 @@ export class InvoiceDetailResponseDto {
   deliveryTermsCode!: DeliveryTermsCode | null;
   deliveryTermsPlace!: string | null;
   deliveryTermsText!: string | null;
+  /** Free-text document note (printed on the PDF and embedded as BT-22); null when none. */
+  note!: string | null;
   paidAt?: Date | null;
   createdAt!: Date;
   canPay!: boolean;

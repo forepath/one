@@ -12,6 +12,7 @@ import { BillingDocumentTermsConfigService } from '../../services/billing-docume
 import { InvoiceTaxContextService } from '../../services/invoice-tax-context.service';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
 import { resolveCustomerNamesByUserId } from '../../utils/customer-display-name.util';
+import { normalizeDocumentNote } from '../../utils/document-note.utils';
 import { resolvePlanTaxCategory } from '../../utils/plan-tax.utils';
 import { getRequiredTenantId } from '../../utils/tenant-query.utils';
 import { OfferFulfillmentStatus } from '../constants/offer-fulfillment-status.constants';
@@ -338,6 +339,7 @@ export class OffersAdminService {
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
         billToOpenPositions: dto.billToOpenPositions ?? false,
         ...buildOfferDraftDocumentTerms(dto),
+        note: normalizeDocumentNote(dto.note),
       },
       lineEntities,
       preparedLines: builtLines.flatMap((line) => (line.prepared ? [line.prepared] : [])),
@@ -478,6 +480,7 @@ export class OffersAdminService {
       taxMode: offer.taxMode ?? null,
       taxNote: offer.taxNote ?? null,
       ...mapAdminOfferDocumentTerms(offer, this.documentTermsConfig),
+      note: offer.note ?? null,
     };
   }
 

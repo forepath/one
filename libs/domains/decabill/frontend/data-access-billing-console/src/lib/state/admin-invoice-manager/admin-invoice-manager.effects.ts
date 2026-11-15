@@ -118,8 +118,8 @@ export const adminInvoiceManagerVoid$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(adminInvoiceManagerVoid),
-      switchMap(({ invoiceRefId }) =>
-        service.voidInvoice(invoiceRefId).pipe(
+      switchMap(({ invoiceRefId, dto }) =>
+        service.voidInvoice(invoiceRefId, dto).pipe(
           map((invoice) => adminInvoiceManagerVoidSuccess({ invoice })),
           catchError((error) => of(adminInvoiceManagerVoidFailure({ error: normalizeError(error) }))),
         ),

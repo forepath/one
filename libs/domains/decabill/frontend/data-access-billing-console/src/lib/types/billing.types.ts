@@ -1183,6 +1183,8 @@ export interface InvoiceDetailResponse {
   deliveryTermsCode?: DeliveryTermsCode | null;
   deliveryTermsPlace?: string | null;
   deliveryTermsText?: string | null;
+  /** Free-text document note printed on the PDF and embedded in the e-invoice (BT-22); null when none. */
+  note?: string | null;
   paidAt?: string | null;
   createdAt: string;
   canPay: boolean;
@@ -1493,10 +1495,19 @@ export interface CreateManualInvoiceDto {
   subscriptionId?: string;
   lineItems: ManualInvoiceLineItemDto[];
   currency?: string;
+  /** Optional document note (max 2000 characters). */
+  note?: string | null;
 }
 
 export interface UpdateManualInvoiceDto {
   lineItems: ManualInvoiceLineItemDto[];
+  /** Omitted keeps the stored note; null or blank removes it. */
+  note?: string | null;
+}
+
+/** Optional note printed on the credit note (void document). */
+export interface VoidInvoiceDto {
+  note?: string | null;
 }
 
 /** Payment terms (`dueInDays`) and delivery terms; omitted / null values inherit (plan → global default). */

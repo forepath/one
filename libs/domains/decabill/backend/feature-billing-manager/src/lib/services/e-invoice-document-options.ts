@@ -17,6 +17,8 @@ export interface EInvoiceDocumentOptions {
   includeDueDate?: boolean;
   /** Fixed BT-20 text (credit notes with an amount due, where the document carries no payment terms of its own). */
   paymentTermsDescription?: string;
+  /** Free-text document note, embedded as invoice note (BG-1 / BT-22) without a subject code (BT-21 is optional). */
+  note?: string | null;
 }
 
 export const DEFAULT_INVOICE_DOCUMENT_OPTIONS: Omit<EInvoiceDocumentOptions, 'documentId' | 'issueDate'> = {
@@ -29,6 +31,7 @@ export function buildCreditNoteDocumentOptions(
   creditNoteNumber: string,
   voidedAt: Date,
   originalInvoiceNumber: string,
+  note?: string | null,
 ): EInvoiceDocumentOptions {
   return {
     typeCode: '381',
@@ -37,6 +40,7 @@ export function buildCreditNoteDocumentOptions(
     duePayableAmount: 0,
     includePaymentMeans: false,
     referencedInvoiceNumber: originalInvoiceNumber,
+    note: note ?? null,
   };
 }
 
@@ -77,6 +81,7 @@ export function buildInvoiceDocumentOptions(invoice: {
   issuedAt?: Date;
   createdAt: Date;
   balanceDue: number;
+  note?: string | null;
 }): EInvoiceDocumentOptions {
   return {
     typeCode: '380',
@@ -86,6 +91,7 @@ export function buildInvoiceDocumentOptions(invoice: {
     includePaymentMeans: true,
     includeDocumentTerms: true,
     includeDueDate: true,
+    note: invoice.note ?? null,
   };
 }
 
@@ -94,6 +100,7 @@ export function buildZeroBalancePromotionalInvoiceDocumentOptions(invoice: {
   id: string;
   issuedAt?: Date;
   createdAt: Date;
+  note?: string | null;
 }): EInvoiceDocumentOptions {
   return {
     // A real (tax) invoice that is paid on issue by the promotion: commercial invoice, nothing due (prepaid).
@@ -103,6 +110,7 @@ export function buildZeroBalancePromotionalInvoiceDocumentOptions(invoice: {
     duePayableAmount: 0,
     includePaymentMeans: false,
     includeDocumentTerms: true,
+    note: invoice.note ?? null,
   };
 }
 
@@ -112,6 +120,7 @@ export function buildOfferDocumentOptions(offer: {
   archivedAt?: Date | null;
   createdAt: Date;
   totalGross: number;
+  note?: string | null;
 }): EInvoiceDocumentOptions {
   return {
     typeCode: '325',
@@ -120,5 +129,6 @@ export function buildOfferDocumentOptions(offer: {
     duePayableAmount: Number(offer.totalGross),
     includePaymentMeans: false,
     includeDocumentTerms: true,
+    note: offer.note ?? null,
   };
 }

@@ -20,6 +20,10 @@ export class InvoiceVoidDocumentEntity {
   @Column({ type: 'varchar', length: 512, name: 'pdf_storage_key' })
   pdfStorageKey!: string;
 
+  /** Optional free-text note printed on the credit note and embedded as invoice note (BT-22). */
+  @Column({ type: 'text', nullable: true, name: 'note' })
+  note?: string | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 }

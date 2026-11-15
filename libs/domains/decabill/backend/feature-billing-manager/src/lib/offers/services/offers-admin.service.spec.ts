@@ -196,6 +196,37 @@ describe('OffersAdminService', () => {
     );
   });
 
+  it('stores the normalized document note on the draft and returns it', async () => {
+    const result = await service.create(
+      {
+        userId: 'user-1',
+        note: '  Valid for 30 days\u0000 ',
+        lineItems: [
+          { lineType: OfferLineType.STANDARD, payload: { description: 'Consulting', quantity: 1, unitPriceNet: 100 } },
+        ],
+      },
+      'admin-1',
+    );
+
+    expect(offersRepository.create).toHaveBeenCalledWith(expect.objectContaining({ note: 'Valid for 30 days' }));
+    expect(result.note).toBeNull();
+  });
+
+  it('clears the note when the draft is saved without one', async () => {
+    await service.create(
+      {
+        userId: 'user-1',
+        note: '   ',
+        lineItems: [
+          { lineType: OfferLineType.STANDARD, payload: { description: 'Consulting', quantity: 1, unitPriceNet: 100 } },
+        ],
+      },
+      'admin-1',
+    );
+
+    expect(offersRepository.create).toHaveBeenCalledWith(expect.objectContaining({ note: null }));
+  });
+
   it('rejects custom delivery terms without text', async () => {
     await expect(
       service.create({

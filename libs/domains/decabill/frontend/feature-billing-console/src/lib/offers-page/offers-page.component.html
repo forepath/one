@@ -222,6 +222,8 @@
     </div>
     <div class="mt-3">
       <framework-document-terms-summary [terms]="detail" />
+
+      <framework-document-note-summary [note]="detail.note" />
     </div>
   }
   @if (previewDetail$ | async; as detail) {

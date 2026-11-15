@@ -37,6 +37,7 @@ import { BehaviorSubject, firstValueFrom, map, of, switchMap } from 'rxjs';
 import { formatBillingDate, formatBillingMoney } from '../billing-format';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { canCustomerRespondToOffer, getOfferStatusBadgeTone, getOfferStatusLabel } from '../billing-status-labels';
+import { DocumentNoteSummaryComponent } from '../document-note/document-note-summary.component';
 import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
 import { getUnnumberedOfferLabel } from '../named-label.util';
 import { dbBulkSummary, type DbBulkResult, DB_DL_PREVIEW, DB_DL_DOWNLOAD_PDF } from '../shared/data-list';
@@ -52,6 +53,7 @@ type CustomerOffersTab = 'pending' | 'history';
     CommonModule,
     FormsModule,
     DocumentTermsSummaryComponent,
+    DocumentNoteSummaryComponent,
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcDataTableComponent,

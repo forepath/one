@@ -15,6 +15,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+import { IsOptionalDocumentNote } from '../../dto/document-note.dto';
 import { ManualInvoiceLineItemDto } from '../../dto/manual-invoice.dto';
 import { ProjectPricingModel, ProjectStatus } from '../entities/project.enums';
 
@@ -211,6 +212,10 @@ export class BillProjectTimeDto {
   @ValidateNested({ each: true })
   @Type(() => ManualInvoiceLineItemDto)
   lineItems?: ManualInvoiceLineItemDto[];
+
+  /** Optional document note printed on the project invoice and embedded as invoice note (BT-22). */
+  @IsOptionalDocumentNote()
+  note?: string | null;
 }
 
 export class ProjectTimeReportRequestDto {

@@ -1431,8 +1431,8 @@
         <target>Vorhandener Workspace</target>
       </trans-unit>
       <trans-unit id="featureChat-provisionServer" datatype="html">
-        <source>Provision</source>
-        <target>Bereitstellen</target>
+        <source>Provision server</source>
+        <target>Server bereitstellen</target>
       </trans-unit>
       <trans-unit id="featureChat-provisionServerSubmit" datatype="html">
         <source>Provision</source>

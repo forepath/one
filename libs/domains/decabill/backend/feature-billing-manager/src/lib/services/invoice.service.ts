@@ -22,6 +22,7 @@ import { SubscriptionsRepository } from '../repositories/subscriptions.repositor
 import { mapInvoiceToSearchDocument } from '../search/billing-search-document.mapper';
 import { BillingSearchIndexService } from '../search/billing-search-index.service';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
+import { normalizeDocumentNote } from '../utils/document-note.utils';
 import { getRequiredTenantId } from '../utils/tenant-query.utils';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
@@ -45,6 +46,8 @@ export interface CreateInvoiceDraftParams {
   currency?: string;
   promotionApplications?: InvoicePromotionApplicationDraft[];
   offerId?: string;
+  /** Optional free-text document note (manual invoices, project bill-time); normalized before it is stored. */
+  note?: string | null;
 }
 
 @Injectable()
@@ -107,6 +110,7 @@ export class InvoiceService {
       buyerCustomerType: taxContext.buyerCustomerType,
       issuerCountry: taxContext.issuerCountry,
       issuerIsInEu: taxContext.treatment.issuerIsInEu,
+      note: normalizeDocumentNote(params.note),
     });
 
     await this.invoiceLineItemsRepository.createMany(
@@ -160,7 +164,7 @@ export class InvoiceService {
     subscriptionId: string | null | undefined,
     adminUserId?: string,
     auditContext?: Record<string, unknown>,
-    options?: { skipNotification?: boolean },
+    options?: { skipNotification?: boolean; note?: string | null },
   ): Promise<InvoiceEntity> {
     const invoice =
       subscriptionId != null && subscriptionId !== ''
@@ -185,9 +189,13 @@ export class InvoiceService {
 
     const voidedAt = new Date();
     const existingVoidDocument = await this.invoiceVoidDocumentsRepository.findByInvoiceId(invoiceId);
+    const note = normalizeDocumentNote(options?.note);
 
-    if (!options?.skipNotification && !existingVoidDocument) {
-      const voidDocumentStorageKey = await this.ensureVoidDocumentStored(invoice, voidedAt);
+    if (note && !existingVoidDocument && options?.skipNotification) {
+      // The note only lives on the credit note record: store it now instead of lazily on the first download.
+      await this.ensureVoidDocumentStored(invoice, voidedAt, note);
+    } else if (!options?.skipNotification && !existingVoidDocument) {
+      const voidDocumentStorageKey = await this.ensureVoidDocumentStored(invoice, voidedAt, note);
 
       await this.billingEmailPublisher.publishVoidDocument(
         invoice,
@@ -213,6 +221,7 @@ export class InvoiceService {
       context: {
         ...(auditContext ?? {}),
         ...(adminUserId ? { adminUserId } : {}),
+        ...(note ? { hasCreditNoteNote: true } : {}),
       },
     });
 
@@ -302,6 +311,7 @@ export class InvoiceService {
       issuedAt: invoice.issuedAt,
       dueDate: invoice.dueDate,
       ...mapDocumentTermsToResponse(invoice),
+      note: invoice.note ?? null,
       paidAt: invoice.paidAt ?? null,
       createdAt: invoice.createdAt,
       autoPaymentStatus: invoice.autoPaymentStatus,
@@ -436,7 +446,11 @@ export class InvoiceService {
     return storageKey;
   }
 
-  private async ensureVoidDocumentStored(invoice: InvoiceEntity, voidedAt: Date): Promise<string> {
+  private async ensureVoidDocumentStored(
+    invoice: InvoiceEntity,
+    voidedAt: Date,
+    note?: string | null,
+  ): Promise<string> {
     const existing = await this.invoiceVoidDocumentsRepository.findByInvoiceId(invoice.id);
 
     if (existing?.pdfStorageKey && !this.shouldSkipFileCache()) {
@@ -475,6 +489,8 @@ export class InvoiceService {
       profile,
       resolvePurchaseOrderReference(subscription?.number, invoice.subscriptionId),
       resolveInvoicingPeriod(invoice, subscription ?? undefined, plan ?? undefined),
+      // A regenerated credit note keeps the note it was issued with.
+      existing ? (existing.note ?? null) : (note ?? null),
     );
 
     if (!existing) {
@@ -482,6 +498,7 @@ export class InvoiceService {
         invoiceId: invoice.id,
         documentNumber: generated.documentNumber,
         pdfStorageKey: generated.storageKey,
+        note: note ?? null,
       });
     }
 

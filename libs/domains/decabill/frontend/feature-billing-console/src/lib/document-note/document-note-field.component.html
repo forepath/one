@@ -1,0 +1,12 @@
+<fpc-form-field [forId]="controlId" [label]="label" [hint]="hint">
+  <fpc-form-control
+    controlType="textarea"
+    [controlId]="controlId"
+    [name]="controlId"
+    [rows]="rows"
+    [maxLength]="maxLength"
+    [disabled]="disabled"
+    [ngModel]="value"
+    (ngModelChange)="onValueChange($event)"
+  />
+</fpc-form-field>

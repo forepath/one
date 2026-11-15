@@ -114,13 +114,14 @@ Entries may optionally reference a ticket (`ticketId`). Billed entries (`billedA
 
 `POST .../bill-time` requires a JSON body:
 
-| Field            | Description                                                  |
-| ---------------- | ------------------------------------------------------------ |
-| `from`           | Range start (ISO 8601, inclusive)                            |
-| `to`             | Range end (ISO 8601, inclusive)                              |
-| `subscriptionId` | Optional subscription link (must belong to project customer) |
-| `amountNet`      | `fixed` projects only: instalment (≤ remaining fixed price)  |
-| `lineItems`      | Optional extra invoice lines (same shape as manual invoices) |
+| Field            | Description                                                                   |
+| ---------------- | ----------------------------------------------------------------------------- |
+| `from`           | Range start (ISO 8601, inclusive)                                             |
+| `to`             | Range end (ISO 8601, inclusive)                                               |
+| `subscriptionId` | Optional subscription link (must belong to project customer)                  |
+| `amountNet`      | `fixed` projects only: instalment (≤ remaining fixed price)                   |
+| `lineItems`      | Optional extra invoice lines (same shape as manual invoices)                  |
+| `note`           | Optional document note on the invoice ([Document notes](./document-notes.md)) |
 
 Only unbilled entries where `startedAt >= from` and `endedAt <= to` are included. `from` must be strictly before `to`. The issued invoice always includes one generated line for the billed time range. **description** = project name plus billed period (`from, to`), **quantity** = billed hours, **unit price (net)** = project hourly rate, followed by any optional `lineItems`. When a `capped` project hits its maximum, or for `fixed` projects, the time line is quantity 1 at the capped / fixed amount and its description notes the cap or fixed price. Per-entry detail remains on the attached time report.
 

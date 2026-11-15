@@ -259,6 +259,7 @@ describe('ProjectBillingService', () => {
       to,
       subscriptionId: 'sub-1',
       lineItems: [{ description: 'Materials', quantity: 1, unitPriceNet: 25 }],
+      note: 'Sprint 3',
     });
 
     expect(result.billedMinutes).toBe(60);
@@ -266,6 +267,7 @@ describe('ProjectBillingService', () => {
     expect(invoiceService.createDraft).toHaveBeenCalledWith(
       expect.objectContaining({
         subscriptionId: 'sub-1',
+        note: 'Sprint 3',
         lineInputs: [
           expect.objectContaining({
             description: expect.stringMatching(/Proj \(.*–.*\)/),

@@ -93,6 +93,7 @@ export class OffersCustomerService {
       billToOpenPositions: offer.billToOpenPositions,
       lineItems: lines.map((line) => mapOfferLineItemToResponse(line)),
       ...mapEffectiveDocumentTermsToResponse(this.documentTermsConfig.resolve(documentTermsLayerFromFields(offer))),
+      note: offer.note ?? null,
     };
   }
 

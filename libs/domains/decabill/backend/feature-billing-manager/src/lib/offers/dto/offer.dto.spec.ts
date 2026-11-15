@@ -113,6 +113,20 @@ describe('Offer request DTO validation (global ValidationPipe options)', () => {
     expect(messages).not.toContain('description should not exist');
   });
 
+  it('accepts a document note and rejects non-string or overlong notes', async () => {
+    const result = (await pipe.transform(
+      { ...consoleOffer(), note: 'Valid for 30 days' },
+      meta(CreateAdminOfferDto),
+    )) as CreateAdminOfferDto;
+
+    expect(result.note).toBe('Valid for 30 days');
+    await expect(pipe.transform({ ...consoleOffer(), note: null }, meta(UpdateAdminOfferDto))).resolves.toBeDefined();
+    await expect(validationMessages({ ...consoleOffer(), note: 42 })).resolves.toContain('note must be a string');
+    await expect(validationMessages({ ...consoleOffer(), note: 'x'.repeat(2001) })).resolves.toContain(
+      'note must be at most 2000 characters',
+    );
+  });
+
   it('rejects a standard line with a non-positive quantity', async () => {
     const body = consoleOffer();
 

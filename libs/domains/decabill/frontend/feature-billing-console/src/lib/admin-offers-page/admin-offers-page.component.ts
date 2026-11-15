@@ -93,6 +93,9 @@ import {
 } from '../billing-format';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { getOfferStatusBadgeTone, getOfferStatusLabel, getUnavailableLabel } from '../billing-status-labels';
+import { DocumentNoteFieldComponent } from '../document-note/document-note-field.component';
+import { DocumentNoteSummaryComponent } from '../document-note/document-note-summary.component';
+import { documentNoteToInput } from '../document-note/document-note.util';
 import { DocumentTermsFieldsComponent } from '../document-terms/document-terms-fields.component';
 import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
 import {
@@ -147,6 +150,8 @@ type AdminOffersTab = 'offers' | 'statistics';
     PricingTotalsSummaryComponent,
     DocumentTermsFieldsComponent,
     DocumentTermsSummaryComponent,
+    DocumentNoteFieldComponent,
+    DocumentNoteSummaryComponent,
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcBoardLaneComponent,
@@ -445,6 +450,9 @@ export class AdminOffersPageComponent implements OnInit {
   editForm: CreateAdminOfferDto & { id: string } = { ...this.emptyForm(), id: '' };
   createTermsForm: DocumentTermsFormModel = emptyDocumentTermsForm();
   editTermsForm: DocumentTermsFormModel = emptyDocumentTermsForm();
+  /** Document note printed on the offer (not carried to the resulting invoice). */
+  createNote = '';
+  editNote = '';
   /** Global default terms (inherited when an offer leaves its terms empty). */
   readonly documentTermsDefaults = signal<EffectiveDocumentTerms | null>(null);
   editLineItems: OfferFormLineItem[] = [createEmptyOfferFormLine()];
@@ -601,6 +609,7 @@ export class AdminOffersPageComponent implements OnInit {
   openCreateModal(): void {
     this.createForm = this.emptyForm();
     this.createTermsForm = emptyDocumentTermsForm();
+    this.createNote = '';
     this.createUserId = '';
     this.createLineItems = [createEmptyOfferFormLine()];
     showBillingModal(this.createModalOpen);
@@ -619,6 +628,7 @@ export class AdminOffersPageComponent implements OnInit {
     };
     this.editLineItems = [createEmptyOfferFormLine()];
     this.editTermsForm = emptyDocumentTermsForm();
+    this.editNote = '';
     showBillingModal(this.editModalOpen);
 
     this.adminOffersService
@@ -635,6 +645,7 @@ export class AdminOffersPageComponent implements OnInit {
             lineItems: [],
           };
           this.editTermsForm = documentTermsFormFromTerms(detail);
+          this.editNote = detail.note ?? '';
           this.editLineItems =
             detail.lineItems.length > 0 ? mapOfferDetailLinesToForm(detail.lineItems) : [createEmptyOfferFormLine()];
           this.editDetailLoading = false;
@@ -702,6 +713,7 @@ export class AdminOffersPageComponent implements OnInit {
       billToOpenPositions: this.createForm.billToOpenPositions,
       ...documentTermsFormToInput(this.createTermsForm),
       lineItems: mapOfferFormLinesToDto(this.createLineItems),
+      note: documentNoteToInput(this.createNote),
     });
   }
 
@@ -716,6 +728,7 @@ export class AdminOffersPageComponent implements OnInit {
       billToOpenPositions: this.editForm.billToOpenPositions,
       ...documentTermsFormToInput(this.editTermsForm),
       lineItems: mapOfferFormLinesToDto(this.editLineItems),
+      note: documentNoteToInput(this.editNote),
     });
   }
 

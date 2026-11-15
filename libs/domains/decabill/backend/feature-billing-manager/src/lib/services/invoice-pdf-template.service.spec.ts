@@ -310,4 +310,73 @@ describe('InvoicePdfTemplateService', () => {
       expect(viewModel.servicePeriod).toBe('2026-05-01 – 2026-06-01');
     });
   });
+
+  describe('document note', () => {
+    const notedInvoice = { ...invoice, note: 'Line one\n<b>Line two</b> & more' } as InvoiceEntity;
+
+    it('prints the invoice note escaped with its line breaks', () => {
+      const html = service.buildHtml(notedInvoice, lineItems, issuer, buyer);
+
+      expect(html).toContain('<h2 class="payment-heading">Notes</h2>');
+      expect(html).toContain('<p class="document-note">Line one\n&lt;b&gt;Line two&lt;/b&gt; &amp; more</p>');
+      expect(html).not.toContain('<b>Line two</b>');
+    });
+
+    it('prints the note on promotional zero-balance invoices', () => {
+      const viewModel = service.buildViewModel(
+        notedInvoice,
+        lineItems,
+        issuer,
+        buyer,
+        buildInvoicePdfPresentation(notedInvoice, { zeroBalancePromotional: true }),
+      );
+
+      expect(viewModel.note).toBe('Line one\n<b>Line two</b> & more');
+    });
+
+    it('omits the notes section without a note', () => {
+      expect(service.buildHtml(invoice, lineItems, issuer, buyer)).not.toContain('>Notes</h2>');
+      expect(service.buildViewModel({ ...invoice, note: ' \n ' } as InvoiceEntity, lineItems, issuer, buyer).note).toBe(
+        undefined,
+      );
+    });
+
+    it('prints the credit note note instead of the invoice note on void credit notes', () => {
+      const withNote = service.buildViewModel(
+        notedInvoice,
+        lineItems,
+        issuer,
+        buyer,
+        buildCreditNotePdfPresentation(
+          'INV-2026-00001-CN',
+          new Date('2026-06-02'),
+          'INV-2026-00001',
+          undefined,
+          'Cancelled',
+        ),
+      );
+      const withoutNote = service.buildViewModel(
+        notedInvoice,
+        lineItems,
+        issuer,
+        buyer,
+        buildCreditNotePdfPresentation('INV-2026-00001-CN', new Date('2026-06-02'), 'INV-2026-00001'),
+      );
+
+      expect(withNote.note).toBe('Cancelled');
+      expect(withoutNote.note).toBeUndefined();
+    });
+
+    it('never prints the invoice note on partial credit notes', () => {
+      const viewModel = service.buildViewModel(
+        notedInvoice,
+        lineItems,
+        issuer,
+        buyer,
+        buildPartialCreditNotePdfPresentation('INV-2026-00001-CN-x', new Date('2026-06-02'), 'INV-2026-00001', 11.9),
+      );
+
+      expect(viewModel.note).toBeUndefined();
+    });
+  });
 });

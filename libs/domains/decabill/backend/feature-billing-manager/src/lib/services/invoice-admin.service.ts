@@ -6,6 +6,7 @@ import type {
   AdminInvoiceListItemDto,
   MarkInvoicePaymentStatusDto,
   PaginatedAdminInvoicesResponseDto,
+  VoidInvoiceDto,
 } from '../dto/admin-billing.dto';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
@@ -66,11 +67,15 @@ export class InvoiceAdminService {
     };
   }
 
-  async voidInvoice(invoiceRefId: string, adminUserId: string): Promise<AdminInvoiceListItemDto> {
+  async voidInvoice(invoiceRefId: string, adminUserId: string, dto?: VoidInvoiceDto): Promise<AdminInvoiceListItemDto> {
     const invoice = await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
-    const voided = await this.invoiceService.voidInvoice(invoiceRefId, invoice.subscriptionId, adminUserId, {
+    const voided = await this.invoiceService.voidInvoice(
+      invoiceRefId,
+      invoice.subscriptionId,
       adminUserId,
-    });
+      { adminUserId },
+      { note: dto?.note },
+    );
 
     return this.mapAdminItem(voided);
   }

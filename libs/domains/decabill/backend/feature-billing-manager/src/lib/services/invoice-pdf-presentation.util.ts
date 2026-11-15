@@ -21,6 +21,8 @@ export interface InvoicePdfPresentationOptions {
   paymentTermsText?: string;
   /** Print the EPC069-12 SEPA payment QR (GiroCode) next to the bank details when applicable. */
   includePaymentQr?: boolean;
+  /** Free-text document note (same text as the embedded BT-22 invoice note). */
+  note?: string | null;
 }
 
 export interface BuildInvoicePdfPresentationOptions {
@@ -81,6 +83,7 @@ export function buildInvoicePdfPresentation(
       showBalanceDue: false,
       includePaymentDetails: false,
       includeDocumentTerms: true,
+      note: invoice.note ?? null,
       ...(options.servicePeriod ? { servicePeriod: options.servicePeriod } : {}),
     };
   }
@@ -95,6 +98,7 @@ export function buildInvoicePdfPresentation(
     includePaymentDetails: true,
     includeDocumentTerms: true,
     includePaymentQr: options?.includePaymentQr === true,
+    note: invoice.note ?? null,
     ...(options?.servicePeriod ? { servicePeriod: options.servicePeriod } : {}),
   };
 }
@@ -104,6 +108,7 @@ export function buildCreditNotePdfPresentation(
   voidedAt: Date,
   originalInvoiceNumber: string,
   servicePeriod?: InvoicingPeriod,
+  note?: string | null,
 ): InvoicePdfPresentationOptions {
   return {
     documentTitle: 'Credit note',
@@ -114,6 +119,7 @@ export function buildCreditNotePdfPresentation(
     showBalanceDue: false,
     referencedInvoiceNumber: originalInvoiceNumber,
     includePaymentDetails: false,
+    note: note ?? null,
     ...(servicePeriod ? { servicePeriod } : {}),
   };
 }

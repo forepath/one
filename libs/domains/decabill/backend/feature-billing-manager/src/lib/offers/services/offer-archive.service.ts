@@ -263,6 +263,7 @@ export class OfferArchiveService {
       taxMode: offer.taxMode ?? null,
       taxNote: offer.taxNote ?? null,
       ...mapAdminOfferDocumentTerms(offer, this.documentTermsConfig),
+      note: offer.note ?? null,
     };
   }
 }

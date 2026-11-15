@@ -51,6 +51,8 @@ export interface InvoicePdfViewModel {
   /** Printed delivery terms (Incoterms® 2020 rule or custom text). */
   deliveryTerms?: string;
   showDocumentTerms?: boolean;
+  /** Free-text document note (also embedded as BT-22 invoice note). */
+  note?: string;
   /** EPC069-12 SEPA credit transfer QR (SVG data URI); only for open EUR invoices with a valid IBAN. */
   epcQrDataUri?: string;
   /** Identity short SHA stamped when file signing is enabled. */

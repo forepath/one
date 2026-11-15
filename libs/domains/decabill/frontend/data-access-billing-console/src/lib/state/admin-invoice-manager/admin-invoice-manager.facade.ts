@@ -7,6 +7,7 @@ import type {
   IssueManualInvoiceDto,
   MarkInvoicePaymentStatusDto,
   UpdateManualInvoiceDto,
+  VoidInvoiceDto,
 } from '../../types/billing.types';
 
 import {
@@ -88,8 +89,8 @@ export class AdminInvoiceManagerFacade {
     this.store.dispatch(deleteManualInvoice({ invoiceRefId }));
   }
 
-  voidInvoice(invoiceRefId: string): void {
-    this.store.dispatch(adminInvoiceManagerVoid({ invoiceRefId }));
+  voidInvoice(invoiceRefId: string, dto?: VoidInvoiceDto): void {
+    this.store.dispatch(adminInvoiceManagerVoid({ invoiceRefId, ...(dto ? { dto } : {}) }));
   }
 
   markPaid(invoiceRefId: string, dto?: MarkInvoicePaymentStatusDto): void {

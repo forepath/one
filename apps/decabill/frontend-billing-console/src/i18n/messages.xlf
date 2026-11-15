@@ -416,6 +416,9 @@
       <trans-unit id="featureAdminBilling-paidAtHelp" datatype="html">
         <source>Defaults to now. Change this if payment was received on a different date or time.</source>
         </trans-unit>
+      <trans-unit id="featureAdminBilling-creditNoteNote" datatype="html">
+        <source>Note on the credit note (optional)</source>
+        </trans-unit>
       <trans-unit id="featureAdminBilling-reasonOptional" datatype="html">
         <source>Reason (optional)</source>
         </trans-unit>
@@ -2590,6 +2593,15 @@
         </trans-unit>
       <trans-unit id="featureContainer-adminDatevExports" datatype="html">
         <source>DATEV</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentNote-label" datatype="html">
+        <source>Note (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentNote-hint" datatype="html">
+        <source>Printed on the document and embedded in its e-invoice data.</source>
+        </trans-unit>
+      <trans-unit id="featureDocumentNote-title" datatype="html">
+        <source>Notes</source>
         </trans-unit>
       <trans-unit id="featureDocumentTerms-paymentDueDays" datatype="html">
         <source>Payment terms (days)</source>

@@ -67,6 +67,7 @@ import {
 import { formatBillingDate, formatBillingMoney } from '../billing-format';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { getInvoiceStatusBadgeTone, getInvoiceStatusLabel } from '../billing-status-labels';
+import { DocumentNoteSummaryComponent } from '../document-note/document-note-summary.component';
 import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
 import { getUnnumberedInvoiceLabel } from '../named-label.util';
 import { NextBillingDayPipe } from '../pipes/next-billing-day.pipe';
@@ -98,6 +99,7 @@ type PaymentReturnFeedback = 'waiting' | 'confirmed' | 'canceled';
     FormsModule,
     NextBillingDayPipe,
     DocumentTermsSummaryComponent,
+    DocumentNoteSummaryComponent,
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcDataTableComponent,

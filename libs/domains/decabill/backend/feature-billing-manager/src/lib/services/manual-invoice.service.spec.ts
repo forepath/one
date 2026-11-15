@@ -209,6 +209,36 @@ describe('ManualInvoiceService', () => {
     );
   });
 
+  it('createDraft forwards the document note', async () => {
+    await service.createDraft(
+      {
+        userId: 'user-1',
+        lineItems: [{ description: 'Consulting', quantity: 1, unitPriceNet: 100 }],
+        note: 'Phase 1',
+      },
+      'admin-1',
+    );
+
+    expect(invoiceService.createDraft).toHaveBeenCalledWith(expect.objectContaining({ note: 'Phase 1' }));
+  });
+
+  it('updateDraft keeps the note when omitted and normalizes or clears it when given', async () => {
+    invoicesRepository.findByIdOrThrow.mockResolvedValue(draftInvoice);
+    invoicesRepository.update.mockResolvedValue(draftInvoice);
+    const lineItems = [{ description: 'Updated', quantity: 1, unitPriceNet: 100 }];
+
+    await service.updateDraft('inv-1', { lineItems }, 'admin-1');
+    expect(invoicesRepository.update.mock.calls[0]?.[1]).not.toHaveProperty('note');
+
+    await service.updateDraft('inv-1', { lineItems, note: '  Line one \r\n\u0007Line two  ' }, 'admin-1');
+    expect(invoicesRepository.update.mock.calls[1]?.[1]).toEqual(
+      expect.objectContaining({ note: 'Line one\nLine two' }),
+    );
+
+    await service.updateDraft('inv-1', { lineItems, note: null }, 'admin-1');
+    expect(invoicesRepository.update.mock.calls[2]?.[1]).toEqual(expect.objectContaining({ note: null }));
+  });
+
   it('updateDraft updates line items and totals', async () => {
     invoicesRepository.findByIdOrThrow.mockResolvedValue(draftInvoice);
     invoicesRepository.update.mockResolvedValue({ ...draftInvoice, totalGross: 119 });
