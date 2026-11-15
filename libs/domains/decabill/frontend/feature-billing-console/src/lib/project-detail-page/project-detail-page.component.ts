@@ -15,6 +15,7 @@ import {
   type AdminProjectDetailResponse,
   type BillProjectTimeDto,
   type ManualInvoiceLineItemDto,
+  type ProjectPricingModel,
   type ProjectSummaryResponse,
   type ProjectTimeEntryResponse,
   type SubscriptionResponse,
@@ -68,7 +69,7 @@ import {
 import type { Subscription } from 'rxjs';
 
 import { BillingAdminSubscriptionSelectComponent } from '../billing-admin-subscription-select/billing-admin-subscription-select.component';
-import { formatBillingClockRange } from '../billing-format';
+import { formatBillingClockRange, formatBillingMoney } from '../billing-format';
 import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { isProjectTimeEntryBilled } from '../billing-status-labels';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
@@ -305,6 +306,11 @@ export class ProjectDetailPageComponent implements OnInit {
   readonly timeReportError = signal<string | null>(null);
   readonly timeReportBoundsLoading = signal(false);
   billSubscriptionId = '';
+  /** Fixed-price projects: optional instalment (empty bills the remaining fixed price). */
+  billAmountNet: number | null = null;
+  readonly billPricingModel = signal<ProjectPricingModel>('hourly');
+  readonly billRemainingPriceNet = signal<number | null>(null);
+  private readonly billCurrency = signal('EUR');
   billCustomLineItems: BillTimeFormLineItem[] = [];
   readonly billBoundsLoading = signal(false);
   readonly billBoundsEntryCount = signal(0);
@@ -438,6 +444,7 @@ export class ProjectDetailPageComponent implements OnInit {
     this.summary$.pipe(take(1)).subscribe((summary) => {
       if (!this.hasUnbilledTime(summary)) return;
 
+      this.billRemainingPriceNet.set(summary?.remainingPriceNet ?? null);
       this.openBillTimeModalAfterSummaryCheck();
     });
   }
@@ -452,6 +459,9 @@ export class ProjectDetailPageComponent implements OnInit {
 
     this.selectedProject$.pipe(take(1)).subscribe((project) => {
       const userId = (project as AdminProjectDetailResponse | null)?.userId;
+
+      this.billPricingModel.set(project?.pricingModel ?? 'hourly');
+      this.billCurrency.set(project?.currency ?? 'EUR');
 
       if (userId) {
         this.loadBillTimeSubscriptions(userId);
@@ -564,6 +574,10 @@ export class ProjectDetailPageComponent implements OnInit {
       subscriptionId: this.billSubscriptionId.trim() || undefined,
     };
 
+    if (this.billPricingModel() === 'fixed' && this.billAmountNet != null && Number(this.billAmountNet) > 0) {
+      dto.amountNet = Number(this.billAmountNet);
+    }
+
     if (this.billCustomLineItems.length > 0) {
       dto.lineItems = this.billCustomLineItems.map((line) => ({
         description: line.description.trim(),
@@ -609,6 +623,8 @@ export class ProjectDetailPageComponent implements OnInit {
 
   isBillTimeFormValid(): boolean {
     if (!this.billFormFrom || !this.billFormTo) return false;
+
+    if (this.billAmountNet != null && !(Number(this.billAmountNet) > 0)) return false;
 
     return new Date(this.billFormTo).getTime() > new Date(this.billFormFrom).getTime();
   }
@@ -888,7 +904,26 @@ export class ProjectDetailPageComponent implements OnInit {
     });
   }
 
+  priceLimitSummaryLabel(model: ProjectPricingModel): string {
+    return model === 'fixed'
+      ? $localize`:@@featureProjectDetail-remainingFixedPrice:Remaining of fixed price`
+      : $localize`:@@featureProjectDetail-remainingMaxPrice:Remaining of maximum price`;
+  }
+
+  billFixedAmountHint(): string {
+    return $localize`:@@featureProjectDetail-billTimeAmountHint:Leave empty to bill the remaining fixed price (${this.formatRemainingPrice()}:amount:). Enter an amount to bill an instalment.`;
+  }
+
+  billCappedHint(): string {
+    return $localize`:@@featureProjectDetail-billTimeCappedHint:Time is billed at the hourly rate up to the remaining maximum price (${this.formatRemainingPrice()}:amount:). Once it is used up, entries are marked as covered without an invoice.`;
+  }
+
+  private formatRemainingPrice(): string {
+    return formatBillingMoney(this.billRemainingPriceNet() ?? 0, this.billCurrency());
+  }
+
   private resetBillTimeCustomFields(): void {
+    this.billAmountNet = null;
     this.billSubscriptionId = '';
     this.billCustomLineItems = [];
     this.billTimeSubscriptions.set([]);

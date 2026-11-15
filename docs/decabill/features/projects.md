@@ -17,6 +17,7 @@ Live board updates use the **`projects`** Socket.IO namespace. See [Project Boar
 | Customer access | Users see only projects where `project.userId` matches their id |
 | Reassignment    | Admin may change `userId` until billed time entries exist       |
 | Hourly rate     | Locked after the first successful bill-time operation           |
+| Pricing model   | `hourly`, `capped` or `fixed`; locked after the first bill      |
 
 Projects inherit tenant scope through the assigned user's `tenant_id`. There is no separate `tenant_id` column on project rows.
 
@@ -57,6 +58,7 @@ All admin routes require admin role (`@UsersRoles(ADMIN)`).
 - **Delete:** Rejected when any unbilled time entries remain
 - **Reassign customer:** Blocked after billed time entries exist
 - **Change hourly rate:** Blocked after the first bill-time operation
+- **Change pricing model:** Blocked after the first bill-time operation; the maximum / fixed price may still change, but not below the already billed amount
 
 ### Project Fields
 
@@ -66,8 +68,20 @@ All admin routes require admin role (`@UsersRoles(ADMIN)`).
 | `description`   | Optional long text                                                                         |
 | `status`        | `active` or `archived`                                                                     |
 | `hourlyRateNet` | Net hourly rate for time billing                                                           |
+| `pricingModel`  | `hourly` (default), `capped` or `fixed`; see [Pricing models](#pricing-models)             |
+| `priceLimitNet` | Maximum price (`capped`) or fixed price (`fixed`), net; `null` for `hourly`                |
 | `targetHours`   | Optional project time budget in hours; shown on detail pages with progress vs tracked time |
 | `currency`      | ISO currency (default `EUR`)                                                               |
+
+### Pricing models
+
+| Model    | Billed amount per bill-time                                                 |
+| -------- | --------------------------------------------------------------------------- |
+| `hourly` | Billed hours × `hourlyRateNet` (unlimited, previous behaviour)              |
+| `capped` | Billed hours × `hourlyRateNet`, limited to `priceLimitNet` − already billed |
+| `fixed`  | Optional `amountNet` instalment, else the whole remaining fixed price       |
+
+The project stores the cumulative net amount invoiced for its time (`billed_amount_net`, custom extra lines excluded); it is updated atomically under the bill-time lock. Once a `capped` or `fixed` price is fully invoiced, further bill-time calls without extra lines mark the entries as covered (`billedAt` set, no invoice) and return `invoiceId: null` with `amountNet: 0`. Projects created from an accepted offer inherit the pricing of their `project_template` line (see [Offers](./offers.md#project-template-pricing)).
 
 ## Time Entries
 
@@ -105,9 +119,10 @@ Entries may optionally reference a ticket (`ticketId`). Billed entries (`billedA
 | `from`           | Range start (ISO 8601, inclusive)                            |
 | `to`             | Range end (ISO 8601, inclusive)                              |
 | `subscriptionId` | Optional subscription link (must belong to project customer) |
+| `amountNet`      | `fixed` projects only: instalment (≤ remaining fixed price)  |
 | `lineItems`      | Optional extra invoice lines (same shape as manual invoices) |
 
-Only unbilled entries where `startedAt >= from` and `endedAt <= to` are included. `from` must be strictly before `to`. The issued invoice always includes one generated line for the billed time range. **description** = project name plus billed period (`from, to`), **quantity** = billed hours, **unit price (net)** = project hourly rate, followed by any optional `lineItems`. Per-entry detail remains on the attached time report.
+Only unbilled entries where `startedAt >= from` and `endedAt <= to` are included. `from` must be strictly before `to`. The issued invoice always includes one generated line for the billed time range. **description** = project name plus billed period (`from, to`), **quantity** = billed hours, **unit price (net)** = project hourly rate, followed by any optional `lineItems`. When a `capped` project hits its maximum, or for `fixed` projects, the time line is quantity 1 at the capped / fixed amount and its description notes the cap or fixed price. Per-entry detail remains on the attached time report.
 
 ### Preconditions
 
@@ -180,22 +195,23 @@ See also [Invoices](./invoices.md) and [Customer Profiles](./customer-profiles.m
 
 `GET /projects/{projectId}/summary` (or admin equivalent) returns:
 
-| Field                   | Description                            |
-| ----------------------- | -------------------------------------- |
-| `totalTrackedMinutes`   | Sum of all time entry durations        |
-| `unbilledMinutes`       | Minutes not yet invoiced               |
-| `openBillableAmountNet` | `unbilledMinutes / 60 × hourlyRateNet` |
-| `billedAmountNet`       | Net amount from billed minutes         |
-| `openTicketCount`       | Tickets not in `done` or `closed`      |
-| `doneTicketCount`       | Tickets in `done` or `closed`          |
-| `milestoneCount`        | Number of milestones                   |
-| `openMilestoneCount`    | Milestones not yet at 100% completion  |
+| Field                   | Description                                                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `totalTrackedMinutes`   | Sum of all time entry durations                                                                                                |
+| `unbilledMinutes`       | Minutes not yet invoiced                                                                                                       |
+| `openBillableAmountNet` | `unbilledMinutes / 60 × hourlyRateNet`, limited to the remaining maximum price (`capped`); the remaining fixed price (`fixed`) |
+| `billedAmountNet`       | Net amount from billed minutes (`hourly`); net amount actually invoiced for time (`capped` / `fixed`)                          |
+| `remainingPriceNet`     | Amount still billable under the maximum / fixed price; `null` for `hourly`                                                     |
+| `openTicketCount`       | Tickets not in `done` or `closed`                                                                                              |
+| `doneTicketCount`       | Tickets in `done` or `closed`                                                                                                  |
+| `milestoneCount`        | Number of milestones                                                                                                           |
+| `openMilestoneCount`    | Milestones not yet at 100% completion                                                                                          |
 
 ## Data Storage
 
 | Table                          | Purpose                                              |
 | ------------------------------ | ---------------------------------------------------- |
-| `billing_projects`             | Project header and hourly rate                       |
+| `billing_projects`             | Project header, hourly rate and pricing model        |
 | `billing_project_milestones`   | Milestones with optional lock                        |
 | `billing_project_tickets`      | Hierarchical tickets with status and priority        |
 | `billing_project_time_entries` | Tracked minutes, optional ticket link, billing state |

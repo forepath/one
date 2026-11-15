@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import type { CreateAdminProjectDto } from '../../projects/dto/project.dto';
+import { ProjectPricingModel } from '../../projects/entities/project.enums';
 import { ProjectsAdminService } from '../../projects/services/projects-admin.service';
 import { OpenPositionsRepository } from '../../repositories/open-positions.repository';
 import { BillingAuditLogService } from '../../services/billing-audit-log.service';
@@ -171,6 +172,9 @@ export class OfferFulfillmentService {
         hourlyRateNet: Number(payload.hourlyRateNet ?? line.unitPriceNet),
         targetHours: payload.targetHours != null ? Number(payload.targetHours) : undefined,
         currency: payload.currency != null ? String(payload.currency) : offer.currency,
+        // Payloads stored before pricing models existed carry neither key and stay hourly.
+        pricingModel: parseProjectPricingModel(payload.pricingModel),
+        priceLimitNet: payload.priceLimitNet != null ? Number(payload.priceLimitNet) : null,
       };
       const project = await this.projectsAdminService.create(dto);
 
@@ -305,4 +309,10 @@ export class OfferFulfillmentService {
 
     this.billingNotificationPublisher.publishOfferLineFulfillmentFailed(offer, line, error.message);
   }
+}
+
+function parseProjectPricingModel(value: unknown): ProjectPricingModel {
+  return Object.values(ProjectPricingModel).includes(value as ProjectPricingModel)
+    ? (value as ProjectPricingModel)
+    : ProjectPricingModel.HOURLY;
 }

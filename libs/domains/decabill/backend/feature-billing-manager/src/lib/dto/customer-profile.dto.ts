@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsOptional, IsString, Length, MaxLength } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsString, Length, MaxLength, ValidateIf } from 'class-validator';
 
 import { CustomerType } from '../constants/customer-type.constants';
 
@@ -49,7 +49,9 @@ export class CustomerProfileDto {
   @Length(2, 2, { message: 'Country must be ISO 3166-1 alpha-2' })
   country?: string;
 
+  /** Optional; the console sends '' for "no email" (also used to clear it), so only non-empty values are checked. */
   @IsOptional()
+  @ValidateIf((_, value) => value !== '')
   @IsEmail({}, { message: 'Email must be valid' })
   email?: string;
 

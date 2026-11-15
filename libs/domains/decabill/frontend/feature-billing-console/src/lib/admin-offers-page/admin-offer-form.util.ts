@@ -5,6 +5,7 @@ import type {
   OfferPlanTemplateLineDto,
   OfferProjectTemplateLineDto,
   OfferStandardLineDto,
+  ProjectPricingModel,
   TaxCategory,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 
@@ -19,6 +20,9 @@ export interface OfferFormLineItem {
   projectDescription: string;
   hourlyRateNet: number;
   targetHours: number | null;
+  pricingModel: ProjectPricingModel;
+  /** Maximum (`capped`) or fixed price (`fixed`), net. */
+  priceLimitNet: number | null;
   planId: string;
   promotionCode: string;
   requestedConfig: Record<string, unknown>;
@@ -40,6 +44,8 @@ export function createEmptyOfferFormLine(lineType: OfferLineType = 'standard'): 
     projectDescription: '',
     hourlyRateNet: 0,
     targetHours: null,
+    pricingModel: 'hourly',
+    priceLimitNet: null,
     planId: '',
     promotionCode: '',
     requestedConfig: {},
@@ -66,6 +72,11 @@ export function mapOfferFormLinesToDto(lines: OfferFormLineItem[]): OfferLineInp
 
         if (line.targetHours != null && line.targetHours > 0) {
           payload.targetHours = line.targetHours;
+        }
+
+        if (isPriceLimitedPricingModel(line.pricingModel)) {
+          payload.pricingModel = line.pricingModel;
+          payload.priceLimitNet = Number(line.priceLimitNet);
         }
 
         if (line.scheduledAt.trim()) {
@@ -152,7 +163,17 @@ export function mapOfferDetailLinesToForm(lines: OfferLineResponse[]): OfferForm
       base.name = typeof payload['name'] === 'string' ? payload['name'] : '';
       base.projectDescription = typeof payload['description'] === 'string' ? payload['description'] : '';
       base.hourlyRateNet = typeof payload['hourlyRateNet'] === 'number' ? payload['hourlyRateNet'] : line.unitPriceNet;
-      base.targetHours = typeof payload['targetHours'] === 'number' ? payload['targetHours'] : line.quantity;
+      base.pricingModel = isPriceLimitedPricingModel(payload['pricingModel']) ? payload['pricingModel'] : 'hourly';
+      base.priceLimitNet =
+        base.pricingModel !== 'hourly' && typeof payload['priceLimitNet'] === 'number'
+          ? payload['priceLimitNet']
+          : null;
+      base.targetHours =
+        typeof payload['targetHours'] === 'number'
+          ? payload['targetHours']
+          : base.pricingModel === 'hourly'
+            ? line.quantity
+            : null;
     }
 
     if (line.lineType === 'plan_template') {
@@ -183,11 +204,28 @@ export function isOfferFormValid(lines: OfferFormLineItem[]): boolean {
     }
 
     if (line.lineType === 'project_template') {
-      return line.name.trim().length > 0 && line.hourlyRateNet >= 0;
+      return line.name.trim().length > 0 && line.hourlyRateNet >= 0 && hasValidOfferProjectPriceLimit(line);
     }
 
     return line.planId.trim().length > 0;
   });
+}
+
+export function isPriceLimitedPricingModel(value: unknown): value is 'capped' | 'fixed' {
+  return value === 'capped' || value === 'fixed';
+}
+
+/** Capped / fixed project lines need a positive maximum / fixed price. */
+export function hasValidOfferProjectPriceLimit(
+  line: Pick<OfferFormLineItem, 'pricingModel' | 'priceLimitNet'>,
+): boolean {
+  if (!isPriceLimitedPricingModel(line.pricingModel)) {
+    return true;
+  }
+
+  const limit = Number(line.priceLimitNet);
+
+  return line.priceLimitNet != null && Number.isFinite(limit) && limit > 0;
 }
 
 function toIsoDateTime(value: string): string {

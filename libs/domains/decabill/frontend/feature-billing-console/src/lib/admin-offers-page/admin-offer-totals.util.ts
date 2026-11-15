@@ -11,7 +11,11 @@ import {
   type PricingTotalsSummary,
 } from '../pricing-totals-summary/pricing-totals.util';
 
-import type { OfferFormLineItem } from './admin-offer-form.util';
+import {
+  hasValidOfferProjectPriceLimit,
+  isPriceLimitedPricingModel,
+  type OfferFormLineItem,
+} from './admin-offer-form.util';
 
 export type { PricingTotalsSummary };
 
@@ -57,10 +61,22 @@ export function computeStandardOfferLineTotals(
   return computeLineTotalsFromRate(quantity, unitPriceNet, taxRate);
 }
 
+/** Mirrors the backend: hourly lines are target hours (else 1) × rate; capped / fixed lines are their price limit. */
 export function computeProjectTemplateOfferLineTotals(
-  line: Pick<OfferFormLineItem, 'hourlyRateNet' | 'targetHours'>,
+  line: Pick<OfferFormLineItem, 'hourlyRateNet' | 'targetHours'> &
+    Partial<Pick<OfferFormLineItem, 'pricingModel' | 'priceLimitNet'>>,
   taxRates: TaxPreviewRates,
 ): OfferLineTotals | null {
+  const pricingModel = line.pricingModel ?? 'hourly';
+
+  if (isPriceLimitedPricingModel(pricingModel)) {
+    const priceLimit = { pricingModel, priceLimitNet: line.priceLimitNet ?? null };
+
+    return hasValidOfferProjectPriceLimit(priceLimit)
+      ? computeLineTotalsFromRate(1, Number(line.priceLimitNet), rateForTaxCategory(taxRates, 'standard'))
+      : null;
+  }
+
   const hourlyRateNet = Number(line.hourlyRateNet);
 
   if (!Number.isFinite(hourlyRateNet) || hourlyRateNet < 0) {

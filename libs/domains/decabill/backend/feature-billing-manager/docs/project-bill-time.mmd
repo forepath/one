@@ -24,11 +24,16 @@ sequenceDiagram
         Billing-->>Admin: 400 Assigned customer profile is incomplete
     end
     Billing->>Billing: withProjectBillTimeLock(projectId)
+    Billing->>Billing: re-read project (pricingModel, priceLimitNet, billedAmountNet)
     Billing->>Time: findUnbilledByProjectInRangeForUpdate(projectId, from, to)
     alt no unbilled entries in range
         Billing-->>Admin: 400 No unbilled time entries
     end
-    Billing->>Billing: compute hours × hourlyRateNet
+    Billing->>Billing: computeProjectTimeCharge (hourly: hours × rate, capped: ≤ remaining max, fixed: amountNet ?? remaining)
+    alt price limit exhausted and no extra lines
+        Billing->>Time: markBilled(projectId, entry ids, invoiceId = null)
+        Billing-->>Admin: 200 { invoiceId: null, billedMinutes, amountNet: 0 }
+    end
     alt amount below minimum
         Billing-->>Admin: 400 Billable amount below minimum
     end
@@ -39,6 +44,7 @@ sequenceDiagram
         Billing->>Invoice: voidInvoice(duplicate, skipNotification)
         Billing-->>Admin: 409 duplicate invoice voided automatically
     end
+    Billing->>Billing: incrementBilledAmountNet(projectId, time line net)
     Billing->>Billing: generateAndStore time report PDF
     Billing->>Invoice: update timeReportStorageKey
     Billing->>Email: notifyInvoiceIssued(invoice + time report)

@@ -12228,6 +12228,12 @@ components:
     ProjectTicketPriority:
       type: string
       enum: [low, medium, high, critical]
+    ProjectPricingModel:
+      type: string
+      enum: [hourly, capped, fixed]
+      description: >-
+        hourly: tracked hours × hourly rate (unlimited). capped: tracked hours × hourly rate, the cumulative billed
+        amount never exceeds priceLimitNet. fixed: priceLimitNet is the fixed price, billed at once or in instalments.
     ProjectResponse:
       type: object
       required:
@@ -12237,6 +12243,8 @@ components:
           name,
           status,
           hourlyRateNet,
+          pricingModel,
+          priceLimitNet,
           currency,
           createdAt,
           updatedAt,
@@ -12248,6 +12256,13 @@ components:
         description: { type: string, nullable: true }
         status: { $ref: '#/components/schemas/ProjectStatus' }
         hourlyRateNet: { type: number }
+        pricingModel: { $ref: '#/components/schemas/ProjectPricingModel' }
+        priceLimitNet:
+          {
+            type: number,
+            nullable: true,
+            description: 'Maximum price (capped) or fixed price (fixed), net; null for hourly',
+          }
         targetHours: { type: number, nullable: true }
         currency: { type: string }
         createdAt: { type: string, format: date-time }
@@ -12301,6 +12316,7 @@ components:
           unbilledMinutes,
           openBillableAmountNet,
           billedAmountNet,
+          remainingPriceNet,
           openTicketCount,
           doneTicketCount,
           milestoneCount,
@@ -12312,6 +12328,12 @@ components:
         unbilledMinutes: { type: integer }
         openBillableAmountNet: { type: number }
         billedAmountNet: { type: number }
+        remainingPriceNet:
+          {
+            type: number,
+            nullable: true,
+            description: 'Amount still billable under the maximum / fixed price; null for hourly projects',
+          }
         openTicketCount: { type: integer }
         doneTicketCount: { type: integer }
         milestoneCount: { type: integer }
@@ -12331,6 +12353,14 @@ components:
         description: { type: string }
         status: { $ref: '#/components/schemas/ProjectStatus' }
         hourlyRateNet: { type: number }
+        pricingModel: { $ref: '#/components/schemas/ProjectPricingModel' }
+        priceLimitNet:
+          {
+            type: number,
+            nullable: true,
+            minimum: 0.01,
+            description: 'Required for capped / fixed; ignored for hourly',
+          }
         targetHours: { type: number, nullable: true }
         currency: { type: string }
     UpdateAdminProjectDto:
@@ -12341,13 +12371,30 @@ components:
         description: { type: string }
         status: { $ref: '#/components/schemas/ProjectStatus' }
         hourlyRateNet: { type: number }
+        pricingModel:
+          allOf:
+            - $ref: '#/components/schemas/ProjectPricingModel'
+          description: 'Locked after the first bill'
+        priceLimitNet:
+          {
+            type: number,
+            nullable: true,
+            minimum: 0.01,
+            description: 'Required for capped / fixed; after the first bill it cannot drop below the billed amount',
+          }
         targetHours: { type: number, nullable: true }
         currency: { type: string }
     BillProjectTimeResponse:
       type: object
       required: [invoiceId, billedMinutes, amountNet]
       properties:
-        invoiceId: { type: string, format: uuid }
+        invoiceId:
+          {
+            type: string,
+            format: uuid,
+            nullable: true,
+            description: 'Null when the maximum / fixed price was already exhausted; the entries are marked as covered without an invoice',
+          }
         invoiceNumber: { type: string }
         billedMinutes: { type: integer }
         amountNet: { type: number }
@@ -12358,6 +12405,12 @@ components:
         from: { type: string, format: date-time }
         to: { type: string, format: date-time }
         subscriptionId: { type: string, format: uuid }
+        amountNet:
+          {
+            type: number,
+            minimum: 0.01,
+            description: 'Fixed-price projects only: instalment to bill (defaults to the remaining fixed price)',
+          }
         lineItems:
           type: array
           items:
@@ -12741,6 +12794,25 @@ components:
         payload:
           type: object
           additionalProperties: true
+          description: 'OfferStandardLineDto, OfferProjectTemplateLineDto or a plan template payload, by lineType'
+    OfferProjectTemplateLineDto:
+      type: object
+      required: [description, name, hourlyRateNet]
+      properties:
+        description: { type: string }
+        name: { type: string }
+        projectDescription: { type: string }
+        hourlyRateNet: { type: number, minimum: 0 }
+        currency: { type: string }
+        targetHours: { type: number }
+        pricingModel: { $ref: '#/components/schemas/ProjectPricingModel' }
+        priceLimitNet:
+          {
+            type: number,
+            minimum: 0.01,
+            description: 'Maximum (capped) or fixed price (fixed), net; required for those models. The offer line is priced at this amount.',
+          }
+        scheduledAt: { type: string, format: date-time }
     CreateAdminOfferDto:
       type: object
       required: [userId, lineItems]

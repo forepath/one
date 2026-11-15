@@ -18,12 +18,12 @@ import {
 
 import type { PaginatedBillingAuditLogsResponseDto } from '../../dto/admin-billing.dto';
 import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
-import type {
-  AdminOfferDetailResponseDto,
+import {
   CreateAdminOfferDto,
-  OfferStatisticsResponseDto,
-  PaginatedAdminOffersResponseDto,
   UpdateAdminOfferDto,
+  type AdminOfferDetailResponseDto,
+  type OfferStatisticsResponseDto,
+  type PaginatedAdminOffersResponseDto,
 } from '../dto/offer.dto';
 import { OfferStatisticsQueryService } from '../services/offer-statistics-query.service';
 import { OffersAdminService } from '../services/offers-admin.service';

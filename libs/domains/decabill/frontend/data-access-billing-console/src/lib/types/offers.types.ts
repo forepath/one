@@ -1,5 +1,6 @@
 import type { ListParams, TaxCategory } from './billing.types';
 import type { DeliveryTermsCode, EffectiveDocumentTerms, DocumentTermsInput } from './document-terms.types';
+import type { ProjectPricingModel } from './projects.types';
 
 export type OfferStatus = 'draft' | 'archived' | 'accepted' | 'declined' | 'expired' | 'revoked';
 
@@ -120,6 +121,9 @@ export interface OfferProjectTemplateLineDto {
   hourlyRateNet: number;
   currency?: string;
   targetHours?: number;
+  pricingModel?: ProjectPricingModel;
+  /** Maximum (`capped`) or fixed price (`fixed`); required for those models. */
+  priceLimitNet?: number;
   scheduledAt?: string;
 }
 

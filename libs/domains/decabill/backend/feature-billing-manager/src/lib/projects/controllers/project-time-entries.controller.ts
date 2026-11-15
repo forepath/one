@@ -16,11 +16,11 @@ import {
 
 import type { RequestWithUser } from '../../utils/billing-access.utils';
 import { getAuthenticatedUserFromRequest } from '../../utils/billing-access.utils';
-import type {
+import {
   CreateProjectTimeEntryDto,
-  PaginatedProjectTimeEntriesResponseDto,
-  ProjectTimeEntryResponseDto,
   UpdateProjectTimeEntryDto,
+  type PaginatedProjectTimeEntriesResponseDto,
+  type ProjectTimeEntryResponseDto,
 } from '../dto/project-time-entry.dto';
 import { ProjectTimeEntriesService } from '../services/project-time-entries.service';
 

@@ -1,6 +1,8 @@
 import type { ListParams, ManualInvoiceLineItemDto } from './billing.types';
 
 export type ProjectStatus = 'active' | 'archived';
+/** `hourly`: hours × rate; `capped`: hours × rate up to `priceLimitNet`; `fixed`: `priceLimitNet` is the fixed price. */
+export type ProjectPricingModel = 'hourly' | 'capped' | 'fixed';
 export type ProjectTicketStatus = 'draft' | 'todo' | 'in_progress' | 'prototype' | 'done' | 'closed';
 export type ProjectTicketPriority = 'low' | 'medium' | 'high' | 'critical';
 
@@ -11,6 +13,9 @@ export interface ProjectResponse {
   description?: string | null;
   status: ProjectStatus;
   hourlyRateNet: number;
+  pricingModel: ProjectPricingModel;
+  /** Maximum price (`capped`) or fixed price (`fixed`), net; null for `hourly`. */
+  priceLimitNet: number | null;
   targetHours?: number | null;
   currency: string;
   createdAt: string;
@@ -54,6 +59,8 @@ export interface ProjectSummaryResponse {
   unbilledMinutes: number;
   openBillableAmountNet: number;
   billedAmountNet: number;
+  /** Amount still billable under the maximum / fixed price; null for hourly projects. */
+  remainingPriceNet: number | null;
   openTicketCount: number;
   doneTicketCount: number;
   milestoneCount: number;
@@ -70,6 +77,8 @@ export interface CreateAdminProjectDto {
   description?: string;
   status?: ProjectStatus;
   hourlyRateNet: number;
+  pricingModel?: ProjectPricingModel;
+  priceLimitNet?: number | null;
   targetHours?: number | null;
   currency?: string;
 }
@@ -80,12 +89,15 @@ export interface UpdateAdminProjectDto {
   description?: string;
   status?: ProjectStatus;
   hourlyRateNet?: number;
+  pricingModel?: ProjectPricingModel;
+  priceLimitNet?: number | null;
   targetHours?: number | null;
   currency?: string;
 }
 
 export interface BillProjectTimeResponse {
-  invoiceId: string;
+  /** Null when the maximum / fixed price was already exhausted (entries covered without an invoice). */
+  invoiceId: string | null;
   invoiceNumber?: string;
   billedMinutes: number;
   amountNet: number;
@@ -95,6 +107,8 @@ export interface BillProjectTimeDto {
   from: string;
   to: string;
   subscriptionId?: string;
+  /** Fixed-price projects only: instalment to bill (defaults to the remaining fixed price). */
+  amountNet?: number;
   lineItems?: ManualInvoiceLineItemDto[];
 }
 

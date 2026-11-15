@@ -8,6 +8,7 @@ import {
   IsString,
   IsUUID,
   Length,
+  Max,
   MaxLength,
   Min,
   ValidateIf,
@@ -15,7 +16,7 @@ import {
 } from 'class-validator';
 
 import { ManualInvoiceLineItemDto } from '../../dto/manual-invoice.dto';
-import { ProjectStatus } from '../entities/project.enums';
+import { ProjectPricingModel, ProjectStatus } from '../entities/project.enums';
 
 export class CreateAdminProjectDto {
   @IsUUID('4')
@@ -50,6 +51,20 @@ export class CreateAdminProjectDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
   targetHours?: number | null;
+
+  /** `hourly` (default), `capped` (hourly up to `priceLimitNet`) or `fixed` (`priceLimitNet` is the fixed price). */
+  @IsOptional()
+  @IsEnum(ProjectPricingModel)
+  pricingModel?: ProjectPricingModel;
+
+  /** Maximum price (`capped`) or fixed price (`fixed`), net. Required for those models; ignored for `hourly`. */
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0.01)
+  @Max(99_999_999)
+  priceLimitNet?: number | null;
 }
 
 export class UpdateAdminProjectDto {
@@ -88,6 +103,20 @@ export class UpdateAdminProjectDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
   targetHours?: number | null;
+
+  /** `hourly` (default), `capped` (hourly up to `priceLimitNet`) or `fixed` (`priceLimitNet` is the fixed price). */
+  @IsOptional()
+  @IsEnum(ProjectPricingModel)
+  pricingModel?: ProjectPricingModel;
+
+  /** Maximum price (`capped`) or fixed price (`fixed`), net. Required for those models; ignored for `hourly`. */
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0.01)
+  @Max(99_999_999)
+  priceLimitNet?: number | null;
 }
 
 export class ProjectResponseDto {
@@ -97,6 +126,9 @@ export class ProjectResponseDto {
   description?: string | null;
   status!: ProjectStatus;
   hourlyRateNet!: number;
+  pricingModel!: ProjectPricingModel;
+  /** Maximum price (`capped`) or fixed price (`fixed`), net; null for `hourly`. */
+  priceLimitNet!: number | null;
   targetHours?: number | null;
   currency!: string;
   createdAt!: Date;
@@ -140,6 +172,8 @@ export class ProjectSummaryResponseDto {
   unbilledMinutes!: number;
   openBillableAmountNet!: number;
   billedAmountNet!: number;
+  /** Amount still billable under the maximum / fixed price; null for unlimited hourly projects. */
+  remainingPriceNet!: number | null;
   openTicketCount!: number;
   doneTicketCount!: number;
   milestoneCount!: number;
@@ -147,7 +181,8 @@ export class ProjectSummaryResponseDto {
 }
 
 export class BillProjectTimeResponseDto {
-  invoiceId!: string;
+  /** Null when the price limit was already exhausted: the entries were marked as covered without an invoice. */
+  invoiceId!: string | null;
   invoiceNumber?: string;
   billedMinutes!: number;
   amountNet!: number;
@@ -163,6 +198,13 @@ export class BillProjectTimeDto {
   @IsOptional()
   @IsUUID('4', { message: 'Subscription ID must be a valid UUID' })
   subscriptionId?: string;
+
+  /** Fixed-price projects only: instalment to bill (defaults to the whole remaining fixed price). */
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0.01)
+  amountNet?: number;
 
   @IsOptional()
   @IsArray({ message: 'Line items must be an array' })

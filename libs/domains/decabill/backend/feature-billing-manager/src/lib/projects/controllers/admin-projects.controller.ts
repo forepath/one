@@ -21,16 +21,18 @@ import type { Response } from 'express';
 
 import type { RequestWithUser } from '../../utils/billing-access.utils';
 import { getUserFromRequest } from '../../utils/billing-access.utils';
-import type {
+// Request DTOs are value imports: with `import type` the emitted param metadata is `Object` and the global
+// ValidationPipe silently skips validation (e.g. `amountNet`, `priceLimitNet`).
+import {
   BillProjectTimeDto,
-  BillProjectTimeResponseDto,
   CreateAdminProjectDto,
-  PaginatedAdminProjectsResponseDto,
-  ProjectResponseDto,
-  ProjectSummaryResponseDto,
   ProjectTimeReportRequestDto,
-  ProjectUnbilledTimeBoundsDto,
   UpdateAdminProjectDto,
+  type BillProjectTimeResponseDto,
+  type PaginatedAdminProjectsResponseDto,
+  type ProjectResponseDto,
+  type ProjectSummaryResponseDto,
+  type ProjectUnbilledTimeBoundsDto,
 } from '../dto/project.dto';
 import { ProjectsAdminService } from '../services/projects-admin.service';
 

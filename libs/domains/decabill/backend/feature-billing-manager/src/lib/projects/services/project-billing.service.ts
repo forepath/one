@@ -12,12 +12,21 @@ import { InvoiceIssuanceService } from '../../services/invoice-issuance.service'
 import { InvoiceTaxContextService } from '../../services/invoice-tax-context.service';
 import { InvoiceService } from '../../services/invoice.service';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
+import type { LineItemInput } from '../../services/tax-calculation.service';
 import { mapManualInvoiceLineItemsToInputs } from '../../utils/map-manual-invoice-line-items.util';
 import type { BillProjectTimeDto, BillProjectTimeResponseDto, ProjectUnbilledTimeBoundsDto } from '../dto/project.dto';
+import type { ProjectTimeEntryEntity } from '../entities/project-time-entry.entity';
+import type { ProjectEntity } from '../entities/project.entity';
+import { ProjectPricingModel } from '../entities/project.enums';
 import { ProjectTimeEntriesRepository } from '../repositories/project-time-entries.repository';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { withProjectBillTimeLock } from '../utils/project-bill-time-lock.util';
 import { resolveProjectBillTimeRange } from '../utils/project-bill-time-range.utils';
+import {
+  computeProjectTimeCharge,
+  toProjectPricingTerms,
+  type ProjectTimeCharge,
+} from '../utils/project-pricing.utils';
 import { formatProjectTimeReportRange } from '../utils/project-time-report-format.util';
 
 import { ProjectBoardSummaryService } from './project-board-summary.service';
@@ -90,6 +99,8 @@ export class ProjectBillingService {
     from: Date,
     to: Date,
   ): Promise<BillProjectTimeResponseDto> {
+    // Re-read inside the lock: the billed amount drives the cap / fixed-price remainder.
+    const lockedProject = await this.projectsRepository.findByIdOrThrow(projectId);
     const entries = await this.dataSource.transaction((manager) =>
       this.timeEntriesRepository.findUnbilledByProjectInRangeForUpdate(projectId, from, to, manager),
     );
@@ -99,18 +110,15 @@ export class ProjectBillingService {
     }
 
     const billedMinutes = entries.reduce((sum, e) => sum + e.durationMinutes, 0);
-    const billedHours = billedMinutes / 60;
-    const hourlyRateNet = Number(project.hourlyRateNet);
+    const charge = computeProjectTimeCharge(toProjectPricingTerms(lockedProject), billedMinutes, dto.amountNet);
     const customLineInputs = mapManualInvoiceLineItemsToInputs(dto.lineItems ?? []);
-    const lineInputs = [
-      {
-        description: `${project.name} (${formatProjectTimeReportRange(from, to)})`,
-        quantity: billedHours,
-        unitPriceNet: hourlyRateNet,
-        taxCategory: TaxCategory.STANDARD,
-      },
-      ...customLineInputs,
-    ];
+    const timeLine = buildProjectTimeLineInput(lockedProject, charge, billedMinutes, from, to);
+
+    if (!timeLine && customLineInputs.length === 0) {
+      return await this.coverEntriesByExhaustedPriceLimit(lockedProject, adminUserId, entries, billedMinutes, from, to);
+    }
+
+    const lineInputs = [...(timeLine ? [timeLine] : []), ...customLineInputs];
     const taxContext = await this.invoiceTaxContextService.resolveForUser(project.userId);
     const totals = this.taxCalculationService.computeLines(lineInputs, {
       taxTreatment: taxContext.treatment,
@@ -158,6 +166,12 @@ export class ProjectBillingService {
       );
     }
 
+    const timeAmountNet = timeLine ? Number(totals.lines[0]?.lineNet ?? 0) : 0;
+
+    if (timeAmountNet > 0) {
+      await this.projectsRepository.incrementBilledAmountNet(projectId, timeAmountNet);
+    }
+
     const timeReportStorageKey = await this.projectTimeReportService.generateAndStoreForBilling(
       issued,
       project,
@@ -184,6 +198,9 @@ export class ProjectBillingService {
         projectId,
         billedMinutes,
         amountNet: totals.subtotalNet,
+        timeAmountNet,
+        pricingModel: lockedProject.pricingModel,
+        capApplied: charge.capApplied,
         from: from.toISOString(),
         to: to.toISOString(),
         subscriptionId: dto.subscriptionId,
@@ -200,4 +217,85 @@ export class ProjectBillingService {
       amountNet: totals.subtotalNet,
     };
   }
+
+  /**
+   * The maximum / fixed price is fully invoiced: further time is covered by it. Entries are marked billed without an
+   * invoice so they no longer count as open (and the project can be archived / deleted).
+   */
+  private async coverEntriesByExhaustedPriceLimit(
+    project: ProjectEntity,
+    adminUserId: string,
+    entries: ProjectTimeEntryEntity[],
+    billedMinutes: number,
+    from: Date,
+    to: Date,
+  ): Promise<BillProjectTimeResponseDto> {
+    const markedCount = await this.timeEntriesRepository.markBilled(
+      project.id,
+      entries.map((e) => e.id),
+      null,
+      new Date(),
+    );
+
+    if (markedCount !== entries.length) {
+      throw new ConflictException('Time entries were billed concurrently');
+    }
+
+    await this.auditLog.log({
+      process: 'project.bill_time',
+      level: 'info',
+      message: 'Project time covered by exhausted price limit',
+      userId: project.userId,
+      context: {
+        adminUserId,
+        projectId: project.id,
+        billedMinutes,
+        amountNet: 0,
+        pricingModel: project.pricingModel,
+        priceLimitNet: Number(project.priceLimitNet ?? 0),
+        from: from.toISOString(),
+        to: to.toISOString(),
+      },
+    });
+
+    await this.projectBoardSummary.emitSummaryChanged(project);
+
+    return { invoiceId: null, billedMinutes, amountNet: 0 };
+  }
+}
+
+/** First invoice line for billed project time; null when nothing is left under the maximum / fixed price. */
+function buildProjectTimeLineInput(
+  project: ProjectEntity,
+  charge: ProjectTimeCharge,
+  billedMinutes: number,
+  from: Date,
+  to: Date,
+): LineItemInput | null {
+  const label = `${project.name} (${formatProjectTimeReportRange(from, to)})`;
+  const hours = billedMinutes / 60;
+  const model = project.pricingModel ?? ProjectPricingModel.HOURLY;
+
+  if (model === ProjectPricingModel.HOURLY || (model === ProjectPricingModel.CAPPED && !charge.capApplied)) {
+    return {
+      description: label,
+      quantity: hours,
+      unitPriceNet: Number(project.hourlyRateNet),
+      taxCategory: TaxCategory.STANDARD,
+    };
+  }
+
+  if (charge.amountNet < MIN_BILLABLE_AMOUNT) {
+    return null;
+  }
+
+  const suffix =
+    model === ProjectPricingModel.FIXED ? 'fixed price' : `${hours.toFixed(2)} h, capped at the maximum price`;
+
+  return {
+    description: `${label} – ${suffix}`,
+    quantity: 1,
+    unitPriceNet: charge.amountNet,
+    taxCategory: TaxCategory.STANDARD,
+  };
 }

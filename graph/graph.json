@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-14T22:25:06.442Z",
+  "generatedAt": "2026-11-15T09:30:02.231Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -85174,6 +85174,11 @@
     {
       "from": "concept:decabill-api-endpoints-summary",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/issue",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-line-types",
+      "to": "api:HTTP:GET:/projects",
       "type": "documents"
     },
     {

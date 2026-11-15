@@ -10,6 +10,7 @@ import {
 import {
   formatProjectHourlyRate,
   formatProjectOpenBillableAmount,
+  formatProjectPricing,
   formatSubscriptionPriceCell,
   getBillingIntervalDurationLabel,
   getBillingIntervalTypeLabel,
@@ -90,6 +91,17 @@ describe('interval and plural labels (DB-04 / DB-08 b / DB-27)', () => {
     expect(formatProjectHourlyRate(110, 'EUR')).toBe('€110.00 / h');
     expect(formatProjectOpenBillableAmount(1210, 'EUR')).toBe('€1,210.00');
     expect(formatProjectOpenBillableAmount(Number.NaN, 'EUR')).toBe('€0.00');
+  });
+
+  it('formats project pricing per model', () => {
+    expect(formatProjectPricing({ pricingModel: 'hourly', hourlyRateNet: 110, currency: 'EUR' })).toBe('€110.00 / h');
+    expect(formatProjectPricing({ hourlyRateNet: 110, currency: 'EUR' })).toBe('€110.00 / h');
+    expect(
+      formatProjectPricing({ pricingModel: 'capped', hourlyRateNet: 110, priceLimitNet: 5000, currency: 'EUR' }),
+    ).toBe('€110.00 / h · max €5,000.00');
+    expect(
+      formatProjectPricing({ pricingModel: 'fixed', hourlyRateNet: 0, priceLimitNet: 5000, currency: 'EUR' }),
+    ).toBe('Fixed €5,000.00');
   });
 });
 

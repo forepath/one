@@ -3,6 +3,7 @@ import { BadRequestException, ConflictException } from '@nestjs/common';
 import { TaxCategory } from '../../constants/tax-category.constants';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
 import { TaxRateConfigService } from '../../services/tax-rate-config.service';
+import { ProjectPricingModel } from '../entities/project.enums';
 
 import { ProjectBillingService } from './project-billing.service';
 
@@ -11,7 +12,7 @@ describe('ProjectBillingService', () => {
     options: { type: 'sqlite' },
     transaction: jest.fn(async (callback: (manager: unknown) => Promise<unknown>) => callback({})),
   };
-  const projectsRepository = { findByIdOrThrow: jest.fn() };
+  const projectsRepository = { findByIdOrThrow: jest.fn(), incrementBilledAmountNet: jest.fn() };
   const timeEntriesRepository = {
     findUnbilledByProjectInRangeForUpdate: jest.fn(),
     findUnbilledTimeBounds: jest.fn(),
@@ -205,6 +206,7 @@ describe('ProjectBillingService', () => {
       }),
     );
     expect(projectBoardSummary.emitSummaryChanged).toHaveBeenCalledWith(project);
+    expect(projectsRepository.incrementBilledAmountNet).toHaveBeenCalledWith('p1', 150);
   });
 
   it('voids duplicate invoice when entries were billed concurrently', async () => {
@@ -230,6 +232,7 @@ describe('ProjectBillingService', () => {
     expect(projectTimeReportService.generateAndStoreForBilling).not.toHaveBeenCalled();
     expect(invoicesRepository.update).not.toHaveBeenCalled();
     expect(billingEmailPublisher.publishInvoiceIssued).not.toHaveBeenCalled();
+    expect(projectsRepository.incrementBilledAmountNet).not.toHaveBeenCalled();
   });
 
   it('combines custom line items with generated time line', async () => {
@@ -289,6 +292,195 @@ describe('ProjectBillingService', () => {
       from: new Date(from),
       to: new Date(to),
       entryCount: 2,
+    });
+  });
+
+  describe('pricing models', () => {
+    const issueMocks = (): void => {
+      customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile' });
+      customerProfilesService.isProfileComplete.mockReturnValue(true);
+      invoiceService.createDraft.mockResolvedValue({ id: 'draft-1' });
+      invoiceIssuanceService.issueDraft.mockResolvedValue({
+        id: 'inv-1',
+        invoiceNumber: 'INV-1',
+        pdfStorageKey: 'sub-1/inv-1.pdf',
+      });
+      invoicesRepository.update.mockResolvedValue({
+        id: 'inv-1',
+        invoiceNumber: 'INV-1',
+        pdfStorageKey: 'sub-1/inv-1.pdf',
+        timeReportStorageKey: 'sub-1/inv-1-time-report.pdf',
+      });
+    };
+
+    it('bills capped time unchanged while below the maximum price', async () => {
+      projectsRepository.findByIdOrThrow.mockResolvedValue({
+        ...project,
+        pricingModel: ProjectPricingModel.CAPPED,
+        priceLimitNet: 1000,
+        billedAmountNet: 0,
+      });
+      issueMocks();
+      timeEntriesRepository.findUnbilledByProjectInRangeForUpdate.mockResolvedValue([
+        { id: 'e1', durationMinutes: 120 },
+      ]);
+
+      const result = await service.billUnbilledTime('p1', 'admin-1', { from, to });
+
+      expect(result.amountNet).toBe(200);
+      expect(invoiceService.createDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          lineInputs: [expect.objectContaining({ quantity: 2, unitPriceNet: 100 })],
+        }),
+      );
+      expect(projectsRepository.incrementBilledAmountNet).toHaveBeenCalledWith('p1', 200);
+    });
+
+    it('limits capped time to the remaining maximum price (read inside the lock)', async () => {
+      projectsRepository.findByIdOrThrow
+        .mockResolvedValueOnce({
+          ...project,
+          pricingModel: ProjectPricingModel.CAPPED,
+          priceLimitNet: 1000,
+          billedAmountNet: 0,
+        })
+        .mockResolvedValueOnce({
+          ...project,
+          pricingModel: ProjectPricingModel.CAPPED,
+          priceLimitNet: 1000,
+          billedAmountNet: 900,
+        });
+      issueMocks();
+      timeEntriesRepository.findUnbilledByProjectInRangeForUpdate.mockResolvedValue([
+        { id: 'e1', durationMinutes: 180 },
+      ]);
+
+      const result = await service.billUnbilledTime('p1', 'admin-1', { from, to });
+
+      expect(result.amountNet).toBe(100);
+      expect(invoiceService.createDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          lineInputs: [
+            expect.objectContaining({
+              description: expect.stringMatching(/3\.00 h, capped at the maximum price$/),
+              quantity: 1,
+              unitPriceNet: 100,
+            }),
+          ],
+        }),
+      );
+      expect(projectsRepository.incrementBilledAmountNet).toHaveBeenCalledWith('p1', 100);
+    });
+
+    it('bills the remaining fixed price by default', async () => {
+      projectsRepository.findByIdOrThrow.mockResolvedValue({
+        ...project,
+        pricingModel: ProjectPricingModel.FIXED,
+        priceLimitNet: 5000,
+        billedAmountNet: 2000,
+      });
+      issueMocks();
+      timeEntriesRepository.findUnbilledByProjectInRangeForUpdate.mockResolvedValue([
+        { id: 'e1', durationMinutes: 30 },
+      ]);
+
+      const result = await service.billUnbilledTime('p1', 'admin-1', { from, to });
+
+      expect(result.amountNet).toBe(3000);
+      expect(invoiceService.createDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          lineInputs: [
+            expect.objectContaining({
+              description: expect.stringMatching(/fixed price$/),
+              quantity: 1,
+              unitPriceNet: 3000,
+            }),
+          ],
+        }),
+      );
+    });
+
+    it('bills a fixed-price instalment and rejects one above the remainder', async () => {
+      const fixedProject = {
+        ...project,
+        pricingModel: ProjectPricingModel.FIXED,
+        priceLimitNet: 5000,
+        billedAmountNet: 0,
+      };
+
+      projectsRepository.findByIdOrThrow.mockResolvedValue(fixedProject);
+      issueMocks();
+      timeEntriesRepository.findUnbilledByProjectInRangeForUpdate.mockResolvedValue([
+        { id: 'e1', durationMinutes: 30 },
+      ]);
+
+      await expect(service.billUnbilledTime('p1', 'admin-1', { from, to, amountNet: 2500 })).resolves.toEqual(
+        expect.objectContaining({ amountNet: 2500, invoiceId: 'inv-1' }),
+      );
+      await expect(service.billUnbilledTime('p1', 'admin-1', { from, to, amountNet: 5000.5 })).rejects.toThrow(
+        /exceeds the remaining fixed price/,
+      );
+    });
+
+    it('rejects a custom amount for hourly projects', async () => {
+      projectsRepository.findByIdOrThrow.mockResolvedValue(project);
+      issueMocks();
+      timeEntriesRepository.findUnbilledByProjectInRangeForUpdate.mockResolvedValue([
+        { id: 'e1', durationMinutes: 60 },
+      ]);
+
+      await expect(service.billUnbilledTime('p1', 'admin-1', { from, to, amountNet: 10 })).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(invoiceService.createDraft).not.toHaveBeenCalled();
+    });
+
+    it('covers entries without an invoice once the price limit is exhausted', async () => {
+      projectsRepository.findByIdOrThrow.mockResolvedValue({
+        ...project,
+        pricingModel: ProjectPricingModel.CAPPED,
+        priceLimitNet: 1000,
+        billedAmountNet: 1000,
+      });
+      issueMocks();
+      timeEntriesRepository.findUnbilledByProjectInRangeForUpdate.mockResolvedValue([
+        { id: 'e1', durationMinutes: 60 },
+      ]);
+
+      const result = await service.billUnbilledTime('p1', 'admin-1', { from, to });
+
+      expect(result).toEqual({ invoiceId: null, billedMinutes: 60, amountNet: 0 });
+      expect(timeEntriesRepository.markBilled).toHaveBeenCalledWith('p1', ['e1'], null, expect.any(Date));
+      expect(invoiceService.createDraft).not.toHaveBeenCalled();
+      expect(projectsRepository.incrementBilledAmountNet).not.toHaveBeenCalled();
+      expect(projectBoardSummary.emitSummaryChanged).toHaveBeenCalled();
+    });
+
+    it('invoices only custom lines once the price limit is exhausted', async () => {
+      projectsRepository.findByIdOrThrow.mockResolvedValue({
+        ...project,
+        pricingModel: ProjectPricingModel.FIXED,
+        priceLimitNet: 1000,
+        billedAmountNet: 1000,
+      });
+      issueMocks();
+      timeEntriesRepository.findUnbilledByProjectInRangeForUpdate.mockResolvedValue([
+        { id: 'e1', durationMinutes: 60 },
+      ]);
+
+      const result = await service.billUnbilledTime('p1', 'admin-1', {
+        from,
+        to,
+        lineItems: [{ description: 'Change request', quantity: 1, unitPriceNet: 250 }],
+      });
+
+      expect(result.amountNet).toBe(250);
+      expect(invoiceService.createDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          lineInputs: [expect.objectContaining({ description: 'Change request', unitPriceNet: 250 })],
+        }),
+      );
+      expect(projectsRepository.incrementBilledAmountNet).not.toHaveBeenCalled();
     });
   });
 });

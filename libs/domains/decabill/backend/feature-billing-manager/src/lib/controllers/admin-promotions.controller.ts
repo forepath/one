@@ -1,12 +1,12 @@
 import { RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 
-import type {
-  AdminPromotionResponseDto,
+import {
   CreateAdminPromotionDto,
-  PaginatedAdminPromotionsResponseDto,
-  PaginatedPromotionRedemptionsResponseDto,
   UpdateAdminPromotionDto,
+  type AdminPromotionResponseDto,
+  type PaginatedAdminPromotionsResponseDto,
+  type PaginatedPromotionRedemptionsResponseDto,
 } from '../dto/promotion.dto';
 import { PromotionAdminService } from '../services/promotion-admin.service';
 

@@ -1,6 +1,8 @@
 import { UserRole } from '@forepath/identity/backend';
 import { ForbiddenException } from '@nestjs/common';
 
+import { ProjectPricingModel } from '../entities/project.enums';
+
 import { ProjectsService } from './projects.service';
 
 describe('ProjectsService', () => {
@@ -102,5 +104,63 @@ describe('ProjectsService', () => {
     expect(summary.milestoneCount).toBe(3);
     expect(summary.openTicketCount).toBe(1);
     expect(summary.doneTicketCount).toBe(2);
+  });
+
+  it('buildSummary keeps hourly amounts and reports no remaining price', async () => {
+    milestonesRepository.findAllByProject.mockResolvedValue([]);
+    ticketsRepository.findAllByProject.mockResolvedValue([]);
+    timeEntriesRepository.sumDurationMinutes.mockResolvedValueOnce(180).mockResolvedValueOnce(60);
+
+    const summary = await service.buildSummary({ id: 'p1', hourlyRateNet: 100 } as never);
+
+    expect(summary.openBillableAmountNet).toBe(100);
+    expect(summary.billedAmountNet).toBe(200);
+    expect(summary.remainingPriceNet).toBeNull();
+  });
+
+  it('buildSummary limits open billable amount by the remaining maximum price', async () => {
+    milestonesRepository.findAllByProject.mockResolvedValue([]);
+    ticketsRepository.findAllByProject.mockResolvedValue([]);
+    timeEntriesRepository.sumDurationMinutes.mockResolvedValueOnce(600).mockResolvedValueOnce(180);
+
+    const summary = await service.buildSummary({
+      id: 'p1',
+      hourlyRateNet: '100.0000',
+      pricingModel: ProjectPricingModel.CAPPED,
+      priceLimitNet: '1000.0000',
+      billedAmountNet: '850.0000',
+    } as never);
+
+    expect(summary.openBillableAmountNet).toBe(150);
+    expect(summary.billedAmountNet).toBe(850);
+    expect(summary.remainingPriceNet).toBe(150);
+  });
+
+  it('buildSummary reports the remaining fixed price as open billable', async () => {
+    milestonesRepository.findAllByProject.mockResolvedValue([]);
+    ticketsRepository.findAllByProject.mockResolvedValue([]);
+    timeEntriesRepository.sumDurationMinutes.mockResolvedValueOnce(60).mockResolvedValueOnce(60);
+
+    const summary = await service.buildSummary({
+      id: 'p1',
+      hourlyRateNet: 0,
+      pricingModel: ProjectPricingModel.FIXED,
+      priceLimitNet: 5000,
+      billedAmountNet: 2000,
+    } as never);
+
+    expect(summary.openBillableAmountNet).toBe(3000);
+    expect(summary.remainingPriceNet).toBe(3000);
+  });
+
+  it('mapResponse exposes pricing and defaults legacy rows to hourly', () => {
+    const base = { id: 'p1', userId: 'u1', name: 'P', status: 'active', hourlyRateNet: 100, currency: 'EUR' };
+
+    expect(service.mapResponse(base as never)).toEqual(
+      expect.objectContaining({ pricingModel: ProjectPricingModel.HOURLY, priceLimitNet: null }),
+    );
+    expect(
+      service.mapResponse({ ...base, pricingModel: ProjectPricingModel.FIXED, priceLimitNet: '2500.0000' } as never),
+    ).toEqual(expect.objectContaining({ pricingModel: ProjectPricingModel.FIXED, priceLimitNet: 2500 }));
   });
 });
