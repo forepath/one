@@ -45,6 +45,7 @@ describe('authentication selectors', () => {
     deletingUser: false,
     lockingUser: false,
     unlockingUser: false,
+    confirmingUserEmail: false,
   };
   const project = (selector: (state: { authentication: AuthenticationState }) => unknown) =>
     selector({ authentication: baseState });

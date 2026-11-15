@@ -244,3 +244,12 @@ export const unlockUser = createAction('[Admin] Unlock User', props<{ id: string
 export const unlockUserSuccess = createAction('[Admin] Unlock User Success', props<{ user: UserResponseDto }>());
 
 export const unlockUserFailure = createAction('[Admin] Unlock User Failure', props<{ error: string }>());
+
+export const confirmUserEmail = createAction('[Admin] Confirm User Email', props<{ id: string }>());
+
+export const confirmUserEmailSuccess = createAction(
+  '[Admin] Confirm User Email Success',
+  props<{ user: UserResponseDto }>(),
+);
+
+export const confirmUserEmailFailure = createAction('[Admin] Confirm User Email Failure', props<{ error: string }>());

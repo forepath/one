@@ -69,6 +69,12 @@ export class UsersController {
     return this.usersService.unlockUser(id, req?.user?.id);
   }
 
+  @Post(':id/confirm-email')
+  @HttpCode(HttpStatus.OK)
+  async confirmEmail(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return this.usersService.confirmEmail(id);
+  }
+
   @Delete(':id/2fa/totp')
   @HttpCode(HttpStatus.OK)
   async clearTotp(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {

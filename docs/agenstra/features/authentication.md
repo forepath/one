@@ -370,6 +370,17 @@ curl -X POST https://<host>/api/auth/apps/token \
 
 If the confirmation page was closed before the code was entered, the confirmation email explains how to continue: sign in again with the same email address (the app returns to the confirmation page), or open `/confirm-email` and enter the email address with the code manually.
 
+#### Admin-managed confirmation
+
+Admins can create or re-address accounts without the emailed code flow, e.g. for users managed on their behalf who do not sign in yet:
+
+- `POST /api/users` and `POST /api/users/{id}` accept `emailConfirmed` (default `false`): the email is confirmed immediately and no confirmation email is sent
+- They also accept `sendConfirmationEmail` (default `true`): with `false` the account stays unconfirmed and no code is sent or stored
+- On update, both options only apply when the email address changes
+- `POST /api/users/{id}/confirm-email` confirms an unconfirmed email without a code and clears any outstanding code (idempotent)
+- The user manager offers these as checkboxes in the create / edit dialogs and as a row or bulk **Confirm email** action
+- Public registration (`POST /api/auth/register`) does not accept these options; omitting them keeps the default behaviour
+
 ### Login
 
 1. User enters email and password
@@ -450,7 +461,7 @@ Admins can manage users via the user management interface or API:
 ### Create User
 
 - Admin creates user via `POST /api/users`
-- Non-first users receive confirmation email
+- Non-first users receive confirmation email (unless the admin opts out, see [Admin-managed confirmation](#admin-managed-confirmation))
 - User must confirm email before logging in
 
 ### Update User
@@ -564,6 +575,7 @@ Admins can manage users via the user management interface or API:
 - `DELETE /api/users/:id` - Delete user
 - `POST /api/users/:id/lock` - Lock user account
 - `POST /api/users/:id/unlock` - Unlock user account
+- `POST /api/users/:id/confirm-email` - Confirm user email without a code
 
 ## Authentication Flow Diagram
 

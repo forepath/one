@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-15T10:47:02.319Z",
+  "generatedAt": "2026-11-15T11:55:08.125Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -17198,6 +17198,17 @@
         "pathOrChannel": "/users/{id}/unlock",
         "operationId": "unlockUser",
         "summary": "Unlock user account (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/users/{id}/confirm-email",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/users/{id}/confirm-email",
+        "operationId": "confirmUserEmail",
+        "summary": "Confirm a user's email (admin only)",
         "specKind": "openapi"
       }
     },
@@ -47635,6 +47646,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/users/{id}/confirm-email",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:DELETE:/users/{id}/2fa/totp",
       "type": "contains"
     },
@@ -49656,6 +49672,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/users/{id}/unlock",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/users/{id}/confirm-email",
       "type": "contains"
     },
     {
@@ -68240,6 +68261,16 @@
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/users.controller.ts",
+      "to": "api:HTTP:POST:/users/{id}/confirm-email",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:POST:/users/{id}/confirm-email",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/users.controller.ts",
       "to": "api:HTTP:DELETE:/users/{id}/2fa/totp",
       "type": "implements"
     },
@@ -79390,6 +79421,11 @@
     },
     {
       "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
+      "to": "api:HTTP:POST:/users/{id}/confirm-email",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
       "to": "api:HTTP:GET:/auth/token-scopes",
       "type": "calls"
     },
@@ -81536,6 +81572,36 @@
     {
       "from": "concept:agenstra-users-authentication-flow",
       "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-users-authentication-flow",
+      "to": "api:HTTP:GET:/users",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-users-authentication-flow",
+      "to": "api:HTTP:POST:/users",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-users-authentication-flow",
+      "to": "api:HTTP:GET:/users/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-users-authentication-flow",
+      "to": "api:HTTP:POST:/users/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-users-authentication-flow",
+      "to": "api:HTTP:DELETE:/users/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-users-authentication-flow",
+      "to": "api:HTTP:POST:/users/{id}/confirm-email",
       "type": "documents"
     },
     {
@@ -83836,6 +83902,36 @@
     {
       "from": "concept:decabill-users-authentication-flow",
       "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-users-authentication-flow",
+      "to": "api:HTTP:GET:/users",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-users-authentication-flow",
+      "to": "api:HTTP:POST:/users",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-users-authentication-flow",
+      "to": "api:HTTP:GET:/users/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-users-authentication-flow",
+      "to": "api:HTTP:POST:/users/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-users-authentication-flow",
+      "to": "api:HTTP:DELETE:/users/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-users-authentication-flow",
+      "to": "api:HTTP:POST:/users/{id}/confirm-email",
       "type": "documents"
     },
     {

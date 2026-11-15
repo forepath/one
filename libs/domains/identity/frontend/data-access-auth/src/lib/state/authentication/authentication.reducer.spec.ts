@@ -20,6 +20,9 @@ import {
   unlockUser,
   unlockUserFailure,
   unlockUserSuccess,
+  confirmUserEmail,
+  confirmUserEmailFailure,
+  confirmUserEmailSuccess,
 } from './authentication.actions';
 import { authenticationReducer, initialAuthenticationState } from './authentication.reducer';
 import type { AuthenticationState } from './authentication.types';
@@ -473,6 +476,45 @@ describe('authenticationReducer', () => {
 
       expect(newState.unlockingUser).toBe(false);
       expect(newState.usersError).toBe('Unlock failed');
+    });
+  });
+
+  describe('confirmUserEmail', () => {
+    it('should set confirmingUserEmail and replace the user on success', () => {
+      const pending = authenticationReducer(
+        {
+          ...initialAuthenticationState,
+          usersError: 'Previous error',
+          users: [{ id: 'u1', email: 'a@b.com', role: 'user', emailConfirmedAt: null, createdAt: '', updatedAt: '' }],
+        },
+        confirmUserEmail({ id: 'u1' }),
+      );
+
+      expect(pending.confirmingUserEmail).toBe(true);
+      expect(pending.usersError).toBeNull();
+
+      const confirmed = {
+        id: 'u1',
+        email: 'a@b.com',
+        role: 'user' as const,
+        emailConfirmedAt: '2026-01-01T00:00:00Z',
+        createdAt: '',
+        updatedAt: '',
+      };
+      const done = authenticationReducer(pending, confirmUserEmailSuccess({ user: confirmed }));
+
+      expect(done.users).toEqual([confirmed]);
+      expect(done.confirmingUserEmail).toBe(false);
+    });
+
+    it('should set usersError on failure', () => {
+      const newState = authenticationReducer(
+        { ...initialAuthenticationState, confirmingUserEmail: true },
+        confirmUserEmailFailure({ error: 'Confirm failed' }),
+      );
+
+      expect(newState.confirmingUserEmail).toBe(false);
+      expect(newState.usersError).toBe('Confirm failed');
     });
   });
 });

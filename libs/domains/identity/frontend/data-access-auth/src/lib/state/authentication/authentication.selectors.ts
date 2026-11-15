@@ -51,6 +51,11 @@ export const selectLockingUser = createSelector(selectAuthenticationState, (stat
 
 export const selectUnlockingUser = createSelector(selectAuthenticationState, (state) => state.unlockingUser);
 
+export const selectConfirmingUserEmail = createSelector(
+  selectAuthenticationState,
+  (state) => state.confirmingUserEmail,
+);
+
 export const selectTwoFactorStatus = createSelector(selectAuthenticationState, (state) => state.twoFactorStatus);
 
 export const selectTwoFactorLoading = createSelector(selectAuthenticationState, (state) => state.twoFactorLoading);

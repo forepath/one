@@ -88,6 +88,9 @@ import {
   unlockUser,
   unlockUserFailure,
   unlockUserSuccess,
+  confirmUserEmail,
+  confirmUserEmailFailure,
+  confirmUserEmailSuccess,
   updateUser,
   updateUserFailure,
   updateUserSuccess,
@@ -779,6 +782,21 @@ export const lockUser$ = createEffect(
         authService.lockUser(id).pipe(
           map((user) => lockUserSuccess({ user })),
           catchError((error) => of(lockUserFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const confirmUserEmail$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(confirmUserEmail),
+      switchMap(({ id }) =>
+        authService.confirmUserEmail(id).pipe(
+          map((user) => confirmUserEmailSuccess({ user })),
+          catchError((error) => of(confirmUserEmailFailure({ error: normalizeError(error) }))),
         ),
       ),
     );

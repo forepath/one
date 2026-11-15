@@ -4488,6 +4488,10 @@
         <source>Unlock user</source>
         <target>Benutzer entsperren</target>
       </trans-unit>
+      <trans-unit id="featureUserManager-confirmEmail" datatype="html">
+        <source>Confirm email</source>
+        <target>E-Mail bestätigen</target>
+      </trans-unit>
       <trans-unit id="featureUserManager-lockUserButtonTitle" datatype="html">
         <source>Lock user</source>
         <target>Benutzer sperren</target>
@@ -4516,6 +4520,22 @@
         <source>Role</source>
         <target>Rolle</target>
       </trans-unit>
+      <trans-unit id="featureUserManager-emailConfirmedLabel" datatype="html">
+        <source>Email already confirmed</source>
+        <target>E-Mail bereits bestätigt</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-emailConfirmedHint" datatype="html">
+        <source>The user can sign in right away and receives no confirmation email.</source>
+        <target>Der Benutzer kann sich sofort anmelden und erhält keine Bestätigungs-E-Mail.</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-sendConfirmationEmailLabel" datatype="html">
+        <source>Send confirmation email</source>
+        <target>Bestätigungs-E-Mail senden</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-sendConfirmationEmailHint" datatype="html">
+        <source>Without it, the email stays unconfirmed until an admin confirms it.</source>
+        <target>Ohne sie bleibt die E-Mail unbestätigt, bis ein Administrator sie bestätigt.</target>
+      </trans-unit>
       <trans-unit id="featureUserManager-create" datatype="html">
         <source>Create</source>
         <target>Erstellen</target>
@@ -4535,6 +4555,14 @@
       <trans-unit id="featureUserManager-passwordKeepCurrentHint" datatype="html">
         <source> Leave empty to keep the current password </source>
         <target> Leer lassen, um das aktuelle Passwort zu behalten </target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-newEmailConfirmedLabel" datatype="html">
+        <source>New email already confirmed</source>
+        <target>Neue E-Mail bereits bestätigt</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-newEmailConfirmedHint" datatype="html">
+        <source>The user keeps signing in and receives no confirmation email.</source>
+        <target>Der Benutzer kann sich weiterhin anmelden und erhält keine Bestätigungs-E-Mail.</target>
       </trans-unit>
       <trans-unit id="featureUserManager-update" datatype="html">
         <source>Save</source>

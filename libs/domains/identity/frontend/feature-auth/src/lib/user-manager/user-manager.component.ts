@@ -23,6 +23,7 @@ import {
   FpcConfirmDialogComponent,
   FpcDataTableComponent,
   FpcEmptyStateComponent,
+  FpcFormCheckComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcModalComponent,
@@ -61,6 +62,7 @@ import {
     FpcConfirmDialogComponent,
     FpcDataTableComponent,
     FpcEmptyStateComponent,
+    FpcFormCheckComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcModalComponent,
@@ -113,6 +115,7 @@ export class IdentityUserManagerComponent implements OnInit {
   readonly deletingUser$ = this.authFacade.deletingUser$;
   readonly lockingUser$ = this.authFacade.lockingUser$;
   readonly unlockingUser$ = this.authFacade.unlockingUser$;
+  readonly confirmingUserEmail$ = this.authFacade.confirmingUserEmail$;
 
   readonly users = toSignal(this.users$, { initialValue: [] as UserResponseDto[] });
   readonly currentUser = toSignal(this.authFacade.user$, { initialValue: null });
@@ -131,6 +134,7 @@ export class IdentityUserManagerComponent implements OnInit {
   readonly lockLabel = $localize`:@@featureUserManager-lockUserButtonTitle:Lock user`;
   readonly unlockLabel = $localize`:@@featureUserManager-unlockUserButtonTitle:Unlock user`;
   readonly deleteLabel = SHARED_DL_DELETE;
+  readonly confirmEmailLabel = $localize`:@@featureUserManager-confirmEmail:Confirm email`;
   readonly authenticatorLabel = $localize`:@@featureUserManager-totpEnabled:Authenticator`;
 
   readonly selectedUserIds = signal<readonly string[]>([]);
@@ -197,6 +201,10 @@ export class IdentityUserManagerComponent implements OnInit {
         : { id: 'lock', label: SHARED_DL_LOCK, icon: 'lock' },
     ];
 
+    if (!user.emailConfirmedAt) {
+      items.push({ id: 'confirm-email', label: this.confirmEmailLabel, icon: 'envelope-check' });
+    }
+
     if (user.totpEnabled) {
       items.push({ id: 'clear-totp', label: SHARED_DL_REMOVE_2FA, icon: 'shield-x' });
     }
@@ -216,12 +224,16 @@ export class IdentityUserManagerComponent implements OnInit {
     email: '',
     password: '',
     role: 'user' as 'user' | 'admin',
+    emailConfirmed: false,
+    sendConfirmationEmail: true,
   };
 
   editForm = {
     email: '',
     password: '',
     role: 'user' as 'user' | 'admin',
+    emailConfirmed: false,
+    sendConfirmationEmail: true,
   };
 
   userToEdit: UserResponseDto | null = null;
@@ -260,7 +272,7 @@ export class IdentityUserManagerComponent implements OnInit {
   }
 
   onAddUser(): void {
-    this.createForm = { email: '', password: '', role: 'user' };
+    this.createForm = { email: '', password: '', role: 'user', emailConfirmed: false, sendConfirmationEmail: true };
     this.createUserModalOpen.set(true);
   }
 
@@ -271,6 +283,13 @@ export class IdentityUserManagerComponent implements OnInit {
       role: this.createForm.role,
     };
 
+    // Only send the confirmation options when they differ from the server defaults.
+    if (this.createForm.emailConfirmed) {
+      dto.emailConfirmed = true;
+    } else if (!this.createForm.sendConfirmationEmail) {
+      dto.sendConfirmationEmail = false;
+    }
+
     this.authFacade.createUser(dto);
   }
 
@@ -280,6 +299,8 @@ export class IdentityUserManagerComponent implements OnInit {
       email: user.email,
       password: '',
       role: user.role,
+      emailConfirmed: false,
+      sendConfirmationEmail: true,
     };
     this.editUserModalOpen.set(true);
   }
@@ -296,7 +317,24 @@ export class IdentityUserManagerComponent implements OnInit {
       dto.password = this.editForm.password;
     }
 
+    if (this.editEmailChanged()) {
+      if (this.editForm.emailConfirmed) {
+        dto.emailConfirmed = true;
+      } else if (!this.editForm.sendConfirmationEmail) {
+        dto.sendConfirmationEmail = false;
+      }
+    }
+
     this.authFacade.updateUser(this.userToEdit.id, dto);
+  }
+
+  /** True when the edit form's email differs from the user's current one (the confirmation options apply). */
+  editEmailChanged(): boolean {
+    return !!this.userToEdit && this.editForm.email.trim().toLowerCase() !== this.userToEdit.email.trim().toLowerCase();
+  }
+
+  onConfirmEmail(user: UserResponseDto): void {
+    this.authFacade.confirmUserEmail(user.id);
   }
 
   onDeleteUser(user: UserResponseDto): void {
@@ -362,6 +400,9 @@ export class IdentityUserManagerComponent implements OnInit {
       case 'unlock':
         this.onUnlockUser(user);
         break;
+      case 'confirm-email':
+        this.onConfirmEmail(user);
+        break;
       case 'clear-totp':
         this.onClearTotp(user);
         break;
@@ -379,6 +420,14 @@ export class IdentityUserManagerComponent implements OnInit {
     void this.runBulk(
       this.selectedUsers().filter((user) => !!user.lockedAt !== lock),
       (user) => firstValueFrom(lock ? this.authService.lockUser(user.id) : this.authService.unlockUser(user.id)),
+    );
+  }
+
+  /** Bulk confirm email: one call per selected user whose email is not confirmed yet. */
+  onBulkConfirmEmail(): void {
+    void this.runBulk(
+      this.selectedUsers().filter((user) => !user.emailConfirmedAt),
+      (user) => firstValueFrom(this.authService.confirmUserEmail(user.id)),
     );
   }
 

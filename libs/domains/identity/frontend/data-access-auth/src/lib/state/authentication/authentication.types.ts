@@ -54,12 +54,20 @@ export interface CreateUserDto {
   email: string;
   password: string;
   role?: UserRole;
+  /** Create the account with its email already confirmed (no confirmation email). Default false. */
+  emailConfirmed?: boolean;
+  /** Email a confirmation code to an unconfirmed account. Default true. */
+  sendConfirmationEmail?: boolean;
 }
 
 export interface UpdateUserDto {
   email?: string;
   password?: string;
   role?: UserRole;
+  /** Only when the email changes: keep the new address confirmed. Default false. */
+  emailConfirmed?: boolean;
+  /** Only when the email changes to an unconfirmed address: email a code. Default true. */
+  sendConfirmationEmail?: boolean;
 }
 
 export interface ListUsersParams {
@@ -89,6 +97,7 @@ export interface AuthenticationState {
   deletingUser: boolean;
   lockingUser: boolean;
   unlockingUser: boolean;
+  confirmingUserEmail: boolean;
   // Login 2FA self-service
   twoFactorStatus: TwoFactorStatus | null;
   twoFactorLoading: boolean;

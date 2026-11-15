@@ -347,7 +347,7 @@ curl -X POST https://<host>/api/auth/apps/token \
 3. If signup is disabled, registration returns 503 Service Unavailable
 4. If enabled, user account is created in the current tenant (from `X-Tenant`):
    - First user in the tenant: auto-confirmed and assigned admin role
-   - Subsequent users: receive confirmation code via email (queued delivery; see [Email notifications](./email-notifications.md))
+   - Subsequent users: receive confirmation code via email (queued delivery; see [Email notifications](./email-notifications.md)); admins can skip this, see [Admin-managed confirmation](#admin-managed-confirmation)
 
 ### Email Confirmation
 
@@ -357,6 +357,19 @@ curl -X POST https://<host>/api/auth/apps/token \
 4. User can log in
 
 If the confirmation page was closed before the code was entered, the confirmation email explains how to continue: sign in again with the same email address (the app returns to the confirmation page), or open `/confirm-email` and enter the email address with the code manually.
+
+#### Admin-managed confirmation
+
+Admins can create or re-address accounts without the emailed code flow, e.g. for users managed on their behalf who do not sign in yet:
+
+- `POST /users` and `POST /users/{id}` accept `emailConfirmed` (default `false`): the email is confirmed immediately and no confirmation email is sent
+- They also accept `sendConfirmationEmail` (default `true`): with `false` the account stays unconfirmed and no code is sent or stored
+- On update, both options only apply when the email address changes
+- `POST /users/{id}/confirm-email` confirms an unconfirmed email without a code and clears any outstanding code (idempotent)
+- The user manager offers these as checkboxes in the create / edit dialogs and as a row or bulk **Confirm email** action
+- Public registration (`POST /auth/register`) does not accept these options; omitting them keeps the default behaviour
+
+Customer and supplier profiles have no email verification of their own (only VAT ID validation), so nothing needs confirming there.
 
 ### Login
 
@@ -483,6 +496,7 @@ Frontend runtime config should set `authentication.disableSignup` to match the b
 - `DELETE /users/{id}` - Delete user
 - `POST /users/{id}/lock` - Lock user account
 - `POST /users/{id}/unlock` - Unlock user account
+- `POST /users/{id}/confirm-email` - Confirm user email without a code
 
 See [Billing Manager OpenAPI](/spec/billing-manager/openapi.yaml) for request and response schemas.
 

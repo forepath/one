@@ -9,6 +9,7 @@ describe('UsersController', () => {
     update: jest.fn(),
     lockUser: jest.fn(),
     unlockUser: jest.fn(),
+    confirmEmail: jest.fn(),
     remove: jest.fn(),
   };
   let controller: UsersController;
@@ -32,5 +33,13 @@ describe('UsersController', () => {
     await controller.unlock('target-1', { user: { id: 'admin-1' } } as any);
 
     expect(mockUsersService.unlockUser).toHaveBeenCalledWith('target-1', 'admin-1');
+  });
+
+  it('delegates confirm-email endpoint', async () => {
+    mockUsersService.confirmEmail.mockResolvedValue({ id: 'target-1' });
+
+    await controller.confirmEmail('target-1');
+
+    expect(mockUsersService.confirmEmail).toHaveBeenCalledWith('target-1');
   });
 });

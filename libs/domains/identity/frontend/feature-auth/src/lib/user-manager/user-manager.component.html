@@ -71,6 +71,18 @@
     </fpc-button>
     <fpc-button
       fpcDataTableBatch
+      variant="secondary"
+      [disabled]="bulkBusy()"
+      (clicked)="onBulkConfirmEmail()"
+      data-testid="user-manager-bulk-confirm-email"
+      iconOnly
+      [ariaLabel]="confirmEmailLabel"
+      [title]="confirmEmailLabel"
+    >
+      <i class="bi bi-envelope-check" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      fpcDataTableBatch
       variant="danger"
       [disabled]="bulkBusy()"
       (clicked)="bulkDeleteOpen.set(true)"
@@ -158,6 +170,32 @@
         <option value="admin" i18n="@@featureUserManager-roleAdmin">Admin</option>
       </fpc-form-control>
     </fpc-form-field>
+    <fpc-form-check
+      class="d-block mb-2"
+      checkId="createUserEmailConfirmed"
+      name="emailConfirmed"
+      [(ngModel)]="createForm.emailConfirmed"
+      [disabled]="(creatingUser$ | async) === true"
+      i18n-label="@@featureUserManager-emailConfirmedLabel"
+      label="Email already confirmed"
+      i18n-hint="@@featureUserManager-emailConfirmedHint"
+      hint="The user can sign in right away and receives no confirmation email."
+      data-testid="create-user-email-confirmed"
+    />
+    @if (!createForm.emailConfirmed) {
+      <fpc-form-check
+        class="d-block"
+        checkId="createUserSendConfirmation"
+        name="sendConfirmationEmail"
+        [(ngModel)]="createForm.sendConfirmationEmail"
+        [disabled]="(creatingUser$ | async) === true"
+        i18n-label="@@featureUserManager-sendConfirmationEmailLabel"
+        label="Send confirmation email"
+        i18n-hint="@@featureUserManager-sendConfirmationEmailHint"
+        hint="Without it, the email stays unconfirmed until an admin confirms it."
+        data-testid="create-user-send-confirmation"
+      />
+    }
     <div *fpcModalFooter>
       <fpc-button
         type="submit"
@@ -222,6 +260,34 @@
         <option value="admin" i18n="@@featureUserManager-roleAdmin">Admin</option>
       </fpc-form-control>
     </fpc-form-field>
+    @if (editEmailChanged()) {
+      <fpc-form-check
+        class="d-block mb-2"
+        checkId="editUserEmailConfirmed"
+        name="emailConfirmed"
+        [(ngModel)]="editForm.emailConfirmed"
+        [disabled]="(updatingUser$ | async) === true"
+        i18n-label="@@featureUserManager-newEmailConfirmedLabel"
+        label="New email already confirmed"
+        i18n-hint="@@featureUserManager-newEmailConfirmedHint"
+        hint="The user keeps signing in and receives no confirmation email."
+        data-testid="edit-user-email-confirmed"
+      />
+      @if (!editForm.emailConfirmed) {
+        <fpc-form-check
+          class="d-block"
+          checkId="editUserSendConfirmation"
+          name="sendConfirmationEmail"
+          [(ngModel)]="editForm.sendConfirmationEmail"
+          [disabled]="(updatingUser$ | async) === true"
+          i18n-label="@@featureUserManager-sendConfirmationEmailLabel"
+          label="Send confirmation email"
+          i18n-hint="@@featureUserManager-sendConfirmationEmailHint"
+          hint="Without it, the email stays unconfirmed until an admin confirms it."
+          data-testid="edit-user-send-confirmation"
+        />
+      }
+    }
     <div *fpcModalFooter>
       <fpc-button
         type="submit"

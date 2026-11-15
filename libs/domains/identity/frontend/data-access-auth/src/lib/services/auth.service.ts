@@ -190,6 +190,10 @@ export class AuthService {
     return this.http.post<UserResponseDto>(`${this.apiUrl}/users/${id}/unlock`, {});
   }
 
+  confirmUserEmail(id: string): Observable<UserResponseDto> {
+    return this.http.post<UserResponseDto>(`${this.apiUrl}/users/${id}/confirm-email`, {});
+  }
+
   listTokenScopes(): Observable<PersonalAccessTokenScopeDto[]> {
     return this.http.get<PersonalAccessTokenScopeDto[]>(`${this.apiUrl}/auth/token-scopes`);
   }
