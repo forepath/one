@@ -7318,9 +7318,69 @@
         <source>Project</source>
         <target>Projekt</target>
       </trans-unit>
-      <trans-unit id="featureProjects-colHourlyRate" datatype="html">
-        <source>Hourly rate</source>
-        <target>Stundensatz</target>
+      <trans-unit id="featureProjects-colPricing" datatype="html">
+        <source>Pricing</source>
+        <target>Preismodell</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-pricingModelLabel" datatype="html">
+        <source>Pricing</source>
+        <target>Preismodell</target>
+      </trans-unit>
+      <trans-unit id="featureProjects-pricingModelHourly" datatype="html">
+        <source>Hourly</source>
+        <target>Stundenbasis</target>
+      </trans-unit>
+      <trans-unit id="featureProjects-pricingModelCapped" datatype="html">
+        <source>Hourly up to a maximum price</source>
+        <target>Stundenbasis bis zu einem Höchstpreis</target>
+      </trans-unit>
+      <trans-unit id="featureProjects-pricingModelFixed" datatype="html">
+        <source>Fixed price</source>
+        <target>Festpreis</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-maxPriceLabel" datatype="html">
+        <source>Maximum price (net)</source>
+        <target>Höchstpreis (netto)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-fixedPriceLabel" datatype="html">
+        <source>Fixed price (net)</source>
+        <target>Festpreis (netto)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-fixedPriceHint" datatype="html">
+        <source>Billed at once or in instalments, regardless of tracked hours.</source>
+        <target>Wird auf einmal oder in Raten abgerechnet, unabhängig von den erfassten Stunden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-maxPriceHint" datatype="html">
+        <source>Tracked hours are billed at the hourly rate until this total is reached.</source>
+        <target>Erfasste Stunden werden zum Stundensatz abgerechnet, bis diese Summe erreicht ist.</target>
+      </trans-unit>
+      <trans-unit id="featureProjects-pricingCappedCell" datatype="html">
+        <source><x id="rate" equiv-text="formatProjectHourlyRate(project.hourlyRateNet, project.currency)"/> · max <x id="limit" equiv-text="limit"/></source>
+        <target><x id="rate" equiv-text="formatProjectHourlyRate(project.hourlyRateNet, project.currency)"/> · max. <x id="limit" equiv-text="limit"/></target>
+      </trans-unit>
+      <trans-unit id="featureProjects-pricingFixedCell" datatype="html">
+        <source>Fixed <x id="limit" equiv-text="limit"/></source>
+        <target>Festpreis <x id="limit" equiv-text="limit"/></target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeAmountLabel" datatype="html">
+        <source>Amount (net, optional)</source>
+        <target>Betrag (netto, optional)</target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-remainingFixedPrice" datatype="html">
+        <source>Remaining of fixed price</source>
+        <target>Verbleibend vom Festpreis</target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-remainingMaxPrice" datatype="html">
+        <source>Remaining of maximum price</source>
+        <target>Verbleibend vom Höchstpreis</target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeAmountHint" datatype="html">
+        <source>Leave empty to bill the remaining fixed price (<x id="amount" equiv-text="this.formatRemainingPrice()"/>). Enter an amount to bill an instalment.</source>
+        <target>Leer lassen, um den verbleibenden Festpreis (<x id="amount" equiv-text="this.formatRemainingPrice()"/>) abzurechnen. Einen Betrag eingeben, um eine Rate abzurechnen.</target>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeCappedHint" datatype="html">
+        <source>Time is billed at the hourly rate up to the remaining maximum price (<x id="amount" equiv-text="this.formatRemainingPrice()"/>). Once it is used up, entries are marked as covered without an invoice.</source>
+        <target>Zeit wird zum Stundensatz bis zum verbleibenden Höchstpreis (<x id="amount" equiv-text="this.formatRemainingPrice()"/>) abgerechnet. Ist er ausgeschöpft, werden Einträge ohne Rechnung als abgegolten markiert.</target>
       </trans-unit>
       <trans-unit id="featureProjects-colUnbilledTime" datatype="html">
         <source>Unbilled time</source>

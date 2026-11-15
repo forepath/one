@@ -693,6 +693,8 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
       description: project.description ?? null,
       status: project.status,
       hourlyRateNet: Number(project.hourlyRateNet),
+      pricingModel: project.pricingModel ?? 'hourly',
+      priceLimitNet: project.priceLimitNet != null ? Number(project.priceLimitNet) : null,
       targetHours: project.targetHours != null ? Number(project.targetHours) : null,
       currency: project.currency,
       createdAt: this.toIsoString(project.createdAt),

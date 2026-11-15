@@ -1,4 +1,5 @@
 import { TaxCategory } from '../../constants/tax-category.constants';
+import { resolveProjectPricing } from '../../projects/utils/project-pricing.utils';
 import type { LineItemInput } from '../../services/tax-calculation.service';
 import type { AdminOfferLineResponseDto, OfferProjectTemplateLineDto, OfferStandardLineDto } from '../dto/offer.dto';
 import type { OfferLineItemEntity } from '../entities/offer-line-item.entity';
@@ -12,13 +13,33 @@ export function mapOfferStandardLineToTaxInput(payload: OfferStandardLineDto): L
   };
 }
 
-export function mapOfferProjectTemplateLineToTaxInput(payload: OfferProjectTemplateLineDto): LineItemInput {
+/**
+ * Offer pricing of a project template line: hourly projects are estimated as target hours (else 1) × hourly rate;
+ * capped and fixed-price projects are offered at their maximum / fixed price (quantity 1).
+ */
+export function resolveOfferProjectTemplateLinePricing(payload: OfferProjectTemplateLineDto): {
+  quantity: number;
+  unitPriceNet: number;
+  unitLabel: string | null;
+} {
+  const pricing = resolveProjectPricing(payload.pricingModel, payload.priceLimitNet);
+
+  if (pricing.priceLimitNet != null) {
+    return { quantity: 1, unitPriceNet: pricing.priceLimitNet, unitLabel: null };
+  }
+
   const quantity = payload.targetHours != null && payload.targetHours > 0 ? payload.targetHours : 1;
+
+  return { quantity, unitPriceNet: payload.hourlyRateNet, unitLabel: 'hour' };
+}
+
+export function mapOfferProjectTemplateLineToTaxInput(payload: OfferProjectTemplateLineDto): LineItemInput {
+  const { quantity, unitPriceNet } = resolveOfferProjectTemplateLinePricing(payload);
 
   return {
     description: payload.description,
     quantity,
-    unitPriceNet: payload.hourlyRateNet,
+    unitPriceNet,
     taxCategory: TaxCategory.STANDARD,
   };
 }
@@ -43,6 +64,7 @@ export function buildOfferProjectTemplatePayload(payload: OfferProjectTemplateLi
     hourlyRateNet: payload.hourlyRateNet,
     currency: payload.currency ?? 'EUR',
     targetHours: payload.targetHours ?? null,
+    ...resolveProjectPricing(payload.pricingModel, payload.priceLimitNet),
   };
 }
 

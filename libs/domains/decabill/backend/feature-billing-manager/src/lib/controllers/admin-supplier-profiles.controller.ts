@@ -13,11 +13,11 @@ import {
   Query,
 } from '@nestjs/common';
 
-import type {
-  AdminSupplierProfileDetailDto,
+import {
   CreateAdminSupplierProfileDto,
-  PaginatedAdminSupplierProfilesResponseDto,
   SupplierProfileFieldsDto,
+  type AdminSupplierProfileDetailDto,
+  type PaginatedAdminSupplierProfilesResponseDto,
 } from '../dto/admin-supplier-profile.dto';
 import { AddSupplierProfileCustomDataDto, UpdateSupplierProfileCustomDataDto } from '../dto/admin-supplier-profile.dto';
 import { SupplierProfilesAdminService } from '../services/supplier-profiles-admin.service';

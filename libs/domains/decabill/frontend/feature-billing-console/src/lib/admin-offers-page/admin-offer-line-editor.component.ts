@@ -77,6 +77,8 @@ export class AdminOfferLineEditorComponent implements OnInit, OnChanges {
   @ViewChildren(PlanOrderConfiguratorComponent) private configurators!: QueryList<PlanOrderConfiguratorComponent>;
 
   readonly lineTypes: OfferLineType[] = ['standard', 'project_template', 'plan_template'];
+  readonly maxPriceLabel = $localize`:@@featureAdminProjects-maxPriceLabel:Maximum price (net)`;
+  readonly fixedPriceLabel = $localize`:@@featureAdminProjects-fixedPriceLabel:Fixed price (net)`;
 
   readonly taxRates = signal<TaxPreviewRates>({ standard: 19, reduced: 7 });
   readonly taxCategoryOptions = computed(() => {

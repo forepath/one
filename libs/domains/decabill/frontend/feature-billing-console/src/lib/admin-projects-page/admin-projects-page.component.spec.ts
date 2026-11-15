@@ -40,6 +40,8 @@ describe('AdminProjectsPageComponent (data list)', () => {
       deleting$: of(false),
       error$: of(null),
       loadAdminProjects: jest.fn(),
+      createAdminProject: jest.fn(),
+      updateAdminProject: jest.fn(),
     };
     TestBed.configureTestingModule({
       providers: [
@@ -91,5 +93,52 @@ describe('AdminProjectsPageComponent (data list)', () => {
     expect(service.delete).toHaveBeenCalledTimes(2);
     expect(component.bulkResult()?.message).toContain('1 done');
     expect(component.bulkResult()?.message).toContain('1 failed');
+  });
+
+  it('create sends the pricing model and drops the limit for hourly projects', () => {
+    component.createForm = {
+      userId: 'u1',
+      name: 'Site',
+      hourlyRateNet: 100,
+      currency: 'EUR',
+      pricingModel: 'hourly',
+      priceLimitNet: 900,
+    };
+    component.submitCreate();
+
+    expect(facade['createAdminProject']).toHaveBeenCalledWith(
+      expect.objectContaining({ pricingModel: 'hourly', priceLimitNet: null }),
+    );
+  });
+
+  it('create requires a price limit for capped / fixed projects', () => {
+    component.createForm = {
+      userId: 'u1',
+      name: 'Site',
+      hourlyRateNet: 100,
+      currency: 'EUR',
+      pricingModel: 'fixed',
+      priceLimitNet: null,
+    };
+
+    expect(component.isPricingValid(component.createForm)).toBe(false);
+    component.submitCreate();
+    expect(facade['createAdminProject']).not.toHaveBeenCalled();
+
+    component.createForm.priceLimitNet = 5000;
+    component.submitCreate();
+    expect(facade['createAdminProject']).toHaveBeenCalledWith(
+      expect.objectContaining({ pricingModel: 'fixed', priceLimitNet: 5000 }),
+    );
+  });
+
+  it('edit sends capped pricing', () => {
+    component.editForm = { id: 'p1', name: 'Site', hourlyRateNet: 100, pricingModel: 'capped', priceLimitNet: 4800 };
+    component.submitEdit();
+
+    expect(facade['updateAdminProject']).toHaveBeenCalledWith(
+      'p1',
+      expect.objectContaining({ pricingModel: 'capped', priceLimitNet: 4800 }),
+    );
   });
 });

@@ -225,7 +225,7 @@ export class ProjectTimeEntriesRepository {
   async markBilled(
     projectId: string,
     ids: string[],
-    invoiceId: string,
+    invoiceId: string | null,
     billedAt: Date,
     manager?: EntityManager,
   ): Promise<number> {

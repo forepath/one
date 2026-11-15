@@ -14,10 +14,10 @@ import {
 } from '@nestjs/common';
 
 import { DatevExportScope } from '../constants/datev-export.constants';
-import type {
-  PaginatedAdminDatevExportsResponseDto,
+import {
   TriggerDatevExportDto,
-  TriggerDatevExportResponseDto,
+  type PaginatedAdminDatevExportsResponseDto,
+  type TriggerDatevExportResponseDto,
 } from '../dto/admin-datev-export.dto';
 import type { AdminDatevExportListItemDto } from '../dto/admin-datev-export.dto';
 import { DatevExportEnabledGuard } from '../guards/datev-export-enabled.guard';

@@ -20,7 +20,9 @@ import type {
   UpdateAdminProjectDto,
 } from '../dto/project.dto';
 import type { ProjectEntity } from '../entities/project.entity';
+import { ProjectPricingModel } from '../entities/project.enums';
 import { ProjectsRepository } from '../repositories/projects.repository';
+import { PROJECT_PRICE_EPSILON, resolveProjectPricing } from '../utils/project-pricing.utils';
 
 import { ProjectBillingService } from './project-billing.service';
 import { ProjectTimeReportService } from './project-time-report.service';
@@ -96,12 +98,15 @@ export class ProjectsAdminService {
       throw new NotFoundException('User not found');
     }
 
+    const pricing = resolveProjectPricing(dto.pricingModel, dto.priceLimitNet);
     const project = await this.projectsRepository.create({
       userId: dto.userId,
       name: dto.name.trim(),
       description: dto.description?.trim() ?? null,
       status: dto.status,
       hourlyRateNet: dto.hourlyRateNet,
+      pricingModel: pricing.pricingModel,
+      priceLimitNet: pricing.priceLimitNet,
       targetHours: dto.targetHours ?? null,
       currency: dto.currency ?? 'EUR',
     });
@@ -135,12 +140,30 @@ export class ProjectsAdminService {
       throw new BadRequestException('Hourly rate is locked after first bill');
     }
 
+    const pricingChanged = dto.pricingModel !== undefined || dto.priceLimitNet !== undefined;
+    const pricing = pricingChanged
+      ? resolveProjectPricing(
+          dto.pricingModel ?? project.pricingModel,
+          dto.priceLimitNet !== undefined
+            ? dto.priceLimitNet
+            : project.priceLimitNet != null
+              ? Number(project.priceLimitNet)
+              : null,
+        )
+      : undefined;
+
+    if (pricing && billedCount > 0) {
+      this.assertPricingChangeAllowedAfterBill(project, pricing);
+    }
+
     const updated = await this.projectsRepository.update(id, {
       userId: dto.userId,
       name: dto.name?.trim(),
       description: dto.description === undefined ? undefined : (dto.description?.trim() ?? null),
       status: dto.status,
       hourlyRateNet: dto.hourlyRateNet,
+      pricingModel: pricing?.pricingModel,
+      priceLimitNet: pricing === undefined ? undefined : pricing.priceLimitNet,
       targetHours: dto.targetHours === undefined ? undefined : dto.targetHours,
       currency: dto.currency,
     });
@@ -177,6 +200,27 @@ export class ProjectsAdminService {
 
   async generateTimeReport(projectId: string, dto: ProjectTimeReportRequestDto): Promise<Buffer> {
     return await this.projectTimeReportService.generateLivePdf(projectId, dto);
+  }
+
+  /**
+   * After the first bill the pricing model is locked (like the hourly rate); the maximum / fixed price may still be
+   * adjusted, but never below what has already been invoiced.
+   */
+  private assertPricingChangeAllowedAfterBill(
+    project: ProjectEntity,
+    pricing: { pricingModel: ProjectPricingModel; priceLimitNet: number | null },
+  ): void {
+    if (pricing.pricingModel !== (project.pricingModel ?? ProjectPricingModel.HOURLY)) {
+      throw new BadRequestException('Pricing model is locked after first bill');
+    }
+
+    const billedAmountNet = Number(project.billedAmountNet ?? 0);
+
+    if (pricing.priceLimitNet != null && pricing.priceLimitNet - billedAmountNet < -PROJECT_PRICE_EPSILON) {
+      throw new BadRequestException(
+        `Price limit cannot be lower than the already billed amount of ${billedAmountNet.toFixed(2)}`,
+      );
+    }
   }
 
   private async mapListItem(

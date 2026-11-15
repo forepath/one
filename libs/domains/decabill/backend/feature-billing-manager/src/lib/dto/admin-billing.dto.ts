@@ -1,4 +1,4 @@
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsOptional, IsString, IsUUID } from 'class-validator';
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 
@@ -14,6 +14,9 @@ export class AdminBillingSummaryResponseDto {
 }
 
 export class AdminBillNowDto {
+  /** Bill one customer; omitted bills everyone due. */
+  @IsOptional()
+  @IsUUID('4', { message: 'User ID must be a valid UUID' })
   userId?: string;
 }
 

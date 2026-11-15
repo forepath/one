@@ -1,6 +1,7 @@
 import type {
   BillingIntervalType,
   MeterAggregator,
+  ProjectPricingModel,
   PromotionRedemptionContext,
   PromotionRedemptionStatus,
   ProviderDetail,
@@ -312,6 +313,38 @@ export function getProjectStatusIconClass(status: string | null | undefined): st
 /** Project hourly rate (DB-03): the one money format + "/ h" (`€110.00 / h`). */
 export function formatProjectHourlyRate(amount: number, currency: string): string {
   return `${formatBillingMoney(Number.isFinite(amount) ? amount : 0, currency)} / h`;
+}
+
+export function getProjectPricingModelLabel(model: ProjectPricingModel | null | undefined): string {
+  switch (model) {
+    case 'capped':
+      return $localize`:@@featureProjects-pricingModelCapped:Hourly up to a maximum price`;
+    case 'fixed':
+      return $localize`:@@featureProjects-pricingModelFixed:Fixed price`;
+    default:
+      return $localize`:@@featureProjects-pricingModelHourly:Hourly`;
+  }
+}
+
+/**
+ * Project pricing cell (DB-03): hourly `€110.00 / h`, capped `€110.00 / h · max €5,000.00`, fixed `Fixed €5,000.00`.
+ */
+export function formatProjectPricing(project: {
+  pricingModel?: ProjectPricingModel | null;
+  hourlyRateNet: number;
+  priceLimitNet?: number | null;
+  currency: string;
+}): string {
+  const limit = formatBillingMoney(Number(project.priceLimitNet ?? 0) || 0, project.currency);
+
+  switch (project.pricingModel) {
+    case 'capped':
+      return $localize`:@@featureProjects-pricingCappedCell:${formatProjectHourlyRate(project.hourlyRateNet, project.currency)}:rate: · max ${limit}:limit:`;
+    case 'fixed':
+      return $localize`:@@featureProjects-pricingFixedCell:Fixed ${limit}:limit:`;
+    default:
+      return formatProjectHourlyRate(project.hourlyRateNet, project.currency);
+  }
 }
 
 /** Project open billable amount (DB-03): the one money format (`€1,210.00`). */

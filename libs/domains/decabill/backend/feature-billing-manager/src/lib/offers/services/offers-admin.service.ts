@@ -38,6 +38,7 @@ import {
   mapOfferPlanTemplateLineToTaxInput,
   mapOfferProjectTemplateLineToTaxInput,
   mapOfferStandardLineToTaxInput,
+  resolveOfferProjectTemplateLinePricing,
 } from '../utils/map-offer-line-items.util';
 import { offerCapabilityFlags } from '../utils/offer-capabilities.util';
 import { buildOfferDraftDocumentTerms, mapAdminOfferDocumentTerms } from '../utils/offer-document-terms.util';
@@ -373,7 +374,7 @@ export class OffersAdminService {
   }
 
   private buildProjectTemplateLine(payload: OfferProjectTemplateLineDto): BuiltOfferLine {
-    const quantity = payload.targetHours != null && payload.targetHours > 0 ? payload.targetHours : 1;
+    const { quantity, unitPriceNet, unitLabel } = resolveOfferProjectTemplateLinePricing(payload);
 
     return {
       taxInput: mapOfferProjectTemplateLineToTaxInput(payload),
@@ -381,8 +382,8 @@ export class OffersAdminService {
         lineType: OfferLineType.PROJECT_TEMPLATE,
         description: payload.description,
         quantity,
-        unitLabel: 'hour',
-        unitPriceNet: payload.hourlyRateNet,
+        unitLabel,
+        unitPriceNet,
         taxCategory: TaxCategory.STANDARD,
         scheduledAt: payload.scheduledAt ? new Date(payload.scheduledAt) : null,
         fulfillmentStatus: OfferFulfillmentStatus.PENDING,

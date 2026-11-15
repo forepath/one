@@ -6,9 +6,11 @@ import {
   IsEnum,
   IsISO8601,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -17,6 +19,7 @@ import { DeliveryTermsCode } from '../../constants/document-terms.constants';
 import { TaxCategory } from '../../constants/tax-category.constants';
 import { CreateSubscriptionDto } from '../../dto/create-subscription.dto';
 import { DocumentTermsInputDto, EffectiveDocumentTermsResponseDto } from '../../dto/document-terms.dto';
+import { ProjectPricingModel } from '../../projects/entities/project.enums';
 import { OfferLineType } from '../constants/offer-line-type.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
 
@@ -67,6 +70,18 @@ export class OfferProjectTemplateLineDto {
   @IsNumber()
   targetHours?: number;
 
+  /** `hourly` (default), `capped` (hourly up to `priceLimitNet`) or `fixed` (`priceLimitNet` is the fixed price). */
+  @IsOptional()
+  @IsEnum(ProjectPricingModel)
+  pricingModel?: ProjectPricingModel;
+
+  /** Maximum price (`capped`) or fixed price (`fixed`), net. Required for those models. */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0.01)
+  @Max(99_999_999)
+  priceLimitNet?: number;
+
   @IsOptional()
   @IsISO8601()
   scheduledAt?: string;
@@ -81,21 +96,26 @@ export class OfferPlanTemplateLineDto extends CreateSubscriptionDto {
   scheduledAt?: string;
 }
 
+const OFFER_LINE_PAYLOAD_TYPES: Record<OfferLineType, new () => object> = {
+  [OfferLineType.STANDARD]: OfferStandardLineDto,
+  [OfferLineType.PROJECT_TEMPLATE]: OfferProjectTemplateLineDto,
+  [OfferLineType.PLAN_TEMPLATE]: OfferPlanTemplateLineDto,
+};
+
 export class OfferLineInputDto {
   @IsEnum(OfferLineType)
   lineType!: OfferLineType;
 
+  /**
+   * The payload class is picked from the sibling `lineType` (a class-transformer discriminator would look for
+   * `lineType` inside the payload, leave it a plain object and reject every field under `forbidNonWhitelisted`).
+   */
+  @IsObject()
   @ValidateNested()
-  @Type(() => Object, {
-    keepDiscriminatorProperty: true,
-    discriminator: {
-      property: 'lineType',
-      subTypes: [
-        { value: OfferStandardLineDto, name: OfferLineType.STANDARD },
-        { value: OfferProjectTemplateLineDto, name: OfferLineType.PROJECT_TEMPLATE },
-        { value: OfferPlanTemplateLineDto, name: OfferLineType.PLAN_TEMPLATE },
-      ],
-    },
+  @Type((options) => {
+    const lineType = (options?.object as { lineType?: unknown } | undefined)?.lineType;
+
+    return OFFER_LINE_PAYLOAD_TYPES[lineType as OfferLineType] ?? Object;
   })
   payload!: OfferStandardLineDto | OfferProjectTemplateLineDto | OfferPlanTemplateLineDto;
 }

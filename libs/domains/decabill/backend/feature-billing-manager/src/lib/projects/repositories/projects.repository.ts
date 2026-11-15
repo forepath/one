@@ -161,6 +161,14 @@ export class ProjectsRepository {
     return await this.repository.save(entity);
   }
 
+  /** Atomically adds `amountNet` to the project's billed time amount (call inside the bill-time lock). */
+  async incrementBilledAmountNet(id: string, amountNet: number): Promise<void> {
+    await this.repository.manager.query(
+      `UPDATE "billing_projects" SET "billed_amount_net" = "billed_amount_net" + $1 WHERE "id" = $2`,
+      [amountNet.toFixed(4), id],
+    );
+  }
+
   async delete(id: string): Promise<void> {
     await this.findByIdOrThrow(id);
     await this.repository.delete(id);

@@ -15,10 +15,10 @@ import {
 
 import type { RequestWithUser } from '../../utils/billing-access.utils';
 import { getAuthenticatedUserFromRequest, getUserFromRequest } from '../../utils/billing-access.utils';
-import type {
+import {
   CreateProjectMilestoneDto,
-  ProjectMilestoneResponseDto,
   UpdateProjectMilestoneDto,
+  type ProjectMilestoneResponseDto,
 } from '../dto/project-milestone.dto';
 import { ProjectMilestonesService } from '../services/project-milestones.service';
 

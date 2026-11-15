@@ -1055,6 +1055,18 @@
       <trans-unit id="featureAdminOffers-targetHours" datatype="html">
         <source>Target hours</source>
         </trans-unit>
+      <trans-unit id="featureAdminProjects-pricingModelLabel" datatype="html">
+        <source>Pricing</source>
+        </trans-unit>
+      <trans-unit id="featureProjects-pricingModelHourly" datatype="html">
+        <source>Hourly</source>
+        </trans-unit>
+      <trans-unit id="featureProjects-pricingModelCapped" datatype="html">
+        <source>Hourly up to a maximum price</source>
+        </trans-unit>
+      <trans-unit id="featureProjects-pricingModelFixed" datatype="html">
+        <source>Fixed price</source>
+        </trans-unit>
       <trans-unit id="featureAdminOffers-plan" datatype="html">
         <source>Service plan</source>
         </trans-unit>
@@ -1066,6 +1078,12 @@
         </trans-unit>
       <trans-unit id="featureAdminOffers-promotionCode" datatype="html">
         <source>Promotion code (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-maxPriceLabel" datatype="html">
+        <source>Maximum price (net)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-fixedPriceLabel" datatype="html">
+        <source>Fixed price (net)</source>
         </trans-unit>
       <trans-unit id="featureAdminOffers-lineTypeProject" datatype="html">
         <source>Project template</source>
@@ -1301,8 +1319,8 @@
       <trans-unit id="featureProjects-colProject" datatype="html">
         <source>Project</source>
         </trans-unit>
-      <trans-unit id="featureProjects-colHourlyRate" datatype="html">
-        <source>Hourly rate</source>
+      <trans-unit id="featureProjects-colPricing" datatype="html">
+        <source>Pricing</source>
         </trans-unit>
       <trans-unit id="featureProjects-colUnbilledTime" datatype="html">
         <source>Unbilled time</source>
@@ -1318,6 +1336,12 @@
         </trans-unit>
       <trans-unit id="featureAdminProjects-bulkDeleteMessage" datatype="html">
         <source><x id="count" equiv-text="this.selectedProjects().length"/> selected projects will be deleted. Projects with unbilled time are reported and left as they are.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-fixedPriceHint" datatype="html">
+        <source>Billed at once or in instalments, regardless of tracked hours.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-maxPriceHint" datatype="html">
+        <source>Tracked hours are billed at the hourly rate until this total is reached.</source>
         </trans-unit>
       <trans-unit id="featureAdminPromotions-empty" datatype="html">
         <source>No promotions yet</source>
@@ -2071,6 +2095,12 @@
         </trans-unit>
       <trans-unit id="featureBilling-projectStatusArchived" datatype="html">
         <source>Archived</source>
+        </trans-unit>
+      <trans-unit id="featureProjects-pricingCappedCell" datatype="html">
+        <source><x id="rate" equiv-text="formatProjectHourlyRate(project.hourlyRateNet, project.currency)"/> · max <x id="limit" equiv-text="limit"/></source>
+        </trans-unit>
+      <trans-unit id="featureProjects-pricingFixedCell" datatype="html">
+        <source>Fixed <x id="limit" equiv-text="limit"/></source>
         </trans-unit>
       <trans-unit id="featureBilling-datevExportStatusEmpty" datatype="html">
         <source>Unknown</source>
@@ -3477,6 +3507,9 @@
       <trans-unit id="featureProjectDetail-billTimeNoUnbilled" datatype="html">
         <source> No unbilled time entries to bill. </source>
         </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeAmountLabel" datatype="html">
+        <source>Amount (net, optional)</source>
+        </trans-unit>
       <trans-unit id="featureProjectDetail-billTimeSubscription" datatype="html">
         <source>Subscription (optional)</source>
         </trans-unit>
@@ -3575,6 +3608,18 @@
         </trans-unit>
       <trans-unit id="featureProjectDetail-tabTime" datatype="html">
         <source>Time</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-remainingFixedPrice" datatype="html">
+        <source>Remaining of fixed price</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-remainingMaxPrice" datatype="html">
+        <source>Remaining of maximum price</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeAmountHint" datatype="html">
+        <source>Leave empty to bill the remaining fixed price (<x id="amount" equiv-text="this.formatRemainingPrice()"/>). Enter an amount to bill an instalment.</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeCappedHint" datatype="html">
+        <source>Time is billed at the hourly rate up to the remaining maximum price (<x id="amount" equiv-text="this.formatRemainingPrice()"/>). Once it is used up, entries are marked as covered without an invoice.</source>
         </trans-unit>
       <trans-unit id="featureProjectMilestoneSelect-clearSelectionAria" datatype="html">
         <source>Clear selected milestone</source>

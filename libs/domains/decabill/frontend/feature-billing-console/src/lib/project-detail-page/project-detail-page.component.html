@@ -125,6 +125,18 @@
           <span class="text-body-secondary">-</span>
         }
       </span>
+      @if ((loadingSummary$ | async) === false) {
+        @if (summary$ | async; as summary) {
+          @if (selectedProject$ | async; as project) {
+            @if (project.pricingModel === 'capped' || project.pricingModel === 'fixed') {
+              <span class="small text-body-secondary" data-testid="project-remaining-price">
+                {{ priceLimitSummaryLabel(project.pricingModel) }}: {{ summary.remainingPriceNet ?? 0 | fpcMoney }} /
+                {{ project.priceLimitNet ?? 0 | fpcMoney }}
+              </span>
+            }
+          }
+        }
+      }
     </fpc-summary-card>
     <fpc-summary-card icon="signpost-2" [label]="isAdminView() ? openMilestonesLabel : completedMilestonesLabel">
       <span fpcSummaryCardValue>
@@ -436,6 +448,28 @@
     @if (billBoundsEntryCount() === 0) {
       <p class="text-body-secondary small mb-3" i18n="@@featureProjectDetail-billTimeNoUnbilled">
         No unbilled time entries to bill.
+      </p>
+    }
+    @if (billPricingModel() === 'fixed') {
+      <fpc-form-field
+        forId="billTimeAmount"
+        i18n-label="@@featureProjectDetail-billTimeAmountLabel"
+        label="Amount (net, optional)"
+        [hint]="billFixedAmountHint()"
+      >
+        <fpc-form-control
+          controlId="billTimeAmount"
+          inputType="number"
+          [(ngModel)]="billAmountNet"
+          name="billTimeAmount"
+          min="0.01"
+          step="0.01"
+          data-testid="project-bill-amount"
+        />
+      </fpc-form-field>
+    } @else if (billPricingModel() === 'capped') {
+      <p class="form-text fpc-form-text--wrap mb-3" data-testid="project-bill-capped-hint">
+        {{ billCappedHint() }}
       </p>
     }
     <fpc-form-field

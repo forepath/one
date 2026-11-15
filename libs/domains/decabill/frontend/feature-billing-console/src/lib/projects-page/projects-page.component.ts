@@ -11,11 +11,7 @@ import {
   type FpcTableColumn,
 } from '@forepath/shared/frontend/ui-components';
 
-import {
-  formatProjectHourlyRate,
-  formatProjectMinutes,
-  formatProjectOpenBillableAmount,
-} from '../billing-status-labels';
+import { formatProjectMinutes, formatProjectOpenBillableAmount, formatProjectPricing } from '../billing-status-labels';
 import { dbCopyIdItem, dbOpenItem } from '../shared/data-list';
 import { dbServerPaging } from '../shared/server-paging';
 import { projectState } from '../shared/table-states';
@@ -59,8 +55,8 @@ export class ProjectsPageComponent {
     },
     {
       id: 'rate',
-      label: $localize`:@@featureProjects-colHourlyRate:Hourly rate`,
-      value: (project) => formatProjectHourlyRate(project.hourlyRateNet, project.currency),
+      label: $localize`:@@featureProjects-colPricing:Pricing`,
+      value: (project) => formatProjectPricing(project),
       align: 'end',
       priority: 2,
     },

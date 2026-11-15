@@ -195,6 +195,45 @@
             </fpc-form-field>
           </div>
         </div>
+        <div class="row g-2 mb-3">
+          <div class="col-sm-6">
+            <fpc-form-field
+              [forId]="prefix + 'LinePricingModel' + i"
+              i18n-label="@@featureAdminProjects-pricingModelLabel"
+              label="Pricing"
+            >
+              <fpc-form-control
+                controlType="select"
+                [controlId]="prefix + 'LinePricingModel' + i"
+                [name]="prefix + 'LinePricingModel' + i"
+                [(ngModel)]="line.pricingModel"
+              >
+                <option value="hourly" i18n="@@featureProjects-pricingModelHourly">Hourly</option>
+                <option value="capped" i18n="@@featureProjects-pricingModelCapped">Hourly up to a maximum price</option>
+                <option value="fixed" i18n="@@featureProjects-pricingModelFixed">Fixed price</option>
+              </fpc-form-control>
+            </fpc-form-field>
+          </div>
+          @if (line.pricingModel === 'capped' || line.pricingModel === 'fixed') {
+            <div class="col-sm-6">
+              <fpc-form-field
+                [forId]="prefix + 'LinePriceLimit' + i"
+                [label]="line.pricingModel === 'fixed' ? fixedPriceLabel : maxPriceLabel"
+                required
+              >
+                <fpc-form-control
+                  inputType="number"
+                  [controlId]="prefix + 'LinePriceLimit' + i"
+                  [name]="prefix + 'LinePriceLimit' + i"
+                  [(ngModel)]="line.priceLimitNet"
+                  min="0.01"
+                  step="any"
+                  required
+                />
+              </fpc-form-field>
+            </div>
+          }
+        </div>
       }
 
       @if (line.lineType === 'plan_template') {

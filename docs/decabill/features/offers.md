@@ -33,6 +33,18 @@ Revocation is allowed only in `draft` or `archived`. Terminal states cannot be r
 | `project_template` | Creates a customer project from stored template payload    |
 | `plan_template`    | Creates a subscription using prepared plan/addon snapshots |
 
+### Project template pricing
+
+A `project_template` payload carries the project's `hourlyRateNet`, optional `targetHours`, and a `pricingModel`:
+
+| `pricingModel`     | Offer line amount                           | Created project                                    |
+| ------------------ | ------------------------------------------- | -------------------------------------------------- |
+| `hourly` (default) | `targetHours` (else 1) × `hourlyRateNet`    | Billed hourly, unlimited                           |
+| `capped`           | `priceLimitNet` (maximum price), quantity 1 | Billed hourly, total never exceeds `priceLimitNet` |
+| `fixed`            | `priceLimitNet` (fixed price), quantity 1   | Billed at the fixed price (at once or instalments) |
+
+`priceLimitNet` is required for `capped` and `fixed`. Both values are stored in the template payload and applied to the project created on acceptance (see [Projects](./projects.md#pricing-models)).
+
 Plan template lines store encrypted GCM snapshots (`effectiveConfigSnapshot`, `addonConfigsSnapshot`) at draft save time via `SubscriptionOrderPreparationService`.
 
 Optional `scheduledAt` defers fulfillment to a BullMQ job.

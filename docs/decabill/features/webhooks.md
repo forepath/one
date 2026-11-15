@@ -194,6 +194,8 @@ See [Application updates](./application-updates.md).
   "description": "Q3 delivery",
   "status": "active",
   "hourlyRateNet": 120,
+  "pricingModel": "capped",
+  "priceLimitNet": 4800,
   "targetHours": 40,
   "currency": "EUR",
   "createdAt": "2026-07-01T10:00:00.000Z",

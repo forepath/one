@@ -112,6 +112,42 @@
     />
   </fpc-form-field>
   <fpc-form-field
+    forId="createProjectPricingModel"
+    i18n-label="@@featureAdminProjects-pricingModelLabel"
+    label="Pricing"
+  >
+    <fpc-form-control
+      controlType="select"
+      controlId="createProjectPricingModel"
+      [(ngModel)]="createForm.pricingModel"
+      name="createPricingModel"
+      data-testid="create-project-pricing-model"
+    >
+      <option value="hourly" i18n="@@featureProjects-pricingModelHourly">Hourly</option>
+      <option value="capped" i18n="@@featureProjects-pricingModelCapped">Hourly up to a maximum price</option>
+      <option value="fixed" i18n="@@featureProjects-pricingModelFixed">Fixed price</option>
+    </fpc-form-control>
+  </fpc-form-field>
+  @if (createForm.pricingModel === 'capped' || createForm.pricingModel === 'fixed') {
+    <fpc-form-field
+      forId="createProjectPriceLimit"
+      [label]="priceLimitLabel(createForm.pricingModel)"
+      [hint]="priceLimitHint(createForm.pricingModel)"
+      required
+    >
+      <fpc-form-control
+        controlId="createProjectPriceLimit"
+        inputType="number"
+        [(ngModel)]="createForm.priceLimitNet"
+        name="createPriceLimit"
+        min="0.01"
+        step="0.01"
+        required
+        data-testid="create-project-price-limit"
+      />
+    </fpc-form-field>
+  }
+  <fpc-form-field
     forId="createProjectTargetHours"
     i18n-label="@@featureAdminProjects-targetHoursLabel"
     label="Target hours"
@@ -131,7 +167,7 @@
     <fpc-button
       variant="primary"
       (clicked)="submitCreate()"
-      [disabled]="(creating$ | async) === true"
+      [disabled]="(creating$ | async) === true || !isPricingValid(createForm)"
       i18n="@@featureAdminProjects-create"
     >
       Create
@@ -153,6 +189,38 @@
       step="0.01"
     />
   </fpc-form-field>
+  <fpc-form-field forId="editProjectPricingModel" i18n-label="@@featureAdminProjects-pricingModelLabel" label="Pricing">
+    <fpc-form-control
+      controlType="select"
+      controlId="editProjectPricingModel"
+      [(ngModel)]="editForm.pricingModel"
+      name="editPricingModel"
+      data-testid="edit-project-pricing-model"
+    >
+      <option value="hourly" i18n="@@featureProjects-pricingModelHourly">Hourly</option>
+      <option value="capped" i18n="@@featureProjects-pricingModelCapped">Hourly up to a maximum price</option>
+      <option value="fixed" i18n="@@featureProjects-pricingModelFixed">Fixed price</option>
+    </fpc-form-control>
+  </fpc-form-field>
+  @if (editForm.pricingModel === 'capped' || editForm.pricingModel === 'fixed') {
+    <fpc-form-field
+      forId="editProjectPriceLimit"
+      [label]="priceLimitLabel(editForm.pricingModel)"
+      [hint]="priceLimitHint(editForm.pricingModel)"
+      required
+    >
+      <fpc-form-control
+        controlId="editProjectPriceLimit"
+        inputType="number"
+        [(ngModel)]="editForm.priceLimitNet"
+        name="editPriceLimit"
+        min="0.01"
+        step="0.01"
+        required
+        data-testid="edit-project-price-limit"
+      />
+    </fpc-form-field>
+  }
   <fpc-form-field
     forId="editProjectTargetHours"
     i18n-label="@@featureAdminProjects-targetHoursLabel"
@@ -184,7 +252,7 @@
     <fpc-button
       variant="primary"
       (clicked)="submitEdit()"
-      [disabled]="(updating$ | async) === true"
+      [disabled]="(updating$ | async) === true || !isPricingValid(editForm)"
       i18n="@@featureAdminProjects-save"
     >
       Save

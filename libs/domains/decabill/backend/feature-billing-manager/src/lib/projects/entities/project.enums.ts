@@ -3,6 +3,18 @@ export enum ProjectStatus {
   ARCHIVED = 'archived',
 }
 
+/**
+ * How a project's tracked time turns into billable amounts.
+ * - `hourly`: tracked hours × hourly rate, unlimited.
+ * - `capped`: tracked hours × hourly rate, but the cumulative billed amount never exceeds `priceLimitNet`.
+ * - `fixed`: the agreed fixed price `priceLimitNet` is billed (at once or in instalments), regardless of tracked hours.
+ */
+export enum ProjectPricingModel {
+  HOURLY = 'hourly',
+  CAPPED = 'capped',
+  FIXED = 'fixed',
+}
+
 export enum ProjectTicketPriority {
   LOW = 'low',
   MEDIUM = 'medium',

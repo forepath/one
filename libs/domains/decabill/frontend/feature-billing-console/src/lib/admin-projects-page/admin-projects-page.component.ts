@@ -8,6 +8,7 @@ import {
   ProjectsFacade,
   type AdminProjectListItem,
   type CreateAdminProjectDto,
+  type ProjectPricingModel,
   type UpdateAdminProjectDto,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { AuthenticationFacade, type UserResponseDto } from '@forepath/identity/frontend';
@@ -31,11 +32,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/billing-admin-user-select.component';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
-import {
-  formatProjectHourlyRate,
-  formatProjectMinutes,
-  formatProjectOpenBillableAmount,
-} from '../billing-status-labels';
+import { formatProjectMinutes, formatProjectOpenBillableAmount, formatProjectPricing } from '../billing-status-labels';
 import { getCustomerLabel, getCustomerSecondaryLabel, type CustomerLabelSource } from '../named-label.util';
 import {
   DB_DL_DELETE,
@@ -124,8 +121,8 @@ export class AdminProjectsPageComponent implements OnInit {
     },
     {
       id: 'rate',
-      label: $localize`:@@featureProjects-colHourlyRate:Hourly rate`,
-      value: (project) => formatProjectHourlyRate(project.hourlyRateNet, project.currency),
+      label: $localize`:@@featureProjects-colPricing:Pricing`,
+      value: (project) => formatProjectPricing(project),
       align: 'end',
       priority: 2,
     },
@@ -179,7 +176,7 @@ export class AdminProjectsPageComponent implements OnInit {
   readonly usersWithoutProject = computed(() => this.users());
 
   createForm: CreateAdminProjectDto = this.emptyCreateForm();
-  editForm: UpdateAdminProjectDto & { id: string } = { id: '', name: '', hourlyRateNet: 0 };
+  editForm: UpdateAdminProjectDto & { id: string } = { id: '', name: '', hourlyRateNet: 0, pricingModel: 'hourly' };
   editTargetHoursInput: number | null = null;
   createTargetHoursInput: number | null = null;
   projectToDelete: AdminProjectListItem | null = null;
@@ -250,6 +247,8 @@ export class AdminProjectsPageComponent implements OnInit {
           description: full.description ?? '',
           status: full.status,
           hourlyRateNet: full.hourlyRateNet,
+          pricingModel: full.pricingModel ?? 'hourly',
+          priceLimitNet: full.priceLimitNet ?? null,
           currency: full.currency,
         };
         this.editTargetHoursInput = full.targetHours ?? null;
@@ -264,9 +263,9 @@ export class AdminProjectsPageComponent implements OnInit {
   }
 
   submitCreate(): void {
-    if (!this.createForm.userId || !this.createForm.name.trim()) return;
+    if (!this.createForm.userId || !this.createForm.name.trim() || !this.isPricingValid(this.createForm)) return;
 
-    const payload: CreateAdminProjectDto = { ...this.createForm };
+    const payload: CreateAdminProjectDto = { ...this.createForm, ...this.normalizePricing(this.createForm) };
     const targetHours = this.normalizeTargetHoursInput(this.createTargetHoursInput);
 
     if (targetHours != null) {
@@ -277,10 +276,13 @@ export class AdminProjectsPageComponent implements OnInit {
   }
 
   submitEdit(): void {
+    if (!this.isPricingValid(this.editForm)) return;
+
     const { id, ...dto } = this.editForm;
 
     this.facade.updateAdminProject(id, {
       ...dto,
+      ...this.normalizePricing(this.editForm),
       targetHours: this.normalizeTargetHoursInput(this.editTargetHoursInput),
     });
   }
@@ -292,7 +294,37 @@ export class AdminProjectsPageComponent implements OnInit {
   }
 
   private emptyCreateForm(): CreateAdminProjectDto {
-    return { userId: '', name: '', hourlyRateNet: 100, currency: 'EUR' };
+    return { userId: '', name: '', hourlyRateNet: 100, currency: 'EUR', pricingModel: 'hourly', priceLimitNet: null };
+  }
+
+  priceLimitLabel(model: ProjectPricingModel | undefined): string {
+    return model === 'fixed'
+      ? $localize`:@@featureAdminProjects-fixedPriceLabel:Fixed price (net)`
+      : $localize`:@@featureAdminProjects-maxPriceLabel:Maximum price (net)`;
+  }
+
+  priceLimitHint(model: ProjectPricingModel | undefined): string {
+    return model === 'fixed'
+      ? $localize`:@@featureAdminProjects-fixedPriceHint:Billed at once or in instalments, regardless of tracked hours.`
+      : $localize`:@@featureAdminProjects-maxPriceHint:Tracked hours are billed at the hourly rate until this total is reached.`;
+  }
+
+  /** Capped / fixed projects need a positive maximum / fixed price. */
+  isPricingValid(form: { pricingModel?: ProjectPricingModel; priceLimitNet?: number | null }): boolean {
+    if (form.pricingModel !== 'capped' && form.pricingModel !== 'fixed') return true;
+
+    const limit = Number(form.priceLimitNet);
+
+    return form.priceLimitNet != null && Number.isFinite(limit) && limit > 0;
+  }
+
+  private normalizePricing(form: { pricingModel?: ProjectPricingModel; priceLimitNet?: number | null }): {
+    pricingModel: ProjectPricingModel;
+    priceLimitNet: number | null;
+  } {
+    const pricingModel = form.pricingModel ?? 'hourly';
+
+    return { pricingModel, priceLimitNet: pricingModel === 'hourly' ? null : Number(form.priceLimitNet) };
   }
 
   private normalizeTargetHoursInput(value: number | null | undefined): number | null | undefined {

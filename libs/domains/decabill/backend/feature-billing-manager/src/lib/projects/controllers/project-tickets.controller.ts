@@ -17,13 +17,13 @@ import {
 
 import type { RequestWithUser } from '../../utils/billing-access.utils';
 import { getAuthenticatedUserFromRequest } from '../../utils/billing-access.utils';
-import type {
+import {
   CreateProjectTicketCommentDto,
   CreateProjectTicketDto,
-  ProjectTicketActivityResponseDto,
-  ProjectTicketCommentResponseDto,
-  ProjectTicketResponseDto,
   UpdateProjectTicketDto,
+  type ProjectTicketActivityResponseDto,
+  type ProjectTicketCommentResponseDto,
+  type ProjectTicketResponseDto,
 } from '../dto/project-ticket.dto';
 import { ProjectTicketStatus } from '../entities/project.enums';
 import { ProjectTicketsService } from '../services/project-tickets.service';

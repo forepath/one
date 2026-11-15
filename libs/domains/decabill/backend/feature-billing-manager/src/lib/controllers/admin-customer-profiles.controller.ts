@@ -13,10 +13,10 @@ import {
   Query,
 } from '@nestjs/common';
 
-import type {
-  AdminCustomerProfileDetailDto,
+import {
   CreateAdminCustomerProfileDto,
-  PaginatedAdminCustomerProfilesResponseDto,
+  type AdminCustomerProfileDetailDto,
+  type PaginatedAdminCustomerProfilesResponseDto,
 } from '../dto/admin-customer-profile.dto';
 import { AddCustomerProfileCustomDataDto, UpdateCustomerProfileCustomDataDto } from '../dto/admin-customer-profile.dto';
 import type { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto';

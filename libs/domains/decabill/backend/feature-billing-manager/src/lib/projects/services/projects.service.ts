@@ -9,13 +9,19 @@ import type {
   ProjectsCatalogSummaryResponseDto,
 } from '../dto/project.dto';
 import type { ProjectEntity } from '../entities/project.entity';
-import { ProjectStatus, ProjectTicketStatus } from '../entities/project.enums';
+import { ProjectPricingModel, ProjectStatus, ProjectTicketStatus } from '../entities/project.enums';
 import { ProjectMilestonesRepository } from '../repositories/project-milestones.repository';
 import { ProjectTicketsRepository } from '../repositories/project-tickets.repository';
 import { ProjectTimeEntriesRepository } from '../repositories/project-time-entries.repository';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ensureProjectReadable } from '../utils/project-access.utils';
 import { computeMilestoneProgressPercent, isMilestoneComplete } from '../utils/project-milestone-progress.utils';
+import {
+  computeProjectOpenBillableAmountNet,
+  computeProjectRemainingPriceNet,
+  isPriceLimitedPricingModel,
+  toProjectPricingTerms,
+} from '../utils/project-pricing.utils';
 
 @Injectable()
 export class ProjectsService {
@@ -75,9 +81,12 @@ export class ProjectsService {
       this.ticketsRepository.findAllByProject(project.id),
     ]);
     const billedMinutes = totalTrackedMinutes - unbilledMinutes;
-    const hourlyRate = Number(project.hourlyRateNet);
-    const openBillableAmountNet = (unbilledMinutes / 60) * hourlyRate;
-    const billedAmountNet = (billedMinutes / 60) * hourlyRate;
+    const pricingTerms = toProjectPricingTerms(project);
+    const openBillableAmountNet = computeProjectOpenBillableAmountNet(pricingTerms, unbilledMinutes);
+    // Hourly projects keep the historical derivation; price-limited ones report the actually invoiced amount.
+    const billedAmountNet = isPriceLimitedPricingModel(pricingTerms.pricingModel)
+      ? pricingTerms.billedAmountNet
+      : (billedMinutes / 60) * pricingTerms.hourlyRateNet;
     let openTicketCount = 0;
     let doneTicketCount = 0;
 
@@ -108,6 +117,7 @@ export class ProjectsService {
       unbilledMinutes,
       openBillableAmountNet,
       billedAmountNet,
+      remainingPriceNet: computeProjectRemainingPriceNet(pricingTerms),
       openTicketCount,
       doneTicketCount,
       milestoneCount: milestones.length,
@@ -123,6 +133,8 @@ export class ProjectsService {
       description: project.description,
       status: project.status,
       hourlyRateNet: Number(project.hourlyRateNet),
+      pricingModel: project.pricingModel ?? ProjectPricingModel.HOURLY,
+      priceLimitNet: project.priceLimitNet != null ? Number(project.priceLimitNet) : null,
       targetHours: project.targetHours != null ? Number(project.targetHours) : null,
       currency: project.currency,
       createdAt: project.createdAt,
@@ -132,7 +144,7 @@ export class ProjectsService {
 
   async mapListItem(project: ProjectEntity): Promise<ProjectListItemDto> {
     const unbilledMinutes = await this.timeEntriesRepository.sumDurationMinutes(project.id, false);
-    const openBillableAmountNet = (unbilledMinutes / 60) * Number(project.hourlyRateNet);
+    const openBillableAmountNet = computeProjectOpenBillableAmountNet(toProjectPricingTerms(project), unbilledMinutes);
 
     return {
       ...this.mapResponse(project),
