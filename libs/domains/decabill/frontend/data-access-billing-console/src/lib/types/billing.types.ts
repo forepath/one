@@ -1318,12 +1318,16 @@ export interface CreateUserDto {
   email: string;
   password: string;
   role?: UserRole;
+  emailConfirmed?: boolean;
+  sendConfirmationEmail?: boolean;
 }
 
 export interface UpdateUserDto {
   email?: string;
   password?: string;
   role?: UserRole;
+  emailConfirmed?: boolean;
+  sendConfirmationEmail?: boolean;
 }
 
 // Common

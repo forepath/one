@@ -1,5 +1,5 @@
 import { UserRole } from '@forepath/identity/backend';
-import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateUserDto {
   @IsEmail()
@@ -14,4 +14,14 @@ export class UpdateUserDto {
   @IsEnum(UserRole)
   @IsOptional()
   role?: UserRole;
+
+  /** Only applies when the email changes: keep the new address confirmed instead of requiring re-confirmation. */
+  @IsBoolean()
+  @IsOptional()
+  emailConfirmed?: boolean;
+
+  /** Only applies when the email changes to an unconfirmed address: whether to email a code (default true). */
+  @IsBoolean()
+  @IsOptional()
+  sendConfirmationEmail?: boolean;
 }

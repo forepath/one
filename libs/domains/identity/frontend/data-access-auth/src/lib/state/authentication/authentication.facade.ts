@@ -26,6 +26,7 @@ import {
   resetPassword,
   setupTotp,
   unlockUser,
+  confirmUserEmail,
   updateUser,
 } from './authentication.actions';
 import {
@@ -51,6 +52,7 @@ import {
   selectTwoFactorStatus,
   selectTwoFactorSuccessMessage,
   selectUnlockingUser,
+  selectConfirmingUserEmail,
   selectUpdatingUser,
   selectUser,
   selectUsers,
@@ -97,6 +99,7 @@ export class AuthenticationFacade {
   readonly deletingUser$: Observable<boolean> = this.store.select(selectDeletingUser);
   readonly lockingUser$: Observable<boolean> = this.store.select(selectLockingUser);
   readonly unlockingUser$: Observable<boolean> = this.store.select(selectUnlockingUser);
+  readonly confirmingUserEmail$: Observable<boolean> = this.store.select(selectConfirmingUserEmail);
 
   readonly twoFactorStatus$: Observable<TwoFactorStatus | null> = this.store.select(selectTwoFactorStatus);
   readonly twoFactorLoading$: Observable<boolean> = this.store.select(selectTwoFactorLoading);
@@ -201,6 +204,10 @@ export class AuthenticationFacade {
 
   unlockUser(id: string): void {
     this.store.dispatch(unlockUser({ id }));
+  }
+
+  confirmUserEmail(id: string): void {
+    this.store.dispatch(confirmUserEmail({ id }));
   }
 
   clearError(): void {

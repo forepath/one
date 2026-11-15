@@ -205,6 +205,15 @@ describe('AuthService', () => {
     req.flush({ id: 'user-1', email: 'a@b.com', role: 'user' });
   });
 
+  it('confirmUserEmail POSTs to /users/:id/confirm-email', (done) => {
+    service.confirmUserEmail('user-1').subscribe(() => done());
+
+    const req = httpMock.expectOne(`${apiUrl}/users/user-1/confirm-email`);
+
+    expect(req.request.method).toBe('POST');
+    req.flush({ id: 'user-1', email: 'a@b.com', role: 'user', emailConfirmedAt: '2026-01-01T00:00:00Z' });
+  });
+
   it('listTokenScopes GETs /auth/token-scopes', (done) => {
     service.listTokenScopes().subscribe((result) => {
       expect(result).toEqual([{ scope: 'read' }]);

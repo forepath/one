@@ -240,6 +240,161 @@ describe('UsersService', () => {
     );
   });
 
+  describe('admin email confirmation options', () => {
+    const mockBootstrap = (first = false) =>
+      mockUsersRepository.createWithTenantBootstrap.mockImplementation(async (build: (first: boolean) => object) => ({
+        user: {
+          id: 'user-2',
+          createdAt: new Date('2026-01-01T00:00:00.000Z'),
+          updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+          ...build(first),
+        },
+        isFirstUser: first,
+      }));
+    const existingUser = (overrides: Record<string, unknown> = {}) => ({
+      id: 'user-1',
+      email: 'old@example.com',
+      role: UserRole.USER,
+      emailConfirmedAt: new Date('2026-01-01T00:00:00.000Z'),
+      emailConfirmationToken: undefined,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      ...overrides,
+    });
+
+    beforeEach(() => {
+      mockUsersRepository.findByEmail.mockResolvedValue(null);
+    });
+
+    it('creates a pre-confirmed user without a code or email when emailConfirmed is true', async () => {
+      mockBootstrap();
+
+      const created = await service.create({
+        email: 'managed@example.com',
+        password: 'secret-pass',
+        emailConfirmed: true,
+      });
+
+      expect(created.emailConfirmedAt).toEqual(expect.any(String));
+      expect(created.role).toBe(UserRole.USER);
+      expect(mockUsersRepository.update).not.toHaveBeenCalled();
+      expect(mockEmailDispatcher.publishEmail).not.toHaveBeenCalled();
+    });
+
+    it('creates an unconfirmed user without a code or email when sendConfirmationEmail is false', async () => {
+      mockBootstrap();
+
+      const created = await service.create({
+        email: 'managed@example.com',
+        password: 'secret-pass',
+        sendConfirmationEmail: false,
+      });
+
+      expect(created.emailConfirmedAt).toBeUndefined();
+      expect(mockUsersRepository.update).not.toHaveBeenCalled();
+      expect(mockEmailDispatcher.publishEmail).not.toHaveBeenCalled();
+    });
+
+    it('still sends the confirmation email when emailConfirmed is false and sendConfirmationEmail is true', async () => {
+      mockBootstrap();
+      mockUsersRepository.update.mockResolvedValue(existingUser());
+
+      await service.create({
+        email: 'new@example.com',
+        password: 'secret-pass',
+        emailConfirmed: false,
+        sendConfirmationEmail: true,
+      });
+
+      expect(mockUsersRepository.update).toHaveBeenCalledWith('user-2', {
+        emailConfirmationToken: expect.any(String),
+      });
+      expect(mockEmailDispatcher.publishEmail).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps a changed email confirmed without sending a code when emailConfirmed is true', async () => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue(existingUser());
+      mockUsersRepository.update.mockResolvedValue(existingUser({ email: 'new@example.com' }));
+
+      await service.update('user-1', { email: 'new@example.com', emailConfirmed: true });
+
+      expect(mockUsersRepository.update).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({
+          email: 'new@example.com',
+          emailConfirmedAt: expect.any(Date),
+          emailConfirmationToken: null,
+        }),
+      );
+      expect(mockEmailDispatcher.publishEmail).not.toHaveBeenCalled();
+    });
+
+    it('unconfirms a changed email and clears any old code when sendConfirmationEmail is false', async () => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue(existingUser({ emailConfirmationToken: 'old-hash' }));
+      mockUsersRepository.update.mockResolvedValue(existingUser({ email: 'new@example.com', emailConfirmedAt: null }));
+
+      await service.update('user-1', { email: 'new@example.com', sendConfirmationEmail: false });
+
+      expect(mockUsersRepository.update).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({ email: 'new@example.com', emailConfirmedAt: null, emailConfirmationToken: null }),
+      );
+      expect(mockEmailDispatcher.publishEmail).not.toHaveBeenCalled();
+    });
+
+    it('ignores the options when the email does not change', async () => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue(existingUser({ emailConfirmedAt: undefined }));
+      mockUsersRepository.update.mockResolvedValue(existingUser({ emailConfirmedAt: undefined }));
+
+      await service.update('user-1', { email: 'OLD@example.com', emailConfirmed: true, role: UserRole.USER });
+
+      const data = mockUsersRepository.update.mock.calls[0][1];
+
+      expect(data).not.toHaveProperty('emailConfirmedAt');
+      expect(data).not.toHaveProperty('emailConfirmationToken');
+      expect(mockEmailDispatcher.publishEmail).not.toHaveBeenCalled();
+    });
+
+    it('confirms an unconfirmed user and clears the outstanding code', async () => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue(
+        existingUser({ emailConfirmedAt: undefined, emailConfirmationToken: 'hash' }),
+      );
+      mockUsersRepository.update.mockResolvedValue(
+        existingUser({ emailConfirmedAt: new Date('2026-01-03T00:00:00.000Z') }),
+      );
+
+      const result = await service.confirmEmail('user-1');
+
+      expect(mockUsersRepository.update).toHaveBeenCalledWith('user-1', {
+        emailConfirmedAt: expect.any(Date),
+        emailConfirmationToken: null,
+      });
+      expect(result.emailConfirmedAt).toBe('2026-01-03T00:00:00.000Z');
+      expect(mockStatisticsService.recordEntityUpdated).toHaveBeenCalledWith(
+        'user',
+        'user-1',
+        { role: UserRole.USER },
+        undefined,
+      );
+    });
+
+    it('returns an already confirmed user unchanged', async () => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue(existingUser());
+
+      const result = await service.confirmEmail('user-1');
+
+      expect(mockUsersRepository.update).not.toHaveBeenCalled();
+      expect(result.emailConfirmedAt).toBe('2026-01-01T00:00:00.000Z');
+    });
+
+    it('throws not found when the confirm target is not in the tenant', async () => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue(null);
+
+      await expect(service.confirmEmail('other-tenant-user')).rejects.toThrow(NotFoundException);
+      expect(mockUsersRepository.update).not.toHaveBeenCalled();
+    });
+  });
+
   it('clears TOTP fields and invalidates sessions on admin clearTotp', async () => {
     mockUsersRepository.findByIdForTenant.mockResolvedValue({
       id: 'user-1',

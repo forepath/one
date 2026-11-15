@@ -65,6 +65,9 @@ import {
   unlockUser,
   unlockUserFailure,
   unlockUserSuccess,
+  confirmUserEmail,
+  confirmUserEmailFailure,
+  confirmUserEmailSuccess,
   updateUser,
   updateUserFailure,
   updateUserSuccess,
@@ -96,6 +99,7 @@ export const initialAuthenticationState: AuthenticationState = {
   deletingUser: false,
   lockingUser: false,
   unlockingUser: false,
+  confirmingUserEmail: false,
   twoFactorStatus: null,
   twoFactorLoading: false,
   twoFactorError: null,
@@ -490,6 +494,23 @@ export const authenticationReducer = createReducer(
   on(unlockUserFailure, (state, { error }) => ({
     ...state,
     unlockingUser: false,
+    usersError: error,
+  })),
+  // Admin: Confirm User Email
+  on(confirmUserEmail, (state) => ({
+    ...state,
+    confirmingUserEmail: true,
+    usersError: null,
+  })),
+  on(confirmUserEmailSuccess, (state, { user }) => ({
+    ...state,
+    users: state.users.map((u) => (u.id === user.id ? user : u)),
+    confirmingUserEmail: false,
+    usersError: null,
+  })),
+  on(confirmUserEmailFailure, (state, { error }) => ({
+    ...state,
+    confirmingUserEmail: false,
     usersError: error,
   })),
 );

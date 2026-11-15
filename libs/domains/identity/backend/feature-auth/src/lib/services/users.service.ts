@@ -78,6 +78,9 @@ export class UsersService {
   /**
    * Creates a password user. Whether it is the tenant's first user (admin, confirmed immediately) is decided
    * atomically with the insert, so concurrent registrations cannot both become admin.
+   *
+   * `emailConfirmed` / `sendConfirmationEmail` are admin-only options (public registration never passes them):
+   * by default a non-first user is unconfirmed and receives a confirmation code.
    */
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
     const existing = await this.usersRepository.findByEmail(dto.email);
@@ -87,11 +90,11 @@ export class UsersService {
     }
 
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
-    const { user, isFirstUser } = await this.usersRepository.createWithTenantBootstrap((first) => ({
+    const { user } = await this.usersRepository.createWithTenantBootstrap((first) => ({
       email: dto.email,
       passwordHash,
       role: dto.role ?? (first ? UserRole.ADMIN : UserRole.USER),
-      emailConfirmedAt: first ? new Date() : undefined,
+      emailConfirmedAt: first || dto.emailConfirmed === true ? new Date() : undefined,
       emailConfirmationToken: undefined,
     }));
     const role = user.role;
@@ -106,7 +109,7 @@ export class UsersService {
       createdAt: user.createdAt.toISOString(),
     });
 
-    if (!isFirstUser) {
+    if (!user.emailConfirmedAt && dto.sendConfirmationEmail !== false) {
       const { code, hash } = createConfirmationCode();
       const codeHash = await hash;
 
@@ -152,12 +155,21 @@ export class UsersService {
     let confirmationCode: string | undefined;
 
     if (emailChanged && dto.email) {
-      const { code, hash } = createConfirmationCode();
-      const codeHash = await hash;
+      if (dto.emailConfirmed === true) {
+        updateData.emailConfirmedAt = new Date();
+        updateData.emailConfirmationToken = null as unknown as string;
+      } else if (dto.sendConfirmationEmail === false) {
+        // Unconfirmed until an admin confirms it; no code exists, so the old address's code cannot be reused.
+        updateData.emailConfirmedAt = null as unknown as Date;
+        updateData.emailConfirmationToken = null as unknown as string;
+      } else {
+        const { code, hash } = createConfirmationCode();
+        const codeHash = await hash;
 
-      updateData.emailConfirmedAt = null as unknown as Date;
-      updateData.emailConfirmationToken = codeHash;
-      confirmationCode = code;
+        updateData.emailConfirmedAt = null as unknown as Date;
+        updateData.emailConfirmationToken = codeHash;
+        confirmationCode = code;
+      }
     }
 
     const updated = await this.usersRepository.update(id, updateData);
@@ -235,6 +247,39 @@ export class UsersService {
     }
 
     const updated = await this.usersRepository.update(targetUserId, { lockedAt: null });
+
+    return this.mapToResponseDto(updated);
+  }
+
+  /**
+   * Admin: mark the user's email as confirmed without a code (e.g. accounts managed on the user's behalf).
+   * Clears any outstanding confirmation code. Idempotent for already confirmed users.
+   */
+  async confirmEmail(targetUserId: string): Promise<UserResponseDto> {
+    const user = await this.usersRepository.findByIdForTenant(targetUserId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.emailConfirmedAt) {
+      return this.mapToResponseDto(user);
+    }
+
+    const updated = await this.usersRepository.update(user.id, {
+      emailConfirmedAt: new Date(),
+      emailConfirmationToken: null as unknown as string,
+    });
+
+    this.statisticsService?.recordEntityUpdated('user', updated.id, { role: updated.role }, undefined).catch(() => {
+      /* fire and forget */
+    });
+    this.notificationPublisher?.publishUserUpdated({
+      id: updated.id,
+      email: updated.email,
+      role: updated.role,
+      updatedAt: updated.updatedAt.toISOString(),
+    });
 
     return this.mapToResponseDto(updated);
   }

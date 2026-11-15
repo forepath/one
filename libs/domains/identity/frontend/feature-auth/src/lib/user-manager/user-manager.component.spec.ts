@@ -25,7 +25,7 @@ function user(id: string, email: string, overrides: Partial<UserResponseDto> = {
 describe('IdentityUserManagerComponent', () => {
   let fixture: ComponentFixture<IdentityUserManagerComponent>;
   let facade: Record<string, unknown>;
-  let authService: { lockUser: jest.Mock; unlockUser: jest.Mock; deleteUser: jest.Mock };
+  let authService: { lockUser: jest.Mock; unlockUser: jest.Mock; deleteUser: jest.Mock; confirmUserEmail: jest.Mock };
 
   beforeEach(async () => {
     facade = {
@@ -34,6 +34,7 @@ describe('IdentityUserManagerComponent', () => {
         user('u-1', 'ann@example.com'),
         user('u-2', 'bob@example.com'),
         user('u-3', 'cat@example.com', { lockedAt: '2026-10-02T10:00:00.000Z' }),
+        user('u-4', 'dan@example.com', { emailConfirmedAt: null }),
       ]),
       user$: new BehaviorSubject({ id: 'self', email: 'admin@example.com', role: 'admin' }),
       usersLoading$: new BehaviorSubject(false),
@@ -43,7 +44,11 @@ describe('IdentityUserManagerComponent', () => {
       deletingUser$: new BehaviorSubject(false),
       lockingUser$: new BehaviorSubject(false),
       unlockingUser$: new BehaviorSubject(false),
+      confirmingUserEmail$: new BehaviorSubject(false),
       loadUsers: jest.fn(),
+      createUser: jest.fn(),
+      updateUser: jest.fn(),
+      confirmUserEmail: jest.fn(),
     };
     authService = {
       lockUser: jest.fn((id: string) =>
@@ -51,6 +56,7 @@ describe('IdentityUserManagerComponent', () => {
       ),
       unlockUser: jest.fn(() => of({})),
       deleteUser: jest.fn(() => of(undefined)),
+      confirmUserEmail: jest.fn(() => of({})),
     };
 
     await TestBed.configureTestingModule({
@@ -93,5 +99,94 @@ describe('IdentityUserManagerComponent', () => {
     expect(component.bulkResult()?.message).toContain('1 done');
     expect(component.bulkResult()?.message).toContain('1 not allowed');
     expect(component.selectedUserIds()).toEqual(['u-2']);
+  });
+
+  describe('email confirmation', () => {
+    it('offers "Confirm email" only for unconfirmed users and dispatches it', () => {
+      const component = fixture.componentInstance;
+      const unconfirmed = user('u-4', 'dan@example.com', { emailConfirmedAt: null });
+
+      expect(component.userRowMenu(user('u-1', 'ann@example.com')).map((i) => i.id)).not.toContain('confirm-email');
+      expect(component.userRowMenu(unconfirmed).map((i) => i.id)).toContain('confirm-email');
+
+      component.onUserAction(unconfirmed, 'confirm-email');
+
+      expect(facade['confirmUserEmail']).toHaveBeenCalledWith('u-4');
+    });
+
+    it('bulk-confirms only the unconfirmed selected users', async () => {
+      const component = fixture.componentInstance;
+
+      component.selectedUserIds.set(['u-1', 'u-4']);
+      component.onBulkConfirmEmail();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve));
+
+      expect(authService.confirmUserEmail).toHaveBeenCalledTimes(1);
+      expect(authService.confirmUserEmail).toHaveBeenCalledWith('u-4');
+    });
+
+    it('creates users with the default confirmation flow unless options change', () => {
+      const component = fixture.componentInstance;
+
+      component.onAddUser();
+      component.createForm.email = ' new@example.com ';
+      component.createForm.password = 'secret-pass';
+      component.onSubmitCreateUser();
+
+      expect(facade['createUser']).toHaveBeenLastCalledWith({
+        email: 'new@example.com',
+        password: 'secret-pass',
+        role: 'user',
+      });
+
+      component.createForm.sendConfirmationEmail = false;
+      component.onSubmitCreateUser();
+
+      expect(facade['createUser']).toHaveBeenLastCalledWith(expect.objectContaining({ sendConfirmationEmail: false }));
+
+      component.createForm.emailConfirmed = true;
+      component.onSubmitCreateUser();
+
+      const dto = (facade['createUser'] as jest.Mock).mock.lastCall[0];
+
+      expect(dto.emailConfirmed).toBe(true);
+      expect(dto).not.toHaveProperty('sendConfirmationEmail');
+    });
+
+    it('shows the create options and hides "send" when the email is pre-confirmed', async () => {
+      const component = fixture.componentInstance;
+
+      component.onAddUser();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(document.querySelector('[data-testid="create-user-email-confirmed"]')).not.toBeNull();
+      expect(document.querySelector('[data-testid="create-user-send-confirmation"]')).not.toBeNull();
+
+      component.createForm.emailConfirmed = true;
+      fixture.detectChanges();
+
+      expect(document.querySelector('[data-testid="create-user-send-confirmation"]')).toBeNull();
+    });
+
+    it('sends edit confirmation options only when the email changes', () => {
+      const component = fixture.componentInstance;
+
+      component.onEditUser(user('u-1', 'ann@example.com'));
+      component.editForm.emailConfirmed = true;
+      component.editForm.email = 'ANN@example.com';
+      component.onSubmitEditUser();
+
+      expect((facade['updateUser'] as jest.Mock).mock.lastCall[1]).not.toHaveProperty('emailConfirmed');
+
+      component.editForm.email = 'ann.new@example.com';
+      component.onSubmitEditUser();
+
+      expect(facade['updateUser']).toHaveBeenLastCalledWith(
+        'u-1',
+        expect.objectContaining({ email: 'ann.new@example.com', emailConfirmed: true }),
+      );
+    });
   });
 });

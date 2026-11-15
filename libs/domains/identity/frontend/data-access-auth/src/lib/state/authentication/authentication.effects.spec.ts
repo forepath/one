@@ -49,6 +49,9 @@ import {
   unlockUser,
   unlockUserFailure,
   unlockUserSuccess,
+  confirmUserEmail,
+  confirmUserEmailFailure,
+  confirmUserEmailSuccess,
 } from './authentication.actions';
 import {
   checkAuthentication$,
@@ -67,6 +70,7 @@ import {
   requestPasswordResetSuccessRedirect$,
   resetPasswordSuccessRedirect$,
   unlockUser$,
+  confirmUserEmail$,
 } from './authentication.effects';
 import type { UserResponseDto } from './authentication.types';
 
@@ -1326,6 +1330,43 @@ describe('AuthenticationEffects', () => {
       });
     });
   });
+  describe('confirmUserEmail$', () => {
+    const mockAuthService = {
+      confirmUserEmail: jest.fn(),
+    } as any;
+
+    it('should return confirmUserEmailSuccess on success', (done) => {
+      const user: UserResponseDto = {
+        id: 'user-1',
+        email: 'managed@example.com',
+        role: 'user',
+        emailConfirmedAt: '2026-01-01T00:00:00Z',
+        lockedAt: null,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      };
+
+      actions$ = of(confirmUserEmail({ id: 'user-1' }));
+      mockAuthService.confirmUserEmail.mockReturnValue(of(user));
+
+      confirmUserEmail$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(confirmUserEmailSuccess({ user }));
+        expect(mockAuthService.confirmUserEmail).toHaveBeenCalledWith('user-1');
+        done();
+      });
+    });
+
+    it('should return confirmUserEmailFailure on error', (done) => {
+      actions$ = of(confirmUserEmail({ id: 'user-1' }));
+      mockAuthService.confirmUserEmail.mockReturnValue(throwError(() => new Error('Confirm failed')));
+
+      confirmUserEmail$(actions$, mockAuthService).subscribe((result) => {
+        expect(result).toEqual(confirmUserEmailFailure({ error: 'Confirm failed' }));
+        done();
+      });
+    });
+  });
+
   describe('client certificate (mtls)', () => {
     const pki = createTestPki();
     const mtlsEnvironment = () => createMockIdentityAuthEnvironment({ authentication: { type: 'mtls' } });

@@ -1050,6 +1050,29 @@ paths:
           description: Self-unlock is not allowed
         '404':
           description: User not found
+  /users/{id}/confirm-email:
+    post:
+      summary: Confirm a user's email (admin only)
+      operationId: confirmUserEmail
+      security:
+        - bearerAuth: [users:admin]
+      description: >
+        Marks the target user's email as confirmed without a code and clears any outstanding confirmation code.
+        Idempotent for users that are already confirmed.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Email confirmed (or already confirmed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponseDto'
+        '404':
+          description: User not found
   /users/{id}/2fa/totp:
     delete:
       summary: Admin remove authenticator 2FA from a user
@@ -9448,6 +9471,16 @@ components:
           minLength: 8
         role:
           $ref: '#/components/schemas/UserRole'
+        emailConfirmed:
+          type: boolean
+          default: false
+          description: Create the account with its email already confirmed; no confirmation email is sent.
+        sendConfirmationEmail:
+          type: boolean
+          default: true
+          description: >
+            Email a confirmation code to an unconfirmed account. With false the account stays unconfirmed
+            until an admin confirms it via POST /users/{id}/confirm-email.
     UpdateUserDto:
       type: object
       properties:
@@ -9459,6 +9492,16 @@ components:
           minLength: 8
         role:
           $ref: '#/components/schemas/UserRole'
+        emailConfirmed:
+          type: boolean
+          default: false
+          description: Only when the email changes. Keep the new address confirmed; no confirmation email is sent.
+        sendConfirmationEmail:
+          type: boolean
+          default: true
+          description: >
+            Only when the email changes to an unconfirmed address. With false no code is sent and the address
+            stays unconfirmed until an admin confirms it.
     ClientResponseDto:
       type: object
       required:
