@@ -169,6 +169,9 @@
       "@forepath/shared/frontend/feature-landingpage": [
         "libs/domains/shared/frontend/feature-landingpage/src/index.ts"
       ],
+      "@forepath/shared/backend/feature-agent-harness": [
+        "libs/domains/shared/backend/feature-agent-harness/src/index.ts"
+      ],
       "@forepath/shared/backend/util-webhook": [
         "libs/domains/shared/backend/util-webhook/src/index.ts"
       ],
@@ -186,6 +189,9 @@
       ],
       "@forepath/shared/backend/feature-notifications": [
         "libs/domains/shared/backend/feature-notifications/src/index.ts"
+      ],
+      "@forepath/shared/frontend/data-access-agent-harness": [
+        "libs/domains/shared/frontend/data-access-agent-harness/src/index.ts"
       ],
       "@forepath/shared/frontend/data-access-notifications": [
         "libs/domains/shared/frontend/data-access-notifications/src/index.ts"
@@ -240,6 +246,9 @@
       ],
       "@forepath/shared/shared/util-release-signing": [
         "libs/domains/shared/shared/util-release-signing/src/index.ts"
+      ],
+      "@forepath/shared/shared/util-agent-harness": [
+        "libs/domains/shared/shared/util-agent-harness/src/index.ts"
       ],
       "@forepath/shared/shared/util-release-keys": [
         "libs/domains/shared/shared/util-release-keys/src/index.ts"

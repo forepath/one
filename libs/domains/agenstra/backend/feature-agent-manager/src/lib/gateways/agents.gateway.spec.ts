@@ -1042,6 +1042,134 @@ describe('AgentsGateway', () => {
       loggerLogSpy.mockRestore();
     });
 
+    it('runs overlapping turns of one chat session one after another', async () => {
+      const socketId = mockSocket.id || 'test-socket-id';
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
+      // Store socket reference for broadcasting
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (gateway as any).socketById.set(socketId, mockSocket);
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      agentsRepository.findById.mockResolvedValue(mockAgent);
+      // Mock chat history to return existing messages (so initialization is skipped)
+      agentMessagesService.getChatHistory.mockResolvedValue([
+        {
+          id: 'msg-1',
+          agentId: mockAgent.id,
+          chatSessionId: 'primary-chat-id',
+          agent: mockAgent,
+          actor: 'user',
+          message: 'Previous message',
+          filtered: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ] as any);
+      const mockAgentResponseJson = JSON.stringify({
+        type: 'result',
+        subtype: 'success',
+        is_error: false,
+        result: 'Hello from agent!',
+      });
+      const mockParsedResponse = {
+        type: 'result',
+        subtype: 'success',
+        is_error: false,
+        result: 'Hello from agent!',
+      };
+      let finishFirst!: (value: string) => void;
+
+      mockAgentProvider.sendMessage
+        .mockImplementationOnce(() => new Promise<string>((resolve) => (finishFirst = resolve)))
+        .mockResolvedValueOnce(mockAgentResponseJson);
+      mockAgentProvider.toParseableStrings.mockReturnValue([mockAgentResponseJson]);
+      mockAgentProvider.toUnifiedResponse.mockReturnValue(mockParsedResponse);
+      const loggerLogSpy = jest.spyOn(gateway['logger'], 'log').mockImplementation();
+      const first = gateway.handleChat({ message: 'First', correlationId: 'turn-1' }, mockSocket as Socket);
+      const second = gateway.handleChat({ message: 'Second', correlationId: 'turn-2' }, mockSocket as Socket);
+
+      for (let i = 0; i < 20; i++) {
+        await new Promise((resolve) => setImmediate(resolve));
+      }
+
+      expect(mockAgentProvider.sendMessage).toHaveBeenCalledTimes(1);
+      // The second user message is already visible while it waits.
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'chatMessage',
+        expect.objectContaining({ data: expect.objectContaining({ from: 'user', text: 'Second' }) }),
+      );
+
+      finishFirst(mockAgentResponseJson);
+      await Promise.all([first, second]);
+
+      expect(mockAgentProvider.sendMessage).toHaveBeenCalledTimes(2);
+      expect(mockAgentProvider.sendMessage.mock.calls[0][2]).toBe('First');
+      expect(mockAgentProvider.sendMessage.mock.calls[1][2]).toBe('Second');
+      loggerLogSpy.mockRestore();
+    });
+
+    it('stamps the turn correlationId on the agent answer and its filter results', async () => {
+      const socketId = mockSocket.id || 'test-socket-id';
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
+      // Store socket reference for broadcasting
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (gateway as any).socketById.set(socketId, mockSocket);
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      agentsRepository.findById.mockResolvedValue(mockAgent);
+      // Mock chat history to return existing messages (so initialization is skipped)
+      agentMessagesService.getChatHistory.mockResolvedValue([
+        {
+          id: 'msg-1',
+          agentId: mockAgent.id,
+          chatSessionId: 'primary-chat-id',
+          agent: mockAgent,
+          actor: 'user',
+          message: 'Previous message',
+          filtered: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ] as any);
+      const mockAgentResponseJson = JSON.stringify({
+        type: 'result',
+        subtype: 'success',
+        is_error: false,
+        result: 'Hello from agent!',
+      });
+      const mockParsedResponse = {
+        type: 'result',
+        subtype: 'success',
+        is_error: false,
+        result: 'Hello from agent!',
+      };
+
+      mockAgentProvider.sendMessage.mockResolvedValue(mockAgentResponseJson);
+      mockAgentProvider.toParseableStrings.mockReturnValue([mockAgentResponseJson]);
+      mockAgentProvider.toUnifiedResponse.mockReturnValue(mockParsedResponse);
+      const loggerLogSpy = jest.spyOn(gateway['logger'], 'log').mockImplementation();
+
+      await gateway.handleChat({ message: 'Hello, world!', correlationId: 'turn-1' }, mockSocket as Socket);
+
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'chatMessage',
+        expect.objectContaining({
+          data: expect.objectContaining({ from: 'agent', chatId: 'primary-chat-id', correlationId: 'turn-1' }),
+        }),
+      );
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'messageFilterResult',
+        expect.objectContaining({ data: expect.objectContaining({ direction: 'incoming', correlationId: 'turn-1' }) }),
+      );
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'messageFilterResult',
+        expect.objectContaining({ data: expect.objectContaining({ direction: 'outgoing', correlationId: 'turn-1' }) }),
+      );
+      loggerLogSpy.mockRestore();
+    });
+
     it('should include model flag in container command when provided', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
@@ -2776,7 +2904,22 @@ describe('AgentsGateway', () => {
         );
         mockAgentProvider.toUnifiedResponse.mockImplementation((s: string) => JSON.parse(s) as AgentResponseObject);
 
-        await gateway.handleChat({ message: 'Say hello', responseMode: 'stream' }, mockSocket as Socket);
+        await gateway.handleChat(
+          { message: 'Say hello', responseMode: 'stream', correlationId: 'stream-turn' },
+          mockSocket as Socket,
+        );
+
+        // The persisted final answer and its filter result name the turn they belong to.
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+          'chatMessage',
+          expect.objectContaining({ data: expect.objectContaining({ from: 'agent', correlationId: 'stream-turn' }) }),
+        );
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+          'messageFilterResult',
+          expect.objectContaining({
+            data: expect.objectContaining({ direction: 'outgoing', correlationId: 'stream-turn' }),
+          }),
+        );
 
         const agentCalls = agentMessagesService.createAgentMessage.mock.calls.filter(
           (c) => c[0] === mockAgent.id && typeof c[1] === 'object' && c[1] !== null,

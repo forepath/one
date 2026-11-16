@@ -56,7 +56,7 @@ Agenstra chat sessions are stateful: the agent keeps the transcript. A turn runs
 | `previous_response_id`                    | Responses          | Id of an earlier response (response ids embed their chat session) |
 | _none_                                    | all                | The agent's **primary** session                                   |
 
-Conflicting selectors are rejected. Sessions of other agents answer `404`. Every turn response carries the session in the `X-Agenstra-Chat-Id` header. Conversation ids are `conv_<chat session id without dashes>`; bare UUIDs are accepted too.
+Turns of one chat session run one after another, also across API callers and console users (the agent works on one prompt per session at a time): a turn sent while another runs waits for it. Use separate conversations for parallel work. Conflicting selectors are rejected. Sessions of other agents answer `404`. Every turn response carries the session in the `X-Agenstra-Chat-Id` header. Conversation ids are `conv_<chat session id without dashes>`; bare UUIDs are accepted too.
 
 ### Message history
 
@@ -235,6 +235,7 @@ JSON bodies on these routes may be up to 1 MB (100 kB elsewhere). Browser client
 - **[Chat Interface](./chat-interface.md)** Chat sessions
 - **[Message Filters](./message-filters.md)** Filter rules and outcomes
 - **[Webhooks](./webhooks.md)** Chat and filter events
+- **[Agent harness libraries](./agent-harness.md)** Ready-made client harness (tools, context, sessions) for Node, NestJS and Angular
 
 ## API references
 

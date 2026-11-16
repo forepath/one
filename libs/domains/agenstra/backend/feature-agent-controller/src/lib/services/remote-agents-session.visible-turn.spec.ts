@@ -200,6 +200,35 @@ describe('RemoteAgentsSessionService.sendVisibleChatTurn', () => {
     expect(fakeSocket.disconnected).toBe(true);
   });
 
+  it('never settles on the answer or filter drop of another turn in the same chat', async () => {
+    const result = start();
+    let settled = false;
+
+    void result.then(() => (settled = true));
+    await waitForChatEmit();
+    // Overlapping turn (another API caller or a console user) in the same chat session.
+    fakeSocket.push('chatMessage', {
+      success: true,
+      data: {
+        ...agentMessage(chatId, { type: 'result', result: 'answer of the other turn' }).data,
+        correlationId: 'console-turn',
+      },
+    });
+    fakeSocket.push('messageFilterResult', {
+      success: true,
+      data: { direction: 'outgoing', status: 'dropped', chatId, correlationId: 'console-turn' },
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(settled).toBe(false);
+
+    fakeSocket.push('chatMessage', {
+      success: true,
+      data: { ...agentMessage(chatId, { type: 'result', result: 'own answer' }).data, correlationId: 'openai:1' },
+    });
+
+    await expect(result).resolves.toEqual(expect.objectContaining({ text: 'own answer', finishReason: 'stop' }));
+  });
+
   it("forwards only this turn's live tool events", async () => {
     const toolEvents: unknown[] = [];
     const result = start({ onToolEvent: (event: unknown) => toolEvents.push(event) });
