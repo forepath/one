@@ -96,6 +96,7 @@ import { ContextInjectionPayload } from '../types/context-injection.types';
 import { deriveAgentContextItems } from '../utils/agent-context-items.utils';
 import { DEFAULT_AGENT_WORKSPACE_ROOT, normalizeWorkspaceRoot } from '../utils/agent-file-path.utils';
 import { PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX } from '../utils/chat-enhancement-prompt.utils';
+import { ChatTurnQueue, ChatTurnQueueTimeoutError, readChatTurnQueueTimeoutMs } from '../utils/chat-turn-queue.utils';
 import { finalizeStreamingTranscriptParts } from '../utils/materialize-streaming-deltas-for-transcript';
 import { PROMPT_TICKET_BODY_RESUME_SESSION_SUFFIX } from '../utils/ticket-body-prompt.utils';
 
@@ -261,6 +262,8 @@ interface AgentChatMessageData {
   chatId?: string;
   /** Persisted `agent_messages.id` when available. */
   id?: string;
+  /** Turn (chat request) this answer belongs to, so turn waiters never settle on another turn's answer. */
+  correlationId?: string;
 }
 
 type ChatMessageData = UserChatMessageData | AgentChatMessageData;
@@ -292,6 +295,8 @@ interface MessageFilterResultData {
   action?: 'drop' | 'flag';
   timestamp: string;
   chatId?: string;
+  /** Turn (chat request) the filtered message belongs to. */
+  correlationId?: string;
 }
 
 interface ChatMessageBatchData {
@@ -376,6 +381,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   server: Server;
 
   private readonly logger = new Logger(AgentsGateway.name);
+  private readonly chatTurnQueue = new ChatTurnQueue();
 
   // Store authenticated agents by socket.id
   // Maps socket.id -> agent UUID
@@ -1024,6 +1030,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       chatSessionId?: string;
       chatIdFields: { chatId?: string };
       filtered?: boolean;
+      correlationId?: string;
     },
   ): Promise<void> {
     let messageId: string | undefined;
@@ -1056,6 +1063,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         response,
         timestamp,
         ...opts.chatIdFields,
+        ...(opts.correlationId ? { correlationId: opts.correlationId } : {}),
       }),
     );
   }
@@ -1388,7 +1396,10 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     finalResponse: AgentResponseObject,
     chatSessionId?: string,
     chatId?: string,
+    correlationId?: string,
   ): Promise<void> {
+    // Turn waiters (controller API turns) only settle on frames of their own turn.
+    const turnFields = { ...(chatId ? { chatId } : {}), ...(correlationId ? { correlationId } : {}) };
     const outgoingFilterResult = await this.applyFilters(JSON.stringify(finalResponse), FilterDirection.OUTGOING, {
       agentId: agentUuid,
       actor: 'agent',
@@ -1400,7 +1411,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       createSuccessResponse<MessageFilterResultData>({
         direction: 'outgoing',
         ...outgoingFilterResult,
-        ...(chatId ? { chatId } : {}),
+        ...turnFields,
       }),
     );
 
@@ -1431,7 +1442,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
             from: ChatActor.AGENT,
             response: responseToUse,
             timestamp: agentResponseTimestamp,
-            ...(chatId ? { chatId } : {}),
+            ...turnFields,
           }),
         );
       } catch (persistError) {
@@ -1445,7 +1456,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
             from: ChatActor.AGENT,
             response: responseToUse,
             timestamp: agentResponseTimestamp,
-            ...(chatId ? { chatId } : {}),
+            ...turnFields,
           }),
         );
       }
@@ -2200,6 +2211,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         direction: 'incoming',
         ...incomingFilterResult,
         ...chatIdFields,
+        correlationId,
       }),
     );
 
@@ -2410,7 +2422,18 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       chatId,
     );
 
+    let releaseChatTurn: (() => void) | undefined;
+
     try {
+      if (chatSessionId && !ephemeral) {
+        // One agent turn at a time per visible chat session (see ChatTurnQueue); the user message above is already
+        // persisted and broadcast, only the prompt to the agent waits for the previous turn.
+        releaseChatTurn = await this.chatTurnQueue.acquire(
+          `${agentUuid}:${chatSessionId}`,
+          readChatTurnQueueTimeoutMs(),
+        );
+      }
+
       // Get agent details for display
       const agent = await this.agentsService.findOne(agentUuid);
 
@@ -2480,6 +2503,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
                     built,
                     chatSessionId,
                     chatId,
+                    correlationId,
                   );
                   streamingTurnPersisted = true;
                 }
@@ -2551,6 +2575,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
                   finalResponse,
                   chatSessionId,
                   chatId,
+                  correlationId,
                 );
               } else {
                 const finalTextLen = aggregatedText.trim().length;
@@ -2594,6 +2619,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
                       direction: 'outgoing',
                       ...outgoingFilterResult,
                       ...chatIdFields,
+                      correlationId,
                     }),
                   );
 
@@ -2615,7 +2641,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
                       socket,
                       fakeAgentResponse,
                       agentResponseTimestamp,
-                      { chatSessionId, chatIdFields, filtered: false },
+                      { chatSessionId, chatIdFields, filtered: false, correlationId },
                     );
 
                     const events = this.agentResponseToChatEvents(
@@ -2646,6 +2672,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
                     chatSessionId,
                     chatIdFields,
                     filtered: outgoingFilterResult.status === 'filtered',
+                    correlationId,
                   });
 
                   const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, responseToUse);
@@ -2672,6 +2699,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
                       direction: 'outgoing',
                       ...outgoingFilterResult,
                       ...chatIdFields,
+                      correlationId,
                     }),
                   );
 
@@ -2689,7 +2717,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
                       socket,
                       fakeAgentResponse,
                       agentResponseTimestamp,
-                      { chatSessionId, chatIdFields, filtered: false },
+                      { chatSessionId, chatIdFields, filtered: false, correlationId },
                     );
 
                     const events = this.agentResponseToChatEvents(
@@ -2718,6 +2746,7 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
                       chatSessionId,
                       chatIdFields,
                       filtered: outgoingFilterResult.status === 'filtered',
+                      correlationId,
                     },
                   );
 
@@ -2744,12 +2773,22 @@ export class AgentsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       }
     } catch (error) {
       const err = error as { message?: string; stack?: string };
+
+      if (error instanceof ChatTurnQueueTimeoutError) {
+        socket.emit('error', createErrorResponse(error.message, 'CHAT_BUSY'));
+        this.logger.warn(`Chat turn of agent ${agentUuid} gave up waiting for the previous turn of its chat session`);
+
+        return;
+      }
+
       const errorCode = err.message?.includes('permission denied') ? 'AGENT_PERMISSION_DENIED' : 'CHAT_ERROR';
 
       socket.emit('error', createErrorResponse('Error processing chat message', errorCode));
 
       this.logger.error(`Chat error for agent ${agentUuid}: ${err.message}`, err.stack);
     } finally {
+      releaseChatTurn?.();
+
       // A context ticket only serves the turn it was minted for: copies (e.g. from the OpenCode session store)
       // are useless afterwards. "Allow for this chat" grants stay with the chat session.
       if (contextTicket) {

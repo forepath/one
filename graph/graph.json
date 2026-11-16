@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-15T17:03:18.530Z",
+  "generatedAt": "2026-11-16T19:31:47.222Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -262,6 +262,27 @@
         "domain": "decabill",
         "context": "frontend",
         "featureGroup": "feature"
+      }
+    },
+    {
+      "id": "project:shared-frontend-data-access-agent-harness",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-frontend-data-access-agent-harness",
+        "root": "libs/domains/shared/frontend/data-access-agent-harness",
+        "tags": [
+          "domain:shared",
+          "scope:frontend",
+          "type:data-access"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "shared",
+        "context": "frontend",
+        "featureGroup": "data-access"
       }
     },
     {
@@ -715,6 +736,27 @@
       }
     },
     {
+      "id": "project:shared-backend-feature-agent-harness",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-backend-feature-agent-harness",
+        "root": "libs/domains/shared/backend/feature-agent-harness",
+        "tags": [
+          "domain:shared",
+          "scope:backend",
+          "type:feature"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "shared",
+        "context": "backend",
+        "featureGroup": "feature"
+      }
+    },
+    {
       "id": "project:shared-backend-feature-notifications",
       "type": "lib",
       "attrs": {
@@ -1009,6 +1051,27 @@
         ],
         "domain": "shared",
         "context": "frontend",
+        "featureGroup": "util"
+      }
+    },
+    {
+      "id": "project:shared-shared-util-agent-harness",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-shared-util-agent-harness",
+        "root": "libs/domains/shared/shared/util-agent-harness",
+        "tags": [
+          "domain:shared",
+          "scope:shared",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "shared",
+        "context": "shared",
         "featureGroup": "util"
       }
     },
@@ -7286,6 +7349,50 @@
       }
     },
     {
+      "id": "file:libs/domains/shared/frontend/data-access-agent-harness/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/data-access-agent-harness/README.md",
+        "languageOrKind": "md",
+        "projectName": "shared-frontend-data-access-agent-harness"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/frontend/data-access-agent-harness/src/lib/services/agent-harness-tools.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/data-access-agent-harness/src/lib/services/agent-harness-tools.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-frontend-data-access-agent-harness"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/frontend/data-access-agent-harness/src/lib/services/agent-harness-transport.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/data-access-agent-harness/src/lib/services/agent-harness-transport.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-frontend-data-access-agent-harness"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/frontend/data-access-agent-harness/src/lib/state/agent-harness",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/data-access-agent-harness/src/lib/state/agent-harness",
+        "languageOrKind": "ts",
+        "projectName": "shared-frontend-data-access-agent-harness",
+        "sliceName": "agent-harness",
+        "memberFiles": [
+          "agent-harness.actions.ts",
+          "agent-harness.effects.ts",
+          "agent-harness.facade.ts",
+          "agent-harness.reducer.ts",
+          "agent-harness.selectors.ts"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/shared/frontend/data-access-communication/README.md",
       "type": "readme",
       "attrs": {
@@ -12923,6 +13030,33 @@
       }
     },
     {
+      "id": "file:libs/domains/shared/backend/feature-agent-harness/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/shared/backend/feature-agent-harness/README.md",
+        "languageOrKind": "md",
+        "projectName": "shared-backend-feature-agent-harness"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/backend/feature-agent-harness/src/lib/agent-harness.module.ts",
+      "type": "module",
+      "attrs": {
+        "path": "libs/domains/shared/backend/feature-agent-harness/src/lib/agent-harness.module.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-backend-feature-agent-harness"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/backend/feature-agent-harness/src/lib/agent-harness.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/backend/feature-agent-harness/src/lib/agent-harness.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-backend-feature-agent-harness"
+      }
+    },
+    {
       "id": "file:libs/domains/shared/backend/feature-notifications/README.md",
       "type": "readme",
       "attrs": {
@@ -13394,6 +13528,15 @@
         "path": "libs/domains/shared/frontend/util-docs-parser/src/lib/services/search-index-builder.service.ts",
         "languageOrKind": "ts",
         "projectName": "shared-frontend-util-docs-parser"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/shared/util-agent-harness/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/shared/shared/util-agent-harness/README.md",
+        "languageOrKind": "md",
+        "projectName": "shared-shared-util-agent-harness"
       }
     },
     {
@@ -15300,6 +15443,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/agenstra/features/agent-handoffs.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/agenstra/features/agent-harness.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/agent-harness.md",
         "languageOrKind": "md"
       }
     },
@@ -28796,6 +28947,76 @@
       }
     },
     {
+      "id": "concept:agenstra-agent-harness-libraries",
+      "type": "concept",
+      "attrs": {
+        "title": "Agent harness libraries",
+        "docPath": "docs/agenstra/features/agent-harness.md",
+        "sectionAnchor": "agent-harness-libraries",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-how-a-turn-runs",
+      "type": "concept",
+      "attrs": {
+        "title": "How a turn runs",
+        "docPath": "docs/agenstra/features/agent-harness.md",
+        "sectionAnchor": "how-a-turn-runs",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-core-usage",
+      "type": "concept",
+      "attrs": {
+        "title": "Core usage",
+        "docPath": "docs/agenstra/features/agent-harness.md",
+        "sectionAnchor": "core-usage",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-nestjs",
+      "type": "concept",
+      "attrs": {
+        "title": "NestJS",
+        "docPath": "docs/agenstra/features/agent-harness.md",
+        "sectionAnchor": "nestjs",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-angular",
+      "type": "concept",
+      "attrs": {
+        "title": "Angular",
+        "docPath": "docs/agenstra/features/agent-harness.md",
+        "sectionAnchor": "angular",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-security-model",
+      "type": "concept",
+      "attrs": {
+        "title": "Security model",
+        "docPath": "docs/agenstra/features/agent-harness.md",
+        "sectionAnchor": "security-model",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-limits",
+      "type": "concept",
+      "attrs": {
+        "title": "Limits",
+        "docPath": "docs/agenstra/features/agent-harness.md",
+        "sectionAnchor": "limits",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-agent-management",
       "type": "concept",
       "attrs": {
@@ -37998,6 +38219,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:shared-frontend-data-access-agent-harness",
+      "to": "project:shared-shared-util-agent-harness",
+      "type": "depends_on"
+    },
+    {
       "from": "project:shared-frontend-data-access-communication",
       "to": "project:shared-frontend-util-configuration",
       "type": "depends_on"
@@ -38335,6 +38561,11 @@
     {
       "from": "project:forepath-frontend-util-configuration",
       "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-backend-feature-agent-harness",
+      "to": "project:shared-shared-util-agent-harness",
       "type": "depends_on"
     },
     {
@@ -43233,6 +43464,26 @@
       "type": "contains"
     },
     {
+      "from": "project:shared-frontend-data-access-agent-harness",
+      "to": "file:libs/domains/shared/frontend/data-access-agent-harness/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-data-access-agent-harness",
+      "to": "file:libs/domains/shared/frontend/data-access-agent-harness/src/lib/services/agent-harness-tools.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-data-access-agent-harness",
+      "to": "file:libs/domains/shared/frontend/data-access-agent-harness/src/lib/services/agent-harness-transport.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-data-access-agent-harness",
+      "to": "file:libs/domains/shared/frontend/data-access-agent-harness/src/lib/state/agent-harness",
+      "type": "contains"
+    },
+    {
       "from": "project:shared-frontend-data-access-communication",
       "to": "file:libs/domains/shared/frontend/data-access-communication/README.md",
       "type": "contains"
@@ -46338,6 +46589,21 @@
       "type": "contains"
     },
     {
+      "from": "project:shared-backend-feature-agent-harness",
+      "to": "file:libs/domains/shared/backend/feature-agent-harness/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-feature-agent-harness",
+      "to": "file:libs/domains/shared/backend/feature-agent-harness/src/lib/agent-harness.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-feature-agent-harness",
+      "to": "file:libs/domains/shared/backend/feature-agent-harness/src/lib/agent-harness.service.ts",
+      "type": "contains"
+    },
+    {
       "from": "project:shared-backend-feature-notifications",
       "to": "file:libs/domains/shared/backend/feature-notifications/README.md",
       "type": "contains"
@@ -46580,6 +46846,11 @@
     {
       "from": "project:shared-frontend-util-docs-parser",
       "to": "file:libs/domains/shared/frontend/util-docs-parser/src/lib/services/search-index-builder.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-shared-util-agent-harness",
+      "to": "file:libs/domains/shared/shared/util-agent-harness/README.md",
       "type": "contains"
     },
     {
@@ -54210,6 +54481,46 @@
     {
       "from": "file:docs/agenstra/features/agent-handoffs.md",
       "to": "concept:agenstra-configuration",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-harness.md",
+      "to": "concept:agenstra-agent-harness-libraries",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-harness.md",
+      "to": "concept:agenstra-how-a-turn-runs",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-harness.md",
+      "to": "concept:agenstra-core-usage",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-harness.md",
+      "to": "concept:agenstra-nestjs",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-harness.md",
+      "to": "concept:agenstra-angular",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-harness.md",
+      "to": "concept:agenstra-security-model",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-harness.md",
+      "to": "concept:agenstra-limits",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-harness.md",
+      "to": "concept:agenstra-related-documentation",
       "type": "contains"
     },
     {
@@ -81668,6 +81979,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-agent-harness-libraries",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-core-usage",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-creating-an-agent",
       "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
@@ -88038,6 +88359,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:shared-frontend-data-access-agent-harness",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-data-access-agent-harness",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-data-access-agent-harness",
+      "to": "feature-group:data-access",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:shared-frontend-data-access-communication",
       "to": "domain:shared",
       "type": "belongs_to"
@@ -88350,6 +88686,21 @@
     {
       "from": "project:forepath-frontend-util-configuration",
       "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-backend-feature-agent-harness",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-backend-feature-agent-harness",
+      "to": "context:backend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-backend-feature-agent-harness",
+      "to": "feature-group:feature",
       "type": "belongs_to"
     },
     {
@@ -88559,6 +88910,21 @@
     },
     {
       "from": "project:shared-frontend-util-docs-parser",
+      "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-shared-util-agent-harness",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-shared-util-agent-harness",
+      "to": "context:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-shared-util-agent-harness",
       "to": "feature-group:util",
       "type": "belongs_to"
     },
@@ -89274,6 +89640,11 @@
     },
     {
       "from": "file:docs/agenstra/features/agent-handoffs.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-harness.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -91089,6 +91460,41 @@
     },
     {
       "from": "concept:agenstra-security-and-limits",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-agent-harness-libraries",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-how-a-turn-runs",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-core-usage",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-nestjs",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-angular",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-security-model",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-limits",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

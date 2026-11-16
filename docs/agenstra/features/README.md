@@ -187,6 +187,16 @@ Call agents through the OpenAI API standard (Chat Completions, Responses, Conver
 - Function calling: the agent can call the client's own tools (harnesses), next to its workspace tools
 - Same scopes, workspace access, statistics and webhooks as console chat turns
 
+### [Agent harness libraries](./agent-harness.md)
+
+Shared Node / NestJS / Angular libraries on top of the OpenAI-compatible API to embed agents into other products.
+
+**Key Capabilities**:
+
+- Register product tools (decorators in NestJS) with schema checks, per-user enablement and human approval
+- Context providers per turn, conversations (chat sessions) and the client tool loop
+- Relay turns from the product backend to its frontend (SSE) with NgRx chat state
+
 ### [Webhooks](./webhooks.md)
 
 Instance-scoped outbound webhook endpoints for controller events with optional workspace filters.

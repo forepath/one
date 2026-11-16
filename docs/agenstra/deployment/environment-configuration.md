@@ -239,6 +239,10 @@ Provisioned managers receive `OIDC_ISSUER`, `OIDC_TOKEN_VALIDATION=OFFLINE` and 
 
 - `OPENCODE_AGENT_DOCKER_IMAGE` - Primary worker image (default: `ghcr.io/forepath/agenstra-manager-worker:latest`)
 
+### Chat turns
+
+- `AGENT_CHAT_TURN_QUEUE_TIMEOUT_MS` - Turns of one visible chat session run one after another (overlapping prompts in one agent session would receive each other's answers). A turn waits at most this long for the previous one, then fails with `CHAT_BUSY` (default: `900000`, minimum `10000`). The user message is persisted and shown immediately.
+
 ### Agent context MCP
 
 - `AGENT_CONTEXT_MCP_MANAGER_URL` - Manager base URL (including `/api`) as reachable **from worker containers**, e.g. `http://agent-manager-api:3000/api` on the `AGENT_DOCKER_NETWORK` bridge (default: empty = context MCP disabled, ticket / knowledge context stays inlined into prompts).
