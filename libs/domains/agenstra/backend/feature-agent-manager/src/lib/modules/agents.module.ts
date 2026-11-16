@@ -7,6 +7,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AgentsChatSessionsController } from '../controllers/agents-chat-sessions.controller';
+import { AgentsContextClientToolsController } from '../controllers/agents-context-client-tools.controller';
 import { AgentsContextDeploymentsController } from '../controllers/agents-context-deployments.controller';
 import { AgentsContextController } from '../controllers/agents-context.controller';
 import { AgentsEgressController } from '../controllers/agents-egress.controller';
@@ -75,6 +76,7 @@ import { WorkspaceConfigurationOverridesRepository } from '../repositories/works
 import { AgenstraManagerMetricsCollectorService } from '../services/agenstra-manager-metrics-collector.service';
 import { AgentActiveTurnsService } from '../services/agent-active-turns.service';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
+import { AgentClientToolsApiService } from '../services/agent-client-tools-api.service';
 import { AgentContextAccessService } from '../services/agent-context-access.service';
 import { AgentContextApiService } from '../services/agent-context-api.service';
 import { AgentContextChangesService } from '../services/agent-context-changes.service';
@@ -155,6 +157,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentsTasksController,
     AgentsHandoffsController,
     AgentsContextDeploymentsController,
+    AgentsContextClientToolsController,
     AgentsGraphController,
     AgentGraphsComposeController,
     AgentsGraphContextController,
@@ -182,6 +185,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentTasksApiService,
     AgentHandoffsApiService,
     AgentDeploymentsApiService,
+    AgentClientToolsApiService,
     AgentDeploymentActionsService,
     AgentWorkspaceMountsService,
     AgentGraphService,

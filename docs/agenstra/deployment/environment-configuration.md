@@ -118,6 +118,13 @@ Transactional identity email via BullMQ (`email-deliver`). See [Email notificati
 - `RATE_LIMIT_TTL` - Time window in seconds (default: `60`)
 - `RATE_LIMIT_LIMIT` - Maximum requests per window (default: `100`)
 
+### OpenAI-compatible API
+
+- `OPENAI_COMPATIBLE_API_ENABLED` - `false` disables the [OpenAI-compatible API](../features/openai-compatible-api.md) (`/api/clients/:id/agents/:agentId/openai/v1/*` answers 404 after authentication). Default: enabled
+- `REMOTE_AGENT_CHAT_TIMEOUT_MS` - Maximum wait for an agent answer on server-side chat turns, including OpenAI-compatible requests (default: `600000`; client tool round trips restart it)
+- `OPENAI_CLIENT_TOOL_RESULT_TIMEOUT_MS` - How long the agent waits for the result of a client tool call (function calling) before the call fails (default: `600000`, 10 s – 1 h)
+- Continuations of client tool turns on another API replica go through the controller's Valkey / Redis connection (`REDIS_*`, `CACHE_CLIENT`); with `CACHE_ENABLED=false` they must reach the replica that started the turn
+
 ### Client workspace endpoints (SSRF guardrails)
 
 These variables apply to **stored client workspace URLs** (the agent-manager base URL the controller proxies to). They mirror the semantics of frontend **`CONFIG_*`** runtime-config settings where noted.

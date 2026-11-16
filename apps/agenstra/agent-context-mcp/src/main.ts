@@ -13,6 +13,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
+import { callClientTool, CLIENT_TOOL_DEFINITIONS, isClientToolName } from './lib/client-tools';
 import { callContentTool, CONTENT_TOOL_DEFINITIONS, isContentToolName } from './lib/content-tools';
 import { ContextApiClient, readContextApiConfig } from './lib/context-api.client';
 import { callContextTool, CONTEXT_TOOL_DEFINITIONS } from './lib/context-tools';
@@ -39,6 +40,7 @@ async function main(): Promise<void> {
       ...HANDOFF_TOOL_DEFINITIONS,
       ...GRAPH_TOOL_DEFINITIONS,
       ...DEPLOYMENT_TOOL_DEFINITIONS,
+      ...CLIENT_TOOL_DEFINITIONS,
     ],
   }));
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -62,6 +64,10 @@ async function main(): Promise<void> {
 
     if (isDeploymentToolName(name)) {
       return callDeploymentTool(client, name, args);
+    }
+
+    if (isClientToolName(name)) {
+      return callClientTool(client, name, args);
     }
 
     return callContextTool(client, name, args);

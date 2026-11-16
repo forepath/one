@@ -1,6 +1,8 @@
 import {
   AGENSTRA_CONTEXT_MCP_SERVER_KEY,
   type PlatformContextMcpWireOptions,
+  AGENSTRA_CONTEXT_MCP_FEATURES,
+  type AgenstraContextMcpFeature,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -32,6 +34,8 @@ export const AGENT_CONTEXT_MCP_IMAGE_LABEL = 'io.agenstra.context-mcp';
 export class AgentContextMcpService {
   private readonly logger = new Logger(AgentContextMcpService.name);
   private readonly statusCache = new Map<string, { connected: boolean; expiresAt: number }>();
+  /** Capabilities each agent's MCP server announced on its last authenticated request (see recordFeatures). */
+  private readonly features = new Map<string, Set<string>>();
 
   constructor(
     private readonly agentsRepository: AgentsRepository,
@@ -112,6 +116,26 @@ export class AgentContextMcpService {
   }
 
   /** True when OpenCode reports the platform server as connected (cached briefly). */
+  /**
+   * Remember the capabilities an authenticated MCP request of this agent announced (`x-agenstra-mcp-features`). The
+   * MCP server calls the health route on startup, so a (re)started worker announces itself before it serves a turn.
+   */
+  recordFeatures(agentId: string, header: string | undefined): void {
+    const announced = new Set(
+      (header ?? '')
+        .split(',')
+        .map((feature) => feature.trim())
+        .filter((feature) => (AGENSTRA_CONTEXT_MCP_FEATURES as readonly string[]).includes(feature)),
+    );
+
+    this.features.set(agentId, announced);
+  }
+
+  /** True when the agent's MCP server announced the feature (older worker images never do). */
+  supportsFeature(agentId: string, feature: AgenstraContextMcpFeature): boolean {
+    return this.features.get(agentId)?.has(feature) === true;
+  }
+
   async isAvailable(agentId: string, containerId: string): Promise<boolean> {
     if (!this.isConfigured()) {
       return false;

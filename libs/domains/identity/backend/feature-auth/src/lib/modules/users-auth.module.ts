@@ -39,7 +39,7 @@ export class UsersAuthModule {
     return {
       module: UsersAuthModule,
       imports: [
-        PatAuthModule.register({ patScopeCatalog: options.patScopeCatalog }),
+        PatAuthModule.register(options),
         TypeOrmModule.forFeature([UserEntity, RevokedUserTokenEntity, UserPersonalAccessTokenEntity]),
         JwtModule.register({
           global: true,

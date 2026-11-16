@@ -39,7 +39,17 @@ export const AGENSTRA_CONTEXT_MCP_ENV = {
 export const AGENSTRA_CONTEXT_API_HEADERS = {
   agentId: 'x-agenstra-agent-id',
   ticket: 'x-agenstra-context-ticket',
+  /** Capabilities of the worker's MCP server (comma-separated), announced with every request. */
+  features: 'x-agenstra-mcp-features',
 } as const;
+
+/**
+ * Capabilities the platform MCP server of current worker images announces. Older images do not send the header:
+ * features they lack (e.g. client tools) are reported as unavailable instead of silently not working.
+ */
+export const AGENSTRA_CONTEXT_MCP_FEATURES = ['client-tools'] as const;
+
+export type AgenstraContextMcpFeature = (typeof AGENSTRA_CONTEXT_MCP_FEATURES)[number];
 
 /** Manager route prefix (below the global `/api` prefix) for the agent-facing context API. */
 export const AGENSTRA_CONTEXT_API_ROUTE = 'agent-context';

@@ -1,6 +1,9 @@
 import {
   assertProductionClientEndpointAllowlistConfigured,
   getMcpOAuthCallbackGlobalPrefixExcludes,
+  OPENAI_COMPATIBLE_CHAT_ID_HEADER,
+  OPENAI_COMPATIBLE_MAX_BODY_SIZE,
+  OPENAI_COMPATIBLE_ROUTE_PATTERN,
 } from '@forepath/agenstra/backend/feature-agent-controller';
 import { configureTrustProxy, createOriginAllowlistMiddleware, getMtlsHttpsOptions } from '@forepath/identity/backend';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
@@ -132,6 +135,7 @@ export async function bootstrap(): Promise<void> {
       'X-File-Type',
       'X-Upload-Id',
       'Content-Disposition',
+      OPENAI_COMPATIBLE_CHAT_ID_HEADER,
     ],
     exposedHeaders: [
       'Accept-Ranges',
@@ -141,6 +145,7 @@ export async function bootstrap(): Promise<void> {
       'X-File-Type',
       'Content-Disposition',
       'X-Correlation-Id',
+      OPENAI_COMPATIBLE_CHAT_ID_HEADER,
     ],
   });
 
@@ -151,6 +156,8 @@ export async function bootstrap(): Promise<void> {
       limit: '10mb',
     }),
   );
+  // OpenAI-compatible routes: clients resend the whole conversation (larger limit on these routes only).
+  app.use(OPENAI_COMPATIBLE_ROUTE_PATTERN, express.json({ limit: OPENAI_COMPATIBLE_MAX_BODY_SIZE }));
   app.use(express.json({ limit: '100kb' }));
   app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 

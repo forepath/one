@@ -2,6 +2,7 @@ import { PasswordService } from '@forepath/identity/backend';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
+import { AgentsContextClientToolsController } from '../controllers/agents-context-client-tools.controller';
 import { AgentsContextDeploymentsController } from '../controllers/agents-context-deployments.controller';
 import { AgentsMessagesController } from '../controllers/agents-messages.controller';
 import { AgentsController } from '../controllers/agents.controller';
@@ -30,6 +31,7 @@ import { AgentEnvironmentVariablesRepository } from '../repositories/agent-envir
 import { AgentMessagesRepository } from '../repositories/agent-messages.repository';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
+import { AgentClientToolsApiService } from '../services/agent-client-tools-api.service';
 import { AgentDeploymentActionsService } from '../services/agent-deployment-actions.service';
 import { AgentDeploymentsApiService } from '../services/agent-deployments-api.service';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
@@ -180,6 +182,8 @@ describe('AgentsModule', () => {
   it('should provide the agent context deployments API', () => {
     expect(module.get(AgentsContextDeploymentsController)).toBeInstanceOf(AgentsContextDeploymentsController);
     expect(module.get(AgentDeploymentsApiService)).toBeInstanceOf(AgentDeploymentsApiService);
+    expect(module.get(AgentsContextClientToolsController)).toBeInstanceOf(AgentsContextClientToolsController);
+    expect(module.get(AgentClientToolsApiService)).toBeInstanceOf(AgentClientToolsApiService);
     expect(module.get(AgentDeploymentActionsService)).toBeInstanceOf(AgentDeploymentActionsService);
   });
 

@@ -1,3 +1,4 @@
+import type { ClientToolDefinition } from '@forepath/agenstra/shared/util-opencode-config';
 import type {
   AgentContentChangeResult,
   AgentContentChangeSource,
@@ -79,6 +80,13 @@ export interface AgentContextTicketRecord extends AgentContextTicketBinding {
   changeCount: number;
   /** Deployment actions (trigger / cancel) requested with this ticket (bounded per turn). */
   deploymentActionCount?: number;
+  /**
+   * Client tools of the turn (OpenAI-compatible API function calling): client input, validated with
+   * `normalizeClientTools`. Calls are forwarded to the controller socket of the turn only.
+   */
+  clientTools?: ClientToolDefinition[];
+  /** Client tool calls of this turn (call ids, bounded per turn). */
+  clientToolCallIds?: string[];
   createdAt: number;
   lastUsedAt: number;
 }

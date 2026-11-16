@@ -10,6 +10,10 @@ const redisInstance = {
   set: jest.fn().mockResolvedValue('OK'),
   mget: jest.fn(),
   scan: jest.fn(),
+  rpush: jest.fn().mockResolvedValue(2),
+  expire: jest.fn().mockResolvedValue(1),
+  lpop: jest.fn(),
+  del: jest.fn().mockResolvedValue(1),
   quit: jest.fn().mockResolvedValue('OK'),
 };
 
@@ -45,6 +49,28 @@ describe('IoRedisKeyValueClient', () => {
       maxRetriesPerRequest: 1,
       enableOfflineQueue: false,
     });
+  });
+
+  it('maps list commands to ioredis', async () => {
+    const client = createClient();
+
+    await client.connect();
+    await expect(client.rpush('l', ['a', 'b'], 30)).resolves.toBe(2);
+    expect(redisInstance.rpush).toHaveBeenCalledWith('l', 'a', 'b');
+    expect(redisInstance.expire).toHaveBeenCalledWith('l', 30);
+
+    redisInstance.expire.mockClear();
+    await client.rpush('l', ['c']);
+    expect(redisInstance.expire).not.toHaveBeenCalled();
+
+    redisInstance.lpop.mockResolvedValueOnce(['a', 'b']);
+    await expect(client.lpop('l', 5)).resolves.toEqual(['a', 'b']);
+    expect(redisInstance.lpop).toHaveBeenCalledWith('l', 5);
+    redisInstance.lpop.mockResolvedValueOnce(null);
+    await expect(client.lpop('missing', 5)).resolves.toEqual([]);
+
+    await client.del('l');
+    expect(redisInstance.del).toHaveBeenCalledWith('l');
   });
 
   it('maps commands to ioredis', async () => {

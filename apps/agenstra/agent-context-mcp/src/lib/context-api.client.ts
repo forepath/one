@@ -38,6 +38,9 @@ import {
   type AgentTaskRunNowResponse,
   type AgentTaskSummary,
   type AgentTaskUpdateInput,
+  AGENSTRA_CLIENT_TOOLS_API_SEGMENT,
+  type AgentClientToolCallResponse,
+  AGENSTRA_CONTEXT_MCP_FEATURES,
 } from '@forepath/agenstra/shared/util-opencode-config';
 
 export interface ContextApiConfig {
@@ -48,6 +51,8 @@ export interface ContextApiConfig {
 
 /** Plain requests stay short; access requests and content changes long-poll on the manager (user decision). */
 const DEFAULT_TIMEOUT_MS = 30_000;
+/** Client tool calls wait up to CLIENT_TOOL_WAIT_MS for the API client (plus tool call claim and ack slack). */
+const CLIENT_TOOL_REQUEST_TIMEOUT_MS = 75_000;
 const ACCESS_REQUEST_TIMEOUT_MS = 150_000;
 /** Missing peer profiles are generated on request (the manager answers within 150 s). */
 const PROFILE_REQUEST_TIMEOUT_MS = 170_000;
@@ -362,6 +367,26 @@ export class ContextApiClient {
     );
   }
 
+  /** Call a client tool of the turn (`POST /agent-context/client-tools/:ticket/calls`). */
+  callClientTool(ticket: string, name: string, args: unknown): Promise<AgentClientToolCallResponse> {
+    return this.request(
+      'POST',
+      `${AGENSTRA_CLIENT_TOOLS_API_SEGMENT}/${encodeURIComponent(ticket)}/calls`,
+      { name, arguments: args ?? {} },
+      CLIENT_TOOL_REQUEST_TIMEOUT_MS,
+    );
+  }
+
+  /** Keep waiting for a pending client tool call (`POST …/calls/:callId/wait`). */
+  waitClientTool(ticket: string, callId: string): Promise<AgentClientToolCallResponse> {
+    return this.request(
+      'POST',
+      `${AGENSTRA_CLIENT_TOOLS_API_SEGMENT}/${encodeURIComponent(ticket)}/calls/${encodeURIComponent(callId)}/wait`,
+      {},
+      CLIENT_TOOL_REQUEST_TIMEOUT_MS,
+    );
+  }
+
   /** Read-only graph endpoints (`/agent-context/graphs/<path>?<query>`). */
   graph<T>(path: string, query: GraphQuery = {}): Promise<T> {
     const params = new URLSearchParams();
@@ -401,6 +426,7 @@ export class ContextApiClient {
           Accept: 'application/json',
           Authorization: `Bearer ${this.config.agentToken}`,
           [AGENSTRA_CONTEXT_API_HEADERS.agentId]: this.config.agentId,
+          [AGENSTRA_CONTEXT_API_HEADERS.features]: AGENSTRA_CONTEXT_MCP_FEATURES.join(','),
           ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
         },
         ...(body !== undefined ? { body: JSON.stringify(body) } : {}),

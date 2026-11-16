@@ -77,6 +77,7 @@ import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 import { TicketsService } from '../services/tickets.service';
+import { extractChatOutputUsage } from '../utils/chat-output-usage.utils';
 import {
   createPinnedSocketAgent,
   getClientEndpointTlsPolicy,
@@ -84,54 +85,6 @@ import {
 } from '../utils/client-endpoint-security';
 import { createClientMtlsAuthorizationHeader } from '../utils/client-mtls-authorization';
 import { buildRemoteAgentsSocketUrl } from '../utils/remote-manager-url.utils';
-
-type ChatOutputUsage = {
-  inputTokens?: number;
-  outputTokens?: number;
-  reasoningTokens?: number;
-  cacheReadTokens?: number;
-  cacheWriteTokens?: number;
-  costUsd?: number;
-};
-
-function extractChatOutputUsage(response: unknown): ChatOutputUsage | undefined {
-  if (!response || typeof response !== 'object') {
-    return undefined;
-  }
-
-  const root = response as Record<string, unknown>;
-  const candidates: unknown[] = [root.usage];
-
-  if (Array.isArray(root.parts)) {
-    for (const part of root.parts) {
-      if (part && typeof part === 'object' && 'usage' in (part as object)) {
-        candidates.push((part as { usage?: unknown }).usage);
-      }
-    }
-  }
-
-  for (const candidate of candidates) {
-    if (!candidate || typeof candidate !== 'object') {
-      continue;
-    }
-
-    const usage = candidate as Record<string, unknown>;
-    const result: ChatOutputUsage = {
-      ...(typeof usage.inputTokens === 'number' ? { inputTokens: usage.inputTokens } : {}),
-      ...(typeof usage.outputTokens === 'number' ? { outputTokens: usage.outputTokens } : {}),
-      ...(typeof usage.reasoningTokens === 'number' ? { reasoningTokens: usage.reasoningTokens } : {}),
-      ...(typeof usage.cacheReadTokens === 'number' ? { cacheReadTokens: usage.cacheReadTokens } : {}),
-      ...(typeof usage.cacheWriteTokens === 'number' ? { cacheWriteTokens: usage.cacheWriteTokens } : {}),
-      ...(typeof usage.costUsd === 'number' ? { costUsd: usage.costUsd } : {}),
-    };
-
-    if (Object.keys(result).length > 0) {
-      return result;
-    }
-  }
-
-  return undefined;
-}
 
 interface SetClientPayload {
   clientId: string;
@@ -1726,6 +1679,10 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
 
     delete next['unattendedAutomation'];
+    // Client tools (OpenAI-compatible API function calling) are bound to the API turn's own connection.
+    delete next['clientTools'];
+    delete next['clientToolChoice'];
+    delete next['parallelToolCalls'];
 
     return next;
   }

@@ -47,6 +47,7 @@ import { ClientsController } from '../controllers/clients.controller';
 import { DeploymentConnectionsController } from '../controllers/deployment-connections.controller';
 import { KnowledgeTreeController } from '../controllers/knowledge-tree.controller';
 import { McpOAuthCallbackController } from '../controllers/mcp-oauth-callback.controller';
+import { OpenAiCompatibleController } from '../controllers/openai-compatible.controller';
 import { OpencodeMcpServersController } from '../controllers/opencode-mcp-servers.controller';
 import { OpencodeProvidersController } from '../controllers/opencode-providers.controller';
 import { StatisticsController } from '../controllers/statistics.controller';
@@ -158,6 +159,9 @@ import { KnowledgeEmbeddingIndexService } from '../services/embeddings/knowledge
 import { LocalEmbeddingProvider } from '../services/embeddings/local-embedding.provider';
 import { KnowledgeBoardRealtimeService } from '../services/knowledge-board-realtime.service';
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
+import { OpenAiClientToolTurnsService } from '../services/openai-client-tool-turns.service';
+import { OpenAiCompatibleService } from '../services/openai-compatible.service';
+import { OpenAiTurnRelayStore } from '../services/openai-turn-relay.store';
 import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
 import { OpencodeConfigService } from '../services/opencode-config.service';
 import { OpencodeEffectiveConfigSyncService } from '../services/opencode-effective-config-sync.service';
@@ -253,6 +257,7 @@ import { StatisticsModule } from './statistics.module';
     KnowledgeTreeController,
     TicketAutomationController,
     ChatPlanController,
+    OpenAiCompatibleController,
     AgentTasksController,
     ClientAgentAutonomyController,
     ClientAgentAutonomyDirectoryController,
@@ -308,6 +313,9 @@ import { StatisticsModule } from './statistics.module';
     ChatPlanOrchestratorService,
     ClientAgentAutonomyService,
     RemoteAgentsSessionService,
+    OpenAiCompatibleService,
+    OpenAiClientToolTurnsService,
+    OpenAiTurnRelayStore,
     AutonomousRunOrchestratorService,
     ClientsRepository,
     ClientUsersRepository,

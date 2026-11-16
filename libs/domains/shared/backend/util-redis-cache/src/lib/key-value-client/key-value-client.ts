@@ -8,8 +8,8 @@ export const KEY_VALUE_CLIENT_DRIVERS: readonly KeyValueClientDriver[] = ['glide
 export const DEFAULT_KEY_VALUE_CLIENT_DRIVER: KeyValueClientDriver = 'glide';
 
 /**
- * Narrow key/value port over Valkey/Redis covering exactly the commands the cache and
- * update stores use. Adapters translate to ioredis or Valkey GLIDE; callers stay driver-agnostic.
+ * Narrow key/value port over Valkey/Redis covering exactly the commands the cache, the
+ * update stores and the OpenAI-compatible API turn relay (lists) use. Adapters translate to ioredis or Valkey GLIDE; callers stay driver-agnostic.
  */
 export interface KeyValueClient {
   readonly driver: KeyValueClientDriver;
@@ -24,6 +24,12 @@ export interface KeyValueClient {
   mget(keys: string[]): Promise<(string | null)[]>;
   /** One SCAN iteration; returns the next cursor (`'0'` when complete) and matched keys. */
   scan(cursor: string, match: string, count: number): Promise<[string, string[]]>;
+  /** RPUSH values (in order), then EXPIRE the list when `ttlSeconds` is given. Returns the list length. */
+  rpush(key: string, values: string[], ttlSeconds?: number): Promise<number>;
+  /** LPOP with COUNT: up to `count` values from the head (empty when the list is missing). */
+  lpop(key: string, count: number): Promise<string[]>;
+  /** DEL one key. */
+  del(key: string): Promise<void>;
   close(): Promise<void>;
 }
 

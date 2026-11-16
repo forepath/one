@@ -53,6 +53,11 @@ files), the path tree and the prompt reference history of the own environment an
 `/opt/workspace` (`/api/agent-context/graphs`, same agent token, answered by the manager itself). See
 [Environment graphs](../features/environment-graphs.md).
 
+`agenstra_client_tools_call` / `agenstra_client_tools_result` call the function tools an API client passed with the
+current request ([OpenAI-compatible API](../features/openai-compatible-api.md#function-calling-client-tools)): only for
+that turn's ticket, only with a matching tool call of the agent, and only through the connection that started the turn
+(`/api/agent-context/client-tools/:ticket/calls`, forwarded as `agentClientToolRequest`).
+
 `agenstra_deployments_*` tools follow, start and propose the CI/CD deployment workflows (GitHub Actions, GitLab CI,
 Jenkins) available to the agent's environment (`/api/agent-context/deployments`, same agent token, forwarded as
 `agentDeploymentRequest`). See [Deployments](#deployments).

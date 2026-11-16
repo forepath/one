@@ -106,8 +106,12 @@ export class AgentsContextController {
   async health(
     @Headers(AGENSTRA_CONTEXT_API_HEADERS.agentId) agentId: string | undefined,
     @Headers('authorization') authorization: string | undefined,
+    @Headers(AGENSTRA_CONTEXT_API_HEADERS.features) features?: string,
   ): Promise<void> {
-    await this.authenticate(agentId, authorization);
+    const id = await this.authenticate(agentId, authorization);
+
+    // Capabilities of the worker's MCP server (current images announce them, older ones do not).
+    this.contextMcp.recordFeatures(id, features);
   }
 
   @Get('tickets/:ticket')

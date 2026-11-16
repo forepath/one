@@ -70,6 +70,25 @@ export class GlideKeyValueClient implements KeyValueClient {
     return [String(nextCursor), keys.map((key) => String(key))];
   }
 
+  async rpush(key: string, values: string[], ttlSeconds?: number): Promise<number> {
+    const client = this.requireClient();
+    const length = await client.rpush(key, values);
+
+    if (ttlSeconds !== undefined) {
+      await client.expire(key, ttlSeconds);
+    }
+
+    return length;
+  }
+
+  async lpop(key: string, count: number): Promise<string[]> {
+    return ((await this.requireClient().lpopCount(key, count)) ?? []).map((value) => String(value));
+  }
+
+  async del(key: string): Promise<void> {
+    await this.requireClient().del([key]);
+  }
+
   async close(): Promise<void> {
     this.client?.close();
     this.client = null;
