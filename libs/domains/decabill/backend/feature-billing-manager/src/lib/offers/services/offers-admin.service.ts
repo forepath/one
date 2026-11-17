@@ -3,6 +3,8 @@ import { BadRequestException, Injectable, NotFoundException, Optional } from '@n
 
 import { TaxCategory } from '../../constants/tax-category.constants';
 import type { PaginatedBillingAuditLogsResponseDto } from '../../dto/admin-billing.dto';
+import { InventoryArticlesRepository } from '../../inventory/repositories/inventory-articles.repository';
+import { assertInventoryArticlesExist } from '../../inventory/utils/inventory-article-references.util';
 import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import { CustomerProfilesRepository } from '../../repositories/customer-profiles.repository';
 import { mapOfferToSearchDocument } from '../../search/billing-search-document.mapper';
@@ -19,6 +21,7 @@ import { OfferFulfillmentStatus } from '../constants/offer-fulfillment-status.co
 import { OfferLineType } from '../constants/offer-line-type.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
 import type {
+  OfferArticleLineDto,
   AdminOfferDetailResponseDto,
   AdminOfferListItemDto,
   CreateAdminOfferDto,
@@ -72,6 +75,7 @@ export class OffersAdminService {
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingSearchIndexService: BillingSearchIndexService,
     private readonly documentTermsConfig: BillingDocumentTermsConfigService,
+    private readonly inventoryArticlesRepository: InventoryArticlesRepository,
     @Optional() private readonly customerProfilesRepository?: CustomerProfilesRepository,
   ) {}
 
@@ -293,6 +297,14 @@ export class OffersAdminService {
     preparedLines: PreparedPlanOrderContext[];
   }> {
     const taxContext = await this.invoiceTaxContextService.resolveForUser(dto.userId);
+
+    await assertInventoryArticlesExist(
+      this.inventoryArticlesRepository,
+      dto.lineItems
+        .filter((line) => line.lineType === OfferLineType.ARTICLE)
+        .map((line) => (line.payload as OfferArticleLineDto).inventoryArticleId),
+    );
+
     const builtLines = await Promise.all(dto.lineItems.map((line) => this.buildLine(dto.userId, line)));
     const totals = this.taxCalculationService.computeLines(
       builtLines.map((line) => line.taxInput),
@@ -350,6 +362,8 @@ export class OffersAdminService {
     switch (line.lineType) {
       case OfferLineType.STANDARD:
         return this.buildStandardLine(line.payload as OfferStandardLineDto);
+      case OfferLineType.ARTICLE:
+        return this.buildArticleLine(line.payload as OfferArticleLineDto);
       case OfferLineType.PROJECT_TEMPLATE:
         return this.buildProjectTemplateLine(line.payload as OfferProjectTemplateLineDto);
       case OfferLineType.PLAN_TEMPLATE:
@@ -372,6 +386,15 @@ export class OffersAdminService {
         scheduledAt: payload.scheduledAt ? new Date(payload.scheduledAt) : null,
         fulfillmentStatus: OfferFulfillmentStatus.PENDING,
       },
+    };
+  }
+
+  private buildArticleLine(payload: OfferArticleLineDto): BuiltOfferLine {
+    const standard = this.buildStandardLine(payload);
+
+    return {
+      ...standard,
+      entity: { ...standard.entity, lineType: OfferLineType.ARTICLE, inventoryArticleId: payload.inventoryArticleId },
     };
   }
 
@@ -476,7 +499,7 @@ export class OffersAdminService {
       subtotalNet: Number(offer.subtotalNet),
       taxTotal: Number(offer.taxTotal),
       billToOpenPositions: offer.billToOpenPositions,
-      lineItems: lines.map((line) => mapOfferLineItemToResponse(line)),
+      lineItems: lines.map((line) => mapOfferLineItemToResponse(line, { includeInternal: true })),
       taxMode: offer.taxMode ?? null,
       taxNote: offer.taxNote ?? null,
       ...mapAdminOfferDocumentTerms(offer, this.documentTermsConfig),

@@ -1,6 +1,7 @@
 import { TaxCategory } from '../../constants/tax-category.constants';
 import { resolveProjectPricing } from '../../projects/utils/project-pricing.utils';
 import type { LineItemInput } from '../../services/tax-calculation.service';
+import { withoutInternalPricing } from '../../utils/internal-pricing-visibility.util';
 import type { AdminOfferLineResponseDto, OfferProjectTemplateLineDto, OfferStandardLineDto } from '../dto/offer.dto';
 import type { OfferLineItemEntity } from '../entities/offer-line-item.entity';
 
@@ -68,8 +69,13 @@ export function buildOfferProjectTemplatePayload(payload: OfferProjectTemplateLi
   };
 }
 
-export function mapOfferLineItemToResponse(line: OfferLineItemEntity): AdminOfferLineResponseDto {
+export function mapOfferLineItemToResponse(
+  line: OfferLineItemEntity,
+  options: { includeInternal?: boolean } = {},
+): AdminOfferLineResponseDto {
   return {
+    // Internal (admins only): the article of `article` lines and base price / margins in the pricing snapshot.
+    ...(options.includeInternal ? { inventoryArticleId: line.inventoryArticleId ?? null } : {}),
     id: line.id,
     position: line.position,
     lineType: line.lineType,
@@ -87,7 +93,11 @@ export function mapOfferLineItemToResponse(line: OfferLineItemEntity): AdminOffe
     planId: line.planId ?? null,
     planNameSnapshot: line.planNameSnapshot ?? null,
     projectTemplatePayload: line.projectTemplatePayload ?? null,
-    pricingSnapshot: line.pricingSnapshot ?? null,
+    pricingSnapshot: line.pricingSnapshot
+      ? options.includeInternal
+        ? line.pricingSnapshot
+        : withoutInternalPricing(line.pricingSnapshot)
+      : null,
     requestedConfig: line.effectiveConfigSnapshot ?? undefined,
     addonIds: line.addonIds ?? undefined,
     addonConfigs: line.addonConfigsSnapshot ?? undefined,

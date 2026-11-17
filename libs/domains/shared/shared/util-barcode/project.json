@@ -1,0 +1,16 @@
+{
+  "name": "shared-shared-util-barcode",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/shared/shared/util-barcode/src",
+  "projectType": "library",
+  "tags": ["domain:shared", "scope:shared", "type:util"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/shared/shared/util-barcode/jest.config.ts"
+      }
+    }
+  }
+}

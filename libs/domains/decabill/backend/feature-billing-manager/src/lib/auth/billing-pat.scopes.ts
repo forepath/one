@@ -51,9 +51,12 @@ export const BILLING_PAT_SCOPES = [
   // Stored billing documents (admin file manager)
   'files:admin',
   'datev:admin',
+  // Inventory: warehouses, compartments, articles, stock movements and withdrawal requests (admin-only)
+  'inventory:admin',
   // WebSockets (connect + subscribe). Events stay capped by the domain scopes above (see billing-websocket.scopes.ts).
   'websocket:billing:read',
   'websocket:projects:read',
+  'websocket:inventory:read',
   ...IDENTITY_PAT_SCOPES,
 ] as const;
 

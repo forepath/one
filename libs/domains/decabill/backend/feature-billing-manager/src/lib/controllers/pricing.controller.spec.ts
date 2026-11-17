@@ -96,11 +96,9 @@ describe('PricingController', () => {
   it('returns zeroed preview when planId is missing', async () => {
     const result = await controller.preview({ planId: '' }, authReq as never);
 
+    // Customers never see base price or margins.
     expect(result).toEqual({
       totalPrice: 0,
-      basePrice: 0,
-      marginPercent: 0,
-      marginFixed: 0,
       taxTotal: 0,
       totalGross: 0,
       taxRate: 0,
@@ -110,6 +108,12 @@ describe('PricingController', () => {
       grandTotal: 0,
     });
     expect(findPlanById).not.toHaveBeenCalled();
+  });
+
+  it('returns base price and margins to admins only', async () => {
+    const result = await controller.preview({ planId: '' }, { user: { id: 'admin-1', roles: ['admin'] } } as never);
+
+    expect(result).toEqual(expect.objectContaining({ basePrice: 0, marginPercent: 0, marginFixed: 0 }));
   });
 
   it('uses requested server type price when customer server type selection is enabled', async () => {

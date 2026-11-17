@@ -25,6 +25,7 @@ describe('OfferFulfillmentService project lines', () => {
     fulfillmentStatus: OfferFulfillmentStatus.PENDING,
     projectTemplatePayload: payload,
   });
+  const inventoryWithdrawalRequests = { raiseForOfferLines: jest.fn() };
 
   beforeEach(() => {
     jest.resetAllMocks();
@@ -41,6 +42,7 @@ describe('OfferFulfillmentService project lines', () => {
       {} as never,
       billingNotificationPublisher as never,
       auditLog as never,
+      inventoryWithdrawalRequests as never,
     );
   });
 

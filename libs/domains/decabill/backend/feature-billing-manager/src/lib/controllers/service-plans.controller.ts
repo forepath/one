@@ -17,6 +17,7 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 
 import { fromApiServiceTypeId, isNoneServiceTypeId, toApiServiceTypeId } from '../constants/service-type-id.constants';
@@ -29,9 +30,12 @@ import { mapDocumentTermsToResponse, mapEffectiveDocumentTermsToResponse } from 
 import { AttachedMeterResponseDto } from '../dto/meter-response.dto';
 import { AttachMeterDto, UpdateAttachedMeterDto } from '../dto/meter.dto';
 import { OrderProvisioningOptionDto } from '../dto/order-provisioning-option.dto';
+import { ServicePlanInventoryArticleDto } from '../dto/service-plan-inventory-article.dto';
 import { ServicePlanResponseDto } from '../dto/service-plan-response.dto';
 import { UpdateServicePlanDto } from '../dto/update-service-plan.dto';
-import { ServicePlanEntity } from '../entities/service-plan.entity';
+import { ServicePlanEntity, type ServicePlanInventoryArticle } from '../entities/service-plan.entity';
+import { InventoryArticlesRepository } from '../inventory/repositories/inventory-articles.repository';
+import { assertInventoryArticlesExist } from '../inventory/utils/inventory-article-references.util';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import {
   PLAN_PRICE_MIGRATE_ENQUEUE,
@@ -45,10 +49,12 @@ import { AddonService } from '../services/addon.service';
 import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
 import { CloudInitConfigService } from '../services/cloud-init-config.service';
 import { MeterService } from '../services/meter.service';
+import { PricingService } from '../services/pricing.service';
 import { ProviderRegistryService } from '../services/provider-registry.service';
 import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
 import { isAddonCompatibleWithProvider } from '../utils/addon-compatibility.utils';
 import { convertAddonPriceToPlanPeriod } from '../utils/addon-pricing.util';
+import type { RequestWithUser } from '../utils/billing-access.utils';
 import { normalizePlanProviderConfigDefaults } from '../utils/cloud-init/plan-provisioning-options.utils';
 import {
   documentTermsLayerFromFields,
@@ -57,6 +63,7 @@ import {
   normalizePaymentDueDaysInput,
   toDeliveryTermsColumns,
 } from '../utils/document-terms.utils';
+import { canViewInternalPricing } from '../utils/internal-pricing-visibility.util';
 import { parsePlanAllowedAddonIds, parsePlanMandatoryAddonIds } from '../utils/plan-addons.utils';
 import { commercialPricingFieldsChanged, snapshotCommercialPricing } from '../utils/plan-commercial-pricing.utils';
 import { isPostgresForeignKeyViolation } from '../utils/postgres-foreign-key-violation.util';
@@ -90,6 +97,8 @@ export class ServicePlansController {
     private readonly documentTermsConfig: BillingDocumentTermsConfigService,
     @Inject(PLAN_PRICE_MIGRATE_ENQUEUE)
     private readonly planPriceMigrateEnqueue: PlanPriceMigrateEnqueuePort,
+    private readonly inventoryArticlesRepository: InventoryArticlesRepository,
+    private readonly pricingService: PricingService,
   ) {}
 
   @RequireScopes('catalog:read')
@@ -99,6 +108,7 @@ export class ServicePlansController {
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
     @Query('serviceTypeId') serviceTypeId?: string,
     @Query('search') search?: string,
+    @Req() req?: RequestWithUser,
   ): Promise<ServicePlanResponseDto[]> {
     let rows = await this.servicePlansRepository.findAll(limit ?? 10, offset ?? 0, search);
 
@@ -108,7 +118,9 @@ export class ServicePlansController {
       rows = rows.filter((row) => row.serviceTypeId === dbTypeId);
     }
 
-    return await Promise.all(rows.map((row) => this.mapToResponse(row)));
+    const internal = canViewInternalPricing(req);
+
+    return await Promise.all(rows.map((row) => this.mapToResponse(row, internal)));
   }
 
   @RequireScopes('catalog:read')
@@ -242,10 +254,13 @@ export class ServicePlansController {
 
   @RequireScopes('catalog:read')
   @Get(':id')
-  async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<ServicePlanResponseDto> {
+  async get(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<ServicePlanResponseDto> {
     const row = await this.servicePlansRepository.findByIdOrThrow(id);
 
-    return await this.mapToResponse(row);
+    return await this.mapToResponse(row, canViewInternalPricing(req));
   }
 
   @RequireScopes('catalog:admin')
@@ -316,6 +331,7 @@ export class ServicePlansController {
       allowCustomerProviderSelection,
       allowedProviders,
       taxCategory: dto.taxCategory ?? TaxCategory.STANDARD,
+      inventoryArticles: await this.normalizeInventoryArticles(dto.inventoryArticles),
       paymentDueDays: normalizePaymentDueDaysInput(dto.paymentDueDays),
       ...toDeliveryTermsColumns(normalizeDeliveryTermsInput(dto)),
       isActive: dto.isActive ?? true,
@@ -466,6 +482,9 @@ export class ServicePlansController {
       ...(dto.allowCustomerProviderSelection !== undefined || isNone ? { allowCustomerProviderSelection } : {}),
       ...(providerSelectionTouched ? { allowedProviders } : {}),
       ...(dto.taxCategory !== undefined ? { taxCategory: dto.taxCategory } : {}),
+      ...(dto.inventoryArticles !== undefined
+        ? { inventoryArticles: await this.normalizeInventoryArticles(dto.inventoryArticles) }
+        : {}),
       ...(dto.paymentDueDays !== undefined ? { paymentDueDays: normalizePaymentDueDaysInput(dto.paymentDueDays) } : {}),
       ...deliveryTermsUpdate,
       ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
@@ -544,14 +563,17 @@ export class ServicePlansController {
     }
   }
 
-  private async mapToResponse(row: ServicePlanEntity): Promise<ServicePlanResponseDto> {
+  /**
+   * `internal` (admins, static API key) adds the commercial internals: provider base price, margins and per-period
+   * articles. Everyone gets `customerPrice`, the final period price the customer pays (before tax).
+   */
+  private async mapToResponse(row: ServicePlanEntity, internal = true): Promise<ServicePlanResponseDto> {
     const withdrawalPolicy = row.serviceTypeId
       ? this.withdrawalPolicyService.buildPolicyInfo(
           await this.serviceTypesRepository.findByIdOrThrow(row.serviceTypeId),
         )
       : this.withdrawalPolicyService.buildPolicyInfo({ disallowStatutoryWithdrawal: false });
-
-    return {
+    const response: ServicePlanResponseDto = {
       id: row.id,
       serviceTypeId: toApiServiceTypeId(row.serviceTypeId),
       name: row.name,
@@ -575,6 +597,7 @@ export class ServicePlansController {
       allowCustomerProviderSelection: row.allowCustomerProviderSelection === true,
       allowedProviders: normalizeAllowedProviders(row.allowedProviders),
       taxCategory: row.taxCategory ?? TaxCategory.STANDARD,
+      inventoryArticles: row.inventoryArticles ?? [],
       ...mapDocumentTermsToResponse(row),
       effectiveDocumentTerms: mapEffectiveDocumentTermsToResponse(
         this.documentTermsConfig.resolve(documentTermsLayerFromFields(row)),
@@ -584,7 +607,37 @@ export class ServicePlansController {
       isActive: row.isActive,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
+      customerPrice: this.pricingService.calculate(row).totalPrice,
     };
+
+    if (!internal) {
+      delete response.basePrice;
+      delete response.marginPercent;
+      delete response.marginFixed;
+      delete response.inventoryArticles;
+    }
+
+    return response;
+  }
+
+  /** Per-period articles: tenant articles only, one entry per article, null / empty clears. */
+  private async normalizeInventoryArticles(
+    entries: ServicePlanInventoryArticleDto[] | null | undefined,
+  ): Promise<ServicePlanInventoryArticle[] | null> {
+    if (!entries || entries.length === 0) {
+      return null;
+    }
+
+    if (new Set(entries.map((entry) => entry.articleId)).size !== entries.length) {
+      throw new BadRequestException('Each article may only be listed once');
+    }
+
+    await assertInventoryArticlesExist(
+      this.inventoryArticlesRepository,
+      entries.map((entry) => entry.articleId),
+    );
+
+    return entries.map((entry) => ({ articleId: entry.articleId, quantity: Number(entry.quantity) }));
   }
 
   private assertNonePlanConstraints(dto: CreateServicePlanDto): void {

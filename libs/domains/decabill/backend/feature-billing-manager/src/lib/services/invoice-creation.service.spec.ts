@@ -71,6 +71,7 @@ describe('InvoiceCreationService', () => {
           forceChargeNonEuIssuerEuB2b: false,
         }),
       } as any);
+    const inventoryWithdrawalRequests = { raiseForSubscriptionPeriod: jest.fn().mockResolvedValue(undefined) };
 
     return new InvoiceCreationService(
       deps.subscriptionsRepository ?? ({} as any),
@@ -95,6 +96,7 @@ describe('InvoiceCreationService', () => {
           hasAnyMeterAttachments: jest.fn().mockResolvedValue(false),
           buildMeterChargeLines: jest.fn().mockResolvedValue([]),
         } as any),
+      inventoryWithdrawalRequests as any,
     );
   }
 

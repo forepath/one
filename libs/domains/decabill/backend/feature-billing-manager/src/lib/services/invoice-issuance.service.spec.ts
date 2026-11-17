@@ -78,6 +78,7 @@ describe('InvoiceIssuanceService', () => {
     publish: jest.fn(),
   };
   const documentTermsConfig = new BillingDocumentTermsConfigService();
+  const inventoryWithdrawalRequests = { raiseForInvoiceLines: jest.fn().mockResolvedValue(undefined) };
   const service = new InvoiceIssuanceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -98,6 +99,7 @@ describe('InvoiceIssuanceService', () => {
     ossThresholdService as never,
     billingSearchIndexService as never,
     documentTermsConfig,
+    inventoryWithdrawalRequests as never,
   );
   const draftInvoice = {
     id: 'inv-1',

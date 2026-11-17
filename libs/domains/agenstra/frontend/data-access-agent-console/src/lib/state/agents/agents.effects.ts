@@ -49,6 +49,9 @@ import {
   loadClientAgentModelsSuccess,
   loadClientAgents,
   loadClientAgentsFailure,
+  loadClientAgentsRailPage,
+  loadClientAgentsRailPageFailure,
+  loadClientAgentsRailPageSuccess,
   loadClientAgentsSuccess,
   loadClientAgentSuccess,
   loadMoreClientAgents,
@@ -67,8 +70,8 @@ import {
   updateClientAgentFailure,
   updateClientAgentSuccess,
 } from './agents.actions';
-import { selectAgentsState } from './agents.selectors';
-import type { AgentSlashCommand } from './agents.types';
+import { selectAgentsRailPage, selectAgentsState } from './agents.selectors';
+import type { AgentSlashCommand, ClientAgentsRailPageQuery } from './agents.types';
 
 /** Longest plain-text error body shown verbatim (longer bodies are proxy/error pages, not messages). */
 const MAX_DISPLAYABLE_ERROR_TEXT_LENGTH = 500;
@@ -279,6 +282,52 @@ export const loadMoreClientAgents$ = createEffect(
             );
           }),
         ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+/**
+ * Environments rail: requests exactly one page (plus one row to know whether a next page exists, the list endpoint
+ * returns no total) and replaces the rail rows. The latest request wins (one rail, one workspace at a time).
+ */
+export const loadClientAgentsRailPage$ = createEffect(
+  (actions$ = inject(Actions), agentsService = inject(AgentsService)) => {
+    return actions$.pipe(
+      ofType(loadClientAgentsRailPage),
+      switchMap(({ clientId, query }) =>
+        agentsService
+          .listClientAgents(clientId, {
+            limit: query.limit + 1,
+            offset: query.offset,
+            search: query.search?.trim() || undefined,
+          })
+          .pipe(
+            map((agents) =>
+              loadClientAgentsRailPageSuccess({
+                clientId,
+                agents: agents.slice(0, query.limit),
+                hasNext: agents.length > query.limit,
+              }),
+            ),
+            catchError((error) => of(loadClientAgentsRailPageFailure({ clientId, error: normalizeError(error) }))),
+          ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+/** Reload the listed rail page (without a loading state) after an environment of its workspace was created / deleted. */
+export const reloadClientAgentsRailPage$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store)) => {
+    return actions$.pipe(
+      ofType(createClientAgentSuccess, deleteClientAgentSuccess),
+      withLatestFrom(store.select(selectAgentsRailPage)),
+      filter(([{ clientId }, railPage]) => railPage.clientId === clientId && railPage.query !== null),
+      map(([{ clientId }, railPage]) =>
+        loadClientAgentsRailPage({ clientId, query: railPage.query as ClientAgentsRailPageQuery, silent: true }),
       ),
     );
   },

@@ -1,0 +1,444 @@
+<fpc-modal
+  [(open)]="open"
+  size="lg"
+  [scrollable]="true"
+  [title]="article() ? editTitle : createTitle"
+  data-testid="inventory-article-form"
+>
+  @if (error(); as message) {
+    <fpc-alert variant="danger" [message]="message" data-testid="inventory-article-form-error" />
+  }
+
+  <h6 class="fw-semibold" i18n="@@featureInventoryArticleForm-general">General</h6>
+  <fpc-form-field forId="inventoryArticleName" i18n-label="@@featureInventory-name" label="Name" required>
+    <fpc-form-control
+      controlId="inventoryArticleName"
+      [(ngModel)]="form.name"
+      name="articleName"
+      [maxLength]="255"
+      required
+      data-testid="inventory-article-name"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="inventoryArticleDescription" i18n-label="@@featureInventory-description" label="Description">
+    <fpc-form-control
+      controlType="textarea"
+      controlId="inventoryArticleDescription"
+      [(ngModel)]="form.description"
+      name="articleDescription"
+    />
+  </fpc-form-field>
+  <div class="row g-3">
+    <div class="col-sm-8">
+      <fpc-form-field
+        forId="inventoryArticleEan"
+        label="EAN / GTIN"
+        i18n-hint="@@featureInventoryArticleForm-eanHint"
+        hint="EAN-8, UPC-A, EAN-13 or GTIN-14 with check digit."
+        [error]="eanValid() ? null : eanError"
+      >
+        <fpc-form-control
+          controlId="inventoryArticleEan"
+          [(ngModel)]="form.ean"
+          name="articleEan"
+          [invalid]="!eanValid()"
+          data-testid="inventory-article-ean"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-sm-4">
+      <fpc-form-field forId="inventoryArticleUnit" i18n-label="@@featureInventory-unit" label="Unit">
+        <fpc-form-control
+          controlType="select"
+          controlId="inventoryArticleUnit"
+          [(ngModel)]="form.unit"
+          name="articleUnit"
+        >
+          @for (unit of units; track unit) {
+            <option [value]="unit">{{ unitLabel(unit) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+  </div>
+  @if (form.ean && eanValid()) {
+    <div class="mt-3"><framework-inventory-barcode [value]="normalizedEan()" kind="gtin" /></div>
+  }
+
+  <h6 class="fw-semibold mt-3" i18n="@@featureInventoryArticleForm-prices">Prices (net)</h6>
+  <div class="row g-3">
+    <div class="col-sm-4">
+      <fpc-form-field
+        forId="inventoryArticlePurchase"
+        i18n-label="@@featureInventoryArticleForm-purchasePrice"
+        label="Purchase price"
+      >
+        <fpc-input-group>
+          <fpc-form-control
+            controlId="inventoryArticlePurchase"
+            inputType="number"
+            min="0"
+            step="0.01"
+            [(ngModel)]="form.purchasePriceNet"
+            name="articlePurchase"
+          />
+          <span class="input-group-text" fpcInputGroupSuffix>{{ form.currency || 'EUR' }}</span>
+        </fpc-input-group>
+      </fpc-form-field>
+    </div>
+    <div class="col-sm-4">
+      <fpc-form-field
+        forId="inventoryArticleSales"
+        i18n-label="@@featureInventoryArticleForm-salesPrice"
+        label="Sales price"
+        i18n-hint="@@featureInventoryArticleForm-salesPriceHint"
+        hint="Prefilled on offer and invoice positions."
+      >
+        <fpc-input-group>
+          <fpc-form-control
+            controlId="inventoryArticleSales"
+            inputType="number"
+            min="0"
+            step="0.01"
+            [(ngModel)]="form.salesPriceNet"
+            name="articleSales"
+            data-testid="inventory-article-sales-price"
+          />
+          <span class="input-group-text" fpcInputGroupSuffix>{{ form.currency || 'EUR' }}</span>
+        </fpc-input-group>
+      </fpc-form-field>
+    </div>
+    <div class="col-6 col-sm-2">
+      <fpc-form-field
+        forId="inventoryArticleCurrency"
+        i18n-label="@@featureInventoryArticleForm-currency"
+        label="Currency"
+      >
+        <fpc-form-control
+          controlId="inventoryArticleCurrency"
+          [(ngModel)]="form.currency"
+          name="articleCurrency"
+          [maxLength]="3"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-6 col-sm-2">
+      <fpc-form-field forId="inventoryArticleTax" i18n-label="@@featureInventoryArticleForm-tax" label="VAT">
+        <fpc-form-control
+          controlType="select"
+          controlId="inventoryArticleTax"
+          [(ngModel)]="form.taxCategory"
+          name="articleTax"
+        >
+          <option value="standard" i18n="@@featureInventoryArticleForm-taxStandard">Standard</option>
+          <option value="reduced" i18n="@@featureInventoryArticleForm-taxReduced">Reduced</option>
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+  </div>
+
+  <h6 class="fw-semibold mt-3" i18n="@@featureInventoryArticleForm-sourcing">Sourcing</h6>
+  <div class="row g-3">
+    <div class="col-sm-6">
+      <fpc-form-field
+        forId="inventoryArticleManufacturer"
+        i18n-label="@@featureInventoryArticleForm-manufacturer"
+        label="Manufacturer"
+      >
+        <fpc-form-control
+          controlId="inventoryArticleManufacturer"
+          [(ngModel)]="form.manufacturer"
+          name="articleManufacturer"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-sm-6">
+      <fpc-form-field
+        forId="inventoryArticleMpn"
+        i18n-label="@@featureInventoryArticleForm-mpn"
+        label="Manufacturer part number"
+      >
+        <fpc-form-control controlId="inventoryArticleMpn" [(ngModel)]="form.manufacturerPartNumber" name="articleMpn" />
+      </fpc-form-field>
+    </div>
+    <div class="col-sm-6">
+      <fpc-form-field
+        forId="inventoryArticleSupplier"
+        i18n-label="@@featureInventoryArticleForm-supplier"
+        label="Supplier"
+      >
+        <framework-billing-admin-supplier-select
+          inputId="inventoryArticleSupplier"
+          [(selectedSupplierId)]="form.supplierId"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-sm-6">
+      <fpc-form-field
+        forId="inventoryArticleSupplierNumber"
+        i18n-label="@@featureInventoryArticleForm-supplierNumber"
+        label="Supplier article number"
+      >
+        <fpc-form-control
+          controlId="inventoryArticleSupplierNumber"
+          [(ngModel)]="form.supplierArticleNumber"
+          name="articleSupplierNumber"
+        />
+      </fpc-form-field>
+    </div>
+  </div>
+
+  <h6 class="fw-semibold mt-3" i18n="@@featureInventoryArticleForm-stockControl">Stock control</h6>
+  <div class="row g-3">
+    <div class="col-sm-6">
+      <fpc-form-field
+        forId="inventoryArticleReorderPoint"
+        i18n-label="@@featureInventoryArticleForm-reorderPoint"
+        label="Reorder point"
+        i18n-hint="@@featureInventoryArticleForm-reorderPointHint"
+        hint="Total stock at or below this is reported as low."
+      >
+        <fpc-input-group>
+          <fpc-form-control
+            controlId="inventoryArticleReorderPoint"
+            inputType="number"
+            min="0"
+            step="any"
+            [(ngModel)]="form.reorderPoint"
+            name="articleReorderPoint"
+          />
+          <span class="input-group-text" fpcInputGroupSuffix>{{ unitLabel(form.unit) }}</span>
+        </fpc-input-group>
+      </fpc-form-field>
+    </div>
+    <div class="col-sm-6">
+      <fpc-form-field
+        forId="inventoryArticleReorderQuantity"
+        i18n-label="@@featureInventoryArticleForm-reorderQuantity"
+        label="Reorder quantity"
+      >
+        <fpc-input-group>
+          <fpc-form-control
+            controlId="inventoryArticleReorderQuantity"
+            inputType="number"
+            min="0"
+            step="any"
+            [(ngModel)]="form.reorderQuantity"
+            name="articleReorderQuantity"
+          />
+          <span class="input-group-text" fpcInputGroupSuffix>{{ unitLabel(form.unit) }}</span>
+        </fpc-input-group>
+      </fpc-form-field>
+    </div>
+  </div>
+
+  <h6 class="fw-semibold mt-3" i18n="@@featureInventoryArticleForm-logistics">Logistics</h6>
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-sm-3">
+      <fpc-form-field
+        forId="inventoryArticleWeight"
+        i18n-label="@@featureInventoryArticleForm-weightLabel"
+        label="Weight"
+      >
+        <fpc-input-group>
+          <fpc-form-control
+            controlId="inventoryArticleWeight"
+            inputType="number"
+            min="0"
+            step="any"
+            [(ngModel)]="form.weightKg"
+            name="articleWeight"
+          />
+          <span class="input-group-text" fpcInputGroupSuffix>kg</span>
+        </fpc-input-group>
+      </fpc-form-field>
+    </div>
+    <div class="col-6 col-sm-3">
+      <fpc-form-field
+        forId="inventoryArticleLength"
+        i18n-label="@@featureInventoryArticleForm-lengthLabel"
+        label="Length"
+      >
+        <fpc-input-group>
+          <fpc-form-control
+            controlId="inventoryArticleLength"
+            inputType="number"
+            min="0"
+            step="any"
+            [(ngModel)]="form.lengthCm"
+            name="articleLength"
+          />
+          <span class="input-group-text" fpcInputGroupSuffix>cm</span>
+        </fpc-input-group>
+      </fpc-form-field>
+    </div>
+    <div class="col-6 col-sm-3">
+      <fpc-form-field forId="inventoryArticleWidth" i18n-label="@@featureInventoryArticleForm-widthLabel" label="Width">
+        <fpc-input-group>
+          <fpc-form-control
+            controlId="inventoryArticleWidth"
+            inputType="number"
+            min="0"
+            step="any"
+            [(ngModel)]="form.widthCm"
+            name="articleWidth"
+          />
+          <span class="input-group-text" fpcInputGroupSuffix>cm</span>
+        </fpc-input-group>
+      </fpc-form-field>
+    </div>
+    <div class="col-6 col-sm-3">
+      <fpc-form-field
+        forId="inventoryArticleHeight"
+        i18n-label="@@featureInventoryArticleForm-heightLabel"
+        label="Height"
+      >
+        <fpc-input-group>
+          <fpc-form-control
+            controlId="inventoryArticleHeight"
+            inputType="number"
+            min="0"
+            step="any"
+            [(ngModel)]="form.heightCm"
+            name="articleHeight"
+          />
+          <span class="input-group-text" fpcInputGroupSuffix>cm</span>
+        </fpc-input-group>
+      </fpc-form-field>
+    </div>
+    <div class="col-sm-6">
+      <fpc-form-field
+        forId="inventoryArticleHs"
+        i18n-label="@@featureInventoryArticleForm-hsCode"
+        label="Customs tariff number (HS)"
+      >
+        <fpc-form-control controlId="inventoryArticleHs" [(ngModel)]="form.hsCode" name="articleHs" />
+      </fpc-form-field>
+    </div>
+    <div class="col-sm-6">
+      <fpc-form-field
+        forId="inventoryArticleOrigin"
+        i18n-label="@@featureInventoryArticleForm-origin"
+        label="Country of origin"
+      >
+        <fpc-form-control
+          controlId="inventoryArticleOrigin"
+          [(ngModel)]="form.countryOfOrigin"
+          name="articleOrigin"
+          [maxLength]="2"
+          placeholder="DE"
+        />
+      </fpc-form-field>
+    </div>
+  </div>
+
+  <fpc-form-switch
+    switchId="inventoryArticleActive"
+    name="articleActive"
+    [(ngModel)]="form.isActive"
+    i18n-label="@@featureInventoryArticleForm-active"
+    label="Active (can be put away and sold)"
+  />
+  <fpc-form-switch
+    switchId="inventoryArticleSerialTracking"
+    name="articleSerialTracking"
+    [(ngModel)]="form.serialTracking"
+    [disabled]="serialTrackingLocked()"
+    i18n-label="@@featureInventoryArticleForm-serialTrackingSwitch"
+    label="Require serial numbers (every unit carries one)"
+    data-testid="inventory-article-serial-tracking"
+  />
+  @if (serialTrackingLocked()) {
+    <p class="small text-body-secondary mt-n2" i18n="@@featureInventoryArticleForm-serialTrackingLocked">
+      Serial tracking can only be switched while the article has no stock and nothing is on loan.
+    </p>
+  }
+
+  @if (!article()) {
+    <h6 class="fw-semibold mt-3" i18n="@@featureInventoryArticleForm-locations">Locations</h6>
+    <p class="small text-body-secondary" i18n="@@featureInventoryArticleForm-locationsHint">
+      Map the article to compartments. A quantity puts new goods away (putaway document); 0 only maps the location.
+    </p>
+    @if (form.serialTracking) {
+      <p class="small text-body-secondary" i18n="@@featureInventoryArticleForm-locationsSerialHint">
+        Serial numbers: enter one per unit put away (ranges like SN-01..SN-20 count up); none only maps the location.
+      </p>
+    }
+    @for (row of placements(); track $index; let index = $index) {
+      <div class="d-flex align-items-start gap-2 mb-2" data-testid="inventory-article-placement-row">
+        <div class="flex-grow-1 min-w-0">
+          <framework-inventory-compartment-select
+            [inputId]="'inventoryArticlePlacement' + index"
+            [selected]="row.compartment"
+            (picked)="setPlacementCompartment(index, $event)"
+          />
+        </div>
+        @if (!form.serialTracking) {
+          <div style="width: 10rem">
+            <fpc-input-group>
+              <fpc-form-control
+                inputType="number"
+                min="0"
+                step="any"
+                [ngModel]="row.quantity"
+                (ngModelChange)="setPlacementQuantity(index, $event)"
+                [name]="'articlePlacementQuantity' + index"
+                i18n-ariaLabel="@@featureInventoryArticleForm-quantityAria"
+                ariaLabel="Quantity"
+                placeholder="0"
+              />
+              <span class="input-group-text" fpcInputGroupSuffix>{{ unitLabel(form.unit) }}</span>
+            </fpc-input-group>
+          </div>
+        }
+        <fpc-button
+          variant="link"
+          iconOnly
+          i18n-title="@@featureInventoryArticleForm-removeLocation"
+          title="Remove location"
+          i18n-ariaLabel="@@featureInventoryArticleForm-removeLocation"
+          ariaLabel="Remove location"
+          (clicked)="removePlacement(index)"
+        >
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </fpc-button>
+      </div>
+      @if (form.serialTracking) {
+        <div class="mb-3">
+          <framework-inventory-serial-input
+            [inputId]="'inventoryArticlePlacementSerials' + index"
+            testId="inventory-article-placement-serials"
+            [value]="row.serialText"
+            (valueChange)="setPlacementSerialText(index, $event)"
+            (selectionChange)="setPlacementSerials(index, $event)"
+          />
+        </div>
+      }
+    }
+    @if (duplicateSerials().length > 0) {
+      <p class="small text-danger" i18n="@@featureInventoryArticleForm-duplicateSerials">
+        Serial numbers listed in more than one location: {{ duplicateSerials().join(', ') }}
+      </p>
+    }
+    <fpc-button
+      variant="secondary"
+      size="sm"
+      (clicked)="addPlacement()"
+      data-testid="inventory-article-add-placement"
+      i18n="@@featureInventoryArticleForm-addLocation"
+      >Add location</fpc-button
+    >
+  }
+
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button
+      variant="primary"
+      [disabled]="mutating() || !canSubmit()"
+      [loading]="mutating()"
+      (clicked)="submit()"
+      data-testid="inventory-article-save"
+      i18n="@@featureInventory-save"
+      >Save</fpc-button
+    >
+  </div>
+</fpc-modal>

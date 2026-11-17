@@ -6,6 +6,7 @@ import type {
   DocumentTermsInput,
   EffectiveDocumentTerms,
 } from './document-terms.types';
+import type { ServicePlanInventoryArticle } from './inventory.types';
 
 // Enums
 export type BillingIntervalType = 'hour' | 'day' | 'month' | 'year';
@@ -75,9 +76,12 @@ export interface ServerType {
   cores: number;
   memory: number;
   disk: number;
+  /** Provider (purchase) prices: admins only. */
   priceMonthly?: number;
   priceHourly?: number;
   description?: string;
+  /** Final net period price of the requested plan on this server type (when the request names a plan). */
+  customerPrice?: number;
 }
 
 // Provider geography option (GET .../providers/:id/locations)
@@ -557,9 +561,14 @@ export interface ServicePlanResponse extends DocumentTerms {
   autoRecalculatePriceDaily: boolean;
   minCommitmentDays: number;
   noticeDays: number;
+  /** Admins only (internal; customers get `customerPrice`). */
   basePrice?: string | null;
+  /** Admins only (internal). */
   marginPercent?: string | null;
+  /** Admins only (internal). */
   marginFixed?: string | null;
+  /** Final net period price for the plan's own base price (server-computed; also sent to customers). */
+  customerPrice?: number;
   providerConfigDefaults: Record<string, unknown>;
   orderingHighlights: ServicePlanOrderingHighlight[];
   allowCustomerLocationSelection: boolean;
@@ -570,6 +579,8 @@ export interface ServicePlanResponse extends DocumentTerms {
   /** Provider ids customers may select when allowCustomerProviderSelection is true. */
   allowedProviders: string[];
   taxCategory?: TaxCategory;
+  /** Admins only: articles withdrawn per billing period (each issued period invoice raises withdrawal requests). */
+  inventoryArticles?: ServicePlanInventoryArticle[];
   /** Terms applied to this plan's invoices (plan override, else global default). */
   effectiveDocumentTerms?: EffectiveDocumentTerms;
   withdrawalPolicy: WithdrawalPolicy;
@@ -603,6 +614,8 @@ export interface CreateServicePlanDto extends DocumentTermsInput {
   allowCustomerProviderSelection?: boolean;
   allowedProviders?: string[];
   taxCategory?: TaxCategory;
+  /** Max 50, unique article ids, quantity > 0 with at most 3 decimals; null / empty clears. */
+  inventoryArticles?: ServicePlanInventoryArticle[] | null;
   isActive?: boolean;
 }
 
@@ -628,6 +641,8 @@ export interface UpdateServicePlanDto extends DocumentTermsInput {
   allowCustomerProviderSelection?: boolean;
   allowedProviders?: string[];
   taxCategory?: TaxCategory;
+  /** Max 50, unique article ids, quantity > 0 with at most 3 decimals; null / empty clears. */
+  inventoryArticles?: ServicePlanInventoryArticle[] | null;
   /** Request-only: migrate eligible subscriptions when commercial pricing fields change. */
   migrateExistingSubscriptions?: boolean;
   isActive?: boolean;
@@ -1155,6 +1170,8 @@ export interface InvoiceLineItemResponse {
   lineNet: number;
   lineTax: number;
   lineGross: number;
+  /** Set on article positions (inventory withdrawal on issue). */
+  inventoryArticleId?: string | null;
 }
 
 export interface InvoiceTaxBreakdown {
@@ -1492,6 +1509,8 @@ export interface ManualInvoiceLineItemDto {
   quantity: number;
   unitPriceNet: number;
   taxCategory?: TaxCategory;
+  /** Article position: issuing the invoice raises an inventory withdrawal request for `quantity`. */
+  inventoryArticleId?: string | null;
 }
 
 export interface CreateManualInvoiceDto {

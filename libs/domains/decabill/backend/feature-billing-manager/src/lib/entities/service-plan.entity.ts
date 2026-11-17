@@ -138,9 +138,21 @@ export class ServicePlanEntity {
   @Column({ type: 'text', nullable: true, name: 'delivery_terms_text' })
   deliveryTermsText?: string | null;
 
+  /**
+   * Articles withdrawn per billing period. Each issued subscription period invoice raises one withdrawal request per
+   * entry (accepted separately in the inventory).
+   */
+  @Column({ type: 'jsonb', nullable: true, name: 'inventory_articles' })
+  inventoryArticles?: ServicePlanInventoryArticle[] | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
+}
+
+export interface ServicePlanInventoryArticle {
+  articleId: string;
+  quantity: number;
 }

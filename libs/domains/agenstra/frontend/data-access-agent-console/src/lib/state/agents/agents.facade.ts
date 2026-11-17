@@ -9,6 +9,7 @@ import {
   loadClientAgent,
   loadClientAgentModels,
   loadClientAgents,
+  loadClientAgentsRailPage,
   loadMoreClientAgents,
   restartClientAgent,
   startClientAgent,
@@ -36,6 +37,10 @@ import {
   selectClientAgentsHasMore,
   selectClientAgentsLoading,
   selectClientAgentsLoadingAny,
+  selectClientAgentsRailError,
+  selectClientAgentsRailHasNext,
+  selectClientAgentsRailLoading,
+  selectClientAgentsRailRows,
   selectClientAgentsRestarting,
   selectClientAgentsStarting,
   selectClientAgentsStopping,
@@ -47,6 +52,7 @@ import type {
   AgentModelsMap,
   AgentResponseDto,
   AgentSlashCommand,
+  ClientAgentsRailPageQuery,
   CreateAgentDto,
   ListClientAgentsParams,
   UpdateAgentDto,
@@ -106,6 +112,23 @@ export class AgentsFacade {
 
   getClientAgentsAppendError$(clientId: string): Observable<string | null> {
     return this.store.select(selectClientAgentsAppendError(clientId));
+  }
+
+  /** Rows of the environments rail page of a workspace (empty while another workspace is listed). */
+  getClientAgentsRailRows$(clientId: string): Observable<AgentResponseDto[]> {
+    return this.store.select(selectClientAgentsRailRows(clientId));
+  }
+
+  getClientAgentsRailHasNext$(clientId: string): Observable<boolean> {
+    return this.store.select(selectClientAgentsRailHasNext(clientId));
+  }
+
+  getClientAgentsRailLoading$(clientId: string): Observable<boolean> {
+    return this.store.select(selectClientAgentsRailLoading(clientId));
+  }
+
+  getClientAgentsRailError$(clientId: string): Observable<string | null> {
+    return this.store.select(selectClientAgentsRailError(clientId));
   }
 
   /**
@@ -240,6 +263,14 @@ export class AgentsFacade {
    */
   loadMoreClientAgents(clientId: string): void {
     this.store.dispatch(loadMoreClientAgents({ clientId }));
+  }
+
+  /**
+   * Load one page of a workspace's environments rail; replaces the rail rows (`silent` keeps them visible while
+   * reloading).
+   */
+  loadClientAgentsRailPage(clientId: string, query: ClientAgentsRailPageQuery, silent = false): void {
+    this.store.dispatch(loadClientAgentsRailPage({ clientId, query, ...(silent && { silent }) }));
   }
 
   /**

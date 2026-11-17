@@ -19,4 +19,9 @@ export class ServerTypeDto {
   priceHourly?: number;
   /** Optional description. */
   description?: string;
+  /**
+   * Final net period price of a plan on this server type (provider price plus the plan's margins); set when the
+   * request names a `planId`. Customers get this instead of the provider prices.
+   */
+  customerPrice?: number;
 }

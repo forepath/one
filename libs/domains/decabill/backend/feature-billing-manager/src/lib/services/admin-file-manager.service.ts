@@ -346,6 +346,7 @@ export class AdminFileManagerService {
     const supplierSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.supplierInvoices];
     const datevSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.datevExports];
     const ticketAttachmentSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.projectTicketAttachments];
+    const inventorySegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.inventoryDocuments];
     const invoiceRows: Array<{
       pdf_storage_key: string | null;
       time_report_storage_key: string | null;
@@ -531,6 +532,29 @@ export class AdminFileManagerService {
           ticketAttachmentSegment,
           FileStorageScope.projectTicketAttachments,
           row.storage_key,
+          row.created_at,
+        ),
+      );
+    }
+
+    const movementRows: Array<{ pdf_storage_key: string; created_at: Date }> = await this.dataSource.query(
+      `
+      SELECT m.pdf_storage_key, m.created_at
+      FROM billing_inventory_movements m
+      WHERE m.tenant_id = $1
+        AND m.pdf_storage_key IS NOT NULL
+      `,
+      [tenantId],
+    );
+
+    for (const row of movementRows) {
+      refs.push(
+        this.toRef(
+          tenantId,
+          unifiedLayout,
+          inventorySegment,
+          FileStorageScope.inventoryDocuments,
+          row.pdf_storage_key,
           row.created_at,
         ),
       );

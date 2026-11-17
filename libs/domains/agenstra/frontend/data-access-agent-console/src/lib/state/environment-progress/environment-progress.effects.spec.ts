@@ -3,8 +3,9 @@ import { Store } from '@ngrx/store';
 import { of, Subject, throwError, toArray } from 'rxjs';
 
 import type { EnvironmentProgressService } from '../../services/environment-progress.service';
-import { loadClientAgents } from '../agents/agents.actions';
-import { selectAgentsCreating, selectAgentsEntities } from '../agents/agents.selectors';
+import { loadClientAgents, loadClientAgentsRailPage } from '../agents/agents.actions';
+import { initialAgentsRailPageState } from '../agents/agents.reducer';
+import { selectAgentsCreating, selectAgentsEntities, selectAgentsRailPage } from '../agents/agents.selectors';
 import {
   forwardedEventReceived,
   remoteReconnected,
@@ -23,6 +24,7 @@ import {
   loadEnvironmentProgress$,
   loadEnvironmentProgressOnClientSelected$,
   reloadAgentsOnEnvironmentCreated$,
+  reloadAgentsRailOnEnvironmentCreated$,
   routeEnvironmentProgressEvents$,
 } from './environment-progress.effects';
 import type { EnvironmentProgress } from './environment-progress.types';
@@ -220,6 +222,63 @@ describe('EnvironmentProgressEffects', () => {
           environmentProgressReceived({ clientId, progress: op({ operation: 'update', status: 'completed' }) }),
         ).subscribe((update) => {
           expect(update).toEqual([]);
+          done();
+        });
+      });
+    });
+  });
+
+  describe('reloadAgentsRailOnEnvironmentCreated$', () => {
+    const query = { limit: 25, offset: 0 };
+    const completed = environmentProgressReceived({
+      clientId,
+      progress: op({ status: 'completed', agentId: 'agent-new' }),
+    });
+
+    function run(railPage: unknown, creating: unknown = {}, action = completed) {
+      const store = mockStore(
+        new Map<unknown, unknown>([
+          [selectAgentsRailPage, railPage],
+          [selectAgentsCreating, creating],
+        ]),
+      );
+
+      return reloadAgentsRailOnEnvironmentCreated$(of(action) as Actions, store).pipe(toArray());
+    }
+
+    it('silently reloads the listed rail page when the new environment is not on it', (done) => {
+      run({ ...initialAgentsRailPageState, clientId, query, rows: [{ id: 'agent-1' }] }).subscribe((results) => {
+        expect(results).toEqual([loadClientAgentsRailPage({ clientId, query, silent: true })]);
+        done();
+      });
+    });
+
+    it('skips when the environment is already on the page, another workspace is listed or a create runs', (done) => {
+      const listed = { ...initialAgentsRailPageState, clientId, query, rows: [{ id: 'agent-new' }] };
+
+      run(listed)
+        .pipe(toArray())
+        .subscribe(([alreadyListed]) => {
+          expect(alreadyListed).toEqual([]);
+          run({ ...initialAgentsRailPageState, clientId: 'other', query }).subscribe((otherWorkspace) => {
+            expect(otherWorkspace).toEqual([]);
+            run({ ...initialAgentsRailPageState, clientId, query }, { [clientId]: true }).subscribe((creating) => {
+              expect(creating).toEqual([]);
+              done();
+            });
+          });
+        });
+    });
+
+    it('skips before the rail requested a page and for running operations', (done) => {
+      run({ ...initialAgentsRailPageState, clientId }).subscribe((noQuery) => {
+        expect(noQuery).toEqual([]);
+        run(
+          { ...initialAgentsRailPageState, clientId, query },
+          {},
+          environmentProgressReceived({ clientId, progress: op() }),
+        ).subscribe((running) => {
+          expect(running).toEqual([]);
           done();
         });
       });

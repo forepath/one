@@ -118,6 +118,16 @@ export const BILLING_NOTIFICATION_EVENTS = [
   'offer.expired',
   'offer.line.fulfilled',
   'offer.line.fulfillment_failed',
+  'article.created',
+  'article.updated',
+  'article.deleted',
+  'article.low_stock',
+  'inventory_movement.created',
+  'withdrawal_request.created',
+  'withdrawal_request.accepted',
+  'withdrawal_request.rejected',
+  'inventory_lending.created',
+  'inventory_lending.returned',
 ] as const;
 
 export type BillingNotificationEventType = (typeof BILLING_NOTIFICATION_EVENTS)[number];

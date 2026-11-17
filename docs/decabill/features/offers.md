@@ -27,11 +27,12 @@ Revocation is allowed only in `draft` or `archived`. Terminal states cannot be r
 
 ## Line types
 
-| Type               | On acceptance                                              |
-| ------------------ | ---------------------------------------------------------- |
-| `standard`         | Invoice line or open position (per offer flag)             |
-| `project_template` | Creates a customer project from stored template payload    |
-| `plan_template`    | Creates a subscription using prepared plan/addon snapshots |
+| Type               | On acceptance                                                                                                           |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `standard`         | Invoice line or open position (per offer flag)                                                                          |
+| `article`          | Like `standard`, plus an inventory withdrawal request for the line's article and quantity ([Inventory](./inventory.md)) |
+| `project_template` | Creates a customer project from stored template payload                                                                 |
+| `plan_template`    | Creates a subscription using prepared plan/addon snapshots                                                              |
 
 ### Project template pricing
 

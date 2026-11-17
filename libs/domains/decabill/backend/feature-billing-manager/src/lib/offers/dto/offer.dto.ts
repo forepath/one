@@ -97,8 +97,15 @@ export class OfferPlanTemplateLineDto extends CreateSubscriptionDto {
   scheduledAt?: string;
 }
 
+/** Billed like a standard line; accepting the offer raises a withdrawal request for `quantity` of the article. */
+export class OfferArticleLineDto extends OfferStandardLineDto {
+  @IsUUID('4')
+  inventoryArticleId!: string;
+}
+
 const OFFER_LINE_PAYLOAD_TYPES: Record<OfferLineType, new () => object> = {
   [OfferLineType.STANDARD]: OfferStandardLineDto,
+  [OfferLineType.ARTICLE]: OfferArticleLineDto,
   [OfferLineType.PROJECT_TEMPLATE]: OfferProjectTemplateLineDto,
   [OfferLineType.PLAN_TEMPLATE]: OfferPlanTemplateLineDto,
 };
@@ -118,7 +125,7 @@ export class OfferLineInputDto {
 
     return OFFER_LINE_PAYLOAD_TYPES[lineType as OfferLineType] ?? Object;
   })
-  payload!: OfferStandardLineDto | OfferProjectTemplateLineDto | OfferPlanTemplateLineDto;
+  payload!: OfferStandardLineDto | OfferArticleLineDto | OfferProjectTemplateLineDto | OfferPlanTemplateLineDto;
 }
 
 /**
@@ -175,6 +182,8 @@ export class AdminOfferLineResponseDto {
   planId?: string | null;
   planNameSnapshot?: string | null;
   projectTemplatePayload?: Record<string, unknown> | null;
+  /** Admin responses only: article of an `article` line. */
+  inventoryArticleId?: string | null;
   pricingSnapshot?: Record<string, unknown> | null;
   requestedConfig?: Record<string, unknown>;
   addonIds?: string[];

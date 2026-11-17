@@ -51,7 +51,26 @@
         />
       </fpc-form-field>
 
-      @if (line.lineType === 'standard') {
+      @if (line.lineType === 'article') {
+        <fpc-form-field
+          [forId]="prefix + 'LineArticle' + i"
+          i18n-label="@@featureAdminOffers-lineArticle"
+          label="Article"
+          i18n-hint="@@featureAdminOffers-lineArticleHint"
+          hint="Accepting the offer raises a withdrawal request for the quantity in the inventory."
+          required
+        >
+          <framework-inventory-article-select
+            [inputId]="prefix + 'LineArticle' + i"
+            [(selectedArticleId)]="line.inventoryArticleId"
+            (articlePicked)="onArticlePicked(line, $event)"
+            [required]="true"
+            data-testid="offer-line-article-select"
+          />
+        </fpc-form-field>
+      }
+
+      @if (isStandardLike(line)) {
         <div class="row g-2 mb-3">
           <div class="col-sm-4">
             <fpc-form-field
@@ -282,7 +301,7 @@
         }
       }
 
-      @if (line.lineType !== 'standard') {
+      @if (!isStandardLike(line)) {
         <fpc-form-field
           class="mt-2"
           [forId]="prefix + 'LineScheduled' + i"

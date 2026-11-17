@@ -4,8 +4,8 @@ import { Store } from '@ngrx/store';
 import { catchError, filter, groupBy, map, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
 
 import { EnvironmentProgressService } from '../../services/environment-progress.service';
-import { loadClientAgents } from '../agents/agents.actions';
-import { selectAgentsCreating, selectAgentsEntities } from '../agents/agents.selectors';
+import { loadClientAgents, loadClientAgentsRailPage } from '../agents/agents.actions';
+import { selectAgentsCreating, selectAgentsEntities, selectAgentsRailPage } from '../agents/agents.selectors';
 import {
   forwardedEventReceived,
   remoteReconnected,
@@ -137,6 +137,34 @@ export const reloadAgentsOnEnvironmentCreated$ = createEffect(
         return !progress.agentId || !(entities[clientId] ?? []).some((agent) => agent.id === progress.agentId);
       }),
       map(([{ clientId }]) => loadClientAgents({ clientId })),
+    ),
+  { functional: true },
+);
+
+/**
+ * Reload the environments rail page (without a loading state) when an environment of the listed workspace finished
+ * provisioning and is not on the page yet (created elsewhere, or the pending row of page 1 turned into a real one).
+ */
+export const reloadAgentsRailOnEnvironmentCreated$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store)) =>
+    actions$.pipe(
+      ofType(environmentProgressReceived),
+      filter(({ progress }) => progress.operation === 'create' && progress.status === 'completed'),
+      withLatestFrom(store.select(selectAgentsRailPage), store.select(selectAgentsCreating)),
+      filter(([{ clientId, progress }, railPage, creating]) => {
+        if (railPage.clientId !== clientId || !railPage.query || creating[clientId]) {
+          return false;
+        }
+
+        return !progress.agentId || !railPage.rows.some((agent) => agent.id === progress.agentId);
+      }),
+      map(([{ clientId }, railPage]) =>
+        loadClientAgentsRailPage({
+          clientId,
+          query: railPage.query as NonNullable<typeof railPage.query>,
+          silent: true,
+        }),
+      ),
     ),
   { functional: true },
 );

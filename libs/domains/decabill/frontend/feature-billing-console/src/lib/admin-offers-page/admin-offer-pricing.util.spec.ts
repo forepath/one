@@ -6,7 +6,7 @@ import {
   mapOfferDetailLinesToForm,
   mapOfferFormLinesToDto,
 } from './admin-offer-form.util';
-import { computeProjectTemplateOfferLineTotals } from './admin-offer-totals.util';
+import { computeProjectTemplateOfferLineTotals, computeStandardOfferLineTotals } from './admin-offer-totals.util';
 
 const projectLine = (overrides: Partial<ReturnType<typeof createEmptyOfferFormLine>> = {}) => ({
   ...createEmptyOfferFormLine('project_template'),
@@ -76,5 +76,68 @@ describe('offer project template pricing', () => {
     expect(form).toEqual(
       expect.objectContaining({ pricingModel: 'capped', priceLimitNet: 4800, hourlyRateNet: 100, targetHours: null }),
     );
+  });
+});
+
+describe('offer article lines', () => {
+  const articleLine = (overrides: Partial<ReturnType<typeof createEmptyOfferFormLine>> = {}) => ({
+    ...createEmptyOfferFormLine('article'),
+    description: 'Router',
+    quantity: 2,
+    unitPriceNet: 49.9,
+    unitLabel: 'pcs',
+    taxCategory: 'reduced' as const,
+    inventoryArticleId: 'art-1',
+    ...overrides,
+  });
+
+  it('sends the standard line payload plus the article id', () => {
+    const [dto] = mapOfferFormLinesToDto([articleLine()]);
+
+    expect(dto).toEqual({
+      lineType: 'article',
+      payload: {
+        description: 'Router',
+        quantity: 2,
+        unitPriceNet: 49.9,
+        unitLabel: 'pcs',
+        taxCategory: 'reduced',
+        inventoryArticleId: 'art-1',
+      },
+    });
+  });
+
+  it('requires an article', () => {
+    expect(isOfferFormValid([articleLine()])).toBe(true);
+    expect(isOfferFormValid([articleLine({ inventoryArticleId: null })])).toBe(false);
+  });
+
+  it('restores the article and standard fields when editing a draft', () => {
+    const [line] = mapOfferDetailLinesToForm([
+      {
+        lineType: 'article',
+        description: 'Router',
+        quantity: 2,
+        unitPriceNet: 49.9,
+        unitLabel: 'pcs',
+        taxCategory: 'reduced',
+        inventoryArticleId: 'art-1',
+      } as OfferLineResponse,
+    ]);
+
+    expect(line).toEqual(
+      expect.objectContaining({
+        lineType: 'article',
+        quantity: 2,
+        unitPriceNet: 49.9,
+        unitLabel: 'pcs',
+        taxCategory: 'reduced',
+        inventoryArticleId: 'art-1',
+      }),
+    );
+  });
+
+  it('prices article lines like standard lines', () => {
+    expect(computeStandardOfferLineTotals(articleLine(), { standard: 19, reduced: 7 })?.net).toBeCloseTo(99.8);
   });
 });

@@ -28,6 +28,7 @@ import {
   type AdminSupplierInvoiceListItem,
   type AdminSupplierProfileListItem,
   type BillingAuditLogResponse,
+  type InventoryArticle,
   type BillingStatisticsSeriesPoint,
   type ManualInvoiceDetailResponse,
   type ManualInvoiceLineItemDto,
@@ -122,6 +123,13 @@ import {
   isDocumentTermsFormValid,
   type DocumentTermsFormModel,
 } from '../document-terms/document-terms.util';
+import { InventoryArticleSelectComponent } from '../inventory/inventory-article-select.component';
+import {
+  applyInventoryArticlePrefill,
+  hasValidInventoryPosition,
+  inventoryPositionPayload,
+  type InvoicePositionType,
+} from '../inventory-line-prefill.util';
 import {
   getCustomerLabel,
   getCustomerSecondaryLabel,
@@ -171,6 +179,8 @@ interface AdminBillingFiltersStorage {
 interface InvoiceFormLineItem extends ManualInvoiceLineItemDto {
   taxCategory: 'standard' | 'reduced' | 'custom';
   taxRate?: number;
+  /** `article`: issuing the invoice raises an inventory withdrawal request for the quantity. */
+  positionType: InvoicePositionType;
 }
 
 interface SupplierInvoiceFormLineItem extends SupplierInvoiceLineItemDto {
@@ -234,6 +244,7 @@ type AdminBillingPerspective = 'customer' | 'supplier';
     BillingAdminSubscriptionSelectComponent,
     BillingAdminSupplierSelectComponent,
     BillingAdminSupplierContractSelectComponent,
+    InventoryArticleSelectComponent,
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
@@ -917,6 +928,8 @@ export class AdminBillingPageComponent implements OnInit {
                 quantity: line.quantity,
                 unitPriceNet: line.unitPriceNet,
                 taxCategory: line.taxCategory as 'standard' | 'reduced',
+                positionType: line.inventoryArticleId ? ('article' as const) : ('standard' as const),
+                inventoryArticleId: line.inventoryArticleId ?? null,
               }))
             : [this.emptyLineItem()];
         this.editNote = detail.note ?? '';
@@ -1191,6 +1204,23 @@ export class AdminBillingPageComponent implements OnInit {
       line.taxRate = undefined;
     } else if (line.taxRate == null) {
       line.taxRate = 0;
+    }
+  }
+
+  onPositionTypeChange(line: InvoiceFormLineItem, positionType: InvoicePositionType): void {
+    line.positionType = positionType;
+
+    if (positionType === 'standard') {
+      line.inventoryArticleId = null;
+    }
+  }
+
+  /** Prefills price (when the article has a sales price), an empty description and VAT; clearing keeps input. */
+  onPositionArticlePicked(line: InvoiceFormLineItem, article: InventoryArticle | null): void {
+    applyInventoryArticlePrefill(line, article);
+
+    if (article && line.taxCategory !== 'custom') {
+      line.taxRate = undefined;
     }
   }
 
@@ -1646,7 +1676,14 @@ export class AdminBillingPageComponent implements OnInit {
   }
 
   private emptyLineItem(): InvoiceFormLineItem {
-    return { description: '', quantity: 1, unitPriceNet: 0, taxCategory: 'standard' };
+    return {
+      description: '',
+      quantity: 1,
+      unitPriceNet: 0,
+      taxCategory: 'standard',
+      positionType: 'standard',
+      inventoryArticleId: null,
+    };
   }
 
   private emptySupplierLineItem(): SupplierInvoiceFormLineItem {
@@ -1654,7 +1691,13 @@ export class AdminBillingPageComponent implements OnInit {
   }
 
   private hasValidLineItems(items: InvoiceFormLineItem[]): boolean {
-    return items.every((item) => item.description.trim().length > 0 && item.quantity > 0 && item.unitPriceNet >= 0);
+    return items.every(
+      (item) =>
+        item.description.trim().length > 0 &&
+        item.quantity > 0 &&
+        item.unitPriceNet >= 0 &&
+        hasValidInventoryPosition(item),
+    );
   }
 
   private hasValidSupplierLineItems(items: SupplierInvoiceFormLineItem[]): boolean {
@@ -1677,6 +1720,7 @@ export class AdminBillingPageComponent implements OnInit {
       quantity: Number(item.quantity),
       unitPriceNet: Number(item.unitPriceNet),
       taxCategory: item.taxCategory === 'custom' ? 'standard' : (item.taxCategory ?? 'standard'),
+      ...inventoryPositionPayload(item),
     }));
   }
 

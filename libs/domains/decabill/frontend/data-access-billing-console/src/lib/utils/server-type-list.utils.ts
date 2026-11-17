@@ -56,6 +56,7 @@ function coerceServerType(raw: unknown, fallbackId?: string): ServerType | null 
     priceMonthly: readNumber(raw['priceMonthly'] ?? raw['price_monthly']),
     priceHourly: readNumber(raw['priceHourly'] ?? raw['price_hourly']),
     description: readString(raw['description']),
+    customerPrice: readNumber(raw['customerPrice']),
   };
 }
 

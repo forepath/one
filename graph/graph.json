@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-16T19:31:47.222Z",
+  "generatedAt": "2026-11-17T22:07:47.623Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -1356,6 +1356,27 @@
         ],
         "domain": "shared",
         "context": "backend",
+        "featureGroup": "util"
+      }
+    },
+    {
+      "id": "project:shared-shared-util-barcode",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-shared-util-barcode",
+        "root": "libs/domains/shared/shared/util-barcode",
+        "tags": [
+          "domain:shared",
+          "scope:shared",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "shared",
+        "context": "shared",
         "featureGroup": "util"
       }
     },
@@ -3208,6 +3229,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-inventory.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-inventory.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-frontend-data-access-billing-console"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
       "type": "service",
       "attrs": {
@@ -3727,6 +3757,24 @@
           "customer-profile.facade.ts",
           "customer-profile.reducer.ts",
           "customer-profile.selectors.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/inventory",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/inventory",
+        "languageOrKind": "ts",
+        "projectName": "decabill-frontend-data-access-billing-console",
+        "sliceName": "inventory",
+        "memberFiles": [
+          "inventory-socket.effects.ts",
+          "inventory.actions.ts",
+          "inventory.effects.ts",
+          "inventory.facade.ts",
+          "inventory.reducer.ts",
+          "inventory.selectors.ts"
         ]
       }
     },
@@ -8595,6 +8643,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/service-plan-inventory-article.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/service-plan-inventory-article.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/service-plan-ordering-highlight.dto.ts",
       "type": "dto",
       "attrs": {
@@ -9220,6 +9277,339 @@
       "type": "guard",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/guards/tenant-user.guard.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-labels.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-labels.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-lendings.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-lendings.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-serial-units.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-serial-units.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-withdrawal-requests.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-withdrawal-requests.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/dto/inventory.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/dto/inventory.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-article.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-article.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-compartment.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-compartment.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-lending.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-lending.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-movement.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-movement.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-number-sequence.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-number-sequence.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-serial-unit.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-serial-unit.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-stock.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-stock.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-warehouse.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-warehouse.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-withdrawal-request.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-withdrawal-request.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/gateways/inventory.gateway.ts",
+      "type": "gateway",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/gateways/inventory.gateway.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-compartments.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-compartments.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-lendings.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-lendings.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-movements.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-movements.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-number-sequences.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-number-sequences.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-serial-units.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-serial-units.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-stock.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-stock.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-warehouses.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-warehouses.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-withdrawal-requests.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-withdrawal-requests.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-labels.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-labels.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-locations.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-locations.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movement-pdf.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movement-pdf.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-serial-units.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-serial-units.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -14512,6 +14902,15 @@
       }
     },
     {
+      "id": "file:libs/domains/shared/shared/util-barcode/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/shared/shared/util-barcode/README.md",
+        "languageOrKind": "md",
+        "projectName": "shared-shared-util-barcode"
+      }
+    },
+    {
       "id": "file:apps/agenstra/backend-agent-controller/README.md",
       "type": "readme",
       "attrs": {
@@ -14879,6 +15278,19 @@
         "memberFiles": [
           "addon-teardown-failed.template.html",
           "addon-teardown-failed.template.txt"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/inventory-labels",
+      "type": "email",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/inventory-labels",
+        "languageOrKind": "template",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "templateName": "inventory-labels",
+        "memberFiles": [
+          "inventory-labels.template.html"
         ]
       }
     },
@@ -16075,6 +16487,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/decabill/features/file-explorer.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/features/inventory.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/inventory.md",
         "languageOrKind": "md"
       }
     },
@@ -20724,6 +21144,134 @@
       }
     },
     {
+      "id": "api:channel:inventory/subscribeInventory",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/subscribeInventory",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/unsubscribeInventory",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/unsubscribeInventory",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/subscribeInventorySuccess",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/subscribeInventorySuccess",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/warehouseUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/warehouseUpsert",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/warehouseRemoved",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/warehouseRemoved",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/compartmentUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/compartmentUpsert",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/compartmentRemoved",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/compartmentRemoved",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/articleUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/articleUpsert",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/articleRemoved",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/articleRemoved",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/stockUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/stockUpsert",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/stockRemoved",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/stockRemoved",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/movementCreated",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/movementCreated",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/requestUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/requestUpsert",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/requestsChanged",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/requestsChanged",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/lendingUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/lendingUpsert",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:inventory/serialUnitsChanged",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "inventory/serialUnitsChanged",
+        "specKind": "asyncapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/public/service-plan-offerings",
       "type": "endpoint",
       "attrs": {
@@ -23716,6 +24264,424 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/admin/billing/inventory/summary",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/summary",
+        "operationId": "getInventorySummary",
+        "summary": "Inventory counts (warehouses, compartments, articles, low stock, pending requests)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/warehouses",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/warehouses",
+        "operationId": "listInventoryWarehouses",
+        "summary": "List warehouses (replace-page)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/warehouses",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/warehouses",
+        "operationId": "createInventoryWarehouse",
+        "summary": "Create warehouse",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/warehouses/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/warehouses/{id}",
+        "operationId": "getInventoryWarehouse",
+        "summary": "Get warehouse",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/warehouses/{id}",
+        "operationId": "updateInventoryWarehouse",
+        "summary": "Update warehouse",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/admin/billing/inventory/warehouses/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/admin/billing/inventory/warehouses/{id}",
+        "operationId": "deleteInventoryWarehouse",
+        "summary": "Delete warehouse (409 while it holds stock)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}/compartments",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/warehouses/{id}/compartments",
+        "operationId": "createInventoryCompartment",
+        "summary": "Create compartment in warehouse",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/compartments",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/compartments",
+        "operationId": "listInventoryCompartments",
+        "summary": "List compartments of a warehouse, or of all warehouses (typeahead) without warehouseId",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/compartments/{id}",
+        "operationId": "getInventoryCompartment",
+        "summary": "Get compartment",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/compartments/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/compartments/{id}",
+        "operationId": "updateInventoryCompartment",
+        "summary": "Update compartment",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/admin/billing/inventory/compartments/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/admin/billing/inventory/compartments/{id}",
+        "operationId": "deleteInventoryCompartment",
+        "summary": "Delete compartment (409 while it holds stock)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}/stock",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/compartments/{id}/stock",
+        "operationId": "listInventoryCompartmentStock",
+        "summary": "Articles placed in a compartment",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/articles",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/articles",
+        "operationId": "listInventoryArticles",
+        "summary": "List articles",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/articles",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/articles",
+        "operationId": "createInventoryArticle",
+        "summary": "Create article (allocates ART- number; optional placements, quantity > 0 books a putaway)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/articles/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/articles/{id}",
+        "operationId": "getInventoryArticle",
+        "summary": "Get article",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/articles/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/articles/{id}",
+        "operationId": "updateInventoryArticle",
+        "summary": "Update article",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/admin/billing/inventory/articles/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/admin/billing/inventory/articles/{id}",
+        "operationId": "deleteInventoryArticle",
+        "summary": "Delete article without history (409 otherwise; deactivate instead)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/articles/{id}/stock",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/articles/{id}/stock",
+        "operationId": "listInventoryArticleStock",
+        "summary": "Locations of an article, most stock first (move suggestions)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/stock",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/stock",
+        "operationId": "createInventoryPlacement",
+        "summary": "Map an article to a compartment with quantity 0 (idempotent)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/stock/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/stock/{id}",
+        "operationId": "getInventoryPlacement",
+        "summary": "Get placement",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/admin/billing/inventory/stock/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/admin/billing/inventory/stock/{id}",
+        "operationId": "deleteInventoryPlacement",
+        "summary": "Remove an empty placement (409 while it holds stock)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/movements",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/movements",
+        "operationId": "listInventoryMovements",
+        "summary": "List movement documents",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/movements/putaway",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/movements/putaway",
+        "operationId": "inventoryPutaway",
+        "summary": "Put new goods away (PUT- document, archived under inventory/documents/putaways)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/movements/transfer",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/movements/transfer",
+        "operationId": "inventoryTransfer",
+        "summary": "Transfer between compartments, also across warehouses (TRF- document)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/movements/withdrawal",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/movements/withdrawal",
+        "operationId": "inventoryWithdrawal",
+        "summary": "Withdraw stock directly (WDR- document; reason fulfillment is reserved for requests)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/movements/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/movements/{id}",
+        "operationId": "getInventoryMovement",
+        "summary": "Get movement",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/movements/{id}/pdf",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/movements/{id}/pdf",
+        "operationId": "downloadInventoryMovementPdf",
+        "summary": "Download the signed movement document (re-rendered and archived again when missing)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/withdrawal-requests",
+        "operationId": "listInventoryWithdrawalRequests",
+        "summary": "List withdrawal requests (offers, invoices, subscriptions)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/withdrawal-requests/{id}",
+        "operationId": "getInventoryWithdrawalRequest",
+        "summary": "Get withdrawal request",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/accept",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/withdrawal-requests/{id}/accept",
+        "operationId": "acceptInventoryWithdrawalRequest",
+        "summary": "Accept: book one WDR- document per allocation (allocations must add up to the requested quantity; 409 when already decided)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/reject",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/withdrawal-requests/{id}/reject",
+        "operationId": "rejectInventoryWithdrawalRequest",
+        "summary": "Reject without moving stock",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/serial-units",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/serial-units",
+        "operationId": "listInventorySerialUnits",
+        "summary": "Serial-tracked units (search: serial number, article, borrower)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/lendings",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/lendings",
+        "operationId": "listInventoryLendings",
+        "summary": "Lendings, open ones by due date first",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/lendings",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/lendings",
+        "operationId": "createInventoryLending",
+        "summary": "Lend stock to a customer or staff (LND- document, archived under inventory/documents/lendings)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/lendings/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/lendings/{id}",
+        "operationId": "getInventoryLending",
+        "summary": "One lending",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/lendings/{id}/return",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/lendings/{id}/return",
+        "operationId": "returnInventoryLending",
+        "summary": "Return all or part of a lending (RTN- document, archived under inventory/documents/lending-returns)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/inventory/labels/owner",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/inventory/labels/owner",
+        "operationId": "getInventoryLabelOwner",
+        "summary": "Company data printed on property stickers (billing issuer)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/labels",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/labels",
+        "operationId": "printInventoryLabels",
+        "summary": "Print labels (article number, EAN, property sticker) as one PDF",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "webhook-event:decabill-backend-feature-billing-manager:addon.activated",
       "type": "webhook-event",
       "attrs": {
@@ -23783,6 +24749,42 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "addon.teardown_failed",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:article.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "article.created",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:article.deleted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "article.deleted",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:article.low_stock",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "article.low_stock",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:article.updated",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "article.updated",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -23927,6 +24929,33 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "datev.debtor_range_exhausted",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:inventory_lending.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "inventory_lending.created",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:inventory_lending.returned",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "inventory_lending.returned",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:inventory_movement.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "inventory_movement.created",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -24701,6 +25730,33 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "webhook_endpoints.subscribed_events",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:withdrawal_request.accepted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "withdrawal_request.accepted",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:withdrawal_request.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "withdrawal_request.created",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:withdrawal_request.rejected",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "withdrawal_request.rejected",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -35147,6 +36203,106 @@
       }
     },
     {
+      "id": "concept:decabill-inventory",
+      "type": "concept",
+      "attrs": {
+        "title": "Inventory",
+        "docPath": "docs/decabill/features/inventory.md",
+        "sectionAnchor": "inventory",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-data-model",
+      "type": "concept",
+      "attrs": {
+        "title": "Data model",
+        "docPath": "docs/decabill/features/inventory.md",
+        "sectionAnchor": "data-model",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-movements-and-documents",
+      "type": "concept",
+      "attrs": {
+        "title": "Movements and documents",
+        "docPath": "docs/decabill/features/inventory.md",
+        "sectionAnchor": "movements-and-documents",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-serial-numbers",
+      "type": "concept",
+      "attrs": {
+        "title": "Serial numbers",
+        "docPath": "docs/decabill/features/inventory.md",
+        "sectionAnchor": "serial-numbers",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-lendings",
+      "type": "concept",
+      "attrs": {
+        "title": "Lendings",
+        "docPath": "docs/decabill/features/inventory.md",
+        "sectionAnchor": "lendings",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-labels",
+      "type": "concept",
+      "attrs": {
+        "title": "Labels",
+        "docPath": "docs/decabill/features/inventory.md",
+        "sectionAnchor": "labels",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-withdrawal-requests",
+      "type": "concept",
+      "attrs": {
+        "title": "Withdrawal requests",
+        "docPath": "docs/decabill/features/inventory.md",
+        "sectionAnchor": "withdrawal-requests",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-console",
+      "type": "concept",
+      "attrs": {
+        "title": "Console",
+        "docPath": "docs/decabill/features/inventory.md",
+        "sectionAnchor": "console",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-live-updates",
+      "type": "concept",
+      "attrs": {
+        "title": "Live updates",
+        "docPath": "docs/decabill/features/inventory.md",
+        "sectionAnchor": "live-updates",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-webhooks-and-audit",
+      "type": "concept",
+      "attrs": {
+        "title": "Webhooks and audit",
+        "docPath": "docs/decabill/features/inventory.md",
+        "sectionAnchor": "webhooks-and-audit",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-invoices",
       "type": "concept",
       "attrs": {
@@ -38215,6 +39371,11 @@
     },
     {
       "from": "project:decabill-frontend-feature-billing-console",
+      "to": "project:shared-shared-util-barcode",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-feature-billing-console",
       "to": "project:shared-frontend-util-provisioning-geography",
       "type": "depends_on"
     },
@@ -38291,6 +39452,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "project:shared-backend-util-queue",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "project:shared-shared-util-barcode",
       "type": "depends_on"
     },
     {
@@ -41465,6 +42631,11 @@
     },
     {
       "from": "project:decabill-frontend-data-access-billing-console",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-inventory.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-frontend-data-access-billing-console",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
       "type": "contains"
     },
@@ -41671,6 +42842,11 @@
     {
       "from": "project:decabill-frontend-data-access-billing-console",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/customer-profile",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-frontend-data-access-billing-console",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/inventory",
       "type": "contains"
     },
     {
@@ -44135,6 +45311,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/service-plan-inventory-article.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/service-plan-ordering-highlight.dto.ts",
       "type": "contains"
     },
@@ -44481,6 +45662,191 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/guards/tenant-user.guard.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-labels.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-lendings.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-serial-units.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-withdrawal-requests.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/dto/inventory.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-article.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-compartment.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-lending.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-movement.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-number-sequence.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-serial-unit.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-stock.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-warehouse.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/entities/inventory-withdrawal-request.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/gateways/inventory.gateway.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-compartments.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-lendings.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-movements.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-number-sequences.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-serial-units.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-stock.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-warehouses.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-withdrawal-requests.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-labels.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-locations.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movement-pdf.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-serial-units.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
       "type": "contains"
     },
     {
@@ -47394,6 +48760,11 @@
       "type": "contains"
     },
     {
+      "from": "project:shared-shared-util-barcode",
+      "to": "file:libs/domains/shared/shared/util-barcode/README.md",
+      "type": "contains"
+    },
+    {
       "from": "project:agenstra-backend-agent-controller",
       "to": "file:apps/agenstra/backend-agent-controller/README.md",
       "type": "contains"
@@ -47586,6 +48957,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/addon-teardown-failed",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/inventory-labels",
       "type": "contains"
     },
     {
@@ -49769,6 +51145,86 @@
       "type": "contains"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/subscribeInventory",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/unsubscribeInventory",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/subscribeInventorySuccess",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/warehouseUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/warehouseRemoved",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/compartmentUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/compartmentRemoved",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/articleUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/articleRemoved",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/stockUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/stockRemoved",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/movementCreated",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/requestUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/requestsChanged",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/lendingUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
+      "to": "api:channel:inventory/serialUnitsChanged",
+      "type": "contains"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/public/service-plan-offerings",
       "type": "contains"
@@ -51374,6 +52830,196 @@
       "type": "contains"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/summary",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/warehouses",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/warehouses/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/warehouses/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}/compartments",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/compartments/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/compartments/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}/stock",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/articles",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/articles/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/articles/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles/{id}/stock",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/stock",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/stock/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/stock/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/putaway",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/transfer",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/withdrawal",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}/pdf",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/accept",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/reject",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/serial-units",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings/{id}/return",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/inventory/labels/owner",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels",
+      "type": "contains"
+    },
+    {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:addon.activated",
       "type": "contains"
@@ -51411,6 +53057,26 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:addon.teardown_failed",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:article.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:article.deleted",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:article.low_stock",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:article.updated",
       "type": "contains"
     },
     {
@@ -51491,6 +53157,21 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:datev.debtor_range_exhausted",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:inventory_lending.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:inventory_lending.returned",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:inventory_movement.created",
       "type": "contains"
     },
     {
@@ -51921,6 +53602,21 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:webhook_endpoints.subscribed_events",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:withdrawal_request.accepted",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:withdrawal_request.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:withdrawal_request.rejected",
       "type": "contains"
     },
     {
@@ -58659,6 +60355,66 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/decabill/features/inventory.md",
+      "to": "concept:decabill-inventory",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/inventory.md",
+      "to": "concept:decabill-data-model",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/inventory.md",
+      "to": "concept:decabill-movements-and-documents",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/inventory.md",
+      "to": "concept:decabill-serial-numbers",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/inventory.md",
+      "to": "concept:decabill-lendings",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/inventory.md",
+      "to": "concept:decabill-labels",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/inventory.md",
+      "to": "concept:decabill-withdrawal-requests",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/inventory.md",
+      "to": "concept:decabill-console",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/inventory.md",
+      "to": "concept:decabill-live-updates",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/inventory.md",
+      "to": "concept:decabill-api",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/inventory.md",
+      "to": "concept:decabill-webhooks-and-audit",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/inventory.md",
+      "to": "concept:decabill-related-documentation",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/decabill/features/invoices.md",
       "to": "concept:decabill-invoices",
       "type": "contains"
@@ -64284,6 +66040,386 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/summary",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/summary",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/warehouses",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/warehouses",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}/compartments",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}/compartments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}/stock",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}/stock",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/articles",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/articles",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles/{id}/stock",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles/{id}/stock",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/stock",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/stock",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/stock/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/stock/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/stock/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/stock/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/putaway",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/putaway",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/transfer",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/transfer",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/withdrawal",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/withdrawal",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}/pdf",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}/pdf",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/accept",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/accept",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/reject",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/reject",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/serial-units",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/serial-units",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings/{id}/return",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings/{id}/return",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/labels/owner",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/inventory/labels/owner",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-profiles.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/customer-profiles",
       "type": "implements"
@@ -65191,6 +67327,196 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/supplier-invoices/{id}/audit-logs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/summary",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/warehouses",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}/compartments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}/stock",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/articles",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles/{id}/stock",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/stock",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/stock/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/stock/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/putaway",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/transfer",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/withdrawal",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}/pdf",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/accept",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/reject",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/serial-units",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings/{id}/return",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/labels/owner",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels",
       "type": "implements"
     },
     {
@@ -66266,6 +68592,471 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:GET:/usage/summary/{subscriptionId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/summary",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/warehouses",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}/compartments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}/stock",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/articles",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles/{id}/stock",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/stock",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/stock/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/stock/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/putaway",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/transfer",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/withdrawal",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}/pdf",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/accept",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/reject",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/serial-units",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings/{id}/return",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/labels/owner",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-labels.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/labels/owner",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-labels.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-lendings.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-lendings.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-lendings.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-lendings.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings/{id}/return",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/summary",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/warehouses",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/warehouses/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/warehouses/{id}/compartments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/compartments/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/compartments/{id}/stock",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/articles",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/articles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/articles/{id}/stock",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/stock",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/stock/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/inventory/stock/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/putaway",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/transfer",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/withdrawal",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}/pdf",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/accept",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/reject",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/serial-units",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/lendings/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/lendings/{id}/return",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/labels/owner",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/putaway",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/transfer",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/withdrawal",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}/pdf",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-serial-units.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/serial-units",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-withdrawal-requests.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-withdrawal-requests.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-withdrawal-requests.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/accept",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-withdrawal-requests.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/withdrawal-requests/{id}/reject",
       "type": "implements"
     },
     {
@@ -71314,6 +74105,16 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-plans.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-plans.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/pricing.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-types.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-types.repository.ts",
       "type": "injects"
@@ -71336,6 +74137,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-types.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-types.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plans.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-types.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/pricing.service.ts",
       "type": "injects"
     },
     {
@@ -71406,6 +74217,356 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/gateways/billing-status.gateway.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/subscriptions.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-locations.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-labels.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-labels.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-lendings.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-locations.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-serial-units.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-serial-units.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-withdrawal-requests.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/gateways/inventory.gateway.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/socket-auth.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/gateways/inventory.gateway.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/gateways/inventory.gateway.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-withdrawal-requests.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-lendings.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-number-sequences.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-compartments.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-warehouses.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-stock.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-withdrawal-requests.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/supplier-profiles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-labels.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-labels.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-serial-units.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-labels.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-pdf-html-renderer.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-labels.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-issuer-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-lendings.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-compartments.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-movements.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-serial-units.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/customer-profiles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-locations.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-warehouses.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-locations.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-compartments.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-locations.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-stock.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-locations.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-locations.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-locations.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movement-pdf.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-pdf-html-renderer.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movement-pdf.service.ts",
+      "to": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movement-pdf.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movement-pdf.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-issuer-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-movements.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-stock.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-compartments.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-number-sequences.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-serial-units.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movement-pdf.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-warehouses.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-compartments.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-stock.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-serial-units.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-serial-units.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-withdrawal-requests.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-movements.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/customer-profiles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
       "type": "injects"
     },
     {
@@ -71554,6 +74715,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/e-invoice-xml.service.ts",
       "type": "injects"
@@ -71641,6 +74807,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-document-terms-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
       "type": "injects"
     },
     {
@@ -72839,6 +76010,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-creation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-issuance.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/invoices.repository.ts",
       "type": "injects"
@@ -72911,6 +76087,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-issuance.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-document-terms-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-issuance.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
       "type": "injects"
     },
     {
@@ -73064,6 +76245,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/manual-invoice.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/invoices.repository.ts",
       "type": "injects"
@@ -73111,6 +76297,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/manual-invoice.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-tax-context.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/manual-invoice.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
       "type": "injects"
     },
     {
@@ -76640,6 +79831,41 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-withdrawal-requests.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-lendings.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-serial-units.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-labels.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "type": "provides"
     },
@@ -77201,6 +80427,106 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-number-sequences.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-warehouses.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-compartments.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-articles.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-stock.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-movements.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-withdrawal-requests.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-number-sequences.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-serial-units.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-lendings.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-realtime-notifier.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movement-pdf.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-locations.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-serial-units.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-labels.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/gateways/inventory.gateway.ts",
       "type": "provides"
     },
     {
@@ -86014,6 +89340,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-movements-and-documents",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-serial-numbers",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-customer-invoice-access",
       "to": "api:HTTP:GET:/invoices/summary",
       "type": "documents"
@@ -87181,6 +90517,41 @@
     {
       "from": "concept:decabill-availability-and-pricing",
       "to": "api:HTTP:POST:/service-types",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-availability-and-pricing",
+      "to": "api:HTTP:GET:/service-types/providers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-availability-and-pricing",
+      "to": "api:HTTP:GET:/service-types/providers/{providerId}/server-types",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-availability-and-pricing",
+      "to": "api:HTTP:GET:/service-plans",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-availability-and-pricing",
+      "to": "api:HTTP:POST:/service-plans",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-availability-and-pricing",
+      "to": "api:HTTP:GET:/service-plans/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-availability-and-pricing",
+      "to": "api:HTTP:POST:/service-plans/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-availability-and-pricing",
+      "to": "api:HTTP:DELETE:/service-plans/{id}",
       "type": "documents"
     },
     {
@@ -89124,6 +92495,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:shared-shared-util-barcode",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-shared-util-barcode",
+      "to": "context:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-shared-util-barcode",
+      "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:agenstra-backend-agent-controller",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -90035,6 +93421,11 @@
     },
     {
       "from": "file:docs/decabill/features/file-explorer.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/features/inventory.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -94560,6 +97951,56 @@
     },
     {
       "from": "concept:decabill-multi-tenant-views",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-inventory",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-data-model",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-movements-and-documents",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-serial-numbers",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-lendings",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-labels",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-withdrawal-requests",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-console",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-live-updates",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-webhooks-and-audit",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

@@ -175,7 +175,13 @@ describe('AdminBillingPageComponent (bulk actions)', () => {
 
   it('manual invoice: create and edit submit the note (null when blank)', () => {
     const managerFacade = TestBed.inject(AdminInvoiceManagerFacade) as unknown as Record<string, jest.Mock>;
-    const line = { description: 'Consulting', quantity: 1, unitPriceNet: 100, taxCategory: 'standard' as const };
+    const line = {
+      description: 'Consulting',
+      quantity: 1,
+      unitPriceNet: 100,
+      taxCategory: 'standard' as const,
+      positionType: 'standard' as const,
+    };
 
     component.createInvoiceType = 'customer';
     component.createUserId = 'u1';
@@ -191,6 +197,77 @@ describe('AdminBillingPageComponent (bulk actions)', () => {
     component.editNote = '  ';
     component.submitEdit();
     expect(managerFacade['updateManualInvoice']).toHaveBeenCalledWith('d1', expect.objectContaining({ note: null }));
+  });
+
+  it('manual invoice: article positions need an article, prefill price / VAT (keeping text) and send the id', () => {
+    const managerFacade = TestBed.inject(AdminInvoiceManagerFacade) as unknown as Record<string, jest.Mock>;
+    const standard = {
+      description: 'Consulting',
+      quantity: 1,
+      unitPriceNet: 100,
+      taxCategory: 'standard' as const,
+      positionType: 'standard' as const,
+      inventoryArticleId: null,
+    };
+    const article = {
+      description: 'Box',
+      quantity: 2,
+      unitPriceNet: 0,
+      taxCategory: 'standard' as 'standard' | 'reduced' | 'custom',
+      positionType: 'standard' as 'standard' | 'article',
+      inventoryArticleId: null as string | null,
+    };
+
+    component.onPositionTypeChange(article, 'article');
+    component.createInvoiceType = 'customer';
+    component.createUserId = 'u1';
+    component.createLineItems = [standard, article];
+    component.submitCreate();
+    expect(managerFacade['createManualInvoice']).not.toHaveBeenCalled();
+
+    article.inventoryArticleId = 'art-1';
+    component.onPositionArticlePicked(article, {
+      name: 'Router',
+      unit: 'piece',
+      salesPriceNet: 49.9,
+      taxCategory: 'reduced',
+    } as never);
+    expect(article).toEqual(
+      expect.objectContaining({ description: 'Box', unitPriceNet: 49.9, taxCategory: 'reduced' }),
+    );
+
+    component.submitCreate();
+    expect(managerFacade['createManualInvoice']).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lineItems: [
+          { description: 'Consulting', quantity: 1, unitPriceNet: 100, taxCategory: 'standard' },
+          { description: 'Box', quantity: 2, unitPriceNet: 49.9, taxCategory: 'reduced', inventoryArticleId: 'art-1' },
+        ],
+      }),
+    );
+
+    component.onPositionTypeChange(article, 'standard');
+    expect(article.inventoryArticleId).toBeNull();
+  });
+
+  it('manual invoice: editing a draft restores article positions', () => {
+    const service = TestBed.inject(AdminBillingService) as unknown as Record<string, jest.Mock>;
+
+    service['getManualInvoiceDetail'] = jest.fn(() =>
+      of({
+        lineItems: [
+          { description: 'Fee', quantity: 1, unitPriceNet: 5, taxCategory: 'standard', inventoryArticleId: null },
+          { description: 'Router', quantity: 2, unitPriceNet: 49.9, taxCategory: 'reduced', inventoryArticleId: 'a1' },
+        ],
+        note: null,
+      }),
+    );
+    component.openEditModal({ id: 'd1', userId: 'u1' } as never);
+
+    expect(component.editLineItems.map((line) => [line.positionType, line.inventoryArticleId])).toEqual([
+      ['standard', null],
+      ['article', 'a1'],
+    ]);
   });
 
   it('audit history: loads page 1 on open, then the requested page / size (replace-page, server total)', () => {

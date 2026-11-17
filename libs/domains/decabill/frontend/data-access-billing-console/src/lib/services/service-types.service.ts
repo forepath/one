@@ -44,11 +44,16 @@ export class ServiceTypesService {
    * Get server types with specs and pricing for a provider (e.g. hetzner).
    * Used for server type dropdown and to auto-set plan base price when configSchema.basePriceFromField is set.
    */
-  getProviderServerTypes(providerId: string, serviceTypeId?: string): Observable<ServerType[]> {
+  /** With `planId`, every type carries `customerPrice` (that plan's final price on it). */
+  getProviderServerTypes(providerId: string, serviceTypeId?: string, planId?: string): Observable<ServerType[]> {
     let params = new HttpParams();
 
     if (serviceTypeId?.trim()) {
       params = params.set('serviceTypeId', serviceTypeId);
+    }
+
+    if (planId?.trim()) {
+      params = params.set('planId', planId);
     }
 
     return this.http

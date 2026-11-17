@@ -1,4 +1,5 @@
 import type {
+  OfferArticleLineDto,
   OfferLineInputDto,
   OfferLineResponse,
   OfferLineType,
@@ -16,6 +17,8 @@ export interface OfferFormLineItem {
   unitPriceNet: number;
   unitLabel: string;
   taxCategory: TaxCategory;
+  /** `article` lines: the inventory article withdrawn (as request) when the offer is accepted. */
+  inventoryArticleId: string | null;
   name: string;
   projectDescription: string;
   hourlyRateNet: number;
@@ -40,6 +43,7 @@ export function createEmptyOfferFormLine(lineType: OfferLineType = 'standard'): 
     unitPriceNet: 0,
     unitLabel: '',
     taxCategory: 'standard',
+    inventoryArticleId: null,
     name: '',
     projectDescription: '',
     hourlyRateNet: 0,
@@ -121,26 +125,38 @@ export function mapOfferFormLinesToDto(lines: OfferFormLineItem[]): OfferLineInp
         return { lineType: 'plan_template', payload };
       }
 
-      default: {
-        const payload: OfferStandardLineDto = {
-          description: line.description.trim(),
-          quantity: line.quantity,
-          unitPriceNet: line.unitPriceNet,
-          taxCategory: line.taxCategory === 'reduced' ? 'reduced' : 'standard',
+      case 'article': {
+        const payload: OfferArticleLineDto = {
+          ...buildStandardLinePayload(line),
+          inventoryArticleId: line.inventoryArticleId ?? '',
         };
 
-        if (line.unitLabel.trim()) {
-          payload.unitLabel = line.unitLabel.trim();
-        }
-
-        if (line.scheduledAt.trim()) {
-          payload.scheduledAt = toIsoDateTime(line.scheduledAt);
-        }
-
-        return { lineType: 'standard', payload };
+        return { lineType: 'article', payload };
       }
+
+      default:
+        return { lineType: 'standard', payload: buildStandardLinePayload(line) };
     }
   });
+}
+
+function buildStandardLinePayload(line: OfferFormLineItem): OfferStandardLineDto {
+  const payload: OfferStandardLineDto = {
+    description: line.description.trim(),
+    quantity: line.quantity,
+    unitPriceNet: line.unitPriceNet,
+    taxCategory: line.taxCategory === 'reduced' ? 'reduced' : 'standard',
+  };
+
+  if (line.unitLabel.trim()) {
+    payload.unitLabel = line.unitLabel.trim();
+  }
+
+  if (line.scheduledAt.trim()) {
+    payload.scheduledAt = toIsoDateTime(line.scheduledAt);
+  }
+
+  return payload;
 }
 
 export function mapOfferDetailLinesToForm(lines: OfferLineResponse[]): OfferFormLineItem[] {
@@ -150,11 +166,15 @@ export function mapOfferDetailLinesToForm(lines: OfferLineResponse[]): OfferForm
     base.description = line.description;
     base.scheduledAt = toLocalDateTimeInput(line.scheduledAt);
 
-    if (line.lineType === 'standard') {
+    if (isStandardLikeOfferLineType(line.lineType)) {
       base.quantity = line.quantity;
       base.unitPriceNet = line.unitPriceNet;
       base.unitLabel = line.unitLabel ?? '';
       base.taxCategory = line.taxCategory === 'reduced' ? 'reduced' : 'standard';
+    }
+
+    if (line.lineType === 'article') {
+      base.inventoryArticleId = line.inventoryArticleId ?? null;
     }
 
     if (line.lineType === 'project_template') {
@@ -199,7 +219,11 @@ export function isOfferFormValid(lines: OfferFormLineItem[]): boolean {
       return false;
     }
 
-    if (line.lineType === 'standard') {
+    if (line.lineType === 'article' && !line.inventoryArticleId) {
+      return false;
+    }
+
+    if (isStandardLikeOfferLineType(line.lineType)) {
       return line.quantity > 0 && line.unitPriceNet >= 0;
     }
 
@@ -209,6 +233,11 @@ export function isOfferFormValid(lines: OfferFormLineItem[]): boolean {
 
     return line.planId.trim().length > 0;
   });
+}
+
+/** `article` lines are priced and billed like `standard` lines. */
+export function isStandardLikeOfferLineType(lineType: OfferLineType): boolean {
+  return lineType === 'standard' || lineType === 'article';
 }
 
 export function isPriceLimitedPricingModel(value: unknown): value is 'capped' | 'fixed' {

@@ -1,0 +1,365 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0" data-testid="inventory-article-detail-page">
+  @if (article(); as current) {
+    <!-- One header row like every detail page (project detail): back left of the title, icon-only actions. -->
+    <fpc-page-header [title]="current.name">
+      <a
+        fpcPageHeaderTitle
+        routerLink="/administration/inventory/articles"
+        class="btn btn-sm btn-link text-body-secondary order-first px-1"
+        [title]="backLabel"
+        [attr.aria-label]="backLabel"
+        data-testid="inventory-article-back"
+      >
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+      </a>
+      <fpc-badge fpcPageHeaderContext color="light" size="sm" [title]="articleNumberLabel">
+        <span class="font-monospace">{{ current.articleNumber }}</span>
+      </fpc-badge>
+      @if (!current.isActive) {
+        <fpc-badge fpcPageHeaderContext color="secondary" size="sm" i18n="@@featureInventory-inactive"
+          >Inactive</fpc-badge
+        >
+      }
+      @if (current.description) {
+        <i
+          fpcPageHeaderContext
+          class="bi bi-info-circle text-body-secondary ms-1"
+          [title]="current.description"
+          [attr.aria-label]="current.description"
+          role="img"
+        ></i>
+      }
+      <div fpcPageHeaderActions class="d-flex align-items-center gap-2">
+        <fpc-button
+          variant="dark"
+          iconOnly
+          [title]="printLabelsLabel"
+          [ariaLabel]="printLabelsLabel"
+          (clicked)="openLabels(['article_number'])"
+          data-testid="inventory-article-labels"
+        >
+          <i class="bi bi-printer" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          iconOnly
+          [disabled]="mutating() || current.totalQuantity <= 0"
+          [title]="lendLabel"
+          [ariaLabel]="lendLabel"
+          (clicked)="openMove('lending', null, null)"
+          data-testid="inventory-article-lend"
+        >
+          <i class="bi bi-person-up" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          iconOnly
+          [disabled]="mutating() || !current.isActive"
+          [title]="movementTypeLabels.putaway"
+          [ariaLabel]="movementTypeLabels.putaway"
+          (clicked)="openMove('putaway', null, null)"
+          data-testid="inventory-article-putaway"
+        >
+          <i class="bi bi-box-arrow-in-down" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          iconOnly
+          [title]="editLabel"
+          [ariaLabel]="editLabel"
+          (clicked)="openEdit()"
+          data-testid="inventory-article-edit"
+        >
+          <i class="bi bi-pencil" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          variant="danger"
+          iconOnly
+          [disabled]="mutating()"
+          [title]="deleteLabel"
+          [ariaLabel]="deleteLabel"
+          (clicked)="askDeleteArticle()"
+          data-testid="inventory-article-delete"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </fpc-button>
+      </div>
+    </fpc-page-header>
+
+    <!-- Header stays; the sections scroll below it, each with a sticky title bar (like Agenstra's audit panels). -->
+    <div class="flex-grow-1 min-h-0 overflow-auto" data-testid="inventory-article-scroll">
+      <fpc-panel-grid [columns]="1">
+        <fpc-panel [title]="detailsTitle" data-testid="inventory-article-details">
+          <div class="inventory-barcodes mb-3" data-testid="inventory-article-barcodes">
+            <div>
+              <span class="inventory-barcode-label" i18n="@@featureInventory-internalBarcode">Article number</span>
+              <framework-inventory-barcode [value]="current.articleNumber" kind="code128" />
+            </div>
+            @if (current.ean) {
+              <div>
+                <span class="inventory-barcode-label">EAN</span>
+                <framework-inventory-barcode [value]="current.ean" kind="gtin" />
+              </div>
+            }
+            <div>
+              <span class="inventory-barcode-label" i18n="@@featureInventory-labelProperty">Property sticker</span>
+              <framework-inventory-property-sticker
+                [articleName]="current.name"
+                [articleNumber]="current.articleNumber"
+              />
+            </div>
+          </div>
+          <fpc-key-value-list [items]="items()" [columns]="2">
+            <ng-template fpcKeyValue="lent">
+              {{ lentLabel() }}
+              @if (current.lentQuantity > 0) {
+                <fpc-button
+                  variant="link"
+                  size="sm"
+                  iconOnly
+                  btnClass="text-body-secondary py-0"
+                  routerLink="/administration/inventory/lendings"
+                  [queryParams]="{ 'lnd-q': current.articleNumber }"
+                  [title]="showLendingsLabel"
+                  [ariaLabel]="showLendingsLabel"
+                  data-testid="inventory-article-lent-link"
+                >
+                  <i class="bi bi-arrow-right-circle" aria-hidden="true"></i>
+                </fpc-button>
+              }
+            </ng-template>
+          </fpc-key-value-list>
+        </fpc-panel>
+
+        <fpc-panel flush [title]="locationsTitle">
+          <fpc-data-table
+            nested
+            [ariaLabel]="locationsTitle"
+            [columns]="locationColumns"
+            [rows]="locations().items"
+            paging="server"
+            [total]="locations().total"
+            [(page)]="locationPage"
+            [(pageSize)]="locationPageSize"
+            [(query)]="locationSearch"
+            i18n-searchPlaceholder="@@featureInventory-searchLocations"
+            searchPlaceholder="Search locations"
+            [loading]="locations().loading"
+            refreshable
+            (refresh)="locationReload.update((tick) => tick + 1)"
+            [error]="locations().error"
+            [rowMenu]="locationMenu"
+            (rowAction)="onLocationAction($event.row, $event.item.id)"
+            emptyIcon="geo-alt"
+            data-testid="inventory-article-locations"
+          >
+            <fpc-button
+              fpcDataTableToolbar
+              variant="primary"
+              iconOnly
+              [disabled]="mutating()"
+              [title]="addLocationLabel"
+              [ariaLabel]="addLocationLabel"
+              (clicked)="openAddLocation()"
+              data-testid="inventory-article-add-location"
+            >
+              <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            </fpc-button>
+            <span fpcDataTableEmpty i18n="@@featureInventoryArticleDetail-noLocations"
+              >Not stored anywhere yet. Add a location or put new goods away.</span
+            >
+          </fpc-data-table>
+        </fpc-panel>
+
+        @if (current.serialTracking) {
+          <fpc-panel flush [title]="serialsTitle" data-testid="inventory-article-serials-panel">
+            <fpc-data-table
+              nested
+              [ariaLabel]="serialsTitle"
+              [columns]="serialColumns"
+              [rows]="serialUnits().items"
+              paging="server"
+              [total]="serialUnits().total"
+              [(page)]="serialPage"
+              [(pageSize)]="serialPageSize"
+              [(query)]="serialSearch"
+              i18n-searchPlaceholder="@@featureInventorySerials-search"
+              searchPlaceholder="Search serial number or borrower"
+              showFilterButton
+              [(filtersOpen)]="serialFiltersOpen"
+              [filtersActive]="serialStatus() === 'all' ? 0 : 1"
+              (filtersApplied)="applySerialFilters()"
+              (filtersCleared)="clearSerialFilters()"
+              selectable
+              [(selected)]="selectedSerials"
+              [loading]="serialUnits().loading"
+              refreshable
+              (refresh)="serialReload.update((tick) => tick + 1)"
+              [error]="serialUnits().error"
+              [rowMenu]="serialMenu"
+              (rowAction)="onSerialAction($event.row, $event.item.id)"
+              (rowActivate)="onSerialAction($event, 'history')"
+              emptyIcon="upc"
+              data-testid="inventory-article-serials"
+            >
+              <fpc-form-field
+                fpcDataTableFilters
+                forId="inventorySerialStatusFilter"
+                i18n-label="@@featureInventoryRequests-statusFilter"
+                label="Status"
+              >
+                <fpc-form-control
+                  controlType="select"
+                  controlId="inventorySerialStatusFilter"
+                  [(ngModel)]="serialStatusDraft"
+                  name="inventorySerialStatusFilter"
+                  data-testid="inventory-serial-status-filter"
+                >
+                  <option value="all" i18n="@@featureInventoryRequests-all">All</option>
+                  <option value="in_stock" i18n="@@featureInventory-serialInStock">In stock</option>
+                  <option value="lent" i18n="@@featureInventory-serialLent">On loan</option>
+                  <option value="withdrawn" i18n="@@featureInventory-serialWithdrawn">Withdrawn</option>
+                </fpc-form-control>
+              </fpc-form-field>
+              <fpc-button
+                fpcDataTableBatch
+                variant="secondary"
+                iconOnly
+                [title]="printSelectedLabel"
+                [ariaLabel]="printSelectedLabel"
+                (clicked)="openLabels(['property'], selectedSerials())"
+                data-testid="inventory-serials-print"
+              >
+                <i class="bi bi-printer" aria-hidden="true"></i>
+              </fpc-button>
+              <span fpcDataTableEmpty i18n="@@featureInventorySerials-empty"
+                >No serial numbers yet. Putaways register them.</span
+              >
+            </fpc-data-table>
+          </fpc-panel>
+        }
+
+        <fpc-panel flush [title]="movementsTitle">
+          <fpc-data-table
+            nested
+            [ariaLabel]="movementsTitle"
+            [columns]="movementColumns"
+            [rows]="movements().items"
+            paging="server"
+            [total]="movements().total"
+            [(page)]="movementPage"
+            [(pageSize)]="movementPageSize"
+            [(query)]="movementSearch"
+            i18n-searchPlaceholder="@@featureInventory-searchMovements"
+            searchPlaceholder="Search number, location, reference"
+            [loading]="movements().loading"
+            refreshable
+            (refresh)="movementReload.update((tick) => tick + 1)"
+            [error]="movements().error"
+            [rowMenu]="movementMenu"
+            (rowAction)="onMovementAction($event.row, $event.item.id)"
+            (rowActivate)="download($event)"
+            emptyIcon="file-earmark-text"
+            data-testid="inventory-article-movements"
+          >
+            <ng-template fpcTableCell="route" let-row>
+              <framework-inventory-route-cell [source]="row.source" [target]="row.target" />
+            </ng-template>
+            <span fpcDataTableEmpty i18n="@@featureInventory-noMovements">No movements yet.</span>
+          </fpc-data-table>
+        </fpc-panel>
+      </fpc-panel-grid>
+    </div>
+  } @else {
+    <fpc-page-header [title]="pageTitle" />
+    <fpc-empty-state [loading]="true" />
+  }
+</div>
+
+<framework-inventory-article-form [(open)]="formOpen" [article]="article()" />
+
+<framework-inventory-label-print-dialog
+  [(open)]="labelOpen"
+  [articleIds]="labelArticleIds()"
+  [serialUnitIds]="labelUnitIds()"
+  [defaultKinds]="labelKinds()"
+/>
+
+<framework-inventory-move-dialog
+  [(open)]="moveOpen"
+  [mode]="moveMode()"
+  [article]="moveArticle()"
+  [presetSource]="moveSource()"
+  [presetTarget]="moveTarget()"
+/>
+
+<fpc-modal [(open)]="addLocationOpen" [title]="addLocationLabel" data-testid="inventory-add-location-modal">
+  @if (mutationError(); as error) {
+    <fpc-alert variant="danger" [message]="error" />
+  }
+  <fpc-form-field
+    forId="inventoryAddLocation"
+    i18n-label="@@featureInventory-colCompartment"
+    label="Compartment"
+    required
+  >
+    <framework-inventory-compartment-select
+      inputId="inventoryAddLocation"
+      [selected]="addLocationCompartment()"
+      (picked)="addLocationCompartment.set($event)"
+    />
+  </fpc-form-field>
+  <fpc-form-field
+    forId="inventoryAddLocationQuantity"
+    i18n-label="@@featureInventory-newQuantity"
+    label="New goods (putaway)"
+    i18n-hint="@@featureInventory-newQuantityHint"
+    hint="Leave empty or 0 to map the location without stock."
+  >
+    <fpc-input-group>
+      <fpc-form-control
+        controlId="inventoryAddLocationQuantity"
+        inputType="number"
+        min="0"
+        step="any"
+        [(ngModel)]="addLocationQuantity"
+        name="inventoryAddLocationQuantity"
+        data-testid="inventory-add-location-quantity"
+      />
+      <span class="input-group-text" fpcInputGroupSuffix>{{ unitLabelOf(article()?.unit) }}</span>
+    </fpc-input-group>
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex flex-wrap justify-content-end gap-2">
+    <fpc-button
+      variant="secondary"
+      [disabled]="mutating() || !addLocationCompartment()"
+      (clicked)="transferIntoNewLocation()"
+      i18n="@@featureInventory-takeFromOther"
+      >Take from another compartment…</fpc-button
+    >
+    <fpc-button
+      variant="primary"
+      [disabled]="mutating() || !addLocationCompartment()"
+      [loading]="mutating()"
+      (clicked)="submitAddLocation()"
+      data-testid="inventory-add-location-submit"
+    >
+      @if ((addLocationQuantity ?? 0) > 0) {
+        <span i18n="@@featureInventory-putAway">Put away</span>
+      } @else {
+        <span i18n="@@featureInventory-mapLocation">Map location</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="confirmOpen"
+  i18n-title="@@featureInventory-deleteTitle"
+  title="Delete?"
+  [message]="mutationError() ?? confirmMessage()"
+  [confirmLabel]="deleteLabel"
+  danger
+  [busy]="mutating()"
+  (confirmed)="runConfirm()"
+/>

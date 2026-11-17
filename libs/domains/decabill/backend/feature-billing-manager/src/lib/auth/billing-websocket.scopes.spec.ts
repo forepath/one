@@ -1,5 +1,6 @@
 import { parsePatScope, type SocketEventScopes } from '@forepath/identity/backend';
 
+import { INVENTORY_EVENTS } from '../inventory/services/inventory-realtime.constants';
 import { PROJECTS_BOARD_EVENTS } from '../projects/services/project-board-realtime.constants';
 
 import { BILLING_PAT_SCOPES } from './billing-pat.scopes';
@@ -8,6 +9,8 @@ import {
   BILLING_SOCKET_INBOUND_SCOPES,
   BILLING_SOCKET_OUTBOUND_SCOPES,
   BILLING_WEBSOCKETS,
+  INVENTORY_SOCKET_INBOUND_SCOPES,
+  INVENTORY_SOCKET_OUTBOUND_SCOPES,
   PROJECTS_SOCKET_INBOUND_SCOPES,
   projectsSocketOutboundScopes,
 } from './billing-websocket.scopes';
@@ -18,6 +21,8 @@ const ALL_MAPS: Record<string, SocketEventScopes> = {
   PROJECTS_SOCKET_INBOUND_SCOPES,
   PROJECTS_OWNER: projectsSocketOutboundScopes(false),
   PROJECTS_CROSS_OWNER: projectsSocketOutboundScopes(true),
+  INVENTORY_SOCKET_INBOUND_SCOPES,
+  INVENTORY_SOCKET_OUTBOUND_SCOPES,
 };
 
 describe('Decabill websocket scopes', () => {
@@ -49,7 +54,7 @@ describe('Decabill websocket scopes', () => {
     );
 
     expect([...used].sort()).toEqual(BILLING_PAT_SCOPES.filter((scope) => scope.startsWith('websocket:')).sort());
-    expect(Object.values(BILLING_WEBSOCKETS).sort()).toEqual(['billing', 'projects']);
+    expect(Object.values(BILLING_WEBSOCKETS).sort()).toEqual(['billing', 'inventory', 'projects']);
   });
 
   it('requires the socket scope on every inbound event', () => {
@@ -60,6 +65,21 @@ describe('Decabill websocket scopes', () => {
     for (const [event, scopes] of Object.entries(PROJECTS_SOCKET_INBOUND_SCOPES)) {
       expect({ event, ok: scopes.includes('websocket:projects:read') }).toEqual({ event, ok: true });
     }
+
+    for (const [event, scopes] of Object.entries(INVENTORY_SOCKET_INBOUND_SCOPES)) {
+      expect({ event, ok: scopes.includes('websocket:inventory:read') }).toEqual({ event, ok: true });
+    }
+  });
+
+  it('gates every inventory event behind the admin-only inventory scope', () => {
+    for (const event of Object.values(INVENTORY_EVENTS)) {
+      expect({ event, scopes: INVENTORY_SOCKET_OUTBOUND_SCOPES[event] }).toEqual({
+        event,
+        scopes: ['inventory:admin'],
+      });
+    }
+
+    expect(INVENTORY_SOCKET_INBOUND_SCOPES['subscribeInventory']).toContain('inventory:admin');
   });
 
   it('classifies every project board event for owners and cross-owner admins', () => {

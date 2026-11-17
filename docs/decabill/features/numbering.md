@@ -25,6 +25,10 @@ Credit notes and void documents derive their document numbers from the invoice n
 | Supplier       | `SUP-{nnnnnn}`        | Six-digit pad; allocated once on supplier profile create                            |
 | Supplier inv   | `SINV-{year}-{nnnnn}` | Yearly counter; five-digit pad; allocated at issue                                  |
 | Offer          | `OFF-{year}-{nnnnn}`  | Yearly counter; five-digit pad; allocated at archive (see [Offers](./offers.md))    |
+| Article        | `ART-{nnnnnn}`        | Six-digit pad; allocated on article create (see [Inventory](./inventory.md))        |
+| Putaway        | `PUT-{year}-{nnnnn}`  | Yearly counter; allocated inside the movement transaction                           |
+| Transfer       | `TRF-{year}-{nnnnn}`  | Yearly counter; allocated inside the movement transaction                           |
+| Withdrawal     | `WDR-{year}-{nnnnn}`  | Yearly counter; allocated inside the movement transaction                           |
 | DATEV debtor   | integer               | Allocated within tenant DATEV range (`debtorAccountStart`–`debtorAccountEnd`)       |
 | DATEV creditor | integer               | Allocated within (`creditorAccountStart`–`creditorAccountEnd`, default 70000–99999) |
 
@@ -35,6 +39,7 @@ Credit notes and void documents derive their document numbers from the invoice n
 - Customer counters: `billing_customer_number_sequences` keyed by `scope_key`; profiles store `number_scope` with a unique `(number_scope, customer_number)`
 - Supplier counters: `billing_supplier_number_sequences` keyed by `scope_key`; profiles store `number_scope` with a unique `(number_scope, supplier_number)`
 - Supplier invoice counters: `billing_supplier_invoice_number_sequences` keyed by `(scope, year)`; invoices store `number_scope` with issued `invoice_number`
+- Inventory counters: `billing_inventory_number_sequences` keyed by `(scope_key, kind, year)` (`ART` uses year 0); articles and movements store `number_scope` with unique numbers
 - Debtors: `billing_datev_debtor_accounts.allocation_scope` with unique `(allocation_scope, debtor_number)`
 - Creditors: `billing_datev_creditor_accounts.allocation_scope` with unique `(allocation_scope, creditor_number)`
 

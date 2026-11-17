@@ -93,7 +93,7 @@
     @if (!editorOpen() && !virtualDesktopOpen() && !isToolWindowRoute()) {
       <div class="section__column d-flex flex-column border-end" [class.active-column]="!(activeClientId$ | async)">
         <fpc-page-header [title]="workspacesHeaderTitle" />
-        <!-- Workspaces as a rail table (3.38 decision 7); pages fill from the append-style clients store. -->
+        <!-- Workspaces as a rail table (3.38 decision 7); server paging, each page replaces the rail rows. -->
         <fpc-data-table
           class="chat-rail-table flex-grow-1 min-h-0"
           [ariaLabel]="workspacesHeaderTitle"

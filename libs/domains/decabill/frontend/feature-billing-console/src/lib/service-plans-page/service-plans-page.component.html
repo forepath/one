@@ -375,6 +375,9 @@
           }
         </fpc-form-check-group>
       </div>
+      <ng-container
+        *ngTemplateOutlet="planInventoryArticles; context: { form: 'create', disabled: (creating$ | async) === true }"
+      ></ng-container>
       <fpc-item-card
         class="d-block mb-3"
         title="Payment and delivery terms"
@@ -1072,7 +1075,10 @@
         variant="primary"
         type="submit"
         [disabled]="
-          !createForm.name?.trim() || !isDocumentTermsFormValid(createTermsForm) || (creating$ | async) === true
+          !createForm.name?.trim() ||
+          !isDocumentTermsFormValid(createTermsForm) ||
+          !isInventoryArticlesValid('create') ||
+          (creating$ | async) === true
         "
         i18n="@@featureServicePlans-create"
       >
@@ -1339,6 +1345,9 @@
           }
         </fpc-form-check-group>
       </div>
+      <ng-container
+        *ngTemplateOutlet="planInventoryArticles; context: { form: 'edit', disabled: (updating$ | async) === true }"
+      ></ng-container>
       <fpc-item-card
         class="d-block mb-3"
         title="Payment and delivery terms"
@@ -2058,7 +2067,9 @@
       <fpc-button
         variant="primary"
         type="submit"
-        [disabled]="!isDocumentTermsFormValid(editTermsForm) || (updating$ | async) === true"
+        [disabled]="
+          !isDocumentTermsFormValid(editTermsForm) || !isInventoryArticlesValid('edit') || (updating$ | async) === true
+        "
         i18n="@@featureServicePlans-save"
       >
         Save
@@ -2337,6 +2348,87 @@
       <p class="text-body-secondary small mb-0" i18n="@@featureServicePlans-metersCatalogLoading">
         Loading meter catalog...
       </p>
+    }
+  </fpc-item-card>
+</ng-template>
+
+<ng-template #planInventoryArticles let-form="form" let-disabled="disabled">
+  <fpc-item-card
+    class="d-block mb-3"
+    title="Articles per billing period"
+    i18n-title="@@featureServicePlans-inventoryArticles"
+    [attr.data-testid]="form + '-plan-inventory-articles'"
+  >
+    <span fpcItemCardActions class="d-flex align-items-center gap-1">
+      <fpc-button
+        variant="dark"
+        iconOnly
+        (clicked)="addInventoryArticleRow(form)"
+        [disabled]="disabled || inventoryArticleRows(form).length >= inventoryArticlesMax"
+        title="Add article"
+        i18n-title="@@featureServicePlans-addInventoryArticle"
+        ariaLabel="Add article"
+        i18n-ariaLabel="@@featureServicePlans-addInventoryArticle"
+        [attr.data-testid]="form + '-plan-inventory-article-add'"
+      >
+        <i class="bi bi-plus" aria-hidden="true"></i>
+      </fpc-button>
+    </span>
+    <p class="form-text fpc-form-text--wrap mb-3" i18n="@@featureServicePlans-inventoryArticlesHint">
+      Each issued period invoice raises withdrawal requests for these articles, which are accepted in the inventory.
+    </p>
+    @for (row of inventoryArticleRows(form); track $index; let i = $index) {
+      <div class="row g-2 mb-2 align-items-end">
+        <div class="col-12 col-md-7">
+          <fpc-form-field
+            [forId]="form + 'PlanInventoryArticle' + i"
+            i18n-label="@@featureServicePlans-inventoryArticle"
+            label="Article"
+            [error]="isDuplicateInventoryArticle(form, i) ? duplicateInventoryArticleError : null"
+            required
+          >
+            <framework-inventory-article-select
+              [inputId]="form + 'PlanInventoryArticle' + i"
+              [(selectedArticleId)]="row.articleId"
+              [disabled]="disabled"
+              [required]="true"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-8 col-md-3">
+          <fpc-form-field
+            [forId]="form + 'PlanInventoryQuantity' + i"
+            i18n-label="@@featureServicePlans-inventoryQuantity"
+            label="Quantity"
+            required
+          >
+            <fpc-form-control
+              inputType="number"
+              [controlId]="form + 'PlanInventoryQuantity' + i"
+              [name]="form + 'PlanInventoryQuantity' + i"
+              [(ngModel)]="row.quantity"
+              [disabled]="disabled"
+              min="0.001"
+              step="any"
+              required
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-4 col-md-2 d-flex justify-content-end">
+          <fpc-button
+            variant="danger"
+            iconOnly
+            (clicked)="removeInventoryArticleRow(form, i)"
+            [disabled]="disabled"
+            title="Remove"
+            i18n-title="@@featureServicePlans-removeInventoryArticle"
+            ariaLabel="Remove"
+            i18n-ariaLabel="@@featureServicePlans-removeInventoryArticle"
+          >
+            <i class="bi bi-trash" aria-hidden="true"></i>
+          </fpc-button>
+        </div>
+      </div>
     }
   </fpc-item-card>
 </ng-template>

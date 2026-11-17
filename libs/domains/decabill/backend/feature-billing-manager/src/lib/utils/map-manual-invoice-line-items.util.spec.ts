@@ -14,6 +14,27 @@ describe('mapManualInvoiceLineItemsToInputs', () => {
     ]);
   });
 
+  it('keeps the article of an article position', () => {
+    expect(
+      mapManualInvoiceLineItemsToInputs([
+        {
+          description: 'Widget',
+          quantity: 2,
+          unitPriceNet: 10,
+          inventoryArticleId: '6f9619ff-8b86-4011-b42d-00c04fc964ff',
+        },
+      ]),
+    ).toEqual([
+      {
+        description: 'Widget',
+        quantity: 2,
+        unitPriceNet: 10,
+        taxCategory: TaxCategory.STANDARD,
+        inventoryArticleId: '6f9619ff-8b86-4011-b42d-00c04fc964ff',
+      },
+    ]);
+  });
+
   it('preserves explicit tax category', () => {
     expect(
       mapManualInvoiceLineItemsToInputs([

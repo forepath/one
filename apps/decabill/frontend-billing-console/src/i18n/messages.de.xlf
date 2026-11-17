@@ -9386,6 +9386,1246 @@
         <source>Default if empty: plan or global</source>
         <target>Standard, wenn leer: Plan oder global</target>
       </trans-unit>
+      <trans-unit id="featureAdminOffers-lineTypeArticle" datatype="html">
+        <source>Article</source>
+        <target>Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineArticle" datatype="html">
+        <source>Article</source>
+        <target>Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineArticleHint" datatype="html">
+        <source>Accepting the offer raises a withdrawal request for the quantity in the inventory.</source>
+        <target>Mit der Annahme des Angebots wird eine Entnahmeanforderung über die Menge im Lager erstellt.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-positionType" datatype="html">
+        <source>Position type</source>
+        <target>Positionsart</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-positionTypeStandard" datatype="html">
+        <source>Standard</source>
+        <target>Standard</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-positionTypeArticle" datatype="html">
+        <source>Article</source>
+        <target>Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-lineArticle" datatype="html">
+        <source>Article</source>
+        <target>Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-lineArticleHint" datatype="html">
+        <source>Issuing the invoice raises a withdrawal request for the quantity in the inventory.</source>
+        <target>Beim Ausstellen der Rechnung wird eine Entnahmeanforderung über die Menge im Lager erstellt.</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-inventoryArticleDuplicate" datatype="html">
+        <source>This article is already listed.</source>
+        <target>Dieser Artikel ist bereits aufgeführt.</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-inventoryArticles" datatype="html">
+        <source>Articles per billing period</source>
+        <target>Artikel pro Abrechnungszeitraum</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-addInventoryArticle" datatype="html">
+        <source>Add article</source>
+        <target>Artikel hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-inventoryArticlesHint" datatype="html">
+        <source> Each issued period invoice raises withdrawal requests for these articles, which are accepted in the inventory. </source>
+        <target>Jede ausgestellte Periodenrechnung erstellt Entnahmeanforderungen für diese Artikel, die im Lager angenommen werden.</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-inventoryArticle" datatype="html">
+        <source>Article</source>
+        <target>Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-inventoryQuantity" datatype="html">
+        <source>Quantity</source>
+        <target>Menge</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-removeInventoryArticle" datatype="html">
+        <source>Remove</source>
+        <target>Entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-inventoryPage" datatype="html">
+        <source>Inventory</source>
+        <target>Lager</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-inventoryArticlesPage" datatype="html">
+        <source>Articles</source>
+        <target>Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-inventoryArticlePage" datatype="html">
+        <source>Article</source>
+        <target>Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-inventoryRequestsPage" datatype="html">
+        <source>Withdrawal requests</source>
+        <target>Entnahmeanforderungen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-inventoryDocumentsPage" datatype="html">
+        <source>Inventory documents</source>
+        <target>Lagerbelege</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminInventoryTitle" datatype="html">
+        <source>Inventory</source>
+        <target>Lager</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminInventory" datatype="html">
+        <source>Inventory</source>
+        <target>Lager</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-backToArticles" datatype="html">
+        <source>Back to articles</source>
+        <target>Zurück zu den Artikeln</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-details" datatype="html">
+        <source>Details</source>
+        <target>Details</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-searchLocations" datatype="html">
+        <source>Search locations</source>
+        <target>Lagerplätze suchen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-searchMovements" datatype="html">
+        <source>Search number, location, reference</source>
+        <target>Nummer, Lagerplatz, Referenz suchen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-inactive" datatype="html">
+        <source>Inactive</source>
+        <target>Inaktiv</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-internalBarcode" datatype="html">
+        <source>Article number</source>
+        <target>Artikelnummer</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-noLocations" datatype="html">
+        <source>Not stored anywhere yet. Add a location or put new goods away.</source>
+        <target>Noch nirgends eingelagert. Lagerplatz hinzufügen oder neue Ware einlagern.</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-noMovements" datatype="html">
+        <source>No movements yet.</source>
+        <target>Noch keine Bewegungen.</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-colCompartment" datatype="html">
+        <source>Compartment</source>
+        <target>Lagerfach</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-newQuantity" datatype="html">
+        <source>New goods (putaway)</source>
+        <target>Neue Ware (Einlagerung)</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-newQuantityHint" datatype="html">
+        <source>Leave empty or 0 to map the location without stock.</source>
+        <target>Leer oder 0 lassen, um den Lagerplatz ohne Bestand zuzuordnen.</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-takeFromOther" datatype="html">
+        <source>Take from another compartment…</source>
+        <target>Aus anderem Lagerfach nehmen…</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-putAway" datatype="html">
+        <source>Put away</source>
+        <target>Einlagern</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-mapLocation" datatype="html">
+        <source>Map location</source>
+        <target>Lagerplatz zuordnen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-deleteTitle" datatype="html">
+        <source>Delete?</source>
+        <target>Löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-title" datatype="html">
+        <source>Inventory</source>
+        <target>Lager</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticles-locations" datatype="html">
+        <source>Locations</source>
+        <target>Lagerplätze</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-history" datatype="html">
+        <source>Movements</source>
+        <target>Bewegungen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-addLocation" datatype="html">
+        <source>Add location</source>
+        <target>Lagerplatz hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-articleNumber" datatype="html">
+        <source>Article number</source>
+        <target>Artikelnummer</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-unit" datatype="html">
+        <source>Unit</source>
+        <target>Einheit</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-onHand" datatype="html">
+        <source>On hand</source>
+        <target>Bestand</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticles-requestedHint" datatype="html">
+        <source><x id="quantity" equiv-text="formatInventoryQuantity(article.requestedQuantity, article.unit)"/> requested</source>
+        <target><x id="quantity" equiv-text="formatInventoryQuantity(article.requestedQuantity, article.unit)"/> angefordert</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-purchasePrice" datatype="html">
+        <source>Purchase price</source>
+        <target>Einkaufspreis</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-salesPrice" datatype="html">
+        <source>Sales price</source>
+        <target>Verkaufspreis</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-reorderPoint" datatype="html">
+        <source>Reorder point</source>
+        <target>Meldebestand</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-manufacturer" datatype="html">
+        <source>Manufacturer</source>
+        <target>Hersteller</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-supplierNumber" datatype="html">
+        <source>Supplier article number</source>
+        <target>Lieferantenartikelnummer</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-weight" datatype="html">
+        <source>Weight (kg)</source>
+        <target>Gewicht (kg)</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-dimensions" datatype="html">
+        <source>Dimensions (cm)</source>
+        <target>Maße (cm)</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-hsCode" datatype="html">
+        <source>Customs tariff number (HS)</source>
+        <target>Zolltarifnummer (HS)</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-colState" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-location" datatype="html">
+        <source>Location</source>
+        <target>Lagerplatz</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-colWarehouse" datatype="html">
+        <source>Warehouse</source>
+        <target>Lager</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-colQuantity" datatype="html">
+        <source>Quantity</source>
+        <target>Menge</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-colType" datatype="html">
+        <source>Type</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-colDocument" datatype="html">
+        <source>Document</source>
+        <target>Beleg</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryDocuments-route" datatype="html">
+        <source>From → To</source>
+        <target>Von → Nach</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-reason" datatype="html">
+        <source>Reason</source>
+        <target>Grund</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-colDate" datatype="html">
+        <source>Date</source>
+        <target>Datum</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-openInWarehouse" datatype="html">
+        <source>Show in warehouse</source>
+        <target>Im Lager anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-removeLocation" datatype="html">
+        <source>Remove location</source>
+        <target>Lagerplatz entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-downloadDocument" datatype="html">
+        <source>Download document</source>
+        <target>Beleg herunterladen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-deleteArticle" datatype="html">
+        <source>The article will be deleted. Articles with stock, movements or requests cannot be deleted; deactivate them instead.</source>
+        <target>Der Artikel wird gelöscht. Artikel mit Bestand, Bewegungen oder Anforderungen können nicht gelöscht werden; deaktivieren Sie sie stattdessen.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-deleteLocation" datatype="html">
+        <source>The empty location will be removed from this article.</source>
+        <target>Der leere Lagerplatz wird von diesem Artikel entfernt.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-general" datatype="html">
+        <source>General</source>
+        <target>Allgemein</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-name" datatype="html">
+        <source>Name</source>
+        <target>Name</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-description" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-eanHint" datatype="html">
+        <source>EAN-8, UPC-A, EAN-13 or GTIN-14 with check digit.</source>
+        <target>EAN-8, UPC-A, EAN-13 oder GTIN-14 mit Prüfziffer.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-prices" datatype="html">
+        <source>Prices (net)</source>
+        <target>Preise (netto)</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-salesPriceHint" datatype="html">
+        <source>Prefilled on offer and invoice positions.</source>
+        <target>Wird in Angebots- und Rechnungspositionen vorbelegt.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-currency" datatype="html">
+        <source>Currency</source>
+        <target>Währung</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-tax" datatype="html">
+        <source>VAT</source>
+        <target>USt.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-taxStandard" datatype="html">
+        <source>Standard</source>
+        <target>Regelsatz</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-taxReduced" datatype="html">
+        <source>Reduced</source>
+        <target>Ermäßigt</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-sourcing" datatype="html">
+        <source>Sourcing</source>
+        <target>Beschaffung</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-mpn" datatype="html">
+        <source>Manufacturer part number</source>
+        <target>Herstellerteilenummer</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-supplier" datatype="html">
+        <source>Supplier</source>
+        <target>Lieferant</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-stockControl" datatype="html">
+        <source>Stock control</source>
+        <target>Bestandsführung</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-reorderPointHint" datatype="html">
+        <source>Total stock at or below this is reported as low.</source>
+        <target>Gesamtbestand bis zu diesem Wert gilt als niedrig.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-reorderQuantity" datatype="html">
+        <source>Reorder quantity</source>
+        <target>Bestellmenge</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-logistics" datatype="html">
+        <source>Logistics</source>
+        <target>Logistik</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-origin" datatype="html">
+        <source>Country of origin</source>
+        <target>Ursprungsland</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-active" datatype="html">
+        <source>Active (can be put away and sold)</source>
+        <target>Aktiv (kann eingelagert und verkauft werden)</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-locations" datatype="html">
+        <source>Locations</source>
+        <target>Lagerplätze</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-locationsHint" datatype="html">
+        <source> Map the article to compartments. A quantity puts new goods away (putaway document); 0 only maps the location. </source>
+        <target> Ordnen Sie den Artikel Lagerfächern zu. Eine Menge lagert neue Ware ein (Einlagerungsbeleg); 0 ordnet nur den Lagerplatz zu.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-quantityAria" datatype="html">
+        <source>Quantity</source>
+        <target>Menge</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-removeLocation" datatype="html">
+        <source>Remove location</source>
+        <target>Lagerplatz entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-createTitle" datatype="html">
+        <source>New article</source>
+        <target>Neuer Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-editTitle" datatype="html">
+        <source>Edit article</source>
+        <target>Artikel bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-eanInvalid" datatype="html">
+        <source>Not a valid EAN / GTIN (check digit).</source>
+        <target>Keine gültige EAN / GTIN (Prüfziffer).</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleSelect-clearAria" datatype="html">
+        <source>Clear selected article</source>
+        <target>Ausgewählten Artikel entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleSelect-none" datatype="html">
+        <source>No articles found.</source>
+        <target>Keine Artikel gefunden.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleSelect-placeholder" datatype="html">
+        <source>Search by number, name or EAN</source>
+        <target>Nach Nummer, Name oder EAN suchen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticles-lowStockOnly" datatype="html">
+        <source>Low stock only</source>
+        <target>Nur niedriger Bestand</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticles-empty" datatype="html">
+        <source>No articles yet</source>
+        <target>Noch keine Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryNav-articles" datatype="html">
+        <source>Articles</source>
+        <target>Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticles-add" datatype="html">
+        <source>New article</source>
+        <target>Neuer Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticles-requested" datatype="html">
+        <source>Requested</source>
+        <target>Angefordert</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryCompartmentSelect-clearAria" datatype="html">
+        <source>Clear selected compartment</source>
+        <target>Ausgewähltes Lagerfach entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryCompartmentSelect-none" datatype="html">
+        <source>No compartments found.</source>
+        <target>Keine Lagerfächer gefunden.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryCompartmentSelect-placeholder" datatype="html">
+        <source>Search compartment or warehouse</source>
+        <target>Lagerfach oder Lager suchen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-all" datatype="html">
+        <source>All</source>
+        <target>Alle</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-typePutaway" datatype="html">
+        <source>Putaway</source>
+        <target>Einlagerung</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-typeTransfer" datatype="html">
+        <source>Transfer</source>
+        <target>Umlagerung</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-typeWithdrawal" datatype="html">
+        <source>Withdrawal</source>
+        <target>Entnahme</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryDocuments-requestFilter" datatype="html">
+        <source>Showing the documents of one withdrawal request.</source>
+        <target>Es werden die Belege einer Entnahmeanforderung angezeigt.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryDocuments-empty" datatype="html">
+        <source>No documents yet</source>
+        <target>Noch keine Belege</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryNav-documents" datatype="html">
+        <source>Documents</source>
+        <target>Belege</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-colArticle" datatype="html">
+        <source>Article</source>
+        <target>Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryDocuments-by" datatype="html">
+        <source>By</source>
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-openArticle" datatype="html">
+        <source>Open article</source>
+        <target>Artikel öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-unitPiece" datatype="html">
+        <source>pcs</source>
+        <target>Stk.</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-unitPack" datatype="html">
+        <source>pack</source>
+        <target>Pck.</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-unitBox" datatype="html">
+        <source>box</source>
+        <target>Karton</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-unitPallet" datatype="html">
+        <source>pallet</source>
+        <target>Palette</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-unitSet" datatype="html">
+        <source>set</source>
+        <target>Satz</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-reasonReceipt" datatype="html">
+        <source>Goods receipt</source>
+        <target>Wareneingang</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-reasonReturn" datatype="html">
+        <source>Return</source>
+        <target>Rücksendung</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-reasonFulfillment" datatype="html">
+        <source>Fulfilment</source>
+        <target>Auftragserfüllung</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-reasonConsumption" datatype="html">
+        <source>Consumption</source>
+        <target>Verbrauch</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-reasonDamage" datatype="html">
+        <source>Damage</source>
+        <target>Beschädigung</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-reasonLoss" datatype="html">
+        <source>Loss</source>
+        <target>Verlust</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-reasonCorrection" datatype="html">
+        <source>Stock correction</source>
+        <target>Bestandskorrektur</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-reasonOther" datatype="html">
+        <source>Other</source>
+        <target>Sonstiges</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-requestPending" datatype="html">
+        <source>Pending</source>
+        <target>Offen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-requestAccepted" datatype="html">
+        <source>Accepted</source>
+        <target>Angenommen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-requestRejected" datatype="html">
+        <source>Rejected</source>
+        <target>Abgelehnt</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-sourceOffer" datatype="html">
+        <source>Offer</source>
+        <target>Angebot</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-sourceInvoice" datatype="html">
+        <source>Invoice</source>
+        <target>Rechnung</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-sourceSubscription" datatype="html">
+        <source>Subscription</source>
+        <target>Abonnement</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-active" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-stockEmpty" datatype="html">
+        <source>No stock</source>
+        <target>Kein Bestand</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-stockLow" datatype="html">
+        <source>Low stock</source>
+        <target>Niedriger Bestand</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-stockOk" datatype="html">
+        <source>In stock</source>
+        <target>Auf Lager</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-source" datatype="html">
+        <source>From</source>
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-available" datatype="html">
+        <source>available</source>
+        <target>verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-change" datatype="html">
+        <source>Change</source>
+        <target>Ändern</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-pickSource" datatype="html">
+        <source>Pick the compartment to take the article from.</source>
+        <target>Wählen Sie das Lagerfach, aus dem der Artikel entnommen wird.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-target" datatype="html">
+        <source>To</source>
+        <target>Nach</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-noSources" datatype="html">
+        <source>No compartment holds this article.</source>
+        <target>Kein Lagerfach enthält diesen Artikel.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-noTargets" datatype="html">
+        <source>No other compartment holds this article yet. Search for a compartment above.</source>
+        <target>Noch kein anderes Lagerfach enthält diesen Artikel. Suchen Sie oben nach einem Lagerfach.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-quantity" datatype="html">
+        <source>Quantity</source>
+        <target>Menge</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-reference" datatype="html">
+        <source>Reference</source>
+        <target>Referenz</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-note" datatype="html">
+        <source>Note</source>
+        <target>Notiz</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-submit" datatype="html">
+        <source>Book and create document</source>
+        <target>Buchen und Beleg erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-colLocation" datatype="html">
+        <source>Compartment</source>
+        <target>Lagerfach</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-colWarehouse" datatype="html">
+        <source>Warehouse</source>
+        <target>Lager</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-colQuantity" datatype="html">
+        <source>On hand</source>
+        <target>Bestand</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-sourceSuggestions" datatype="html">
+        <source>Compartments holding this article</source>
+        <target>Lagerfächer mit diesem Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-targetSuggestions" datatype="html">
+        <source>Other compartments with this article</source>
+        <target>Andere Lagerfächer mit diesem Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryNav-aria" datatype="html">
+        <source>Inventory sections</source>
+        <target>Lagerbereiche</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryNav-warehouses" datatype="html">
+        <source>Warehouses</source>
+        <target>Lager</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryNav-requests" datatype="html">
+        <source>Requests</source>
+        <target>Anforderungen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryNav-pendingBadge" datatype="html">
+        <source>Pending withdrawal requests</source>
+        <target>Offene Entnahmeanforderungen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-search" datatype="html">
+        <source>Search document, article</source>
+        <target>Beleg, Artikel suchen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-empty" datatype="html">
+        <source>No withdrawal requests. Offers, invoices and subscriptions with article positions raise them.</source>
+        <target>Keine Entnahmeanforderungen. Angebote, Rechnungen und Abonnements mit Artikelpositionen erzeugen sie.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-takeFrom" datatype="html">
+        <source>Take from</source>
+        <target>Entnehmen aus</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-pickSources" datatype="html">
+        <source> Pick the compartments to take the article from (suggested below, or search). </source>
+        <target> Wählen Sie die Lagerfächer, aus denen entnommen wird (Vorschläge unten oder Suche). </target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-remaining" datatype="html">
+        <source>Still to allocate:</source>
+        <target>Noch zuzuordnen:</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-searchCompartment" datatype="html">
+        <source>Other compartment</source>
+        <target>Anderes Lagerfach</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-noStockThere" datatype="html">
+        <source>That compartment holds none of this article.</source>
+        <target>Dieses Lagerfach enthält diesen Artikel nicht.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-suggestions" datatype="html">
+        <source> Compartments holding this article </source>
+        <target> Lagerfächer mit diesem Artikel </target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-acceptSubmit" datatype="html">
+        <source>Withdraw and create documents</source>
+        <target>Entnehmen und Belege erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-reason" datatype="html">
+        <source>Reason</source>
+        <target>Grund</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-accept" datatype="html">
+        <source>Accept</source>
+        <target>Annehmen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-reject" datatype="html">
+        <source>Reject</source>
+        <target>Ablehnen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-colSource" datatype="html">
+        <source>Source</source>
+        <target>Herkunft</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-colCustomer" datatype="html">
+        <source>Customer</source>
+        <target>Kunde</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-colCreated" datatype="html">
+        <source>Requested</source>
+        <target>Angefordert</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-documents" datatype="html">
+        <source>Documents</source>
+        <target>Belege</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-searchWarehouses" datatype="html">
+        <source>Search warehouses</source>
+        <target>Lager suchen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-noWarehouses" datatype="html">
+        <source>No warehouses yet</source>
+        <target>Noch keine Lager</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-searchCompartments" datatype="html">
+        <source>Search compartments</source>
+        <target>Lagerfächer suchen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-noCompartments" datatype="html">
+        <source>No compartments in this warehouse yet</source>
+        <target>Noch keine Lagerfächer in diesem Lager</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-searchContents" datatype="html">
+        <source>Search articles</source>
+        <target>Artikel suchen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-emptyCompartmentTitle" datatype="html">
+        <source>This compartment is empty</source>
+        <target>Dieses Lagerfach ist leer</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-emptyCompartmentMessage" datatype="html">
+        <source>Map an article to it, put new goods away or take them from another compartment.</source>
+        <target>Ordnen Sie einen Artikel zu, lagern Sie neue Ware ein oder nehmen Sie sie aus einem anderen Lagerfach.</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-addArticleToCompartment" datatype="html">
+        <source>Add article</source>
+        <target>Artikel hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-placementTitle" datatype="html">
+        <source> Article in compartment </source>
+        <target> Artikel im Lagerfach </target>
+      </trans-unit>
+      <trans-unit id="featureInventory-code" datatype="html">
+        <source>Code</source>
+        <target>Kürzel</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-address" datatype="html">
+        <source>Address</source>
+        <target>Adresse</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-address2" datatype="html">
+        <source>Address line 2</source>
+        <target>Adresszusatz</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-postalCode" datatype="html">
+        <source>Postal code</source>
+        <target>Postleitzahl</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-city" datatype="html">
+        <source>City</source>
+        <target>Ort</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-country" datatype="html">
+        <source>Country</source>
+        <target>Land</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-activeSwitch" datatype="html">
+        <source>Active (accepts new stock)</source>
+        <target>Aktiv (nimmt neuen Bestand an)</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-compartmentCodeHint" datatype="html">
+        <source>Location code, for example aisle-rack-shelf (A-01-03).</source>
+        <target>Lagerplatzkürzel, zum Beispiel Gang-Regal-Fach (A-01-03).</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-warehouses" datatype="html">
+        <source>Warehouses</source>
+        <target>Lager</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-compartments" datatype="html">
+        <source>Compartments</source>
+        <target>Lagerfächer</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-contents" datatype="html">
+        <source>Contents</source>
+        <target>Inhalt</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-addWarehouse" datatype="html">
+        <source>Add warehouse</source>
+        <target>Lager hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-addCompartment" datatype="html">
+        <source>Add compartment</source>
+        <target>Lagerfach hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-back" datatype="html">
+        <source>Back</source>
+        <target>Zurück</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-editWarehouse" datatype="html">
+        <source>Edit warehouse</source>
+        <target>Lager bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-editCompartment" datatype="html">
+        <source>Edit compartment</source>
+        <target>Lagerfach bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-colCompartments" datatype="html">
+        <source>Compartments</source>
+        <target>Lagerfächer</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-colArticles" datatype="html">
+        <source>Articles</source>
+        <target>Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-compartmentFilled" datatype="html">
+        <source>In use</source>
+        <target>Belegt</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-compartmentEmpty" datatype="html">
+        <source>Empty</source>
+        <target>Leer</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-updated" datatype="html">
+        <source>Last change</source>
+        <target>Letzte Änderung</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-deleteWarehouseMessage" datatype="html">
+        <source>Warehouse <x id="label" equiv-text="target.label"/> and its empty compartments will be deleted. Warehouses holding stock cannot be deleted.</source>
+        <target>Lager <x id="label" equiv-text="target.label"/> und seine leeren Lagerfächer werden gelöscht. Lager mit Bestand können nicht gelöscht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-deleteCompartmentMessage" datatype="html">
+        <source>Compartment <x id="label" equiv-text="target.label"/> will be deleted. Compartments holding stock cannot be deleted.</source>
+        <target>Lagerfach <x id="label" equiv-text="target.label"/> wird gelöscht. Lagerfächer mit Bestand können nicht gelöscht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-deletePlacementMessage" datatype="html">
+        <source>The location <x id="label" equiv-text="target.label"/> will be removed from the article. Only empty locations can be removed.</source>
+        <target>Der Lagerplatz <x id="label" equiv-text="target.label"/> wird vom Artikel entfernt. Nur leere Lagerplätze können entfernt werden.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryDocuments-typeFilter" datatype="html">
+        <source>Type</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryRequests-statusFilter" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-inventoryLendingsPage" datatype="html">
+        <source>Lendings</source>
+        <target>Ausleihen</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-search" datatype="html">
+        <source>Search serial number or borrower</source>
+        <target>Seriennummer oder Ausleiher suchen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-serialInStock" datatype="html">
+        <source>In stock</source>
+        <target>Auf Lager</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-serialLent" datatype="html">
+        <source>On loan</source>
+        <target>Verliehen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-serialWithdrawn" datatype="html">
+        <source>Withdrawn</source>
+        <target>Entnommen</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-empty" datatype="html">
+        <source>No serial numbers yet. Putaways register them.</source>
+        <target>Noch keine Seriennummern. Einlagerungen erfassen sie.</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-typeLending" datatype="html">
+        <source>Lending</source>
+        <target>Ausleihe</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLabels-title" datatype="html">
+        <source>Print labels</source>
+        <target>Etiketten drucken</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-serials" datatype="html">
+        <source>Serial numbers</source>
+        <target>Seriennummern</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLabels-printSelected" datatype="html">
+        <source>Print labels for the selected serial numbers</source>
+        <target>Etiketten für die ausgewählten Seriennummern drucken</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLendings-outstanding" datatype="html">
+        <source>On loan</source>
+        <target>Verliehen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-serialTracking" datatype="html">
+        <source>Serial numbers</source>
+        <target>Seriennummern</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-serialTracked" datatype="html">
+        <source>Required for every unit</source>
+        <target>Für jede Einheit erforderlich</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-notSerialTracked" datatype="html">
+        <source>Not tracked</source>
+        <target>Nicht erfasst</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-serialNumber" datatype="html">
+        <source>Serial number</source>
+        <target>Seriennummer</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-where" datatype="html">
+        <source>Location / borrower</source>
+        <target>Lagerplatz / Ausleiher</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLend-dueDate" datatype="html">
+        <source>Due back</source>
+        <target>Rückgabe bis</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-colLastChange" datatype="html">
+        <source>Last change</source>
+        <target>Letzte Änderung</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-history" datatype="html">
+        <source>Show movements</source>
+        <target>Bewegungen anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-openLending" datatype="html">
+        <source>Open lending</source>
+        <target>Ausleihe öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-copy" datatype="html">
+        <source>Copy serial number</source>
+        <target>Seriennummer kopieren</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-serialTrackingSwitch" datatype="html">
+        <source>Require serial numbers (every unit carries one)</source>
+        <target>Seriennummern erforderlich (jede Einheit trägt eine)</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-serialTrackingLocked" datatype="html">
+        <source> Serial tracking can only be switched while the article has no stock and nothing is on loan. </source>
+        <target> Die Seriennummernpflicht lässt sich nur ändern, solange der Artikel keinen Bestand hat und nichts verliehen ist. </target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-locationsSerialHint" datatype="html">
+        <source> Serial numbers: enter one per unit put away (ranges like SN-01..SN-20 count up); none only maps the location. </source>
+        <target> Seriennummern: eine je eingelagerter Einheit (Bereiche wie SN-01..SN-20 zählen hoch); ohne Seriennummern wird der Lagerplatz nur zugeordnet. </target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-duplicateSerials" datatype="html">
+        <source> Serial numbers listed in more than one location: <x id="INTERPOLATION" equiv-text="{{ duplicateSerials().join(&apos;, &apos;) }}"/> </source>
+        <target> Seriennummern an mehreren Lagerplätzen angegeben: <x id="INTERPOLATION" equiv-text="{{ duplicateSerials().join(&apos;, &apos;) }}"/> </target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticles-searchSerials" datatype="html">
+        <source>Search number, name, EAN, MPN, serial number</source>
+        <target>Nummer, Name, EAN, MPN, Seriennummer suchen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryDocuments-searchSerials" datatype="html">
+        <source>Search number, article, serial number, reference</source>
+        <target>Nummer, Artikel, Seriennummer, Referenz suchen</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-typeLendingReturn" datatype="html">
+        <source>Lending return</source>
+        <target>Rückgabe</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLabels-kinds" datatype="html">
+        <source>Labels</source>
+        <target>Etiketten</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLabels-kindsHint" datatype="html">
+        <source> Property stickers name the company from the billing settings. Serial-tracked articles get one sticker per unit in stock or on loan; articles without an EAN get no EAN label. </source>
+        <target> Eigentumsaufkleber nennen das Unternehmen aus den Abrechnungseinstellungen. Artikel mit Seriennummern erhalten einen Aufkleber je Einheit auf Lager oder in Ausleihe; Artikel ohne EAN erhalten kein EAN-Etikett. </target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLabels-layout" datatype="html">
+        <source>Layout</source>
+        <target>Layout</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLabels-layoutSheet" datatype="html">
+        <source>A4 sheet, 24 labels to cut out</source>
+        <target> A4-Bogen, 24 Etiketten zum Ausschneiden </target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLabels-layoutSingle" datatype="html">
+        <source> One label per page (label printer, 70 × 37 mm) </source>
+        <target> Ein Etikett je Seite (Etikettendrucker, 70 × 37 mm) </target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLabels-copies" datatype="html">
+        <source>Copies</source>
+        <target>Exemplare</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLabels-print" datatype="html">
+        <source>Create PDF</source>
+        <target>PDF erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLabels-units" datatype="html">
+        <source><x id="count" equiv-text="units"/> serial numbers selected</source>
+        <target><x id="count" equiv-text="units"/> Seriennummern ausgewählt</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLabels-articles" datatype="html">
+        <source><x id="count" equiv-text="articles"/> articles selected</source>
+        <target><x id="count" equiv-text="articles"/> Artikel ausgewählt</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLabels-failed" datatype="html">
+        <source>The labels could not be created.</source>
+        <target>Die Etiketten konnten nicht erstellt werden.</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-borrowerCustomer" datatype="html">
+        <source>Customer</source>
+        <target>Kunde</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-borrowerStaff" datatype="html">
+        <source>Staff</source>
+        <target>Mitarbeitende</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-labelArticleNumber" datatype="html">
+        <source>Article number</source>
+        <target>Artikelnummer</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-labelProperty" datatype="html">
+        <source>Property sticker</source>
+        <target>Eigentumsaufkleber</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-lendingReturned" datatype="html">
+        <source>Returned</source>
+        <target>Zurückgegeben</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-lendingOverdue" datatype="html">
+        <source>Overdue</source>
+        <target>Überfällig</target>
+      </trans-unit>
+      <trans-unit id="featureInventory-lendingOpen" datatype="html">
+        <source>On loan</source>
+        <target>Verliehen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReturn-title" datatype="html">
+        <source>Return lending</source>
+        <target>Ausleihe zurücknehmen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReturn-outstanding" datatype="html">
+        <source><x id="quantity" equiv-text="formatInventoryQuantity(lending.outstandingQuantity, lending.article.unit)"/> on loan</source>
+        <target><x id="quantity" equiv-text="formatInventoryQuantity(lending.outstandingQuantity, lending.article.unit)"/> verliehen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLendings-search" datatype="html">
+        <source>Search borrower, article, serial number</source>
+        <target>Ausleiher, Artikel, Seriennummer suchen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLendings-empty" datatype="html">
+        <source>Nothing on loan</source>
+        <target>Nichts verliehen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryNav-lendings" datatype="html">
+        <source>Lendings</source>
+        <target>Ausleihen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLend-borrower" datatype="html">
+        <source>Borrower</source>
+        <target>Ausleiher</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLendings-lentAt" datatype="html">
+        <source>Lent</source>
+        <target>Verliehen am</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLendings-documents" datatype="html">
+        <source>Download documents</source>
+        <target>Belege herunterladen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLend-borrowerAccount" datatype="html">
+        <source>Customer or staff account</source>
+        <target>Kunden- oder Mitarbeiterkonto</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLend-borrowerEmployee" datatype="html">
+        <source>Employee without account</source>
+        <target>Mitarbeitende ohne Konto</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLend-borrowerNamePlaceholder" datatype="html">
+        <source>Name of the employee</source>
+        <target>Name der Person</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLend-dueDateHint" datatype="html">
+        <source>Optional. Open lendings past this date are flagged as overdue.</source>
+        <target>Optional. Offene Ausleihen nach diesem Datum werden als überfällig markiert.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-serialsHintPutaway" datatype="html">
+        <source>One serial number per unit. Ranges count up the last number.</source>
+        <target>Eine Seriennummer je Einheit. Bereiche zählen die letzte Zahl hoch.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-serialsHintMove" datatype="html">
+        <source>Only units in stock at the source can be moved.</source>
+        <target>Nur Einheiten, die am Quelllagerplatz auf Lager sind, können bewegt werden.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryNav-overdueBadge" datatype="html">
+        <source>Overdue lendings</source>
+        <target>Überfällige Ausleihen</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-errorInvalid" datatype="html">
+        <source>not a valid serial number</source>
+        <target>keine gültige Seriennummer</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-errorRangeMismatch" datatype="html">
+        <source>range ends must differ only in their last number</source>
+        <target>Bereichsenden dürfen sich nur in der letzten Zahl unterscheiden</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-errorRangeOrder" datatype="html">
+        <source>range must count upwards</source>
+        <target>Bereich muss aufsteigend sein</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-errorTooMany" datatype="html">
+        <source>too many serial numbers</source>
+        <target>zu viele Seriennummern</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-errorDuplicate" datatype="html">
+        <source>listed twice</source>
+        <target>doppelt angegeben</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-expected" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ expected() }}"/> expected</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ expected() }}"/> erwartet</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-notAvailable" datatype="html">
+        <source>Not available here:</source>
+        <target>Hier nicht verfügbar:</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-placeholder" datatype="html">
+        <source>One per line, or a range like SN-0001..SN-0050</source>
+        <target>Eine je Zeile oder ein Bereich wie SN-0001..SN-0050</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-countOne" datatype="html">
+        <source>1 serial number</source>
+        <target>1 Seriennummer</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-count" datatype="html">
+        <source><x id="count" equiv-text="this.count()"/> serial numbers</source>
+        <target><x id="count" equiv-text="this.count()"/> Seriennummern</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLendings-continue" datatype="html">
+        <source>Continue</source>
+        <target>Weiter</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryLendings-new" datatype="html">
+        <source>New lending</source>
+        <target>Neue Ausleihe</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-showLendings" datatype="html">
+        <source>Show lendings</source>
+        <target>Ausleihen anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-weightLabel" datatype="html">
+        <source>Weight</source>
+        <target>Gewicht</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-lengthLabel" datatype="html">
+        <source>Length</source>
+        <target>Länge</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-widthLabel" datatype="html">
+        <source>Width</source>
+        <target>Breite</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-heightLabel" datatype="html">
+        <source>Height</source>
+        <target>Höhe</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySticker-propertyOf" datatype="html">
+        <source>Property of</source>
+        <target>Eigentum von</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySticker-contact" datatype="html">
+        <source>If found, please contact <x id="INTERPOLATION" equiv-text="{{ contact }}"/></source>
+        <target>Bei Fund bitte <x id="INTERPOLATION" equiv-text="{{ contact }}"/> kontaktieren</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySticker-noOwner" datatype="html">
+        <source>Company name not configured</source>
+        <target>Firmenname nicht konfiguriert</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-referenceSelectHint" datatype="html">
+        <source>Search invoices, offers, supplier invoices, subscriptions, projects or customers, or use Other for free text.</source>
+        <target>Rechnungen, Angebote, Eingangsrechnungen, Abonnements, Projekte oder Kunden suchen, oder Sonstiges für Freitext.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReference-invoice" datatype="html">
+        <source>Invoice</source>
+        <target>Rechnung</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReference-offer" datatype="html">
+        <source>Offer</source>
+        <target>Angebot</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReference-supplierInvoice" datatype="html">
+        <source>Supplier invoice</source>
+        <target>Eingangsrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReference-subscription" datatype="html">
+        <source>Subscription</source>
+        <target>Abonnement</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReference-project" datatype="html">
+        <source>Project</source>
+        <target>Projekt</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReference-customer" datatype="html">
+        <source>Customer</source>
+        <target>Kunde</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReference-other" datatype="html">
+        <source>Other</source>
+        <target>Sonstiges</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReference-clear" datatype="html">
+        <source>Clear reference</source>
+        <target>Referenz entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReference-none" datatype="html">
+        <source>No matching documents.</source>
+        <target>Keine passenden Belege.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReference-useOther" datatype="html">
+        <source>Other:</source>
+        <target>Sonstiges:</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReference-otherHint" datatype="html">
+        <source>Free text, for example a delivery note number</source>
+        <target>Freitext, zum Beispiel eine Lieferscheinnummer</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReference-placeholder" datatype="html">
+        <source>Search invoice, offer, project, customer…</source>
+        <target>Rechnung, Angebot, Projekt, Kunde suchen …</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryReturn-pickPlaceholder" datatype="html">
+        <source>Search units on loan, or pick all</source>
+        <target>Verliehene Einheiten suchen oder alle wählen</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-noneAvailable" datatype="html">
+        <source>No units available here.</source>
+        <target>Hier sind keine Einheiten verfügbar.</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-allEntered" datatype="html">
+        <source>All available units are entered.</source>
+        <target>Alle verfügbaren Einheiten sind eingetragen.</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-allMatching" datatype="html">
+        <source>All matching (<x id="INTERPOLATION" equiv-text="{{ pickMatches().length }}"/>)</source>
+        <target>Alle passenden (<x id="INTERPOLATION" equiv-text="{{ pickMatches().length }}"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-allAvailable" datatype="html">
+        <source>All available (<x id="INTERPOLATION" equiv-text="{{ remaining().length }}"/>)</source>
+        <target>Alle verfügbaren (<x id="INTERPOLATION" equiv-text="{{ remaining().length }}"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-noMatch" datatype="html">
+        <source>No matching units.</source>
+        <target>Keine passenden Einheiten.</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-more" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ pickMatches().length - pickShown().length }}"/> more, refine the search</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ pickMatches().length - pickShown().length }}"/> weitere, Suche verfeinern</target>
+      </trans-unit>
+      <trans-unit id="featureInventorySerials-pickPlaceholder" datatype="html">
+        <source>Search units in stock here, or pick all</source>
+        <target>Einheiten auf Lager suchen oder alle wählen</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

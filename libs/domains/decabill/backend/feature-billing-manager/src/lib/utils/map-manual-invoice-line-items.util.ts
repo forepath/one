@@ -8,5 +8,6 @@ export function mapManualInvoiceLineItemsToInputs(items: ManualInvoiceLineItemDt
     quantity: item.quantity,
     unitPriceNet: item.unitPriceNet,
     taxCategory: item.taxCategory ?? TaxCategory.STANDARD,
+    ...(item.inventoryArticleId ? { inventoryArticleId: item.inventoryArticleId } : {}),
   }));
 }

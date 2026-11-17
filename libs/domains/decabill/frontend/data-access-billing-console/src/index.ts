@@ -309,3 +309,13 @@ export * from './lib/state/public-withdrawal/public-withdrawal.effects';
 export * from './lib/state/public-withdrawal/public-withdrawal.facade';
 export * from './lib/state/public-withdrawal/public-withdrawal.reducer';
 export * from './lib/state/public-withdrawal/public-withdrawal.selectors';
+
+// Inventory (admin)
+export * from './lib/types/inventory.types';
+export * from './lib/services/admin-inventory.service';
+export * from './lib/state/inventory/inventory.actions';
+export * from './lib/state/inventory/inventory.effects';
+export * from './lib/state/inventory/inventory-socket.effects';
+export * from './lib/state/inventory/inventory.facade';
+export * from './lib/state/inventory/inventory.reducer';
+export * from './lib/state/inventory/inventory.selectors';

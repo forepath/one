@@ -48,4 +48,8 @@ export class InvoiceLineItemEntity {
 
   @Column({ type: 'decimal', precision: 12, scale: 4, name: 'line_gross' })
   lineGross!: number;
+
+  /** Article position: issuing the invoice raises a withdrawal request for `quantity` of this article. */
+  @Column({ type: 'uuid', nullable: true, name: 'inventory_article_id' })
+  inventoryArticleId?: string | null;
 }

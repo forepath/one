@@ -1250,6 +1250,55 @@
       </fpc-button>
     }
     <div>
+      <div class="mb-3">
+        <fpc-form-check-group
+          inline
+          [legendId]="prefix + 'PositionTypeLegend' + i"
+          i18n-label="@@featureAdminInvoices-positionType"
+          label="Position type"
+        >
+          <fpc-form-check
+            type="radio"
+            inline
+            [name]="prefix + 'PositionType' + i"
+            [checkId]="prefix + 'PositionType' + i + '_standard'"
+            value="standard"
+            [checked]="line.positionType !== 'article'"
+            (valueSelect)="onPositionTypeChange(line, 'standard')"
+            i18n-label="@@featureAdminInvoices-positionTypeStandard"
+            label="Standard"
+          />
+          <fpc-form-check
+            type="radio"
+            inline
+            [name]="prefix + 'PositionType' + i"
+            [checkId]="prefix + 'PositionType' + i + '_article'"
+            value="article"
+            [checked]="line.positionType === 'article'"
+            (valueSelect)="onPositionTypeChange(line, 'article')"
+            i18n-label="@@featureAdminInvoices-positionTypeArticle"
+            label="Article"
+          />
+        </fpc-form-check-group>
+      </div>
+      @if (line.positionType === 'article') {
+        <fpc-form-field
+          [forId]="prefix + 'LineArticle' + i"
+          i18n-label="@@featureAdminInvoices-lineArticle"
+          label="Article"
+          i18n-hint="@@featureAdminInvoices-lineArticleHint"
+          hint="Issuing the invoice raises a withdrawal request for the quantity in the inventory."
+          required
+        >
+          <framework-inventory-article-select
+            [inputId]="prefix + 'LineArticle' + i"
+            [(selectedArticleId)]="line.inventoryArticleId"
+            (articlePicked)="onPositionArticlePicked(line, $event)"
+            [required]="true"
+            data-testid="invoice-line-article-select"
+          />
+        </fpc-form-field>
+      }
       <fpc-form-field
         [forId]="prefix + 'LineDesc' + i"
         i18n-label="@@featureAdminInvoices-lineDescription"

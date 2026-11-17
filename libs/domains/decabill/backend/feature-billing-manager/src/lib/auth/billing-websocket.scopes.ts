@@ -1,5 +1,6 @@
 import { type SocketEventScopes, websocketScope } from '@forepath/identity/backend';
 
+import { INVENTORY_EVENTS } from '../inventory/services/inventory-realtime.constants';
 import { PROJECTS_BOARD_EVENTS } from '../projects/services/project-board-realtime.constants';
 
 /**
@@ -12,10 +13,12 @@ import { PROJECTS_BOARD_EVENTS } from '../projects/services/project-board-realti
 export const BILLING_WEBSOCKETS = {
   billing: 'billing',
   projects: 'projects',
+  inventory: 'inventory',
 } as const;
 
 const billingRead = websocketScope(BILLING_WEBSOCKETS.billing, 'read');
 const projectsRead = websocketScope(BILLING_WEBSOCKETS.projects, 'read');
+const inventoryRead = websocketScope(BILLING_WEBSOCKETS.inventory, 'read');
 
 /** `billing` namespace: client → server. */
 export const BILLING_SOCKET_INBOUND_SCOPES: SocketEventScopes = {
@@ -61,3 +64,16 @@ export function projectsSocketOutboundScopes(crossOwner: boolean): SocketEventSc
     [PROJECTS_BOARD_EVENTS.projectSummaryChanged]: [`projects:${level}`],
   };
 }
+
+/** `inventory` namespace: client → server (admin-only, same scope as the inventory REST API). */
+export const INVENTORY_SOCKET_INBOUND_SCOPES: SocketEventScopes = {
+  subscribeInventory: [inventoryRead, 'inventory:admin'],
+  unsubscribeInventory: [inventoryRead],
+};
+
+/** `inventory` namespace: server → client. */
+export const INVENTORY_SOCKET_OUTBOUND_SCOPES: SocketEventScopes = {
+  error: [],
+  subscribeInventorySuccess: [],
+  ...Object.fromEntries(Object.values(INVENTORY_EVENTS).map((event) => [event, ['inventory:admin']])),
+};

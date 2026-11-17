@@ -175,6 +175,13 @@ export interface ListClientsParams {
   search?: string;
 }
 
+/** One server page of the workspaces rail (replace-page paging, never accumulated). */
+export interface ClientsRailPageQuery {
+  limit: number;
+  offset: number;
+  search?: string;
+}
+
 // Provisioning types
 export interface ProvisioningProviderInfo {
   type: string;

@@ -132,4 +132,39 @@ describe('ProjectDetailPageComponent (time entries bulk Delete)', () => {
     expect(timeFacade['load']).toHaveBeenLastCalledWith('pr1', 3, 50, '');
     expect(component.selectedTimeEntries()).toEqual([]);
   });
+
+  it('bill time: article positions need an article, prefill from it and send the article id', () => {
+    const projectsFacade = TestBed.inject(ProjectsFacade) as unknown as Record<string, jest.Mock>;
+
+    component.billFormFrom = '2026-10-01T08:00';
+    component.billFormTo = '2026-10-31T18:00';
+    component.billBoundsEntryCount.set(2);
+    component.addBillTimeLineItem();
+
+    const [line] = component.billCustomLineItems;
+
+    component.onBillTimePositionTypeChange(line, 'article');
+    expect(component.hasValidBillTimeCustomLineItems()).toBe(false);
+
+    line.inventoryArticleId = 'art-1';
+    component.onBillTimeArticlePicked(line, {
+      name: 'Switch',
+      unit: 'piece',
+      salesPriceNet: null,
+      taxCategory: 'reduced',
+    } as never);
+    line.unitPriceNet = 80;
+    expect(line).toEqual(expect.objectContaining({ description: 'Switch', unitPriceNet: 80, taxCategory: 'reduced' }));
+    expect(component.hasValidBillTimeCustomLineItems()).toBe(true);
+
+    component.submitBillTime();
+    expect(projectsFacade['billProjectTime']).toHaveBeenCalledWith(
+      'pr1',
+      expect.objectContaining({
+        lineItems: [
+          { description: 'Switch', quantity: 1, unitPriceNet: 80, taxCategory: 'reduced', inventoryArticleId: 'art-1' },
+        ],
+      }),
+    );
+  });
 });

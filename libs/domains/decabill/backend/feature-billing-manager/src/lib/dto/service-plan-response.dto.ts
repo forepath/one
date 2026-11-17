@@ -24,9 +24,14 @@ export class ServicePlanResponseDto extends DocumentTermsResponseDto {
   autoRecalculatePriceDaily!: boolean;
   minCommitmentDays!: number;
   noticeDays!: number;
+  /** Admins only (internal). */
   basePrice?: string;
+  /** Admins only (internal). */
   marginPercent?: string;
+  /** Admins only (internal). */
   marginFixed?: string;
+  /** Final net period price (base price plus margins) for the plan's own base price. */
+  customerPrice!: number;
   providerConfigDefaults!: Record<string, unknown>;
   orderingHighlights!: ServicePlanOrderingHighlight[];
   /** When true, customers may override region/location in POST /subscriptions requestedConfig if the schema allows. */
@@ -43,6 +48,8 @@ export class ServicePlanResponseDto extends DocumentTermsResponseDto {
    */
   allowedProviders!: string[];
   taxCategory!: TaxCategory;
+  /** Admins only: articles withdrawn per billing period (as requests raised by the period invoice). */
+  inventoryArticles?: Array<{ articleId: string; quantity: number }>;
   /** Terms applied to this plan's invoices (plan override, else global default). */
   effectiveDocumentTerms!: EffectiveDocumentTermsResponseDto;
   withdrawalPolicy!: WithdrawalPolicyDto;

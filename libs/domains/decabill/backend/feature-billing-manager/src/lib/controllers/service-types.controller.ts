@@ -13,6 +13,7 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 
 import { CreateServiceTypeDto } from '../dto/create-service-type.dto';
@@ -25,11 +26,15 @@ import { ServiceTypeResponseDto } from '../dto/service-type-response.dto';
 import { UpdateServiceTypeDto } from '../dto/update-service-type.dto';
 import { ServiceTypeEntity } from '../entities/service-type.entity';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
+import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { MeterService } from '../services/meter.service';
+import { PricingService } from '../services/pricing.service';
 import { ProviderLocationsService } from '../services/provider-locations.service';
 import { ProviderRegistryService } from '../services/provider-registry.service';
 import { ProviderServerTypesService } from '../services/provider-server-types.service';
+import type { RequestWithUser } from '../utils/billing-access.utils';
+import { canViewInternalPricing } from '../utils/internal-pricing-visibility.util';
 import {
   getProvidersEnvDefaultFieldKeys,
   getProvidersEnvDefaultFields,
@@ -54,6 +59,8 @@ export class ServiceTypesController {
     private readonly providerLocationsService: ProviderLocationsService,
     private readonly meterService: MeterService,
     private readonly notificationPublisher: BillingNotificationPublisher,
+    private readonly servicePlansRepository: ServicePlansRepository,
+    private readonly pricingService: PricingService,
   ) {}
 
   /**
@@ -65,6 +72,8 @@ export class ServiceTypesController {
   async getProviderServerTypes(
     @Param('providerId') providerId: string,
     @Query('serviceTypeId', new ParseUUIDPipe({ version: '4', optional: true })) serviceTypeId?: string,
+    @Query('planId', new ParseUUIDPipe({ version: '4', optional: true })) planId?: string,
+    @Req() req?: RequestWithUser,
   ): Promise<ServerTypeDto[]> {
     let providerDefaults: Record<string, string> | undefined;
 
@@ -79,7 +88,24 @@ export class ServiceTypesController {
       }
     }
 
-    return this.providerServerTypesService.getServerTypes(providerId, providerDefaults);
+    const types = await this.providerServerTypesService.getServerTypes(providerId, providerDefaults);
+    // Tenant-scoped lookup: a foreign tenant's plan is "not found".
+    const plan = planId ? await this.servicePlansRepository.findByIdOrThrow(planId) : null;
+    const internal = canViewInternalPricing(req);
+
+    return types.map((type) => {
+      const customerPrice =
+        plan && type.priceMonthly != null && Number.isFinite(type.priceMonthly)
+          ? this.pricingService.calculate(plan, type.priceMonthly).totalPrice
+          : undefined;
+      // Provider prices are purchase prices (internal): customers only get the final plan price.
+      const { priceMonthly, priceHourly, ...rest } = type;
+
+      return {
+        ...(internal ? { ...rest, priceMonthly, priceHourly } : rest),
+        ...(customerPrice !== undefined ? { customerPrice } : {}),
+      };
+    });
   }
 
   /**

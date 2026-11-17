@@ -110,9 +110,19 @@ import {
   isDocumentTermsFormValid,
   type DocumentTermsFormModel,
 } from '../document-terms/document-terms.util';
+import { InventoryArticleSelectComponent } from '../inventory/inventory-article-select.component';
 import { optionalNumberInputValue } from '../optional-number-input.util';
 import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { activeState } from '../shared/table-states';
+
+import {
+  areServicePlanInventoryArticleRowsValid,
+  isDuplicateServicePlanInventoryArticle,
+  SERVICE_PLAN_INVENTORY_ARTICLES_MAX,
+  servicePlanInventoryArticleRowsFromPlan,
+  servicePlanInventoryArticlesForSubmit,
+  type ServicePlanInventoryArticleRow,
+} from './service-plan-inventory-articles.util';
 
 /** Schema property: type, description, and optional enum for pre-defined values. */
 interface ConfigSchemaProperty {
@@ -157,6 +167,7 @@ interface ServerTypeProviderGroup {
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
     DocumentTermsFieldsComponent,
+    InventoryArticleSelectComponent,
   ],
   templateUrl: './service-plans-page.component.html',
   styleUrls: ['./service-plans-page.component.scss'],
@@ -298,6 +309,11 @@ export class ServicePlansPageComponent implements OnInit {
 
   createForm: CreateServicePlanDto = this.getDefaultCreateForm();
   editForm: UpdateServicePlanDto & { id: string } = this.getDefaultEditForm();
+  /** Articles withdrawn per billing period (each issued period invoice raises withdrawal requests). */
+  createInventoryArticles: ServicePlanInventoryArticleRow[] = [];
+  editInventoryArticles: ServicePlanInventoryArticleRow[] = [];
+  readonly inventoryArticlesMax = SERVICE_PLAN_INVENTORY_ARTICLES_MAX;
+  readonly duplicateInventoryArticleError = $localize`:@@featureServicePlans-inventoryArticleDuplicate:This article is already listed.`;
   readonly noProvisioningOptionKey = NO_PROVISIONING_OPTION_KEY;
   createProvisioningOptionKeys = new Set<string>();
   editProvisioningOptionKeys = new Set<string>();
@@ -2430,6 +2446,42 @@ export class ServicePlansPageComponent implements OnInit {
     formRef.orderingHighlights = list;
   }
 
+  inventoryArticleRows(form: 'create' | 'edit'): ServicePlanInventoryArticleRow[] {
+    return form === 'create' ? this.createInventoryArticles : this.editInventoryArticles;
+  }
+
+  addInventoryArticleRow(form: 'create' | 'edit'): void {
+    const rows = this.inventoryArticleRows(form);
+
+    if (rows.length >= SERVICE_PLAN_INVENTORY_ARTICLES_MAX) return;
+
+    const next = [...rows, { articleId: null, quantity: 1 }];
+
+    if (form === 'create') {
+      this.createInventoryArticles = next;
+    } else {
+      this.editInventoryArticles = next;
+    }
+  }
+
+  removeInventoryArticleRow(form: 'create' | 'edit', index: number): void {
+    const next = this.inventoryArticleRows(form).filter((_, rowIndex) => rowIndex !== index);
+
+    if (form === 'create') {
+      this.createInventoryArticles = next;
+    } else {
+      this.editInventoryArticles = next;
+    }
+  }
+
+  isInventoryArticlesValid(form: 'create' | 'edit'): boolean {
+    return areServicePlanInventoryArticleRowsValid(this.inventoryArticleRows(form));
+  }
+
+  isDuplicateInventoryArticle(form: 'create' | 'edit', index: number): boolean {
+    return isDuplicateServicePlanInventoryArticle(this.inventoryArticleRows(form), index);
+  }
+
   private sanitizeOrderingHighlights(
     highlights: ServicePlanOrderingHighlight[] | undefined,
   ): ServicePlanOrderingHighlight[] {
@@ -2678,6 +2730,7 @@ export class ServicePlansPageComponent implements OnInit {
       migrateExistingSubscriptions: false,
       isActive: plan.isActive,
     };
+    this.editInventoryArticles = servicePlanInventoryArticleRowsFromPlan(plan.inventoryArticles);
     combineLatest([this.typesAndProviders$, this.cloudInitConfigs$])
       .pipe(take(1))
       .subscribe(([{ serviceTypes, providerDetails }, cloudInitConfigs]) => {
@@ -2708,7 +2761,7 @@ export class ServicePlansPageComponent implements OnInit {
 
   onSubmitCreate(): void {
     // Null serviceTypeId means no deployment; only name is required.
-    if (!this.createForm.name?.trim()) return;
+    if (!this.createForm.name?.trim() || !this.isInventoryArticlesValid('create')) return;
 
     const isNone = isNoneServiceTypeId(this.createForm.serviceTypeId);
     const serviceTypeId = isNone ? null : this.createForm.serviceTypeId!.trim();
@@ -2731,6 +2784,7 @@ export class ServicePlansPageComponent implements OnInit {
               'create',
             );
         const orderingHighlights = this.sanitizeOrderingHighlights(this.createForm.orderingHighlights);
+        const inventoryArticles = servicePlanInventoryArticlesForSubmit(this.createInventoryArticles);
 
         this.plansFacade.createServicePlan({
           serviceTypeId,
@@ -2763,6 +2817,7 @@ export class ServicePlansPageComponent implements OnInit {
               ? [...this.createAllowedProviders]
               : undefined,
           taxCategory: this.createForm.taxCategory ?? 'standard',
+          inventoryArticles: inventoryArticles.length > 0 ? inventoryArticles : undefined,
           ...documentTermsFormToInput(this.createTermsForm),
           isActive: this.createForm.isActive ?? true,
         });
@@ -2771,7 +2826,7 @@ export class ServicePlansPageComponent implements OnInit {
   }
 
   onSubmitEdit(): void {
-    if (!this.editForm.id) return;
+    if (!this.editForm.id || !this.isInventoryArticlesValid('edit')) return;
 
     const isNone = isNoneServiceTypeId(this.editingPlan?.serviceTypeId);
 
@@ -2824,6 +2879,8 @@ export class ServicePlansPageComponent implements OnInit {
               ? [...this.editAllowedProviders]
               : [],
           taxCategory: this.editForm.taxCategory ?? 'standard',
+          // Always sent: an empty list clears the plan's articles.
+          inventoryArticles: servicePlanInventoryArticlesForSubmit(this.editInventoryArticles),
           ...documentTermsFormToInput(this.editTermsForm),
           migrateExistingSubscriptions: this.editForm.migrateExistingSubscriptions === true,
           isActive: this.editForm.isActive,
@@ -3005,6 +3062,7 @@ export class ServicePlansPageComponent implements OnInit {
   private resetCreateForm(): void {
     this.createForm = this.getDefaultCreateForm();
     this.createTermsForm = emptyDocumentTermsForm();
+    this.createInventoryArticles = [];
     this.createProvisioningOptionKeys = new Set();
     this.createAttachedMeters = [];
     this.createAllowedProviders = [];
@@ -3015,6 +3073,7 @@ export class ServicePlansPageComponent implements OnInit {
   private resetEditForm(): void {
     this.editForm = this.getDefaultEditForm();
     this.editTermsForm = emptyDocumentTermsForm();
+    this.editInventoryArticles = [];
     this.editingPlan = null;
     this.editStaleCustomConfigIds = [];
     this.editAttachedMeters = [];

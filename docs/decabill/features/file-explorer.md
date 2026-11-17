@@ -4,7 +4,7 @@ Read-only browsing and download of billing files stored through the shared `File
 
 ## Overview
 
-Administrators open **Administration → File Explorer** in the billing console. The UI shows a virtual file tree built from **database storage keys** (not a raw bucket listing). Fixed structural folders (`customer/{invoices,offers,timesheets}`, `supplier/invoices`, `export/datev`) are always shown; dynamic folders (DATEV year/month, subscription keys, …) appear only when files exist. Orphan objects on disk/S3 that are not referenced by tenant-scoped entities are never shown or downloadable.
+Administrators open **Administration → File Explorer** in the billing console. The UI shows a virtual file tree built from **database storage keys** (not a raw bucket listing). Fixed structural folders (`customer/{invoices,offers,timesheets}`, `supplier/invoices`, `export/datev`, `inventory/documents/{putaways,transfers,withdrawals,lendings,lending-returns}`) are always shown; dynamic folders (DATEV year/month, subscription keys, …) appear only when files exist. Orphan objects on disk/S3 that are not referenced by tenant-scoped entities are never shown or downloadable.
 
 Supported actions:
 
@@ -24,13 +24,14 @@ The explorer renders a flattened list of visible files and folders with depth-ba
 
 Files live under `{FILE_STORAGE_ROOT}`:
 
-| Virtual path          | Scope                | Sources                        |
-| --------------------- | -------------------- | ------------------------------ |
-| `customer/invoices`   | `customerInvoices`   | Invoice PDFs, void/credit docs |
-| `customer/offers`     | `customerOffers`     | Archived offer PDFs            |
-| `customer/timesheets` | `customerTimesheets` | Project time-report PDFs       |
-| `supplier/invoices`   | `supplierInvoices`   | Supplier invoice documents     |
-| `export/datev`        | `datevExports`       | Completed DATEV export ZIPs    |
+| Virtual path          | Scope                | Sources                                               |
+| --------------------- | -------------------- | ----------------------------------------------------- |
+| `customer/invoices`   | `customerInvoices`   | Invoice PDFs, void/credit docs                        |
+| `customer/offers`     | `customerOffers`     | Archived offer PDFs                                   |
+| `customer/timesheets` | `customerTimesheets` | Project time-report PDFs                              |
+| `supplier/invoices`   | `supplierInvoices`   | Supplier invoice documents                            |
+| `export/datev`        | `datevExports`       | Completed DATEV export ZIPs                           |
+| `inventory/documents` | `inventoryDocuments` | Inventory movement PDFs ([Inventory](./inventory.md)) |
 
 A default-on layout migrator copies objects from the previous segments (`invoices/`, `supplier-invoices/`, `datev-exports/`) into this layout (local + S3). Dual-read remains enabled until cutover.
 
@@ -44,7 +45,7 @@ Every managed file has a `billing_stored_files` row with:
 
 BullMQ job `stored-files.backfill.*` fills hashes/signatures for backfilled rows. File Explorer shows a short-hash badge and lock icon with tooltip details.
 
-When signing is enabled, newly generated invoice / void / credit / offer / timesheet PDFs print `Document ID: {shortSha}` (the same identity short SHA as the explorer badge). The content HMAC is not embedded in PDF bytes (that would invalidate the signature).
+When signing is enabled, newly generated invoice / void / credit / offer / timesheet / inventory movement PDFs print `Document ID: {shortSha}` (the same identity short SHA as the explorer badge). The content HMAC is not embedded in PDF bytes (that would invalidate the signature).
 
 ## Authenticity verify
 

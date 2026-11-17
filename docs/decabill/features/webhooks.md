@@ -72,6 +72,7 @@ Events are published from the **billing** service after successful mutations.
 - `invoice.created`, `invoice.issued`, `invoice.voided`
 - `invoice.paid`: the invoice was fully settled by a checkout or auto payment, an admin marking it paid, a credit that covers the remaining balance, or issuance of a zero-balance (fully discounted) invoice (payload includes `paidAt`)
 - `offer.created`, `offer.updated`, `offer.archived`, `offer.revoked`, `offer.accepted`, `offer.declined`, `offer.expired`, `offer.line.fulfilled`, `offer.line.fulfillment_failed` (see [Offers](./offers.md))
+- `article.created`, `article.updated`, `article.deleted`, `article.low_stock`, `inventory_movement.created`, `withdrawal_request.created`, `withdrawal_request.accepted`, `withdrawal_request.rejected`, `inventory_lending.created`, `inventory_lending.returned` (see [Inventory](./inventory.md))
 - `invoice.tax_mode_applied` (non-domestic tax modes at issue time)
 - `payment.initiated`, `payment.succeeded`, `payment.failed`
 - `payment.auto_initiated`, `payment.auto_retry_scheduled`, `payment.auto_exhausted`

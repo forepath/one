@@ -3,6 +3,8 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 
 import type { CreateManualInvoiceDto, IssueManualInvoiceDto, UpdateManualInvoiceDto } from '../dto/manual-invoice.dto';
 import type { ManualInvoiceDetailResponseDto } from '../dto/manual-invoice.dto';
+import { InventoryArticlesRepository } from '../inventory/repositories/inventory-articles.repository';
+import { assertInventoryArticlesExist } from '../inventory/utils/inventory-article-references.util';
 import { InvoiceLineItemsRepository } from '../repositories/invoice-line-items.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
@@ -31,6 +33,7 @@ export class ManualInvoiceService {
     private readonly customerProfilesService: CustomerProfilesService,
     private readonly auditLog: BillingAuditLogService,
     private readonly invoiceTaxContextService: InvoiceTaxContextService,
+    private readonly inventoryArticlesRepository: InventoryArticlesRepository,
   ) {}
 
   async createDraft(dto: CreateManualInvoiceDto, adminUserId: string): Promise<ManualInvoiceDetailResponseDto> {
@@ -80,6 +83,11 @@ export class ManualInvoiceService {
     assertDraftEditable(invoice);
 
     const lineInputs = mapManualInvoiceLineItemsToInputs(dto.lineItems);
+
+    await assertInventoryArticlesExist(
+      this.inventoryArticlesRepository,
+      lineInputs.map((line) => line.inventoryArticleId),
+    );
     const taxContext = await this.invoiceTaxContextService.resolveForUser(invoice.userId);
     const totals = this.taxCalculationService.computeLines(lineInputs, {
       taxTreatment: taxContext.treatment,
@@ -99,6 +107,7 @@ export class ManualInvoiceService {
         lineNet: line.lineNet,
         lineTax: line.lineTax,
         lineGross: line.lineGross,
+        inventoryArticleId: lineInputs[index]?.inventoryArticleId ?? null,
       })),
     );
 

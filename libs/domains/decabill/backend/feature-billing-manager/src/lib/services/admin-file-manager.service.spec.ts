@@ -81,7 +81,13 @@ describe('AdminFileManagerService', () => {
   it('lists scope roots for tenant view', async () => {
     const result = await runWithTenantId('default', () => service.listDirectory('', AdminFileManagerView.TENANT));
 
-    expect(result.entries.map((entry) => entry.name)).toEqual(['customer', 'export', 'project', 'supplier']);
+    expect(result.entries.map((entry) => entry.name)).toEqual([
+      'customer',
+      'export',
+      'inventory',
+      'project',
+      'supplier',
+    ]);
     expect(result.viewTenantId).toBe('default');
   });
 
@@ -125,6 +131,54 @@ describe('AdminFileManagerService', () => {
         scope: FileStorageScope.customerInvoices,
       }),
     ]);
+  });
+
+  it('materializes the inventory document folders by movement type', async () => {
+    const root = await runWithTenantId('default', () =>
+      service.listDirectory('inventory/documents', AdminFileManagerView.TENANT),
+    );
+
+    expect(root.entries.map((entry) => entry.name)).toEqual([
+      'lending-returns',
+      'lendings',
+      'putaways',
+      'transfers',
+      'withdrawals',
+    ]);
+  });
+
+  it('lists and downloads tenant movement documents from the inventory scope', async () => {
+    dataSource.query.mockImplementation(async (sql: string, params?: unknown[]) => {
+      if (sql.includes('FROM billing_inventory_movements m')) {
+        expect(params).toEqual(['default']);
+
+        return [{ pdf_storage_key: 'putaways/2026/PUT-2026-00001.pdf', created_at: new Date() }];
+      }
+
+      return [];
+    });
+    fileStorage.readFile.mockResolvedValue(Buffer.from('pdf'));
+
+    const listing = await runWithTenantId('default', () =>
+      service.listDirectory('inventory/documents/putaways/2026', AdminFileManagerView.TENANT),
+    );
+
+    expect(listing.entries).toEqual([
+      expect.objectContaining({
+        name: 'PUT-2026-00001.pdf',
+        type: 'file',
+        scope: FileStorageScope.inventoryDocuments,
+      }),
+    ]);
+
+    await runWithTenantId('default', () =>
+      service.downloadFile('inventory/documents/putaways/2026/PUT-2026-00001.pdf', AdminFileManagerView.TENANT),
+    );
+
+    expect(fileStorage.readFile).toHaveBeenCalledWith(
+      FileStorageScope.inventoryDocuments,
+      'putaways/2026/PUT-2026-00001.pdf',
+    );
   });
 
   it('rejects foreign viewTenantId without global views', async () => {
