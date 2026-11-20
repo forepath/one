@@ -300,6 +300,13 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: planId
+          in: query
+          required: false
+          description: When set, every server type carries `customerPrice` (that plan's final price on it). Provider prices are only returned to admins.
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: List of server types with id, name, specs, priceMonthly, priceHourly
@@ -8423,6 +8430,837 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedBillingAuditLogsResponse'
+  /admin/billing/inventory/summary:
+    get:
+      tags: [Admin Inventory]
+      summary: 'Inventory counts (warehouses, compartments, articles, low stock, pending requests)'
+      operationId: getInventorySummary
+      security:
+        - bearerAuth: [inventory:admin]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventorySummary'
+  /admin/billing/inventory/warehouses:
+    get:
+      tags: [Admin Inventory]
+      summary: 'List warehouses (replace-page)'
+      operationId: listInventoryWarehouses
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventoryWarehouses'
+    post:
+      tags: [Admin Inventory]
+      summary: 'Create warehouse'
+      operationId: createInventoryWarehouse
+      security:
+        - bearerAuth: [inventory:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryWarehouseInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryWarehouse'
+  /admin/billing/inventory/warehouses/{id}:
+    get:
+      tags: [Admin Inventory]
+      summary: 'Get warehouse'
+      operationId: getInventoryWarehouse
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryWarehouse'
+    post:
+      tags: [Admin Inventory]
+      summary: 'Update warehouse'
+      operationId: updateInventoryWarehouse
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryWarehouseInput'
+      responses:
+        '201':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryWarehouse'
+    delete:
+      tags: [Admin Inventory]
+      summary: 'Delete warehouse (409 while it holds stock)'
+      operationId: deleteInventoryWarehouse
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Deleted
+  /admin/billing/inventory/warehouses/{id}/compartments:
+    post:
+      tags: [Admin Inventory]
+      summary: 'Create compartment in warehouse'
+      operationId: createInventoryCompartment
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryCompartmentInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryCompartment'
+  /admin/billing/inventory/compartments:
+    get:
+      tags: [Admin Inventory]
+      summary: 'List compartments of a warehouse, or of all warehouses (typeahead) without warehouseId'
+      operationId: listInventoryCompartments
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+        - name: warehouseId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: activeOnly
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventoryCompartments'
+  /admin/billing/inventory/compartments/{id}:
+    get:
+      tags: [Admin Inventory]
+      summary: 'Get compartment'
+      operationId: getInventoryCompartment
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryCompartment'
+    post:
+      tags: [Admin Inventory]
+      summary: 'Update compartment'
+      operationId: updateInventoryCompartment
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryCompartmentInput'
+      responses:
+        '201':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryCompartment'
+    delete:
+      tags: [Admin Inventory]
+      summary: 'Delete compartment (409 while it holds stock)'
+      operationId: deleteInventoryCompartment
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Deleted
+  /admin/billing/inventory/compartments/{id}/stock:
+    get:
+      tags: [Admin Inventory]
+      summary: 'Articles placed in a compartment'
+      operationId: listInventoryCompartmentStock
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventoryStock'
+  /admin/billing/inventory/articles:
+    get:
+      tags: [Admin Inventory]
+      summary: 'List articles'
+      operationId: listInventoryArticles
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+        - name: activeOnly
+          in: query
+          schema: { type: boolean }
+        - name: lowStockOnly
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventoryArticles'
+    post:
+      tags: [Admin Inventory]
+      summary: 'Create article (allocates ART- number; optional placements, quantity > 0 books a putaway)'
+      operationId: createInventoryArticle
+      security:
+        - bearerAuth: [inventory:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryArticleInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryArticle'
+  /admin/billing/inventory/articles/{id}:
+    get:
+      tags: [Admin Inventory]
+      summary: 'Get article'
+      operationId: getInventoryArticle
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryArticle'
+    post:
+      tags: [Admin Inventory]
+      summary: 'Update article'
+      operationId: updateInventoryArticle
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryArticleInput'
+      responses:
+        '201':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryArticle'
+    delete:
+      tags: [Admin Inventory]
+      summary: 'Delete article without history (409 otherwise; deactivate instead)'
+      operationId: deleteInventoryArticle
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Deleted
+  /admin/billing/inventory/articles/{id}/stock:
+    get:
+      tags: [Admin Inventory]
+      summary: 'Locations of an article, most stock first (move suggestions)'
+      operationId: listInventoryArticleStock
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+        - name: withStockOnly
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventoryStock'
+  /admin/billing/inventory/stock:
+    post:
+      tags: [Admin Inventory]
+      summary: 'Map an article to a compartment with quantity 0 (idempotent)'
+      operationId: createInventoryPlacement
+      security:
+        - bearerAuth: [inventory:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryPlacementInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryStock'
+  /admin/billing/inventory/stock/{id}:
+    get:
+      tags: [Admin Inventory]
+      summary: 'Get placement'
+      operationId: getInventoryPlacement
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryStock'
+    delete:
+      tags: [Admin Inventory]
+      summary: 'Remove an empty placement (409 while it holds stock)'
+      operationId: deleteInventoryPlacement
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Deleted
+  /admin/billing/inventory/movements:
+    get:
+      tags: [Admin Inventory]
+      summary: 'List movement documents'
+      operationId: listInventoryMovements
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+        - name: type
+          in: query
+          schema:
+            {
+              type: string,
+              enum: [putaway, transfer, withdrawal, lending, lending_return],
+            }
+        - name: articleId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: compartmentId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: warehouseId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: requestId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: lendingId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: serialNumber
+          in: query
+          description: Movements that moved this exact serial number (unit history)
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventoryMovements'
+  /admin/billing/inventory/movements/putaway:
+    post:
+      tags: [Admin Inventory]
+      summary: 'Put new goods away (PUT- document, archived under inventory/documents/putaways)'
+      operationId: inventoryPutaway
+      security:
+        - bearerAuth: [inventory:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryPutawayInput'
+      responses:
+        '201':
+          description: Booked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryMovement'
+  /admin/billing/inventory/movements/transfer:
+    post:
+      tags: [Admin Inventory]
+      summary: 'Transfer between compartments, also across warehouses (TRF- document)'
+      operationId: inventoryTransfer
+      security:
+        - bearerAuth: [inventory:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryTransferInput'
+      responses:
+        '201':
+          description: Booked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryMovement'
+  /admin/billing/inventory/movements/withdrawal:
+    post:
+      tags: [Admin Inventory]
+      summary: 'Withdraw stock directly (WDR- document; reason fulfillment is reserved for requests)'
+      operationId: inventoryWithdrawal
+      security:
+        - bearerAuth: [inventory:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryWithdrawalInput'
+      responses:
+        '201':
+          description: Booked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryMovement'
+  /admin/billing/inventory/movements/{id}:
+    get:
+      tags: [Admin Inventory]
+      summary: 'Get movement'
+      operationId: getInventoryMovement
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryMovement'
+  /admin/billing/inventory/movements/{id}/pdf:
+    get:
+      tags: [Admin Inventory]
+      summary: 'Download the signed movement document (re-rendered and archived again when missing)'
+      operationId: downloadInventoryMovementPdf
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: PDF
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+  /admin/billing/inventory/withdrawal-requests:
+    get:
+      tags: [Admin Inventory]
+      summary: 'List withdrawal requests (offers, invoices, subscriptions)'
+      operationId: listInventoryWithdrawalRequests
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+        - name: status
+          in: query
+          schema: { type: string, enum: [pending, accepted, rejected] }
+        - name: articleId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventoryWithdrawalRequests'
+  /admin/billing/inventory/withdrawal-requests/{id}:
+    get:
+      tags: [Admin Inventory]
+      summary: 'Get withdrawal request'
+      operationId: getInventoryWithdrawalRequest
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryWithdrawalRequest'
+  /admin/billing/inventory/withdrawal-requests/{id}/accept:
+    post:
+      tags: [Admin Inventory]
+      summary: 'Accept: book one WDR- document per allocation (allocations must add up to the requested quantity; 409 when already decided)'
+      operationId: acceptInventoryWithdrawalRequest
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptInventoryWithdrawalRequest'
+      responses:
+        '201':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryWithdrawalRequest'
+  /admin/billing/inventory/withdrawal-requests/{id}/reject:
+    post:
+      tags: [Admin Inventory]
+      summary: 'Reject without moving stock'
+      operationId: rejectInventoryWithdrawalRequest
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectInventoryWithdrawalRequest'
+      responses:
+        '201':
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryWithdrawalRequest'
+  /admin/billing/inventory/serial-units:
+    get:
+      tags: [Admin Inventory]
+      summary: 'Serial-tracked units (search: serial number, article, borrower)'
+      operationId: listInventorySerialUnits
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+        - name: status
+          in: query
+          schema: { type: string, enum: [in_stock, lent, withdrawn] }
+        - name: articleId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: compartmentId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: lendingId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventorySerialUnits'
+  /admin/billing/inventory/lendings:
+    get:
+      tags: [Admin Inventory]
+      summary: 'Lendings, open ones by due date first'
+      operationId: listInventoryLendings
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+        - name: status
+          in: query
+          schema: { type: string, enum: [open, returned] }
+        - name: overdue
+          in: query
+          description: Only open lendings past their due date
+          schema: { type: boolean }
+        - name: articleId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: borrowerUserId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventoryLendings'
+    post:
+      tags: [Admin Inventory]
+      summary: 'Lend stock to a customer or staff (LND- document, archived under inventory/documents/lendings)'
+      operationId: createInventoryLending
+      security:
+        - bearerAuth: [inventory:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryLendingInput'
+      responses:
+        '201':
+          description: Lent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryLending'
+        '400':
+          description: Invalid quantity, insufficient stock, serial numbers not in stock at the source, borrower missing or due date in the past
+        '404':
+          description: Article, compartment or borrower not found
+  /admin/billing/inventory/lendings/{id}:
+    get:
+      tags: [Admin Inventory]
+      summary: 'One lending'
+      operationId: getInventoryLending
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryLending'
+  /admin/billing/inventory/lendings/{id}/return:
+    post:
+      tags: [Admin Inventory]
+      summary: 'Return all or part of a lending (RTN- document, archived under inventory/documents/lending-returns)'
+      operationId: returnInventoryLending
+      security:
+        - bearerAuth: [inventory:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryLendingReturnInput'
+      responses:
+        '201':
+          description: Returned (closed once everything is back)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryLending'
+        '409':
+          description: Lending already returned
+  /admin/billing/inventory/labels/owner:
+    get:
+      tags: [Admin Inventory]
+      summary: 'Company data printed on property stickers (billing issuer)'
+      operationId: getInventoryLabelOwner
+      security:
+        - bearerAuth: [inventory:admin]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    {
+                      type: string,
+                      nullable: true,
+                      description: BILLING_ISSUER_NAME; null when not configured,
+                    }
+                  address: { type: string, nullable: true }
+                  contact:
+                    {
+                      type: string,
+                      nullable: true,
+                      description: BILLING_ISSUER_EMAIL,
+                    }
+  /admin/billing/inventory/labels:
+    post:
+      tags: [Admin Inventory]
+      summary: 'Print labels (article number, EAN, property sticker) as one PDF'
+      description: Synchronous export of at most 1000 labels. Property stickers name the billing issuer as owner; serial-tracked articles get one per unit in stock or on loan.
+      operationId: printInventoryLabels
+      security:
+        - bearerAuth: [inventory:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryLabelRequest'
+      responses:
+        '200':
+          description: PDF
+          headers:
+            X-Label-Count:
+              schema: { type: integer }
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+        '400':
+          description: Nothing to print, too many labels or company name missing
 components:
   securitySchemes:
     bearerAuth:
@@ -9226,9 +10064,21 @@ components:
         memory: { type: number, description: 'RAM in GB' }
         disk: { type: number, description: 'Disk in GB' }
         priceMonthly:
-          { type: number, description: 'Price per month (e.g. EUR)' }
-        priceHourly: { type: number, description: 'Price per hour (e.g. EUR)' }
+          {
+            type: number,
+            description: 'Provider price per month (e.g. EUR); admins only',
+          }
+        priceHourly:
+          {
+            type: number,
+            description: 'Provider price per hour (e.g. EUR); admins only',
+          }
         description: { type: string }
+        customerPrice:
+          {
+            type: number,
+            description: 'Final net period price of the requested plan (planId) on this server type',
+          }
     ProviderLocation:
       type: object
       description: Provider geography option (location or region) with human-readable label.
@@ -9588,6 +10438,17 @@ components:
       type: object
       required: [name, billingIntervalType, billingIntervalValue]
       properties:
+        inventoryArticles:
+          type: array
+          nullable: true
+          maxItems: 50
+          description: Articles withdrawn per billing period; each issued period invoice raises withdrawal requests (null / empty clears).
+          items:
+            type: object
+            required: [articleId, quantity]
+            properties:
+              articleId: { type: string, format: uuid }
+              quantity: { type: number, exclusiveMinimum: 0 }
         serviceTypeId:
           type: string
           format: uuid
@@ -9683,6 +10544,17 @@ components:
     UpdateServicePlanDto:
       type: object
       properties:
+        inventoryArticles:
+          type: array
+          nullable: true
+          maxItems: 50
+          description: Articles withdrawn per billing period; each issued period invoice raises withdrawal requests (null / empty clears).
+          items:
+            type: object
+            required: [articleId, quantity]
+            properties:
+              articleId: { type: string, format: uuid }
+              quantity: { type: number, exclusiveMinimum: 0 }
         name: { type: string }
         description: { type: string }
         billingIntervalType: { type: string, enum: [hour, day, month, year] }
@@ -9735,7 +10607,24 @@ components:
           $ref: '#/components/schemas/DeliveryTermsText'
     ServicePlanResponse:
       type: object
+      description: >
+        `basePrice`, `marginPercent`, `marginFixed` and `inventoryArticles` are internal and only returned to admins
+        (and the static API key). Everyone gets `customerPrice`.
       properties:
+        customerPrice:
+          type: number
+          description: Final net period price (base price plus margins) for the plan's own base price.
+        inventoryArticles:
+          type: array
+          nullable: true
+          maxItems: 50
+          description: Admins only. Articles withdrawn per billing period; each issued period invoice raises withdrawal requests.
+          items:
+            type: object
+            required: [articleId, quantity]
+            properties:
+              articleId: { type: string, format: uuid }
+              quantity: { type: number, exclusiveMinimum: 0 }
         id: { type: string, format: uuid }
         serviceTypeId:
           type: string
@@ -9756,9 +10645,10 @@ components:
           description: When true, nightly automatic price recalculation from the provider catalog is enabled (opt-in; default false).
         minCommitmentDays: { type: integer }
         noticeDays: { type: integer }
-        basePrice: { type: string, nullable: true }
-        marginPercent: { type: string, nullable: true }
-        marginFixed: { type: string, nullable: true }
+        basePrice: { type: string, nullable: true, description: Admins only }
+        marginPercent:
+          { type: string, nullable: true, description: Admins only }
+        marginFixed: { type: string, nullable: true, description: Admins only }
         providerConfigDefaults: { type: object }
         orderingHighlights:
           type: array
@@ -10620,10 +11510,11 @@ components:
           items: { type: string, format: uuid }
     PricingPreviewResponse:
       type: object
+      description: '`basePrice`, `marginPercent` and `marginFixed` are internal and only returned to admins.'
       properties:
-        basePrice: { type: number }
-        marginPercent: { type: number }
-        marginFixed: { type: number }
+        basePrice: { type: number, description: Admins only }
+        marginPercent: { type: number, description: Admins only }
+        marginFixed: { type: number, description: Admins only }
         totalPrice:
           {
             type: number,
@@ -10999,6 +11890,11 @@ components:
     InvoiceLineItemResponse:
       type: object
       properties:
+        inventoryArticleId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Article position; issuing the invoice raises an inventory withdrawal request for `quantity`.
         description: { type: string }
         quantity: { type: number }
         unitPriceNet: { type: number }
@@ -11721,6 +12617,11 @@ components:
       type: object
       required: [description, quantity, unitPriceNet]
       properties:
+        inventoryArticleId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Article position; issuing the invoice raises an inventory withdrawal request for `quantity`.
         description: { type: string }
         quantity: { type: number }
         unitPriceNet: { type: number }
@@ -12864,11 +13765,22 @@ components:
       required: [lineType, payload]
       properties:
         lineType:
-          { type: string, enum: [standard, project_template, plan_template] }
+          {
+            type: string,
+            enum: [standard, article, project_template, plan_template],
+          }
         payload:
           type: object
           additionalProperties: true
-          description: 'OfferStandardLineDto, OfferProjectTemplateLineDto or a plan template payload, by lineType'
+          description: 'OfferStandardLineDto, OfferArticleLineDto, OfferProjectTemplateLineDto or a plan template payload, by lineType'
+    OfferArticleLineDto:
+      description: Billed like a standard line; accepting the offer raises an inventory withdrawal request for `quantity`.
+      allOf:
+        - $ref: '#/components/schemas/OfferStandardLineDto'
+        - type: object
+          required: [inventoryArticleId]
+          properties:
+            inventoryArticleId: { type: string, format: uuid }
     OfferProjectTemplateLineDto:
       type: object
       required: [description, name, hourlyRateNet]
@@ -12920,7 +13832,10 @@ components:
         id: { type: string, format: uuid }
         position: { type: integer }
         lineType:
-          { type: string, enum: [standard, project_template, plan_template] }
+          {
+            type: string,
+            enum: [standard, article, project_template, plan_template],
+          }
         description: { type: string }
         quantity: { type: number }
         unitLabel: { type: string, nullable: true }
@@ -12932,6 +13847,13 @@ components:
         lineGross: { type: number }
         scheduledAt: { type: string, format: date-time, nullable: true }
         fulfillmentStatus: { type: string }
+        inventoryArticleId:
+          {
+            type: string,
+            format: uuid,
+            nullable: true,
+            description: Article of an `article` line,
+          }
     AdminOfferListItemDto:
       type: object
       properties:
@@ -13280,3 +14202,459 @@ components:
           items:
             $ref: '#/components/schemas/WebhookDeliveryResponseDto'
         total: { type: integer }
+    PaginatedInventoryWarehouses:
+      type: object
+      properties:
+        items:
+          {
+            type: array,
+            items: { $ref: '#/components/schemas/InventoryWarehouse' },
+          }
+        total: { type: integer }
+    PaginatedInventoryCompartments:
+      type: object
+      properties:
+        items:
+          {
+            type: array,
+            items: { $ref: '#/components/schemas/InventoryCompartment' },
+          }
+        total: { type: integer }
+    PaginatedInventoryArticles:
+      type: object
+      properties:
+        items:
+          {
+            type: array,
+            items: { $ref: '#/components/schemas/InventoryArticle' },
+          }
+        total: { type: integer }
+    PaginatedInventoryStock:
+      type: object
+      properties:
+        items:
+          {
+            type: array,
+            items: { $ref: '#/components/schemas/InventoryStock' },
+          }
+        total: { type: integer }
+    PaginatedInventoryMovements:
+      type: object
+      properties:
+        items:
+          {
+            type: array,
+            items: { $ref: '#/components/schemas/InventoryMovement' },
+          }
+        total: { type: integer }
+    PaginatedInventoryWithdrawalRequests:
+      type: object
+      properties:
+        items:
+          {
+            type: array,
+            items: { $ref: '#/components/schemas/InventoryWithdrawalRequest' },
+          }
+        total: { type: integer }
+    InventorySummary:
+      type: object
+      properties:
+        warehouseCount: { type: integer }
+        compartmentCount: { type: integer }
+        articleCount: { type: integer }
+        lowStockArticleCount: { type: integer }
+        pendingRequestCount: { type: integer }
+        openLendingCount: { type: integer }
+        overdueLendingCount: { type: integer }
+    InventoryWarehouseInput:
+      type: object
+      description: Create requires code and name; update accepts any subset. Empty strings clear optional fields.
+      properties:
+        code:
+          {
+            type: string,
+            maxLength: 32,
+            pattern: '^[A-Za-z0-9][A-Za-z0-9._\-/ ]*$',
+          }
+        name: { type: string, maxLength: 255 }
+        description: { type: string, nullable: true }
+        addressLine1: { type: string, nullable: true }
+        addressLine2: { type: string, nullable: true }
+        postalCode: { type: string, nullable: true }
+        city: { type: string, nullable: true }
+        country:
+          { type: string, nullable: true, description: ISO 3166-1 alpha-2 }
+        isActive: { type: boolean }
+    InventoryWarehouse:
+      allOf:
+        - $ref: '#/components/schemas/InventoryWarehouseInput'
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            compartmentCount: { type: integer }
+            articleCount:
+              { type: integer, description: Distinct articles with stock }
+            totalQuantity: { type: number }
+            createdAt: { type: string, format: date-time }
+            updatedAt: { type: string, format: date-time }
+    InventoryCompartmentInput:
+      type: object
+      properties:
+        code: { type: string, maxLength: 64 }
+        name: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        isActive: { type: boolean }
+    InventoryCompartment:
+      allOf:
+        - $ref: '#/components/schemas/InventoryCompartmentInput'
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            warehouseId: { type: string, format: uuid }
+            warehouseCode: { type: string }
+            warehouseName: { type: string }
+            articleCount: { type: integer }
+            totalQuantity: { type: number }
+            createdAt: { type: string, format: date-time }
+            updatedAt: { type: string, format: date-time }
+    InventoryArticleInput:
+      type: object
+      description: Create requires name. Prices are net and optional; the sales price is prefilled on offer / invoice article positions.
+      properties:
+        name: { type: string, maxLength: 255 }
+        description: { type: string, nullable: true }
+        ean:
+          {
+            type: string,
+            nullable: true,
+            description: 'GTIN-8 / UPC-A / EAN-13 / GTIN-14 with valid check digit; unique per tenant',
+          }
+        unit:
+          {
+            type: string,
+            enum: [piece, pack, box, pallet, set, kg, g, l, ml, m, m2, m3],
+          }
+        manufacturer: { type: string, nullable: true }
+        manufacturerPartNumber: { type: string, nullable: true }
+        supplierId: { type: string, format: uuid, nullable: true }
+        supplierArticleNumber: { type: string, nullable: true }
+        purchasePriceNet: { type: number, nullable: true }
+        salesPriceNet: { type: number, nullable: true }
+        currency: { type: string }
+        taxCategory: { type: string, enum: [standard, reduced] }
+        reorderPoint: { type: number, nullable: true }
+        reorderQuantity: { type: number, nullable: true }
+        weightKg: { type: number, nullable: true }
+        lengthCm: { type: number, nullable: true }
+        widthCm: { type: number, nullable: true }
+        heightCm: { type: number, nullable: true }
+        hsCode: { type: string, nullable: true }
+        countryOfOrigin: { type: string, nullable: true }
+        isActive: { type: boolean }
+        serialTracking:
+          {
+            type: boolean,
+            description: 'Every unit carries a serial number. Switchable only while the article has no stock and no open lendings (409 otherwise).',
+          }
+        placements:
+          type: array
+          maxItems: 50
+          description: Create only. Quantity > 0 books a putaway document; 0 maps the location. Serial-tracked articles name one serial number per unit.
+          items:
+            type: object
+            required: [compartmentId]
+            properties:
+              compartmentId: { type: string, format: uuid }
+              quantity: { type: number, minimum: 0 }
+              serialNumbers: { type: array, items: { type: string } }
+    InventoryArticle:
+      allOf:
+        - $ref: '#/components/schemas/InventoryArticleInput'
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            articleNumber:
+              {
+                type: string,
+                example: ART-000001,
+                description: Internal identifier (Code 128 barcode),
+              }
+            totalQuantity: { type: number }
+            lentQuantity:
+              {
+                type: number,
+                description: On loan (open lendings); not part of totalQuantity,
+              }
+            locationCount: { type: integer }
+            requestedQuantity:
+              {
+                type: number,
+                description: Quantity of pending withdrawal requests,
+              }
+            lowStock: { type: boolean }
+            createdAt: { type: string, format: date-time }
+            updatedAt: { type: string, format: date-time }
+    InventoryPlacementInput:
+      type: object
+      required: [articleId, compartmentId]
+      properties:
+        articleId: { type: string, format: uuid }
+        compartmentId: { type: string, format: uuid }
+    InventoryStock:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        quantity: { type: number }
+        article: { type: object, additionalProperties: true }
+        compartment: { type: object, additionalProperties: true }
+        warehouse: { type: object, additionalProperties: true }
+        updatedAt: { type: string, format: date-time }
+    InventoryPutawayInput:
+      type: object
+      required: [articleId, targetCompartmentId, quantity]
+      properties:
+        articleId: { type: string, format: uuid }
+        targetCompartmentId: { type: string, format: uuid }
+        quantity:
+          { type: number, exclusiveMinimum: 0, description: At most 3 decimals }
+        reason: { type: string, enum: [receipt, return, correction, other] }
+        serialNumbers:
+          type: array
+          maxItems: 1000
+          description: Serial-tracked articles only. Single serial numbers and ranges (`SN-0001..SN-0050`, last digit group counts up, padding of the first end kept); their expanded count must equal `quantity`.
+          items: { type: string, maxLength: 300 }
+        reference: { type: string, nullable: true }
+        note: { type: string, nullable: true }
+    InventoryTransferInput:
+      type: object
+      required: [articleId, sourceCompartmentId, targetCompartmentId, quantity]
+      properties:
+        articleId: { type: string, format: uuid }
+        sourceCompartmentId: { type: string, format: uuid }
+        targetCompartmentId: { type: string, format: uuid }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        serialNumbers:
+          type: array
+          maxItems: 1000
+          description: Serial-tracked articles only. Single serial numbers and ranges (`SN-0001..SN-0050`, last digit group counts up, padding of the first end kept); their expanded count must equal `quantity`.
+          items: { type: string, maxLength: 300 }
+        reference: { type: string, nullable: true }
+        note: { type: string, nullable: true }
+    InventoryWithdrawalInput:
+      type: object
+      required: [articleId, sourceCompartmentId, quantity]
+      properties:
+        articleId: { type: string, format: uuid }
+        sourceCompartmentId: { type: string, format: uuid }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        reason:
+          { type: string, enum: [consumption, damage, loss, correction, other] }
+        serialNumbers:
+          type: array
+          maxItems: 1000
+          description: Serial-tracked articles only. Single serial numbers and ranges (`SN-0001..SN-0050`, last digit group counts up, padding of the first end kept); their expanded count must equal `quantity`.
+          items: { type: string, maxLength: 300 }
+        reference: { type: string, nullable: true }
+        note: { type: string, nullable: true }
+    InventoryMovement:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        type:
+          {
+            type: string,
+            enum: [putaway, transfer, withdrawal, lending, lending_return],
+          }
+        documentNumber: { type: string, example: PUT-2026-00001 }
+        articleId: { type: string, format: uuid }
+        articleNumber: { type: string }
+        articleName: { type: string }
+        unit: { type: string }
+        quantity: { type: number }
+        reason: { type: string, nullable: true }
+        source: { type: object, nullable: true, additionalProperties: true }
+        target: { type: object, nullable: true, additionalProperties: true }
+        sourceQuantityAfter: { type: number, nullable: true }
+        targetQuantityAfter: { type: number, nullable: true }
+        reference: { type: string, nullable: true }
+        note: { type: string, nullable: true }
+        withdrawalRequestId: { type: string, format: uuid, nullable: true }
+        serialNumbers: { type: array, items: { type: string } }
+        lendingId: { type: string, format: uuid, nullable: true }
+        lending:
+          {
+            type: object,
+            nullable: true,
+            additionalProperties: true,
+            description: Borrower and due date (lendings and their returns),
+          }
+        performedByEmail: { type: string, nullable: true }
+        hasPdf: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    AcceptInventoryWithdrawalRequest:
+      type: object
+      required: [allocations]
+      properties:
+        allocations:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: object
+            required: [compartmentId, quantity]
+            properties:
+              compartmentId: { type: string, format: uuid }
+              quantity: { type: number, exclusiveMinimum: 0 }
+              serialNumbers:
+                {
+                  type: array,
+                  items: { type: string },
+                  description: Serial-tracked articles; units in stock in this compartment,
+                }
+        note: { type: string, nullable: true }
+    RejectInventoryWithdrawalRequest:
+      type: object
+      properties:
+        note: { type: string, nullable: true }
+    InventoryWithdrawalRequest:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [pending, accepted, rejected] }
+        sourceType: { type: string, enum: [offer, invoice, subscription] }
+        sourceLabel: { type: string, example: 'INV-2026-00012, pos. 2' }
+        quantity: { type: number }
+        article: { type: object, additionalProperties: true }
+        availableQuantity: { type: number }
+        userId: { type: string, format: uuid, nullable: true }
+        customerEmail: { type: string, nullable: true }
+        offerId: { type: string, format: uuid, nullable: true }
+        invoiceId: { type: string, format: uuid, nullable: true }
+        subscriptionId: { type: string, format: uuid, nullable: true }
+        decidedAt: { type: string, format: date-time, nullable: true }
+        decisionNote: { type: string, nullable: true }
+        movementIds: { type: array, items: { type: string, format: uuid } }
+        createdAt: { type: string, format: date-time }
+    PaginatedInventorySerialUnits:
+      type: object
+      properties:
+        items:
+          {
+            type: array,
+            items: { $ref: '#/components/schemas/InventorySerialUnit' },
+          }
+        total: { type: integer }
+    InventorySerialUnit:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        serialNumber: { type: string }
+        status: { type: string, enum: [in_stock, lent, withdrawn] }
+        article: { type: object, additionalProperties: true }
+        location:
+          {
+            type: object,
+            nullable: true,
+            additionalProperties: true,
+            description: Compartment (in_stock),
+          }
+        lending:
+          {
+            type: object,
+            nullable: true,
+            additionalProperties: true,
+            description: Lending holding the unit (lent),
+          }
+        updatedAt: { type: string, format: date-time }
+    PaginatedInventoryLendings:
+      type: object
+      properties:
+        items:
+          {
+            type: array,
+            items: { $ref: '#/components/schemas/InventoryLending' },
+          }
+        total: { type: integer }
+    InventoryLendingInput:
+      type: object
+      required: [articleId, sourceCompartmentId, quantity]
+      description: Exactly one of borrowerUserId (customer or staff account) and borrowerName (employee without account).
+      properties:
+        articleId: { type: string, format: uuid }
+        sourceCompartmentId: { type: string, format: uuid }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        serialNumbers:
+          type: array
+          maxItems: 1000
+          description: Serial-tracked articles only. Single serial numbers and ranges (`SN-0001..SN-0050`, last digit group counts up, padding of the first end kept); their expanded count must equal `quantity`.
+          items: { type: string, maxLength: 300 }
+        borrowerUserId: { type: string, format: uuid }
+        borrowerName: { type: string, maxLength: 255 }
+        dueDate:
+          {
+            type: string,
+            format: date,
+            nullable: true,
+            description: Today or later,
+          }
+        reference: { type: string, nullable: true }
+        note: { type: string, nullable: true }
+    InventoryLendingReturnInput:
+      type: object
+      required: [targetCompartmentId, quantity]
+      properties:
+        targetCompartmentId: { type: string, format: uuid }
+        quantity:
+          {
+            type: number,
+            exclusiveMinimum: 0,
+            description: At most the quantity still on loan,
+          }
+        serialNumbers:
+          {
+            type: array,
+            items: { type: string },
+            description: Serial-tracked lendings; units on loan under this lending,
+          }
+        reference: { type: string, nullable: true }
+        note: { type: string, nullable: true }
+    InventoryLending:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [open, returned] }
+        overdue: { type: boolean }
+        documentNumber: { type: string, example: LND-2026-00001 }
+        article: { type: object, additionalProperties: true }
+        quantity: { type: number }
+        returnedQuantity: { type: number }
+        outstandingQuantity: { type: number }
+        borrower:
+          type: object
+          properties:
+            userId: { type: string, format: uuid, nullable: true }
+            name: { type: string }
+            email: { type: string, nullable: true }
+            customerNumber: { type: string, nullable: true }
+            kind: { type: string, enum: [customer, staff] }
+        source: { type: object, nullable: true, additionalProperties: true }
+        dueDate: { type: string, format: date, nullable: true }
+        note: { type: string, nullable: true }
+        outstandingSerialNumbers: { type: array, items: { type: string } }
+        movementIds: { type: array, items: { type: string, format: uuid } }
+        createdAt: { type: string, format: date-time }
+        returnedAt: { type: string, format: date-time, nullable: true }
+    InventoryLabelRequest:
+      type: object
+      required: [kinds]
+      properties:
+        kinds:
+          type: array
+          minItems: 1
+          items: { type: string, enum: [article_number, ean, property] }
+        articleIds:
+          { type: array, maxItems: 200, items: { type: string, format: uuid } }
+        serialUnitIds:
+          { type: array, maxItems: 500, items: { type: string, format: uuid } }
+        copies: { type: integer, minimum: 1, maximum: 20 }
+        layout: { type: string, enum: [sheet, single] }

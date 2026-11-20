@@ -140,6 +140,7 @@ import {
   resolveNamedLabel,
 } from '../billing-status-labels';
 import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
+import { resolvePlanCustomerPrice } from '../plan-customer-price.util';
 import {
   buildOrderAuthProviderConfig,
   createDefaultOidcOrderConfig,
@@ -927,18 +928,13 @@ export class SubscriptionsComponent implements OnInit {
     (item: SubscriptionItemResponse) => string | null
   >();
 
-  /** Calculates total price from plan (base + margin). Same formula as backend PricingService. */
+  /**
+   * Final plan price: the server-computed `customerPrice` (plan, or plan on a server type). Base price and margins
+   * are internal and only reach admins; the local formula (same as backend PricingService) is the fallback for
+   * responses without a server price.
+   */
   getPlanTotalPrice(plan: ServicePlanResponse, serverType?: ServerType | null): number | null {
-    const baseFromType = serverType?.priceMonthly;
-    const base =
-      baseFromType != null && Number.isFinite(baseFromType) ? baseFromType : this.parsePlanNumber(plan.basePrice);
-
-    if (base <= 0) return null;
-
-    const marginPct = this.parsePlanNumber(plan.marginPercent);
-    const marginFix = this.parsePlanNumber(plan.marginFixed);
-
-    return base + base * (marginPct / 100) + marginFix;
+    return resolvePlanCustomerPrice(plan, serverType);
   }
 
   formatOrderPlanPrice(plan: ServicePlanResponse, serverTypeId?: string): string {
@@ -982,14 +978,6 @@ export class SubscriptionsComponent implements OnInit {
     const interval = getBillingIntervalLabel(plan.billingIntervalValue, plan.billingIntervalType);
 
     return `${baseLabel} - ${this.formatCurrencyAmount(total)} / ${interval}`;
-  }
-
-  private parsePlanNumber(value: string | number | null | undefined): number {
-    if (value === undefined || value === null) return 0;
-
-    const n = typeof value === 'number' ? value : Number(String(value).trim());
-
-    return Number.isFinite(n) ? n : 0;
   }
 
   formatCurrencyAmount(amount: number): string {
@@ -2388,36 +2376,38 @@ export class SubscriptionsComponent implements OnInit {
         this.orderServerTypesLoading = true;
         const allowed = new Set(normalizeAllowedServerTypeIds(plan.allowedServerTypes));
 
-        this.serviceTypesService.getProviderServerTypes(providerId, plan.serviceTypeId ?? undefined).subscribe({
-          next: (types) => {
-            if (requestId !== this.orderServerTypesRequestId) {
-              return;
-            }
+        this.serviceTypesService
+          .getProviderServerTypes(providerId, plan.serviceTypeId ?? undefined, plan.id)
+          .subscribe({
+            next: (types) => {
+              if (requestId !== this.orderServerTypesRequestId) {
+                return;
+              }
 
-            this.orderServerTypeOptions = types.filter((st) => allowed.has(st.id));
-            const defaults = plan.providerConfigDefaults ?? {};
-            const fromPlanStr = this.resolvePlanDefaultServerType(defaults, providerId);
-            const options = this.orderServerTypeOptions.map((st) => st.id);
+              this.orderServerTypeOptions = types.filter((st) => allowed.has(st.id));
+              const defaults = plan.providerConfigDefaults ?? {};
+              const fromPlanStr = this.resolvePlanDefaultServerType(defaults, providerId);
+              const options = this.orderServerTypeOptions.map((st) => st.id);
 
-            this.orderProvisioningServerType = options.includes(fromPlanStr) ? fromPlanStr : (options[0] ?? '');
-            this.orderServerTypesLoading = false;
-            this.clampOrderWizardStepIndex();
-            this.syncOrderPricingPreview();
-            this.cdr.detectChanges();
-          },
-          error: () => {
-            if (requestId !== this.orderServerTypesRequestId) {
-              return;
-            }
+              this.orderProvisioningServerType = options.includes(fromPlanStr) ? fromPlanStr : (options[0] ?? '');
+              this.orderServerTypesLoading = false;
+              this.clampOrderWizardStepIndex();
+              this.syncOrderPricingPreview();
+              this.cdr.detectChanges();
+            },
+            error: () => {
+              if (requestId !== this.orderServerTypesRequestId) {
+                return;
+              }
 
-            this.orderServerTypeOptions = [];
-            this.orderProvisioningServerType = '';
-            this.orderServerTypesLoading = false;
-            this.clampOrderWizardStepIndex();
-            this.syncOrderPricingPreview();
-            this.cdr.detectChanges();
-          },
-        });
+              this.orderServerTypeOptions = [];
+              this.orderProvisioningServerType = '';
+              this.orderServerTypesLoading = false;
+              this.clampOrderWizardStepIndex();
+              this.syncOrderPricingPreview();
+              this.cdr.detectChanges();
+            },
+          });
       });
   }
 
@@ -2774,7 +2764,7 @@ export class SubscriptionsComponent implements OnInit {
 
         const allowed = new Set(allowedServerTypes);
 
-        this.serviceTypesService.getProviderServerTypes(providerId, serviceType.id).subscribe({
+        this.serviceTypesService.getProviderServerTypes(providerId, serviceType.id, planId).subscribe({
           next: (types) => {
             if (requestId !== this.configChangeServerTypesRequestId) {
               return;

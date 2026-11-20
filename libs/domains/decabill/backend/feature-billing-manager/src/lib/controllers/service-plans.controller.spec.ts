@@ -7,6 +7,7 @@ import { ContainerManagerCatalogService } from '../contributors/container-manage
 import { CreateServicePlanDto } from '../dto/create-service-plan.dto';
 import { UpdateServicePlanDto } from '../dto/update-service-plan.dto';
 import { BillingIntervalType, ServicePlanEntity } from '../entities/service-plan.entity';
+import { InventoryArticlesRepository } from '../inventory/repositories/inventory-articles.repository';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { PLAN_PRICE_MIGRATE_ENQUEUE } from '../queue/plan-price-migrate-enqueue.token';
 import { AddonsRepository } from '../repositories/addons.repository';
@@ -17,6 +18,7 @@ import { AddonService } from '../services/addon.service';
 import { BillingDocumentTermsConfigService } from '../services/billing-document-terms-config.service';
 import { CloudInitConfigService } from '../services/cloud-init-config.service';
 import { MeterService } from '../services/meter.service';
+import { PricingService } from '../services/pricing.service';
 import { ProviderRegistryService } from '../services/provider-registry.service';
 import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
 
@@ -152,6 +154,8 @@ describe('ServicePlansController', () => {
         { provide: BillingNotificationPublisher, useValue: notificationPublisherStub },
         BillingDocumentTermsConfigService,
         { provide: PLAN_PRICE_MIGRATE_ENQUEUE, useValue: planPriceMigrateEnqueueStub },
+        { provide: InventoryArticlesRepository, useValue: { findByIds: jest.fn().mockResolvedValue([]) } },
+        PricingService,
       ],
     }).compile();
   }
@@ -170,6 +174,51 @@ describe('ServicePlansController', () => {
 
     expect(result[0].orderingHighlights).toEqual([{ icon: 'star', text: 'Feature A' }]);
     expect(result[0].allowCustomerLocationSelection).toBe(false);
+  });
+
+  it('hides base price, margins and plan articles from customers but gives them the final price', async () => {
+    const row = {
+      ...basePlanRow,
+      basePrice: '10',
+      marginPercent: '20',
+      marginFixed: '1',
+      inventoryArticles: [{ articleId: '6f9619ff-8b86-4011-b42d-00c04fc964ff', quantity: 2 }],
+    };
+    const moduleRef = await setupRepositoryMock({
+      findAll: jest.fn().mockResolvedValue([row]),
+      findByIdOrThrow: jest.fn().mockResolvedValue(row),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    });
+    const controller = moduleRef.get(ServicePlansController);
+    const customer = { user: { id: 'user-1', roles: ['user'] } } as never;
+    const admin = { user: { id: 'admin-1', roles: ['admin'] } } as never;
+
+    for (const response of [
+      (await controller.list(undefined, undefined, undefined, undefined, customer))[0],
+      await controller.get(row.id, customer),
+    ]) {
+      expect(response).not.toHaveProperty('basePrice');
+      expect(response).not.toHaveProperty('marginPercent');
+      expect(response).not.toHaveProperty('marginFixed');
+      expect(response).not.toHaveProperty('inventoryArticles');
+      expect(response.customerPrice).toBe(13);
+    }
+
+    const forAdmin = await controller.get(row.id, admin);
+
+    expect(forAdmin).toEqual(
+      expect.objectContaining({
+        basePrice: '10',
+        marginPercent: '20',
+        marginFixed: '1',
+        inventoryArticles: row.inventoryArticles,
+        customerPrice: 13,
+      }),
+    );
+    // The static API key has full access.
+    expect(await controller.get(row.id, { apiKeyAuthenticated: true } as never)).toHaveProperty('marginPercent', '20');
   });
 
   it('get maps orderingHighlights', async () => {

@@ -11,6 +11,7 @@ import {
   loadClient,
   loadClientUsers,
   loadClients,
+  loadClientsRailPage,
   loadMoreClients,
   loadProvisioningProviders,
   loadServerInfo,
@@ -42,6 +43,10 @@ import {
   selectClientsHasMore,
   selectClientsLoading,
   selectClientsLoadingAny,
+  selectClientsRailError,
+  selectClientsRailHasNext,
+  selectClientsRailLoading,
+  selectClientsRailRows,
   selectClientUsers,
   selectDeletingProvisionedServer,
   selectHasClients,
@@ -64,6 +69,7 @@ import type {
   ClientIsolationSummaryDto,
   ClientResponseDto,
   ClientUserResponseDto,
+  ClientsRailPageQuery,
   CreateClientDto,
   ListClientsParams,
   ProvisionServerDto,
@@ -108,6 +114,12 @@ export class ClientsFacade {
   readonly appendLoading$: Observable<boolean> = this.store.select(selectClientsAppendLoading);
   readonly appendError$: Observable<string | null> = this.store.select(selectClientsAppendError);
 
+  // Workspaces rail (replace-page server paging, independent of the append-style list above)
+  readonly railRows$: Observable<ClientResponseDto[]> = this.store.select(selectClientsRailRows);
+  readonly railHasNext$: Observable<boolean> = this.store.select(selectClientsRailHasNext);
+  readonly railLoading$: Observable<boolean> = this.store.select(selectClientsRailLoading);
+  readonly railError$: Observable<string | null> = this.store.select(selectClientsRailError);
+
   // Derived state observables
   readonly clientsCount$: Observable<number> = this.store.select(selectClientsCount);
   readonly hasClients$: Observable<boolean> = this.store.select(selectHasClients);
@@ -124,6 +136,13 @@ export class ClientsFacade {
    */
   loadMoreClients(): void {
     this.store.dispatch(loadMoreClients());
+  }
+
+  /**
+   * Load one page of the workspaces rail; replaces the rail rows (`silent` keeps them visible while reloading).
+   */
+  loadClientsRailPage(query: ClientsRailPageQuery, silent = false): void {
+    this.store.dispatch(loadClientsRailPage({ query, ...(silent && { silent }) }));
   }
 
   /**

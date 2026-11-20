@@ -548,6 +548,21 @@
       <trans-unit id="featureAdminInvoices-removeLine" datatype="html">
         <source>Remove line</source>
         </trans-unit>
+      <trans-unit id="featureAdminInvoices-positionType" datatype="html">
+        <source>Position type</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-positionTypeStandard" datatype="html">
+        <source>Standard</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-positionTypeArticle" datatype="html">
+        <source>Article</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-lineArticle" datatype="html">
+        <source>Article</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-lineArticleHint" datatype="html">
+        <source>Issuing the invoice raises a withdrawal request for the quantity in the inventory.</source>
+        </trans-unit>
       <trans-unit id="featureAdminInvoices-lineDescription" datatype="html">
         <source>Description</source>
         </trans-unit>
@@ -1031,6 +1046,12 @@
       <trans-unit id="featureAdminOffers-lineDescription" datatype="html">
         <source>Description</source>
         </trans-unit>
+      <trans-unit id="featureAdminOffers-lineArticle" datatype="html">
+        <source>Article</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-lineArticleHint" datatype="html">
+        <source>Accepting the offer raises a withdrawal request for the quantity in the inventory.</source>
+        </trans-unit>
       <trans-unit id="featureAdminOffers-lineQuantity" datatype="html">
         <source>Quantity</source>
         </trans-unit>
@@ -1093,6 +1114,9 @@
         </trans-unit>
       <trans-unit id="featureAdminOffers-lineTypePlan" datatype="html">
         <source>Plan template</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-lineTypeArticle" datatype="html">
+        <source>Article</source>
         </trans-unit>
       <trans-unit id="featureAdminOffers-lineTypeStandard" datatype="html">
         <source>Generic</source>
@@ -1931,6 +1955,24 @@
       <trans-unit id="featureContainer-adminProjectDetailPage" datatype="html">
         <source>Project</source>
         </trans-unit>
+      <trans-unit id="featureContainer-inventoryPage" datatype="html">
+        <source>Inventory</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-inventoryArticlesPage" datatype="html">
+        <source>Articles</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-inventoryArticlePage" datatype="html">
+        <source>Article</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-inventoryRequestsPage" datatype="html">
+        <source>Withdrawal requests</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-inventoryDocumentsPage" datatype="html">
+        <source>Inventory documents</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-inventoryLendingsPage" datatype="html">
+        <source>Lendings</source>
+        </trans-unit>
       <trans-unit id="featureContainer-adminDatevExportsPage" datatype="html">
         <source>DATEV exports</source>
         </trans-unit>
@@ -2576,6 +2618,12 @@
       <trans-unit id="featureContainer-adminProjects" datatype="html">
         <source>Projects</source>
         </trans-unit>
+      <trans-unit id="featureContainer-adminInventoryTitle" datatype="html">
+        <source>Inventory</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminInventory" datatype="html">
+        <source>Inventory</source>
+        </trans-unit>
       <trans-unit id="featureContainer-adminBillingTitle" datatype="html">
         <source>Billing</source>
         </trans-unit>
@@ -2707,6 +2755,873 @@
         </trans-unit>
       <trans-unit id="featureDocumentTerms-placeTooLong" datatype="html">
         <source>Use at most <x id="max" equiv-text="DELIVERY_TERMS_PLACE_MAX_LENGTH"/> characters.</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-inactive" datatype="html">
+        <source>Inactive</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-internalBarcode" datatype="html">
+        <source>Article number</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-labelProperty" datatype="html">
+        <source>Property sticker</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-searchLocations" datatype="html">
+        <source>Search locations</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-noLocations" datatype="html">
+        <source>Not stored anywhere yet. Add a location or put new goods away.</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-search" datatype="html">
+        <source>Search serial number or borrower</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-statusFilter" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-all" datatype="html">
+        <source>All</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-serialInStock" datatype="html">
+        <source>In stock</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-serialLent" datatype="html">
+        <source>On loan</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-serialWithdrawn" datatype="html">
+        <source>Withdrawn</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-empty" datatype="html">
+        <source>No serial numbers yet. Putaways register them.</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-searchMovements" datatype="html">
+        <source>Search number, location, reference</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-noMovements" datatype="html">
+        <source>No movements yet.</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-colCompartment" datatype="html">
+        <source>Compartment</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-newQuantity" datatype="html">
+        <source>New goods (putaway)</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-newQuantityHint" datatype="html">
+        <source>Leave empty or 0 to map the location without stock.</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-takeFromOther" datatype="html">
+        <source>Take from another compartment…</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-putAway" datatype="html">
+        <source>Put away</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-mapLocation" datatype="html">
+        <source>Map location</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-deleteTitle" datatype="html">
+        <source>Delete?</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-title" datatype="html">
+        <source>Inventory</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-backToArticles" datatype="html">
+        <source>Back to articles</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-articleNumber" datatype="html">
+        <source>Article number</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-details" datatype="html">
+        <source>Details</source>
+        </trans-unit>
+      <trans-unit id="featureDataList-edit" datatype="html">
+        <source>Edit</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-showLendings" datatype="html">
+        <source>Show lendings</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-typeLending" datatype="html">
+        <source>Lending</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLabels-title" datatype="html">
+        <source>Print labels</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-serials" datatype="html">
+        <source>Serial numbers</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLabels-printSelected" datatype="html">
+        <source>Print labels for the selected serial numbers</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticles-locations" datatype="html">
+        <source>Locations</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-history" datatype="html">
+        <source>Movements</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-addLocation" datatype="html">
+        <source>Add location</source>
+        </trans-unit>
+      <trans-unit id="featureDataList-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-unit" datatype="html">
+        <source>Unit</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-onHand" datatype="html">
+        <source>On hand</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticles-requestedHint" datatype="html">
+        <source><x id="quantity" equiv-text="formatInventoryQuantity(article.requestedQuantity, article.unit)"/> requested</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLendings-outstanding" datatype="html">
+        <source>On loan</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-serialTracking" datatype="html">
+        <source>Serial numbers</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-serialTracked" datatype="html">
+        <source>Required for every unit</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-notSerialTracked" datatype="html">
+        <source>Not tracked</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-purchasePrice" datatype="html">
+        <source>Purchase price</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-salesPrice" datatype="html">
+        <source>Sales price</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-reorderPoint" datatype="html">
+        <source>Reorder point</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-reorderQuantity" datatype="html">
+        <source>Reorder quantity</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-manufacturer" datatype="html">
+        <source>Manufacturer</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-mpn" datatype="html">
+        <source>Manufacturer part number</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-supplierNumber" datatype="html">
+        <source>Supplier article number</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-weight" datatype="html">
+        <source>Weight (kg)</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-dimensions" datatype="html">
+        <source>Dimensions (cm)</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-hsCode" datatype="html">
+        <source>Customs tariff number (HS)</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-origin" datatype="html">
+        <source>Country of origin</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-colState" datatype="html">
+        <source>State</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-location" datatype="html">
+        <source>Location</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-colWarehouse" datatype="html">
+        <source>Warehouse</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-colQuantity" datatype="html">
+        <source>Quantity</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-colType" datatype="html">
+        <source>Type</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-colDocument" datatype="html">
+        <source>Document</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryDocuments-route" datatype="html">
+        <source>From → To</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-reason" datatype="html">
+        <source>Reason</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-colDate" datatype="html">
+        <source>Date</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-openInWarehouse" datatype="html">
+        <source>Show in warehouse</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-removeLocation" datatype="html">
+        <source>Remove location</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-serialNumber" datatype="html">
+        <source>Serial number</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-where" datatype="html">
+        <source>Location / borrower</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLend-dueDate" datatype="html">
+        <source>Due back</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-colLastChange" datatype="html">
+        <source>Last change</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-history" datatype="html">
+        <source>Show movements</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-openLending" datatype="html">
+        <source>Open lending</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-copy" datatype="html">
+        <source>Copy serial number</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-downloadDocument" datatype="html">
+        <source>Download document</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-deleteArticle" datatype="html">
+        <source>The article will be deleted. Articles with stock, movements or requests cannot be deleted; deactivate them instead.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-deleteLocation" datatype="html">
+        <source>The empty location will be removed from this article.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-general" datatype="html">
+        <source>General</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-name" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-description" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-eanHint" datatype="html">
+        <source>EAN-8, UPC-A, EAN-13 or GTIN-14 with check digit.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-prices" datatype="html">
+        <source>Prices (net)</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-salesPriceHint" datatype="html">
+        <source>Prefilled on offer and invoice positions.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-currency" datatype="html">
+        <source>Currency</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-tax" datatype="html">
+        <source>VAT</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-taxStandard" datatype="html">
+        <source>Standard</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-taxReduced" datatype="html">
+        <source>Reduced</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-sourcing" datatype="html">
+        <source>Sourcing</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-supplier" datatype="html">
+        <source>Supplier</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-stockControl" datatype="html">
+        <source>Stock control</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-reorderPointHint" datatype="html">
+        <source>Total stock at or below this is reported as low.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-logistics" datatype="html">
+        <source>Logistics</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-weightLabel" datatype="html">
+        <source>Weight</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-lengthLabel" datatype="html">
+        <source>Length</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-widthLabel" datatype="html">
+        <source>Width</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-heightLabel" datatype="html">
+        <source>Height</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-active" datatype="html">
+        <source>Active (can be put away and sold)</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-serialTrackingSwitch" datatype="html">
+        <source>Require serial numbers (every unit carries one)</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-serialTrackingLocked" datatype="html">
+        <source> Serial tracking can only be switched while the article has no stock and nothing is on loan. </source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-locations" datatype="html">
+        <source>Locations</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-locationsHint" datatype="html">
+        <source> Map the article to compartments. A quantity puts new goods away (putaway document); 0 only maps the location. </source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-locationsSerialHint" datatype="html">
+        <source> Serial numbers: enter one per unit put away (ranges like SN-01..SN-20 count up); none only maps the location. </source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-quantityAria" datatype="html">
+        <source>Quantity</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-removeLocation" datatype="html">
+        <source>Remove location</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-duplicateSerials" datatype="html">
+        <source> Serial numbers listed in more than one location: <x id="INTERPOLATION" equiv-text="{{ duplicateSerials().join(&apos;, &apos;) }}"/> </source>
+        </trans-unit>
+      <trans-unit id="featureInventory-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-createTitle" datatype="html">
+        <source>New article</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-editTitle" datatype="html">
+        <source>Edit article</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleForm-eanInvalid" datatype="html">
+        <source>Not a valid EAN / GTIN (check digit).</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleSelect-clearAria" datatype="html">
+        <source>Clear selected article</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleSelect-none" datatype="html">
+        <source>No articles found.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleSelect-placeholder" datatype="html">
+        <source>Search by number, name or EAN</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticles-searchSerials" datatype="html">
+        <source>Search number, name, EAN, MPN, serial number</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticles-lowStockOnly" datatype="html">
+        <source>Low stock only</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticles-empty" datatype="html">
+        <source>No articles yet</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryNav-articles" datatype="html">
+        <source>Articles</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticles-add" datatype="html">
+        <source>New article</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticles-requested" datatype="html">
+        <source>Requested</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryCompartmentSelect-clearAria" datatype="html">
+        <source>Clear selected compartment</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryCompartmentSelect-none" datatype="html">
+        <source>No compartments found.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryCompartmentSelect-placeholder" datatype="html">
+        <source>Search compartment or warehouse</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryDocuments-requestFilter" datatype="html">
+        <source>Showing the documents of one withdrawal request.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryDocuments-searchSerials" datatype="html">
+        <source>Search number, article, serial number, reference</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryDocuments-typeFilter" datatype="html">
+        <source>Type</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-typePutaway" datatype="html">
+        <source>Putaway</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-typeTransfer" datatype="html">
+        <source>Transfer</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-typeWithdrawal" datatype="html">
+        <source>Withdrawal</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-typeLendingReturn" datatype="html">
+        <source>Lending return</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryDocuments-empty" datatype="html">
+        <source>No documents yet</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryNav-documents" datatype="html">
+        <source>Documents</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-colArticle" datatype="html">
+        <source>Article</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryDocuments-by" datatype="html">
+        <source>By</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-openArticle" datatype="html">
+        <source>Open article</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLabels-kinds" datatype="html">
+        <source>Labels</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLabels-kindsHint" datatype="html">
+        <source> Property stickers name the company from the billing settings. Serial-tracked articles get one sticker per unit in stock or on loan; articles without an EAN get no EAN label. </source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLabels-layout" datatype="html">
+        <source>Layout</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLabels-layoutSheet" datatype="html">
+        <source>A4 sheet, 24 labels to cut out</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLabels-layoutSingle" datatype="html">
+        <source> One label per page (label printer, 70 × 37 mm) </source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLabels-copies" datatype="html">
+        <source>Copies</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLabels-print" datatype="html">
+        <source>Create PDF</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLabels-units" datatype="html">
+        <source><x id="count" equiv-text="units"/> serial numbers selected</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLabels-articles" datatype="html">
+        <source><x id="count" equiv-text="articles"/> articles selected</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLabels-failed" datatype="html">
+        <source>The labels could not be created.</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-unitPiece" datatype="html">
+        <source>pcs</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-unitPack" datatype="html">
+        <source>pack</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-unitBox" datatype="html">
+        <source>box</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-unitPallet" datatype="html">
+        <source>pallet</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-unitSet" datatype="html">
+        <source>set</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-borrowerCustomer" datatype="html">
+        <source>Customer</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-borrowerStaff" datatype="html">
+        <source>Staff</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-labelArticleNumber" datatype="html">
+        <source>Article number</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-reasonReceipt" datatype="html">
+        <source>Goods receipt</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-reasonReturn" datatype="html">
+        <source>Return</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-reasonFulfillment" datatype="html">
+        <source>Fulfilment</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-reasonConsumption" datatype="html">
+        <source>Consumption</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-reasonDamage" datatype="html">
+        <source>Damage</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-reasonLoss" datatype="html">
+        <source>Loss</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-reasonCorrection" datatype="html">
+        <source>Stock correction</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-reasonOther" datatype="html">
+        <source>Other</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-requestPending" datatype="html">
+        <source>Pending</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-requestAccepted" datatype="html">
+        <source>Accepted</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-requestRejected" datatype="html">
+        <source>Rejected</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-sourceOffer" datatype="html">
+        <source>Offer</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-sourceInvoice" datatype="html">
+        <source>Invoice</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-sourceSubscription" datatype="html">
+        <source>Subscription</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-active" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-stockEmpty" datatype="html">
+        <source>No stock</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-stockLow" datatype="html">
+        <source>Low stock</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-stockOk" datatype="html">
+        <source>In stock</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-lendingReturned" datatype="html">
+        <source>Returned</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-lendingOverdue" datatype="html">
+        <source>Overdue</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-lendingOpen" datatype="html">
+        <source>On loan</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-target" datatype="html">
+        <source>To</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReturn-pickPlaceholder" datatype="html">
+        <source>Search units on loan, or pick all</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-quantity" datatype="html">
+        <source>Quantity</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-reference" datatype="html">
+        <source>Reference</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-referenceSelectHint" datatype="html">
+        <source>Search invoices, offers, supplier invoices, subscriptions, projects or customers, or use Other for free text.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-note" datatype="html">
+        <source>Note</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-submit" datatype="html">
+        <source>Book and create document</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReturn-title" datatype="html">
+        <source>Return lending</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReturn-outstanding" datatype="html">
+        <source><x id="quantity" equiv-text="formatInventoryQuantity(lending.outstandingQuantity, lending.article.unit)"/> on loan</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLendings-search" datatype="html">
+        <source>Search borrower, article, serial number</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLendings-empty" datatype="html">
+        <source>Nothing on loan</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLendings-continue" datatype="html">
+        <source>Continue</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryNav-lendings" datatype="html">
+        <source>Lendings</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLendings-new" datatype="html">
+        <source>New lending</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLend-borrower" datatype="html">
+        <source>Borrower</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLendings-lentAt" datatype="html">
+        <source>Lent</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLendings-documents" datatype="html">
+        <source>Download documents</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-change" datatype="html">
+        <source>Change</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-source" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-available" datatype="html">
+        <source>available</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-pickSource" datatype="html">
+        <source>Pick the compartment to take the article from.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-noSources" datatype="html">
+        <source>No compartment holds this article.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-noTargets" datatype="html">
+        <source>No other compartment holds this article yet. Search for a compartment above.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLend-borrowerAccount" datatype="html">
+        <source>Customer or staff account</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLend-borrowerEmployee" datatype="html">
+        <source>Employee without account</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLend-borrowerNamePlaceholder" datatype="html">
+        <source>Name of the employee</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryLend-dueDateHint" datatype="html">
+        <source>Optional. Open lendings past this date are flagged as overdue.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-serialsHintPutaway" datatype="html">
+        <source>One serial number per unit. Ranges count up the last number.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-serialsHintMove" datatype="html">
+        <source>Only units in stock at the source can be moved.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-colLocation" datatype="html">
+        <source>Compartment</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-colWarehouse" datatype="html">
+        <source>Warehouse</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-colQuantity" datatype="html">
+        <source>On hand</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-sourceSuggestions" datatype="html">
+        <source>Compartments holding this article</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-targetSuggestions" datatype="html">
+        <source>Other compartments with this article</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryNav-aria" datatype="html">
+        <source>Inventory sections</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryNav-warehouses" datatype="html">
+        <source>Warehouses</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryNav-requests" datatype="html">
+        <source>Requests</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryNav-pendingBadge" datatype="html">
+        <source>Pending withdrawal requests</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryNav-overdueBadge" datatype="html">
+        <source>Overdue lendings</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySticker-propertyOf" datatype="html">
+        <source>Property of</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySticker-contact" datatype="html">
+        <source>If found, please contact <x id="INTERPOLATION" equiv-text="{{ contact }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureInventorySticker-noOwner" datatype="html">
+        <source>Company name not configured</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReference-invoice" datatype="html">
+        <source>Invoice</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReference-offer" datatype="html">
+        <source>Offer</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReference-supplierInvoice" datatype="html">
+        <source>Supplier invoice</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReference-subscription" datatype="html">
+        <source>Subscription</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReference-project" datatype="html">
+        <source>Project</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReference-customer" datatype="html">
+        <source>Customer</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReference-other" datatype="html">
+        <source>Other</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReference-clear" datatype="html">
+        <source>Clear reference</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReference-none" datatype="html">
+        <source>No matching documents.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReference-useOther" datatype="html">
+        <source>Other:</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReference-otherHint" datatype="html">
+        <source>Free text, for example a delivery note number</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryReference-placeholder" datatype="html">
+        <source>Search invoice, offer, project, customer…</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-search" datatype="html">
+        <source>Search document, article</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-empty" datatype="html">
+        <source>No withdrawal requests. Offers, invoices and subscriptions with article positions raise them.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-takeFrom" datatype="html">
+        <source>Take from</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-pickSources" datatype="html">
+        <source> Pick the compartments to take the article from (suggested below, or search). </source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-remaining" datatype="html">
+        <source>Still to allocate:</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-searchCompartment" datatype="html">
+        <source>Other compartment</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-noStockThere" datatype="html">
+        <source>That compartment holds none of this article.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-suggestions" datatype="html">
+        <source> Compartments holding this article </source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-acceptSubmit" datatype="html">
+        <source>Withdraw and create documents</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-reason" datatype="html">
+        <source>Reason</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-accept" datatype="html">
+        <source>Accept</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-reject" datatype="html">
+        <source>Reject</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-colSource" datatype="html">
+        <source>Source</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-colCustomer" datatype="html">
+        <source>Customer</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-colCreated" datatype="html">
+        <source>Requested</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryRequests-documents" datatype="html">
+        <source>Documents</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-errorInvalid" datatype="html">
+        <source>not a valid serial number</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-errorRangeMismatch" datatype="html">
+        <source>range ends must differ only in their last number</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-errorRangeOrder" datatype="html">
+        <source>range must count upwards</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-errorTooMany" datatype="html">
+        <source>too many serial numbers</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-errorDuplicate" datatype="html">
+        <source>listed twice</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-noneAvailable" datatype="html">
+        <source>No units available here.</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-allEntered" datatype="html">
+        <source>All available units are entered.</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-allMatching" datatype="html">
+        <source>All matching (<x id="INTERPOLATION" equiv-text="{{ pickMatches().length }}"/>)</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-allAvailable" datatype="html">
+        <source>All available (<x id="INTERPOLATION" equiv-text="{{ remaining().length }}"/>)</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-noMatch" datatype="html">
+        <source>No matching units.</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-more" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ pickMatches().length - pickShown().length }}"/> more, refine the search</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-expected" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ expected() }}"/> expected</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-notAvailable" datatype="html">
+        <source>Not available here:</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-pickPlaceholder" datatype="html">
+        <source>Search units in stock here, or pick all</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-placeholder" datatype="html">
+        <source>One per line, or a range like SN-0001..SN-0050</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-countOne" datatype="html">
+        <source>1 serial number</source>
+        </trans-unit>
+      <trans-unit id="featureInventorySerials-count" datatype="html">
+        <source><x id="count" equiv-text="this.count()"/> serial numbers</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-searchWarehouses" datatype="html">
+        <source>Search warehouses</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-noWarehouses" datatype="html">
+        <source>No warehouses yet</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-searchCompartments" datatype="html">
+        <source>Search compartments</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-noCompartments" datatype="html">
+        <source>No compartments in this warehouse yet</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-searchContents" datatype="html">
+        <source>Search articles</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-emptyCompartmentTitle" datatype="html">
+        <source>This compartment is empty</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-emptyCompartmentMessage" datatype="html">
+        <source>Map an article to it, put new goods away or take them from another compartment.</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-addArticleToCompartment" datatype="html">
+        <source>Add article</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-code" datatype="html">
+        <source>Code</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-address" datatype="html">
+        <source>Address</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-address2" datatype="html">
+        <source>Address line 2</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-postalCode" datatype="html">
+        <source>Postal code</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-city" datatype="html">
+        <source>City</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-country" datatype="html">
+        <source>Country</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-activeSwitch" datatype="html">
+        <source>Active (accepts new stock)</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-compartmentCodeHint" datatype="html">
+        <source>Location code, for example aisle-rack-shelf (A-01-03).</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-warehouses" datatype="html">
+        <source>Warehouses</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-compartments" datatype="html">
+        <source>Compartments</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-contents" datatype="html">
+        <source>Contents</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-addWarehouse" datatype="html">
+        <source>Add warehouse</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-addCompartment" datatype="html">
+        <source>Add compartment</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-back" datatype="html">
+        <source>Back</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-editWarehouse" datatype="html">
+        <source>Edit warehouse</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-editCompartment" datatype="html">
+        <source>Edit compartment</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-placementTitle" datatype="html">
+        <source>Article in compartment</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-colCompartments" datatype="html">
+        <source>Compartments</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-colArticles" datatype="html">
+        <source>Articles</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-compartmentFilled" datatype="html">
+        <source>In use</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-compartmentEmpty" datatype="html">
+        <source>Empty</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-updated" datatype="html">
+        <source>Last change</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-deleteWarehouseMessage" datatype="html">
+        <source>Warehouse <x id="label" equiv-text="target.label"/> and its empty compartments will be deleted. Warehouses holding stock cannot be deleted.</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-deleteCompartmentMessage" datatype="html">
+        <source>Compartment <x id="label" equiv-text="target.label"/> will be deleted. Compartments holding stock cannot be deleted.</source>
+        </trans-unit>
+      <trans-unit id="featureInventory-deletePlacementMessage" datatype="html">
+        <source>The location <x id="label" equiv-text="target.label"/> will be removed from the article. Only empty locations can be removed.</source>
         </trans-unit>
       <trans-unit id="featureInvoices-paymentWaiting" datatype="html">
         <source> Payment submitted. Waiting for confirmation from the payment provider... </source>
@@ -4485,6 +5400,24 @@
       <trans-unit id="featureServicePlans-metersCatalogLoading" datatype="html">
         <source> Loading meter catalog... </source>
         </trans-unit>
+      <trans-unit id="featureServicePlans-inventoryArticles" datatype="html">
+        <source>Articles per billing period</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-addInventoryArticle" datatype="html">
+        <source>Add article</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-inventoryArticlesHint" datatype="html">
+        <source> Each issued period invoice raises withdrawal requests for these articles, which are accepted in the inventory. </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-inventoryArticle" datatype="html">
+        <source>Article</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-inventoryQuantity" datatype="html">
+        <source>Quantity</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-removeInventoryArticle" datatype="html">
+        <source>Remove</source>
+        </trans-unit>
       <trans-unit id="featureServicePlans-title" datatype="html">
         <source>Service plans</source>
         </trans-unit>
@@ -4520,6 +5453,9 @@
         </trans-unit>
       <trans-unit id="featureServicePlans-bulkDeleteMessage" datatype="html">
         <source><x id="count" equiv-text="this.selectedPlans().length"/> selected plans will be deleted. Plans with subscriptions are reported and left as they are.</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-inventoryArticleDuplicate" datatype="html">
+        <source>This article is already listed.</source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-empty" datatype="html">
         <source>No service types yet</source>
@@ -4674,14 +5610,8 @@
       <trans-unit id="featureDataList-copyId" datatype="html">
         <source>Copy ID</source>
         </trans-unit>
-      <trans-unit id="featureDataList-delete" datatype="html">
-        <source>Delete</source>
-        </trans-unit>
       <trans-unit id="featureDataList-cancel" datatype="html">
         <source>Cancel</source>
-        </trans-unit>
-      <trans-unit id="featureDataList-edit" datatype="html">
-        <source>Edit</source>
         </trans-unit>
       <trans-unit id="featureDataList-customData" datatype="html">
         <source>Custom data</source>

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { InventoryWithdrawalRequestsService } from '../../inventory/services/inventory-withdrawal-requests.service';
 import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import type { CreateAdminProjectDto } from '../../projects/dto/project.dto';
 import { ProjectPricingModel } from '../../projects/entities/project.enums';
@@ -35,6 +36,7 @@ export class OfferFulfillmentService {
     private readonly openPositionsRepository: OpenPositionsRepository,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly auditLog: BillingAuditLogService,
+    private readonly inventoryWithdrawalRequests: InventoryWithdrawalRequestsService,
   ) {}
 
   async fulfillAcceptedOffer(offerId: string): Promise<void> {
@@ -67,9 +69,10 @@ export class OfferFulfillmentService {
       }
     }
 
+    // Article lines are billed like standard lines (and additionally request their withdrawal).
     const standardLines = lines.filter(
       (line) =>
-        line.lineType === OfferLineType.STANDARD &&
+        (line.lineType === OfferLineType.STANDARD || line.lineType === OfferLineType.ARTICLE) &&
         line.fulfillmentStatus !== OfferFulfillmentStatus.COMPLETED &&
         !(line.scheduledAt && line.scheduledAt.getTime() > Date.now()),
     );
@@ -103,6 +106,7 @@ export class OfferFulfillmentService {
         await this.fulfillProjectLine(offer, line);
         break;
       case OfferLineType.STANDARD:
+      case OfferLineType.ARTICLE:
         await this.fulfillStandardLines(offer, [line]);
         break;
       default:
@@ -220,6 +224,8 @@ export class OfferFulfillmentService {
           this.billingNotificationPublisher.publishOfferLineFulfilled(offer, line, {});
         }
 
+        await this.inventoryWithdrawalRequests.raiseForOfferLines(offer, lines);
+
         return;
       }
 
@@ -257,6 +263,9 @@ export class OfferFulfillmentService {
           resultInvoiceId: issued.id,
         });
       }
+
+      // The invoice lines carry no article: the offer line itself requests the withdrawal (exactly once).
+      await this.inventoryWithdrawalRequests.raiseForOfferLines(offer, lines);
     } catch (error) {
       for (const line of lines) {
         await this.failLine(offer, line, error as Error);

@@ -6,6 +6,25 @@ import {
   AdminSupplierInvoiceManagerFacade,
   AdminDatevExportsFacade,
   AdminFileManagerFacade,
+  InventoryFacade,
+  inventoryReducer,
+  loadInventoryWarehouses$,
+  loadInventoryCompartments$,
+  loadInventoryCompartmentStock$,
+  loadInventoryArticles$,
+  loadInventoryArticleStock$,
+  loadInventoryRequests$,
+  loadInventoryLendings$,
+  loadInventoryMovements$,
+  loadInventorySerialUnits$,
+  loadInventorySummary$,
+  loadInventoryArticle$,
+  reloadInventorySlices$,
+  runInventoryMutation$,
+  refreshSelectedInventoryArticle$,
+  connectInventorySocket$,
+  disconnectInventorySocket$,
+  reloadInventoryOnLiveChange$,
   AdminInvoiceManagerFacade,
   AdminSubscriptionsFacade,
   BillingCapabilitiesFacade,
@@ -304,6 +323,12 @@ import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from './contributors/first-party-c
 import { billingAdminGuard } from './guards/billing-admin.guard';
 import { datevExportEnabledGuard } from './guards/datev-export-enabled.guard';
 import { publicWithdrawalAccessGuard } from './guards/public-withdrawal-access.guard';
+import { InventoryArticleDetailPageComponent } from './inventory/inventory-article-detail-page.component';
+import { InventoryArticlesPageComponent } from './inventory/inventory-articles-page.component';
+import { InventoryDocumentsPageComponent } from './inventory/inventory-documents-page.component';
+import { InventoryLendingsPageComponent } from './inventory/inventory-lendings-page.component';
+import { InventoryRequestsPageComponent } from './inventory/inventory-requests-page.component';
+import { InventoryWarehousesPageComponent } from './inventory/inventory-warehouses-page.component';
 import { InvoicesComponent } from './invoices/invoices.component';
 import { MetersPageComponent } from './meters-page/meters-page.component';
 import { OffersPageComponent } from './offers-page/offers-page.component';
@@ -541,6 +566,65 @@ export const billingConsoleRoutes: Route[] = [
                     title: () => buildPageTitle($localize`:@@featureContainer-adminProjectDetailPage:Project`),
                   },
                 ],
+              },
+            ],
+          },
+          {
+            path: 'inventory',
+            canActivate: [authGuard, billingAdminGuard],
+            providers: [
+              InventoryFacade,
+              provideState('inventory', inventoryReducer),
+              provideEffects({
+                loadInventoryWarehouses$,
+                loadInventoryCompartments$,
+                loadInventoryCompartmentStock$,
+                loadInventoryArticles$,
+                loadInventoryArticleStock$,
+                loadInventoryRequests$,
+                loadInventoryMovements$,
+                loadInventoryLendings$,
+                loadInventorySerialUnits$,
+                loadInventorySummary$,
+                loadInventoryArticle$,
+                reloadInventorySlices$,
+                runInventoryMutation$,
+                refreshSelectedInventoryArticle$,
+                connectInventorySocket$,
+                disconnectInventorySocket$,
+                reloadInventoryOnLiveChange$,
+              }),
+            ],
+            children: [
+              {
+                path: '',
+                component: InventoryWarehousesPageComponent,
+                title: () => buildPageTitle($localize`:@@featureContainer-inventoryPage:Inventory`),
+              },
+              {
+                path: 'articles',
+                component: InventoryArticlesPageComponent,
+                title: () => buildPageTitle($localize`:@@featureContainer-inventoryArticlesPage:Articles`),
+              },
+              {
+                path: 'articles/:articleId',
+                component: InventoryArticleDetailPageComponent,
+                title: () => buildPageTitle($localize`:@@featureContainer-inventoryArticlePage:Article`),
+              },
+              {
+                path: 'requests',
+                component: InventoryRequestsPageComponent,
+                title: () => buildPageTitle($localize`:@@featureContainer-inventoryRequestsPage:Withdrawal requests`),
+              },
+              {
+                path: 'documents',
+                component: InventoryDocumentsPageComponent,
+                title: () => buildPageTitle($localize`:@@featureContainer-inventoryDocumentsPage:Inventory documents`),
+              },
+              {
+                path: 'lendings',
+                component: InventoryLendingsPageComponent,
+                title: () => buildPageTitle($localize`:@@featureContainer-inventoryLendingsPage:Lendings`),
               },
             ],
           },

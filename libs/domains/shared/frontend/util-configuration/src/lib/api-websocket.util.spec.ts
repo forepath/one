@@ -17,6 +17,12 @@ describe('resolveApiWebsocketUrl', () => {
     );
   });
 
+  it('derives inventory from billing string primary', () => {
+    expect(resolveApiWebsocketUrl('http://localhost:3200/socket/billing', 'inventory')).toBe(
+      'http://localhost:3200/socket/inventory',
+    );
+  });
+
   it('derives projects from billing string primary', () => {
     expect(resolveApiWebsocketUrl('http://localhost:3200/socket/billing', 'projects')).toBe(
       'http://localhost:3200/socket/projects',

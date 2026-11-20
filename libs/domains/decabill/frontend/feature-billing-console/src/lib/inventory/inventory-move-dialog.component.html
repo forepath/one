@@ -1,0 +1,249 @@
+<fpc-modal [(open)]="open" size="lg" [title]="title()" data-testid="inventory-move-dialog">
+  @if (article(); as currentArticle) {
+    <p class="mb-3">
+      <span class="fw-semibold">{{ currentArticle.name }}</span>
+      <span class="ms-2 small text-body-secondary font-monospace">{{ currentArticle.articleNumber }}</span>
+    </p>
+
+    @if (error(); as message) {
+      <fpc-alert variant="danger" [message]="message" data-testid="inventory-move-error" />
+    }
+
+    @if (needsSource()) {
+      <fpc-form-field i18n-label="@@featureInventoryMove-source" label="From" required>
+        @if (source(); as from) {
+          <div class="d-flex flex-wrap align-items-center gap-2" data-testid="inventory-move-source">
+            <framework-inventory-location-chip
+              [warehouseCode]="from.warehouseCode"
+              [compartmentCode]="from.compartmentCode"
+              [clearable]="!presetSource()"
+              (cleared)="changeSource()"
+            />
+            <span class="text-body-secondary small"
+              ><ng-container i18n="@@featureInventoryMove-available">available</ng-container>
+              {{ formatQuantity(from.quantity) }}</span
+            >
+          </div>
+        } @else {
+          <span class="text-body-secondary small" i18n="@@featureInventoryMove-pickSource"
+            >Pick the compartment to take the article from.</span
+          >
+        }
+      </fpc-form-field>
+    }
+
+    @if (needsTarget() && !pickingSource()) {
+      <fpc-form-field forId="inventoryMoveTarget" i18n-label="@@featureInventoryMove-target" label="To" required>
+        @if (target(); as to) {
+          <div class="d-flex align-items-center gap-2" data-testid="inventory-move-target">
+            <framework-inventory-location-chip
+              [warehouseCode]="to.warehouseCode"
+              [compartmentCode]="to.compartmentCode"
+              [clearable]="!presetTarget()"
+              (cleared)="target.set(null); typeaheadTarget.set(null)"
+            />
+          </div>
+        } @else {
+          <framework-inventory-compartment-select
+            inputId="inventoryMoveTarget"
+            [excludeId]="source()?.compartmentId ?? null"
+            [(selected)]="typeaheadTarget"
+            (picked)="onTypeaheadTarget($event)"
+          />
+        }
+      </fpc-form-field>
+    }
+
+    @if ((pickingSource() || (needsTarget() && !target())) && !(presetTarget() && !pickingSource())) {
+      <div class="mb-3">
+        <div class="small fw-semibold text-body-secondary mb-1">{{ suggestionsLabel() }}</div>
+        <fpc-data-table
+          nested
+          [ariaLabel]="suggestionsLabel()"
+          [columns]="suggestionColumns"
+          [rows]="visibleSuggestions()"
+          [activeRowId]="selectedSuggestionId()"
+          paging="server"
+          [total]="visibleSuggestionTotal()"
+          [(page)]="suggestionPage"
+          [(pageSize)]="suggestionPageSize"
+          [searchable]="false"
+          [showColumnChooser]="false"
+          [loading]="suggestionLoading()"
+          (rowActivate)="onSuggestion($event)"
+          emptyIcon="box"
+          data-testid="inventory-move-suggestions"
+        >
+          <span fpcDataTableEmpty>
+            @if (pickingSource()) {
+              <span i18n="@@featureInventoryMove-noSources">No compartment holds this article.</span>
+            } @else {
+              <span i18n="@@featureInventoryMove-noTargets"
+                >No other compartment holds this article yet. Search for a compartment above.</span
+              >
+            }
+          </span>
+        </fpc-data-table>
+      </div>
+    }
+
+    @if (!pickingSource()) {
+      @if (lending()) {
+        <fpc-form-field i18n-label="@@featureInventoryLend-borrower" label="Borrower" required>
+          <div class="d-flex gap-3 mb-2" role="radiogroup">
+            <label class="form-check-label d-flex align-items-center gap-1">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="inventoryBorrowerMode"
+                [checked]="borrowerMode() === 'account'"
+                (change)="borrowerMode.set('account')"
+                data-testid="inventory-lend-borrower-account"
+              />
+              <span i18n="@@featureInventoryLend-borrowerAccount">Customer or staff account</span>
+            </label>
+            <label class="form-check-label d-flex align-items-center gap-1">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="inventoryBorrowerMode"
+                [checked]="borrowerMode() === 'name'"
+                (change)="borrowerMode.set('name')"
+                data-testid="inventory-lend-borrower-name-mode"
+              />
+              <span i18n="@@featureInventoryLend-borrowerEmployee">Employee without account</span>
+            </label>
+          </div>
+          @if (borrowerMode() === 'account') {
+            <framework-billing-admin-user-select
+              inputId="inventoryLendBorrower"
+              [selectedUserId]="borrowerUserId()"
+              (selectedUserIdChange)="borrowerUserId.set($event)"
+              data-testid="inventory-lend-borrower-user"
+            />
+          } @else {
+            <fpc-form-control
+              controlId="inventoryLendBorrowerName"
+              [(ngModel)]="borrowerName"
+              name="inventoryLendBorrowerName"
+              [maxLength]="255"
+              i18n-placeholder="@@featureInventoryLend-borrowerNamePlaceholder"
+              placeholder="Name of the employee"
+              data-testid="inventory-lend-borrower-name"
+            />
+          }
+        </fpc-form-field>
+        <fpc-form-field
+          forId="inventoryLendDueDate"
+          i18n-label="@@featureInventoryLend-dueDate"
+          label="Due back"
+          i18n-hint="@@featureInventoryLend-dueDateHint"
+          hint="Optional. Open lendings past this date are flagged as overdue."
+        >
+          <fpc-form-control
+            controlId="inventoryLendDueDate"
+            inputType="date"
+            [min]="today"
+            [(ngModel)]="dueDate"
+            name="inventoryLendDueDate"
+            data-testid="inventory-lend-due-date"
+          />
+        </fpc-form-field>
+      }
+      @if (serialTracking()) {
+        <fpc-form-field
+          forId="inventoryMoveSerials"
+          i18n-label="@@featureInventoryMove-serials"
+          label="Serial numbers"
+          [hint]="serialHint()"
+          required
+        >
+          <framework-inventory-serial-input
+            inputId="inventoryMoveSerials"
+            testId="inventory-move-serials"
+            [available]="availableSerials()"
+            [(value)]="serialText"
+            (selectionChange)="serialSelection.set($event)"
+          />
+        </fpc-form-field>
+      }
+      <div class="row g-3 mb-3">
+        @if (!serialTracking()) {
+          <div class="col-sm-6">
+            <fpc-form-field
+              forId="inventoryMoveQuantity"
+              i18n-label="@@featureInventoryMove-quantity"
+              label="Quantity"
+              required
+            >
+              <fpc-input-group>
+                <fpc-form-control
+                  controlId="inventoryMoveQuantity"
+                  inputType="number"
+                  [min]="0.001"
+                  [max]="maxQuantity()"
+                  step="any"
+                  [(ngModel)]="quantity"
+                  name="inventoryMoveQuantity"
+                  data-testid="inventory-move-quantity"
+                />
+                <span class="input-group-text" fpcInputGroupSuffix>{{ unitLabel() }}</span>
+              </fpc-input-group>
+            </fpc-form-field>
+          </div>
+        }
+        @if (reasons().length > 0) {
+          <div class="col-sm-6">
+            <fpc-form-field forId="inventoryMoveReason" i18n-label="@@featureInventoryMove-reason" label="Reason">
+              <fpc-form-control
+                controlType="select"
+                controlId="inventoryMoveReason"
+                [(ngModel)]="reason"
+                name="inventoryMoveReason"
+                data-testid="inventory-move-reason"
+              >
+                @for (option of reasons(); track option) {
+                  <option [value]="option">{{ reasonLabels[option] }}</option>
+                }
+              </fpc-form-control>
+            </fpc-form-field>
+          </div>
+        }
+      </div>
+      <fpc-form-field
+        forId="inventoryMoveReference"
+        i18n-label="@@featureInventoryMove-reference"
+        label="Reference"
+        i18n-hint="@@featureInventoryMove-referenceSelectHint"
+        hint="Search invoices, offers, supplier invoices, subscriptions, projects or customers, or use Other for free text."
+      >
+        <framework-inventory-reference-select
+          inputId="inventoryMoveReference"
+          [(value)]="reference"
+          data-testid="inventory-move-reference"
+        />
+      </fpc-form-field>
+      <fpc-form-field forId="inventoryMoveNote" i18n-label="@@featureInventoryMove-note" label="Note">
+        <fpc-form-control
+          controlType="textarea"
+          controlId="inventoryMoveNote"
+          [(ngModel)]="note"
+          name="inventoryMoveNote"
+          [maxLength]="2000"
+        />
+      </fpc-form-field>
+    }
+  }
+
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button
+      variant="primary"
+      [disabled]="mutating() || !canSubmit()"
+      [loading]="mutating()"
+      (clicked)="submit()"
+      data-testid="inventory-move-submit"
+      i18n="@@featureInventoryMove-submit"
+      >Book and create document</fpc-button
+    >
+  </div>
+</fpc-modal>

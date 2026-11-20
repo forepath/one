@@ -1,0 +1,231 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0" data-testid="inventory-requests-page">
+  <fpc-page-header [title]="pageTitle" />
+  <framework-inventory-nav active="requests" />
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="requestsTitle"
+    [columns]="columns"
+    [rows]="requests().items"
+    paging="server"
+    [total]="requests().total"
+    [(page)]="paging.page"
+    [(pageSize)]="paging.pageSize"
+    persistKey="decabill-inventory-requests"
+    [(query)]="paging.search"
+    i18n-searchPlaceholder="@@featureInventoryRequests-search"
+    searchPlaceholder="Search document, article"
+    showFilterButton
+    [(filtersOpen)]="filtersOpen"
+    [filtersActive]="status() === 'all' ? 0 : 1"
+    (filtersApplied)="applyFilters()"
+    (filtersCleared)="clearFilters()"
+    [loading]="requests().loading"
+    refreshable
+    (refresh)="paging.reload()"
+    [error]="requests().error"
+    [rowMenu]="rowMenu"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    (rowActivate)="onRowActivate($event)"
+    emptyIcon="inbox"
+    data-testid="inventory-requests-table"
+  >
+    <fpc-form-field
+      fpcDataTableFilters
+      forId="inventoryRequestStatusFilter"
+      i18n-label="@@featureInventoryRequests-statusFilter"
+      label="Status"
+    >
+      <fpc-form-control
+        controlType="select"
+        controlId="inventoryRequestStatusFilter"
+        [(ngModel)]="statusDraft"
+        name="inventoryRequestStatusFilter"
+        data-testid="inventory-requests-status-filter"
+      >
+        <option value="pending" i18n="@@featureInventory-requestPending">Pending</option>
+        <option value="accepted" i18n="@@featureInventory-requestAccepted">Accepted</option>
+        <option value="rejected" i18n="@@featureInventory-requestRejected">Rejected</option>
+        <option value="all" i18n="@@featureInventoryRequests-all">All</option>
+      </fpc-form-control>
+    </fpc-form-field>
+    <ng-template fpcTableCell="source" let-row
+      >{{ row.sourceLabel }}<span class="ms-2 small text-body-secondary">{{ sourceTypeLabel(row) }}</span></ng-template
+    >
+    <ng-template fpcTableCell="article" let-row
+      >{{ row.article.name
+      }}<span class="ms-2 small text-body-secondary font-monospace">{{ row.article.articleNumber }}</span></ng-template
+    >
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        size="sm"
+        icon="inbox"
+        i18n-message="@@featureInventoryRequests-empty"
+        message="No withdrawal requests. Offers, invoices and subscriptions with article positions raise them."
+      />
+    </span>
+  </fpc-data-table>
+</div>
+
+<fpc-modal [(open)]="acceptOpen" size="lg" [title]="acceptLabel" data-testid="inventory-accept-modal">
+  @if (current(); as request) {
+    @if (mutationError(); as error) {
+      <fpc-alert variant="danger" [message]="error" data-testid="inventory-accept-error" />
+    }
+    <fpc-key-value-list class="d-block mb-3" [items]="requestItems()" />
+
+    <h6 class="fw-semibold" i18n="@@featureInventoryRequests-takeFrom">Take from</h6>
+    @for (row of allocations(); track row.compartmentId; let index = $index) {
+      <div class="d-flex align-items-center gap-2 mb-2" data-testid="inventory-allocation-row">
+        <span class="font-monospace flex-grow-1">{{ row.label }}</span>
+        <span class="text-body-secondary small">/ {{ formatQuantity(row.available) }}</span>
+        @if (serialTracking()) {
+          <span class="small" data-testid="inventory-allocation-serial-count">{{
+            formatQuantity(row.serials.serialNumbers.length)
+          }}</span>
+        } @else {
+          <div style="width: 10rem">
+            <fpc-input-group>
+              <fpc-form-control
+                inputType="number"
+                min="0"
+                step="any"
+                [max]="row.available"
+                [ngModel]="row.quantity"
+                (ngModelChange)="setQuantity(index, $event)"
+                [name]="'allocation' + index"
+                i18n-ariaLabel="@@featureInventory-colQuantity"
+                ariaLabel="Quantity"
+                data-testid="inventory-allocation-quantity"
+              />
+              <span class="input-group-text" fpcInputGroupSuffix>{{ unitLabelOf(request.article.unit) }}</span>
+            </fpc-input-group>
+          </div>
+        }
+        <fpc-button
+          variant="link"
+          iconOnly
+          i18n-title="@@featureInventoryArticleForm-removeLocation"
+          title="Remove location"
+          i18n-ariaLabel="@@featureInventoryArticleForm-removeLocation"
+          ariaLabel="Remove location"
+          (clicked)="removeAllocation(index)"
+        >
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </fpc-button>
+      </div>
+      @if (serialTracking()) {
+        <div class="mb-3">
+          <framework-inventory-serial-input
+            [inputId]="'inventoryAllocationSerials' + index"
+            testId="inventory-allocation-serials"
+            [available]="row.availableSerials"
+            [value]="row.serialText"
+            (valueChange)="setSerialText(index, $event)"
+            (selectionChange)="setSerials(index, $event)"
+          />
+        </div>
+      }
+    } @empty {
+      <p class="small text-body-secondary" i18n="@@featureInventoryRequests-pickSources">
+        Pick the compartments to take the article from (suggested below, or search).
+      </p>
+    }
+    <p class="small" [class.text-danger]="remaining() !== 0" data-testid="inventory-allocation-remaining">
+      <ng-container i18n="@@featureInventoryRequests-remaining">Still to allocate:</ng-container>
+      {{ formatQuantity(remaining()) }}
+    </p>
+
+    <fpc-form-field
+      forId="inventoryAcceptSearch"
+      i18n-label="@@featureInventoryRequests-searchCompartment"
+      label="Other compartment"
+    >
+      <framework-inventory-compartment-select
+        inputId="inventoryAcceptSearch"
+        [selected]="extraCompartment()"
+        (picked)="addExtraCompartment($event)"
+      />
+    </fpc-form-field>
+    @if (missingStock()) {
+      <fpc-alert
+        variant="warning"
+        [dismissible]="true"
+        (closed)="missingStock.set(null)"
+        i18n-message="@@featureInventoryRequests-noStockThere"
+        message="That compartment holds none of this article."
+      />
+    }
+
+    <div class="small fw-semibold text-body-secondary mb-1" i18n="@@featureInventoryRequests-suggestions">
+      Compartments holding this article
+    </div>
+    <fpc-data-table
+      nested
+      i18n-ariaLabel="@@featureInventoryRequests-suggestions"
+      ariaLabel="Compartments holding this article"
+      [columns]="sourceColumns"
+      [rows]="sources()"
+      paging="server"
+      [total]="sourcesTotal()"
+      [(page)]="sourcesPage"
+      [(pageSize)]="sourcesPageSize"
+      [searchable]="false"
+      [showColumnChooser]="false"
+      [loading]="sourcesLoading()"
+      (rowActivate)="addSource($event)"
+      emptyIcon="box"
+      data-testid="inventory-accept-sources"
+    >
+      <span fpcDataTableEmpty i18n="@@featureInventoryMove-noSources">No compartment holds this article.</span>
+    </fpc-data-table>
+
+    <fpc-form-field class="mt-3" forId="inventoryAcceptNote" i18n-label="@@featureInventoryMove-note" label="Note">
+      <fpc-form-control
+        controlType="textarea"
+        controlId="inventoryAcceptNote"
+        [(ngModel)]="note"
+        name="acceptNote"
+        [maxLength]="2000"
+      />
+    </fpc-form-field>
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button
+      variant="primary"
+      [disabled]="mutating() || !allocationValid()"
+      [loading]="mutating()"
+      (clicked)="submitAccept()"
+      data-testid="inventory-accept-submit"
+      i18n="@@featureInventoryRequests-acceptSubmit"
+      >Withdraw and create documents</fpc-button
+    >
+  </div>
+</fpc-modal>
+
+<fpc-modal [(open)]="rejectOpen" [title]="rejectLabel" data-testid="inventory-reject-modal">
+  @if (mutationError(); as error) {
+    <fpc-alert variant="danger" [message]="error" />
+  }
+  @if (current(); as request) {
+    <fpc-key-value-list class="d-block mb-3" [items]="requestItems()" />
+  }
+  <fpc-form-field forId="inventoryRejectNote" i18n-label="@@featureInventoryRequests-reason" label="Reason">
+    <fpc-form-control
+      controlType="textarea"
+      controlId="inventoryRejectNote"
+      [(ngModel)]="note"
+      name="rejectNote"
+      [maxLength]="2000"
+    />
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button
+      variant="danger"
+      [disabled]="mutating()"
+      [loading]="mutating()"
+      (clicked)="submitReject()"
+      data-testid="inventory-reject-submit"
+      >{{ rejectLabel }}</fpc-button
+    >
+  </div>
+</fpc-modal>

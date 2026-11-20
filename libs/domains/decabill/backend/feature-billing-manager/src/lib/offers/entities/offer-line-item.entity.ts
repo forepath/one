@@ -132,4 +132,8 @@ export class OfferLineItemEntity {
 
   @Column({ type: 'timestamp', nullable: true, name: 'availability_checked_at' })
   availabilityCheckedAt?: Date | null;
+
+  /** `article` lines: the article withdrawn (as request) when the offer is accepted. */
+  @Column({ type: 'uuid', nullable: true, name: 'inventory_article_id' })
+  inventoryArticleId?: string | null;
 }

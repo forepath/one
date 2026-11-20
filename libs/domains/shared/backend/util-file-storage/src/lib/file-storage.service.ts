@@ -166,6 +166,14 @@ export class FileStorageService {
     return await this.readFile(FileStorageScope.agenstraAttachments, storageKey);
   }
 
+  async writeInventoryDocumentFile(storageKey: string, content: Buffer): Promise<void> {
+    await this.writeFile(FileStorageScope.inventoryDocuments, storageKey, content);
+  }
+
+  async readInventoryDocumentFile(storageKey: string): Promise<Buffer> {
+    return await this.readFile(FileStorageScope.inventoryDocuments, storageKey);
+  }
+
   private resolveDualReadFallback(
     scope: FileStorageScopeType,
     storageKey: string,

@@ -20,6 +20,9 @@ import {
   loadClientFailure,
   loadClients,
   loadClientsFailure,
+  loadClientsRailPage,
+  loadClientsRailPageFailure,
+  loadClientsRailPageSuccess,
   loadClientsSuccess,
   pingClientFailure,
   pingClientSuccess,
@@ -52,6 +55,7 @@ import {
   removeClientUser,
   removeClientUserFailure,
   removeClientUserSuccess,
+  resolveActiveClientSuccess,
   setActiveClient,
   setActiveClientFailure,
   setActiveClientSuccess,
@@ -62,11 +66,52 @@ import {
 import type {
   ClientResponseDto,
   ClientUserResponseDto,
+  ClientsRailPageQuery,
   ProvisioningProviderInfo,
   ProviderLocation,
   ServerInfo,
   ServerType,
 } from './clients.types';
+
+/**
+ * Replace-page slice of the workspaces rail: only the rows of the current server page are held (each page / size /
+ * search change replaces them), independent of the append-style `entities` other consumers page through.
+ */
+export interface ClientsRailPageState {
+  /** Rows of the current page (at most `query.limit`). */
+  rows: ClientResponseDto[];
+  /** Query of the listed page (reloaded after creates / deletes); `null` until the rail requested a page. */
+  query: ClientsRailPageQuery | null;
+  /** Server paging without a total: the page was requested with one extra row to know whether a next one exists. */
+  hasNext: boolean;
+  loading: boolean;
+  error: string | null;
+}
+
+export const initialClientsRailPageState: ClientsRailPageState = {
+  rows: [],
+  query: null,
+  hasNext: false,
+  loading: false,
+  error: null,
+};
+
+/** Replaces a rail row by id (rows not on the current page are left alone). */
+function patchRailRow(
+  railPage: ClientsRailPageState,
+  id: string,
+  patch: (client: ClientResponseDto) => ClientResponseDto,
+): ClientsRailPageState {
+  return railPage.rows.some((c) => c.id === id)
+    ? { ...railPage, rows: railPage.rows.map((c) => (c.id === id ? patch(c) : c)) }
+    : railPage;
+}
+
+function removeRailRow(railPage: ClientsRailPageState, id: string): ClientsRailPageState {
+  return railPage.rows.some((c) => c.id === id)
+    ? { ...railPage, rows: railPage.rows.filter((c) => c.id !== id) }
+    : railPage;
+}
 
 export interface ClientsState {
   entities: ClientResponseDto[];
@@ -107,6 +152,8 @@ export interface ClientsState {
    * unknown), string = why the workspace cannot be reached. Presence of a key means "already pinged".
    */
   reachabilityErrors: Record<string, string | null>;
+  /** Workspaces rail of the agent console (replace-page server paging). */
+  railPage: ClientsRailPageState;
 }
 
 export const initialClientsState: ClientsState = {
@@ -141,6 +188,7 @@ export const initialClientsState: ClientsState = {
   refreshingIsolation: {},
   isolationErrors: {},
   reachabilityErrors: {},
+  railPage: initialClientsRailPageState,
 };
 
 export const clientsReducer = createReducer(
@@ -193,6 +241,24 @@ export const clientsReducer = createReducer(
     appendLoading: false,
     appendError: error,
   })),
+  // Workspaces rail (replace-page)
+  on(loadClientsRailPage, (state, { query, silent }) => ({
+    ...state,
+    railPage: {
+      ...state.railPage,
+      query,
+      loading: silent ? state.railPage.loading : true,
+      error: silent ? state.railPage.error : null,
+    },
+  })),
+  on(loadClientsRailPageSuccess, (state, { clients, hasNext }) => ({
+    ...state,
+    railPage: { ...state.railPage, rows: clients, hasNext, loading: false, error: null },
+  })),
+  on(loadClientsRailPageFailure, (state, { error }) => ({
+    ...state,
+    railPage: { ...state.railPage, rows: [], hasNext: false, loading: false, error },
+  })),
   // Load Client by ID
   on(loadClient, (state) => ({
     ...state,
@@ -208,6 +274,7 @@ export const clientsReducer = createReducer(
       ...state,
       selectedClient: client,
       entities,
+      railPage: patchRailRow(state.railPage, client.id, () => client),
       loadingClient: false,
       error: null,
     };
@@ -250,6 +317,7 @@ export const clientsReducer = createReducer(
     ...state,
     entities: state.entities.map((c) => (c.id === client.id ? client : c)),
     selectedClient: state.selectedClient?.id === client.id ? client : state.selectedClient,
+    railPage: patchRailRow(state.railPage, client.id, () => client),
     updating: false,
     error: null,
   })),
@@ -268,6 +336,7 @@ export const clientsReducer = createReducer(
     ...state,
     reachabilityErrors: Object.fromEntries(Object.entries(state.reachabilityErrors).filter(([key]) => key !== id)),
     entities: state.entities.filter((c) => c.id !== id),
+    railPage: removeRailRow(state.railPage, id),
     selectedClient: state.selectedClient?.id === id ? null : state.selectedClient,
     activeClientId: state.activeClientId === id ? null : state.activeClientId,
     deleting: false,
@@ -285,7 +354,9 @@ export const clientsReducer = createReducer(
   })),
   on(setActiveClientSuccess, (state, { id }) => {
     const activeClient =
-      state.entities.find((c) => c.id === id) ?? (state.selectedClient?.id === id ? state.selectedClient : null);
+      state.entities.find((c) => c.id === id) ??
+      state.railPage.rows.find((c) => c.id === id) ??
+      (state.selectedClient?.id === id ? state.selectedClient : null);
 
     return {
       ...state,
@@ -294,6 +365,15 @@ export const clientsReducer = createReducer(
       error: null,
     };
   }),
+  on(resolveActiveClientSuccess, (state, { client }) =>
+    state.activeClientId === client.id
+      ? {
+          ...state,
+          selectedClient: client,
+          railPage: patchRailRow(state.railPage, client.id, () => client),
+        }
+      : state,
+  ),
   on(setActiveClientFailure, (state, { error }) => ({
     ...state,
     error,
@@ -417,6 +497,7 @@ export const clientsReducer = createReducer(
     return {
       ...state,
       entities: state.entities.filter((c) => c.id !== clientId),
+      railPage: removeRailRow(state.railPage, clientId),
       selectedClient: state.selectedClient?.id === clientId ? null : state.selectedClient,
       activeClientId: state.activeClientId === clientId ? null : state.activeClientId,
       serverInfo: restServerInfo,
@@ -530,6 +611,7 @@ export const clientsReducer = createReducer(
   on(refreshClientIsolationSuccess, (state, { clientId, isolation }) => ({
     ...state,
     entities: state.entities.map((c) => (c.id === clientId ? { ...c, isolation } : c)),
+    railPage: patchRailRow(state.railPage, clientId, (c) => ({ ...c, isolation })),
     selectedClient:
       state.selectedClient?.id === clientId ? { ...state.selectedClient, isolation } : state.selectedClient,
     refreshingIsolation: { ...state.refreshingIsolation, [clientId]: false },

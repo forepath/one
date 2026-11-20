@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* A4 sheets of 24 labels to cut out (5 mm margins, 3 mm gaps), or one 70 x 37 mm label per page (label printers). */
+      {{#if single}}
+      @page {
+        size: 70mm 37mm;
+        margin: 0;
+      }
+      {{else}}
+      @page {
+        size: A4;
+        margin: 0;
+      }
+      {{/if}}
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #111111;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      /* Sheets to cut out: 5 mm page margin and 3 mm between labels, 3 x 8 labels (about 64.7 x 33.3 mm). */
+      .sheet {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(8, 1fr);
+        gap: 3mm;
+        width: 210mm;
+        height: 297mm;
+        padding: 5mm;
+        page-break-after: always;
+      }
+
+      .sheet:last-child {
+        page-break-after: auto;
+      }
+
+      /* Every label is framed (cut line on sheets, outline on label printers), like the property sticker. */
+      .label {
+        width: 70mm;
+        height: 37mm;
+        padding: 2.5mm 3.5mm;
+        border: 0.3mm solid #111111;
+        border-radius: 1.5mm;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8mm;
+      }
+
+      .sheet .label {
+        width: auto;
+        height: auto;
+        min-height: 0;
+        padding: 2mm 3mm;
+        gap: 0.5mm;
+      }
+
+      .single .label {
+        page-break-after: always;
+      }
+
+      .single .label:last-child {
+        page-break-after: auto;
+      }
+
+      .title {
+        font-size: 7.5pt;
+        font-weight: 700;
+        line-height: 1.2;
+        max-height: 2.4em;
+        overflow: hidden;
+      }
+
+      .meta {
+        font-size: 6pt;
+        line-height: 1.25;
+        color: #444444;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .mono {
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+      }
+
+      .barcode {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .barcode svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .owner-kicker {
+        font-size: 5.5pt;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #444444;
+      }
+
+      .owner-name {
+        font-size: 8pt;
+        font-weight: 700;
+        line-height: 1.15;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    </style>
+  </head>
+  <body class="{{#if single}}single{{/if}}">
+    {{#each pages}}
+    <div class="{{#if ../single}}pages{{else}}sheet{{/if}}">
+      {{#each this}}
+      <div class="label {{kind}}">
+        {{#if property}}
+        <span class="owner-kicker">Property of</span>
+        <span class="owner-name">{{ownerName}}</span>
+        {{#if ownerAddress}}<span class="meta">{{ownerAddress}}</span>{{/if}}
+        <div class="barcode">{{{barcodeSvg}}}</div>
+        <span class="meta">{{title}}</span>
+        {{#if ownerContact}}<span class="meta">If found, please contact {{ownerContact}}</span>{{/if}} {{else}}
+        <span class="title">{{title}}</span>
+        <div class="barcode">{{{barcodeSvg}}}</div>
+        {{#if serialNumber}}<span class="meta">S/N <span class="mono">{{serialNumber}}</span></span
+        >{{/if}} {{/if}}
+      </div>
+      {{/each}}
+    </div>
+    {{/each}}
+  </body>
+</html>

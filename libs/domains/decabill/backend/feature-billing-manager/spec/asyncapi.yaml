@@ -6,7 +6,14 @@ info:
     Socket.IO events for billing-manager gateways on the shared HTTP `PORT` (default 3200).
     Engine.IO path is `/socket.io/`; REST remains under `/api/`.
 
-    **Namespaces:** `socket/billing` (dashboard status polling) and `socket/projects` (live project board).
+    **Namespaces:** `socket/billing` (dashboard status polling), `socket/projects` (live project board) and
+    `socket/inventory` (live inventory for administrators).
+
+    **Inventory:** after `subscribeInventory`, ADMIN sockets of the tenant receive the current state (same shape as the
+    REST responses) of every changed warehouse, compartment, article, stock placement, movement, withdrawal
+    request and lending; `serialUnitsChanged` names articles whose serial-tracked units moved. Non-admins get `error` (`Access denied`). Machine tokens need `websocket:inventory:read` and
+    `inventory:admin`. Requests raised outside the API process (subscription billing runs) are announced with
+    `requestsChanged` (polled every `INVENTORY_REQUESTS_POLL_INTERVAL` ms, default 15000, while admins are subscribed).
 
     All connections require authentication via `Authorization` in the handshake. Pass `X-Tenant` in handshake
     `extraHeaders` or `auth.tenantId`. Static API key auth is not sufficient for end-user streams.
@@ -27,6 +34,10 @@ servers:
     host: localhost:3200
     protocol: ws
     description: Socket.IO namespace /socket/projects (PROJECTS_WEBSOCKET_NAMESPACE) on shared PORT
+  inventory:
+    host: localhost:3200
+    protocol: ws
+    description: Socket.IO namespace /socket/inventory (INVENTORY_WEBSOCKET_NAMESPACE) on shared PORT
 channels:
   billing/subscribeDashboardStatus:
     address: billing/subscribeDashboardStatus
@@ -128,6 +139,86 @@ channels:
     messages:
       errorEvent:
         $ref: '#/components/messages/Error'
+  inventory/subscribeInventory:
+    address: inventory/subscribeInventory
+    messages:
+      subscribeInventoryMessage:
+        $ref: '#/components/messages/InventorySubscribeInventory'
+  inventory/unsubscribeInventory:
+    address: inventory/unsubscribeInventory
+    messages:
+      unsubscribeInventoryMessage:
+        $ref: '#/components/messages/InventoryUnsubscribeInventory'
+  inventory/subscribeInventorySuccess:
+    address: inventory/subscribeInventorySuccess
+    messages:
+      subscribeInventorySuccessMessage:
+        $ref: '#/components/messages/InventorySubscribeInventorySuccess'
+  inventory/warehouseUpsert:
+    address: inventory/warehouseUpsert
+    messages:
+      warehouseUpsertMessage:
+        $ref: '#/components/messages/InventoryWarehouseUpsert'
+  inventory/warehouseRemoved:
+    address: inventory/warehouseRemoved
+    messages:
+      warehouseRemovedMessage:
+        $ref: '#/components/messages/InventoryWarehouseRemoved'
+  inventory/compartmentUpsert:
+    address: inventory/compartmentUpsert
+    messages:
+      compartmentUpsertMessage:
+        $ref: '#/components/messages/InventoryCompartmentUpsert'
+  inventory/compartmentRemoved:
+    address: inventory/compartmentRemoved
+    messages:
+      compartmentRemovedMessage:
+        $ref: '#/components/messages/InventoryCompartmentRemoved'
+  inventory/articleUpsert:
+    address: inventory/articleUpsert
+    messages:
+      articleUpsertMessage:
+        $ref: '#/components/messages/InventoryArticleUpsert'
+  inventory/articleRemoved:
+    address: inventory/articleRemoved
+    messages:
+      articleRemovedMessage:
+        $ref: '#/components/messages/InventoryArticleRemoved'
+  inventory/stockUpsert:
+    address: inventory/stockUpsert
+    messages:
+      stockUpsertMessage:
+        $ref: '#/components/messages/InventoryStockUpsert'
+  inventory/stockRemoved:
+    address: inventory/stockRemoved
+    messages:
+      stockRemovedMessage:
+        $ref: '#/components/messages/InventoryStockRemoved'
+  inventory/movementCreated:
+    address: inventory/movementCreated
+    messages:
+      movementCreatedMessage:
+        $ref: '#/components/messages/InventoryMovementCreated'
+  inventory/requestUpsert:
+    address: inventory/requestUpsert
+    messages:
+      requestUpsertMessage:
+        $ref: '#/components/messages/InventoryRequestUpsert'
+  inventory/requestsChanged:
+    address: inventory/requestsChanged
+    messages:
+      requestsChangedMessage:
+        $ref: '#/components/messages/InventoryRequestsChanged'
+  inventory/lendingUpsert:
+    address: inventory/lendingUpsert
+    messages:
+      lendingUpsertMessage:
+        $ref: '#/components/messages/InventoryLendingUpsert'
+  inventory/serialUnitsChanged:
+    address: inventory/serialUnitsChanged
+    messages:
+      serialUnitsChangedMessage:
+        $ref: '#/components/messages/InventorySerialUnitsChanged'
 operations:
   clientSubscribesDashboard:
     action: send
@@ -209,8 +300,210 @@ operations:
     action: receive
     channel:
       $ref: '#/channels/projects~1error'
+  inventorySubscribeInventory:
+    action: send
+    channel:
+      $ref: '#/channels/inventory~1subscribeInventory'
+  inventoryUnsubscribeInventory:
+    action: send
+    channel:
+      $ref: '#/channels/inventory~1unsubscribeInventory'
+  inventorySubscribeInventorySuccess:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1subscribeInventorySuccess'
+  inventoryWarehouseUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1warehouseUpsert'
+  inventoryWarehouseRemoved:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1warehouseRemoved'
+  inventoryCompartmentUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1compartmentUpsert'
+  inventoryCompartmentRemoved:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1compartmentRemoved'
+  inventoryArticleUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1articleUpsert'
+  inventoryArticleRemoved:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1articleRemoved'
+  inventoryStockUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1stockUpsert'
+  inventoryStockRemoved:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1stockRemoved'
+  inventoryMovementCreated:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1movementCreated'
+  inventoryRequestUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1requestUpsert'
+  inventoryRequestsChanged:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1requestsChanged'
+  inventoryLendingUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1lendingUpsert'
+  inventorySerialUnitsChanged:
+    action: receive
+    channel:
+      $ref: '#/channels/inventory~1serialUnitsChanged'
 components:
   messages:
+    InventorySubscribeInventory:
+      name: InventorySubscribeInventory
+      summary: 'Subscribe to live inventory changes of the tenant (admins only)'
+      contentType: application/json
+      payload: {}
+    InventoryUnsubscribeInventory:
+      name: InventoryUnsubscribeInventory
+      summary: 'Stop live inventory changes'
+      contentType: application/json
+      payload: {}
+    InventorySubscribeInventorySuccess:
+      name: InventorySubscribeInventorySuccess
+      summary: 'Subscription confirmed'
+      contentType: application/json
+      payload: { type: object, properties: { message: { type: string } } }
+    InventoryWarehouseUpsert:
+      name: InventoryWarehouseUpsert
+      summary: 'Warehouse created or changed (InventoryWarehouse)'
+      contentType: application/json
+      payload:
+        {
+          type: object,
+          additionalProperties: true,
+          description: Same shape as the REST response,
+        }
+    InventoryWarehouseRemoved:
+      name: InventoryWarehouseRemoved
+      summary: 'Warehouse deleted'
+      contentType: application/json
+      payload:
+        { type: object, properties: { id: { type: string, format: uuid } } }
+    InventoryCompartmentUpsert:
+      name: InventoryCompartmentUpsert
+      summary: 'Compartment created or changed (InventoryCompartment)'
+      contentType: application/json
+      payload:
+        {
+          type: object,
+          additionalProperties: true,
+          description: Same shape as the REST response,
+        }
+    InventoryCompartmentRemoved:
+      name: InventoryCompartmentRemoved
+      summary: 'Compartment deleted'
+      contentType: application/json
+      payload:
+        {
+          type: object,
+          properties:
+            {
+              id: { type: string, format: uuid },
+              warehouseId: { type: string, format: uuid },
+            },
+        }
+    InventoryArticleUpsert:
+      name: InventoryArticleUpsert
+      summary: 'Article created or changed, including stock totals (InventoryArticle)'
+      contentType: application/json
+      payload:
+        {
+          type: object,
+          additionalProperties: true,
+          description: Same shape as the REST response,
+        }
+    InventoryArticleRemoved:
+      name: InventoryArticleRemoved
+      summary: 'Article deleted'
+      contentType: application/json
+      payload:
+        { type: object, properties: { id: { type: string, format: uuid } } }
+    InventoryStockUpsert:
+      name: InventoryStockUpsert
+      summary: 'Placement created or its quantity changed (InventoryStock)'
+      contentType: application/json
+      payload:
+        {
+          type: object,
+          additionalProperties: true,
+          description: Same shape as the REST response,
+        }
+    InventoryStockRemoved:
+      name: InventoryStockRemoved
+      summary: 'Empty placement removed'
+      contentType: application/json
+      payload:
+        {
+          type: object,
+          properties:
+            {
+              id: { type: string, format: uuid },
+              compartmentId: { type: string, format: uuid },
+              articleId: { type: string, format: uuid },
+            },
+        }
+    InventoryMovementCreated:
+      name: InventoryMovementCreated
+      summary: 'Movement booked (InventoryMovement; document number PUT-/TRF-/WDR-)'
+      contentType: application/json
+      payload:
+        {
+          type: object,
+          additionalProperties: true,
+          description: Same shape as the REST response,
+        }
+    InventoryRequestUpsert:
+      name: InventoryRequestUpsert
+      summary: 'Withdrawal request raised or decided (InventoryWithdrawalRequest)'
+      contentType: application/json
+      payload:
+        {
+          type: object,
+          additionalProperties: true,
+          description: Same shape as the REST response,
+        }
+    InventoryRequestsChanged:
+      name: InventoryRequestsChanged
+      summary: 'Requests changed outside this API process; reload request views'
+      contentType: application/json
+      payload: { type: object, properties: { pendingCount: { type: integer } } }
+    InventoryLendingUpsert:
+      name: InventoryLendingUpsert
+      summary: 'Lending opened or (partly) returned (InventoryLending)'
+      contentType: application/json
+      payload:
+        {
+          type: object,
+          additionalProperties: true,
+          description: Same shape as the REST response,
+        }
+    InventorySerialUnitsChanged:
+      name: InventorySerialUnitsChanged
+      summary: 'Serial-tracked units of an article moved; reload its serial number views'
+      contentType: application/json
+      payload:
+        {
+          type: object,
+          properties: { articleId: { type: string, format: uuid } },
+        }
     SubscribeDashboardStatus:
       name: SubscribeDashboardStatus
       contentType: application/json

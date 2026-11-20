@@ -117,6 +117,42 @@ import { BillingMeterRealtimeService } from './gateways/billing-meter-realtime.s
 import { BillingStatusGateway } from './gateways/billing-status.gateway';
 import { DatevExportEnabledGuard } from './guards/datev-export-enabled.guard';
 import { TenantUserGuard } from './guards/tenant-user.guard';
+import { AdminInventoryArticlesController } from './inventory/controllers/admin-inventory-articles.controller';
+import { AdminInventoryLabelsController } from './inventory/controllers/admin-inventory-labels.controller';
+import { AdminInventoryLendingsController } from './inventory/controllers/admin-inventory-lendings.controller';
+import { AdminInventoryLocationsController } from './inventory/controllers/admin-inventory-locations.controller';
+import { AdminInventoryMovementsController } from './inventory/controllers/admin-inventory-movements.controller';
+import { AdminInventorySerialUnitsController } from './inventory/controllers/admin-inventory-serial-units.controller';
+import { AdminInventoryWithdrawalRequestsController } from './inventory/controllers/admin-inventory-withdrawal-requests.controller';
+import { InventoryArticleEntity } from './inventory/entities/inventory-article.entity';
+import { InventoryCompartmentEntity } from './inventory/entities/inventory-compartment.entity';
+import { InventoryLendingEntity } from './inventory/entities/inventory-lending.entity';
+import { InventoryMovementEntity } from './inventory/entities/inventory-movement.entity';
+import { InventoryNumberSequenceEntity } from './inventory/entities/inventory-number-sequence.entity';
+import { InventorySerialUnitEntity } from './inventory/entities/inventory-serial-unit.entity';
+import { InventoryStockEntity } from './inventory/entities/inventory-stock.entity';
+import { InventoryWarehouseEntity } from './inventory/entities/inventory-warehouse.entity';
+import { InventoryWithdrawalRequestEntity } from './inventory/entities/inventory-withdrawal-request.entity';
+import { InventoryGateway } from './inventory/gateways/inventory.gateway';
+import { InventoryArticlesRepository } from './inventory/repositories/inventory-articles.repository';
+import { InventoryCompartmentsRepository } from './inventory/repositories/inventory-compartments.repository';
+import { InventoryLendingsRepository } from './inventory/repositories/inventory-lendings.repository';
+import { InventoryMovementsRepository } from './inventory/repositories/inventory-movements.repository';
+import { InventoryNumberSequencesRepository } from './inventory/repositories/inventory-number-sequences.repository';
+import { InventorySerialUnitsRepository } from './inventory/repositories/inventory-serial-units.repository';
+import { InventoryStockRepository } from './inventory/repositories/inventory-stock.repository';
+import { InventoryWarehousesRepository } from './inventory/repositories/inventory-warehouses.repository';
+import { InventoryWithdrawalRequestsRepository } from './inventory/repositories/inventory-withdrawal-requests.repository';
+import { InventoryArticlesService } from './inventory/services/inventory-articles.service';
+import { InventoryLabelsService } from './inventory/services/inventory-labels.service';
+import { InventoryLendingsService } from './inventory/services/inventory-lendings.service';
+import { InventoryLocationsService } from './inventory/services/inventory-locations.service';
+import { InventoryMovementPdfService } from './inventory/services/inventory-movement-pdf.service';
+import { InventoryMovementsService } from './inventory/services/inventory-movements.service';
+import { InventoryRealtimeNotifier } from './inventory/services/inventory-realtime-notifier.service';
+import { InventoryRealtimeService } from './inventory/services/inventory-realtime.service';
+import { InventorySerialUnitsService } from './inventory/services/inventory-serial-units.service';
+import { InventoryWithdrawalRequestsService } from './inventory/services/inventory-withdrawal-requests.service';
 import { BillingIdentityEmailBridgeModule } from './modules/billing-identity-email-bridge.module';
 import { BillingIdentityNotificationBridgeModule } from './modules/billing-identity-notification-bridge.module';
 import { BillingUpdatesModule } from './modules/billing-updates.module';
@@ -414,6 +450,15 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
       OfferEntity,
       OfferLineItemEntity,
       OfferNumberSequenceEntity,
+      InventoryWarehouseEntity,
+      InventoryCompartmentEntity,
+      InventoryArticleEntity,
+      InventoryStockEntity,
+      InventoryMovementEntity,
+      InventoryWithdrawalRequestEntity,
+      InventoryNumberSequenceEntity,
+      InventorySerialUnitEntity,
+      InventoryLendingEntity,
       SupplierInvoiceLineItemEntity,
       SupplierNumberSequenceEntity,
       SupplierInvoiceNumberSequenceEntity,
@@ -448,6 +493,13 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     AdminPromotionsController,
     AdminOffersController,
     OffersController,
+    AdminInventoryLocationsController,
+    AdminInventoryArticlesController,
+    AdminInventoryMovementsController,
+    AdminInventoryWithdrawalRequestsController,
+    AdminInventoryLendingsController,
+    AdminInventorySerialUnitsController,
+    AdminInventoryLabelsController,
     AdminBillingController,
     AdminSubscriptionItemsController,
     AdminSubscriptionMetersController,
@@ -627,6 +679,26 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     OffersRepository,
     OfferLineItemsRepository,
     OfferNumberSequencesRepository,
+    InventoryWarehousesRepository,
+    InventoryCompartmentsRepository,
+    InventoryArticlesRepository,
+    InventoryStockRepository,
+    InventoryMovementsRepository,
+    InventoryWithdrawalRequestsRepository,
+    InventoryNumberSequencesRepository,
+    InventorySerialUnitsRepository,
+    InventoryLendingsRepository,
+    InventoryRealtimeService,
+    InventoryRealtimeNotifier,
+    InventoryMovementPdfService,
+    InventoryMovementsService,
+    InventoryLocationsService,
+    InventoryArticlesService,
+    InventoryLendingsService,
+    InventorySerialUnitsService,
+    InventoryLabelsService,
+    InventoryWithdrawalRequestsService,
+    InventoryGateway,
     SubscriptionOrderPreparationService,
     OffersAdminService,
     OffersCustomerService,

@@ -82,6 +82,13 @@ export interface ListClientAgentsParams {
   search?: string;
 }
 
+/** One server page of a workspace's environments rail (replace-page paging, never accumulated). */
+export interface ClientAgentsRailPageQuery {
+  limit: number;
+  offset: number;
+  search?: string;
+}
+
 /** Model id → display name, as returned by GET .../agents/:agentId/models (proxied agent-manager). */
 export type AgentModelsMap = Record<string, string>;
 

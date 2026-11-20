@@ -14,6 +14,7 @@ import { TaxCalculationService } from '../services/tax-calculation.service';
 import { TaxPreviewService } from '../services/tax-preview.service';
 import { convertAddonPriceToPlanPeriod } from '../utils/addon-pricing.util';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
+import { canViewInternalPricing, withoutInternalPricing } from '../utils/internal-pricing-visibility.util';
 import { mergeOrderAddonIds, parsePlanAllowedAddonIds } from '../utils/plan-addons.utils';
 import { resolvePlanTaxCategory } from '../utils/plan-tax.utils';
 import { enrichPricingWithTax } from '../utils/pricing-tax.utils';
@@ -40,7 +41,7 @@ export class PricingController {
   @Post('preview')
   async preview(@Body() dto: PricingPreviewDto, @Req() req?: RequestWithUser) {
     if (!dto.planId) {
-      return {
+      const empty = {
         totalPrice: 0,
         basePrice: 0,
         marginPercent: 0,
@@ -53,6 +54,8 @@ export class PricingController {
         addonsTotal: 0,
         grandTotal: 0,
       };
+
+      return canViewInternalPricing(req) ? empty : withoutInternalPricing(empty);
     }
 
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
@@ -142,8 +145,7 @@ export class PricingController {
       this.taxCalculationService,
       computeOptions,
     );
-
-    return {
+    const preview = {
       ...taxed,
       basePrice: planPricing.basePrice,
       marginPercent: planPricing.marginPercent,
@@ -153,6 +155,9 @@ export class PricingController {
       addonsTotal,
       grandTotal,
     };
+
+    // Base price and margins are internal: customers see the final prices only.
+    return canViewInternalPricing(req) ? preview : withoutInternalPricing(preview);
   }
 
   @Post('tax-preview')

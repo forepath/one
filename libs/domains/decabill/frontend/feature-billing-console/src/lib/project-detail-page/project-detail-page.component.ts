@@ -14,6 +14,7 @@ import {
   rateForTaxCategory,
   type AdminProjectDetailResponse,
   type BillProjectTimeDto,
+  type InventoryArticle,
   type ManualInvoiceLineItemDto,
   type ProjectPricingModel,
   type ProjectSummaryResponse,
@@ -74,6 +75,13 @@ import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } fr
 import { isProjectTimeEntryBilled } from '../billing-status-labels';
 import { DocumentNoteFieldComponent } from '../document-note/document-note-field.component';
 import { documentNoteToInput } from '../document-note/document-note.util';
+import { InventoryArticleSelectComponent } from '../inventory/inventory-article-select.component';
+import {
+  applyInventoryArticlePrefill,
+  hasValidInventoryPosition,
+  inventoryPositionPayload,
+  type InvoicePositionType,
+} from '../inventory-line-prefill.util';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import { buildPricingTotalsSummary, type PricingTotalsSummary } from '../pricing-totals-summary/pricing-totals.util';
 import { projectBoardViewState, type ProjectBoardView } from '../project-board/project-board-view';
@@ -97,6 +105,8 @@ type ProjectViewMode = 'admin' | 'customer';
 
 interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
   taxCategory: 'standard' | 'reduced';
+  /** `article`: issuing the invoice raises an inventory withdrawal request for the quantity. */
+  positionType: InvoicePositionType;
 }
 
 @Component({
@@ -114,6 +124,7 @@ interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
     ProjectBoardComponent,
     ProjectMilestonesPanelComponent,
     BillingAdminSubscriptionSelectComponent,
+    InventoryArticleSelectComponent,
     DocumentNoteFieldComponent,
     PricingTotalsSummaryComponent,
     FpcAlertComponent,
@@ -589,6 +600,7 @@ export class ProjectDetailPageComponent implements OnInit {
         quantity: line.quantity,
         unitPriceNet: line.unitPriceNet,
         taxCategory: line.taxCategory,
+        ...inventoryPositionPayload(line),
       }));
     }
 
@@ -628,6 +640,19 @@ export class ProjectDetailPageComponent implements OnInit {
     return $localize`:@@featureAdminOffers-lineTitle:Line ${lineIndex + 1}:position:`;
   }
 
+  onBillTimePositionTypeChange(line: BillTimeFormLineItem, positionType: InvoicePositionType): void {
+    line.positionType = positionType;
+
+    if (positionType === 'standard') {
+      line.inventoryArticleId = null;
+    }
+  }
+
+  /** Prefills price (when the article has a sales price), an empty description and VAT; clearing keeps input. */
+  onBillTimeArticlePicked(line: BillTimeFormLineItem, article: InventoryArticle | null): void {
+    applyInventoryArticlePrefill(line, article);
+  }
+
   removeBillTimeLineItem(index: number): void {
     this.billCustomLineItems = this.billCustomLineItems.filter((_, itemIndex) => itemIndex !== index);
   }
@@ -644,7 +669,11 @@ export class ProjectDetailPageComponent implements OnInit {
     return (
       this.billCustomLineItems.length === 0 ||
       this.billCustomLineItems.every(
-        (item) => item.description.trim().length > 0 && item.quantity > 0 && item.unitPriceNet >= 0,
+        (item) =>
+          item.description.trim().length > 0 &&
+          item.quantity > 0 &&
+          item.unitPriceNet >= 0 &&
+          hasValidInventoryPosition(item),
       )
     );
   }
@@ -945,7 +974,14 @@ export class ProjectDetailPageComponent implements OnInit {
   }
 
   private emptyBillTimeLineItem(): BillTimeFormLineItem {
-    return { description: '', quantity: 1, unitPriceNet: 0, taxCategory: 'standard' };
+    return {
+      description: '',
+      quantity: 1,
+      unitPriceNet: 0,
+      taxCategory: 'standard',
+      positionType: 'standard',
+      inventoryArticleId: null,
+    };
   }
 
   private loadBillTimeSubscriptions(userId: string): void {

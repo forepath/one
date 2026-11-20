@@ -13,6 +13,8 @@ export interface LineItemInput {
   taxCategory?: TaxCategory;
   /** When set, overrides catalog rates (used for supplier custom VAT). */
   taxRate?: number;
+  /** Article position: issuing the invoice raises an inventory withdrawal request. */
+  inventoryArticleId?: string | null;
 }
 
 export interface ComputedLineItem {

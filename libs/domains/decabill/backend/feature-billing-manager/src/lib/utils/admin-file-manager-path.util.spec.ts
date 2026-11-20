@@ -60,6 +60,7 @@ describe('admin-file-manager-path.util', () => {
       'supplier',
       'export',
       'project',
+      'inventory',
     ]);
     expect(structuralChildrenForPath(['customer'], AdminFileManagerView.TENANT)).toEqual([
       'invoices',
@@ -70,6 +71,14 @@ describe('admin-file-manager-path.util', () => {
     expect(structuralChildrenForPath(['export'], AdminFileManagerView.TENANT)).toEqual(['datev']);
     expect(structuralChildrenForPath(['project'], AdminFileManagerView.TENANT)).toEqual(['tickets']);
     expect(structuralChildrenForPath(['project', 'tickets'], AdminFileManagerView.TENANT)).toEqual(['attachments']);
+    expect(structuralChildrenForPath(['inventory'], AdminFileManagerView.TENANT)).toEqual(['documents']);
+    expect(structuralChildrenForPath(['inventory', 'documents'], AdminFileManagerView.TENANT)).toEqual([
+      'putaways',
+      'transfers',
+      'withdrawals',
+      'lendings',
+      'lending-returns',
+    ]);
     expect(structuralChildrenForPath(['export', 'datev'], AdminFileManagerView.TENANT)).toBeNull();
     expect(structuralChildrenForPath(['customer', 'invoices'], AdminFileManagerView.TENANT)).toBeNull();
     expect(structuralChildrenForPath([], AdminFileManagerView.UNIFIED)).toBeNull();

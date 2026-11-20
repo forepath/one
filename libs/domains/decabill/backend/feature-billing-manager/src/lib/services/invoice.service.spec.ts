@@ -124,6 +124,7 @@ describe('InvoiceService', () => {
     invoiceTaxContextService as never,
     ossThresholdService as never,
     billingSearchIndexService as never,
+    { findByIds: jest.fn().mockResolvedValue([]) } as never,
   );
   const subscriptionId = 'sub-1';
   const userId = 'user-1';

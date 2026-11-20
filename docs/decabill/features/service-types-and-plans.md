@@ -159,6 +159,15 @@ Before order:
 - `POST /availability/alternatives` - Suggest alternatives when unavailable
 - `POST /pricing/preview` - Estimated customer total for plan and config
 
+### Internal pricing
+
+Base prices, margins, provider (purchase) prices of server types and a plan's per-period inventory articles are internal: only admins (and the static API key) receive them. Customers get final net prices computed by the server instead:
+
+- `GET /service-plans` and `GET /service-plans/{id}`: `customerPrice` (base price plus margins); `basePrice`, `marginPercent`, `marginFixed` and `inventoryArticles` are omitted.
+- `GET /service-types/providers/{providerId}/server-types?planId=`: `customerPrice` per server type; `priceMonthly` / `priceHourly` are omitted.
+- `POST /pricing/preview`: totals only, without `basePrice` and margins.
+- Customer offer details: plan lines' `pricingSnapshot` without base price and margins, article lines without the article id.
+
 ## Admin UI
 
 The billing console provides administration routes for service types and service plans. Provider dropdown and dynamic config fields are driven by `GET /service-types/providers` and server type endpoints.

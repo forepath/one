@@ -79,6 +79,7 @@ describe('OffersAdminService', () => {
     billingNotificationPublisher as never,
     billingSearchIndexService as never,
     new BillingDocumentTermsConfigService(),
+    { findByIds: jest.fn().mockResolvedValue([]) } as never,
   );
 
   beforeEach(() => {

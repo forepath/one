@@ -2,8 +2,10 @@ import { Test } from '@nestjs/testing';
 
 import { ServiceTypeEntity } from '../entities/service-type.entity';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
+import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { MeterService } from '../services/meter.service';
+import { PricingService } from '../services/pricing.service';
 import { ProviderLocationsService } from '../services/provider-locations.service';
 import { ProviderRegistryService } from '../services/provider-registry.service';
 import { ProviderServerTypesService } from '../services/provider-server-types.service';
@@ -50,6 +52,14 @@ describe('ServiceTypesController', () => {
     provide: BillingNotificationPublisher,
     useValue: notificationPublisherStub,
   };
+  const servicePlansRepositoryStub = {
+    findByIdOrThrow: jest
+      .fn()
+      .mockResolvedValue({ id: 'plan-1', basePrice: '10', marginPercent: '20', marginFixed: '1' }),
+  };
+  const pricingProviders = [{ provide: ServicePlansRepository, useValue: servicePlansRepositoryStub }, PricingService];
+  const adminRequest = { user: { id: 'admin-1', roles: ['admin'] } } as never;
+  const customerRequest = { user: { id: 'user-1', roles: ['user'] } } as never;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -74,13 +84,59 @@ describe('ServiceTypesController', () => {
           { provide: ProviderLocationsService, useValue: mockProviderLocations },
           meterProvider,
           notificationProvider,
+          ...pricingProviders,
         ],
       }).compile();
       const controller = moduleRef.get(ServiceTypesController);
-      const result = await controller.getProviderServerTypes('hetzner');
+      const result = await controller.getProviderServerTypes('hetzner', undefined, undefined, adminRequest);
 
       expect(result).toEqual(serverTypes);
       expect(serverTypesService.getServerTypes).toHaveBeenCalledWith('hetzner', undefined);
+    });
+
+    it('hides provider (purchase) prices from customers and returns the plan price per server type', async () => {
+      const serverTypesService = {
+        getServerTypes: jest
+          .fn()
+          .mockResolvedValue([
+            { id: 'cax11', name: 'CAX11', cores: 2, memory: 4, disk: 40, priceMonthly: 10, priceHourly: 0.02 },
+          ]),
+      };
+      const moduleRef = await Test.createTestingModule({
+        controllers: [ServiceTypesController],
+        providers: [
+          { provide: ServiceTypesRepository, useValue: {} },
+          { provide: ProviderRegistryService, useValue: providerRegistryStub },
+          { provide: ProviderServerTypesService, useValue: serverTypesService },
+          { provide: ProviderLocationsService, useValue: mockProviderLocations },
+          meterProvider,
+          notificationProvider,
+          ...pricingProviders,
+        ],
+      }).compile();
+      const controller = moduleRef.get(ServiceTypesController);
+      const withoutPlan = await controller.getProviderServerTypes('hetzner', undefined, undefined, customerRequest);
+
+      expect(withoutPlan).toEqual([{ id: 'cax11', name: 'CAX11', cores: 2, memory: 4, disk: 40 }]);
+
+      const withPlan = await controller.getProviderServerTypes(
+        'hetzner',
+        undefined,
+        '6f9619ff-8b86-4011-b42d-00c04fc964ff',
+        customerRequest,
+      );
+
+      // 10 + 20 % + 1 fixed margin
+      expect(withPlan).toEqual([{ id: 'cax11', name: 'CAX11', cores: 2, memory: 4, disk: 40, customerPrice: 13 }]);
+
+      const forAdmin = await controller.getProviderServerTypes(
+        'hetzner',
+        undefined,
+        '6f9619ff-8b86-4011-b42d-00c04fc964ff',
+        adminRequest,
+      );
+
+      expect(forAdmin[0]).toEqual(expect.objectContaining({ priceMonthly: 10, priceHourly: 0.02, customerPrice: 13 }));
     });
 
     it('should resolve credentials from service type when serviceTypeId query is set', async () => {
@@ -99,6 +155,7 @@ describe('ServiceTypesController', () => {
           { provide: ProviderLocationsService, useValue: mockProviderLocations },
           meterProvider,
           notificationProvider,
+          ...pricingProviders,
         ],
       }).compile();
       const controller = moduleRef.get(ServiceTypesController);
@@ -126,6 +183,7 @@ describe('ServiceTypesController', () => {
           { provide: ProviderLocationsService, useValue: locationsService },
           meterProvider,
           notificationProvider,
+          ...pricingProviders,
         ],
       }).compile();
       const controller = moduleRef.get(ServiceTypesController);
@@ -154,6 +212,7 @@ describe('ServiceTypesController', () => {
           { provide: ProviderLocationsService, useValue: mockProviderLocations },
           meterProvider,
           notificationProvider,
+          ...pricingProviders,
         ],
       }).compile();
       const controller = moduleRef.get(ServiceTypesController);
@@ -189,6 +248,7 @@ describe('ServiceTypesController', () => {
           { provide: ProviderLocationsService, useValue: mockProviderLocations },
           meterProvider,
           notificationProvider,
+          ...pricingProviders,
         ],
       }).compile();
       const controller = moduleRef.get(ServiceTypesController);
@@ -220,6 +280,7 @@ describe('ServiceTypesController', () => {
           { provide: ProviderLocationsService, useValue: mockProviderLocations },
           meterProvider,
           notificationProvider,
+          ...pricingProviders,
         ],
       }).compile();
       const controller = moduleRef.get(ServiceTypesController);
@@ -258,6 +319,7 @@ describe('ServiceTypesController', () => {
           { provide: ProviderLocationsService, useValue: mockProviderLocations },
           meterProvider,
           notificationProvider,
+          ...pricingProviders,
         ],
       }).compile();
       const controller = moduleRef.get(ServiceTypesController);

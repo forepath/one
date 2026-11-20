@@ -1,6 +1,7 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
-import type { AgentsState } from './agents.reducer';
+import { type AgentsState, initialAgentsRailPageState } from './agents.reducer';
+import type { AgentResponseDto } from './agents.types';
 
 export const selectAgentsState = createFeatureSelector<AgentsState>('agents');
 
@@ -93,6 +94,30 @@ export const selectClientAgentsAppendLoading = (clientId: string) =>
 
 export const selectClientAgentsAppendError = (clientId: string) =>
   createSelector(selectAgentsAppendError, (appendError) => appendError[clientId] ?? null);
+
+// Environments rail (replace-page server paging; only the listed workspace has rows)
+export const selectAgentsRailPage = createSelector(
+  selectAgentsState,
+  (state) => state.railPage ?? initialAgentsRailPageState,
+);
+
+export const selectAgentsRailPageQuery = createSelector(selectAgentsRailPage, (railPage) => railPage.query);
+
+const EMPTY_RAIL_ROWS: AgentResponseDto[] = [];
+
+export const selectClientAgentsRailRows = (clientId: string) =>
+  createSelector(selectAgentsRailPage, (railPage) =>
+    railPage.clientId === clientId ? railPage.rows : EMPTY_RAIL_ROWS,
+  );
+
+export const selectClientAgentsRailHasNext = (clientId: string) =>
+  createSelector(selectAgentsRailPage, (railPage) => railPage.clientId === clientId && railPage.hasNext);
+
+export const selectClientAgentsRailLoading = (clientId: string) =>
+  createSelector(selectAgentsRailPage, (railPage) => railPage.clientId === clientId && railPage.loading);
+
+export const selectClientAgentsRailError = (clientId: string) =>
+  createSelector(selectAgentsRailPage, (railPage) => (railPage.clientId === clientId ? railPage.error : null));
 
 // Combined loading selector for a specific client (true if any operation is loading)
 export const selectClientAgentsLoadingAny = (clientId: string) =>

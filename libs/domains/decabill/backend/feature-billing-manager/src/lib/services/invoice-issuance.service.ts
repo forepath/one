@@ -5,6 +5,7 @@ import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { TaxMode } from '../constants/tax-mode.constants';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import { InventoryWithdrawalRequestsService } from '../inventory/services/inventory-withdrawal-requests.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoiceLineItemsRepository } from '../repositories/invoice-line-items.repository';
@@ -61,6 +62,7 @@ export class InvoiceIssuanceService {
     private readonly ossThresholdService: OssThresholdService,
     private readonly billingSearchIndexService: BillingSearchIndexService,
     private readonly documentTermsConfig: BillingDocumentTermsConfigService,
+    private readonly inventoryWithdrawalRequests: InventoryWithdrawalRequestsService,
   ) {}
 
   async issueDraft(invoiceId: string, options?: IssueDraftOptions): Promise<InvoiceEntity> {
@@ -186,6 +188,9 @@ export class InvoiceIssuanceService {
     }
 
     this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
+
+    // Article positions request their withdrawal (accepted separately in the inventory; never moves stock here).
+    await this.inventoryWithdrawalRequests.raiseForInvoiceLines(issued, lineItems);
 
     return issued;
   }

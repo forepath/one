@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        /* Neutral print palette (shared with invoice-pdf.template.html) */
+        --body-bg: #ffffff;
+        --body-color: #404040;
+        --body-emphasis: #111111;
+        --card-bg: #ffffff;
+        --surface-subtle: #f4f4f4;
+        --border: #cccccc;
+        --border-translucent: rgba(0, 0, 0, 0.08);
+        --secondary: #666666;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--body-color);
+        background: var(--body-bg);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page {
+        max-width: 794px;
+        margin: 0 auto;
+        padding: 0;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 32px;
+      }
+
+      .header-title {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--body-emphasis);
+        letter-spacing: -0.02em;
+      }
+
+      .header-subtitle {
+        margin: 6px 0 0;
+        font-size: 13px;
+        color: var(--secondary);
+        font-weight: 500;
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 40px;
+      }
+
+      .meta-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--secondary);
+        margin-bottom: 4px;
+      }
+
+      .meta-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--body-emphasis);
+      }
+
+      .serial-numbers {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        margin: 0 0 24px;
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 12px;
+        color: var(--body-emphasis);
+      }
+
+      .line-items {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 24px;
+        background: var(--card-bg);
+        overflow: hidden;
+      }
+
+      .line-items thead {
+        background: var(--surface-subtle);
+      }
+
+      .line-items th {
+        padding: 12px 14px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--body-emphasis);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .line-items th.num,
+      .line-items td.num {
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .line-items td {
+        padding: 12px 14px;
+        font-size: 13px;
+        border-bottom: 1px solid var(--border-translucent);
+        vertical-align: top;
+      }
+
+      .line-items tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .line-items .description {
+        font-weight: 500;
+        color: var(--body-emphasis);
+        word-break: break-word;
+      }
+
+      .totals-wrap {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 40px;
+      }
+
+      .totals {
+        width: 280px;
+      }
+
+      .totals-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        font-size: 13px;
+      }
+
+      .totals-row.total {
+        margin-top: 8px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--body-emphasis);
+      }
+
+      .empty {
+        padding: 24px 0;
+        color: var(--secondary);
+        font-style: italic;
+        font-size: 13px;
+      }
+
+      .authenticity-mark {
+        margin-top: 28px;
+        font-size: 10px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: var(--secondary);
+      }
+
+      .header-number {
+        text-align: right;
+      }
+
+      .doc-number {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--body-emphasis);
+        letter-spacing: 0.02em;
+      }
+
+      .locations {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 16px;
+        align-items: stretch;
+        margin-bottom: 32px;
+      }
+
+      .location {
+        border: 1px solid var(--border);
+        padding: 14px 16px;
+        min-height: 92px;
+      }
+
+      .location.muted {
+        background: var(--surface-subtle);
+        color: var(--secondary);
+      }
+
+      .location-code {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--body-emphasis);
+        word-break: break-word;
+      }
+
+      .location-sub {
+        margin-top: 2px;
+        font-size: 12px;
+        color: var(--secondary);
+      }
+
+      .location-code-sub {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+
+      .meta-sub {
+        display: block;
+        margin-top: 2px;
+        font-size: 12px;
+        color: var(--secondary);
+      }
+
+      .arrow {
+        align-self: center;
+        font-size: 22px;
+        color: var(--secondary);
+      }
+
+      .barcodes {
+        display: flex;
+        gap: 32px;
+        flex-wrap: wrap;
+        margin: 8px 0 32px;
+      }
+
+      .barcode-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--secondary);
+        margin-bottom: 6px;
+      }
+
+      .notes {
+        margin-bottom: 32px;
+        font-size: 13px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .signatures {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px;
+        margin-top: 56px;
+      }
+
+      .signature {
+        border-top: 1px solid var(--border);
+        padding-top: 6px;
+        font-size: 11px;
+        color: var(--secondary);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <div>
+          <h1 class="header-title">{{title}}</h1>
+          <p class="header-subtitle">{{companyName}}</p>
+        </div>
+        <div class="header-number">
+          <span class="meta-label">Document</span>
+          <span class="doc-number">{{documentNumber}}</span>
+        </div>
+      </header>
+
+      <div class="meta-grid">
+        <div class="meta-card">
+          <span class="meta-label">Date</span>
+          <span class="meta-value">{{dateLabel}}</span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-label">Reason</span>
+          <span class="meta-value">{{reasonLabel}}</span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-label">Performed by</span>
+          <span class="meta-value">{{performedBy}}</span>
+        </div>
+        {{#if reference}}
+        <div class="meta-card">
+          <span class="meta-label">Reference</span>
+          <span class="meta-value">{{reference}}</span>
+        </div>
+        {{/if}} {{#if requestLabel}}
+        <div class="meta-card">
+          <span class="meta-label">Request</span>
+          <span class="meta-value">{{requestLabel}}</span>
+        </div>
+        {{/if}} {{#if borrower}}
+        <div>
+          <span class="meta-label">Borrower</span>
+          <span class="meta-value">{{borrower.name}}</span>
+          <span class="meta-sub"
+            >{{borrower.kindLabel}}{{#if borrower.customerNumber}}, {{borrower.customerNumber}}{{/if}}</span
+          >
+          {{#if borrower.email}}
+          <span class="meta-sub">{{borrower.email}}</span>
+          {{/if}}
+        </div>
+        {{#if borrower.dueDate}}
+        <div>
+          <span class="meta-label">Due back</span>
+          <span class="meta-value">{{borrower.dueDate}}</span>
+        </div>
+        {{/if}} {{#if lendingNumber}}
+        <div>
+          <span class="meta-label">Lending</span>
+          <span class="meta-value">{{lendingNumber}}</span>
+        </div>
+        {{/if}} {{/if}} {{#if customerLabel}}
+        <div class="meta-card">
+          <span class="meta-label">Customer</span>
+          <span class="meta-value">{{customerLabel}}</span>
+          {{#if customerNumber}}
+          <span class="meta-sub">{{customerNumber}}</span>
+          {{/if}}
+        </div>
+        {{/if}}
+      </div>
+
+      <div class="locations">
+        {{#if source}}
+        <div class="location">
+          <span class="meta-label">From</span>
+          <div class="location-code">{{source.compartmentCode}}</div>
+          <div class="location-sub">{{source.warehouseName}}</div>
+          <div class="location-sub location-code-sub">{{source.warehouseCode}}</div>
+          {{#if source.compartmentName}}
+          <div class="location-sub">{{source.compartmentName}}</div>
+          {{/if}}
+        </div>
+        {{else}}
+        <div class="location muted">
+          <span class="meta-label">From</span>
+          <div class="location-sub">{{sourcePlaceholder}}</div>
+          {{#if sourcePlaceholderSub}}
+          <div class="location-sub">{{sourcePlaceholderSub}}</div>
+          {{/if}}
+        </div>
+        {{/if}}
+        <div class="arrow">&rarr;</div>
+        {{#if target}}
+        <div class="location">
+          <span class="meta-label">To</span>
+          <div class="location-code">{{target.compartmentCode}}</div>
+          <div class="location-sub">{{target.warehouseName}}</div>
+          <div class="location-sub location-code-sub">{{target.warehouseCode}}</div>
+          {{#if target.compartmentName}}
+          <div class="location-sub">{{target.compartmentName}}</div>
+          {{/if}}
+        </div>
+        {{else}}
+        <div class="location muted">
+          <span class="meta-label">To</span>
+          <div class="location-sub">{{targetPlaceholder}}</div>
+          {{#if targetPlaceholderSub}}
+          <div class="location-sub">{{targetPlaceholderSub}}</div>
+          {{/if}}
+        </div>
+        {{/if}}
+      </div>
+
+      <table class="line-items">
+        <thead>
+          <tr>
+            <th>Article</th>
+            <th>Description</th>
+            <th>EAN</th>
+            <th class="num">Quantity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{articleNumber}}</td>
+            <td class="description">{{articleName}}</td>
+            <td>{{ean}}</td>
+            <td class="num">{{quantityLabel}}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      {{#if serialNumbers.length}}
+      <span class="meta-label">Serial numbers ({{serialCount}})</span>
+      <p class="serial-numbers">{{#each serialNumbers}}<span class="serial">{{this}}</span>{{/each}}</p>
+      {{/if}} {{#if stockLines.length}}
+      <div class="totals-wrap">
+        <div class="totals">
+          {{#each stockLines}}
+          <div class="totals-row">
+            <span>{{label}}</span>
+            <span>{{value}}</span>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+
+      <div class="barcodes">
+        <div>
+          <span class="barcode-label">Article number</span>
+          {{{articleBarcodeSvg}}}
+        </div>
+        {{#if eanBarcodeSvg}}
+        <div>
+          <span class="barcode-label">EAN</span>
+          {{{eanBarcodeSvg}}}
+        </div>
+        {{/if}}
+      </div>
+
+      {{#if note}}
+      <span class="meta-label">Note</span>
+      <p class="notes">{{note}}</p>
+      {{/if}}
+
+      <div class="signatures">
+        <div class="signature">{{signatureLeft}}</div>
+        <div class="signature">{{signatureRight}}</div>
+      </div>
+      {{#if authenticityShortSha}}
+      <p class="authenticity-mark">Document ID: {{authenticityShortSha}}</p>
+      {{/if}}
+    </div>
+  </body>
+</html>

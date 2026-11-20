@@ -11,6 +11,8 @@ export class InvoiceLineItemResponseDto {
   lineNet!: number;
   lineTax!: number;
   lineGross!: number;
+  /** Set on article positions (inventory withdrawal on issue). */
+  inventoryArticleId?: string | null;
 }
 
 export class InvoiceTaxBreakdownDto {

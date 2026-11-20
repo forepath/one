@@ -1,0 +1,628 @@
+<div class="border-top d-flex flex-column flex-grow-1 min-h-0" data-testid="inventory-warehouses-page">
+  <fpc-page-header [title]="pageTitle" />
+  <framework-inventory-nav active="warehouses" />
+
+  <section class="inventory-columns flex-grow-1">
+    <!-- Column 1: warehouses -->
+    <div class="inventory-column border-end" [class.active-column]="activeColumn() === 'warehouses'">
+      <fpc-page-header [title]="warehousesTitle" density="compact" />
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="warehousesTitle"
+        [columns]="warehouseColumns"
+        [rows]="warehouses().items"
+        [activeRowId]="warehouseId()"
+        paging="server"
+        [total]="warehouses().total"
+        [(page)]="warehousePaging.page"
+        [(pageSize)]="warehousePaging.pageSize"
+        persistKey="decabill-inventory-warehouses"
+        [(query)]="warehousePaging.search"
+        i18n-searchPlaceholder="@@featureInventory-searchWarehouses"
+        searchPlaceholder="Search warehouses"
+        [loading]="warehouses().loading"
+        refreshable
+        (refresh)="warehousePaging.reload()"
+        [error]="warehouses().error"
+        [rowMenu]="warehouseMenu"
+        (rowAction)="onWarehouseAction($event.row, $event.item.id)"
+        (rowActivate)="selectWarehouse($event)"
+        emptyIcon="building"
+        data-testid="inventory-warehouses-table"
+      >
+        <fpc-button
+          fpcDataTableToolbar
+          variant="primary"
+          iconOnly
+          [disabled]="mutating()"
+          [title]="addWarehouseLabel"
+          [ariaLabel]="addWarehouseLabel"
+          (clicked)="openWarehouseModal()"
+          data-testid="inventory-add-warehouse"
+        >
+          <i class="bi bi-plus-lg" aria-hidden="true"></i>
+        </fpc-button>
+        <ng-template fpcTableCell="code" let-row
+          >{{ row.name }}<span class="ms-2 small text-body-secondary font-monospace">{{ row.code }}</span></ng-template
+        >
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            size="sm"
+            icon="building"
+            i18n-message="@@featureInventory-noWarehouses"
+            message="No warehouses yet"
+          />
+        </span>
+      </fpc-data-table>
+    </div>
+
+    <!-- Column 2: compartments of the selected warehouse -->
+    @if (warehouseId()) {
+      <div class="inventory-column border-end" [class.active-column]="activeColumn() === 'compartments'">
+        <fpc-page-header density="compact">
+          <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
+            <fpc-button
+              class="d-block d-md-none flex-shrink-0"
+              variant="dark"
+              iconOnly
+              [title]="backLabel"
+              [ariaLabel]="backLabel"
+              (clicked)="back()"
+            >
+              <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            </fpc-button>
+            <h5 class="mb-0 fw-semibold text-truncate">
+              {{ compartmentsTitle }}
+              @if (selectedWarehouse(); as warehouse) {
+                <span class="ms-2 text-body-secondary fw-normal small font-monospace">{{ warehouse.code }}</span>
+              }
+            </h5>
+          </div>
+        </fpc-page-header>
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="compartmentsTitle"
+          [columns]="compartmentColumns"
+          [rows]="compartments().items"
+          [activeRowId]="compartmentId()"
+          paging="server"
+          [total]="compartments().total"
+          [(page)]="compartmentPage"
+          [(pageSize)]="compartmentPageSize"
+          persistKey="decabill-inventory-compartments"
+          [(query)]="compartmentSearch"
+          i18n-searchPlaceholder="@@featureInventory-searchCompartments"
+          searchPlaceholder="Search compartments"
+          [loading]="compartments().loading"
+          refreshable
+          (refresh)="compartmentReload.update((tick) => tick + 1)"
+          [error]="compartments().error"
+          [rowMenu]="compartmentMenu"
+          (rowAction)="onCompartmentAction($event.row, $event.item.id)"
+          (rowActivate)="selectCompartment($event)"
+          emptyIcon="grid-3x3"
+          data-testid="inventory-compartments-table"
+        >
+          <fpc-button
+            fpcDataTableToolbar
+            variant="primary"
+            iconOnly
+            [disabled]="mutating()"
+            [title]="addCompartmentLabel"
+            [ariaLabel]="addCompartmentLabel"
+            (clicked)="openCompartmentModal()"
+            data-testid="inventory-add-compartment"
+          >
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+          </fpc-button>
+          <ng-template fpcTableCell="code" let-row
+            ><span class="font-monospace">{{ row.code }}</span>
+            @if (row.name) {
+              <span class="ms-2 small text-body-secondary">{{ row.name }}</span>
+            }
+          </ng-template>
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="grid-3x3"
+              i18n-message="@@featureInventory-noCompartments"
+              message="No compartments in this warehouse yet"
+            />
+          </span>
+        </fpc-data-table>
+      </div>
+    }
+
+    <!-- Column 3: contents of the selected compartment -->
+    @if (compartmentId()) {
+      <div class="inventory-column border-end" [class.active-column]="activeColumn() === 'contents'">
+        <fpc-page-header density="compact">
+          <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
+            <fpc-button
+              class="d-block d-md-none flex-shrink-0"
+              variant="dark"
+              iconOnly
+              [title]="backLabel"
+              [ariaLabel]="backLabel"
+              (clicked)="back()"
+            >
+              <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            </fpc-button>
+            <h5 class="mb-0 fw-semibold text-truncate">
+              {{ contentsTitle }}
+              @if (selectedCompartment(); as compartment) {
+                <span class="ms-2 text-body-secondary fw-normal small font-monospace">{{ compartment.code }}</span>
+              }
+            </h5>
+          </div>
+        </fpc-page-header>
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="contentsTitle"
+          [columns]="contentColumns"
+          [rows]="contents().items"
+          [activeRowId]="placementId()"
+          paging="server"
+          [total]="contents().total"
+          [(page)]="contentPage"
+          [(pageSize)]="contentPageSize"
+          persistKey="decabill-inventory-contents"
+          [(query)]="contentSearch"
+          i18n-searchPlaceholder="@@featureInventory-searchContents"
+          searchPlaceholder="Search articles"
+          [loading]="contents().loading"
+          refreshable
+          (refresh)="contentReload.update((tick) => tick + 1)"
+          [error]="contents().error"
+          (rowActivate)="selectPlacement($event)"
+          emptyIcon="box"
+          data-testid="inventory-contents-table"
+        >
+          <fpc-button
+            fpcDataTableToolbar
+            variant="primary"
+            iconOnly
+            [disabled]="mutating() || selectedCompartment()?.isActive === false"
+            [title]="addArticleLabel"
+            [ariaLabel]="addArticleLabel"
+            (clicked)="openAddArticle()"
+            data-testid="inventory-add-article"
+          >
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+          </fpc-button>
+          <ng-template fpcTableCell="article" let-row
+            >{{ row.article.name
+            }}<span class="ms-2 small text-body-secondary font-monospace">{{
+              row.article.articleNumber
+            }}</span></ng-template
+          >
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="box"
+              i18n-title="@@featureInventory-emptyCompartmentTitle"
+              title="This compartment is empty"
+              i18n-message="@@featureInventory-emptyCompartmentMessage"
+              message="Map an article to it, put new goods away or take them from another compartment."
+            />
+            @if (selectedCompartment()?.isActive !== false) {
+              <div class="d-flex justify-content-center mt-2">
+                <fpc-button
+                  variant="primary"
+                  size="sm"
+                  (clicked)="openAddArticle()"
+                  data-testid="inventory-empty-add-article"
+                  i18n="@@featureInventory-addArticleToCompartment"
+                  >Add article</fpc-button
+                >
+              </div>
+            }
+          </span>
+        </fpc-data-table>
+      </div>
+    }
+
+    <!-- Column 4: placement detail -->
+    @if (placementId()) {
+      <div
+        class="inventory-column inventory-column--detail"
+        [class.active-column]="activeColumn() === 'placement'"
+        data-testid="inventory-placement-detail"
+      >
+        <fpc-page-header density="compact">
+          <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-w-0">
+            <fpc-button
+              class="d-block d-md-none flex-shrink-0"
+              variant="dark"
+              iconOnly
+              [title]="backLabel"
+              [ariaLabel]="backLabel"
+              (clicked)="back()"
+            >
+              <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            </fpc-button>
+            <h5 class="mb-0 fw-semibold text-truncate" [title]="selectedPlacement()?.article?.name ?? placementTitle">
+              {{ selectedPlacement()?.article?.name ?? placementTitle }}
+            </h5>
+          </div>
+          @if (selectedPlacement(); as placement) {
+            <div fpcPageHeaderActions class="d-flex align-items-center gap-2">
+              <fpc-button
+                variant="primary"
+                iconOnly
+                [disabled]="mutating() || !placement.article.isActive || !placement.compartment.isActive"
+                [title]="movementTypeLabels.putaway"
+                [ariaLabel]="movementTypeLabels.putaway"
+                (clicked)="movePlacement('putaway')"
+                data-testid="inventory-placement-putaway"
+              >
+                <i class="bi bi-box-arrow-in-down" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                variant="dark"
+                iconOnly
+                [disabled]="mutating() || placement.quantity <= 0"
+                [title]="movementTypeLabels.transfer"
+                [ariaLabel]="movementTypeLabels.transfer"
+                (clicked)="movePlacement('transfer')"
+                data-testid="inventory-placement-transfer"
+              >
+                <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                variant="dark"
+                iconOnly
+                [disabled]="mutating() || placement.quantity <= 0"
+                [title]="movementTypeLabels.withdrawal"
+                [ariaLabel]="movementTypeLabels.withdrawal"
+                (clicked)="movePlacement('withdrawal')"
+                data-testid="inventory-placement-withdraw"
+              >
+                <i class="bi bi-box-arrow-up" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                variant="dark"
+                iconOnly
+                [disabled]="mutating() || placement.quantity <= 0"
+                [title]="lendLabel"
+                [ariaLabel]="lendLabel"
+                (clicked)="movePlacement('lending')"
+                data-testid="inventory-placement-lend"
+              >
+                <i class="bi bi-person-up" aria-hidden="true"></i>
+              </fpc-button>
+              <fpc-button
+                variant="dark"
+                iconOnly
+                [routerLink]="articleLink(placement)"
+                [title]="openArticleLabel"
+                [ariaLabel]="openArticleLabel"
+                data-testid="inventory-placement-open-article"
+              >
+                <i class="bi bi-box-seam" aria-hidden="true"></i>
+              </fpc-button>
+              @if (placement.quantity <= 0) {
+                <fpc-button
+                  variant="danger"
+                  iconOnly
+                  [disabled]="mutating()"
+                  [title]="removeLocationLabel"
+                  [ariaLabel]="removeLocationLabel"
+                  (clicked)="removePlacement()"
+                  data-testid="inventory-placement-remove"
+                >
+                  <i class="bi bi-trash" aria-hidden="true"></i>
+                </fpc-button>
+              }
+            </div>
+          }
+        </fpc-page-header>
+        @if (selectedPlacement(); as placement) {
+          <!-- Header stays; details and movements scroll below it, the movements title bar sticks. -->
+          <div class="flex-grow-1 min-h-0 overflow-auto">
+            <fpc-panel-grid [columns]="1" [bordered]="false">
+              <fpc-panel>
+                <fpc-key-value-list [items]="placementItems()" [columns]="1" />
+                <div class="inventory-barcodes mt-3">
+                  <div>
+                    <span class="inventory-barcode-label" i18n="@@featureInventory-internalBarcode"
+                      >Article number</span
+                    >
+                    <framework-inventory-barcode [value]="placement.article.articleNumber" kind="code128" />
+                  </div>
+                  @if (placement.article.ean) {
+                    <div>
+                      <span class="inventory-barcode-label">EAN</span>
+                      <framework-inventory-barcode [value]="placement.article.ean" kind="gtin" />
+                    </div>
+                  }
+                  <div>
+                    <span class="inventory-barcode-label" i18n="@@featureInventory-labelProperty"
+                      >Property sticker</span
+                    >
+                    <framework-inventory-property-sticker
+                      [articleName]="placement.article.name"
+                      [articleNumber]="placement.article.articleNumber"
+                      [serialNumber]="placement.article.serialTracking ? (placementSerials()[0] ?? null) : null"
+                    />
+                  </div>
+                </div>
+              </fpc-panel>
+              <fpc-panel flush [title]="movementsTitle">
+                <fpc-data-table
+                  nested
+                  [ariaLabel]="movementsTitle"
+                  [columns]="movementColumns"
+                  [rows]="placementMovements()"
+                  paging="server"
+                  [total]="placementMovementsTotal()"
+                  [(page)]="placementMovementsPage"
+                  [(pageSize)]="placementMovementsPageSize"
+                  [(query)]="placementMovementsSearch"
+                  i18n-searchPlaceholder="@@featureInventory-searchMovements"
+                  searchPlaceholder="Search number, location, reference"
+                  [loading]="placementMovementsLoading()"
+                  refreshable
+                  (refresh)="placementMovementsReload.update((tick) => tick + 1)"
+                  [rowMenu]="movementMenu"
+                  (rowAction)="onMovementAction($event.row, $event.item.id)"
+                  (rowActivate)="downloadDocument($event)"
+                  emptyIcon="file-earmark-text"
+                  data-testid="inventory-placement-movements"
+                >
+                  <ng-template fpcTableCell="route" let-row>
+                    <framework-inventory-route-cell [source]="row.source" [target]="row.target" />
+                  </ng-template>
+                  <span fpcDataTableEmpty i18n="@@featureInventory-noMovements">No movements yet.</span>
+                </fpc-data-table>
+              </fpc-panel>
+            </fpc-panel-grid>
+          </div>
+        } @else {
+          <fpc-empty-state size="sm" [loading]="true" />
+        }
+      </div>
+    }
+  </section>
+</div>
+
+<!-- Warehouse create / edit -->
+<fpc-modal
+  [(open)]="warehouseModalOpen"
+  [title]="warehouseForm.id ? editWarehouseLabel : addWarehouseLabel"
+  data-testid="inventory-warehouse-modal"
+>
+  @if (mutationError(); as error) {
+    <fpc-alert variant="danger" [message]="error" />
+  }
+  <div class="row g-3 mb-3">
+    <div class="col-sm-4">
+      <fpc-form-field forId="inventoryWarehouseCode" i18n-label="@@featureInventory-code" label="Code" required>
+        <fpc-form-control
+          controlId="inventoryWarehouseCode"
+          [(ngModel)]="warehouseForm.code"
+          name="warehouseCode"
+          [maxLength]="32"
+          required
+          data-testid="inventory-warehouse-code"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-sm-8">
+      <fpc-form-field forId="inventoryWarehouseName" i18n-label="@@featureInventory-name" label="Name" required>
+        <fpc-form-control
+          controlId="inventoryWarehouseName"
+          [(ngModel)]="warehouseForm.name"
+          name="warehouseName"
+          [maxLength]="255"
+          required
+          data-testid="inventory-warehouse-name"
+        />
+      </fpc-form-field>
+    </div>
+  </div>
+  <fpc-form-field forId="inventoryWarehouseAddress1" i18n-label="@@featureInventory-address" label="Address">
+    <fpc-form-control
+      controlId="inventoryWarehouseAddress1"
+      [(ngModel)]="warehouseForm.addressLine1"
+      name="warehouseAddress1"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="inventoryWarehouseAddress2" i18n-label="@@featureInventory-address2" label="Address line 2">
+    <fpc-form-control
+      controlId="inventoryWarehouseAddress2"
+      [(ngModel)]="warehouseForm.addressLine2"
+      name="warehouseAddress2"
+    />
+  </fpc-form-field>
+  <div class="row g-3 mb-3">
+    <div class="col-4">
+      <fpc-form-field forId="inventoryWarehousePostal" i18n-label="@@featureInventory-postalCode" label="Postal code">
+        <fpc-form-control
+          controlId="inventoryWarehousePostal"
+          [(ngModel)]="warehouseForm.postalCode"
+          name="warehousePostal"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-5">
+      <fpc-form-field forId="inventoryWarehouseCity" i18n-label="@@featureInventory-city" label="City">
+        <fpc-form-control controlId="inventoryWarehouseCity" [(ngModel)]="warehouseForm.city" name="warehouseCity" />
+      </fpc-form-field>
+    </div>
+    <div class="col-3">
+      <fpc-form-field forId="inventoryWarehouseCountry" i18n-label="@@featureInventory-country" label="Country">
+        <fpc-form-control
+          controlId="inventoryWarehouseCountry"
+          [(ngModel)]="warehouseForm.country"
+          name="warehouseCountry"
+          [maxLength]="2"
+          placeholder="DE"
+        />
+      </fpc-form-field>
+    </div>
+  </div>
+  <fpc-form-field forId="inventoryWarehouseDescription" i18n-label="@@featureInventory-description" label="Description">
+    <fpc-form-control
+      controlType="textarea"
+      controlId="inventoryWarehouseDescription"
+      [(ngModel)]="warehouseForm.description"
+      name="warehouseDescription"
+    />
+  </fpc-form-field>
+  <fpc-form-switch
+    switchId="inventoryWarehouseActive"
+    name="warehouseActive"
+    [(ngModel)]="warehouseForm.isActive"
+    i18n-label="@@featureInventory-activeSwitch"
+    label="Active (accepts new stock)"
+  />
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button
+      variant="primary"
+      [disabled]="mutating() || !warehouseForm.code.trim() || !warehouseForm.name.trim()"
+      [loading]="mutating()"
+      (clicked)="submitWarehouse()"
+      data-testid="inventory-warehouse-save"
+      i18n="@@featureInventory-save"
+      >Save</fpc-button
+    >
+  </div>
+</fpc-modal>
+
+<!-- Compartment create / edit -->
+<fpc-modal
+  [(open)]="compartmentModalOpen"
+  [title]="compartmentForm.id ? editCompartmentLabel : addCompartmentLabel"
+  data-testid="inventory-compartment-modal"
+>
+  @if (mutationError(); as error) {
+    <fpc-alert variant="danger" [message]="error" />
+  }
+  <fpc-form-field
+    forId="inventoryCompartmentCode"
+    i18n-label="@@featureInventory-code"
+    label="Code"
+    i18n-hint="@@featureInventory-compartmentCodeHint"
+    hint="Location code, for example aisle-rack-shelf (A-01-03)."
+    required
+  >
+    <fpc-form-control
+      controlId="inventoryCompartmentCode"
+      [(ngModel)]="compartmentForm.code"
+      name="compartmentCode"
+      [maxLength]="64"
+      required
+      data-testid="inventory-compartment-code"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="inventoryCompartmentName" i18n-label="@@featureInventory-name" label="Name">
+    <fpc-form-control controlId="inventoryCompartmentName" [(ngModel)]="compartmentForm.name" name="compartmentName" />
+  </fpc-form-field>
+  <fpc-form-field
+    forId="inventoryCompartmentDescription"
+    i18n-label="@@featureInventory-description"
+    label="Description"
+  >
+    <fpc-form-control
+      controlType="textarea"
+      controlId="inventoryCompartmentDescription"
+      [(ngModel)]="compartmentForm.description"
+      name="compartmentDescription"
+    />
+  </fpc-form-field>
+  <fpc-form-switch
+    switchId="inventoryCompartmentActive"
+    name="compartmentActive"
+    [(ngModel)]="compartmentForm.isActive"
+    i18n-label="@@featureInventory-activeSwitch"
+    label="Active (accepts new stock)"
+  />
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button
+      variant="primary"
+      [disabled]="mutating() || !compartmentForm.code.trim()"
+      [loading]="mutating()"
+      (clicked)="submitCompartment()"
+      data-testid="inventory-compartment-save"
+      i18n="@@featureInventory-save"
+      >Save</fpc-button
+    >
+  </div>
+</fpc-modal>
+
+<!-- Add an article to the selected compartment -->
+<fpc-modal [(open)]="addArticleModalOpen" [title]="addArticleLabel" data-testid="inventory-add-article-modal">
+  @if (mutationError(); as error) {
+    <fpc-alert variant="danger" [message]="error" />
+  }
+  <fpc-form-field forId="inventoryAddArticle" i18n-label="@@featureInventory-colArticle" label="Article" required>
+    <framework-inventory-article-select
+      inputId="inventoryAddArticle"
+      [(selectedArticleId)]="addArticleId"
+      (articlePicked)="addArticle.set($event)"
+    />
+  </fpc-form-field>
+  <fpc-form-field
+    forId="inventoryAddQuantity"
+    i18n-label="@@featureInventory-newQuantity"
+    label="New goods (putaway)"
+    i18n-hint="@@featureInventory-newQuantityHint"
+    hint="Leave empty or 0 to map the location without stock."
+  >
+    <fpc-input-group>
+      <fpc-form-control
+        controlId="inventoryAddQuantity"
+        inputType="number"
+        min="0"
+        step="any"
+        [(ngModel)]="addArticleQuantity"
+        name="inventoryAddQuantity"
+        data-testid="inventory-add-article-quantity"
+      />
+      <span class="input-group-text" fpcInputGroupSuffix>{{ unitLabelOf(addArticle()?.unit) }}</span>
+    </fpc-input-group>
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex flex-wrap justify-content-end gap-2">
+    <fpc-button
+      variant="secondary"
+      [disabled]="mutating() || !addArticleId"
+      (clicked)="transferIntoCompartment()"
+      data-testid="inventory-add-article-transfer"
+      i18n="@@featureInventory-takeFromOther"
+      >Take from another compartment…</fpc-button
+    >
+    <fpc-button
+      variant="primary"
+      [disabled]="mutating() || !addArticleId"
+      [loading]="mutating()"
+      (clicked)="submitAddArticle()"
+      data-testid="inventory-add-article-submit"
+    >
+      @if ((addArticleQuantity ?? 0) > 0) {
+        <span i18n="@@featureInventory-putAway">Put away</span>
+      } @else {
+        <span i18n="@@featureInventory-mapLocation">Map location</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<framework-inventory-move-dialog
+  [(open)]="moveDialogOpen"
+  [mode]="moveMode()"
+  [article]="moveArticle()"
+  [presetSource]="moveSource()"
+  [presetTarget]="moveTarget()"
+/>
+
+<fpc-confirm-dialog
+  [(open)]="confirmDeleteOpen"
+  i18n-title="@@featureInventory-deleteTitle"
+  title="Delete?"
+  [message]="mutationError() ?? confirmDeleteMessage()"
+  [confirmLabel]="deleteLabel"
+  danger
+  [busy]="mutating()"
+  (confirmed)="runDelete()"
+/>

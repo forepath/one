@@ -5,6 +5,7 @@ import { Store } from '@ngrx/store';
 import {
   catchError,
   defer,
+  EMPTY,
   exhaustMap,
   filter,
   finalize,
@@ -38,6 +39,9 @@ import {
   loadClientUsersSuccess,
   loadClients,
   loadClientsFailure,
+  loadClientsRailPage,
+  loadClientsRailPageFailure,
+  loadClientsRailPageSuccess,
   loadClientsSuccess,
   pingClientFailure,
   pingClientSuccess,
@@ -68,12 +72,19 @@ import {
   removeClientUserFailure,
   removeClientUserSuccess,
   setActiveClient,
+  resolveActiveClientSuccess,
   setActiveClientSuccess,
   updateClient,
   updateClientFailure,
   updateClientSuccess,
 } from './clients.actions';
-import { selectClientById, selectClientsState } from './clients.selectors';
+import {
+  selectActiveClient,
+  selectClientById,
+  selectClientsRailPageQuery,
+  selectClientsState,
+} from './clients.selectors';
+import type { ClientsRailPageQuery } from './clients.types';
 
 /** Longest plain-text error body shown verbatim (longer bodies are proxy/error pages, not messages). */
 const MAX_DISPLAYABLE_ERROR_TEXT_LENGTH = 500;
@@ -183,6 +194,68 @@ export const loadMoreClients$ = createEffect(
   { functional: true },
 );
 
+/**
+ * Workspaces rail: requests exactly one page (plus one row to know whether a next page exists, the list endpoint
+ * returns no total) and replaces the rail rows. The latest request wins.
+ */
+export const loadClientsRailPage$ = createEffect(
+  (actions$ = inject(Actions), clientsService = inject(ClientsService)) => {
+    return actions$.pipe(
+      ofType(loadClientsRailPage),
+      switchMap(({ query }) =>
+        clientsService
+          .listClients({ limit: query.limit + 1, offset: query.offset, search: query.search?.trim() || undefined })
+          .pipe(
+            map((clients) =>
+              loadClientsRailPageSuccess({
+                clients: clients.slice(0, query.limit),
+                hasNext: clients.length > query.limit,
+              }),
+            ),
+            catchError((error) => of(loadClientsRailPageFailure({ error: normalizeError(error) }))),
+          ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+/** Reload the listed rail page (without a loading state) after workspaces were created or removed. */
+export const reloadClientsRailPage$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store)) => {
+    return actions$.pipe(
+      ofType(createClientSuccess, deleteClientSuccess, provisionServerSuccess, deleteProvisionedServerSuccess),
+      withLatestFrom(store.select(selectClientsRailPageQuery)),
+      map(([, query]) => query),
+      filter((query): query is ClientsRailPageQuery => query !== null),
+      map((query) => loadClientsRailPage({ query, silent: true })),
+    );
+  },
+  { functional: true },
+);
+
+/**
+ * The active workspace must resolve even when it is neither in the loaded list nor on the current rail page (deep
+ * link to a workspace on a later page): load it by id.
+ */
+export const resolveActiveClient$ = createEffect(
+  (actions$ = inject(Actions), clientsService = inject(ClientsService), store = inject(Store)) => {
+    return actions$.pipe(
+      ofType(setActiveClientSuccess),
+      withLatestFrom(store.select(selectActiveClient)),
+      filter(([{ id }, activeClient]) => activeClient?.id !== id),
+      switchMap(([{ id }]) =>
+        clientsService.getClient(id).pipe(
+          map((client) => resolveActiveClientSuccess({ client })),
+          // Not resolvable (e.g. no access): the workspace simply stays unresolved, as before.
+          catchError(() => EMPTY),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
 export const loadClient$ = createEffect(
   (actions$ = inject(Actions), clientsService = inject(ClientsService)) => {
     return actions$.pipe(
@@ -267,7 +340,7 @@ const CLIENT_PING_CONCURRENCY = 4;
 export const pingListedClients$ = createEffect(
   (actions$ = inject(Actions), store = inject(Store)) => {
     return actions$.pipe(
-      ofType(loadClientsSuccess, loadMoreClientsSuccess),
+      ofType(loadClientsSuccess, loadMoreClientsSuccess, loadClientsRailPageSuccess),
       withLatestFrom(store.select(selectClientsState)),
       map(([{ clients }, state]) => clients.map((c) => c.id).filter((id) => !(id in state.reachabilityErrors))),
       filter((clientIds) => clientIds.length > 0),

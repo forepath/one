@@ -5,6 +5,7 @@ import type { InvoicePromotionApplicationDraft } from '../dto/promotion.dto';
 import type { OpenPositionEntity } from '../entities/open-position.entity';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import type { SubscriptionEntity } from '../entities/subscription.entity';
+import { InventoryWithdrawalRequestsService } from '../inventory/services/inventory-withdrawal-requests.service';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionAddonsRepository } from '../repositories/subscription-addons.repository';
@@ -57,6 +58,7 @@ export class InvoiceCreationService {
     private readonly subscriptionAddonsRepository: SubscriptionAddonsRepository,
     private readonly billingScheduleService: BillingScheduleService,
     private readonly meterBillingService: MeterBillingService,
+    private readonly inventoryWithdrawalRequests: InventoryWithdrawalRequestsService,
   ) {}
 
   async createInvoice(subscriptionId: string, userId: string, description?: string, options?: InvoiceCreationOptions) {
@@ -179,13 +181,22 @@ export class InvoiceCreationService {
       );
     }
 
-    return await this.issueInvoiceWithPromotionCommit({
+    const issued = await this.issueInvoiceWithPromotionCommit({
       subscriptionId,
       userId,
       lineInputs,
       promotionApplications: promoResult.applications,
       redemptionUpdates: promoResult.redemptionUpdates,
     });
+
+    // Per-period plan articles: requested once the period invoice is issued (accepted separately in the inventory).
+    await this.inventoryWithdrawalRequests.raiseForSubscriptionPeriod(
+      { id: issued.invoiceRefId, invoiceNumber: issued.invoiceNumber, userId },
+      subscription,
+      plan,
+    );
+
+    return issued;
   }
 
   async createAccumulatedInvoice(
@@ -239,10 +250,13 @@ export class InvoiceCreationService {
     const lineInputs: LineItemInput[] = [];
     const promotionApplications: InvoicePromotionApplicationDraft[] = [];
     const redemptionUpdates: PromotionRedemptionUpdate[] = [];
+    const billedSubscriptions: Array<{ subscription: SubscriptionEntity; plan: ServicePlanEntity }> = [];
 
     for (const { group, amount, chargePeriod, meterLines } of billableGroups) {
       const subscription = await this.subscriptionsRepository.findByIdOrThrow(group.subscriptionId);
       const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
+
+      billedSubscriptions.push({ subscription, plan });
       const taxCategory = resolvePlanTaxCategory(plan);
       const billableAddons = await this.subscriptionAddonsRepository.findBillableBySubscriptionId(group.subscriptionId);
       const addonChargeLines = billableAddons
@@ -340,6 +354,14 @@ export class InvoiceCreationService {
     ];
 
     await this.openPositionsRepository.markManyBilled(positionIds, result.invoiceRefId);
+
+    for (const { subscription, plan } of billedSubscriptions) {
+      await this.inventoryWithdrawalRequests.raiseForSubscriptionPeriod(
+        { id: result.invoiceRefId, invoiceNumber: result.invoiceNumber, userId },
+        subscription,
+        plan,
+      );
+    }
 
     return { invoiceRefId: result.invoiceRefId };
   }

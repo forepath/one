@@ -10,6 +10,7 @@ import {
   IsUUID,
   Max,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 
@@ -34,6 +35,12 @@ export class ManualInvoiceLineItemDto {
   @IsOptional()
   @IsEnum(TaxCategory, { message: 'Tax category must be standard or reduced' })
   taxCategory?: TaxCategory;
+
+  /** Article position: issuing the invoice raises an inventory withdrawal request for `quantity`. */
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsUUID('4', { message: 'Inventory article ID must be a valid UUID' })
+  inventoryArticleId?: string | null;
 }
 
 export class CreateManualInvoiceDto {

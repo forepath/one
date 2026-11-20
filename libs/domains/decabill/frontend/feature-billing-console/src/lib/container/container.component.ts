@@ -488,6 +488,13 @@ export class BillingConsoleContainerComponent implements OnInit {
         label: $localize`:@@featureContainer-adminProjects:Projects`,
       },
       {
+        routerLink: ['/administration/inventory'],
+        activePaths: ['/administration/inventory'],
+        icon: 'bi-box-seam',
+        title: $localize`:@@featureContainer-adminInventoryTitle:Inventory`,
+        label: $localize`:@@featureContainer-adminInventory:Inventory`,
+      },
+      {
         routerLink: ['/administration/billing'],
         activePaths: ['/administration/billing'],
         icon: 'bi-receipt-cutoff',

@@ -18,6 +18,7 @@ import {
   AdminBillingService,
   ServicePlansFacade,
   rateForTaxCategory,
+  type InventoryArticle,
   type OfferLineType,
   type ServicePlanResponse,
   type TaxPreviewRates,
@@ -32,11 +33,14 @@ import {
 } from '@forepath/shared/frontend/ui-components';
 
 import { BillingAdminPromotionSelectComponent } from '../billing-admin-promotion-select/billing-admin-promotion-select.component';
+import { InventoryArticleSelectComponent } from '../inventory/inventory-article-select.component';
+import { inventoryUnitLabel } from '../inventory/inventory-labels';
+import { applyInventoryArticlePrefill } from '../inventory-line-prefill.util';
 import { PlanOrderConfiguratorComponent } from '../plan-order-configurator/plan-order-configurator.component';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import type { PricingTotalsLeadingRow } from '../pricing-totals-summary/pricing-totals.util';
 
-import { createEmptyOfferFormLine, type OfferFormLineItem } from './admin-offer-form.util';
+import { createEmptyOfferFormLine, isStandardLikeOfferLineType, type OfferFormLineItem } from './admin-offer-form.util';
 import {
   aggregateOfferDraftPricingSummaries,
   computePlanTemplateOfferLineTotals,
@@ -54,6 +58,7 @@ import {
     CommonModule,
     FormsModule,
     BillingAdminPromotionSelectComponent,
+    InventoryArticleSelectComponent,
     PlanOrderConfiguratorComponent,
     PricingTotalsSummaryComponent,
     FpcButtonComponent,
@@ -76,7 +81,7 @@ export class AdminOfferLineEditorComponent implements OnInit, OnChanges {
 
   @ViewChildren(PlanOrderConfiguratorComponent) private configurators!: QueryList<PlanOrderConfiguratorComponent>;
 
-  readonly lineTypes: OfferLineType[] = ['standard', 'project_template', 'plan_template'];
+  readonly lineTypes: OfferLineType[] = ['standard', 'article', 'project_template', 'plan_template'];
   readonly maxPriceLabel = $localize`:@@featureAdminProjects-maxPriceLabel:Maximum price (net)`;
   readonly fixedPriceLabel = $localize`:@@featureAdminProjects-fixedPriceLabel:Fixed price (net)`;
 
@@ -120,6 +125,14 @@ export class AdminOfferLineEditorComponent implements OnInit, OnChanges {
   }
 
   onLineTypeChange(line: OfferFormLineItem, lineType: OfferLineType): void {
+    if (isStandardLikeOfferLineType(line.lineType) && isStandardLikeOfferLineType(lineType)) {
+      // Generic <-> article keeps quantity, price, unit and VAT; only the article link changes.
+      line.lineType = lineType;
+      line.inventoryArticleId = null;
+
+      return;
+    }
+
     const next = createEmptyOfferFormLine(lineType);
 
     next.description = line.description;
@@ -132,6 +145,15 @@ export class AdminOfferLineEditorComponent implements OnInit, OnChanges {
     line.requestedConfig = {};
     line.addonIds = [];
     line.addonConfigs = {};
+  }
+
+  isStandardLike(line: OfferFormLineItem): boolean {
+    return isStandardLikeOfferLineType(line.lineType);
+  }
+
+  /** Prefills price (when the article has a sales price), empty description / unit and VAT; clearing keeps input. */
+  onArticlePicked(line: OfferFormLineItem, article: InventoryArticle | null): void {
+    applyInventoryArticlePrefill(line, article, inventoryUnitLabel);
   }
 
   onTaxCategoryChange(line: OfferFormLineItem, value: 'standard' | 'reduced'): void {
@@ -148,6 +170,8 @@ export class AdminOfferLineEditorComponent implements OnInit, OnChanges {
         return $localize`:@@featureAdminOffers-lineTypeProject:Project template`;
       case 'plan_template':
         return $localize`:@@featureAdminOffers-lineTypePlan:Plan template`;
+      case 'article':
+        return $localize`:@@featureAdminOffers-lineTypeArticle:Article`;
       default:
         return $localize`:@@featureAdminOffers-lineTypeStandard:Generic`;
     }

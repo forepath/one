@@ -4,7 +4,8 @@ import type { ProjectPricingModel } from './projects.types';
 
 export type OfferStatus = 'draft' | 'archived' | 'accepted' | 'declined' | 'expired' | 'revoked';
 
-export type OfferLineType = 'standard' | 'project_template' | 'plan_template';
+/** `article`: billed like `standard`; accepting the offer raises an inventory withdrawal request. */
+export type OfferLineType = 'standard' | 'article' | 'project_template' | 'plan_template';
 
 export type OfferFulfillmentStatus = 'pending' | 'fulfilled' | 'failed';
 
@@ -52,6 +53,8 @@ export interface OfferLineResponse {
   planId?: string | null;
   planNameSnapshot?: string | null;
   projectTemplatePayload?: Record<string, unknown> | null;
+  /** Admin responses only: article of an `article` line. */
+  inventoryArticleId?: string | null;
   pricingSnapshot?: Record<string, unknown> | null;
   requestedConfig?: Record<string, unknown>;
   addonIds?: string[];
@@ -118,6 +121,11 @@ export interface OfferStandardLineDto {
   scheduledAt?: string;
 }
 
+/** Standard line plus the article withdrawn (as request) when the offer is accepted. */
+export interface OfferArticleLineDto extends OfferStandardLineDto {
+  inventoryArticleId: string;
+}
+
 export interface OfferProjectTemplateLineDto {
   description: string;
   name: string;
@@ -146,7 +154,7 @@ export interface OfferPlanTemplateLineDto {
 
 export interface OfferLineInputDto {
   lineType: OfferLineType;
-  payload: OfferStandardLineDto | OfferProjectTemplateLineDto | OfferPlanTemplateLineDto;
+  payload: OfferStandardLineDto | OfferArticleLineDto | OfferProjectTemplateLineDto | OfferPlanTemplateLineDto;
 }
 
 export interface CreateAdminOfferDto extends DocumentTermsInput {

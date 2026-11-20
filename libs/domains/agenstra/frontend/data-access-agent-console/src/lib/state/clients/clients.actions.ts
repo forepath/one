@@ -6,6 +6,7 @@ import type {
   ClientIsolationSummaryDto,
   ClientResponseDto,
   ClientUserResponseDto,
+  ClientsRailPageQuery,
   CreateClientDto,
   CreateClientResponseDto,
   ListClientsParams,
@@ -36,6 +37,23 @@ export const loadMoreClientsSuccess = createAction(
 );
 
 export const loadMoreClientsFailure = createAction('[Clients] Load More Clients Failure', props<{ error: string }>());
+
+// Workspaces rail (replace-page server paging: each page replaces the rail rows)
+/** Load one rail page; `silent` keeps the current rows without a loading state (live reloads). */
+export const loadClientsRailPage = createAction(
+  '[Clients] Load Clients Rail Page',
+  props<{ query: ClientsRailPageQuery; silent?: boolean }>(),
+);
+
+export const loadClientsRailPageSuccess = createAction(
+  '[Clients] Load Clients Rail Page Success',
+  props<{ clients: ClientResponseDto[]; hasNext: boolean }>(),
+);
+
+export const loadClientsRailPageFailure = createAction(
+  '[Clients] Load Clients Rail Page Failure',
+  props<{ error: string }>(),
+);
 
 // Get Client by ID Actions
 export const loadClient = createAction('[Clients] Load Client', props<{ id: string }>());
@@ -77,6 +95,15 @@ export const setActiveClient = createAction('[Clients] Set Active Client', props
 export const setActiveClientSuccess = createAction('[Clients] Set Active Client Success', props<{ id: string }>());
 
 export const setActiveClientFailure = createAction('[Clients] Set Active Client Failure', props<{ error: string }>());
+
+/**
+ * The active workspace was neither listed nor on the current rail page (e.g. deep link to a later page) and was
+ * loaded by id. Only resolves the active workspace (`selectedClient`); the append-style list stays untouched.
+ */
+export const resolveActiveClientSuccess = createAction(
+  '[Clients] Resolve Active Client Success',
+  props<{ client: ClientResponseDto }>(),
+);
 
 // Clear Active Client Actions
 export const clearActiveClient = createAction('[Clients] Clear Active Client');

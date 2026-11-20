@@ -259,7 +259,7 @@ export class OfferArchiveService {
       subtotalNet: Number(offer.subtotalNet),
       taxTotal: Number(offer.taxTotal),
       billToOpenPositions: offer.billToOpenPositions,
-      lineItems: lines.map((line) => mapOfferLineItemToResponse(line)),
+      lineItems: lines.map((line) => mapOfferLineItemToResponse(line, { includeInternal: true })),
       taxMode: offer.taxMode ?? null,
       taxNote: offer.taxNote ?? null,
       ...mapAdminOfferDocumentTerms(offer, this.documentTermsConfig),

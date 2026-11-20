@@ -6,18 +6,26 @@ export class InvoicePdfHtmlRendererService implements OnModuleDestroy {
   private readonly logger = new Logger(InvoicePdfHtmlRendererService.name);
   private browserPromise: Promise<Browser> | null = null;
 
-  async renderHtmlToPdf(html: string): Promise<Uint8Array> {
+  /**
+   * Renders HTML to PDF: A4 with 12 mm margins, or (`cssPageSize`) the page size and margins of the document's
+   * own `@page` rule (labels).
+   */
+  async renderHtmlToPdf(html: string, options: { cssPageSize?: boolean } = {}): Promise<Uint8Array> {
     const browser = await this.getBrowser();
     const page = await browser.newPage();
 
     try {
       await page.setContent(html, { waitUntil: 'networkidle' });
 
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: { top: '12mm', right: '12mm', bottom: '12mm', left: '12mm' },
-      });
+      const pdfBuffer = await page.pdf(
+        options.cssPageSize
+          ? { preferCSSPageSize: true, printBackground: true, margin: { top: '0', right: '0', bottom: '0', left: '0' } }
+          : {
+              format: 'A4',
+              printBackground: true,
+              margin: { top: '12mm', right: '12mm', bottom: '12mm', left: '12mm' },
+            },
+      );
 
       return new Uint8Array(pdfBuffer);
     } finally {

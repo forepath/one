@@ -72,6 +72,7 @@ describe('ManualInvoiceService', () => {
     customerProfilesService as never,
     auditLog as never,
     invoiceTaxContextService as never,
+    { findByIds: jest.fn().mockResolvedValue([]) } as never,
   );
   const draftInvoice = {
     id: 'inv-1',

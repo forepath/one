@@ -108,4 +108,31 @@ describe('ServicePlansPageComponent (data list)', () => {
     expect(component.bulkResult()?.message).toContain('1 not allowed');
     expect(plansFacade['loadServicePlans']).toHaveBeenCalled();
   });
+
+  it('articles per billing period: add / remove rows, validate and restore them when editing', () => {
+    expect(component.inventoryArticleRows('create')).toEqual([]);
+    component.addInventoryArticleRow('create');
+    expect(component.inventoryArticleRows('create')).toEqual([{ articleId: null, quantity: 1 }]);
+    expect(component.isInventoryArticlesValid('create')).toBe(false);
+
+    component.createInventoryArticles[0].articleId = 'a1';
+    expect(component.isInventoryArticlesValid('create')).toBe(true);
+
+    component.addInventoryArticleRow('create');
+    component.createInventoryArticles[1].articleId = 'a1';
+    expect(component.isDuplicateInventoryArticle('create', 1)).toBe(true);
+    expect(component.isInventoryArticlesValid('create')).toBe(false);
+
+    component.removeInventoryArticleRow('create', 1);
+    expect(component.isInventoryArticlesValid('create')).toBe(true);
+
+    (TestBed.inject(ServicePlansService) as unknown as Record<string, jest.Mock>)['listPlanMeters'] = jest.fn(() =>
+      of([]),
+    );
+    component.openEditModal({
+      ...plan('p1'),
+      inventoryArticles: [{ articleId: 'a2', quantity: 0.5 }],
+    } as ServicePlanResponse);
+    expect(component.inventoryArticleRows('edit')).toEqual([{ articleId: 'a2', quantity: 0.5 }]);
+  });
 });

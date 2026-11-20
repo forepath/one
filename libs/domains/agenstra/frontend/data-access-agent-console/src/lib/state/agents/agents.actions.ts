@@ -4,6 +4,7 @@ import type {
   AgentModelsMap,
   AgentResponseDto,
   AgentSlashCommand,
+  ClientAgentsRailPageQuery,
   CreateAgentDto,
   CreateAgentResponseDto,
   ListClientAgentsParams,
@@ -35,6 +36,23 @@ export const loadMoreClientAgentsSuccess = createAction(
 
 export const loadMoreClientAgentsFailure = createAction(
   '[Agents] Load More Client Agents Failure',
+  props<{ clientId: string; error: string }>(),
+);
+
+// Environments rail (replace-page server paging of one workspace: each page replaces the rail rows)
+/** Load one rail page; `silent` keeps the current rows without a loading state (live reloads). */
+export const loadClientAgentsRailPage = createAction(
+  '[Agents] Load Client Agents Rail Page',
+  props<{ clientId: string; query: ClientAgentsRailPageQuery; silent?: boolean }>(),
+);
+
+export const loadClientAgentsRailPageSuccess = createAction(
+  '[Agents] Load Client Agents Rail Page Success',
+  props<{ clientId: string; agents: AgentResponseDto[]; hasNext: boolean }>(),
+);
+
+export const loadClientAgentsRailPageFailure = createAction(
+  '[Agents] Load Client Agents Rail Page Failure',
   props<{ clientId: string; error: string }>(),
 );
 

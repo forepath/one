@@ -21,6 +21,7 @@ import { TaxCategory } from '../constants/tax-category.constants';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 
 import { DocumentTermsInputDto } from './document-terms.dto';
+import { ServicePlanInventoryArticleDto } from './service-plan-inventory-article.dto';
 import { ServicePlanOrderingHighlightDto } from './service-plan-ordering-highlight.dto';
 
 /** Inherits optional payment / delivery terms (null = global default). */
@@ -128,4 +129,13 @@ export class CreateServicePlanDto extends DocumentTermsInputDto {
   @IsOptional()
   @IsEnum(TaxCategory, { message: 'taxCategory must be standard or reduced' })
   taxCategory?: TaxCategory;
+
+  /** Articles withdrawn per billing period (each issued period invoice raises withdrawal requests). */
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsArray({ message: 'inventoryArticles must be an array' })
+  @ArrayMaxSize(50)
+  @ValidateNested({ each: true })
+  @Type(() => ServicePlanInventoryArticleDto)
+  inventoryArticles?: ServicePlanInventoryArticleDto[] | null;
 }

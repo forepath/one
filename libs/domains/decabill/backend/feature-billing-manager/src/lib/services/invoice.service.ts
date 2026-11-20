@@ -10,6 +10,8 @@ import type { InvoiceResponseDto } from '../dto/invoice-response.dto';
 import type { InvoicePromotionApplicationDraft } from '../dto/promotion.dto';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import { InventoryArticlesRepository } from '../inventory/repositories/inventory-articles.repository';
+import { assertInventoryArticlesExist } from '../inventory/utils/inventory-article-references.util';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { ProjectTimeReportService } from '../projects/services/project-time-report.service';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
@@ -73,6 +75,7 @@ export class InvoiceService {
     private readonly invoiceTaxContextService: InvoiceTaxContextService,
     private readonly ossThresholdService: OssThresholdService,
     private readonly billingSearchIndexService: BillingSearchIndexService,
+    private readonly inventoryArticlesRepository: InventoryArticlesRepository,
   ) {}
 
   async createAndIssue(params: CreateInvoiceDraftParams): Promise<{ invoiceRefId: string; invoiceNumber?: string }> {
@@ -83,6 +86,11 @@ export class InvoiceService {
   }
 
   async createDraft(params: CreateInvoiceDraftParams): Promise<InvoiceEntity> {
+    await assertInventoryArticlesExist(
+      this.inventoryArticlesRepository,
+      params.lineInputs.map((line) => line.inventoryArticleId),
+    );
+
     const taxContext = await this.invoiceTaxContextService.resolveForUser(params.userId);
     const totals = this.taxCalculationService.computeLines(params.lineInputs, {
       taxTreatment: taxContext.treatment,
@@ -125,6 +133,7 @@ export class InvoiceService {
         lineNet: line.lineNet,
         lineTax: line.lineTax,
         lineGross: line.lineGross,
+        inventoryArticleId: params.lineInputs[index]?.inventoryArticleId ?? null,
       })),
     );
 
@@ -306,6 +315,7 @@ export class InvoiceService {
         lineNet: Number(line.lineNet),
         lineTax: Number(line.lineTax),
         lineGross: Number(line.lineGross),
+        inventoryArticleId: line.inventoryArticleId ?? null,
       })),
       taxBreakdown: Array.from(taxByKey.values()),
       issuedAt: invoice.issuedAt,

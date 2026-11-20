@@ -18,6 +18,9 @@ import {
   loadClientAgentModelsSuccess,
   loadClientAgents,
   loadClientAgentsFailure,
+  loadClientAgentsRailPage,
+  loadClientAgentsRailPageFailure,
+  loadClientAgentsRailPageSuccess,
   loadClientAgentsSuccess,
   loadClientAgentSuccess,
   loadMoreClientAgents,
@@ -36,7 +39,50 @@ import {
   updateClientAgentFailure,
   updateClientAgentSuccess,
 } from './agents.actions';
-import type { AgentModelsMap, AgentResponseDto, AgentSlashCommand } from './agents.types';
+import type { AgentModelsMap, AgentResponseDto, AgentSlashCommand, ClientAgentsRailPageQuery } from './agents.types';
+
+/**
+ * Replace-page slice of the environments rail (one workspace at a time): only the rows of the current server page are
+ * held (each page / size / search / workspace change replaces them), independent of the append-style `entities`.
+ */
+export interface AgentsRailPageState {
+  /** Workspace the listed page belongs to; `null` until the rail requested a page. */
+  clientId: string | null;
+  /** Rows of the current page (at most `query.limit`). */
+  rows: AgentResponseDto[];
+  /** Query of the listed page (reloaded after creates / deletes). */
+  query: ClientAgentsRailPageQuery | null;
+  /** Server paging without a total: the page was requested with one extra row to know whether a next one exists. */
+  hasNext: boolean;
+  loading: boolean;
+  error: string | null;
+}
+
+export const initialAgentsRailPageState: AgentsRailPageState = {
+  clientId: null,
+  rows: [],
+  query: null,
+  hasNext: false,
+  loading: false,
+  error: null,
+};
+
+/** Replaces a rail row of the listed workspace by id (rows not on the current page are left alone). */
+function patchRailRow(state: AgentsState, clientId: string, agent: AgentResponseDto): AgentsState {
+  const railPage = state.railPage;
+
+  return railPage.clientId === clientId && railPage.rows.some((a) => a.id === agent.id)
+    ? { ...state, railPage: { ...railPage, rows: railPage.rows.map((a) => (a.id === agent.id ? agent : a)) } }
+    : state;
+}
+
+function removeRailRow(state: AgentsState, clientId: string, agentId: string): AgentsState {
+  const railPage = state.railPage;
+
+  return railPage.clientId === clientId && railPage.rows.some((a) => a.id === agentId)
+    ? { ...state, railPage: { ...railPage, rows: railPage.rows.filter((a) => a.id !== agentId) } }
+    : state;
+}
 
 export interface AgentsState {
   // Agents grouped by clientId
@@ -68,6 +114,8 @@ export interface AgentsState {
   agentModels: Record<string, AgentModelsMap>;
   loadingAgentModels: Record<string, boolean>;
   agentModelsErrors: Record<string, string | null>;
+  /** Environments rail of the agent console (replace-page server paging). */
+  railPage: AgentsRailPageState;
 }
 
 export const initialAgentsState: AgentsState = {
@@ -93,6 +141,7 @@ export const initialAgentsState: AgentsState = {
   agentModels: {},
   loadingAgentModels: {},
   agentModelsErrors: {},
+  railPage: initialAgentsRailPageState,
 };
 
 function getClientAgentKey(clientId: string, agentId: string): string {
@@ -254,6 +303,34 @@ export const agentsReducer = createReducer(
     appendLoading: { ...state.appendLoading, [clientId]: false },
     appendError: { ...state.appendError, [clientId]: error },
   })),
+  // Environments rail (replace-page)
+  on(loadClientAgentsRailPage, (state, { clientId, query, silent }) => {
+    const sameClient = state.railPage.clientId === clientId;
+
+    return {
+      ...state,
+      railPage: {
+        ...state.railPage,
+        clientId,
+        query,
+        // Rows of another workspace are never shown while the new one loads.
+        rows: sameClient ? state.railPage.rows : [],
+        hasNext: sameClient ? state.railPage.hasNext : false,
+        loading: silent && sameClient ? state.railPage.loading : true,
+        error: silent && sameClient ? state.railPage.error : null,
+      },
+    };
+  }),
+  on(loadClientAgentsRailPageSuccess, (state, { clientId, agents, hasNext }) =>
+    state.railPage.clientId === clientId
+      ? { ...state, railPage: { ...state.railPage, rows: agents, hasNext, loading: false, error: null } }
+      : state,
+  ),
+  on(loadClientAgentsRailPageFailure, (state, { clientId, error }) =>
+    state.railPage.clientId === clientId
+      ? { ...state, railPage: { ...state.railPage, rows: [], hasNext: false, loading: false, error } }
+      : state,
+  ),
   // Load Client Agent by ID
   on(loadClientAgent, (state, { clientId }) =>
     updateClientState(state, clientId, (clientState) => ({
@@ -263,20 +340,24 @@ export const agentsReducer = createReducer(
     })),
   ),
   on(loadClientAgentSuccess, (state, { clientId, agent }) =>
-    updateClientState(state, clientId, (clientState) => {
-      const existingIndex = clientState.agents.findIndex((a) => a.id === agent.id);
-      const agents =
-        existingIndex >= 0
-          ? clientState.agents.map((a) => (a.id === agent.id ? agent : a))
-          : [...clientState.agents, agent];
+    patchRailRow(
+      updateClientState(state, clientId, (clientState) => {
+        const existingIndex = clientState.agents.findIndex((a) => a.id === agent.id);
+        const agents =
+          existingIndex >= 0
+            ? clientState.agents.map((a) => (a.id === agent.id ? agent : a))
+            : [...clientState.agents, agent];
 
-      return {
-        agents,
-        selectedAgent: agent,
-        loadingAgent: false,
-        error: null,
-      };
-    }),
+        return {
+          agents,
+          selectedAgent: agent,
+          loadingAgent: false,
+          error: null,
+        };
+      }),
+      clientId,
+      agent,
+    ),
   ),
   on(loadClientAgentFailure, (state, { clientId, error }) =>
     updateClientState(state, clientId, () => ({
@@ -346,12 +427,16 @@ export const agentsReducer = createReducer(
     })),
   ),
   on(updateClientAgentSuccess, (state, { clientId, agent }) =>
-    updateClientState(state, clientId, (clientState) => ({
-      agents: clientState.agents.map((a) => (a.id === agent.id ? agent : a)),
-      selectedAgent: clientState.selectedAgent?.id === agent.id ? agent : clientState.selectedAgent,
-      updating: false,
-      error: null,
-    })),
+    patchRailRow(
+      updateClientState(state, clientId, (clientState) => ({
+        agents: clientState.agents.map((a) => (a.id === agent.id ? agent : a)),
+        selectedAgent: clientState.selectedAgent?.id === agent.id ? agent : clientState.selectedAgent,
+        updating: false,
+        error: null,
+      })),
+      clientId,
+      agent,
+    ),
   ),
   on(updateClientAgentFailure, (state, { clientId, error }) =>
     updateClientState(state, clientId, () => ({
@@ -379,7 +464,7 @@ export const agentsReducer = createReducer(
     const { [key]: _removedLoading, ...loadingAgentModels } = next.loadingAgentModels;
     const { [key]: _removedErrors, ...agentModelsErrors } = next.agentModelsErrors;
 
-    return { ...next, agentModels, loadingAgentModels, agentModelsErrors };
+    return removeRailRow({ ...next, agentModels, loadingAgentModels, agentModelsErrors }, clientId, agentId);
   }),
   on(deleteClientAgentFailure, (state, { clientId, error }) =>
     updateClientState(state, clientId, () => ({
@@ -396,12 +481,16 @@ export const agentsReducer = createReducer(
     })),
   ),
   on(startClientAgentSuccess, (state, { clientId, agent }) =>
-    updateClientState(state, clientId, (clientState) => ({
-      agents: clientState.agents.map((a) => (a.id === agent.id ? agent : a)),
-      selectedAgent: clientState.selectedAgent?.id === agent.id ? agent : clientState.selectedAgent,
-      starting: false,
-      error: null,
-    })),
+    patchRailRow(
+      updateClientState(state, clientId, (clientState) => ({
+        agents: clientState.agents.map((a) => (a.id === agent.id ? agent : a)),
+        selectedAgent: clientState.selectedAgent?.id === agent.id ? agent : clientState.selectedAgent,
+        starting: false,
+        error: null,
+      })),
+      clientId,
+      agent,
+    ),
   ),
   on(startClientAgentFailure, (state, { clientId, error }) =>
     updateClientState(state, clientId, () => ({
@@ -418,12 +507,16 @@ export const agentsReducer = createReducer(
     })),
   ),
   on(stopClientAgentSuccess, (state, { clientId, agent }) =>
-    updateClientState(state, clientId, (clientState) => ({
-      agents: clientState.agents.map((a) => (a.id === agent.id ? agent : a)),
-      selectedAgent: clientState.selectedAgent?.id === agent.id ? agent : clientState.selectedAgent,
-      stopping: false,
-      error: null,
-    })),
+    patchRailRow(
+      updateClientState(state, clientId, (clientState) => ({
+        agents: clientState.agents.map((a) => (a.id === agent.id ? agent : a)),
+        selectedAgent: clientState.selectedAgent?.id === agent.id ? agent : clientState.selectedAgent,
+        stopping: false,
+        error: null,
+      })),
+      clientId,
+      agent,
+    ),
   ),
   on(stopClientAgentFailure, (state, { clientId, error }) =>
     updateClientState(state, clientId, () => ({
@@ -440,12 +533,16 @@ export const agentsReducer = createReducer(
     })),
   ),
   on(restartClientAgentSuccess, (state, { clientId, agent }) =>
-    updateClientState(state, clientId, (clientState) => ({
-      agents: clientState.agents.map((a) => (a.id === agent.id ? agent : a)),
-      selectedAgent: clientState.selectedAgent?.id === agent.id ? agent : clientState.selectedAgent,
-      restarting: false,
-      error: null,
-    })),
+    patchRailRow(
+      updateClientState(state, clientId, (clientState) => ({
+        agents: clientState.agents.map((a) => (a.id === agent.id ? agent : a)),
+        selectedAgent: clientState.selectedAgent?.id === agent.id ? agent : clientState.selectedAgent,
+        restarting: false,
+        error: null,
+      })),
+      clientId,
+      agent,
+    ),
   ),
   on(restartClientAgentFailure, (state, { clientId, error }) =>
     updateClientState(state, clientId, () => ({

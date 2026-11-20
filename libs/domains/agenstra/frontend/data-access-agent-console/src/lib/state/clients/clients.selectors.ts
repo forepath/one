@@ -1,6 +1,7 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
-import type { ClientsState } from './clients.reducer';
+import { type ClientsState, initialClientsRailPageState } from './clients.reducer';
+import type { ClientResponseDto } from './clients.types';
 
 export const selectClientsState = createFeatureSelector<ClientsState>('clients');
 
@@ -18,19 +19,43 @@ export const selectSelectedClient = createSelector(selectClientsState, (state) =
 
 export const selectActiveClientId = createSelector(selectClientsState, (state) => state.activeClientId);
 
+// Workspaces rail (replace-page server paging)
+export const selectClientsRailPage = createSelector(
+  selectClientsState,
+  (state) => state.railPage ?? initialClientsRailPageState,
+);
+
+export const selectClientsRailRows = createSelector(selectClientsRailPage, (railPage) => railPage.rows);
+
+export const selectClientsRailPageQuery = createSelector(selectClientsRailPage, (railPage) => railPage.query);
+
+export const selectClientsRailHasNext = createSelector(selectClientsRailPage, (railPage) => railPage.hasNext);
+
+export const selectClientsRailLoading = createSelector(selectClientsRailPage, (railPage) => railPage.loading);
+
+export const selectClientsRailError = createSelector(selectClientsRailPage, (railPage) => railPage.error);
+
+/** A workspace by id from the loaded list, the current rail page or the resolved active workspace. */
+function findClient(
+  id: string,
+  clients: ClientResponseDto[],
+  railRows: ClientResponseDto[],
+  selectedClient: ClientResponseDto | null,
+): ClientResponseDto | null {
+  return (
+    clients.find((c) => c.id === id) ??
+    railRows.find((c) => c.id === id) ??
+    (selectedClient?.id === id ? selectedClient : null)
+  );
+}
+
 export const selectActiveClient = createSelector(
   selectClients,
+  selectClientsRailRows,
   selectActiveClientId,
   selectSelectedClient,
-  (clients, activeClientId, selectedClient) => {
-    if (!activeClientId) {
-      return null;
-    }
-
-    return (
-      clients.find((c) => c.id === activeClientId) ?? (selectedClient?.id === activeClientId ? selectedClient : null)
-    );
-  },
+  (clients, railRows, activeClientId, selectedClient) =>
+    activeClientId ? findClient(activeClientId, clients, railRows, selectedClient) : null,
 );
 
 export const selectActiveClientIsolation = createSelector(selectActiveClient, (client) => client?.isolation ?? null);
@@ -72,7 +97,9 @@ export const selectClientsAppendError = createSelector(selectClientsState, (stat
 export const selectClientsCount = createSelector(selectClients, (clients) => clients.length);
 
 export const selectClientById = (id: string) =>
-  createSelector(selectClients, (clients) => clients.find((c) => c.id === id) ?? null);
+  createSelector(selectClients, selectClientsRailRows, selectSelectedClient, (clients, railRows, selectedClient) =>
+    findClient(id, clients, railRows, selectedClient),
+  );
 
 export const selectHasClients = createSelector(selectClients, (clients) => clients.length > 0);
 

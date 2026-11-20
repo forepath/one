@@ -54,6 +54,21 @@ describe('ServiceTypesService', () => {
       req.flush(mockTypes);
     });
 
+    it('should pass planId and keep the server-computed customer price', (done) => {
+      service.getProviderServerTypes('hetzner', 'st-1', 'plan-1').subscribe((types) => {
+        expect(types).toEqual([{ id: 'cx11', name: 'CX11', cores: 2, memory: 4, disk: 40, customerPrice: 9.9 }]);
+        expect(types[0]?.priceMonthly).toBeUndefined();
+        done();
+      });
+
+      const req = httpMock.expectOne(
+        (request) => request.url === `${apiUrl}/service-types/providers/hetzner/server-types`,
+      );
+
+      expect(req.request.params.get('planId')).toBe('plan-1');
+      req.flush([{ id: 'cx11', name: 'CX11', cores: 2, memory: 4, disk: 40, customerPrice: 9.9 }]);
+    });
+
     it('should normalize numeric-keyed object responses', (done) => {
       service.getProviderServerTypes('hetzner').subscribe((types) => {
         expect(types).toEqual([{ id: 'cx11', name: 'CX11', cores: 2, memory: 4, disk: 40, priceMonthly: 4.15 }]);

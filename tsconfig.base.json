@@ -53,6 +53,9 @@
       "@forepath/shared/shared/util-network-address": [
         "libs/domains/shared/shared/util-network-address/src/index.ts"
       ],
+      "@forepath/shared/shared/util-barcode": [
+        "libs/domains/shared/shared/util-barcode/src/index.ts"
+      ],
       "@forepath/shared/frontend": ["libs/domains/shared/frontend/index.ts"],
       "@forepath/shared/keycloak": ["libs/domains/shared/keycloak/index.ts"],
       "@forepath/shared/shared": ["libs/domains/shared/shared/index.ts"],

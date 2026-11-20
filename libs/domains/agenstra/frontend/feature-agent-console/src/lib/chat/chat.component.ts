@@ -233,6 +233,7 @@ import {
   chatPlanStateBadgeColor as chatPlanStateBadgeColorFn,
   chatPlanStateLabel as chatPlanStateLabelFn,
 } from './chat-plan-labels';
+import { type ChatEnvironmentRailRow, chatEnvironmentRailRows, chatRailPageQuery } from './chat-rail-paging';
 import { buildMergedChatDisplayThread, type ChatDisplayThreadItem } from './chat-thread-display';
 
 // Type declaration for marked library
@@ -265,14 +266,6 @@ type ChatMessageWithFilter = {
 };
 
 type SlashCommandInputTarget = 'chat' | 'planRefine';
-
-/** Row of the environments rail table: a listed environment or a create still provisioning. */
-interface ChatEnvironmentRailRow {
-  id: string;
-  name: string;
-  agent: AgentResponseDto | null;
-  pending: EnvironmentProgress | null;
-}
 
 /** Segment colors of the stacked workspace provisioning bar (cycled per environment). */
 const WORKSPACE_PROGRESS_SEGMENT_VARIANTS: FpcProgressVariant[] = [
@@ -434,14 +427,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly clients$: Observable<ClientResponseDto[]> = this.clientsFacade.clients$;
   readonly activeClientId$: Observable<string | null> = this.clientsFacade.activeClientId$;
   readonly activeClient$: Observable<ClientResponseDto | null> = this.clientsFacade.activeClient$;
-  readonly clientsLoading$: Observable<boolean> = combineLatest([
-    this.clientsFacade.loading$,
-    this.clientsFacade.clients$,
-  ]).pipe(map(([loading, clients]) => loading && clients.length === 0));
   readonly clientsError$: Observable<string | null> = this.clientsFacade.error$;
-  readonly clientsHasMore$: Observable<boolean> = this.clientsFacade.hasMore$;
-  readonly clientsAppendLoading$: Observable<boolean> = this.clientsFacade.appendLoading$;
-  readonly clientsAppendError$: Observable<string | null> = this.clientsFacade.appendError$;
   readonly clientsDeleting$: Observable<boolean> = this.clientsFacade.deleting$;
   readonly clientsCreating$: Observable<boolean> = this.clientsFacade.creating$;
   readonly clientsUpdating$: Observable<boolean> = this.clientsFacade.updating$;
@@ -455,45 +441,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
 
       return this.agentsFacade.getClientAgents$(clientId);
-    }),
-  );
-  readonly agentsLoading$: Observable<boolean> = this.activeClientId$.pipe(
-    switchMap((clientId) => {
-      if (!clientId) {
-        return of(false);
-      }
-
-      return combineLatest([
-        this.agentsFacade.getClientAgentsLoading$(clientId),
-        this.agentsFacade.getClientAgents$(clientId),
-      ]).pipe(map(([loading, agents]) => loading && agents.length === 0));
-    }),
-  );
-  readonly agentsHasMore$: Observable<boolean> = this.activeClientId$.pipe(
-    switchMap((clientId) => {
-      if (!clientId) {
-        return of(false);
-      }
-
-      return this.agentsFacade.getClientAgentsHasMore$(clientId);
-    }),
-  );
-  readonly agentsAppendLoading$: Observable<boolean> = this.activeClientId$.pipe(
-    switchMap((clientId) => {
-      if (!clientId) {
-        return of(false);
-      }
-
-      return this.agentsFacade.getClientAgentsAppendLoading$(clientId);
-    }),
-  );
-  readonly agentsAppendError$: Observable<string | null> = this.activeClientId$.pipe(
-    switchMap((clientId) => {
-      if (!clientId) {
-        return of(null);
-      }
-
-      return this.agentsFacade.getClientAgentsAppendError$(clientId);
     }),
   );
   readonly agentsDeleting$: Observable<boolean> = this.activeClientId$.pipe(
@@ -1047,20 +994,29 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   });
 
   // ---- Workspace / environment rails as tables (3.38 decision 7) ----
-  // The clients / agents stores are append-style (batches via "load more"); the rails page over them and load
-  // further batches until the current page (+ one row for "has next") is filled.
+  // True server paging (replace-page): each page / page size / search change requests exactly that page and
+  // replaces the rail rows (dedicated rail slices of the clients / agents stores; the append-style lists other
+  // consumers page through are not touched). The list endpoints return no total: one extra row tells "has next".
 
   readonly workspaceRailPage = signal(1);
   readonly workspaceRailPageSize = signal(FPC_DEFAULT_PAGE_SIZE);
   readonly environmentRailPage = signal(1);
   readonly environmentRailPageSize = signal(FPC_DEFAULT_PAGE_SIZE);
 
-  private readonly railClients = toSignal(this.clients$, { initialValue: [] as ClientResponseDto[] });
-  private readonly railClientsLoading = toSignal(this.clientsLoading$, { initialValue: false });
-  private readonly railClientsError = toSignal(this.clientsError$, { initialValue: null as string | null });
-  private readonly railClientsHasMore = toSignal(this.clientsHasMore$, { initialValue: false });
-  private readonly railClientsAppendLoading = toSignal(this.clientsAppendLoading$, { initialValue: false });
-  private readonly railClientsAppendError = toSignal(this.clientsAppendError$, { initialValue: null as string | null });
+  /** Rail searches, debounced (the table resets the page to 1 at once). */
+  private readonly workspaceRailSearch = toSignal(
+    this.searchClientQuery$.pipe(debounceTime(300), distinctUntilChanged()),
+    { initialValue: '' },
+  );
+  private readonly environmentRailSearch = toSignal(
+    this.searchAgentQuery$.pipe(debounceTime(300), distinctUntilChanged()),
+    { initialValue: '' },
+  );
+
+  private readonly railClients = toSignal(this.clientsFacade.railRows$, { initialValue: [] as ClientResponseDto[] });
+  private readonly railClientsLoading = toSignal(this.clientsFacade.railLoading$, { initialValue: false });
+  private readonly railClientsError = toSignal(this.clientsFacade.railError$, { initialValue: null as string | null });
+  private readonly railClientsHasNext = toSignal(this.clientsFacade.railHasNext$, { initialValue: false });
   private readonly railWorkspaceErrors = toSignal(this.workspaceConnectionErrors$, {
     initialValue: {} as Record<string, string>,
   });
@@ -1071,11 +1027,30 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     >,
   });
 
-  private readonly railAgents = toSignal(this.agents$, { initialValue: [] as AgentResponseDto[] });
-  private readonly railAgentsLoading = toSignal(this.agentsLoading$, { initialValue: false });
-  private readonly railAgentsHasMore = toSignal(this.agentsHasMore$, { initialValue: false });
-  private readonly railAgentsAppendLoading = toSignal(this.agentsAppendLoading$, { initialValue: false });
-  private readonly railAgentsAppendError = toSignal(this.agentsAppendError$, { initialValue: null as string | null });
+  private readonly railAgents = toSignal(
+    this.activeClientId$.pipe(
+      switchMap((clientId) => (clientId ? this.agentsFacade.getClientAgentsRailRows$(clientId) : of([]))),
+    ),
+    { initialValue: [] as AgentResponseDto[] },
+  );
+  private readonly railAgentsLoading = toSignal(
+    this.activeClientId$.pipe(
+      switchMap((clientId) => (clientId ? this.agentsFacade.getClientAgentsRailLoading$(clientId) : of(false))),
+    ),
+    { initialValue: false },
+  );
+  private readonly railAgentsHasNext = toSignal(
+    this.activeClientId$.pipe(
+      switchMap((clientId) => (clientId ? this.agentsFacade.getClientAgentsRailHasNext$(clientId) : of(false))),
+    ),
+    { initialValue: false },
+  );
+  private readonly railAgentsError = toSignal(
+    this.activeClientId$.pipe(
+      switchMap((clientId) => (clientId ? this.agentsFacade.getClientAgentsRailError$(clientId) : of(null))),
+    ),
+    { initialValue: null as string | null },
+  );
   private readonly railPendingEnvironments = toSignal(this.pendingEnvironmentProgress$, {
     initialValue: [] as EnvironmentProgress[],
   });
@@ -1085,51 +1060,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   readonly activeClientIdForRail = computed(() => this.activeClientIdSignal());
 
-  readonly workspaceRailRows = computed(() => {
-    const size = this.workspaceRailPageSize();
-    const start = (this.workspaceRailPage() - 1) * size;
+  readonly workspaceRailRows = computed(() => this.railClients());
+  readonly workspaceRailHasNext = computed(() => this.railClientsHasNext());
+  readonly workspaceRailLoading = computed(() => this.railClientsLoading());
+  readonly workspaceRailError = computed(() => this.railClientsError());
 
-    return this.railClients().slice(start, start + size);
-  });
-  readonly workspaceRailHasNext = computed(
-    () =>
-      this.railClients().length > this.workspaceRailPage() * this.workspaceRailPageSize() || this.railClientsHasMore(),
+  readonly environmentRailRows = computed((): ChatEnvironmentRailRow[] =>
+    chatEnvironmentRailRows(this.environmentRailPage(), this.railPendingEnvironments(), this.railAgents()),
   );
-  readonly workspaceRailLoading = computed(
-    () => this.railClientsLoading() || (this.railClientsAppendLoading() && this.workspaceRailRows().length === 0),
-  );
-  readonly workspaceRailError = computed(() => this.railClientsError() ?? this.railClientsAppendError());
-
-  readonly environmentRailRows = computed((): ChatEnvironmentRailRow[] => {
-    const page = this.environmentRailPage();
-    const size = this.environmentRailPageSize();
-    const start = (page - 1) * size;
-    const pending: ChatEnvironmentRailRow[] =
-      page === 1
-        ? this.railPendingEnvironments().map((progress) => ({
-            id: `pending:${progress.operationId}`,
-            name: progress.agentName,
-            agent: null,
-            pending: progress,
-          }))
-        : [];
-
-    return [
-      ...pending,
-      ...this.railAgents()
-        .slice(start, start + size)
-        .map((agent) => ({ id: agent.id, name: agent.name, agent, pending: null })),
-    ];
-  });
-  readonly environmentRailHasNext = computed(
-    () =>
-      this.railAgents().length > this.environmentRailPage() * this.environmentRailPageSize() ||
-      this.railAgentsHasMore(),
-  );
-  readonly environmentRailLoading = computed(
-    () => this.railAgentsLoading() || (this.railAgentsAppendLoading() && this.environmentRailRows().length === 0),
-  );
-  readonly environmentRailError = computed(() => this.railAgentsAppendError());
+  readonly environmentRailHasNext = computed(() => this.railAgentsHasNext());
+  readonly environmentRailLoading = computed(() => this.railAgentsLoading());
+  readonly environmentRailError = computed(() => this.railAgentsError());
 
   private readonly railCurrentWorkspaceLabel = $localize`:@@featureAgentConsoleWorkspaceSwitch-current:Current workspace`;
   private readonly railAvailableLabel = $localize`:@@featureAgentConsoleWorkspaceSwitch-other:Available`;
@@ -2198,37 +2139,58 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   constructor() {
-    // Rail tables: load further batches of the append-style stores until the current page (+1 row) is filled.
+    // Rail tables: load exactly the requested page (replaces the rail rows).
     effect(() => {
-      const needed = this.workspaceRailPage() * this.workspaceRailPageSize() + 1;
+      const query = chatRailPageQuery(
+        this.workspaceRailPage(),
+        this.workspaceRailPageSize(),
+        this.workspaceRailSearch(),
+      );
 
+      untracked(() => this.clientsFacade.loadClientsRailPage(query));
+    });
+    // A different workspace starts its environments rail on the first page (the page change re-runs this effect).
+    let environmentRailClientId: string | null | undefined;
+
+    effect(() => {
+      const clientId = this.activeClientIdSignal();
+      const page = this.environmentRailPage();
+      const query = chatRailPageQuery(page, this.environmentRailPageSize(), this.environmentRailSearch());
+      const clientChanged = environmentRailClientId !== undefined && clientId !== environmentRailClientId;
+
+      environmentRailClientId = clientId;
+
+      if (clientChanged && page !== 1) {
+        untracked(() => this.environmentRailPage.set(1));
+
+        return;
+      }
+
+      if (clientId) {
+        untracked(() => this.agentsFacade.loadClientAgentsRailPage(clientId, query));
+      }
+    });
+    // A page emptied by deletes (or a search narrowing a later page) steps back to the previous page.
+    effect(() => {
       if (
-        this.railClients().length < needed &&
-        this.railClientsHasMore() &&
         !this.railClientsLoading() &&
-        !this.railClientsAppendLoading() &&
-        !this.railClientsAppendError()
+        !this.railClientsError() &&
+        this.railClients().length === 0 &&
+        this.workspaceRailPage() > 1
       ) {
-        untracked(() => this.onLoadMoreClients());
+        untracked(() => this.workspaceRailPage.update((page) => page - 1));
       }
     });
     effect(() => {
-      const needed = this.environmentRailPage() * this.environmentRailPageSize() + 1;
-
       if (
-        this.railAgents().length < needed &&
-        this.railAgentsHasMore() &&
+        this.activeClientIdSignal() &&
         !this.railAgentsLoading() &&
-        !this.railAgentsAppendLoading() &&
-        !this.railAgentsAppendError()
+        !this.railAgentsError() &&
+        this.railAgents().length === 0 &&
+        this.environmentRailPage() > 1
       ) {
-        untracked(() => this.onLoadMoreAgents());
+        untracked(() => this.environmentRailPage.update((page) => page - 1));
       }
-    });
-    // A different workspace starts its environments rail on the first page.
-    effect(() => {
-      this.activeClientIdSignal();
-      untracked(() => this.environmentRailPage.set(1));
     });
 
     // Pin the displayed capability revision; a change after an explicit choice requires a new selection.
@@ -2349,21 +2311,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
     });
 
-    this.searchClientQuery$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        this.clientsFacade.loadClients({ search: search.trim() || undefined });
-      });
-
-    this.searchAgentQuery$
-      .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((search) => {
-        const clientId = this.activeClientId;
-
-        if (clientId) {
-          this.agentsFacade.loadClientAgents(clientId, { search: search.trim() || undefined });
-        }
-      });
+    // Rail searches load rail pages (constructor effects); the cached workspace / environment lists stay unfiltered.
 
     // Sync local active client from store when component is recreated
     this.activeClientId$.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((clientId) => {
@@ -3106,29 +3054,22 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       });
   }
 
-  onLoadMoreClients(): void {
-    this.clientsFacade.loadMoreClients();
-  }
-
-  onLoadMoreAgents(): void {
-    const clientId = this.activeClientIdSignal();
-
-    if (clientId) {
-      this.agentsFacade.loadMoreClientAgents(clientId);
-    }
-  }
-
-  /** Reloads the workspaces rail with the current search (table toolbar refresh). */
+  /** Reloads the current workspaces rail page (table toolbar refresh). */
   onRefreshClients(): void {
-    this.clientsFacade.loadClients({ search: this.searchClientQuery().trim() || undefined });
+    this.clientsFacade.loadClientsRailPage(
+      chatRailPageQuery(this.workspaceRailPage(), this.workspaceRailPageSize(), this.searchClientQuery()),
+    );
   }
 
-  /** Reloads the active workspace's environments with the current search (table toolbar refresh). */
+  /** Reloads the current environments rail page of the active workspace (table toolbar refresh). */
   onRefreshAgents(): void {
     const clientId = this.activeClientIdSignal();
 
     if (clientId) {
-      this.agentsFacade.loadClientAgents(clientId, { search: this.searchAgentQuery().trim() || undefined });
+      this.agentsFacade.loadClientAgentsRailPage(
+        clientId,
+        chatRailPageQuery(this.environmentRailPage(), this.environmentRailPageSize(), this.searchAgentQuery()),
+      );
     }
   }
 
