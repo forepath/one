@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; font-src 'self'"
+    />
+    <title>Settings</title>
+    <link rel="stylesheet" href="brand.css" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--page-bg);
+        color: var(--fg);
+        font-family: var(--font);
+        font-size: 13px;
+        line-height: 1.5;
+        overflow: hidden;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        border: 1px solid var(--border);
+        cursor: default;
+      }
+      body:not(.ready) main,
+      body:not(.ready) footer {
+        visibility: hidden;
+      }
+
+      /* Header: the same chrome as the title bar of the main window */
+      header {
+        display: flex;
+        align-items: center;
+        flex: none;
+        height: 36px;
+        background: var(--chrome-bg);
+        border-bottom: 1px solid var(--border);
+        user-select: none;
+        -webkit-app-region: drag;
+      }
+      header .mark {
+        width: 16px;
+        height: 16px;
+        margin: 0 10px 0 12px;
+      }
+      header h1 {
+        flex: 1;
+        margin: 0;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--fg-emphasis);
+      }
+      header .close {
+        width: 46px;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--fg);
+        -webkit-app-region: no-drag;
+      }
+      header .close:hover {
+        background: var(--close-hover);
+        color: #fff;
+      }
+      header .close svg {
+        width: 10px;
+        height: 10px;
+        stroke: currentColor;
+        stroke-width: 1;
+      }
+
+      main {
+        flex: 1;
+        overflow: auto;
+        padding: 20px 24px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      h2 {
+        margin: 0;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--fg-muted);
+      }
+      label {
+        font-weight: 500;
+        color: var(--fg-emphasis);
+      }
+      .hint {
+        margin: 0;
+        font-size: 12px;
+        color: var(--fg-muted);
+      }
+      .error {
+        margin: 0;
+        font-size: 12px;
+        color: var(--danger);
+      }
+      .error:empty {
+        display: none;
+      }
+      input[type='url'] {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 8px 12px;
+        font: inherit;
+        color: var(--fg-emphasis);
+        background: var(--input-bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        outline: none;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+      }
+      input[type='url']::placeholder {
+        color: var(--fg-muted);
+      }
+      input[type='url']:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-ring);
+      }
+      input[type='url'][aria-invalid='true'] {
+        border-color: var(--danger);
+      }
+
+      /* Update channel: segmented control */
+      .segmented {
+        display: inline-flex;
+        align-self: flex-start;
+        padding: 3px;
+        gap: 3px;
+        background: var(--surface-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      .segmented input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .segmented label {
+        padding: 5px 16px;
+        border-radius: 5px;
+        font-weight: 500;
+        color: var(--fg);
+        cursor: pointer;
+        transition: background-color 0.1s;
+      }
+      .segmented label:hover {
+        background: var(--hover);
+      }
+      .segmented input:checked + label {
+        background: var(--primary-fill);
+        color: var(--on-primary);
+      }
+      .segmented input:focus-visible + label {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .version {
+        color: var(--fg-muted);
+        font-size: 12px;
+      }
+
+      footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: none;
+        padding: 14px 24px 18px;
+      }
+      footer .spacer {
+        flex: 1;
+      }
+      button.btn {
+        padding: 7px 16px;
+        font: inherit;
+        font-weight: 500;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition:
+          background-color 0.1s,
+          border-color 0.1s;
+      }
+      button.btn:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+      button.btn:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+      .btn-primary {
+        background: var(--primary-fill);
+        color: var(--on-primary);
+      }
+      .btn-primary:hover:not(:disabled) {
+        background: var(--primary-fill-hover);
+      }
+      .btn-secondary {
+        background: var(--surface-bg);
+        border-color: var(--border);
+        color: var(--fg-emphasis);
+      }
+      .btn-secondary:hover:not(:disabled) {
+        background: var(--hover);
+      }
+      .btn-link {
+        padding-left: 0;
+        padding-right: 0;
+        background: transparent;
+        color: var(--primary-text);
+      }
+      .btn-link:hover:not(:disabled) {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <img class="mark" src="logo.svg" alt="" />
+      <h1>Settings</h1>
+      <button type="button" class="close" id="close" title="Close" aria-label="Close">
+        <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M0.5 0.5L9.5 9.5M9.5 0.5L0.5 9.5" /></svg>
+      </button>
+    </header>
+    <main>
+      <section aria-labelledby="server-heading">
+        <h2 id="server-heading">Server</h2>
+        <label for="configUrl">Configuration URL</label>
+        <input
+          type="url"
+          id="configUrl"
+          placeholder="https://example.com/config.json"
+          spellcheck="false"
+          autocomplete="off"
+          aria-describedby="configUrlHint configUrlError"
+        />
+        <p class="error" id="configUrlError" role="alert"></p>
+        <p class="hint" id="configUrlHint">
+          Runtime configuration the console loads at start. Leave empty to use the built-in default. Changing it
+          restarts the app.
+        </p>
+      </section>
+      <section aria-labelledby="updates-heading">
+        <h2 id="updates-heading">Updates</h2>
+        <div class="row">
+          <div class="segmented" role="radiogroup" aria-label="Update channel">
+            <input type="radio" name="channel" id="channelStable" value="stable" />
+            <label for="channelStable">Stable</label>
+            <input type="radio" name="channel" id="channelBeta" value="beta" />
+            <label for="channelBeta">Beta</label>
+          </div>
+          <button type="button" class="btn btn-secondary" id="check">Check for updates</button>
+        </div>
+        <p class="hint">
+          Beta brings new features earlier and may be less stable. <span class="version" id="version"></span>
+        </p>
+      </section>
+    </main>
+    <footer>
+      <button type="button" class="btn btn-link" id="reset">Use default server</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn btn-secondary" id="cancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="save">Save</button>
+    </footer>
+    <script src="settings.js"></script>
+  </body>
+</html>

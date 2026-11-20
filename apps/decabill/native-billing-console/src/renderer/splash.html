@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; font-src 'self'"
+    />
+    <title></title>
+    <link rel="stylesheet" href="brand.css" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--chrome-bg);
+        color: var(--fg-emphasis);
+        font-family: var(--font);
+        user-select: none;
+        cursor: default;
+        overflow: hidden;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        box-sizing: border-box;
+        border: 1px solid var(--border);
+        /* No frame: the splash is moved by dragging it anywhere */
+        -webkit-app-region: drag;
+      }
+      .mark {
+        width: 64px;
+        height: 64px;
+        animation: fade-in 0.5s ease-out both;
+      }
+      .name {
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        animation: fade-in 0.5s 0.1s ease-out both;
+      }
+      .bar {
+        position: relative;
+        width: 140px;
+        height: 3px;
+        overflow: hidden;
+        background: var(--track);
+        border-radius: 2px;
+        animation: fade-in 0.5s 0.2s ease-out both;
+      }
+      .bar::after {
+        content: '';
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 40%;
+        background: var(--primary);
+        border-radius: 2px;
+        animation: slide 1.2s ease-in-out infinite;
+      }
+      .version {
+        position: absolute;
+        bottom: 14px;
+        font-size: 11px;
+        color: var(--fg-muted);
+        letter-spacing: 0.02em;
+      }
+      @keyframes slide {
+        from {
+          transform: translateX(-100%);
+        }
+        to {
+          transform: translateX(250%);
+        }
+      }
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .mark,
+        .name,
+        .bar,
+        .bar::after {
+          animation: none;
+        }
+        .bar::after {
+          width: 100%;
+          opacity: 0.6;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <img class="mark" src="logo.svg" alt="" />
+    <div class="name" id="name"></div>
+    <div class="bar" role="progressbar" aria-label="Starting"></div>
+    <div class="version" id="version"></div>
+    <script src="splash.js"></script>
+  </body>
+</html>
