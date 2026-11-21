@@ -1,0 +1,56 @@
+/*
+ * Decabill tokens for the bundled pages (splash, title bar, settings): the console palette
+ * (ui-components/styles/brands/decabill) resolved for light and dark. `src/brand.ts` repeats the backgrounds for the
+ * native windows. The pages set `data-theme` on <html> to the console theme.
+ */
+@font-face {
+  font-family: 'Plus Jakarta Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url('plus-jakarta-sans.woff2') format('woff2-variations');
+}
+
+:root {
+  --primary: #32a852;
+  /* Primary surface that carries white labels at >= 4.5 : 1 (--fpc-primary-fill) */
+  --primary-fill: #288642;
+  --primary-fill-hover: #216f37;
+  --on-primary: #fff;
+  --primary-ring: rgb(50 168 82 / 0.35);
+  --danger: #ef4444;
+  --close-hover: #c42b1c;
+
+  /* light */
+  --page-bg: #f0f2f5;
+  --chrome-bg: #eceff1;
+  --surface-bg: #e4e6ea;
+  --input-bg: #f0f2f5;
+  --border: #dadbde;
+  --fg: #3c3f45;
+  --fg-emphasis: #24262c;
+  --fg-muted: rgb(60 63 69 / 0.75);
+  --hover: rgb(36 38 44 / 0.08);
+  --active: rgb(36 38 44 / 0.14);
+  --track: rgb(50 168 82 / 0.16);
+  --primary-text: #1f7833;
+
+  --font: 'Plus Jakarta Sans Variable', system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, sans-serif;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --page-bg: #0f0f11;
+  --chrome-bg: #141417;
+  --surface-bg: #18191d;
+  --input-bg: #0f0f11;
+  --border: #222224;
+  --fg: #d1d5db;
+  --fg-emphasis: #fff;
+  --fg-muted: rgb(209 213 219 / 0.75);
+  --hover: rgb(255 255 255 / 0.08);
+  --active: rgb(255 255 255 / 0.14);
+  --track: rgb(255 255 255 / 0.12);
+  --primary-text: #84cb97;
+  color-scheme: dark;
+}

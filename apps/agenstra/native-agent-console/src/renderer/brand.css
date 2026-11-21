@@ -1,0 +1,56 @@
+/*
+ * Agenstra tokens for the bundled pages (splash, title bar, settings): the console palette
+ * (ui-components/styles/brands/agenstra) resolved for light and dark. `src/brand.ts` repeats the backgrounds for the
+ * native windows. The pages set `data-theme` on <html> to the console theme.
+ */
+@font-face {
+  font-family: 'Plus Jakarta Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url('plus-jakarta-sans.woff2') format('woff2-variations');
+}
+
+:root {
+  --primary: #7a3fff;
+  /* Primary surface that carries white labels at >= 4.5 : 1 (--fpc-primary-fill) */
+  --primary-fill: #7a3fff;
+  --primary-fill-hover: #6835db;
+  --on-primary: #fff;
+  --primary-ring: rgb(122 63 255 / 0.35);
+  --danger: #f43f5e;
+  --close-hover: #c42b1c;
+
+  /* light */
+  --page-bg: #f2eff9;
+  --chrome-bg: #e8e4f0;
+  --surface-bg: #e6e2f1;
+  --input-bg: #f2eff9;
+  --border: #dbd9e2;
+  --fg: #3c3f45;
+  --fg-emphasis: #24262c;
+  --fg-muted: rgb(60 63 69 / 0.75);
+  --hover: rgb(36 38 44 / 0.08);
+  --active: rgb(36 38 44 / 0.14);
+  --track: rgb(122 63 255 / 0.16);
+  --primary-text: #4b2d9e;
+
+  --font: 'Plus Jakarta Sans Variable', system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, sans-serif;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --page-bg: #0f0f11;
+  --chrome-bg: #141417;
+  --surface-bg: #18191d;
+  --input-bg: #0f0f11;
+  --border: #222224;
+  --fg: #d1d5db;
+  --fg-emphasis: #fff;
+  --fg-muted: rgb(209 213 219 / 0.75);
+  --hover: rgb(255 255 255 / 0.08);
+  --active: rgb(255 255 255 / 0.14);
+  --track: rgb(255 255 255 / 0.12);
+  --primary-text: #af8cff;
+  color-scheme: dark;
+}

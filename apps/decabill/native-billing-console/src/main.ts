@@ -1,23 +1,41 @@
+/**
+ * Desktop app: the console's SSR server on Electron's runtime, shown in app windows with their own frame.
+ *
+ * Start: splash (no frame, no buttons) -> SSR server on localhost -> main window: an own title bar (view, with the
+ * settings gear and the window buttons) above the console (view); the splash closes once the console has loaded.
+ * Pop-ups of console pages open as further app windows, other links in the system browser. The settings window is
+ * a bundled page as well; the title bar, the splash and the settings follow the console theme (light / dark).
+ */
 import {
   app,
+  BaseWindow,
   BrowserWindow,
-  BrowserWindowConstructorOptions,
   dialog,
   ipcMain,
   Menu,
+  nativeTheme,
+  shell,
   utilityProcess,
+  WebContentsView,
+  type IpcMainEvent,
+  type IpcMainInvokeEvent,
   type UtilityProcess,
+  type WebContents,
 } from 'electron';
 import * as fs from 'fs';
 import { ChildProcess, spawn } from 'node:child_process';
 import * as net from 'node:net';
 import * as path from 'node:path';
 
-import { appOrigin, ipcSenderAllowed, type IpcScope } from './ipc-sender';
+import { APP_NAME, CHROME_BACKGROUND, isTheme, PAGE_BACKGROUND, type Theme } from './brand';
+import { appOrigin, ipcSenderAllowed, isAppUrl, isExternalLink, parseConfigUrl, type IpcScope } from './ipc-sender';
 import { effectiveUpdateChannel, isUpdateChannel } from './update/update-config';
 import { DesktopUpdater } from './update/updater';
 
 const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
+const TITLEBAR_HEIGHT = 36;
+/** The splash stays at least this long, so it does not just flash. */
+const SPLASH_MIN_MS = 1200;
 /** Resolved in whenReady: from PORT env or a free port. */
 let ssrPort = 0;
 
@@ -73,28 +91,25 @@ function getFreePort(): Promise<number> {
     server.once('error', reject);
   });
 }
-let ssrProcess: ChildProcess | UtilityProcess | null = null;
-let mainWindow: BrowserWindow | null = null;
-let configDialog: BrowserWindow | null = null;
 
-/** Only the app's own pages (and the config dialog) may use the IPC bridge; see `ipc-sender.ts`. */
-function trustedSender(event: Electron.IpcMainInvokeEvent, scope: IpcScope): boolean {
-  const frame = event.senderFrame;
-  const allowed = ipcSenderAllowed(
-    scope,
-    {
-      url: frame?.url,
-      isTopFrame: !!frame && frame.parent === null,
-      isMainWindow: !!mainWindow && !mainWindow.isDestroyed() && event.sender === mainWindow.webContents,
-      isConfigDialog: !!configDialog && !configDialog.isDestroyed() && event.sender === configDialog.webContents,
-    },
-    appOrigin(ssrPort),
-  );
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, Math.max(0, ms)));
+const rendererFile = (name: string) => path.join(__dirname, 'renderer', name);
 
-  if (!allowed) debugLog('Refused IPC from an untrusted sender:', frame?.url ?? '(no frame)');
-
-  return allowed;
+/** An app window: the title bar view above the console view. */
+interface AppWindow {
+  win: BaseWindow;
+  titlebar: WebContentsView;
+  content: WebContentsView;
+  title: string;
+  theme: Theme;
 }
+
+let ssrProcess: ChildProcess | UtilityProcess | null = null;
+const appWindows = new Set<AppWindow>();
+let mainWindow: AppWindow | null = null;
+let splash: BrowserWindow | null = null;
+let settingsWindow: BrowserWindow | null = null;
+let settingsTheme: Theme = 'light';
 
 // Config file path
 const configFilePath = path.join(app.getPath('userData'), 'config.json');
@@ -103,6 +118,8 @@ interface AppConfig {
   configUrl?: string;
   /** In-app update channel (`stable` / `beta`); unset: the channel of the installed version. */
   updateChannel?: 'stable' | 'beta';
+  /** Last console theme, for the splash and the frame before the console has loaded. */
+  theme?: Theme;
 }
 
 // Read config from file
@@ -137,9 +154,17 @@ function getUpdateChannel(): 'stable' | 'beta' {
   return effectiveUpdateChannel(readConfig().updateChannel, app.getVersion());
 }
 
+/** The console theme of the last run; the system theme (what the console falls back to) on the first. */
+function storedTheme(): Theme {
+  const theme = readConfig().theme;
+
+  return isTheme(theme) ? theme : nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+}
+
 const updater = new DesktopUpdater({
   channel: getUpdateChannel,
-  window: () => mainWindow,
+  // Update dialogs belong to the settings window while it is open (its "Check for updates" button).
+  window: () => (settingsWindow && !settingsWindow.isDestroyed() ? settingsWindow : (mainWindow?.win ?? null)),
   log: debugLog,
 });
 
@@ -250,411 +275,414 @@ function resolveAppIconPath(): string | undefined {
   return candidates.find((iconPath) => fs.existsSync(iconPath));
 }
 
-function getWindowOptions(): BrowserWindowConstructorOptions {
-  const preloadPath = path.join(__dirname, 'preload.js');
-  const icon = resolveAppIconPath();
+function webPreferences(preload?: string): Electron.WebPreferences {
   return {
-    width: 1400,
-    height: 900,
-    backgroundColor: '#121212',
-    show: false,
-    autoHideMenuBar: true,
-    frame: false,
-    title: 'Decabill Billing Console',
-    ...(icon ? { icon } : {}),
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      sandbox: true,
-      devTools: isDev,
-      preload: preloadPath,
-    },
+    nodeIntegration: false,
+    contextIsolation: true,
+    sandbox: true,
+    devTools: isDev,
+    ...(preload ? { preload: path.join(__dirname, preload) } : {}),
   };
 }
 
-function createWindow(): BrowserWindow {
-  mainWindow = new BrowserWindow(getWindowOptions());
+// --------------------------------------------------------------------------------------- guards
 
-  const ssrUrl = `http://localhost:${ssrPort}`;
-  mainWindow.loadURL(ssrUrl);
-
-  mainWindow.once('ready-to-show', () => mainWindow?.show());
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-    ssrProcess?.kill();
+/** Bundled pages stay on themselves; links on them open in the system browser. */
+function guardBundledPage(contents: WebContents): void {
+  contents.setWindowOpenHandler(({ url }) => {
+    if (isExternalLink(url)) void shell.openExternal(url);
+    return { action: 'deny' };
   });
-
-  return mainWindow;
+  contents.on('will-navigate', (event) => event.preventDefault());
+  contents.on('will-attach-webview', (event) => event.preventDefault());
 }
 
-// Set window open handler for all windows to use getWindowOptions()
-app.on('browser-window-created', (_event, window) => {
-  window.once('ready-to-show', () => window?.show());
-
-  const iconPath = resolveAppIconPath();
-  if (iconPath) {
-    try {
-      window.setIcon(iconPath);
-    } catch (error) {
-      console.warn('[Main Process] Failed to set window icon:', error instanceof Error ? error.message : String(error));
-    }
-  }
-
-  window.webContents.setWindowOpenHandler(() => {
-    const options = getWindowOptions();
-
-    return {
-      action: 'allow',
-      overrideBrowserWindowOptions: {
-        width: options.width,
-        height: options.height,
-        backgroundColor: options.backgroundColor,
-        show: options.show,
-        autoHideMenuBar: options.autoHideMenuBar,
-        frame: options.frame,
-        title: options.title,
-        icon: options.icon,
-        webPreferences: options.webPreferences,
-      },
-    };
+/**
+ * Pop-ups of the console: its own pages (agent desktop, file editor, docs, ...) open as further app windows, links to
+ * other sites in the system browser. The console window itself may still navigate away (sign-in, payment checkout)
+ * and come back, as before.
+ */
+function guardConsole(contents: WebContents): void {
+  contents.setWindowOpenHandler(({ url }) => {
+    if (isAppUrl(url, appOrigin(ssrPort))) void createAppWindow(url).catch((err) => debugLog('Pop-up failed:', err));
+    else if (isExternalLink(url)) void shell.openExternal(url);
+    return { action: 'deny' };
   });
-});
+  contents.on('will-attach-webview', (event) => event.preventDefault());
+}
 
-// IPC handlers for window controls
-ipcMain.handle('window-minimize', (event: Electron.IpcMainInvokeEvent) => {
-  if (!trustedSender(event, 'window')) return false;
+/** Reload, zoom and settings shortcuts (the frameless windows have no menu bar); dev tools in development. */
+function addShortcuts(contents: WebContents, owner: () => AppWindow | undefined): void {
+  contents.on('before-input-event', (event, input) => {
+    if (input.type !== 'keyDown') return;
+    const mod = process.platform === 'darwin' ? input.meta : input.control;
+    const key = input.key.toLowerCase();
+    if (key === 'f5' || (mod && key === 'r')) contents.reload();
+    else if (mod && (key === '=' || key === '+')) contents.setZoomLevel(contents.getZoomLevel() + 0.5);
+    else if (mod && key === '-') contents.setZoomLevel(contents.getZoomLevel() - 0.5);
+    else if (mod && key === '0') contents.setZoomLevel(0);
+    else if (mod && key === ',') openSettings(owner());
+    else if (isDev && (key === 'f12' || (mod && input.shift && key === 'i'))) contents.toggleDevTools();
+    else return;
+    event.preventDefault();
+  });
+}
 
-  console.log('[Main Process] window-minimize IPC received');
-  const window = BrowserWindow.fromWebContents(event.sender);
-  if (window) {
-    console.log('[Main Process] Minimizing window');
-    window.minimize();
-    return true;
+// --------------------------------------------------------------------------------------- splash
+
+/** Frameless splash in the console theme (logo, name, progress, version). Resolves once it is on screen. */
+function showSplash(): Promise<number> {
+  const theme = storedTheme();
+  const icon = resolveAppIconPath();
+  const window = new BrowserWindow({
+    width: 440,
+    height: 300,
+    frame: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    show: false,
+    center: true,
+    backgroundColor: CHROME_BACKGROUND[theme],
+    title: APP_NAME,
+    ...(icon ? { icon } : {}),
+    webPreferences: { ...webPreferences(), devTools: false },
+  });
+  splash = window;
+  guardBundledPage(window.webContents);
+  window.on('closed', () => {
+    if (splash === window) splash = null;
+  });
+  const shown = new Promise<number>((resolve) =>
+    window.once('ready-to-show', () => {
+      window.show();
+      resolve(Date.now());
+    }),
+  );
+  void window.loadFile(rendererFile('splash.html'), {
+    query: { name: APP_NAME, version: app.getVersion(), theme },
+  });
+  return shown;
+}
+
+function closeSplash(): void {
+  if (splash && !splash.isDestroyed()) splash.destroy();
+  splash = null;
+}
+
+// ---------------------------------------------------------------------------------- app windows
+
+function titlebarState(w: AppWindow) {
+  return {
+    title: w.title,
+    maximized: w.win.isMaximized(),
+    focused: w.win.isFocused(),
+    theme: w.theme,
+    platform: process.platform,
+  };
+}
+
+function sendTitlebarState(w: AppWindow): void {
+  if (!w.titlebar.webContents.isDestroyed()) w.titlebar.webContents.send('window:state', titlebarState(w));
+}
+
+function layoutViews(w: AppWindow): void {
+  const { width, height } = w.win.getContentBounds();
+  w.titlebar.setBounds({ x: 0, y: 0, width, height: TITLEBAR_HEIGHT });
+  w.content.setBounds({ x: 0, y: TITLEBAR_HEIGHT, width, height: Math.max(0, height - TITLEBAR_HEIGHT) });
+}
+
+function applyTheme(w: AppWindow, theme: Theme): void {
+  w.theme = theme;
+  w.win.setBackgroundColor(PAGE_BACKGROUND[theme]);
+  w.titlebar.setBackgroundColor(CHROME_BACKGROUND[theme]);
+  w.content.setBackgroundColor(PAGE_BACKGROUND[theme]);
+  sendTitlebarState(w);
+}
+
+/**
+ * Opens an app window on a console URL. Resolves once the console has loaded and the window is shown; rejects when the
+ * page cannot be loaded (the main window then reports a startup error).
+ */
+function createAppWindow(url: string, isMain = false): Promise<AppWindow> {
+  const theme = storedTheme();
+  const icon = resolveAppIconPath();
+  const win = new BaseWindow({
+    width: 1400,
+    height: 900,
+    minWidth: 800,
+    minHeight: 500,
+    frame: false,
+    autoHideMenuBar: true,
+    show: false,
+    backgroundColor: PAGE_BACKGROUND[theme],
+    title: APP_NAME,
+    ...(icon ? { icon } : {}),
+  });
+  const titlebar = new WebContentsView({ webPreferences: webPreferences('preload-titlebar.js') });
+  const content = new WebContentsView({ webPreferences: webPreferences('preload-console.js') });
+  const w: AppWindow = { win, titlebar, content, title: APP_NAME, theme };
+
+  appWindows.add(w);
+  if (isMain) mainWindow = w;
+  win.contentView.addChildView(titlebar);
+  win.contentView.addChildView(content);
+  applyTheme(w, theme);
+  layoutViews(w);
+
+  for (const e of ['resize', 'maximize', 'unmaximize', 'enter-full-screen', 'leave-full-screen'] as const) {
+    win.on(e as 'resize', () => {
+      layoutViews(w);
+      sendTitlebarState(w);
+    });
   }
-  console.error('[Main Process] Window not found for minimize');
-  return false;
-});
-
-ipcMain.handle('window-maximize', (event: Electron.IpcMainInvokeEvent) => {
-  if (!trustedSender(event, 'window')) return false;
-
-  console.log('[Main Process] window-maximize IPC received');
-  const window = BrowserWindow.fromWebContents(event.sender);
-  if (window) {
-    if (window.isMaximized()) {
-      console.log('[Main Process] Unmaximizing window');
-      window.unmaximize();
-    } else {
-      console.log('[Main Process] Maximizing window');
-      window.maximize();
+  win.on('focus', () => {
+    // Keyboard input belongs to the console, not to the title bar view.
+    if (!content.webContents.isDestroyed()) content.webContents.focus();
+    sendTitlebarState(w);
+  });
+  win.on('blur', () => sendTitlebarState(w));
+  win.on('closed', () => {
+    appWindows.delete(w);
+    if (!titlebar.webContents.isDestroyed()) titlebar.webContents.close();
+    if (!content.webContents.isDestroyed()) content.webContents.close();
+    if (mainWindow === w) {
+      // The console windows share the server of the main window: closing it quits the app.
+      mainWindow = null;
+      app.quit();
     }
-    return true;
+  });
+
+  guardBundledPage(titlebar.webContents);
+  // Clicking a title bar button must not take the keyboard away from the console.
+  titlebar.webContents.on('focus', () => {
+    if (!content.webContents.isDestroyed()) content.webContents.focus();
+  });
+  guardConsole(content.webContents);
+  addShortcuts(content.webContents, () => w);
+  content.webContents.on('page-title-updated', (_event, title) => {
+    w.title = title || APP_NAME;
+    win.setTitle(w.title);
+    sendTitlebarState(w);
+  });
+  content.webContents.on('render-process-gone', (_event, details) => debugLog('Console page gone:', details.reason));
+
+  void titlebar.webContents.loadFile(rendererFile('titlebar.html'));
+
+  return new Promise<AppWindow>((resolve, reject) => {
+    const show = () => {
+      if (win.isDestroyed()) return;
+      win.show();
+      win.focus();
+      content.webContents.focus();
+      if (isMain) closeSplash();
+      resolve(w);
+    };
+    content.webContents.once('did-finish-load', show);
+    content.webContents.on('did-fail-load', (_event, code, description, failedUrl, isMainFrame) => {
+      // -3 (ERR_ABORTED): a redirect or a navigation replaced the load, not an error.
+      if (!isMainFrame || code === -3 || win.isVisible()) return;
+      debugLog('Console page failed to load:', code, description, failedUrl);
+      if (isMain) reject(new Error(`Could not load the console (${description}, ${code}) from ${failedUrl}`));
+      else show();
+    });
+    void content.webContents.loadURL(url).catch(() => undefined);
+  });
+}
+
+function appWindowOf(event: IpcMainInvokeEvent | IpcMainEvent, view: 'titlebar' | 'content'): AppWindow | undefined {
+  for (const w of appWindows) if (w[view].webContents === event.sender) return w;
+  return undefined;
+}
+
+/** Only the app's own pages may use the IPC bridge, each for its own scope; see `ipc-sender.ts`. */
+function trustedSender(event: IpcMainInvokeEvent | IpcMainEvent, scope: IpcScope, fromExpectedView: boolean): boolean {
+  const frame = event.senderFrame;
+  const allowed = ipcSenderAllowed(
+    scope,
+    { url: frame?.url, isTopFrame: !!frame && frame.parent === null, fromExpectedView },
+    appOrigin(ssrPort),
+  );
+
+  if (!allowed) debugLog('Refused IPC from an untrusted sender:', frame?.url ?? '(no frame)');
+
+  return allowed;
+}
+
+/** The app window whose title bar sent this, when the sender may use the window buttons. */
+function titlebarWindow(event: IpcMainInvokeEvent): AppWindow | undefined {
+  const w = appWindowOf(event, 'titlebar');
+
+  return trustedSender(event, 'titlebar', !!w) ? w : undefined;
+}
+
+function fromSettings(event: IpcMainInvokeEvent): boolean {
+  const isSettings = !!settingsWindow && !settingsWindow.isDestroyed() && event.sender === settingsWindow.webContents;
+
+  return trustedSender(event, 'settings', isSettings);
+}
+
+// ------------------------------------------------------------------------------------- settings
+
+/** Modal settings window over an app window, in its theme; focuses the open one instead of a second. */
+function openSettings(parent: AppWindow | undefined | null): void {
+  const owner = parent ?? mainWindow;
+
+  if (!owner) return;
+
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.focus();
+    return;
   }
-  console.error('[Main Process] Window not found for maximize');
-  return false;
-});
 
-ipcMain.handle('window-close', (event: Electron.IpcMainInvokeEvent) => {
-  if (!trustedSender(event, 'window')) return false;
+  settingsTheme = owner.theme;
+  const icon = resolveAppIconPath();
+  const window = new BrowserWindow({
+    parent: owner.win,
+    modal: true,
+    width: 540,
+    height: 424,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    frame: false,
+    show: false,
+    backgroundColor: PAGE_BACKGROUND[settingsTheme],
+    title: `Settings – ${APP_NAME}`,
+    ...(icon ? { icon } : {}),
+    webPreferences: webPreferences('preload-settings.js'),
+  });
+  settingsWindow = window;
+  guardBundledPage(window.webContents);
+  window.once('ready-to-show', () => window.show());
+  window.on('closed', () => {
+    if (settingsWindow === window) settingsWindow = null;
+  });
+  void window.loadFile(rendererFile('settings.html'), { query: { theme: settingsTheme } });
+}
 
-  console.log('[Main Process] window-close IPC received');
-  const window = BrowserWindow.fromWebContents(event.sender);
-  if (window) {
-    console.log('[Main Process] Closing window');
-    window.close();
-    return true;
-  }
-  console.error('[Main Process] Window not found for close');
-  return false;
-});
-
-ipcMain.handle('window-is-maximized', (event: Electron.IpcMainInvokeEvent) => {
-  if (!trustedSender(event, 'window')) return false;
-
-  const window = BrowserWindow.fromWebContents(event.sender);
-  return window?.isMaximized() ?? false;
-});
-
-// IPC handlers for config management
-ipcMain.handle('get-config-url', (event: Electron.IpcMainInvokeEvent) => {
-  if (!trustedSender(event, 'privileged')) return undefined;
-
-  return getConfigUrl();
-});
-
-ipcMain.handle('set-config-url', async (event: Electron.IpcMainInvokeEvent, url: unknown) => {
-  if (!trustedSender(event, 'privileged')) return false;
-
-  if (url !== null && url !== undefined && typeof url !== 'string') return false;
-
-  const value = typeof url === 'string' ? url.trim() : '';
+/** Stores a new server URL and restarts the app so the SSR server picks it up. */
+function applyConfigUrl(value: string): void {
   const config = readConfig();
-  if (value) {
-    config.configUrl = value;
-    writeConfig(config);
-    console.log('[Main Process] Config URL set to:', config.configUrl);
-  } else {
-    // Reset config (empty string or null)
-    delete config.configUrl;
-    writeConfig(config);
-    console.log('[Main Process] Config URL reset');
-  }
 
-  // Notify the sender that config was set (for dialog to close)
-  event.sender.send('config-url-set');
+  if (value) config.configUrl = value;
+  else delete config.configUrl;
+  writeConfig(config);
+  debugLog(value ? 'Config URL set to:' : 'Config URL reset', value);
 
   // Kill SSR server before restarting to ensure clean restart
   if (ssrProcess) {
-    console.log('[Main Process] Killing SSR server before restart');
     ssrProcess.kill();
     ssrProcess = null;
   }
 
-  // Restart the application after a short delay
   setTimeout(() => {
     app.relaunch();
     app.exit(0);
   }, 100);
+}
 
+// ------------------------------------------------------------------------------------------ ipc
+
+// Window buttons and the settings gear (title bar views)
+ipcMain.handle('window:minimize', (event) => {
+  const w = titlebarWindow(event);
+  w?.win.minimize();
+  return !!w;
+});
+
+ipcMain.handle('window:toggle-maximize', (event) => {
+  const w = titlebarWindow(event);
+  if (!w) return false;
+  if (w.win.isMaximized()) w.win.unmaximize();
+  else w.win.maximize();
   return true;
 });
 
-// IPC handlers for in-app updates
-ipcMain.handle('get-update-channel', (event: Electron.IpcMainInvokeEvent) =>
-  trustedSender(event, 'privileged') ? getUpdateChannel() : undefined,
-);
+ipcMain.handle('window:close', (event) => {
+  const w = titlebarWindow(event);
+  w?.win.close();
+  return !!w;
+});
 
-ipcMain.handle('set-update-channel', (event: Electron.IpcMainInvokeEvent, channel: unknown) =>
-  trustedSender(event, 'privileged') ? setUpdateChannel(channel) : getUpdateChannel(),
-);
+ipcMain.handle('window:get-state', (event) => {
+  const w = titlebarWindow(event);
+  return w ? titlebarState(w) : undefined;
+});
 
-ipcMain.handle('check-for-updates', async (event: Electron.IpcMainInvokeEvent) => {
-  if (!trustedSender(event, 'privileged')) return false;
+ipcMain.handle('settings:open', (event) => {
+  const w = titlebarWindow(event);
+  if (w) openSettings(w);
+  return !!w;
+});
+
+// Theme of the console page (console views)
+ipcMain.on('console:theme', (event, theme: unknown) => {
+  const w = appWindowOf(event, 'content');
+
+  if (!trustedSender(event, 'console', !!w) || !w || !isTheme(theme) || theme === w.theme) return;
+
+  applyTheme(w, theme);
+  if (w === mainWindow && readConfig().theme !== theme) writeConfig({ ...readConfig(), theme });
+});
+
+// Settings window
+ipcMain.handle('settings:get', (event) => {
+  if (!fromSettings(event)) return undefined;
+
+  return {
+    configUrl: getConfigUrl() ?? '',
+    updateChannel: getUpdateChannel(),
+    version: app.getVersion(),
+    theme: settingsTheme,
+  };
+});
+
+ipcMain.handle('settings:save', (event, change: unknown) => {
+  if (!fromSettings(event)) return 'invalid';
+
+  const { configUrl, updateChannel } = (change ?? {}) as { configUrl?: unknown; updateChannel?: unknown };
+  const url = parseConfigUrl(configUrl);
+
+  if (url === undefined) return 'invalid';
+
+  if (isUpdateChannel(updateChannel) && updateChannel !== getUpdateChannel()) setUpdateChannel(updateChannel);
+
+  if (url === (getConfigUrl() ?? '')) return 'saved';
+
+  applyConfigUrl(url);
+
+  return 'restart';
+});
+
+ipcMain.handle('settings:check-for-updates', async (event) => {
+  if (!fromSettings(event)) return false;
 
   await updater.check(true);
 
   return true;
 });
 
-ipcMain.handle('open-config-dialog', async (event: Electron.IpcMainInvokeEvent) => {
-  if (!trustedSender(event, 'privileged')) return false;
+ipcMain.handle('settings:close', (event) => {
+  if (!fromSettings(event)) return false;
 
-  console.log('[Main Process] Opening config dialog');
-  await showConfigUrlDialog();
+  settingsWindow?.close();
+
   return true;
 });
 
-// Show config URL dialog
-async function showConfigUrlDialog(): Promise<void> {
-  if (!mainWindow) {
-    return;
-  }
-
-  const currentUrl = getConfigUrl();
-  const dialogWindow = new BrowserWindow({
-    parent: mainWindow,
-    width: 500,
-    height: 372,
-    modal: true,
-    resizable: false,
-    frame: false,
-    backgroundColor: '#1e1e1e',
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      sandbox: true,
-      preload: path.join(__dirname, 'preload.js'),
-    },
-  });
-
-  const dialogHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <style>
-        body {
-          margin: 0;
-          padding: 20px;
-          background: #1e1e1e;
-          color: #ffffff;
-          font-family: 'Plus Jakarta Sans Variable', sans-serif;
-          display: flex;
-          flex-direction: column;
-          gap: 15px;
-        }
-        .title {
-          font-size: 16px;
-          font-weight: 600;
-          margin-top: 20px;
-          margin-bottom: 5px;
-        }
-        .current {
-          font-size: 12px;
-          color: #888;
-          margin-bottom: 10px;
-          word-break: break-all;
-        }
-        input {
-          width: calc(100% - 20px);
-          padding: 10px;
-          background: #2d2d2d;
-          border: 1px solid #444;
-          border-radius: 4px;
-          color: #ffffff;
-          font-size: 14px;
-        }
-        .row {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-size: 13px;
-        }
-        select {
-          flex: 1;
-          padding: 8px;
-          background: #2d2d2d;
-          border: 1px solid #444;
-          border-radius: 4px;
-          color: #ffffff;
-          font-size: 14px;
-        }
-        input:focus {
-          outline: none;
-          border-color: #007acc;
-        }
-        .buttons {
-          display: flex;
-          gap: 10px;
-          justify-content: flex-end;
-          margin-top: 10px;
-        }
-        button {
-          padding: 8px 16px;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 14px;
-          font-weight: 500;
-        }
-        .btn-primary {
-          background: #007acc;
-          color: #ffffff;
-        }
-        .btn-primary:hover {
-          background: #005a9e;
-        }
-        .btn-secondary {
-          background: #3d3d3d;
-          color: #ffffff;
-        }
-        .btn-secondary:hover {
-          background: #4d4d4d;
-        }
-        .btn-danger {
-          background: #d32f2f;
-          color: #ffffff;
-        }
-        .btn-danger:hover {
-          background: #b71c1c;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="title">Configure Server URL</div>
-      ${currentUrl ? `<div class="current">Current: ${currentUrl}</div>` : '<div class="current">No URL currently set</div>'}
-      <input type="text" id="urlInput" placeholder="https://example.com/config.json" value="${currentUrl || ''}" autofocus>
-      <div class="title">Updates</div>
-      <div class="row">
-        <label for="channelSelect">Update channel</label>
-        <select id="channelSelect">
-          <option value="stable">Stable</option>
-          <option value="beta">Beta</option>
-        </select>
-        <button class="btn-secondary" id="checkBtn">Check for updates</button>
-      </div>
-      <div class="buttons">
-        <button class="btn-danger" id="resetBtn">Reset</button>
-        <button class="btn-secondary" id="cancelBtn">Cancel</button>
-        <button class="btn-primary" id="saveBtn">Save</button>
-      </div>
-      <script>
-        // Wait for preload script to expose electronAPI
-        function waitForElectronAPI(callback) {
-          if (window.electronAPI) {
-            callback();
-          } else {
-            setTimeout(() => waitForElectronAPI(callback), 50);
-          }
-        }
-
-        waitForElectronAPI(() => {
-          const input = document.getElementById('urlInput');
-          const saveBtn = document.getElementById('saveBtn');
-          const cancelBtn = document.getElementById('cancelBtn');
-          const resetBtn = document.getElementById('resetBtn');
-
-          input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-              saveBtn.click();
-            } else if (e.key === 'Escape') {
-              cancelBtn.click();
-            }
-          });
-
-          saveBtn.addEventListener('click', () => {
-            const url = input.value.trim();
-            window.electronAPI.setConfigUrl(url || '');
-          });
-
-          cancelBtn.addEventListener('click', () => {
-            window.close();
-          });
-
-          resetBtn.addEventListener('click', () => {
-            input.value = '';
-            input.focus();
-          });
-
-          const channelSelect = document.getElementById('channelSelect');
-          const checkBtn = document.getElementById('checkBtn');
-
-          window.electronAPI.getUpdateChannel().then((channel) => {
-            channelSelect.value = channel;
-          });
-          channelSelect.addEventListener('change', () => {
-            window.electronAPI.setUpdateChannel(channelSelect.value);
-          });
-          checkBtn.addEventListener('click', () => {
-            window.electronAPI.checkForUpdates();
-          });
-        });
-      </script>
-    </body>
-    </html>
-  `;
-
-  configDialog = dialogWindow;
-  dialogWindow.on('closed', () => {
-    if (configDialog === dialogWindow) configDialog = null;
-  });
-  dialogWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(dialogHTML)}`);
-
-  // Dialog will close automatically when app restarts after config is set
-}
-
-// Create application menu
+// Create application menu (macOS menu bar; shortcuts elsewhere — the frameless windows show no menu bar)
 function createMenu(): void {
   const template: Electron.MenuItemConstructorOptions[] = [
     {
       label: 'Settings',
       submenu: [
         {
-          label: 'Configure Server URL...',
+          label: 'Settings...',
           accelerator: 'CmdOrCtrl+,',
-          click: async () => {
-            await showConfigUrlDialog();
-          },
+          click: () => openSettings(mainWindow),
         },
         { type: 'separator' },
         {
@@ -680,6 +708,7 @@ function createMenu(): void {
         },
       ],
     },
+    ...(process.platform === 'darwin' ? [{ role: 'editMenu' as const }, { role: 'windowMenu' as const }] : []),
   ];
 
   const menu = Menu.buildFromTemplate(template);
@@ -687,7 +716,7 @@ function createMenu(): void {
 }
 
 function showStartupError(message: string, detail?: string): void {
-  dialog.showErrorBox('Decabill Billing Console – Startup Error', detail ? `${message}\n\n${detail}` : message);
+  dialog.showErrorBox(`${APP_NAME} – Startup Error`, detail ? `${message}\n\n${detail}` : message);
   console.error('[Main Process] Startup error:', message, detail ?? '');
 }
 
@@ -695,22 +724,25 @@ app.whenReady().then(async () => {
   initDebugLog();
   debugLog('app whenReady');
   try {
+    createMenu();
+    const shownAt = await showSplash();
     ssrPort =
       process.env.PORT !== undefined && process.env.PORT !== '' ? parseInt(process.env.PORT, 10) : await getFreePort();
     if (!Number.isInteger(ssrPort) || ssrPort <= 0) {
       ssrPort = await getFreePort();
     }
     debugLog('Using port:', ssrPort);
-    createMenu();
     debugLog('Starting SSR server...');
     await startSSRServer();
     debugLog('SSR server ready, creating window');
-    createWindow();
+    await delay(shownAt + SPLASH_MIN_MS - Date.now());
+    await createAppWindow(appOrigin(ssrPort), true);
     debugLog('Window created');
     updater.start();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     debugLog('Startup failed:', message, err);
+    closeSplash();
     showStartupError('Failed to start the application server.', message);
     ssrProcess?.kill();
     ssrProcess = null;
@@ -725,12 +757,9 @@ app.on('before-quit', () => {
 });
 app.on('window-all-closed', () => {
   debugLog('window-all-closed');
-  if (process.platform !== 'darwin') {
-    ssrProcess?.kill();
-    app.quit();
-  }
+  ssrProcess?.kill();
+  app.quit();
 });
-app.on('activate', () => BrowserWindow.getAllWindows().length === 0 && createWindow());
 
 // Log uncaught errors so Windows users can see them in the log file after crash
 process.on('uncaughtException', (err) => {

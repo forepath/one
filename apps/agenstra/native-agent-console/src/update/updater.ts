@@ -19,7 +19,7 @@ import {
   dialog,
   net,
   shell,
-  type BrowserWindow,
+  type BaseWindow,
   type MessageBoxOptions,
   type MessageBoxReturnValue,
 } from 'electron';
@@ -48,7 +48,7 @@ const MAC_UPDATE_TIMEOUT_MS = 10 * 60 * 1000;
 
 export interface DesktopUpdaterOptions {
   channel(): DesktopUpdateChannel;
-  window(): BrowserWindow | null;
+  window(): BaseWindow | null;
   log(message: string, ...args: unknown[]): void;
 }
 
