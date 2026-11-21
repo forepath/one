@@ -3309,6 +3309,18 @@
       <trans-unit id="featureAdminOffers-revokeNotify" datatype="html">
         <source>Notify the customer by email</source>
         </trans-unit>
+      <trans-unit id="featureAdminOffers-acceptNotifyCustomer" datatype="html">
+        <source>Email the customer the confirmation</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-acceptNotifyInvoices" datatype="html">
+        <source>Email the resulting invoices</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-acceptNotifyInvoicesHint" datatype="html">
+        <source>Otherwise you can send them later from the invoices.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-declineNotifyCustomer" datatype="html">
+        <source>Email the customer the confirmation</source>
+        </trans-unit>
       <trans-unit id="featureAdminOffers-createTitle" datatype="html">
         <source>Create offer</source>
         </trans-unit>
@@ -3440,6 +3452,24 @@
         </trans-unit>
       <trans-unit id="featureAdminOffers-revokeMessage" datatype="html">
         <source>The customer can no longer accept the offer. This cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-accept" datatype="html">
+        <source>Accept</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-decline" datatype="html">
+        <source>Decline</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-acceptTitle" datatype="html">
+        <source>Accept offer for the customer?</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-acceptMessage" datatype="html">
+        <source>Records that <x id="customer" equiv-text="this.customerLabel(offer)"/> accepted offer <x id="number" equiv-text="this.offerDisplayTitle(offer)"/>. Its services are fulfilled and billed as if the customer had accepted it. This cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-declineTitle" datatype="html">
+        <source>Decline offer for the customer?</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-declineMessage" datatype="html">
+        <source>Records that <x id="customer" equiv-text="this.customerLabel(offer)"/> declined offer <x id="number" equiv-text="this.offerDisplayTitle(offer)"/>. It can no longer be accepted. This cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureAdminOffers-bulkRevokeMessage" datatype="html">
         <source><x id="count" equiv-text="this.selectedPendingResponse().length"/> offers awaiting a response will be revoked. Customers can no longer accept them.</source>

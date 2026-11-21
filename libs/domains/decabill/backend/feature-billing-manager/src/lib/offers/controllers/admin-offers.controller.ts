@@ -19,8 +19,10 @@ import {
 import type { PaginatedBillingAuditLogsResponseDto } from '../../dto/admin-billing.dto';
 import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
 import {
+  AcceptAdminOfferDto,
   ArchiveAdminOfferDto,
   CreateAdminOfferDto,
+  DeclineAdminOfferDto,
   RevokeAdminOfferDto,
   UpdateAdminOfferDto,
   type AdminOfferDetailResponseDto,
@@ -125,6 +127,28 @@ export class AdminOffersController {
     @Req() req: AdminRequest,
   ): Promise<AdminOfferDetailResponseDto> {
     return await this.offersAdminService.revoke(id, getUserFromRequest(req)?.userId, dto);
+  }
+
+  /** Records the customer's acceptance given outside the system (e.g. an offer that was not sent through it). */
+  @Post(':id/accept')
+  @RequireScopes('offers:admin')
+  async accept(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: AcceptAdminOfferDto,
+    @Req() req: AdminRequest,
+  ): Promise<AdminOfferDetailResponseDto> {
+    return await this.offersAdminService.accept(id, getUserFromRequest(req)?.userId, dto);
+  }
+
+  /** Records the customer's decline given outside the system. */
+  @Post(':id/decline')
+  @RequireScopes('offers:admin')
+  async decline(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: DeclineAdminOfferDto,
+    @Req() req: AdminRequest,
+  ): Promise<AdminOfferDetailResponseDto> {
+    return await this.offersAdminService.decline(id, getUserFromRequest(req)?.userId, dto);
   }
 
   @Get(':id/pdf')

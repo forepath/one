@@ -5,7 +5,12 @@ import { Observable, of, throwError } from 'rxjs';
 import { AdminOffersService } from '../../services/admin-offers.service';
 
 import {
+  acceptAdminOffer,
+  acceptAdminOfferFailure,
+  acceptAdminOfferSuccess,
   archiveAdminOffer,
+  declineAdminOffer,
+  declineAdminOfferSuccess,
   archiveAdminOfferSuccess,
   loadAdminOffers,
   loadAdminOffersSuccess,
@@ -13,14 +18,35 @@ import {
   sendAdminOffer,
   sendAdminOfferSuccess,
 } from './admin-offers.actions';
-import { archiveAdminOffer$, loadAdminOffers$, revokeAdminOffer$, sendAdminOffer$ } from './admin-offers.effects';
+import {
+  acceptAdminOffer$,
+  archiveAdminOffer$,
+  declineAdminOffer$,
+  loadAdminOffers$,
+  revokeAdminOffer$,
+  sendAdminOffer$,
+} from './admin-offers.effects';
 
 describe('adminOffers effects', () => {
   let actions$: Observable<unknown>;
-  let service: { list: jest.Mock; archive: jest.Mock; send: jest.Mock; revoke: jest.Mock };
+  let service: {
+    list: jest.Mock;
+    archive: jest.Mock;
+    send: jest.Mock;
+    revoke: jest.Mock;
+    accept: jest.Mock;
+    decline: jest.Mock;
+  };
 
   beforeEach(() => {
-    service = { list: jest.fn(), archive: jest.fn(), send: jest.fn(), revoke: jest.fn() };
+    service = {
+      list: jest.fn(),
+      archive: jest.fn(),
+      send: jest.fn(),
+      revoke: jest.fn(),
+      accept: jest.fn(),
+      decline: jest.fn(),
+    };
 
     TestBed.configureTestingModule({
       providers: [provideMockActions(() => actions$), { provide: AdminOffersService, useValue: service }],
@@ -62,6 +88,34 @@ describe('adminOffers effects', () => {
           sendAdminOfferSuccess({ offer: { id: 'offer-1', sentAt: '2026-11-21T10:00:00Z' } as never }),
         );
         expect(service.send).toHaveBeenCalledWith('offer-1');
+        done();
+      });
+    });
+  });
+
+  it('records accept / decline through the admin endpoints and maps accept errors', (done) => {
+    service.accept.mockReturnValueOnce(of({ id: 'offer-1', status: 'accepted' }));
+    service.decline.mockReturnValue(of({ id: 'offer-1', status: 'declined' }));
+
+    TestBed.runInInjectionContext(() => {
+      acceptAdminOffer$(
+        of(acceptAdminOffer({ id: 'offer-1', dto: { notifyCustomer: false, notifyInvoices: true } })),
+        service as never,
+      ).subscribe((action) => {
+        expect(action).toEqual(acceptAdminOfferSuccess({ offer: { id: 'offer-1', status: 'accepted' } as never }));
+        expect(service.accept).toHaveBeenCalledWith('offer-1', { notifyCustomer: false, notifyInvoices: true });
+      });
+      declineAdminOffer$(
+        of(declineAdminOffer({ id: 'offer-1', dto: { notifyCustomer: false } })),
+        service as never,
+      ).subscribe((action) => {
+        expect(action).toEqual(declineAdminOfferSuccess({ offer: { id: 'offer-1', status: 'declined' } as never }));
+        expect(service.decline).toHaveBeenCalledWith('offer-1', { notifyCustomer: false });
+      });
+
+      service.accept.mockReturnValueOnce(throwError(() => new Error('Offer has expired')));
+      acceptAdminOffer$(of(acceptAdminOffer({ id: 'offer-1' })), service as never).subscribe((action) => {
+        expect(action).toEqual(acceptAdminOfferFailure({ error: expect.any(String) }));
         done();
       });
     });

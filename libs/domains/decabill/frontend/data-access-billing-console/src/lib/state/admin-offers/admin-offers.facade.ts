@@ -4,16 +4,20 @@ import { take } from 'rxjs';
 
 import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
 import type {
+  AcceptAdminOfferDto,
   AdminOfferStatisticsParams,
   ArchiveAdminOfferDto,
   CreateAdminOfferDto,
+  DeclineAdminOfferDto,
   RevokeAdminOfferDto,
   UpdateAdminOfferDto,
 } from '../../types/offers.types';
 
 import {
+  acceptAdminOffer,
   archiveAdminOffer,
   createAdminOffer,
+  declineAdminOffer,
   deleteAdminOffer,
   loadAdminOfferAuditLogs,
   loadAdminOfferStatistics,
@@ -41,6 +45,7 @@ import {
   selectAdminOffersTotal,
   selectAdminOffersLoading,
   selectAdminOffersMutating,
+  selectAdminOffersResponding,
   selectAdminOffersRevoking,
   selectAdminOffersSending,
   selectAdminOffersState,
@@ -59,6 +64,7 @@ export class AdminOffersFacade {
   readonly archiving$ = this.store.select(selectAdminOffersArchiving);
   readonly sending$ = this.store.select(selectAdminOffersSending);
   readonly revoking$ = this.store.select(selectAdminOffersRevoking);
+  readonly responding$ = this.store.select(selectAdminOffersResponding);
   readonly mutating$ = this.store.select(selectAdminOffersMutating);
   readonly error$ = this.store.select(selectAdminOffersError);
   readonly total$ = this.store.select(selectAdminOffersTotal);
@@ -130,6 +136,16 @@ export class AdminOffersFacade {
 
   revokeOffer(id: string, dto?: RevokeAdminOfferDto): void {
     this.store.dispatch(revokeAdminOffer({ id, dto }));
+  }
+
+  /** Records the customer's acceptance given outside the system (phone, signed copy, ...). */
+  acceptOffer(id: string, dto?: AcceptAdminOfferDto): void {
+    this.store.dispatch(acceptAdminOffer({ id, dto }));
+  }
+
+  /** Records the customer's decline given outside the system. */
+  declineOffer(id: string, dto?: DeclineAdminOfferDto): void {
+    this.store.dispatch(declineAdminOffer({ id, dto }));
   }
 
   /** One page of an offer's audit log (replace-page; 1-based page, 25 by default). */

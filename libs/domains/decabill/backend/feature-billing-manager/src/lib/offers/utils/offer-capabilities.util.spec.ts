@@ -2,7 +2,12 @@ import { BadRequestException } from '@nestjs/common';
 
 import { OfferStatus } from '../constants/offer-status.constants';
 
-import { assertOfferHasPdf, offerCapabilityFlags, offerDeliveryFields } from './offer-capabilities.util';
+import {
+  assertOfferHasPdf,
+  offerCapabilityFlags,
+  offerDeliveryFields,
+  offerResponseFlags,
+} from './offer-capabilities.util';
 
 describe('offer-capabilities.util', () => {
   it('drafts can be neither previewed nor downloaded', () => {
@@ -30,6 +35,30 @@ describe('offer-capabilities.util', () => {
   it('assertOfferHasPdf rejects drafts only', () => {
     expect(() => assertOfferHasPdf({ status: OfferStatus.DRAFT })).toThrow(BadRequestException);
     expect(() => assertOfferHasPdf({ status: OfferStatus.ARCHIVED })).not.toThrow();
+  });
+
+  describe('offerResponseFlags', () => {
+    const now = new Date('2026-11-21T12:00:00Z');
+
+    it('mirrors what the customer can answer: archived, accept only before expiry', () => {
+      expect(offerResponseFlags({ status: OfferStatus.ARCHIVED, expiresAt: null }, now)).toEqual({
+        canAccept: true,
+        canDecline: true,
+      });
+      expect(
+        offerResponseFlags({ status: OfferStatus.ARCHIVED, expiresAt: new Date('2026-11-21T12:00:00Z') }, now),
+      ).toEqual({ canAccept: false, canDecline: true });
+
+      for (const status of [
+        OfferStatus.DRAFT,
+        OfferStatus.ACCEPTED,
+        OfferStatus.DECLINED,
+        OfferStatus.REVOKED,
+        OfferStatus.EXPIRED,
+      ]) {
+        expect(offerResponseFlags({ status, expiresAt: null }, now)).toEqual({ canAccept: false, canDecline: false });
+      }
+    });
   });
 
   describe('offerDeliveryFields', () => {

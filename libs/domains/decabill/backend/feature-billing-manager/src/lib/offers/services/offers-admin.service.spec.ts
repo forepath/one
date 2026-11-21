@@ -282,6 +282,7 @@ describe('OffersAdminService revoke / expiry notifications', () => {
   const billingEmailPublisher = { publishOfferRevoked: jest.fn(), publishOfferExpired: jest.fn() };
   const auditLog = { log: jest.fn() };
   const offerArchiveService = { archive: jest.fn(), send: jest.fn() };
+  const offerResponseService = { accept: jest.fn(), decline: jest.fn() };
   const service = new OffersAdminService(
     offersRepository as never,
     { findByOfferId: jest.fn().mockResolvedValue([]) } as never,
@@ -297,6 +298,7 @@ describe('OffersAdminService revoke / expiry notifications', () => {
     { findByIds: jest.fn().mockResolvedValue([]) } as never,
     undefined,
     billingEmailPublisher as never,
+    offerResponseService as never,
   );
   const offer = (patch: Record<string, unknown> = {}) => ({
     id: 'offer-1',
@@ -348,7 +350,7 @@ describe('OffersAdminService revoke / expiry notifications', () => {
   });
 
   it('emails about revoking an archived offer that was not emailed yet when asked (like a void)', async () => {
-    stored = offer({ sentAt: null });
+    stored = offer({ sentAt: null, expiresAt: null });
 
     await service.revoke('offer-1', 'admin-1', { notifyCustomer: true });
 
@@ -409,5 +411,46 @@ describe('OffersAdminService revoke / expiry notifications', () => {
       notifyOnExpiry: false,
     });
     expect(offerArchiveService.send).toHaveBeenCalledWith('offer-1', 'admin-1');
+  });
+
+  it('records accept / decline through the shared response service as the admin (tenant-scoped lookup first)', async () => {
+    stored = offer({ sentAt: null, expiresAt: null });
+
+    const accepted = await service.accept('offer-1', 'admin-1', { notifyCustomer: false, notifyInvoices: true });
+
+    expect(offersRepository.findByIdOrThrow).toHaveBeenCalledWith('offer-1');
+    expect(offerResponseService.accept).toHaveBeenCalledWith(
+      stored,
+      { kind: 'admin', adminUserId: 'admin-1' },
+      { notifyCustomer: false, notifyInvoices: true },
+    );
+    expect(accepted).toEqual(expect.objectContaining({ id: 'offer-1', canAccept: true, canDecline: true }));
+
+    await service.decline('offer-1', 'admin-1');
+
+    expect(offerResponseService.decline).toHaveBeenCalledWith(
+      stored,
+      { kind: 'admin', adminUserId: 'admin-1' },
+      { notifyCustomer: undefined },
+    );
+  });
+
+  it('flags accept / decline exactly where the customer could answer', async () => {
+    const flags = async (patch: Record<string, unknown>) => {
+      stored = offer(patch);
+      const { canAccept, canDecline } = await service.get('offer-1');
+
+      return { canAccept, canDecline };
+    };
+
+    expect(await flags({ expiresAt: null })).toEqual({ canAccept: true, canDecline: true });
+    expect(await flags({ expiresAt: new Date('2000-01-01T00:00:00Z') })).toEqual({
+      canAccept: false,
+      canDecline: true,
+    });
+
+    for (const status of [OfferStatus.DRAFT, OfferStatus.ACCEPTED, OfferStatus.DECLINED, OfferStatus.REVOKED]) {
+      expect(await flags({ status, expiresAt: null })).toEqual({ canAccept: false, canDecline: false });
+    }
   });
 });

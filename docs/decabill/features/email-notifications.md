@@ -36,7 +36,8 @@ If no company name is resolved, header and footer are omitted. On Decabill, leav
 | -------------------------------------- | -------------------------------------- | ---------------------------------------------------------------------- |
 | `invoice.issued`                       | `invoice-issued`                       | Invoice issuance / project billing                                     |
 | `offer.archived`                       | `offer-archived`                       | Offer sent to customer (PDF attachment)                                |
-| `offer.accepted`                       | `offer-accepted-confirmation`          | Customer accepted offer                                                |
+| `offer.accepted`                       | `offer-accepted-confirmation`          | Customer accepted offer (or admin recorded it, unless suppressed)      |
+| `offer.declined`                       | `offer-declined-confirmation`          | Admin recorded a decline (unless suppressed)                           |
 | `offer.revoked`                        | `offer-revoked`                        | Admin revoked an offer (unless suppressed)                             |
 | `offer.expired`                        | `offer-expired`                        | Offer expired (when chosen on archive)                                 |
 | `invoice.voided`                       | `invoice-voided`                       | Invoice void                                                           |

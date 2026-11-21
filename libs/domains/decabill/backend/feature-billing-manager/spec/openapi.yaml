@@ -6159,6 +6159,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminOfferDetailResponseDto'
+  /admin/billing/offers/{id}/accept:
+    post:
+      tags: [Admin Billing]
+      summary: Record the customer's acceptance (admin)
+      description: |
+        For an answer given outside the system (e.g. an offer that was not sent through it). Same checks and
+        fulfillment as `POST /offers/{offerRefId}/accept`: 400 when the offer is not archived, has expired or the
+        customer profile is incomplete, or when another answer won a concurrent request. The acceptance confirmation
+        is emailed unless `notifyCustomer` is `false`; invoices issued right away are emailed unless
+        `notifyInvoices` is `false` (they can be sent later).
+      operationId: acceptAdminOffer
+      security:
+        - bearerAuth: [offers:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptAdminOfferDto'
+      responses:
+        '200':
+          description: Accepted offer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOfferDetailResponseDto'
+  /admin/billing/offers/{id}/decline:
+    post:
+      tags: [Admin Billing]
+      summary: Record the customer's decline (admin)
+      description: |
+        Same checks as `POST /offers/{offerRefId}/decline`: 400 when the offer is not archived (or another answer
+        won a concurrent request). The customer is emailed a decline confirmation unless `notifyCustomer` is `false`.
+      operationId: declineAdminOffer
+      security:
+        - bearerAuth: [offers:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeclineAdminOfferDto'
+      responses:
+        '200':
+          description: Declined offer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOfferDetailResponseDto'
   /admin/billing/offers/{id}/pdf:
     get:
       tags: [Admin Billing]
@@ -16405,6 +16464,16 @@ components:
             type: boolean,
             description: 'Customer is emailed when the offer expires',
           }
+        canAccept:
+          {
+            type: boolean,
+            description: 'Archived and not expired: the customer could accept it, so an admin may record the acceptance',
+          }
+        canDecline:
+          {
+            type: boolean,
+            description: 'Archived: the customer could decline it, so an admin may record the decline',
+          }
     ArchiveAdminOfferDto:
       type: object
       properties:
@@ -16423,6 +16492,26 @@ components:
           type: boolean
           default: true
           description: Email the customer that the offer was withdrawn.
+    AcceptAdminOfferDto:
+      type: object
+      additionalProperties: false
+      properties:
+        notifyCustomer:
+          type: boolean
+          default: true
+          description: Email the customer the acceptance confirmation.
+        notifyInvoices:
+          type: boolean
+          default: true
+          description: Email the invoices the acceptance issues right away.
+    DeclineAdminOfferDto:
+      type: object
+      additionalProperties: false
+      properties:
+        notifyCustomer:
+          type: boolean
+          default: true
+          description: Email the customer the decline confirmation.
     AdminOfferDetailResponseDto:
       allOf:
         - $ref: '#/components/schemas/AdminOfferListItemDto'

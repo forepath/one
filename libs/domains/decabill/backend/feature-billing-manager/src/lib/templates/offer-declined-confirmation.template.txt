@@ -1,0 +1,9 @@
+Offer declined
+
+Dear {{recipientName}},
+
+We have recorded that you declined offer {{offerNumber}}.
+
+Total amount: {{amountLabel}}
+
+If you have any questions or would like a new offer, please get in touch with us.

@@ -1,7 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 
-import { archiveAdminOffer, loadAdminOffers, revokeAdminOffer, sendAdminOffer } from './admin-offers.actions';
+import {
+  acceptAdminOffer,
+  archiveAdminOffer,
+  declineAdminOffer,
+  loadAdminOffers,
+  revokeAdminOffer,
+  sendAdminOffer,
+} from './admin-offers.actions';
 import { AdminOffersFacade } from './admin-offers.facade';
 
 describe('AdminOffersFacade', () => {
@@ -38,5 +45,15 @@ describe('AdminOffersFacade', () => {
     );
     expect(store.dispatch).toHaveBeenCalledWith(sendAdminOffer({ id: 'offer-1' }));
     expect(store.dispatch).toHaveBeenCalledWith(revokeAdminOffer({ id: 'offer-1', dto: { notifyCustomer: false } }));
+  });
+
+  it('dispatches accept / decline with the notification choice', () => {
+    facade.acceptOffer('offer-1', { notifyCustomer: false, notifyInvoices: false });
+    facade.declineOffer('offer-1', { notifyCustomer: true });
+
+    expect(store.dispatch).toHaveBeenCalledWith(
+      acceptAdminOffer({ id: 'offer-1', dto: { notifyCustomer: false, notifyInvoices: false } }),
+    );
+    expect(store.dispatch).toHaveBeenCalledWith(declineAdminOffer({ id: 'offer-1', dto: { notifyCustomer: true } }));
   });
 });

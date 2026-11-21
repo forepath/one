@@ -13746,6 +13746,46 @@
         <source>Notify the customer by email</source>
         <target>Kunden per E-Mail benachrichtigen</target>
       </trans-unit>
+      <trans-unit id="featureAdminOffers-accept" datatype="html">
+        <source>Accept</source>
+        <target>Annehmen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-decline" datatype="html">
+        <source>Decline</source>
+        <target>Ablehnen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-acceptTitle" datatype="html">
+        <source>Accept offer for the customer?</source>
+        <target>Angebot für den Kunden annehmen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-acceptMessage" datatype="html">
+        <source>Records that <x id="customer" equiv-text="this.customerLabel(offer)"/> accepted offer <x id="number" equiv-text="this.offerDisplayTitle(offer)"/>. Its services are fulfilled and billed as if the customer had accepted it. This cannot be undone.</source>
+        <target>Hält fest, dass <x id="customer" equiv-text="this.customerLabel(offer)"/> das Angebot <x id="number" equiv-text="this.offerDisplayTitle(offer)"/> angenommen hat. Die Leistungen werden erbracht und abgerechnet, als hätte der Kunde es selbst angenommen. Dies kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-declineTitle" datatype="html">
+        <source>Decline offer for the customer?</source>
+        <target>Angebot für den Kunden ablehnen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-declineMessage" datatype="html">
+        <source>Records that <x id="customer" equiv-text="this.customerLabel(offer)"/> declined offer <x id="number" equiv-text="this.offerDisplayTitle(offer)"/>. It can no longer be accepted. This cannot be undone.</source>
+        <target>Hält fest, dass <x id="customer" equiv-text="this.customerLabel(offer)"/> das Angebot <x id="number" equiv-text="this.offerDisplayTitle(offer)"/> abgelehnt hat. Es kann danach nicht mehr angenommen werden. Dies kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-acceptNotifyCustomer" datatype="html">
+        <source>Email the customer the confirmation</source>
+        <target>Bestätigung per E-Mail an den Kunden senden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-acceptNotifyInvoices" datatype="html">
+        <source>Email the resulting invoices</source>
+        <target>Entstehende Rechnungen per E-Mail senden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-acceptNotifyInvoicesHint" datatype="html">
+        <source>Otherwise you can send them later from the invoices.</source>
+        <target>Andernfalls können Sie sie später aus den Rechnungen versenden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-declineNotifyCustomer" datatype="html">
+        <source>Email the customer the confirmation</source>
+        <target>Bestätigung per E-Mail an den Kunden senden</target>
+      </trans-unit>
       <trans-unit id="featureAdminOffers-archiveBulkTitle" datatype="html">
         <source>Archive <x id="count" equiv-text="this.pendingArchive()?.length ?? 0"/> draft offers?</source>
         <target><x id="count" equiv-text="this.pendingArchive()?.length ?? 0"/> Angebotsentwürfe archivieren?</target>

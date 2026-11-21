@@ -27,6 +27,7 @@ import {
   isOfferPastExpiry,
   offerCapabilityFlags,
   offerDeliveryFields,
+  offerResponseFlags,
 } from '../utils/offer-capabilities.util';
 import { mapAdminOfferDocumentTerms } from '../utils/offer-document-terms.util';
 import { assertOfferDraftEditable } from '../utils/offer-mutability.util';
@@ -357,6 +358,7 @@ export class OfferArchiveService {
       updatedAt: offer.updatedAt.toISOString(),
       ...offerCapabilityFlags(offer),
       ...offerDeliveryFields(offer),
+      ...offerResponseFlags(offer),
       subtotalNet: Number(offer.subtotalNet),
       taxTotal: Number(offer.taxTotal),
       billToOpenPositions: offer.billToOpenPositions,

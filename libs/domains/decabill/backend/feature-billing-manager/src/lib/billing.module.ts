@@ -219,6 +219,7 @@ import { OfferFulfillmentService } from './offers/services/offer-fulfillment.ser
 import { OfferPdfTemplateService } from './offers/services/offer-pdf-template.service';
 import { OfferPdfService } from './offers/services/offer-pdf.service';
 import { OfferProfileSummaryService } from './offers/services/offer-profile-summary.service';
+import { OfferResponseService } from './offers/services/offer-response.service';
 import { OfferStatisticsQueryService } from './offers/services/offer-statistics-query.service';
 import { OffersAdminService } from './offers/services/offers-admin.service';
 import { OffersCustomerService } from './offers/services/offers-customer.service';
@@ -804,6 +805,7 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     SubscriptionOrderPreparationService,
     OffersAdminService,
     OffersCustomerService,
+    OfferResponseService,
     OfferArchiveService,
     OfferPdfService,
     OfferPdfTemplateService,

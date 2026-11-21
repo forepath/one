@@ -102,31 +102,47 @@ export class BillingEmailPublisher {
     return true;
   }
 
-  async publishOfferAcceptedConfirmation(offer: OfferEntity): Promise<void> {
+  /** Confirms the customer's acceptance; resolves `false` when no mail was queued. */
+  async publishOfferAcceptedConfirmation(offer: OfferEntity): Promise<boolean> {
+    return await this.publishOfferAnswer(offer, 'offer.accepted', 'offer-accepted-confirmation');
+  }
+
+  /** Confirms a decline recorded by an admin; resolves `false` when no mail was queued. */
+  async publishOfferDeclinedConfirmation(offer: OfferEntity): Promise<boolean> {
+    return await this.publishOfferAnswer(offer, 'offer.declined', 'offer-declined-confirmation');
+  }
+
+  private async publishOfferAnswer(
+    offer: OfferEntity,
+    eventType: 'offer.accepted' | 'offer.declined',
+    templateKey: 'offer-accepted-confirmation' | 'offer-declined-confirmation',
+  ): Promise<boolean> {
     if (!offer.offerNumber) {
-      return;
+      return false;
     }
 
     const profile = await this.customerProfilesRepository.findByUserId(offer.userId);
     const to = await this.resolveRecipientEmail(offer.userId, profile);
 
     if (!to) {
-      this.logger.warn(`No billing email found for user ${offer.userId}, skipping offer acceptance email`);
+      this.logger.warn(`No billing email found for user ${offer.userId}, skipping ${eventType} email`);
 
-      return;
+      return false;
     }
 
     await this.emailDispatcher.publish({
-      eventType: 'offer.accepted',
+      eventType,
       scopeKey: getTenantIdOrDefault(),
       to,
-      templateKey: 'offer-accepted-confirmation',
+      templateKey,
       templateContext: {
         recipientName: this.greeting(profile),
         offerNumber: offer.offerNumber,
         amountLabel: this.formatAmount(Number(offer.totalGross), offer.currency),
       },
     });
+
+    return true;
   }
 
   /** Tells the customer that a sent offer was withdrawn and can no longer be accepted. */

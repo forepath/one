@@ -21,6 +21,11 @@ import { OffersRepository } from '../repositories/offers.repository';
 
 import { SubscriptionOrderPreparationService } from './subscription-order-preparation.service';
 
+export interface FulfillAcceptedOfferOptions {
+  /** Issue the invoices of this fulfillment without emailing them (they can be sent later). */
+  skipInvoiceNotification?: boolean;
+}
+
 @Injectable()
 export class OfferFulfillmentService {
   private readonly logger = new Logger(OfferFulfillmentService.name);
@@ -39,7 +44,7 @@ export class OfferFulfillmentService {
     private readonly inventoryWithdrawalRequests: InventoryWithdrawalRequestsService,
   ) {}
 
-  async fulfillAcceptedOffer(offerId: string): Promise<void> {
+  async fulfillAcceptedOffer(offerId: string, options: FulfillAcceptedOfferOptions = {}): Promise<void> {
     const offer = await this.offersRepository.findByIdOrThrow(offerId, true);
     const lines = offer.lineItems ?? (await this.offerLineItemsRepository.findByOfferId(offerId));
     let anchorSubscriptionId: string | undefined;
@@ -78,7 +83,7 @@ export class OfferFulfillmentService {
     );
 
     if (standardLines.length > 0) {
-      await this.fulfillStandardLines(offer, standardLines, anchorSubscriptionId);
+      await this.fulfillStandardLines(offer, standardLines, anchorSubscriptionId, options);
     }
   }
 
@@ -196,6 +201,7 @@ export class OfferFulfillmentService {
     offer: OfferEntity,
     lines: OfferLineItemEntity[],
     anchorSubscriptionId?: string,
+    options: FulfillAcceptedOfferOptions = {},
   ): Promise<void> {
     try {
       if (offer.billToOpenPositions && anchorSubscriptionId) {
@@ -245,6 +251,7 @@ export class OfferFulfillmentService {
       // The accepted offer's (frozen) payment / delivery terms carry over to its invoice.
       const issued = await this.invoiceIssuanceService.issueDraft(draft.id, {
         terms: documentTermsLayerFromFields(offer),
+        skipNotification: options.skipInvoiceNotification,
       });
 
       for (const line of lines) {

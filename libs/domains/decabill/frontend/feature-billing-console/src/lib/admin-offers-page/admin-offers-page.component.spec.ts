@@ -177,6 +177,43 @@ describe('AdminOffersPageComponent (data list)', () => {
     expect(component.pendingSend()).toBeNull();
   });
 
+  it('offers Accept / Decline exactly where the server allows it (sent or not), after a confirm', () => {
+    const open = { ...offer('p2', 'archived'), sentAt: null, canAccept: true, canDecline: true };
+    const expired = { ...offer('p3', 'archived'), canAccept: false, canDecline: true };
+    const ids = (row: AdminOfferListItem) => component.rowMenu(row).map((item) => item.id);
+
+    expect(ids(open)).toEqual(expect.arrayContaining(['accept', 'decline']));
+    expect(ids(expired)).not.toContain('accept');
+    expect(ids(expired)).toContain('decline');
+
+    for (const status of ['draft', 'accepted', 'declined', 'expired', 'revoked'] as const) {
+      expect(ids(offer('x', status))).not.toEqual(expect.arrayContaining(['accept']));
+      expect(ids(offer('x', status))).not.toContain('decline');
+    }
+
+    component.onRowAction(expired, 'accept');
+    expect(component.pendingAccept()).toBeNull();
+
+    component.acceptNotifyCustomer = false;
+    component.onRowAction(open, 'accept');
+    expect(component.pendingAccept()?.id).toBe('p2');
+    expect(component.acceptNotifyCustomer).toBe(true);
+    expect(component.acceptNotifyInvoices).toBe(true);
+    expect(facade['acceptOffer']).not.toHaveBeenCalled();
+
+    component.acceptNotifyInvoices = false;
+    component.confirmAccept();
+    expect(facade['acceptOffer']).toHaveBeenCalledWith('p2', { notifyCustomer: true, notifyInvoices: false });
+    expect(component.pendingAccept()).toBeNull();
+
+    component.onRowAction(expired, 'decline');
+    expect(component.pendingDecline()?.id).toBe('p3');
+    component.declineNotifyCustomer = false;
+    component.confirmDecline();
+    expect(facade['declineOffer']).toHaveBeenCalledWith('p3', { notifyCustomer: false });
+    expect(component.pendingDecline()).toBeNull();
+  });
+
   it('row Revoke asks first and passes the notification choice', () => {
     component.onRowAction({ ...offer('p2', 'archived'), sentAt: null }, 'revoke');
     expect(component.revokeNotifyCustomer).toBe(false);

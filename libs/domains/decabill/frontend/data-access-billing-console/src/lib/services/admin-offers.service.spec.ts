@@ -165,6 +165,21 @@ describe('AdminOffersService', () => {
     });
   });
 
+  it('records accept / decline through the admin endpoints with the notification choice', () => {
+    service.accept('offer-1', { notifyCustomer: false, notifyInvoices: true }).subscribe();
+    service.decline('offer-1').subscribe();
+
+    const accept = httpMock.expectOne(`${apiUrl}/admin/billing/offers/offer-1/accept`);
+    const decline = httpMock.expectOne(`${apiUrl}/admin/billing/offers/offer-1/decline`);
+
+    expect(accept.request.method).toBe('POST');
+    expect(accept.request.body).toEqual({ notifyCustomer: false, notifyInvoices: true });
+    expect(decline.request.method).toBe('POST');
+    expect(decline.request.body).toEqual({});
+    accept.flush({ ...mockListItem, status: 'accepted' });
+    decline.flush({ ...mockListItem, status: 'declined' });
+  });
+
   it('downloads the offer PDF as a blob', (done) => {
     const pdf = new Blob(['%PDF'], { type: 'application/pdf' });
 

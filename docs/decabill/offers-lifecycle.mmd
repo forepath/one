@@ -41,6 +41,13 @@ sequenceDiagram
         Customer->>CustomerAPI: POST /:id/decline
         CustomerAPI->>Search: upsert declined offer
         CustomerAPI-->>Customer: declined offer
+    else Admin records the answer (e.g. offer sent another way)
+        Admin->>AdminAPI: POST :id/accept { notifyCustomer, notifyInvoices }
+        Note over AdminAPI: same checks + atomic claim as the customer path
+        AdminAPI->>Fulfillment: fulfill immediate lines (invoice email unless notifyInvoices false)
+        AdminAPI->>Email: publishOfferAcceptedConfirmation (notifyCustomer)
+        Admin->>AdminAPI: POST :id/decline { notifyCustomer }
+        AdminAPI->>Email: publishOfferDeclinedConfirmation (notifyCustomer)
     end
 
     opt Admin revokes (notifyCustomer)

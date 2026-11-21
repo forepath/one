@@ -81,3 +81,54 @@ describe('OfferFulfillmentService project lines', () => {
     );
   });
 });
+
+describe('OfferFulfillmentService standard lines invoice notification', () => {
+  const offer = { id: 'o1', userId: 'u1', currency: 'EUR', status: OfferStatus.ACCEPTED, billToOpenPositions: false };
+  const line = {
+    id: 'l1',
+    offerId: 'o1',
+    lineType: OfferLineType.STANDARD,
+    description: 'Setup',
+    quantity: 1,
+    unitPriceNet: 100,
+    lineNet: 100,
+    fulfillmentStatus: OfferFulfillmentStatus.PENDING,
+    scheduledAt: null,
+  };
+  const invoiceService = { createDraft: jest.fn() };
+  const invoiceIssuanceService = { issueDraft: jest.fn() };
+  let service: OfferFulfillmentService;
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    invoiceService.createDraft.mockResolvedValue({ id: 'd1' });
+    invoiceIssuanceService.issueDraft.mockResolvedValue({ id: 'i1', invoiceNumber: 'INV-1' });
+    service = new OfferFulfillmentService(
+      { findByIdOrThrow: jest.fn().mockResolvedValue({ ...offer, lineItems: [line] }), update: jest.fn() } as never,
+      { update: jest.fn() } as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      invoiceService as never,
+      invoiceIssuanceService as never,
+      {} as never,
+      { publishOfferLineFulfilled: jest.fn() } as never,
+      { log: jest.fn() } as never,
+      { raiseForOfferLines: jest.fn() } as never,
+    );
+  });
+
+  it('emails the issued invoice by default and holds it back when asked', async () => {
+    await service.fulfillAcceptedOffer('o1');
+    expect(invoiceIssuanceService.issueDraft).toHaveBeenLastCalledWith(
+      'd1',
+      expect.objectContaining({ skipNotification: undefined }),
+    );
+
+    await service.fulfillAcceptedOffer('o1', { skipInvoiceNotification: true });
+    expect(invoiceIssuanceService.issueDraft).toHaveBeenLastCalledWith(
+      'd1',
+      expect.objectContaining({ skipNotification: true }),
+    );
+  });
+});

@@ -353,6 +353,55 @@
   />
 </fpc-confirm-dialog>
 
+<fpc-confirm-dialog
+  [open]="pendingAccept() !== null"
+  (openChange)="!$event && pendingAccept.set(null)"
+  [title]="acceptConfirmTitle"
+  [message]="acceptConfirmMessage()"
+  [confirmLabel]="acceptLabel"
+  (confirmed)="confirmAccept()"
+  data-testid="admin-offers-accept-dialog"
+>
+  <fpc-form-check
+    class="d-block mt-3"
+    checkId="acceptNotifyCustomer"
+    [(checked)]="acceptNotifyCustomer"
+    i18n-label="@@featureAdminOffers-acceptNotifyCustomer"
+    label="Email the customer the confirmation"
+    data-testid="admin-offers-accept-notify"
+  />
+  <fpc-form-check
+    class="d-block mt-2"
+    checkId="acceptNotifyInvoices"
+    [(checked)]="acceptNotifyInvoices"
+    i18n-label="@@featureAdminOffers-acceptNotifyInvoices"
+    label="Email the resulting invoices"
+    i18n-hint="@@featureAdminOffers-acceptNotifyInvoicesHint"
+    hint="Otherwise you can send them later from the invoices."
+    data-testid="admin-offers-accept-notify-invoices"
+  />
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [open]="pendingDecline() !== null"
+  (openChange)="!$event && pendingDecline.set(null)"
+  [title]="declineConfirmTitle"
+  [message]="declineConfirmMessage()"
+  [confirmLabel]="declineLabel"
+  [danger]="true"
+  (confirmed)="confirmDecline()"
+  data-testid="admin-offers-decline-dialog"
+>
+  <fpc-form-check
+    class="d-block mt-3"
+    checkId="declineNotifyCustomer"
+    [(checked)]="declineNotifyCustomer"
+    i18n-label="@@featureAdminOffers-declineNotifyCustomer"
+    label="Email the customer the confirmation"
+    data-testid="admin-offers-decline-notify"
+  />
+</fpc-confirm-dialog>
+
 <fpc-modal [(open)]="createModalOpen" size="lg" i18n-title="@@featureAdminOffers-createTitle" title="Create offer">
   <fpc-form-field forId="createOfferCustomer" i18n-label="@@featureAdminOffers-customer" label="Customer">
     <framework-billing-admin-user-select
@@ -632,8 +681,24 @@
     </article>
   }
   @if (previewDetail(); as detail) {
-    @if (canDownloadOffer(detail) || canSendOffer(detail)) {
+    @if (canDownloadOffer(detail) || canSendOffer(detail) || canAcceptOffer(detail) || canDeclineOffer(detail)) {
       <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+        @if (canDeclineOffer(detail)) {
+          <fpc-button
+            variant="outline-danger"
+            (clicked)="openDeclineDialog(detail)"
+            data-testid="admin-offer-preview-decline"
+          >
+            <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+            <span>{{ declineLabel }}</span>
+          </fpc-button>
+        }
+        @if (canAcceptOffer(detail)) {
+          <fpc-button variant="success" (clicked)="openAcceptDialog(detail)" data-testid="admin-offer-preview-accept">
+            <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+            <span>{{ acceptLabel }}</span>
+          </fpc-button>
+        }
         @if (canSendOffer(detail)) {
           <fpc-button variant="primary" (clicked)="openSendDialog(detail)" data-testid="admin-offer-preview-send">
             <i class="bi bi-send me-1" aria-hidden="true"></i>

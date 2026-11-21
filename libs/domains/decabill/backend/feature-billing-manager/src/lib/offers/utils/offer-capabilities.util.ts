@@ -32,6 +32,19 @@ export function offerDeliveryFields(
   };
 }
 
+/**
+ * Whether an admin may record the customer's answer: exactly the offers the customer could accept / decline
+ * themselves (`OffersCustomerService`), whether or not the offer was sent through the system.
+ */
+export function offerResponseFlags(
+  offer: Pick<OfferEntity, 'status' | 'expiresAt'>,
+  now: Date = new Date(),
+): { canAccept: boolean; canDecline: boolean } {
+  const open = offer.status === OfferStatus.ARCHIVED;
+
+  return { canAccept: open && !isOfferPastExpiry(offer, now), canDecline: open };
+}
+
 export function isOfferPastExpiry(offer: Pick<OfferEntity, 'expiresAt'>, now: Date = new Date()): boolean {
   return Boolean(offer.expiresAt && offer.expiresAt.getTime() <= now.getTime());
 }
