@@ -111,7 +111,7 @@ import {
   type DocumentTermsFormModel,
 } from '../document-terms/document-terms.util';
 import { InventoryArticleSelectComponent } from '../inventory/inventory-article-select.component';
-import { optionalNumberInputValue } from '../optional-number-input.util';
+import { optionalNumberInput, optionalNumberInputValue, requiredNumberInput } from '../optional-number-input.util';
 import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { activeState } from '../shared/table-states';
 
@@ -2791,14 +2791,13 @@ export class ServicePlansPageComponent implements OnInit {
           name: this.createForm.name.trim(),
           description: this.createForm.description?.trim() || undefined,
           billingIntervalType: this.createForm.billingIntervalType,
-          billingIntervalValue: Number(this.createForm.billingIntervalValue) || 1,
-          billingDayOfMonth:
-            this.createForm.billingDayOfMonth != null ? Number(this.createForm.billingDayOfMonth) : undefined,
+          billingIntervalValue: requiredNumberInput(this.createForm.billingIntervalValue, 1) || 1,
+          billingDayOfMonth: optionalNumberInput(this.createForm.billingDayOfMonth),
           cancelAtPeriodEnd: this.createForm.cancelAtPeriodEnd ?? true,
           billInAdvance: this.createForm.billInAdvance === true,
           autoRecalculatePriceDaily: isNone ? false : this.createForm.autoRecalculatePriceDaily === true,
-          minCommitmentDays: Number(this.createForm.minCommitmentDays) || 0,
-          noticeDays: Number(this.createForm.noticeDays) || 0,
+          minCommitmentDays: requiredNumberInput(this.createForm.minCommitmentDays),
+          noticeDays: requiredNumberInput(this.createForm.noticeDays),
           basePrice: this.createForm.basePrice?.trim() || undefined,
           marginPercent: this.createForm.marginPercent?.trim() || undefined,
           marginFixed: this.createForm.marginFixed?.trim() || undefined,
@@ -2855,14 +2854,13 @@ export class ServicePlansPageComponent implements OnInit {
           name: this.editForm.name,
           description: this.editForm.description,
           billingIntervalType: this.editForm.billingIntervalType,
-          billingIntervalValue: Number(this.editForm.billingIntervalValue) ?? 1,
-          billingDayOfMonth:
-            this.editForm.billingDayOfMonth != null ? Number(this.editForm.billingDayOfMonth) : undefined,
+          billingIntervalValue: requiredNumberInput(this.editForm.billingIntervalValue, 1) || 1,
+          billingDayOfMonth: optionalNumberInput(this.editForm.billingDayOfMonth),
           cancelAtPeriodEnd: this.editForm.cancelAtPeriodEnd,
           billInAdvance: this.editForm.billInAdvance === true,
           autoRecalculatePriceDaily: isNone ? false : this.editForm.autoRecalculatePriceDaily === true,
-          minCommitmentDays: Number(this.editForm.minCommitmentDays) ?? 0,
-          noticeDays: Number(this.editForm.noticeDays) ?? 0,
+          minCommitmentDays: requiredNumberInput(this.editForm.minCommitmentDays),
+          noticeDays: requiredNumberInput(this.editForm.noticeDays),
           basePrice: this.editForm.basePrice?.trim() || undefined,
           marginPercent: this.editForm.marginPercent?.trim() || undefined,
           marginFixed: this.editForm.marginFixed?.trim() || undefined,

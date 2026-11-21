@@ -141,4 +141,32 @@ describe('AdminProjectsPageComponent (data list)', () => {
       expect.objectContaining({ pricingModel: 'capped', priceLimitNet: 4800 }),
     );
   });
+
+  it('sends the values of number inputs (reported as strings) as numbers, incl. target hours', () => {
+    const typed = <T>(value: string): T => value as unknown as T;
+
+    component.createForm = {
+      userId: 'u1',
+      name: 'Site',
+      hourlyRateNet: typed('95'),
+      currency: 'EUR',
+      pricingModel: 'capped',
+      priceLimitNet: typed('4800'),
+    };
+    component.createTargetHoursInput = typed('40');
+    component.submitCreate();
+
+    expect(facade['createAdminProject']).toHaveBeenCalledWith(
+      expect.objectContaining({ hourlyRateNet: 95, priceLimitNet: 4800, targetHours: 40 }),
+    );
+
+    component.editForm = { id: 'p1', name: 'Site', hourlyRateNet: typed('80'), pricingModel: 'hourly' };
+    component.editTargetHoursInput = typed('');
+    component.submitEdit();
+
+    expect(facade['updateAdminProject']).toHaveBeenCalledWith(
+      'p1',
+      expect.objectContaining({ hourlyRateNet: 80, targetHours: null, priceLimitNet: null }),
+    );
+  });
 });

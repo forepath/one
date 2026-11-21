@@ -42,6 +42,7 @@ import {
   getDatevExportStatusLabel,
 } from '../billing-status-labels';
 import { resolveBillingAdminUserLabel } from '../billing-user-select';
+import { requiredNumberInput } from '../optional-number-input.util';
 import { dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_DOWNLOAD } from '../shared/data-list';
 import { dbServerPaging } from '../shared/server-paging';
 import { BillingTenantSwitchComponent, type BillingTenantSwitchOption } from '../shared/tenant-switch.component';
@@ -347,8 +348,8 @@ export class AdminDatevExportsPageComponent implements OnInit {
 
   submitTriggerExport(): void {
     this.facade.triggerExport({
-      year: this.triggerYear,
-      month: this.triggerMonth,
+      year: requiredNumberInput(this.triggerYear),
+      month: requiredNumberInput(this.triggerMonth),
       scope: this.triggerScope,
       viewTenantId: this.triggerScope === 'tenant' ? this.triggerViewTenantId : undefined,
     });

@@ -142,6 +142,7 @@ import {
 import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
 import { EinvoiceSettingsFieldsComponent } from '../einvoice/einvoice-settings-fields.component';
 import { einvoiceSettingsPayload, isEinvoiceEndpointValid } from '../einvoice/einvoice-settings.util';
+import { requiredNumberInput } from '../optional-number-input.util';
 import { resolvePlanCustomerPrice } from '../plan-customer-price.util';
 import {
   buildOrderAuthProviderConfig,
@@ -2501,7 +2502,8 @@ export class SubscriptionsComponent implements OnInit {
     const requestedConfig: Record<string, unknown> = {
       service: cfg.service,
       authenticationMethod: cfg.authenticationMethod,
-      smtp: { ...cfg.smtp },
+      // The port comes from a number input (reported as a string).
+      smtp: { ...cfg.smtp, port: requiredNumberInput(cfg.smtp.port, 1025) },
     };
 
     this.attachOrderProvider(requestedConfig);

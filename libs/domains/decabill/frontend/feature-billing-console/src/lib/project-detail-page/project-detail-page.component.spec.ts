@@ -168,6 +168,17 @@ describe('ProjectDetailPageComponent (time entries bulk Delete)', () => {
       }),
     );
 
+    // Number inputs report strings; the positions must still reach the API as numbers.
+    line.quantity = '2' as unknown as number;
+    line.unitPriceNet = '80.5' as unknown as number;
+    component.submitBillTime();
+    expect(projectsFacade['billProjectTime']).toHaveBeenLastCalledWith(
+      'pr1',
+      expect.objectContaining({
+        lineItems: [expect.objectContaining({ quantity: 2, unitPriceNet: 80.5 })],
+      }),
+    );
+
     component.billNotifyCustomer = false;
     component.submitBillTime();
     expect(projectsFacade['billProjectTime']).toHaveBeenLastCalledWith(

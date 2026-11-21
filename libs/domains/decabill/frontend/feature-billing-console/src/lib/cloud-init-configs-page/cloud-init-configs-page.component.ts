@@ -35,6 +35,7 @@ import { debounceTime, distinctUntilChanged, firstValueFrom, skip, take } from '
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { getUnavailableLabel } from '../billing-status-labels';
 import { MonacoEditorWrapperComponent } from '../monaco-editor-wrapper/monaco-editor-wrapper.component';
+import { optionalNumberInput } from '../optional-number-input.util';
 import { DB_DL_DELETE, dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_EDIT } from '../shared/data-list';
 import { activeState } from '../shared/table-states';
 
@@ -480,8 +481,8 @@ export class CloudInitConfigsPageComponent implements OnInit {
       description: this.editForm.description,
       provisioningMode: this.editForm.provisioningMode,
       dockerImage: this.editForm.dockerImage,
-      containerPort: this.editForm.containerPort != null ? Number(this.editForm.containerPort) : undefined,
-      hostPort: this.editForm.hostPort != null ? Number(this.editForm.hostPort) : undefined,
+      containerPort: optionalNumberInput(this.editForm.containerPort),
+      hostPort: optionalNumberInput(this.editForm.hostPort),
       workDir: this.editForm.workDir,
       dockerComposeTemplate: this.editForm.dockerComposeTemplate?.trim() || null,
       userDataTemplate: this.editForm.userDataTemplate?.trim() || null,
