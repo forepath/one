@@ -81,7 +81,7 @@ describe('SubscriptionConfigChangeBillingService', () => {
   const invoicePdfService = { generatePartialCreditDocumentAndStore: jest.fn() };
   const billingEmailPublisher = { publishPartialCreditDocument: jest.fn() };
   const auditLog = { log: jest.fn() };
-  const billingNotificationPublisher = { publishInvoice: jest.fn() };
+  const billingNotificationPublisher = { publishInvoice: jest.fn(), publish: jest.fn() };
   const managerInvoiceSave = jest.fn(async (entity: unknown) => entity);
   const managerMock = {
     getRepository: jest.fn(() => ({
@@ -90,7 +90,9 @@ describe('SubscriptionConfigChangeBillingService', () => {
   };
   const dataSource = {
     transaction: jest.fn(async (callback: (manager: typeof managerMock) => Promise<unknown>) => callback(managerMock)),
+    getRepository: jest.fn(() => ({ find: jest.fn().mockResolvedValue([{ lineNet: 100, taxRate: 0 }]) })),
   };
+  const documentSettlementService = { apply: jest.fn() };
   const service = new SubscriptionConfigChangeBillingService(
     openPositionsRepository as never,
     subscriptionsRepository as never,
@@ -105,6 +107,7 @@ describe('SubscriptionConfigChangeBillingService', () => {
     billingEmailPublisher as never,
     auditLog as never,
     dataSource as never,
+    documentSettlementService as never,
     billingNotificationPublisher as never,
   );
   const subscription = {
@@ -167,6 +170,15 @@ describe('SubscriptionConfigChangeBillingService', () => {
       currency: 'EUR',
       createdAt: PERIOD_START,
       issuedAt: PERIOD_START,
+    });
+    dataSource.getRepository.mockImplementation(() => ({
+      find: jest.fn().mockResolvedValue([{ lineNet: 100, taxRate: 0 }]),
+    }));
+    documentSettlementService.apply.mockResolvedValue({
+      created: true,
+      becameSettled: false,
+      settlement: { id: 'set-1' },
+      document: { id: 'inv-1', status: InvoiceStatus.PARTIALLY_PAID, balanceDue: 20 },
     });
   });
 
@@ -265,8 +277,17 @@ describe('SubscriptionConfigChangeBillingService', () => {
     );
     expect(dataSource.transaction).toHaveBeenCalled();
     expect(invoiceCreditDocumentsRepository.markSettlementComplete).toHaveBeenCalledWith('credit-new', managerMock);
-    expect(managerInvoiceSave).toHaveBeenCalledWith(expect.objectContaining({ id: 'inv-1', balanceDue: 20 }));
+    expect(documentSettlementService.apply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'credit',
+        amount: 10,
+        creditDocumentId: 'credit-new',
+        sourceRef: 'credit:credit-new',
+      }),
+      managerMock,
+    );
     expect(billingEmailPublisher.publishPartialCreditDocument).toHaveBeenCalled();
+    // No negative carry-forward position: excess credit stays as customer credit on the invoice.
     expect(openPositionsRepository.createUniqueBySourceRef).not.toHaveBeenCalled();
     // Balance remains open: no settlement webhook.
     expect(billingNotificationPublisher.publishInvoice).not.toHaveBeenCalled();
@@ -292,6 +313,13 @@ describe('SubscriptionConfigChangeBillingService', () => {
       issuedAt: PERIOD_START,
     });
 
+    documentSettlementService.apply.mockResolvedValue({
+      created: true,
+      becameSettled: true,
+      settlement: { id: 'set-1' },
+      document: { id: 'inv-1', status: InvoiceStatus.CREDITED, balanceDue: 0 },
+    });
+
     let committed = false;
 
     dataSource.transaction.mockImplementationOnce(async (callback) => {
@@ -315,9 +343,10 @@ describe('SubscriptionConfigChangeBillingService', () => {
     });
 
     expect(committed).toBe(true);
+    // Settled by the credit note alone: credited, not paid.
     expect(billingNotificationPublisher.publishInvoice).toHaveBeenCalledWith(
-      'invoice.paid',
-      expect.objectContaining({ id: 'inv-1', status: InvoiceStatus.PAID, balanceDue: 0 }),
+      'invoice.credited',
+      expect.objectContaining({ id: 'inv-1', status: InvoiceStatus.CREDITED, balanceDue: 0 }),
     );
   });
 
@@ -399,7 +428,10 @@ describe('SubscriptionConfigChangeBillingService', () => {
     expect(outcome).toBe('credited');
     expect(invoiceCreditDocumentsRepository.createUniqueBySourceRef).not.toHaveBeenCalled();
     expect(invoiceCreditDocumentsRepository.markSettlementComplete).toHaveBeenCalledWith('credit-1', managerMock);
-    expect(managerInvoiceSave).toHaveBeenCalledWith(expect.objectContaining({ id: 'inv-1', balanceDue: 20 }));
+    expect(documentSettlementService.apply).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'credit', amount: 10 }),
+      managerMock,
+    );
     expect(billingEmailPublisher.publishPartialCreditDocument).not.toHaveBeenCalled();
   });
 
@@ -444,7 +476,10 @@ describe('SubscriptionConfigChangeBillingService', () => {
       'credit-existing',
       managerMock,
     );
-    expect(managerInvoiceSave).toHaveBeenCalledWith(expect.objectContaining({ id: 'inv-1', balanceDue: 20 }));
+    expect(documentSettlementService.apply).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'credit', sourceRef: 'credit:credit-existing' }),
+      managerMock,
+    );
   });
 
   it('caps the credit at what the customer pays after promotions', async () => {

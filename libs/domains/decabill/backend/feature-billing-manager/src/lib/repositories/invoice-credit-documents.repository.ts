@@ -68,6 +68,8 @@ export class InvoiceCreditDocumentsRepository {
     sourceRef: string;
     taxCategory?: TaxCategory;
     description?: string;
+    creditTax?: number | null;
+    taxRate?: number | null;
   }): Promise<{ entity: InvoiceCreditDocumentEntity; created: boolean }> {
     const entity = this.repository.create({
       taxCategory: TaxCategory.STANDARD,
@@ -130,24 +132,32 @@ export class InvoiceCreditDocumentsRepository {
     await repository.update(id, { settlementComplete: true });
   }
 
-  async create(dto: {
-    invoiceId: string;
-    documentNumber: string;
-    creditNet: number;
-    creditGross: number;
-    pdfStorageKey: string;
-    reason: string;
-    withdrawnAt: Date;
-    taxCategory?: TaxCategory;
-    description?: string;
-  }): Promise<InvoiceCreditDocumentEntity> {
-    const entity = this.repository.create({
+  async create(
+    dto: {
+      invoiceId: string;
+      documentNumber: string;
+      creditNet: number;
+      creditGross: number;
+      pdfStorageKey: string;
+      reason: string;
+      withdrawnAt: Date;
+      taxCategory?: TaxCategory;
+      description?: string;
+      creditTax?: number | null;
+      taxRate?: number | null;
+      sourceRef?: string | null;
+      settlementComplete?: boolean;
+    },
+    manager?: EntityManager,
+  ): Promise<InvoiceCreditDocumentEntity> {
+    const repository = manager ? manager.getRepository(InvoiceCreditDocumentEntity) : this.repository;
+    const entity = repository.create({
       taxCategory: TaxCategory.STANDARD,
       description: '',
       ...dto,
     });
 
-    return await this.repository.save(entity);
+    return await repository.save(entity);
   }
 
   async findWithdrawnInPeriod(from: Date, to: Date): Promise<InvoiceCreditDocumentEntity[]> {

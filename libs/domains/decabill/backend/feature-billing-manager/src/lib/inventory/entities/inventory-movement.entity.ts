@@ -78,6 +78,17 @@ export class InventoryMovementEntity {
   @Column({ type: 'varchar', length: 512, nullable: true, name: 'pdf_storage_key' })
   pdfStorageKey?: string | null;
 
+  /** Unit cost of the moved stock (receipt: purchase price; withdrawal: moving average at the time). */
+  @Column({ type: 'decimal', precision: 14, scale: 4, nullable: true, name: 'unit_cost' })
+  unitCost?: number | string | null;
+
+  @Column({ type: 'decimal', precision: 14, scale: 2, nullable: true, name: 'total_cost' })
+  totalCost?: number | string | null;
+
+  /** Supplier invoice the received stock was bought with (cost source). */
+  @Column({ type: 'uuid', nullable: true, name: 'supplier_invoice_id' })
+  supplierInvoiceId?: string | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 }

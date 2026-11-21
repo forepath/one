@@ -115,6 +115,27 @@ export class SupplierInvoicesRepository {
     return await this.findByIdOrThrow(id);
   }
 
+  /** Issued / partially paid supplier invoices of the current tenant due before `now` become overdue. */
+  async markOverdueBefore(now: Date): Promise<number> {
+    const today = now.toISOString().slice(0, 10);
+    const rows: unknown[] = await this.repository.manager.query(
+      `
+        UPDATE billing_supplier_invoices si
+        SET status = 'overdue'
+        FROM billing_supplier_profiles sp
+        WHERE sp.id = si.supplier_id
+          AND sp.tenant_id = $1
+          AND si.status IN ('issued', 'partially_paid')
+          AND si.due_date IS NOT NULL
+          AND si.due_date < $2::date
+        RETURNING si.id
+      `,
+      [getRequiredTenantId(), today],
+    );
+
+    return Array.isArray(rows) ? (Array.isArray(rows[0]) ? (rows[0] as unknown[]).length : rows.length) : 0;
+  }
+
   async delete(id: string): Promise<void> {
     await this.findByIdOrThrow(id);
     await this.repository.delete(id);

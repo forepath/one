@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import {
   AdminBillingFacade,
   AdminBillingService,
@@ -20,6 +21,7 @@ import {
   AdminSupplierInvoiceManagerFacade,
   AdminSupplierInvoicesService,
   AdminSupplierProfilesService,
+  BillingCapabilitiesFacade,
   InvoicesFacade,
   computeLineTotalsFromRate,
   fillPeriodSeriesPoints,
@@ -29,6 +31,7 @@ import {
   type AdminSupplierProfileListItem,
   type BillingAuditLogResponse,
   type InventoryArticle,
+  type InvoiceSettlementResponse,
   type BillingStatisticsSeriesPoint,
   type ManualInvoiceDetailResponse,
   type ManualInvoiceLineItemDto,
@@ -111,7 +114,14 @@ import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/bi
 import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart';
 import { formatBillingDate, formatBillingDateRange, formatBillingMoney } from '../billing-format';
 import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
-import { getInvoiceStatusBadgeTone, getInvoiceStatusLabel, getUnavailableLabel } from '../billing-status-labels';
+import {
+  getInvoiceSettlementSourceLabel,
+  getInvoiceSettlementTypeLabel,
+  getInvoiceStatusBadgeTone,
+  getInvoiceStatusLabel,
+  getUnavailableLabel,
+  isBalanceIncreasingSettlement,
+} from '../billing-status-labels';
 import { DocumentNoteFieldComponent } from '../document-note/document-note-field.component';
 import { DocumentNoteSummaryComponent } from '../document-note/document-note-summary.component';
 import { documentNoteToInput } from '../document-note/document-note.util';
@@ -152,6 +162,10 @@ import {
   DB_DL_PREVIEW,
   DB_DL_MARK_PAID,
   DB_DL_MARK_UNPAID,
+  DB_DL_WRITE_OFF,
+  DB_DL_REFUND,
+  DB_DL_BOOKINGS,
+  DB_DL_EINVOICE_XML,
   DB_DL_DOWNLOAD_PDF,
   DB_DL_VOID_PDF,
   DB_DL_TIME_REPORT,
@@ -186,7 +200,11 @@ interface InvoiceFormLineItem extends ManualInvoiceLineItemDto {
 interface SupplierInvoiceFormLineItem extends SupplierInvoiceLineItemDto {
   taxCategory: 'standard' | 'reduced' | 'custom';
   taxRate?: number;
+  /** UI only: the expandable "Accounting" row of the line is open. */
+  accountingOpen?: boolean;
 }
+
+type AdminInvoiceAction = 'void' | 'markPaid' | 'markUnpaid' | 'writeOff' | 'refund';
 
 interface InvoicePreviewLineItem {
   description: string;
@@ -239,6 +257,7 @@ type AdminBillingPerspective = 'customer' | 'supplier';
     FpcSectionColumnComponent,
     CommonModule,
     FormsModule,
+    RouterLink,
     NgApexchartsModule,
     BillingAdminUserSelectComponent,
     BillingAdminSubscriptionSelectComponent,
@@ -305,6 +324,7 @@ export class AdminBillingPageComponent implements OnInit {
   private readonly supplierInvoicesService = inject(AdminSupplierInvoicesService);
   private readonly supplierProfilesService = inject(AdminSupplierProfilesService);
   private readonly invoicesFacade = inject(InvoicesFacade);
+  private readonly capabilitiesFacade = inject(BillingCapabilitiesFacade);
   private readonly authFacade = inject(AuthenticationFacade);
   private readonly datePipe = inject(DatePipe);
   private readonly destroyRef = inject(DestroyRef);
@@ -399,7 +419,7 @@ export class AdminBillingPageComponent implements OnInit {
   readonly billNowScope = signal<'all' | 'user'>('all');
   billNowUserId = '';
 
-  readonly pendingAction = signal<'void' | 'markPaid' | 'markUnpaid' | null>(null);
+  readonly pendingAction = signal<AdminInvoiceAction | null>(null);
   /** Footer action of the confirm-action modal: the verb of the pending action. */
   readonly actionConfirmLabel = computed(() => {
     switch (this.pendingAction()) {
@@ -407,8 +427,61 @@ export class AdminBillingPageComponent implements OnInit {
         return DB_DL_MARK_PAID;
       case 'markUnpaid':
         return DB_DL_MARK_UNPAID;
+      case 'writeOff':
+        return DB_DL_WRITE_OFF;
+      case 'refund':
+        return DB_DL_REFUND;
       default:
         return DB_DL_VOID;
+    }
+  });
+  /**
+   * Optional amount of mark paid (partial payment), write-off and refund; empty = the full open balance
+   * (refund: the full customer credit).
+   */
+  readonly actionAmount = signal<number | null>(null);
+  /** Upper bound of the amount: open balance (mark paid / write-off) or customer credit (refund). */
+  readonly actionMaxAmount = computed(() => {
+    const action = this.pendingAction();
+    const balance = Number(this.pendingInvoice()?.balance ?? this.pendingSupplierInvoice()?.balanceDue ?? NaN);
+
+    if (!Number.isFinite(balance)) return null;
+
+    if (action === 'refund') return balance < 0 ? Math.abs(balance) : null;
+
+    return action === 'markPaid' || action === 'writeOff' ? (balance > 0 ? balance : null) : null;
+  });
+  readonly actionAmountValid = computed(() => {
+    const amount = this.actionAmount();
+
+    if (amount == null || (amount as unknown) === '') return true;
+
+    const value = Number(amount);
+    const max = this.actionMaxAmount();
+
+    return Number.isFinite(value) && value > 0 && (max == null || value <= max + 0.005);
+  });
+  /** Amount hint: what an empty field means and the upper bound. */
+  readonly actionAmountHint = computed(() => {
+    const max = this.actionMaxAmount();
+    const currency = this.pendingSupplierInvoice()?.currency;
+    const limit = max != null ? formatBillingMoney(max, currency) : null;
+
+    switch (this.pendingAction()) {
+      case 'markPaid':
+        return limit
+          ? $localize`:@@featureAdminBilling-amountHintPaid:Leave empty to record the full open balance (${limit}:amount:). A smaller amount records a partial payment.`
+          : $localize`:@@featureAdminBilling-amountHintPaidNoLimit:Leave empty to record the full open balance. A smaller amount records a partial payment.`;
+      case 'writeOff':
+        return limit
+          ? $localize`:@@featureAdminBilling-amountHintWriteOff:Leave empty to write off the full open balance (${limit}:amount:).`
+          : $localize`:@@featureAdminBilling-amountHintWriteOffNoLimit:Leave empty to write off the full open balance.`;
+      case 'refund':
+        return limit
+          ? $localize`:@@featureAdminBilling-amountHintRefund:Leave empty to refund the full customer credit (${limit}:amount:).`
+          : $localize`:@@featureAdminBilling-amountHintRefundNoLimit:Leave empty to refund the full customer credit.`;
+      default:
+        return null;
     }
   });
   readonly actionReason = signal('');
@@ -432,6 +505,16 @@ export class AdminBillingPageComponent implements OnInit {
   /** Footer Download of the preview modal (customer PDF or supplier document); `null` when none is stored. */
   readonly previewDownload = signal<(() => void) | null>(null);
   readonly downloadLabel = DB_DL_DOWNLOAD;
+  readonly einvoiceXmlLabel = DB_DL_EINVOICE_XML;
+  readonly bookingsLabel = DB_DL_BOOKINGS;
+  /** Customer invoice shown in the preview (settlement history, e-invoice, bookings); `null` for supplier invoices. */
+  readonly previewInvoice = signal<AdminInvoiceListItem | null>(null);
+  readonly settlements = toSignal(this.invoiceManagerFacade.settlements$, {
+    initialValue: [] as InvoiceSettlementResponse[],
+  });
+  readonly settlementsLoading = toSignal(this.invoiceManagerFacade.settlementsLoading$, { initialValue: false });
+  /** Accounting module active: the invoice detail links to its journal bookings; supplier lines get accounts. */
+  readonly accountingEnabled = toSignal(this.capabilitiesFacade.accountingEnabled$, { initialValue: false });
 
   readonly summary$ = this.adminBillingFacade.summary$;
   readonly summaryLoading$ = this.adminBillingFacade.summaryLoading$;
@@ -675,7 +758,12 @@ export class AdminBillingPageComponent implements OnInit {
       if (this.canMarkUnpaid(inv))
         menu.push({ id: 'markUnpaid', label: DB_DL_MARK_UNPAID, icon: 'arrow-counterclockwise' });
 
-      if (inv.canDownload) menu.push({ id: 'download', label: DB_DL_DOWNLOAD_PDF, icon: 'file-earmark-pdf' });
+      if (this.canRefund(inv)) menu.push({ id: 'refund', label: DB_DL_REFUND, icon: 'cash-coin' });
+
+      if (inv.canDownload) {
+        menu.push({ id: 'download', label: DB_DL_DOWNLOAD_PDF, icon: 'file-earmark-pdf' });
+        menu.push({ id: 'download-einvoice', label: DB_DL_EINVOICE_XML, icon: 'filetype-xml' });
+      }
 
       if (inv.canDownloadVoidDocument) {
         menu.push({ id: 'download-void', label: DB_DL_VOID_PDF, icon: 'file-earmark-x' });
@@ -685,8 +773,18 @@ export class AdminBillingPageComponent implements OnInit {
         menu.push({ id: 'download-time', label: DB_DL_TIME_REPORT, icon: 'file-earmark-text' });
       }
 
+      if (this.canWriteOff(inv)) {
+        menu.push({ id: 'writeOff', label: DB_DL_WRITE_OFF, icon: 'journal-x', danger: true, dividerBefore: true });
+      }
+
       if (this.canVoid(inv))
-        menu.push({ id: 'void', label: DB_DL_VOID, icon: 'x-octagon', danger: true, dividerBefore: true });
+        menu.push({
+          id: 'void',
+          label: DB_DL_VOID,
+          icon: 'x-octagon',
+          danger: true,
+          dividerBefore: !this.canWriteOff(inv),
+        });
 
       menu.push({ id: 'history', label: DB_DL_HISTORY, icon: 'clock-history', dividerBefore: true });
     }
@@ -843,6 +941,7 @@ export class AdminBillingPageComponent implements OnInit {
       });
 
     this.registerModalCloseWatchers();
+    this.capabilitiesFacade.loadCapabilities();
   }
 
   onFiltersOpenChange(open: boolean): void {
@@ -1077,6 +1176,7 @@ export class AdminBillingPageComponent implements OnInit {
     this.pendingSupplierInvoice.set(invoice);
     this.pendingInvoice.set(null);
     this.actionReason.set('');
+    this.actionAmount.set(null);
     this.actionPaidAt.set(action === 'markPaid' ? this.defaultPaidAtLocalInput() : '');
     showBillingModal(this.actionConfirmModalOpen);
   }
@@ -1092,11 +1192,14 @@ export class AdminBillingPageComponent implements OnInit {
     if (action === 'void') {
       this.supplierInvoiceManagerFacade.voidInvoice(invoice.id);
     } else if (action === 'markPaid') {
+      if (!this.actionAmountValid()) return;
+
       this.supplierInvoiceManagerFacade.markPaid(invoice.id, {
         reason,
         paidAt: this.toPaidAtIso(this.actionPaidAt()),
+        ...this.actionAmountPayload(),
       });
-    } else {
+    } else if (action === 'markUnpaid') {
       this.supplierInvoiceManagerFacade.markUnpaid(invoice.id, { reason });
     }
   }
@@ -1155,7 +1258,9 @@ export class AdminBillingPageComponent implements OnInit {
 
     this.previewLoading.set(true);
     this.previewDetail.set(null);
+    this.previewInvoice.set(invoice);
     this.previewDownload.set(invoice.canDownload ? () => this.downloadInvoice(invoice) : null);
+    this.invoiceManagerFacade.loadSettlements(invoice.id);
     showBillingModal(this.previewInvoiceModalOpen);
     this.adminBillingService
       .getManualInvoiceDetail(invoice.id)
@@ -1171,6 +1276,7 @@ export class AdminBillingPageComponent implements OnInit {
 
     this.previewLoading.set(true);
     this.previewDetail.set(null);
+    this.previewInvoice.set(null);
     this.previewDownload.set(
       this.canDownloadSupplierInvoice(invoice) ? () => this.downloadSupplierInvoice(invoice) : null,
     );
@@ -1222,6 +1328,40 @@ export class AdminBillingPageComponent implements OnInit {
     if (article && line.taxCategory !== 'custom') {
       line.taxRate = undefined;
     }
+  }
+
+  isSupplierTarget(target: string): boolean {
+    return target === 'createSupplier' || target === 'editSupplier';
+  }
+
+  toggleSupplierLineAccounting(line: SupplierInvoiceFormLineItem): void {
+    line.accountingOpen = !line.accountingOpen;
+  }
+
+  onSupplierLineCapitalizeChange(line: SupplierInvoiceFormLineItem, capitalize: boolean): void {
+    line.capitalizeAsAsset = capitalize;
+
+    if (!capitalize) line.assetUsefulLifeMonths = null;
+  }
+
+  /** Purchase lines: the stock article bought; prefills an empty description and a zero price (purchase price). */
+  onSupplierLineArticlePicked(line: SupplierInvoiceFormLineItem, article: InventoryArticle | null): void {
+    if (!article) return;
+
+    if (!line.description.trim() && article.name?.trim()) line.description = article.name.trim();
+
+    if (
+      !Number(line.unitPriceNet) &&
+      article.purchasePriceNet != null &&
+      Number.isFinite(Number(article.purchasePriceNet))
+    ) {
+      line.unitPriceNet = Number(article.purchasePriceNet);
+    }
+  }
+
+  /** Accounting details set on a supplier line (keeps the expandable row open when editing). */
+  hasSupplierLineAccounting(line: SupplierInvoiceFormLineItem): boolean {
+    return !!(line.ledgerAccountNumber?.trim() || line.capitalizeAsAsset || line.inventoryArticleId);
   }
 
   supplierInvoiceDisplayTitle(invoice: AdminSupplierInvoiceListItem): string {
@@ -1277,14 +1417,25 @@ export class AdminBillingPageComponent implements OnInit {
     this.invoiceManagerFacade.deleteManualInvoice(this.deleteInvoice.id);
   }
 
-  openActionModal(action: 'void' | 'markPaid' | 'markUnpaid', invoice: AdminInvoiceListItem): void {
+  openActionModal(action: AdminInvoiceAction, invoice: AdminInvoiceListItem): void {
     this.pendingAction.set(action);
     this.pendingInvoice.set(invoice);
     this.pendingSupplierInvoice.set(null);
     this.actionReason.set('');
     this.actionNote.set('');
-    this.actionPaidAt.set(action === 'markPaid' ? this.defaultPaidAtLocalInput() : '');
+    this.actionAmount.set(null);
+    this.actionPaidAt.set(this.actionHasDate(action) ? this.defaultPaidAtLocalInput() : '');
     showBillingModal(this.actionConfirmModalOpen);
+  }
+
+  /** Mark paid records the payment date; write-off and refund their booking date. */
+  actionHasDate(action: AdminInvoiceAction | null): boolean {
+    return action === 'markPaid' || action === 'writeOff' || action === 'refund';
+  }
+
+  /** Mark paid (partial payment), write-off and refund take an optional amount. */
+  actionHasAmount(action: AdminInvoiceAction | null): boolean {
+    return action === 'markPaid' || action === 'writeOff' || action === 'refund';
   }
 
   confirmAction(): void {
@@ -1306,13 +1457,76 @@ export class AdminBillingPageComponent implements OnInit {
 
       this.invoiceManagerFacade.voidInvoice(invoice.id, note ? { note } : undefined);
     } else if (action === 'markPaid') {
+      if (!this.actionAmountValid()) return;
+
       this.invoiceManagerFacade.markPaid(invoice.id, {
         reason,
         paidAt: this.toPaidAtIso(this.actionPaidAt()),
+        ...this.actionAmountPayload(),
       });
+    } else if (action === 'writeOff' || action === 'refund') {
+      if (!this.actionAmountValid()) return;
+
+      const dto = {
+        reason,
+        occurredAt: this.toPaidAtIso(this.actionPaidAt()),
+        ...this.actionAmountPayload(),
+      };
+
+      if (action === 'writeOff') this.invoiceManagerFacade.writeOff(invoice.id, dto);
+      else this.invoiceManagerFacade.refund(invoice.id, dto);
     } else {
       this.invoiceManagerFacade.markUnpaid(invoice.id, { reason });
     }
+  }
+
+  /** `{ amount }` when a (partial) amount was entered, `{}` for the full balance. */
+  private actionAmountPayload(): { amount?: number } {
+    const amount = this.actionAmount();
+
+    if (amount == null || (amount as unknown) === '') return {};
+
+    const value = Math.round(Number(amount) * 100) / 100;
+
+    return Number.isFinite(value) && value > 0 ? { amount: value } : {};
+  }
+
+  /** Customer credit of an invoice (negative balance due), `0` when none. */
+  customerCredit(invoice: Pick<AdminInvoiceListItem, 'balance'> | null | undefined): number {
+    const balance = Number(invoice?.balance ?? 0);
+
+    return Number.isFinite(balance) && balance < 0 ? Math.abs(balance) : 0;
+  }
+
+  /** Journal bookings of a customer invoice (accounting module). */
+  bookingsQueryParams(invoice: Pick<AdminInvoiceListItem, 'id'>): Record<string, string> {
+    return { linkType: 'invoice', targetId: invoice.id };
+  }
+
+  settlementTypeLabel(settlement: InvoiceSettlementResponse): string {
+    return getInvoiceSettlementTypeLabel(settlement.type);
+  }
+
+  settlementSourceLabel(settlement: InvoiceSettlementResponse): string {
+    return getInvoiceSettlementSourceLabel(settlement.source);
+  }
+
+  /** Signed amount: reducing settlements (payment, credit, write-off) read negative, increasing ones positive. */
+  settlementAmount(settlement: InvoiceSettlementResponse): string {
+    const amount = Math.abs(Number(settlement.amount) || 0);
+    const formatted = formatBillingMoney(amount, settlement.currency);
+
+    return isBalanceIncreasingSettlement(settlement.type) ? `+${formatted}` : `\u2212${formatted}`;
+  }
+
+  /** Structured e-invoice XML (format snapshotted on the invoice). */
+  downloadEinvoice(invoice: AdminInvoiceListItem): void {
+    if (!invoice.canDownload) return;
+
+    this.downloadPdfBlob(
+      this.adminBillingService.downloadInvoiceEinvoice(invoice.id),
+      `${invoice.invoiceNumber ?? invoice.id}.xml`,
+    );
   }
 
   openAuditHistory(invoice: AdminInvoiceListItem): void {
@@ -1391,12 +1605,23 @@ export class AdminBillingPageComponent implements OnInit {
     return ['issued', 'partially_paid', 'overdue'].includes(invoice.status ?? '');
   }
 
+  /** Mark unpaid reverses all cash received (paid or partially paid). */
   canMarkUnpaid(invoice: Pick<AdminInvoiceListItem, 'status'> | Pick<AdminSupplierInvoiceListItem, 'status'>): boolean {
-    return invoice.status === 'paid';
+    return invoice.status === 'paid' || invoice.status === 'partially_paid';
   }
 
   canVoid(invoice: Pick<AdminInvoiceListItem, 'status'> | Pick<AdminSupplierInvoiceListItem, 'status'>): boolean {
-    return invoice.status !== 'void' && invoice.status !== 'paid' && invoice.status !== 'draft';
+    return !['void', 'paid', 'draft', 'credited', 'written_off'].includes(invoice.status ?? '');
+  }
+
+  /** Write off the open balance as uncollectible (customer invoices with something left to pay). */
+  canWriteOff(invoice: Pick<AdminInvoiceListItem, 'status' | 'balance'>): boolean {
+    return this.canMarkPaid(invoice) && !(Number(invoice.balance ?? 1) <= 0);
+  }
+
+  /** Refund a customer credit: only when the balance due is negative. */
+  canRefund(invoice: Pick<AdminInvoiceListItem, 'status' | 'balance'>): boolean {
+    return !this.isDraft(invoice) && this.customerCredit(invoice) > 0;
   }
 
   onInvoiceAction(inv: AdminInvoiceListItem, action: string): void {
@@ -1404,8 +1629,16 @@ export class AdminBillingPageComponent implements OnInit {
     else if (action === 'issue') this.openIssueModal(inv);
     else if (action === 'delete') this.openDeleteModal(inv);
     else if (action === 'preview') this.openPreview(inv);
-    else if (action === 'void' || action === 'markPaid' || action === 'markUnpaid') this.openActionModal(action, inv);
+    else if (
+      action === 'void' ||
+      action === 'markPaid' ||
+      action === 'markUnpaid' ||
+      action === 'writeOff' ||
+      action === 'refund'
+    )
+      this.openActionModal(action, inv);
     else if (action === 'download') this.downloadInvoice(inv);
+    else if (action === 'download-einvoice') this.downloadEinvoice(inv);
     else if (action === 'download-void') this.downloadVoidDocument(inv);
     else if (action === 'download-time') this.downloadTimeReport(inv);
     else if (action === 'history') this.openAuditHistory(inv);
@@ -1707,7 +1940,19 @@ export class AdminBillingPageComponent implements OnInit {
       }
 
       if (item.taxCategory === 'custom') {
-        return item.taxRate != null && Number.isFinite(Number(item.taxRate)) && Number(item.taxRate) >= 0;
+        if (!(item.taxRate != null && Number.isFinite(Number(item.taxRate)) && Number(item.taxRate) >= 0)) {
+          return false;
+        }
+      }
+
+      if (
+        item.capitalizeAsAsset &&
+        item.assetUsefulLifeMonths != null &&
+        (item.assetUsefulLifeMonths as unknown) !== ''
+      ) {
+        const months = Number(item.assetUsefulLifeMonths);
+
+        return Number.isInteger(months) && months >= 1;
       }
 
       return true;
@@ -1731,7 +1976,41 @@ export class AdminBillingPageComponent implements OnInit {
       unitPriceNet: Number(item.unitPriceNet),
       taxCategory: item.taxCategory ?? 'standard',
       taxRate: item.taxCategory === 'custom' ? Number(item.taxRate ?? 0) : undefined,
+      ...this.supplierLineAccountingPayload(item),
     }));
+  }
+
+  /** Account assignment, asset capitalization and stock article of a purchase line; only the fields that are set. */
+  private supplierLineAccountingPayload(
+    item: SupplierInvoiceFormLineItem,
+  ): Pick<
+    SupplierInvoiceLineItemDto,
+    'ledgerAccountNumber' | 'capitalizeAsAsset' | 'assetUsefulLifeMonths' | 'inventoryArticleId'
+  > {
+    const payload: Pick<
+      SupplierInvoiceLineItemDto,
+      'ledgerAccountNumber' | 'capitalizeAsAsset' | 'assetUsefulLifeMonths' | 'inventoryArticleId'
+    > = {};
+
+    if (item.inventoryArticleId) payload.inventoryArticleId = item.inventoryArticleId;
+
+    if (!this.accountingEnabled()) return payload;
+
+    const account = item.ledgerAccountNumber?.trim();
+
+    if (account) payload.ledgerAccountNumber = account;
+
+    if (item.capitalizeAsAsset) {
+      payload.capitalizeAsAsset = true;
+
+      const months = Number(item.assetUsefulLifeMonths);
+
+      if (item.assetUsefulLifeMonths != null && (item.assetUsefulLifeMonths as unknown) !== '' && months >= 1) {
+        payload.assetUsefulLifeMonths = Math.round(months);
+      }
+    }
+
+    return payload;
   }
 
   private mapParsedSupplierLine(line: {
@@ -1785,16 +2064,28 @@ export class AdminBillingPageComponent implements OnInit {
     unitPriceNet: number;
     taxCategory: string;
     taxRate: number;
+    ledgerAccountNumber?: string | null;
+    capitalizeAsAsset?: boolean;
+    assetUsefulLifeMonths?: number | null;
+    inventoryArticleId?: string | null;
   }): SupplierInvoiceFormLineItem {
     const category = line.taxCategory === 'reduced' || line.taxCategory === 'custom' ? line.taxCategory : 'standard';
-
-    return {
+    const mapped: SupplierInvoiceFormLineItem = {
       description: line.description,
       quantity: line.quantity,
       unitPriceNet: line.unitPriceNet,
       taxCategory: category,
       ...(category === 'custom' ? { taxRate: line.taxRate } : {}),
+      ...(line.ledgerAccountNumber ? { ledgerAccountNumber: line.ledgerAccountNumber } : {}),
+      ...(line.capitalizeAsAsset
+        ? { capitalizeAsAsset: true, assetUsefulLifeMonths: line.assetUsefulLifeMonths ?? null }
+        : {}),
+      ...(line.inventoryArticleId ? { inventoryArticleId: line.inventoryArticleId } : {}),
     };
+
+    mapped.accountingOpen = this.hasSupplierLineAccounting(mapped);
+
+    return mapped;
   }
 
   private computeLineItemTotals(
@@ -1970,6 +2261,7 @@ export class AdminBillingPageComponent implements OnInit {
         this.pendingInvoice.set(null);
         this.pendingSupplierInvoice.set(null);
         this.actionReason.set('');
+        this.actionAmount.set(null);
         this.actionPaidAt.set('');
         refreshDashboard();
       },
@@ -1984,6 +2276,7 @@ export class AdminBillingPageComponent implements OnInit {
         this.pendingInvoice.set(null);
         this.pendingSupplierInvoice.set(null);
         this.actionReason.set('');
+        this.actionAmount.set(null);
         this.actionPaidAt.set('');
         refreshDashboard();
       },

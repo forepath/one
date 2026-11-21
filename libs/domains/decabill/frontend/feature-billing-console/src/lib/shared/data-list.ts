@@ -22,9 +22,14 @@ export const DB_DL_ISSUE = $localize`:@@featureDataList-issue:Issue`;
 export const DB_DL_VOID = $localize`:@@featureDataList-void:Void`;
 export const DB_DL_MARK_PAID = $localize`:@@featureDataList-markPaid:Mark paid`;
 export const DB_DL_MARK_UNPAID = $localize`:@@featureDataList-markUnpaid:Mark unpaid`;
+export const DB_DL_WRITE_OFF = $localize`:@@featureDataList-writeOff:Write off`;
+export const DB_DL_REFUND = $localize`:@@featureDataList-refund:Record refund`;
+export const DB_DL_BOOKINGS = $localize`:@@featureDataList-bookings:Bookings`;
 export const DB_DL_HISTORY = $localize`:@@featureDataList-history:History`;
 export const DB_DL_DOWNLOAD = $localize`:@@featureDataList-download:Download`;
 export const DB_DL_DOWNLOAD_PDF = $localize`:@@featureDataList-downloadPdf:Download PDF`;
+/** Structured e-invoice (XRechnung / Peppol / CII XML) next to the PDF. */
+export const DB_DL_EINVOICE_XML = $localize`:@@featureDataList-einvoiceXml:E-invoice (XML)`;
 export const DB_DL_TIME_REPORT = $localize`:@@featureDataList-timeReport:Time report`;
 export const DB_DL_VOID_PDF = $localize`:@@featureDataList-voidPdf:Void PDF`;
 export const DB_DL_CREDIT_NOTE = $localize`:@@featureDataList-creditNote:Credit note`;

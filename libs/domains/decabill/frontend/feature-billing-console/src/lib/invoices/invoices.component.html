@@ -313,6 +313,14 @@
   @if (previewDetail$ | async; as detail) {
     @if (detail.canDownload) {
       <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+        <fpc-button
+          variant="outline-secondary"
+          (clicked)="downloadEinvoice(detail)"
+          data-testid="invoice-preview-download-einvoice"
+        >
+          <i class="bi bi-filetype-xml me-1" aria-hidden="true"></i>
+          <span>{{ einvoiceXmlLabel }}</span>
+        </fpc-button>
         <fpc-button variant="dark" (clicked)="downloadPreviewInvoice(detail)" data-testid="invoice-preview-download">
           <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>
           <span>{{ downloadLabel }}</span>

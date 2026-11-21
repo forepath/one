@@ -1,0 +1,762 @@
+<div class="accounting-page border-top d-flex flex-column flex-grow-1 min-h-0" data-testid="accounting-journal-page">
+  <fpc-page-header [title]="pageTitle">
+    <framework-accounting-tenant-switch fpcPageHeaderContext />
+  </fpc-page-header>
+  <framework-accounting-nav active="journal" />
+
+  @if (linkContext(); as context) {
+    <div class="border-bottom px-3 py-2" data-testid="accounting-journal-link-context">
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <i class="bi bi-link-45deg" aria-hidden="true"></i>
+        <span class="fw-semibold" i18n="@@featureAccountingJournal-linkContextTitle">Bookings of document</span>
+        <span class="text-body-secondary small">{{ linkTypeLabel(context.linkType) }}</span>
+        <span class="small text-truncate" data-testid="accounting-journal-link-context-label">{{
+          linkContextLabel() === undefined ? '' : (linkContextLabel() ?? context.targetId)
+        }}</span>
+        <span class="flex-grow-1"></span>
+        <fpc-button variant="secondary" size="sm" (clicked)="openManualEntry()">
+          <span i18n="@@featureAccountingJournal-linkContextBook">Book manually</span>
+        </fpc-button>
+        <fpc-button
+          variant="secondary"
+          size="sm"
+          (clicked)="clearLinkContext()"
+          data-testid="accounting-journal-clear-link"
+        >
+          <span i18n="@@featureAccountingJournal-linkContextClear">Show all bookings</span>
+        </fpc-button>
+      </div>
+      @if (byLink().loading) {
+        <fpc-empty-state size="sm" loading />
+      } @else if (byLink().error; as error) {
+        <fpc-alert variant="danger" [message]="error" />
+      } @else if ((byLink().data ?? []).length === 0) {
+        <p class="small text-body-secondary mb-0 mt-2" i18n="@@featureAccountingJournal-linkContextEmpty">
+          No bookings for this document yet.
+        </p>
+      } @else {
+        <div class="table-responsive mt-2">
+          <table class="accounting-table">
+            <thead>
+              <tr>
+                <th i18n="@@featureAccountingJournal-colNumber">No.</th>
+                <th i18n="@@featureAccountingJournal-colPostingDate">Posting date</th>
+                <th i18n="@@featureAccountingJournal-colDescription">Description</th>
+                <th i18n="@@featureAccountingJournal-colKind">Kind</th>
+                <th class="accounting-amount" i18n="@@featureAccountingJournal-colTotal">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of byLink().data ?? []; track row.id) {
+                <tr role="button" tabindex="0" (click)="openEntry(row)" (keydown.enter)="openEntry(row)">
+                  <td class="accounting-mono">{{ row.entryNumber }}</td>
+                  <td>{{ formatDate(row.postingDate) }}</td>
+                  <td>{{ row.description }}</td>
+                  <td>{{ entryKindLabel(row.kind) }}</td>
+                  <td class="accounting-amount">{{ money(row.total, row.currency) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Phone: one lane at a time; md and up show Statistics and Bookings side by side. -->
+  <fpc-tab-group class="d-md-none flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="onTabChange($event)">
+    <fpc-tab id="statistics" [label]="tabLabel('statistics')" />
+    <fpc-tab id="journal" [label]="tabLabel('journal')" />
+  </fpc-tab-group>
+
+  <fpc-section-row class="flex-grow-1 min-h-0" [nowrap]="true">
+    <fpc-section-column class="d-flex d-md-flex" [class.d-none]="activeTab() !== 'statistics'">
+      <fpc-board-lane class="h-100">
+        <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+          <span fpcLaneHeaderTitle>{{ statisticsTitle }}</span>
+        </fpc-lane-header>
+        <fpc-list-toolbar
+          fpcBoardLaneSearch
+          [open]="!filtersCollapsed()"
+          (openChange)="onFiltersOpenChange($event)"
+          [title]="filtersPanelTitle"
+          [activeCount]="activeStatisticsFilterCount()"
+          (applied)="filterState.apply()"
+          (cleared)="onResetStatisticsFilters()"
+        >
+          <span fpcListToolbarLead class="accounting-statistics-scope small text-body-secondary text-truncate">{{
+            statisticsScopeLabel()
+          }}</span>
+          <fpc-form-field forId="journalStatsFrom" i18n-label="@@featureAccountingJournal-from" label="From">
+            <fpc-form-control
+              controlId="journalStatsFrom"
+              inputType="date"
+              [ngModel]="filterState.draft().from"
+              (ngModelChange)="filterState.patch({ from: $event })"
+              name="journalStatsFrom"
+            />
+          </fpc-form-field>
+          <fpc-form-field forId="journalStatsTo" i18n-label="@@featureAccountingJournal-to" label="To">
+            <fpc-form-control
+              controlId="journalStatsTo"
+              inputType="date"
+              [ngModel]="filterState.draft().to"
+              (ngModelChange)="filterState.patch({ to: $event })"
+              name="journalStatsTo"
+            />
+          </fpc-form-field>
+        </fpc-list-toolbar>
+
+        @if (statistics().error; as statsErr) {
+          <fpc-alert [flush]="true" variant="danger" [message]="statsErr" />
+        }
+
+        <fpc-summary-bar [columns]="6">
+          <fpc-summary-card icon="journal-text" [label]="entriesLabel" [value]="kpis() ? '' + kpis()!.entries : '-'" />
+          <fpc-summary-card icon="arrow-left-right" [label]="volumeLabel" [value]="money(kpis()?.volume ?? null)" />
+          <fpc-summary-card
+            icon="pencil-square"
+            [label]="manualShareLabel"
+            [value]="kpis() ? formatShare(kpis()!.manualShare) : '-'"
+          />
+          <fpc-summary-card icon="graph-up-arrow" [label]="revenueLabel" [value]="money(kpis()?.revenue ?? null)" />
+          <fpc-summary-card icon="graph-down-arrow" [label]="expensesLabel" [value]="money(kpis()?.expenses ?? null)" />
+          <fpc-summary-card
+            icon="calculator"
+            [label]="resultLabel"
+            [tone]="(kpis()?.result ?? 0) < 0 ? 'danger' : 'success'"
+            [value]="money(kpis()?.result ?? null)"
+          />
+        </fpc-summary-bar>
+
+        <fpc-panel-grid [columns]="1" [bordered]="false">
+          <fpc-panel [title]="bookingsChartTitle">
+            @if (statistics().loading) {
+              <fpc-empty-state size="sm" loading />
+            } @else if (bookingsChart(); as chart) {
+              <apx-chart
+                [series]="chart.series"
+                [chart]="chart.chart"
+                [colors]="chart.colors"
+                [plotOptions]="chart.plotOptions"
+                [dataLabels]="chart.dataLabels"
+                [legend]="chart.legend"
+                [xaxis]="chart.xaxis"
+                [yaxis]="chart.yaxis"
+                [grid]="chart.grid"
+                [tooltip]="chart.tooltip"
+                [responsive]="chart.responsive"
+              ></apx-chart>
+            } @else {
+              <fpc-empty-state
+                size="sm"
+                message="No bookings in the selected period."
+                i18n-message="@@featureAccountingJournal-noStatistics"
+              />
+            }
+          </fpc-panel>
+          <fpc-panel [title]="volumeChartTitle">
+            @if (statistics().loading) {
+              <fpc-empty-state size="sm" loading />
+            } @else if (volumeChart(); as chart) {
+              <apx-chart
+                [series]="chart.series"
+                [chart]="chart.chart"
+                [colors]="chart.colors"
+                [plotOptions]="chart.plotOptions"
+                [dataLabels]="chart.dataLabels"
+                [legend]="chart.legend"
+                [xaxis]="chart.xaxis"
+                [yaxis]="chart.yaxis"
+                [grid]="chart.grid"
+                [tooltip]="chart.tooltip"
+                [responsive]="chart.responsive"
+              ></apx-chart>
+            } @else {
+              <fpc-empty-state
+                size="sm"
+                message="No bookings in the selected period."
+                i18n-message="@@featureAccountingJournal-noStatistics"
+              />
+            }
+          </fpc-panel>
+          <fpc-panel [title]="resultChartTitle">
+            @if (statistics().loading) {
+              <fpc-empty-state size="sm" loading />
+            } @else if (resultChart(); as chart) {
+              <apx-chart
+                [series]="chart.series"
+                [chart]="chart.chart"
+                [colors]="chart.colors"
+                [plotOptions]="chart.plotOptions"
+                [dataLabels]="chart.dataLabels"
+                [legend]="chart.legend"
+                [xaxis]="chart.xaxis"
+                [yaxis]="chart.yaxis"
+                [grid]="chart.grid"
+                [tooltip]="chart.tooltip"
+                [responsive]="chart.responsive"
+              ></apx-chart>
+            } @else {
+              <fpc-empty-state
+                size="sm"
+                message="No revenue or expenses in the selected period."
+                i18n-message="@@featureAccountingJournal-noResult"
+              />
+            }
+          </fpc-panel>
+          <fpc-panel [title]="sourceChartTitle">
+            @if (statistics().loading) {
+              <fpc-empty-state size="sm" loading />
+            } @else if (sourceChart(); as chart) {
+              <apx-chart
+                [series]="chart.series"
+                [chart]="chart.chart"
+                [labels]="chart.labels"
+                [colors]="chart.colors"
+                [dataLabels]="chart.dataLabels"
+                [legend]="chart.legend"
+                [tooltip]="chart.tooltip"
+                [responsive]="chart.responsive"
+              ></apx-chart>
+            } @else {
+              <fpc-empty-state
+                size="sm"
+                message="No bookings in the selected period."
+                i18n-message="@@featureAccountingJournal-noStatistics"
+              />
+            }
+          </fpc-panel>
+        </fpc-panel-grid>
+      </fpc-board-lane>
+    </fpc-section-column>
+
+    <fpc-section-column class="d-md-flex" [class.d-none]="activeTab() !== 'journal'">
+      <fpc-board-lane class="h-100">
+        <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+          <span fpcLaneHeaderTitle>{{ journalTitle }}</span>
+        </fpc-lane-header>
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="journalTitle"
+          [columns]="columns"
+          [rows]="rows()"
+          paging="server"
+          [total]="total()"
+          [(page)]="paging.page"
+          [(pageSize)]="paging.pageSize"
+          persistKey="decabill-accounting-journal"
+          [(query)]="paging.search"
+          [searchPlaceholder]="searchPlaceholder"
+          showFilterButton
+          [(filtersOpen)]="listFiltersOpen"
+          [filtersActive]="listFiltersActive()"
+          (filtersApplied)="applyListFilters()"
+          (filtersCleared)="clearListFilters()"
+          [loading]="journal().loading"
+          refreshable
+          (refresh)="paging.reload()"
+          [error]="journal().error"
+          (rowActivate)="openEntry($event)"
+          emptyIcon="journal-text"
+          data-testid="accounting-journal-table"
+        >
+          <fpc-button
+            fpcDataTableToolbar
+            variant="primary"
+            iconOnly
+            [ariaLabel]="createEntryLabel"
+            [title]="createEntryLabel"
+            (clicked)="openManualEntry()"
+            data-testid="accounting-journal-create"
+          >
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+          </fpc-button>
+
+          <fpc-form-field
+            fpcDataTableFilters
+            forId="journalKindFilter"
+            i18n-label="@@featureAccountingJournal-kind"
+            label="Kind"
+          >
+            <fpc-form-control
+              controlType="select"
+              controlId="journalKindFilter"
+              [(ngModel)]="filterKindDraft"
+              name="journalKindFilter"
+            >
+              <option value="" i18n="@@featureAccountingJournal-any">Any</option>
+              @for (kind of entryKinds; track kind) {
+                <option [value]="kind">{{ entryKindLabel(kind) }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+          <fpc-form-field
+            fpcDataTableFilters
+            forId="journalSourceFilter"
+            i18n-label="@@featureAccountingJournal-source"
+            label="Source"
+          >
+            <fpc-form-control
+              controlType="select"
+              controlId="journalSourceFilter"
+              [(ngModel)]="filterSourceDraft"
+              name="journalSourceFilter"
+            >
+              <option value="" i18n="@@featureAccountingJournal-any">Any</option>
+              @for (source of sourceTypes; track source) {
+                <option [value]="source">{{ sourceTypeLabel(source) }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+          <fpc-form-field
+            fpcDataTableFilters
+            forId="journalAccountFilter"
+            i18n-label="@@featureAccountingJournal-account"
+            label="Account"
+          >
+            <fpc-form-control
+              controlType="select"
+              controlId="journalAccountFilter"
+              [(ngModel)]="filterAccountDraft"
+              name="journalAccountFilter"
+            >
+              <option value="" i18n="@@featureAccountingJournal-any">Any</option>
+              @for (account of filterAccounts(); track account.id) {
+                <option [value]="account.id">{{ account.number }} {{ account.name }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+          <fpc-form-field
+            fpcDataTableFilters
+            forId="journalFromFilter"
+            i18n-label="@@featureAccountingJournal-from"
+            label="From"
+          >
+            <fpc-form-control
+              controlId="journalFromFilter"
+              inputType="date"
+              [(ngModel)]="filterFromDraft"
+              name="journalFromFilter"
+            />
+          </fpc-form-field>
+          <fpc-form-field
+            fpcDataTableFilters
+            forId="journalToFilter"
+            i18n-label="@@featureAccountingJournal-to"
+            label="To"
+          >
+            <fpc-form-control
+              controlId="journalToFilter"
+              inputType="date"
+              [(ngModel)]="filterToDraft"
+              name="journalToFilter"
+            />
+          </fpc-form-field>
+
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="journal-text"
+              i18n-message="@@featureAccountingJournal-empty"
+              message="No bookings. Invoices, payments and supplier invoices are booked automatically."
+            />
+          </span>
+        </fpc-data-table>
+      </fpc-board-lane>
+    </fpc-section-column>
+  </fpc-section-row>
+</div>
+
+<!-- Entry detail: lines, links, receipts, reversal. -->
+<fpc-modal [(open)]="entryOpen" size="xl" [title]="entryTitle" data-testid="accounting-entry-modal">
+  @if (entry().loading) {
+    <fpc-empty-state size="sm" loading />
+  } @else if (entry().error; as error) {
+    <fpc-alert variant="danger" [message]="error" />
+  } @else if (entry().data; as current) {
+    @if (mutationError(); as error) {
+      <fpc-alert variant="danger" [message]="error" data-testid="accounting-entry-error" />
+    }
+    <p class="fw-semibold mb-2">{{ current.description }}</p>
+    <fpc-key-value-list class="d-block mb-3" [columns]="2" [items]="entryItems()" />
+
+    @if (current.reversedByEntryId) {
+      <fpc-alert
+        variant="warning"
+        i18n-message="@@featureAccountingJournal-reversedNotice"
+        message="This entry was reversed."
+      />
+    }
+    @if (current.reversalOfEntryId) {
+      <p class="small mb-2">
+        <span i18n="@@featureAccountingJournal-reversalOf">Reverses entry</span>
+        <button type="button" class="btn btn-link btn-sm p-0 ms-1" (click)="openEntry(current.reversalOfEntryId)">
+          <span i18n="@@featureAccountingJournal-openOriginal">Open original</span>
+        </button>
+      </p>
+    }
+
+    <h6 class="accounting-section-title" i18n="@@featureAccountingJournal-lines">Lines</h6>
+    <div class="table-responsive">
+      <table class="accounting-table" data-testid="accounting-entry-lines">
+        <thead>
+          <tr>
+            <th i18n="@@featureAccountingJournal-lineAccount">Account</th>
+            <th class="accounting-amount" i18n="@@featureAccountingJournal-lineDebit">Debit</th>
+            <th class="accounting-amount" i18n="@@featureAccountingJournal-lineCredit">Credit</th>
+            <th class="accounting-amount" i18n="@@featureAccountingJournal-lineTaxRate">Tax rate</th>
+            <th i18n="@@featureAccountingJournal-lineDescription">Description</th>
+            <th i18n="@@featureAccountingJournal-lineCounterparty">Counterparty</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of entryLines(); track line.id) {
+            <tr>
+              <td>{{ accountLabel(line) }}</td>
+              <td class="accounting-amount">{{ lineAmount(line.debit) }}</td>
+              <td class="accounting-amount">{{ lineAmount(line.credit) }}</td>
+              <td class="accounting-amount">{{ lineTaxRate(line) }}</td>
+              <td>{{ line.description ?? '' }}</td>
+              <td>{{ lineCounterparty(line) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <h6 class="accounting-section-title" i18n="@@featureAccountingJournal-links">Links and receipts</h6>
+    @if (downloadError(); as error) {
+      <fpc-alert variant="danger" [message]="error" />
+    }
+    @if (entryLinks().length === 0) {
+      <p class="small text-body-secondary" i18n="@@featureAccountingJournal-noLinks">No linked documents.</p>
+    } @else {
+      <ul class="list-unstyled mb-2" data-testid="accounting-entry-links">
+        @for (link of entryLinks(); track link.id) {
+          <li class="d-flex align-items-center gap-2 py-1 border-bottom">
+            <i
+              class="bi"
+              [class.bi-paperclip]="isReceipt(link)"
+              [class.bi-link-45deg]="!isReceipt(link)"
+              aria-hidden="true"
+            ></i>
+            <span class="small text-body-secondary">{{ linkTypeLabel(link.linkType) }}</span>
+            <span class="text-truncate flex-grow-1">{{ linkLabel(link) }}</span>
+            <span class="small text-body-secondary">{{ link.role }}</span>
+            @if (isReceipt(link)) {
+              <fpc-button
+                variant="secondary"
+                size="sm"
+                iconOnly
+                i18n-ariaLabel="@@featureAccountingJournal-downloadReceipt"
+                ariaLabel="Download receipt"
+                (clicked)="downloadReceipt(link)"
+              >
+                <i class="bi bi-download" aria-hidden="true"></i>
+              </fpc-button>
+            }
+            @if (link.role !== 'source') {
+              <fpc-button
+                variant="secondary"
+                size="sm"
+                iconOnly
+                [disabled]="mutating()"
+                i18n-ariaLabel="@@featureAccountingJournal-removeLink"
+                ariaLabel="Remove link"
+                (clicked)="removeLink(link)"
+              >
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+              </fpc-button>
+            }
+          </li>
+        }
+      </ul>
+    }
+
+    <div class="row g-3 mb-3 align-items-end">
+      <div class="col-12 col-md-3">
+        <fpc-form-field forId="entryLinkType" i18n-label="@@featureAccountingJournal-linkType" label="Document type">
+          <fpc-form-control
+            controlType="select"
+            controlId="entryLinkType"
+            [(ngModel)]="linkTypeDraft"
+            name="entryLinkType"
+          >
+            @for (type of linkTypes; track type) {
+              <option [value]="type">{{ linkTypeLabel(type) }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-3">
+        <fpc-form-field
+          forId="entryLinkTarget"
+          i18n-label="@@featureAccountingJournal-linkTarget"
+          label="Document number"
+        >
+          <fpc-form-control controlId="entryLinkTarget" [(ngModel)]="linkTargetDraft" name="entryLinkTarget" />
+        </fpc-form-field>
+      </div>
+      <div class="col-6 col-md-2">
+        <fpc-form-field forId="entryLinkRole" i18n-label="@@featureAccountingJournal-linkRole" label="Role">
+          <fpc-form-control
+            controlType="select"
+            controlId="entryLinkRole"
+            [(ngModel)]="linkRoleDraft"
+            name="entryLinkRole"
+          >
+            <option value="related" i18n="@@featureAccountingJournal-roleRelated">Related</option>
+            <option value="settles" i18n="@@featureAccountingJournal-roleSettles">Settles</option>
+            <option value="receipt" i18n="@@featureAccountingJournal-roleReceipt">Receipt</option>
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-6 col-md-2">
+        <fpc-form-field forId="entryLinkLabel" i18n-label="@@featureAccountingJournal-linkLabel" label="Label">
+          <fpc-form-control controlId="entryLinkLabel" [(ngModel)]="linkLabelDraft" name="entryLinkLabel" />
+        </fpc-form-field>
+      </div>
+      <div class="col-12 col-md-2">
+        <fpc-button
+          variant="secondary"
+          [block]="true"
+          [disabled]="mutating() || !linkTargetDraft.trim()"
+          (clicked)="submitLink()"
+          data-testid="accounting-entry-add-link"
+        >
+          <span i18n="@@featureAccountingJournal-addLink">Add link</span>
+        </fpc-button>
+      </div>
+    </div>
+
+    <fpc-form-field forId="entryReceipt" i18n-label="@@featureAccountingJournal-uploadReceipt" label="Upload receipt">
+      <input
+        id="entryReceipt"
+        type="file"
+        class="form-control"
+        [disabled]="mutating()"
+        (change)="onReceiptSelected($event)"
+        data-testid="accounting-entry-receipt"
+      />
+    </fpc-form-field>
+
+    @if (reverseOpen()) {
+      <h6 class="accounting-section-title" i18n="@@featureAccountingJournal-reverseTitle">Reverse entry</h6>
+      <div class="row g-3 align-items-end">
+        <div class="col-12 col-md-4">
+          <fpc-form-field forId="reverseDate" i18n-label="@@featureAccountingJournal-reverseDate" label="Reversal date">
+            <fpc-form-control controlId="reverseDate" inputType="date" [(ngModel)]="reverseDate" name="reverseDate" />
+          </fpc-form-field>
+        </div>
+        <div class="col-12 col-md-8">
+          <fpc-form-field forId="reverseReason" i18n-label="@@featureAccountingJournal-reverseReason" label="Reason">
+            <fpc-form-control controlId="reverseReason" [(ngModel)]="reverseReason" name="reverseReason" />
+          </fpc-form-field>
+        </div>
+      </div>
+    }
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    @if (canReverse()) {
+      @if (reverseOpen()) {
+        <fpc-button variant="secondary" (clicked)="reverseOpen.set(false)">
+          <span i18n="@@featureAccountingJournal-cancel">Cancel</span>
+        </fpc-button>
+        <fpc-button
+          variant="danger"
+          [disabled]="mutating()"
+          (clicked)="submitReverse()"
+          data-testid="accounting-entry-reverse-submit"
+        >
+          @if (mutating()) {
+            <fpc-spinner size="sm" />
+          } @else {
+            <span i18n="@@featureAccountingJournal-reverseSubmit">Book reversal</span>
+          }
+        </fpc-button>
+      } @else {
+        <fpc-button variant="secondary" (clicked)="reverseOpen.set(true)" data-testid="accounting-entry-reverse">
+          <span i18n="@@featureAccountingJournal-reverse">Reverse</span>
+        </fpc-button>
+      }
+    }
+  </div>
+</fpc-modal>
+
+<!-- Manual booking (gross lines with a tax code split off the VAT automatically). -->
+<fpc-modal [(open)]="manualOpen" size="xl" [title]="createEntryLabel" data-testid="accounting-manual-entry-modal">
+  @if (mutationError(); as error) {
+    <fpc-alert variant="danger" [message]="error" />
+  }
+  @if (linkContext()) {
+    <fpc-alert
+      variant="info"
+      i18n-message="@@featureAccountingJournal-manualLinked"
+      message="The booking will be linked to the selected document."
+    />
+  }
+  <div class="row g-3">
+    <div class="col-12 col-md-3">
+      <fpc-form-field
+        forId="manualDate"
+        i18n-label="@@featureAccountingJournal-documentDate"
+        label="Document date"
+        [required]="true"
+      >
+        <fpc-form-control controlId="manualDate" inputType="date" [(ngModel)]="manualDocumentDate" name="manualDate" />
+      </fpc-form-field>
+    </div>
+    <div class="col-12 col-md-3">
+      <fpc-form-field
+        forId="manualDocNumber"
+        i18n-label="@@featureAccountingJournal-documentNumber"
+        label="Document number"
+      >
+        <fpc-form-control controlId="manualDocNumber" [(ngModel)]="manualDocumentNumber" name="manualDocNumber" />
+      </fpc-form-field>
+    </div>
+    <div class="col-12" [class.col-md-6]="!globalAccess()" [class.col-md-4]="globalAccess()">
+      <fpc-form-field
+        forId="manualDescription"
+        i18n-label="@@featureAccountingJournal-description"
+        label="Description"
+        [required]="true"
+      >
+        <fpc-form-control controlId="manualDescription" [(ngModel)]="manualDescription" name="manualDescription" />
+      </fpc-form-field>
+    </div>
+    @if (globalAccess()) {
+      <div class="col-12 col-md-2">
+        <fpc-form-field
+          forId="manualTenant"
+          i18n-label="@@featureAccountingJournal-tenant"
+          label="Tenant"
+          i18n-hint="@@featureAccountingJournal-tenantHint"
+          hint="Empty = current tenant"
+        >
+          <fpc-form-control controlId="manualTenant" [(ngModel)]="manualTenantId" name="manualTenant" />
+        </fpc-form-field>
+      </div>
+    }
+  </div>
+
+  <h6 class="accounting-section-title" i18n="@@featureAccountingJournal-lines">Lines</h6>
+  <div class="accounting-lines" data-testid="accounting-manual-lines">
+    @for (line of manualLines; track $index; let index = $index) {
+      <div class="accounting-line">
+        <fpc-form-control
+          controlType="select"
+          [controlId]="'manualAccount' + index"
+          [name]="'manualAccount' + index"
+          [(ngModel)]="line.accountNumber"
+          i18n-ariaLabel="@@featureAccountingJournal-lineAccount"
+          ariaLabel="Account"
+        >
+          <option value="" i18n="@@featureAccountingJournal-selectAccount">Account…</option>
+          @for (account of bookableAccounts(); track account.id) {
+            <option [value]="account.number">{{ account.number }} {{ account.name }}</option>
+          }
+        </fpc-form-control>
+        <fpc-form-control
+          inputType="number"
+          step="0.01"
+          min="0"
+          [controlId]="'manualDebit' + index"
+          [name]="'manualDebit' + index"
+          [(ngModel)]="line.debit"
+          i18n-placeholder="@@featureAccountingJournal-lineDebit"
+          placeholder="Debit"
+          i18n-ariaLabel="@@featureAccountingJournal-lineDebit"
+          ariaLabel="Debit"
+        />
+        <fpc-form-control
+          inputType="number"
+          step="0.01"
+          min="0"
+          [controlId]="'manualCredit' + index"
+          [name]="'manualCredit' + index"
+          [(ngModel)]="line.credit"
+          i18n-placeholder="@@featureAccountingJournal-lineCredit"
+          placeholder="Credit"
+          i18n-ariaLabel="@@featureAccountingJournal-lineCredit"
+          ariaLabel="Credit"
+        />
+        <fpc-form-control
+          controlType="select"
+          [controlId]="'manualTax' + index"
+          [name]="'manualTax' + index"
+          [(ngModel)]="line.taxCode"
+          i18n-ariaLabel="@@featureAccountingJournal-lineTaxCode"
+          ariaLabel="Tax code"
+        >
+          <option value="" i18n="@@featureAccountingJournal-noTaxCode">No tax</option>
+          @for (taxCode of activeTaxCodes(); track taxCode.id) {
+            <option [value]="taxCode.code">{{ taxCode.code }} – {{ taxCode.name }}</option>
+          }
+        </fpc-form-control>
+        <fpc-form-control
+          [controlId]="'manualLineDescription' + index"
+          [name]="'manualLineDescription' + index"
+          [(ngModel)]="line.description"
+          i18n-placeholder="@@featureAccountingJournal-lineDescription"
+          placeholder="Description"
+          i18n-ariaLabel="@@featureAccountingJournal-lineDescription"
+          ariaLabel="Description"
+        />
+        <fpc-button
+          variant="secondary"
+          iconOnly
+          [disabled]="manualLines.length <= 2"
+          i18n-ariaLabel="@@featureAccountingJournal-removeLine"
+          ariaLabel="Remove line"
+          (clicked)="removeLine(index)"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </fpc-button>
+      </div>
+    }
+  </div>
+  <div class="d-flex flex-wrap align-items-center gap-3 mt-2">
+    <fpc-button variant="secondary" size="sm" (clicked)="addLine()" data-testid="accounting-manual-add-line">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
+      <span i18n="@@featureAccountingJournal-addLine">Add line</span>
+    </fpc-button>
+    <span class="small">
+      <span i18n="@@featureAccountingJournal-debitTotal">Debit</span>
+      <span class="accounting-amount ms-1">{{ money(debitTotal()) }}</span>
+    </span>
+    <span class="small">
+      <span i18n="@@featureAccountingJournal-creditTotal">Credit</span>
+      <span class="accounting-amount ms-1">{{ money(creditTotal()) }}</span>
+    </span>
+    @if (isBalanced()) {
+      <span class="small text-success" data-testid="accounting-manual-balanced">
+        <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>
+        <span i18n="@@featureAccountingJournal-balanced">Balanced</span>
+      </span>
+    } @else {
+      <span class="small text-warning-emphasis">
+        <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>
+        <span i18n="@@featureAccountingJournal-unbalanced">Debit and credit differ</span>
+      </span>
+    }
+  </div>
+  <p class="small text-body-secondary mt-2 mb-0" i18n="@@featureAccountingJournal-grossHint">
+    Lines with a tax code are entered gross; the VAT is split off to the tax code's account.
+  </p>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button
+      variant="primary"
+      [disabled]="mutating() || !manualValid()"
+      (clicked)="submitManualEntry()"
+      data-testid="accounting-manual-submit"
+    >
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingJournal-book">Book</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>

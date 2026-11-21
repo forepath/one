@@ -54,6 +54,14 @@ export class InvoiceCreditDocumentEntity {
    * True once invoice balance reduction and any carry-forward OP for this credit have been applied.
    * Lets retries finish settlement if the worker died after inserting the credit row.
    */
+  /** VAT of the credit (gross − net), stored so bookings and exports never recompute it. */
+  @Column({ type: 'decimal', precision: 12, scale: 4, nullable: true, name: 'credit_tax' })
+  creditTax?: number | null;
+
+  /** Percent rate of the credited line (from the original invoice's tax snapshot). */
+  @Column({ type: 'decimal', precision: 8, scale: 4, nullable: true, name: 'tax_rate' })
+  taxRate?: number | null;
+
   @Column({ type: 'boolean', name: 'settlement_complete', default: false })
   settlementComplete!: boolean;
 

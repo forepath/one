@@ -50,6 +50,9 @@ export const BillingJobName = {
   VAT_ID_VALIDATION_UNIT: VatIdValidationJobName.UNIT,
   WEBHOOK_DELIVERY_RETENTION_COORDINATOR,
   UPDATE_CHECK: UPDATE_CHECK_JOB_NAME,
+  ACCOUNTING_CATCH_UP_COORDINATOR: 'accounting-catch-up.coordinator',
+  ACCOUNTING_FX_RATES_COORDINATOR: 'accounting-fx-rates.coordinator',
+  ACCOUNTING_PROCESSOR_SYNC_COORDINATOR: 'accounting-processor-sync.coordinator',
   SEARCH_REINDEX_COORDINATOR: 'search-reindex.coordinator',
   SEARCH_REINDEX_UNIT: 'search-reindex.unit',
   SEARCH_INDEX_SYNC_UNIT: 'search-index-sync.unit',
@@ -207,6 +210,29 @@ export function getBillingRepeatableJobs(): BillingRepeatableJobDefinition[] {
       pattern: envCronOrDefault('BILLING_DATEV_EXPORT_CRON', '0 0 1 * *'),
       tz: process.env.BILLING_DATEV_EXPORT_TIMEZONE ?? 'Europe/Berlin',
     });
+  }
+
+  if (parseBooleanEnv('BILLING_ACCOUNTING_ENABLED', false)) {
+    // Backfill + retry of failed postings, ECB reference rates (published ~16:00 CET), processor fee / payout sync.
+    jobs.push(
+      {
+        name: BillingJobName.ACCOUNTING_CATCH_UP_COORDINATOR,
+        coordinatorJobId: buildCoordinatorJobId('accounting-catch-up'),
+        everyMs: parseIntervalMs('BILLING_ACCOUNTING_CATCH_UP_INTERVAL_MS', 15 * 60_000),
+      },
+      {
+        name: BillingJobName.ACCOUNTING_FX_RATES_COORDINATOR,
+        coordinatorJobId: buildCoordinatorJobId('accounting-fx-rates'),
+        pattern: envCronOrDefault('BILLING_ACCOUNTING_FX_CRON', '30 16 * * 1-5'),
+        tz: 'Europe/Berlin',
+      },
+      {
+        name: BillingJobName.ACCOUNTING_PROCESSOR_SYNC_COORDINATOR,
+        coordinatorJobId: buildCoordinatorJobId('accounting-processor-sync'),
+        pattern: envCronOrDefault('BILLING_ACCOUNTING_PROCESSOR_SYNC_CRON', '15 * * * *'),
+        tz: 'Europe/Berlin',
+      },
+    );
   }
 
   if (parseBooleanEnv('BILLING_PRICE_RECALC_ENABLED', true)) {

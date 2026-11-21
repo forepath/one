@@ -7,8 +7,9 @@ import {
   getAutoPaymentPendingSafetyDelayMs,
   getAutoPaymentRetryDelayMs,
 } from '../constants/auto-payment-status.constants';
-import { InvoiceStatus, OPEN_OVERDUE_INVOICE_STATUSES } from '../constants/invoice-status.constants';
+import { OPEN_OVERDUE_INVOICE_STATUSES } from '../constants/invoice-status.constants';
 import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
+import { SettlementDocumentType, SettlementSource, SettlementType } from '../constants/settlement.constants';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
@@ -23,6 +24,7 @@ import { resolveTenantFrontendBaseUrl } from '../utils/tenant-frontend-url.utils
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { CustomerProfilesService } from './customer-profiles.service';
+import { DocumentSettlementService } from './document-settlement.service';
 
 export interface AutoBillingSetupResult {
   setupUrl: string;
@@ -43,6 +45,7 @@ export class AutoBillingService {
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly customerTrustScoreService: CustomerTrustScoreService,
+    private readonly documentSettlementService: DocumentSettlementService,
   ) {}
 
   get batchSizeLimit(): number {
@@ -384,8 +387,8 @@ export class AutoBillingService {
         invoiceNumber: claimed.invoiceNumber ?? '',
       },
     });
-
-    await this.paymentAttemptsRepository.create({
+    const chargedAmount = Number(claimed.balanceDue);
+    const createdAttempt = await this.paymentAttemptsRepository.create({
       invoiceId: claimed.id,
       processor: processorType,
       externalId: result.externalId,
@@ -404,7 +407,13 @@ export class AutoBillingService {
     await this.invoicesRepository.update(claimed.id, { externalPaymentId: result.externalId });
 
     if (result.status === 'succeeded') {
-      await this.markInvoicePaidFromAutoCharge(claimed, processorType, result.externalId);
+      await this.markInvoicePaidFromAutoCharge(
+        claimed,
+        processorType,
+        result.externalId,
+        chargedAmount,
+        createdAttempt?.id ?? null,
+      );
 
       return;
     }
@@ -516,38 +525,41 @@ export class AutoBillingService {
     invoice: InvoiceEntity,
     processorType: string,
     externalId: string,
+    amount: number,
+    paymentAttemptId: string | null,
   ): Promise<void> {
-    const current = await this.invoicesRepository.findById(invoice.id);
+    // Same source ref as the processor webhook for this payment, so whichever arrives second is a no-op.
+    const result = await this.documentSettlementService.apply({
+      documentType: SettlementDocumentType.INVOICE,
+      documentId: invoice.id,
+      type: SettlementType.PAYMENT,
+      amount,
+      currency: invoice.currency,
+      occurredAt: new Date(),
+      source: SettlementSource.AUTO_CHARGE,
+      sourceRef: `${processorType}:${externalId}`,
+      processor: processorType,
+      externalId,
+      paymentAttemptId,
+    });
+    const paid = await this.invoicesRepository.update(invoice.id, {
+      autoPaymentStatus: AutoPaymentStatus.SUCCEEDED,
+      autoPaymentNextRetryAt: null,
+    });
 
-    if (!current) {
-      return;
-    }
-
-    if (current.status === InvoiceStatus.PAID) {
-      await this.invoicesRepository.update(invoice.id, {
-        autoPaymentStatus: AutoPaymentStatus.SUCCEEDED,
-        autoPaymentNextRetryAt: null,
-      });
+    if (!result.created) {
       this.logger.debug(`Skipping duplicate auto-payment success handling for invoice ${invoice.id}`);
 
       return;
     }
 
-    const paid = await this.invoicesRepository.update(invoice.id, {
-      status: InvoiceStatus.PAID,
-      balanceDue: 0,
-      paidAt: new Date(),
-      autoPaymentStatus: AutoPaymentStatus.SUCCEEDED,
-      autoPaymentNextRetryAt: null,
-    });
-
     await this.auditLog.log({
       process: 'payment.auto',
       level: 'info',
-      message: 'Invoice marked paid via auto-billing',
+      message: result.becameSettled ? 'Invoice marked paid via auto-billing' : 'Auto-billing payment recorded',
       invoiceId: invoice.id,
       userId: invoice.userId,
-      context: { externalId, processor: processorType },
+      context: { externalId, processor: processorType, amount },
     });
 
     this.billingNotificationPublisher.publishPayment('payment.succeeded', paid, {
@@ -555,7 +567,11 @@ export class AutoBillingService {
       externalId,
       mode: 'auto',
     });
-    this.billingNotificationPublisher.publishInvoice('invoice.paid', paid);
+
+    if (result.becameSettled) {
+      this.billingNotificationPublisher.publishInvoice('invoice.paid', paid);
+    }
+
     this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
     await this.billingEmailPublisher.publishPaymentSucceeded(paid, {
       processor: processorType,

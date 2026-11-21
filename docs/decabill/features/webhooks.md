@@ -70,7 +70,13 @@ Events are published from the **billing** service after successful mutations.
 ### Billing and subscriptions
 
 - `invoice.created`, `invoice.issued`, `invoice.voided`
-- `invoice.paid`: the invoice was fully settled by a checkout or auto payment, an admin marking it paid, a credit that covers the remaining balance, or issuance of a zero-balance (fully discounted) invoice (payload includes `paidAt`)
+- `invoice.paid`: the invoice became settled with cash involved (checkout or auto payment, admin payment, bank match, or issuance of a zero-balance invoice); payload includes `paidAt`. Partial payments only emit `payment.succeeded`.
+- `invoice.credited`: the invoice became settled by credit notes / customer credit without cash
+- `invoice.unpaid`: an admin reversed the payments (status back to issued / overdue)
+- `invoice.overdue`: the due date passed with an open balance
+- `invoice.refunded`: money was paid back from a customer credit
+- `invoice.settlement_recorded`, `invoice.written_off`: settlement events
+- `credit_note.created`, `payment.refunded`
 - `offer.created`, `offer.updated`, `offer.archived`, `offer.revoked`, `offer.accepted`, `offer.declined`, `offer.expired`, `offer.line.fulfilled`, `offer.line.fulfillment_failed` (see [Offers](./offers.md))
 - `article.created`, `article.updated`, `article.deleted`, `article.low_stock`, `inventory_movement.created`, `withdrawal_request.created`, `withdrawal_request.accepted`, `withdrawal_request.rejected`, `inventory_lending.created`, `inventory_lending.returned` (see [Inventory](./inventory.md))
 - `invoice.tax_mode_applied` (non-domestic tax modes at issue time)

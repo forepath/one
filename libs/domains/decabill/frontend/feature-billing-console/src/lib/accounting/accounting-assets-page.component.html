@@ -1,0 +1,453 @@
+<div class="accounting-page border-top d-flex flex-column flex-grow-1 min-h-0" data-testid="accounting-assets-page">
+  <fpc-page-header [title]="pageTitle" />
+  <framework-accounting-nav active="assets" />
+
+  <fpc-summary-bar [columns]="5">
+    <fpc-summary-card
+      icon="safe"
+      i18n-label="@@featureAccountingAssets-kpiBookValue"
+      label="Closing book value"
+      [value]="money(scheduleTotals().closingBookValue)"
+    />
+    <fpc-summary-card
+      icon="plus-circle"
+      i18n-label="@@featureAccountingAssets-kpiAdditions"
+      label="Additions"
+      [value]="money(scheduleTotals().additions)"
+    />
+    <fpc-summary-card
+      icon="graph-down-arrow"
+      i18n-label="@@featureAccountingAssets-kpiDepreciation"
+      label="Depreciation"
+      [value]="money(scheduleTotals().depreciation)"
+    />
+    <fpc-summary-card
+      icon="box-arrow-right"
+      i18n-label="@@featureAccountingAssets-kpiDisposals"
+      label="Disposals"
+      [value]="money(scheduleTotals().disposals)"
+    />
+    <fpc-summary-card
+      icon="pc-display"
+      i18n-label="@@featureAccountingAssets-kpiActive"
+      label="Active assets"
+      [value]="'' + activeAssetCount()"
+    />
+  </fpc-summary-bar>
+
+  <fpc-tab-group class="d-md-none flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="onTabChange($event)">
+    <fpc-tab id="statistics" [label]="tabLabel('statistics')" />
+    <fpc-tab id="list" [label]="tabLabel('list')" />
+  </fpc-tab-group>
+
+  <fpc-section-row class="flex-grow-1 min-h-0" [nowrap]="true">
+    <fpc-section-column class="d-flex d-md-flex" [class.d-none]="activeTab() !== 'statistics'">
+      <fpc-board-lane class="h-100">
+        <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+          <span fpcLaneHeaderTitle i18n="@@featureAccountingAssets-statistics">Statistics</span>
+        </fpc-lane-header>
+        <fpc-list-toolbar
+          fpcBoardLaneSearch
+          [(open)]="filtersOpen"
+          [title]="filtersTitle"
+          [activeCount]="activeFilterCount()"
+          (applied)="applyFilters()"
+          (cleared)="resetFilters()"
+        >
+          <span fpcListToolbarLead class="accounting-statistics-scope small text-body-secondary text-truncate">{{
+            scopeLabel()
+          }}</span>
+          <fpc-form-field forId="assetsFrom" i18n-label="@@featureAccountingAssets-from" label="From">
+            <fpc-form-control controlId="assetsFrom" inputType="date" [(ngModel)]="fromDraft" name="assetsFrom" />
+          </fpc-form-field>
+          <fpc-form-field forId="assetsTo" i18n-label="@@featureAccountingAssets-to" label="To">
+            <fpc-form-control controlId="assetsTo" inputType="date" [(ngModel)]="toDraft" name="assetsTo" />
+          </fpc-form-field>
+        </fpc-list-toolbar>
+
+        @if (schedule().error; as err) {
+          <fpc-alert [flush]="true" variant="danger" [message]="err" />
+        }
+
+        <fpc-panel-grid [columns]="1" [bordered]="false">
+          <fpc-panel [title]="chartTitle">
+            @if (schedule().loading) {
+              <fpc-empty-state size="sm" loading />
+            } @else if (yearChart(); as chart) {
+              <apx-chart
+                [series]="chart.series"
+                [chart]="chart.chart"
+                [colors]="chart.colors"
+                [plotOptions]="chart.plotOptions"
+                [dataLabels]="chart.dataLabels"
+                [legend]="chart.legend"
+                [xaxis]="chart.xaxis"
+                [yaxis]="chart.yaxis"
+                [grid]="chart.grid"
+                [tooltip]="chart.tooltip"
+                [responsive]="chart.responsive"
+              ></apx-chart>
+            } @else {
+              <fpc-empty-state
+                size="sm"
+                icon="bar-chart"
+                i18n-message="@@featureAccountingAssets-noStatistics"
+                message="No assets in the selected period."
+              />
+            }
+          </fpc-panel>
+        </fpc-panel-grid>
+      </fpc-board-lane>
+    </fpc-section-column>
+
+    <fpc-section-column class="d-md-flex" [class.d-none]="activeTab() !== 'list'">
+      <fpc-board-lane class="h-100">
+        <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+          <span fpcLaneHeaderTitle i18n="@@featureAccountingAssets-register">Assets</span>
+        </fpc-lane-header>
+        <fpc-tab-group
+          class="flex-shrink-0"
+          [activeId]="listTab()"
+          (activeIdChange)="onListTabChange($event)"
+          i18n-ariaLabel="@@featureAccountingAssets-listTabs"
+          ariaLabel="Asset views"
+        >
+          <fpc-tab id="register" icon="list-ul" i18n-label="@@featureAccountingAssets-tabRegister" label="Register" />
+          <fpc-tab id="schedule" icon="table" i18n-label="@@featureAccountingAssets-tabSchedule" label="Schedule" />
+        </fpc-tab-group>
+
+        @if (listTab() === 'register') {
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [ariaLabel]="pageTitle"
+            [columns]="columns"
+            [rows]="assets().data?.items ?? []"
+            paging="server"
+            [total]="assets().data?.total ?? 0"
+            [(page)]="paging.page"
+            [(pageSize)]="paging.pageSize"
+            persistKey="decabill-accounting-assets"
+            [(query)]="paging.search"
+            [searchPlaceholder]="searchPlaceholder"
+            [loading]="assets().loading"
+            refreshable
+            (refresh)="reload()"
+            [error]="assets().error"
+            [rowMenu]="rowMenu"
+            (rowAction)="onRowAction($event.row, $event.item.id)"
+            (rowActivate)="onRowActivate($event)"
+            emptyIcon="pc-display"
+            data-testid="accounting-assets-table"
+          >
+            <fpc-button
+              fpcDataTableToolbar
+              variant="primary"
+              iconOnly
+              [ariaLabel]="createLabel"
+              [title]="createLabel"
+              (clicked)="openCreate()"
+              data-testid="accounting-assets-create"
+            >
+              <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-button
+              fpcDataTableToolbar
+              variant="secondary"
+              iconOnly
+              [ariaLabel]="depreciationLabel"
+              [title]="depreciationLabel"
+              (clicked)="openDepreciation()"
+              data-testid="accounting-assets-depreciation"
+            >
+              <i class="bi bi-calendar-check" aria-hidden="true"></i>
+            </fpc-button>
+            <span fpcDataTableEmpty>
+              <fpc-empty-state
+                size="sm"
+                icon="pc-display"
+                i18n-message="@@featureAccountingAssets-empty"
+                message="No fixed assets yet. Supplier invoice lines booked as assets appear here."
+              />
+            </span>
+          </fpc-data-table>
+        } @else {
+          <div class="accounting-scroll p-2">
+            @if (schedule().loading) {
+              <fpc-empty-state size="sm" loading />
+            } @else if (scheduleRows().length === 0) {
+              <fpc-empty-state
+                size="sm"
+                icon="table"
+                i18n-message="@@featureAccountingAssets-scheduleEmpty"
+                message="No assets in the selected period."
+              />
+            } @else {
+              <table class="accounting-table" data-testid="accounting-assets-schedule">
+                <thead>
+                  <tr>
+                    <th i18n="@@featureAccountingAssets-colNumber">Number</th>
+                    <th i18n="@@featureAccountingAssets-colName">Name</th>
+                    <th i18n="@@featureAccountingAssets-colAccount">Asset account</th>
+                    <th class="accounting-amount" i18n="@@featureAccountingAssets-colOpeningCost">Opening cost</th>
+                    <th class="accounting-amount" i18n="@@featureAccountingAssets-kpiAdditions">Additions</th>
+                    <th class="accounting-amount" i18n="@@featureAccountingAssets-kpiDisposals">Disposals</th>
+                    <th class="accounting-amount" i18n="@@featureAccountingAssets-colClosingCost">Closing cost</th>
+                    <th class="accounting-amount" i18n="@@featureAccountingAssets-colOpeningDepreciation">
+                      Opening depreciation
+                    </th>
+                    <th class="accounting-amount" i18n="@@featureAccountingAssets-kpiDepreciation">Depreciation</th>
+                    <th class="accounting-amount" i18n="@@featureAccountingAssets-colOpeningBookValue">
+                      Opening book value
+                    </th>
+                    <th class="accounting-amount" i18n="@@featureAccountingAssets-kpiBookValue">Closing book value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of scheduleRows(); track row.id) {
+                    <tr>
+                      <td class="accounting-mono">{{ row.assetNumber }}</td>
+                      <td>{{ row.name }}</td>
+                      <td class="accounting-mono">{{ row.accountNumber }}</td>
+                      <td class="accounting-amount">{{ money(row.openingCost) }}</td>
+                      <td class="accounting-amount">{{ money(row.additions) }}</td>
+                      <td class="accounting-amount">{{ money(row.disposals) }}</td>
+                      <td class="accounting-amount">{{ money(row.closingCost) }}</td>
+                      <td class="accounting-amount">{{ money(row.openingDepreciation) }}</td>
+                      <td class="accounting-amount">{{ money(row.depreciation) }}</td>
+                      <td class="accounting-amount">{{ money(row.openingBookValue) }}</td>
+                      <td class="accounting-amount">{{ money(row.closingBookValue) }}</td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  @let totals = scheduleTotals();
+                  <tr>
+                    <td colspan="3" i18n="@@featureAccountingAssets-total">Total</td>
+                    <td class="accounting-amount">{{ money(totals.openingCost) }}</td>
+                    <td class="accounting-amount">{{ money(totals.additions) }}</td>
+                    <td class="accounting-amount">{{ money(totals.disposals) }}</td>
+                    <td class="accounting-amount">{{ money(totals.closingCost) }}</td>
+                    <td class="accounting-amount">{{ money(totals.openingDepreciation) }}</td>
+                    <td class="accounting-amount">{{ money(totals.depreciation) }}</td>
+                    <td class="accounting-amount">{{ money(totals.openingBookValue) }}</td>
+                    <td class="accounting-amount">{{ money(totals.closingBookValue) }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            }
+          </div>
+        }
+      </fpc-board-lane>
+    </fpc-section-column>
+  </fpc-section-row>
+</div>
+
+<fpc-modal [(open)]="createOpen" size="lg" [title]="createLabel" data-testid="accounting-assets-create-modal">
+  @if (mutationError(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  <fpc-form-field forId="assetName" i18n-label="@@featureAccountingAssets-colName" label="Name" [required]="true">
+    <fpc-form-control controlId="assetName" [(ngModel)]="form.name" name="assetName" />
+  </fpc-form-field>
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <fpc-form-field
+        forId="assetDate"
+        i18n-label="@@featureAccountingAssets-colAcquired"
+        label="Acquired"
+        [required]="true"
+      >
+        <fpc-form-control controlId="assetDate" inputType="date" [(ngModel)]="form.acquisitionDate" name="assetDate" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field
+        forId="assetCost"
+        i18n-label="@@featureAccountingAssets-netCost"
+        label="Net cost"
+        [required]="true"
+      >
+        <fpc-form-control
+          controlId="assetCost"
+          inputType="number"
+          step="0.01"
+          min="0"
+          [(ngModel)]="form.acquisitionCost"
+          name="assetCost"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field
+        forId="assetMethod"
+        i18n-label="@@featureAccountingAssets-colMethod"
+        label="Method"
+        i18n-hint="@@featureAccountingAssets-methodHint"
+        hint="Empty: classified by cost (low-value, pool or straight line)."
+      >
+        <fpc-form-control controlType="select" controlId="assetMethod" [(ngModel)]="form.method" name="assetMethod">
+          <option value="" i18n="@@featureAccountingAssets-methodAuto">Automatic</option>
+          <option value="straight_line" i18n="@@featureAccounting-methodStraightLine">Straight line</option>
+          <option value="immediate" i18n="@@featureAccounting-methodImmediate">Immediate write-off</option>
+          <option value="pool" i18n="@@featureAccounting-methodPool">Asset pool</option>
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field forId="assetLife" i18n-label="@@featureAccountingAssets-colLife" label="Useful life (months)">
+        <fpc-form-control
+          controlId="assetLife"
+          inputType="number"
+          min="1"
+          max="1200"
+          [(ngModel)]="form.usefulLifeMonths"
+          name="assetLife"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field forId="assetAccount" i18n-label="@@featureAccountingAssets-colAccount" label="Asset account">
+        <fpc-form-control controlId="assetAccount" [(ngModel)]="form.assetAccountNumber" name="assetAccount" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field forId="assetResidual" i18n-label="@@featureAccountingAssets-residual" label="Residual value">
+        <fpc-form-control
+          controlId="assetResidual"
+          inputType="number"
+          step="0.01"
+          min="0"
+          [(ngModel)]="form.residualValue"
+          name="assetResidual"
+        />
+      </fpc-form-field>
+    </div>
+  </div>
+  <fpc-form-field forId="assetNote" i18n-label="@@featureAccountingAssets-note" label="Note">
+    <fpc-form-control controlType="textarea" controlId="assetNote" [(ngModel)]="form.note" name="assetNote" />
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="primary" (clicked)="submitCreate()" [disabled]="mutating() || !formValid()">
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingAssets-createSubmit">Create</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal [(open)]="depreciationOpen" [title]="depreciationLabel" data-testid="accounting-assets-depreciation-modal">
+  @if (mutationError(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  <p class="small text-body-secondary" i18n="@@featureAccountingAssets-depreciationHint">
+    Books the planned depreciation of all active assets up to and including the month.
+  </p>
+  <fpc-form-field forId="depreciationMonth" i18n-label="@@featureAccountingAssets-through" label="Through month">
+    <fpc-form-control
+      controlId="depreciationMonth"
+      inputType="month"
+      [(ngModel)]="depreciationMonth"
+      name="depreciationMonth"
+    />
+  </fpc-form-field>
+  @if (depreciationResult(); as result) {
+    <fpc-alert
+      variant="success"
+      i18n-message="@@featureAccountingAssets-depreciationDone"
+      message="Depreciation booked for {{ result.assets }} assets: {{ money(result.amount) }}."
+    />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="primary" (clicked)="submitDepreciation()" [disabled]="mutating() || !depreciationMonth">
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingAssets-runSubmit">Run</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="detailOpen"
+  size="lg"
+  i18n-title="@@featureAccountingAssets-detailTitle"
+  title="Asset"
+  data-testid="accounting-assets-detail-modal"
+>
+  @if (asset().loading) {
+    <fpc-empty-state size="sm" loading />
+  } @else if (asset().error; as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  } @else if (asset().data; as detail) {
+    <fpc-key-value-list [items]="detailItems()" [columns]="2" />
+    <h6 class="accounting-section-title" i18n="@@featureAccountingAssets-plan">Depreciation plan</h6>
+    @if (planRows().length === 0) {
+      <p class="small text-body-secondary" i18n="@@featureAccountingAssets-planEmpty">No depreciation planned.</p>
+    } @else {
+      <table class="accounting-table">
+        <thead>
+          <tr>
+            <th i18n="@@featureAccountingAssets-month">Month</th>
+            <th class="accounting-amount" i18n="@@featureAccountingAssets-amount">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of planRows(); track row.month) {
+            <tr>
+              <td>{{ row.month }}</td>
+              <td class="accounting-amount">{{ money(row.amount) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      @if (planTruncated() && !showFullPlan()) {
+        <fpc-button variant="link" size="sm" (clicked)="showFullPlan.set(true)">
+          <span i18n="@@featureAccountingAssets-showAll">Show all</span>
+        </fpc-button>
+      }
+    }
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+      <fpc-button variant="secondary" (clicked)="openBookings(detail.id)">
+        <span i18n="@@featureAccountingAssets-bookings">Bookings</span>
+      </fpc-button>
+      @if (detail.status !== 'disposed') {
+        <fpc-button variant="danger" (clicked)="openDispose(detail.id)" data-testid="accounting-assets-dispose">
+          <span i18n="@@featureAccountingAssets-dispose">Dispose</span>
+        </fpc-button>
+      }
+    </div>
+  }
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="disposeOpen"
+  i18n-title="@@featureAccountingAssets-disposeTitle"
+  title="Dispose asset"
+  accent="danger"
+  data-testid="accounting-assets-dispose-modal"
+>
+  @if (mutationError(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  <p class="small text-body-secondary" i18n="@@featureAccountingAssets-disposeHint">
+    Books the remaining book value as disposal loss and removes the asset from the register.
+  </p>
+  <fpc-form-field forId="disposeDate" i18n-label="@@featureAccountingAssets-disposeDate" label="Disposal date">
+    <fpc-form-control controlId="disposeDate" inputType="date" [(ngModel)]="disposeDate" name="disposeDate" />
+  </fpc-form-field>
+  <fpc-form-field forId="disposeNote" i18n-label="@@featureAccountingAssets-note" label="Note">
+    <fpc-form-control controlType="textarea" controlId="disposeNote" [(ngModel)]="disposeNote" name="disposeNote" />
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="danger" (clicked)="submitDispose()" [disabled]="mutating() || !disposeDate">
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingAssets-disposeSubmit">Dispose</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>

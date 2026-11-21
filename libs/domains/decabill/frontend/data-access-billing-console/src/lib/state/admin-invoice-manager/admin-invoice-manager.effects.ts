@@ -12,9 +12,15 @@ import {
   adminInvoiceManagerMarkUnpaid,
   adminInvoiceManagerMarkUnpaidFailure,
   adminInvoiceManagerMarkUnpaidSuccess,
+  adminInvoiceManagerRefund,
+  adminInvoiceManagerRefundFailure,
+  adminInvoiceManagerRefundSuccess,
   adminInvoiceManagerVoid,
   adminInvoiceManagerVoidFailure,
   adminInvoiceManagerVoidSuccess,
+  adminInvoiceManagerWriteOff,
+  adminInvoiceManagerWriteOffFailure,
+  adminInvoiceManagerWriteOffSuccess,
   createManualInvoice,
   createManualInvoiceFailure,
   createManualInvoiceSuccess,
@@ -27,6 +33,9 @@ import {
   loadAdminInvoiceManager,
   loadAdminInvoiceManagerFailure,
   loadAdminInvoiceManagerSuccess,
+  loadAdminInvoiceSettlements,
+  loadAdminInvoiceSettlementsFailure,
+  loadAdminInvoiceSettlementsSuccess,
   updateManualInvoice,
   updateManualInvoiceFailure,
   updateManualInvoiceSuccess,
@@ -150,6 +159,48 @@ export const adminInvoiceManagerMarkUnpaid$ = createEffect(
         service.markUnpaid(invoiceRefId, dto).pipe(
           map((invoice) => adminInvoiceManagerMarkUnpaidSuccess({ invoice })),
           catchError((error) => of(adminInvoiceManagerMarkUnpaidFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const adminInvoiceManagerWriteOff$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
+    actions$.pipe(
+      ofType(adminInvoiceManagerWriteOff),
+      switchMap(({ invoiceRefId, dto }) =>
+        service.writeOffInvoice(invoiceRefId, dto).pipe(
+          map((invoice) => adminInvoiceManagerWriteOffSuccess({ invoice })),
+          catchError((error) => of(adminInvoiceManagerWriteOffFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const adminInvoiceManagerRefund$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
+    actions$.pipe(
+      ofType(adminInvoiceManagerRefund),
+      switchMap(({ invoiceRefId, dto }) =>
+        service.refundInvoice(invoiceRefId, dto).pipe(
+          map((invoice) => adminInvoiceManagerRefundSuccess({ invoice })),
+          catchError((error) => of(adminInvoiceManagerRefundFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const loadAdminInvoiceSettlements$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
+    actions$.pipe(
+      ofType(loadAdminInvoiceSettlements),
+      switchMap(({ invoiceRefId }) =>
+        service.listInvoiceSettlements(invoiceRefId).pipe(
+          map((settlements) => loadAdminInvoiceSettlementsSuccess({ invoiceRefId, settlements })),
+          catchError((error) => of(loadAdminInvoiceSettlementsFailure({ invoiceRefId, error: normalizeError(error) }))),
         ),
       ),
     ),

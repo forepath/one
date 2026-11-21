@@ -26,6 +26,7 @@ jest.mock('../billing-country-options', () => ({
   BILLING_COUNTRY_OPTIONS: [],
   DEFAULT_BILLING_COUNTRY_CODE: 'DE',
   getCountryDisplayName: (code: string) => code,
+  withOptionalCountry: jest.requireActual('../billing-country-default').withOptionalCountry,
 }));
 jest.mock('../monaco-editor-wrapper/monaco-editor-wrapper.component', () => {
   const { Component } = jest.requireActual('@angular/core');
@@ -172,5 +173,25 @@ describe('SubscriptionsComponent (bulk actions)', () => {
     component.selectedBackorders.set(['b1']);
     await component.retrySelectedBackorders();
     expect(backordersFacade['loadBackorders']).toHaveBeenLastCalledWith(expect.objectContaining({ offset: 25 }));
+  });
+
+  it('profile: saves the buyer reference / e-invoice address normalized and blocks an invalid address', () => {
+    const profileFacade = TestBed.inject(CustomerProfileFacade) as unknown as Record<string, jest.Mock>;
+
+    component.profileForm = {
+      customerType: 'business',
+      country: 'DE',
+      buyerReference: ' 991-12345-67 ',
+      einvoiceEndpoint: 'invalid',
+    };
+    component.onSubmitProfile();
+    expect(profileFacade['updateCustomerProfile']).not.toHaveBeenCalled();
+
+    component.profileForm.einvoiceEndpoint = '';
+    component.onSubmitProfile();
+    expect(profileFacade['updateCustomerProfile']).toHaveBeenCalledWith(
+      expect.objectContaining({ buyerReference: '991-12345-67', einvoiceEndpoint: null }),
+    );
+    expect(profileFacade['updateCustomerProfile'].mock.calls[0][0]).not.toHaveProperty('einvoiceFormat');
   });
 });

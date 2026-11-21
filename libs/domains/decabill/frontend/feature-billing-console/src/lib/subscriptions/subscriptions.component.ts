@@ -140,6 +140,8 @@ import {
   resolveNamedLabel,
 } from '../billing-status-labels';
 import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
+import { EinvoiceSettingsFieldsComponent } from '../einvoice/einvoice-settings-fields.component';
+import { einvoiceSettingsPayload, isEinvoiceEndpointValid } from '../einvoice/einvoice-settings.util';
 import { resolvePlanCustomerPrice } from '../plan-customer-price.util';
 import {
   buildOrderAuthProviderConfig,
@@ -193,6 +195,7 @@ type ConfigChangeWizardStep = {
   standalone: true,
   imports: [
     DocumentTermsSummaryComponent,
+    EinvoiceSettingsFieldsComponent,
     FpcFormTextDirective,
     FpcStepStripComponent,
     FpcStepStripDirective,
@@ -3226,13 +3229,20 @@ export class SubscriptionsComponent implements OnInit {
           country: profile?.country?.trim() || DEFAULT_BILLING_COUNTRY_CODE,
           email: profile?.email ?? undefined,
           phone: profile?.phone ?? undefined,
+          buyerReference: profile?.buyerReference ?? '',
+          einvoiceEndpoint: profile?.einvoiceEndpoint ?? '',
         };
         this.cdr.markForCheck();
       });
   }
 
   onSubmitProfile(): void {
-    this.customerProfileFacade.updateCustomerProfile(withOptionalCountry(this.profileForm));
+    if (!isEinvoiceEndpointValid(this.profileForm.einvoiceEndpoint)) return;
+
+    // The e-invoice format stays an admin setting; customers maintain their reference and address.
+    this.customerProfileFacade.updateCustomerProfile(
+      withOptionalCountry({ ...this.profileForm, ...einvoiceSettingsPayload(this.profileForm) }),
+    );
   }
 
   onSetupAutoBilling(): void {

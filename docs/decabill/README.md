@@ -13,6 +13,7 @@ Decabill lets operators and customers manage billing in one place:
 - **Multi-tenant deployments** with tenant-scoped data and configurable frontends
 - **Server provisioning** for bundled product stacks via cloud-init when service plans include infrastructure
 - **Projects and project boards** for customer-assigned work, time tracking, and billable-hours invoicing
+- **Accounting** with national charts of accounts, journal, bank statement import, VAT returns, statements and DATEV / GoBD / FEC / SAF-T exports
 - **Inventory** with warehouses, compartments, articles, numbered and signed movement documents, and withdrawal requests
 
 ## Documentation Structure

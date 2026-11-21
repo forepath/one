@@ -88,7 +88,7 @@ Admin and user routes filter by the request tenant. Interactive auth (oidc, saml
 Comma-separated tenant ids allowed to use **cross-tenant admin views**:
 
 - DATEV unified export access (also requires `BILLING_DATEV_UNIFIED_EXPORT_ENABLED`)
-- DATEV and File Explorer per-tenant tabs plus Unified consolidation
+- DATEV and File Explorer tenant switch (chip in the page header) plus Unified consolidation
 
 Default when unset: `default`. Operators keep their console `X-Tenant` as the home tenant; selected tabs send `viewTenantId` (or DATEV body field) which the API accepts only when the home tenant is allowlisted.
 

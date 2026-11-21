@@ -9,7 +9,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Queue } from 'bullmq';
 
-import { BILLING_QUEUE_NAME, getBillingRepeatableJobs } from './job-registry';
+import { BILLING_QUEUE_NAME, BillingJobName, getBillingRepeatableJobs } from './job-registry';
 
 function parseBooleanEnv(envKey: string, fallback: boolean): boolean {
   const raw = process.env[envKey];
@@ -49,6 +49,16 @@ export class BillingQueueRegistrarService implements OnModuleInit {
         buildCoordinatorJobId('datev-export'),
       );
       this.logger.log('Removed stale DATEV export repeatable job (feature disabled)');
+    }
+
+    if (!parseBooleanEnv('BILLING_ACCOUNTING_ENABLED', false)) {
+      for (const [name, key] of [
+        [BillingJobName.ACCOUNTING_CATCH_UP_COORDINATOR, 'accounting-catch-up'],
+        [BillingJobName.ACCOUNTING_FX_RATES_COORDINATOR, 'accounting-fx-rates'],
+        [BillingJobName.ACCOUNTING_PROCESSOR_SYNC_COORDINATOR, 'accounting-processor-sync'],
+      ] as const) {
+        await removeRepeatableCoordinatorJob(this.billingQueue, name, buildCoordinatorJobId(key));
+      }
     }
 
     for (const definition of getBillingRepeatableJobs()) {

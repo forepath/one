@@ -32,6 +32,8 @@ export interface DatevTenantExportConfig {
   expenseBuKeyStandard: string;
   expenseBuKeyReduced: string;
   includeDocuments: boolean;
+  /** Export bookings that originate from bank statement lines (off when the advisor gets bank data directly). */
+  includeBankPostings: boolean;
   dictationAbbr: string;
   fiscalYearStartMonth: number;
 }
@@ -63,6 +65,7 @@ interface DatevTenantConfigOverrides {
   expenseBuKeyStandard?: string;
   expenseBuKeyReduced?: string;
   includeDocuments?: boolean;
+  includeBankPostings?: boolean;
   dictationAbbr?: string;
   fiscalYearStartMonth?: number;
 }
@@ -216,6 +219,12 @@ export class DatevExportConfigService implements OnModuleInit {
         tenantId,
         'includeDocuments',
         'BILLING_DATEV_EXPORT_INCLUDE_DOCUMENTS',
+        true,
+      ),
+      includeBankPostings: this.resolveBoolean(
+        tenantId,
+        'includeBankPostings',
+        'BILLING_DATEV_EXPORT_INCLUDE_BANK_POSTINGS',
         true,
       ),
       dictationAbbr: this.resolveString(tenantId, 'dictationAbbr', 'BILLING_DATEV_EXPORT_DICTATION_ABBR', 'DEC'),

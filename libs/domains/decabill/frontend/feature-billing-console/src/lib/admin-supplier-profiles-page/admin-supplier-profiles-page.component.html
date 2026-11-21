@@ -388,4 +388,21 @@
       </fpc-form-field>
     </div>
   </div>
+  @if (accountingEnabled()) {
+    <fpc-form-field
+      [forId]="prefix + 'DefaultExpenseAccount'"
+      i18n-label="@@featureAdminSupplierProfiles-defaultExpenseAccount"
+      label="Default expense account (optional)"
+      i18n-hint="@@featureAdminSupplierProfiles-defaultExpenseAccountHint"
+      hint="Account number of the active chart used for this supplier's invoice lines unless a line names its own account."
+    >
+      <fpc-form-control
+        [controlId]="prefix + 'DefaultExpenseAccount'"
+        [(ngModel)]="form.defaultExpenseAccountNumber"
+        [name]="prefix + 'DefaultExpenseAccount'"
+        maxLength="20"
+        autocomplete="off"
+      />
+    </fpc-form-field>
+  }
 </ng-template>

@@ -32,6 +32,7 @@ describe('DatevExtfCsvService', () => {
     expenseBuKeyStandard: '',
     expenseBuKeyReduced: '',
     includeDocuments: true,
+    includeBankPostings: true,
     dictationAbbr: 'DEC',
     fiscalYearStartMonth: 1,
   };
@@ -51,9 +52,49 @@ describe('DatevExtfCsvService', () => {
     });
     const text = csv.toString('latin1');
 
-    expect(text.startsWith('EXTF;700;21;Buchungsstapel')).toBe(true);
+    expect(text.startsWith('EXTF;700;21;Buchungsstapel;13;')).toBe(true);
     expect(text).toContain('119,00');
     expect(text.endsWith('\r\n')).toBe(true);
+  });
+
+  it('writes the configured chart, lock flag and currency into the header', () => {
+    const csv = service.buildBookingBatchCsv({
+      config: { ...config, chartOfAccounts: 'SKR04' },
+      periodStart: new Date('2026-01-01T00:00:00Z'),
+      periodEnd: new Date('2026-01-31T23:59:59Z'),
+      batchLabel: '2026-01',
+      bookingRows: [],
+      locked: true,
+      currency: 'CHF',
+    });
+    const header = csv.toString('latin1').split('\r\n')[0].split(';');
+
+    expect(header[4]).toBe('13');
+    expect(header[20]).toBe('1');
+    expect(header[21]).toBe('CHF');
+    expect(header[26]).toBe('04');
+  });
+
+  it('derives the master-data fiscal-year start from the export period', () => {
+    const csv = service.buildDebtorBatchCsv({
+      config: { ...config, fiscalYearStartMonth: 7 },
+      debtorRows: [],
+      periodStart: new Date('2024-03-01T00:00:00Z'),
+    });
+
+    expect(csv.toString('latin1').split('\r\n')[0].split(';')[12]).toBe('20230701');
+  });
+
+  it('builds Kontenbeschriftungen (category 20) for ledger accounts', () => {
+    const csv = service.buildAccountLabelsCsv({
+      config,
+      periodStart: new Date('2026-01-01T00:00:00Z'),
+      accounts: [['1210', 'Zahlungsdienstleister (Verrechnung)']],
+    });
+    const lines = csv.toString('latin1').split('\r\n');
+
+    expect(lines[0].startsWith('EXTF;700;20;Kontenbeschriftungen')).toBe(true);
+    expect(lines[2]).toBe('1210;Zahlungsdienstleister (Verrechnung);de-DE');
   });
 
   it('builds debtor batch CSV with format 16 header', () => {

@@ -198,7 +198,11 @@ describe('GitHubDeploymentProvider', () => {
     fetchMock
       .mockResolvedValueOnce(new Response(null, { status: 204 }))
       .mockResolvedValueOnce(json({ workflow_runs: [] }))
-      .mockResolvedValueOnce(json({ workflow_runs: [{ ...run, status: 'queued', conclusion: null }] }));
+      // created_at must be "now": the fixture's module-load timestamp can fall outside the 5 s dispatch window on
+      // slow CI runners, which made this test flaky.
+      .mockResolvedValueOnce(
+        json({ workflow_runs: [{ ...run, created_at: new Date().toISOString(), status: 'queued', conclusion: null }] }),
+      );
 
     const snap = await provider.trigger(tokenConnection({ baseUrl: 'https://ghe.local/api/v3' }), {
       repository: 'o/r',

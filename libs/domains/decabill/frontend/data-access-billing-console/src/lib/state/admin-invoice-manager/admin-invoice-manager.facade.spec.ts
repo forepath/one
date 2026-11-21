@@ -4,11 +4,14 @@ import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import {
   adminInvoiceManagerMarkPaid,
   adminInvoiceManagerMarkUnpaid,
+  adminInvoiceManagerRefund,
   adminInvoiceManagerVoid,
+  adminInvoiceManagerWriteOff,
   createManualInvoice,
   deleteManualInvoice,
   issueManualInvoice,
   loadAdminInvoiceManager,
+  loadAdminInvoiceSettlements,
   updateManualInvoice,
 } from './admin-invoice-manager.actions';
 import { AdminInvoiceManagerFacade } from './admin-invoice-manager.facade';
@@ -85,5 +88,35 @@ describe('AdminInvoiceManagerFacade', () => {
     expect(store.dispatch).toHaveBeenCalledWith(
       adminInvoiceManagerMarkUnpaid({ invoiceRefId: 'inv-1', dto: undefined }),
     );
+  });
+
+  it('markPaid forwards a partial amount', () => {
+    facade.markPaid('inv-1', { amount: 25.5 });
+
+    expect(store.dispatch).toHaveBeenCalledWith(
+      adminInvoiceManagerMarkPaid({ invoiceRefId: 'inv-1', dto: { amount: 25.5 } }),
+    );
+  });
+
+  it('writeOff dispatches action', () => {
+    facade.writeOff('inv-1', { reason: 'insolvent' });
+
+    expect(store.dispatch).toHaveBeenCalledWith(
+      adminInvoiceManagerWriteOff({ invoiceRefId: 'inv-1', dto: { reason: 'insolvent' } }),
+    );
+  });
+
+  it('refund dispatches action', () => {
+    facade.refund('inv-1', { amount: 10 });
+
+    expect(store.dispatch).toHaveBeenCalledWith(
+      adminInvoiceManagerRefund({ invoiceRefId: 'inv-1', dto: { amount: 10 } }),
+    );
+  });
+
+  it('loadSettlements dispatches action', () => {
+    facade.loadSettlements('inv-1');
+
+    expect(store.dispatch).toHaveBeenCalledWith(loadAdminInvoiceSettlements({ invoiceRefId: 'inv-1' }));
   });
 });

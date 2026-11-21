@@ -183,6 +183,10 @@ export class InvoicesFacade {
     return this.invoicesService.downloadInvoicePdf(subscriptionId, invoiceRefId);
   }
 
+  downloadEinvoiceXml(invoiceRefId: string): Observable<Blob> {
+    return this.invoicesService.downloadEinvoiceXml(invoiceRefId);
+  }
+
   downloadVoidDocumentPdf(subscriptionId: string | undefined, invoiceRefId: string): Observable<Blob> {
     return this.invoicesService.downloadVoidDocumentPdf(subscriptionId, invoiceRefId);
   }

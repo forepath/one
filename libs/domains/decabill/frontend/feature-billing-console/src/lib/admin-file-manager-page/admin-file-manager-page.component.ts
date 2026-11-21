@@ -23,13 +23,12 @@ import {
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcSpinnerComponent,
-  FpcTabComponent,
-  FpcTabGroupComponent,
   FpcTooltipComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { combineLatest, map } from 'rxjs';
 
 import { hideBillingModal, showBillingModal } from '../billing-modal';
+import { BillingTenantSwitchComponent, type BillingTenantSwitchOption } from '../shared/tenant-switch.component';
 
 interface TreeNodeView {
   entry: AdminFileManagerEntry;
@@ -53,8 +52,7 @@ interface TreeNodeView {
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
     FpcSpinnerComponent,
-    FpcTabComponent,
-    FpcTabGroupComponent,
+    BillingTenantSwitchComponent,
     FpcTooltipComponent,
   ],
   templateUrl: './admin-file-manager-page.component.html',
@@ -68,6 +66,7 @@ export class AdminFileManagerPageComponent implements OnInit {
   readonly homeTenantId = this.environment.billing?.tenantId?.trim() || 'default';
   readonly pageTitle = $localize`:@@featureAdminFileExplorer-title:File explorer`;
   readonly unifiedTabLabel = $localize`:@@featureAdminFileExplorer-tabUnified:Unified`;
+  readonly unifiedSwitchNote = $localize`:@@featureAdminFileExplorer-unifiedNote:Files of all tenants`;
   readonly refreshAriaLabel = $localize`:@@featureAdminFileExplorer-refresh:Refresh`;
   readonly verifyAriaLabel = $localize`:@@featureAdminFileExplorer-verify:Verify file`;
   readonly searchAriaLabel = $localize`:@@featureAdminFileExplorer-search:Find by document ID`;
@@ -106,6 +105,12 @@ export class AdminFileManagerPageComponent implements OnInit {
 
   readonly state = toSignal(this.facade.state$, { initialValue: null });
   readonly viewableTenants = toSignal(this.viewableTenants$, { initialValue: [] as string[] });
+  readonly activeTabId = toSignal(this.activeTabId$, { initialValue: this.homeTenantId });
+  /** Options of the header tenant switch: viewable tenants plus the unified (all tenants) tree. */
+  readonly tenantSwitchOptions = computed<BillingTenantSwitchOption[]>(() => [
+    ...this.viewableTenants().map((tenantId) => ({ id: tenantId, label: this.tenantTabLabel(tenantId) })),
+    { id: 'unified', label: this.unifiedTabLabel, icon: 'buildings', description: this.unifiedSwitchNote },
+  ]);
   private readonly verifyResult = toSignal(this.verifyResult$, { initialValue: null });
 
   constructor() {

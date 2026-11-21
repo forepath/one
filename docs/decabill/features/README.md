@@ -29,6 +29,8 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 - **CloudInit Configs** Admin-managed Docker templates for the custom service kind
 - **Projects** Customer-assigned work tracking with admin CRUD and billable time
 - **Project Board** Live ticket board with swimlanes and WebSocket updates
+- **[Accounting](./accounting.md)** Double-entry books per national standard, bank / processor statement import and reconciliation, VAT returns, statements, assets, DATEV / GoBD / FEC / SAF-T exports
+- **[E-invoice formats](./e-invoice-formats.md)** Factur-X profiles, XRechnung (CII/UBL), Peppol BIS 3.0 and UBL EN 16931 per issuer default or customer
 - **[Inventory](./inventory.md)** Warehouses, compartments, articles with barcodes, signed movement documents, and withdrawal requests from offers, invoices and subscriptions
 - **[Ticket attachments](./ticket-attachments.md)** Upload, list, download, and file-explorer integration for project ticket files
 - **OpenTelemetry** Optional Prometheus metrics and OTLP export (disabled by default)

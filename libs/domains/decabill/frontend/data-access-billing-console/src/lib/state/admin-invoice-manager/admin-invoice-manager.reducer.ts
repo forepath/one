@@ -1,7 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 
 import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
-import type { AdminInvoiceListItem } from '../../types/billing.types';
+import type { AdminInvoiceListItem, InvoiceSettlementResponse } from '../../types/billing.types';
 
 import {
   adminInvoiceManagerMarkPaid,
@@ -10,9 +10,15 @@ import {
   adminInvoiceManagerMarkUnpaid,
   adminInvoiceManagerMarkUnpaidFailure,
   adminInvoiceManagerMarkUnpaidSuccess,
+  adminInvoiceManagerRefund,
+  adminInvoiceManagerRefundFailure,
+  adminInvoiceManagerRefundSuccess,
   adminInvoiceManagerVoid,
   adminInvoiceManagerVoidFailure,
   adminInvoiceManagerVoidSuccess,
+  adminInvoiceManagerWriteOff,
+  adminInvoiceManagerWriteOffFailure,
+  adminInvoiceManagerWriteOffSuccess,
   createManualInvoice,
   createManualInvoiceFailure,
   createManualInvoiceSuccess,
@@ -25,6 +31,9 @@ import {
   loadAdminInvoiceManager,
   loadAdminInvoiceManagerFailure,
   loadAdminInvoiceManagerSuccess,
+  loadAdminInvoiceSettlements,
+  loadAdminInvoiceSettlementsFailure,
+  loadAdminInvoiceSettlementsSuccess,
   updateManualInvoice,
   updateManualInvoiceFailure,
   updateManualInvoiceSuccess,
@@ -45,6 +54,10 @@ export interface AdminInvoiceManagerState {
   pageSize: number;
   search: string | null;
   userId: string | null;
+  /** Settlement history (payments, credits, write-offs, refunds) of the invoice opened in the detail view. */
+  settlementsInvoiceId: string | null;
+  settlements: InvoiceSettlementResponse[];
+  settlementsLoading: boolean;
 }
 
 export const initialAdminInvoiceManagerState: AdminInvoiceManagerState = {
@@ -61,6 +74,9 @@ export const initialAdminInvoiceManagerState: AdminInvoiceManagerState = {
   pageSize: BILLING_LIST_PAGE_SIZE,
   search: null,
   userId: null,
+  settlementsInvoiceId: null,
+  settlements: [],
+  settlementsLoading: false,
 };
 
 function upsertInvoice(invoices: AdminInvoiceListItem[], invoice: AdminInvoiceListItem): AdminInvoiceListItem[] {
@@ -170,15 +186,24 @@ export const adminInvoiceManagerReducer = createReducer(
     invoices: state.invoices.filter((invoice) => invoice.id !== invoiceRefId),
   })),
   on(deleteManualInvoiceFailure, (state, { error }) => ({ ...state, deleting: false, error })),
-  on(adminInvoiceManagerVoid, adminInvoiceManagerMarkPaid, adminInvoiceManagerMarkUnpaid, (state) => ({
-    ...state,
-    actionLoading: true,
-    error: null,
-  })),
+  on(
+    adminInvoiceManagerVoid,
+    adminInvoiceManagerMarkPaid,
+    adminInvoiceManagerMarkUnpaid,
+    adminInvoiceManagerWriteOff,
+    adminInvoiceManagerRefund,
+    (state) => ({
+      ...state,
+      actionLoading: true,
+      error: null,
+    }),
+  ),
   on(
     adminInvoiceManagerVoidSuccess,
     adminInvoiceManagerMarkPaidSuccess,
     adminInvoiceManagerMarkUnpaidSuccess,
+    adminInvoiceManagerWriteOffSuccess,
+    adminInvoiceManagerRefundSuccess,
     (state, { invoice }) => ({
       ...state,
       actionLoading: false,
@@ -189,6 +214,20 @@ export const adminInvoiceManagerReducer = createReducer(
     adminInvoiceManagerVoidFailure,
     adminInvoiceManagerMarkPaidFailure,
     adminInvoiceManagerMarkUnpaidFailure,
+    adminInvoiceManagerWriteOffFailure,
+    adminInvoiceManagerRefundFailure,
     (state, { error }) => ({ ...state, actionLoading: false, error }),
+  ),
+  on(loadAdminInvoiceSettlements, (state, { invoiceRefId }) => ({
+    ...state,
+    settlementsInvoiceId: invoiceRefId,
+    settlements: state.settlementsInvoiceId === invoiceRefId ? state.settlements : [],
+    settlementsLoading: true,
+  })),
+  on(loadAdminInvoiceSettlementsSuccess, (state, { invoiceRefId, settlements }) =>
+    state.settlementsInvoiceId === invoiceRefId ? { ...state, settlements, settlementsLoading: false } : state,
+  ),
+  on(loadAdminInvoiceSettlementsFailure, (state, { invoiceRefId }) =>
+    state.settlementsInvoiceId === invoiceRefId ? { ...state, settlements: [], settlementsLoading: false } : state,
   ),
 );

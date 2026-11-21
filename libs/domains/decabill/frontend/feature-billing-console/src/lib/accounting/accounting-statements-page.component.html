@@ -1,0 +1,186 @@
+<div class="accounting-page border-top d-flex flex-column flex-grow-1 min-h-0" data-testid="accounting-statements-page">
+  <fpc-page-header [title]="pageTitle">
+    <framework-accounting-tenant-switch fpcPageHeaderContext />
+  </fpc-page-header>
+  <framework-accounting-nav active="statements" />
+
+  <fpc-list-toolbar
+    class="flex-shrink-0"
+    [open]="filtersOpen()"
+    (openChange)="onFiltersOpenChange($event)"
+    [title]="filtersTitle"
+    [activeCount]="activeFilterCount()"
+    (applied)="applyFilters()"
+    (cleared)="resetFilters()"
+    data-testid="accounting-statement-filters"
+  >
+    <span fpcListToolbarLead class="accounting-statistics-scope small text-body-secondary text-truncate">{{
+      scopeLabel()
+    }}</span>
+    <fpc-form-field forId="statementKind" i18n-label="@@featureAccountingStatements-kind" label="Statement">
+      <fpc-form-control
+        controlType="select"
+        controlId="statementKind"
+        [(ngModel)]="draftKind"
+        name="statementKind"
+        data-testid="accounting-statement-kind"
+      >
+        <option value="balance_sheet" i18n="@@featureAccountingStatements-balanceSheet">Balance sheet</option>
+        <option value="profit_and_loss" i18n="@@featureAccountingStatements-profitAndLoss">Profit and loss</option>
+        @if (hasCashBasis()) {
+          <option value="cash_basis" i18n="@@featureAccountingStatements-cashBasis">Cash-basis result</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+    @if (draftKind !== 'balance_sheet') {
+      <fpc-form-field forId="statementFrom" i18n-label="@@featureAccountingStatements-from" label="From">
+        <fpc-form-control controlId="statementFrom" inputType="date" [(ngModel)]="draftFrom" name="statementFrom" />
+      </fpc-form-field>
+    }
+    <fpc-form-field forId="statementTo" [label]="draftKind === 'balance_sheet' ? asOfLabel : toLabel">
+      <fpc-form-control controlId="statementTo" inputType="date" [(ngModel)]="draftTo" name="statementTo" />
+    </fpc-form-field>
+    <fpc-form-check
+      checkId="statementShowAccounts"
+      [checked]="showAccounts()"
+      (checkedChange)="showAccounts.set($event)"
+      i18n-label="@@featureAccountingStatements-showAccounts"
+      label="Show accounts"
+    />
+  </fpc-list-toolbar>
+
+  <div class="accounting-scroll">
+    @if (managementReport()) {
+      <fpc-alert
+        variant="info"
+        i18n-message="@@featureAccountingStatements-managementReport"
+        message="Filtered by tenant: this is a management report. Select All tenants for the statutory statement."
+        data-testid="accounting-statement-management"
+      />
+    }
+
+    <fpc-panel-grid [columns]="1" [bordered]="false">
+      <fpc-panel [title]="statement().data?.name || statementPanelTitle">
+        @if (statement().loading) {
+          <fpc-empty-state size="sm" loading />
+        } @else if (statement().error; as error) {
+          <fpc-alert variant="danger" [message]="error" />
+        } @else if (statement().data; as report) {
+          <p class="small text-body-secondary">{{ formatDate(report.from) }} – {{ formatDate(report.to) }}</p>
+          <div class="table-responsive">
+            <table class="accounting-table" data-testid="accounting-statement-table">
+              <thead>
+                <tr>
+                  <th i18n="@@featureAccountingStatements-position">Position</th>
+                  <th class="accounting-amount" i18n="@@featureAccountingStatements-amount">Amount</th>
+                  @if (showPrevious()) {
+                    <th class="accounting-amount" i18n="@@featureAccountingStatements-previousYear">Previous year</th>
+                  }
+                </tr>
+              </thead>
+              @for (section of sections(); track section.key) {
+                <tbody>
+                  <tr class="accounting-statement-node--group">
+                    <td [attr.colspan]="showPrevious() ? 3 : 2" class="pt-3">{{ section.label }}</td>
+                  </tr>
+                  @for (row of section.rows; track row.key) {
+                    <tr [class]="rowClass(row)">
+                      <td>
+                        @if (row.code && row.type === 'account') {
+                          <span class="accounting-mono me-2">{{ row.code }}</span>
+                        }
+                        {{ row.label }}
+                      </td>
+                      <td class="accounting-amount" [class.accounting-negative]="row.amount < 0">
+                        {{ money(row.amount) }}
+                      </td>
+                      @if (showPrevious()) {
+                        <td class="accounting-amount">
+                          {{ row.previousAmount === null ? '' : money(row.previousAmount) }}
+                        </td>
+                      }
+                    </tr>
+                  }
+                  <tr class="accounting-statement-node--group">
+                    <td><span i18n="@@featureAccountingStatements-sectionTotal">Total</span> {{ section.label }}</td>
+                    <td class="accounting-amount">{{ money(section.total) }}</td>
+                    @if (showPrevious()) {
+                      <td></td>
+                    }
+                  </tr>
+                </tbody>
+              }
+              <tfoot>
+                <tr>
+                  <td i18n="@@featureAccountingStatements-result">Result</td>
+                  <td class="accounting-amount" [class.accounting-negative]="report.result < 0">
+                    {{ money(report.result) }}
+                  </td>
+                  @if (showPrevious()) {
+                    <td></td>
+                  }
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          @if (unassigned().length > 0) {
+            <fpc-alert
+              class="d-block mt-3"
+              variant="warning"
+              i18n-message="@@featureAccountingStatements-unassigned"
+              message="These accounts have balances but no statement position. Assign a position in the chart of accounts."
+              data-testid="accounting-statement-unassigned"
+            />
+            <table class="accounting-table">
+              <tbody>
+                @for (account of unassigned(); track account.number) {
+                  <tr>
+                    <td class="accounting-mono">{{ account.number }}</td>
+                    <td>{{ account.name }}</td>
+                    <td class="accounting-amount">{{ money(account.amount) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        } @else {
+          <fpc-empty-state
+            size="sm"
+            icon="file-earmark-bar-graph"
+            i18n-message="@@featureAccountingStatements-empty"
+            message="Choose a statement and period."
+          />
+        }
+      </fpc-panel>
+
+      <fpc-panel [title]="exportsPanelTitle">
+        <p class="small text-body-secondary" i18n="@@featureAccountingStatements-exportsHint">
+          Exports cover the period above. Statutory formats always include every tenant.
+        </p>
+        @if (downloadError(); as error) {
+          <fpc-alert variant="danger" [message]="error" [dismissible]="true" (closed)="downloadError.set(null)" />
+        }
+        <div class="d-flex flex-wrap gap-2" data-testid="accounting-exports">
+          @for (exportKind of exportKinds(); track exportKind) {
+            <span [title]="exportDisabledReason(exportKind) ?? ''">
+              <fpc-button
+                variant="secondary"
+                [disabled]="!!exportDisabledReason(exportKind) || downloading() !== null"
+                (clicked)="downloadExport(exportKind)"
+                [attr.data-testid]="'accounting-export-' + exportKind"
+              >
+                @if (downloading() === exportKind) {
+                  <fpc-spinner size="sm" />
+                } @else {
+                  <i class="bi bi-download me-1" aria-hidden="true"></i>
+                }
+                {{ exportKindLabel(exportKind) }}
+              </fpc-button>
+            </span>
+          }
+        </div>
+      </fpc-panel>
+    </fpc-panel-grid>
+  </div>
+</div>

@@ -48,4 +48,20 @@ export class SupplierInvoiceLineItemEntity {
 
   @Column({ type: 'decimal', precision: 12, scale: 4, name: 'line_gross' })
   lineGross!: number;
+
+  /** Account assignment (Kontierung) overriding the supplier default; account number of the active chart. */
+  @Column({ type: 'varchar', length: 20, nullable: true, name: 'ledger_account_number' })
+  ledgerAccountNumber?: string | null;
+
+  /** Capitalize this line as a fixed asset instead of expensing it. */
+  @Column({ type: 'boolean', name: 'capitalize_as_asset', default: false })
+  capitalizeAsAsset!: boolean;
+
+  /** Useful life in months for capitalized lines. */
+  @Column({ type: 'int', nullable: true, name: 'asset_useful_life_months' })
+  assetUsefulLifeMonths?: number | null;
+
+  /** Stock article received with this line (moving-average valuation of the putaway). */
+  @Column({ type: 'uuid', nullable: true, name: 'inventory_article_id' })
+  inventoryArticleId?: string | null;
 }

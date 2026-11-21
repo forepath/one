@@ -147,8 +147,65 @@ export function getInvoiceStatusLabel(status: string | null | undefined): string
       return $localize`:@@featureInvoices-statusOverdue:Overdue`;
     case 'void':
       return $localize`:@@featureInvoices-statusVoid:Void`;
+    case 'credited':
+      return $localize`:@@featureInvoices-statusCredited:Credited`;
+    case 'written_off':
+      return $localize`:@@featureInvoices-statusWrittenOff:Written off`;
     default:
       return $localize`:@@featureBilling-invoiceStatusUnknown:Unknown (${status})`;
+  }
+}
+
+/** Settlement kinds of an invoice (payments, credits, write-offs, refunds, credit transfers). */
+export function getInvoiceSettlementTypeLabel(type: string | null | undefined): string {
+  switch (type) {
+    case 'payment':
+      return $localize`:@@featureBilling-settlementPayment:Payment`;
+    case 'payment_reversal':
+      return $localize`:@@featureBilling-settlementPaymentReversal:Payment reversal`;
+    case 'credit':
+      return $localize`:@@featureBilling-settlementCredit:Credit note`;
+    case 'refund':
+      return $localize`:@@featureBilling-settlementRefund:Refund`;
+    case 'write_off':
+      return $localize`:@@featureBilling-settlementWriteOff:Write-off`;
+    case 'discount':
+      return $localize`:@@featureBilling-settlementDiscount:Cash discount`;
+    case 'credit_transfer_in':
+      return $localize`:@@featureBilling-settlementCreditTransferIn:Customer credit applied`;
+    case 'credit_transfer_out':
+      return $localize`:@@featureBilling-settlementCreditTransferOut:Customer credit moved`;
+    default:
+      return type ?? getUnavailableLabel();
+  }
+}
+
+/** Settlements that raise the open balance again (shown with a leading plus). */
+export function isBalanceIncreasingSettlement(type: string | null | undefined): boolean {
+  return type === 'payment_reversal' || type === 'refund' || type === 'credit_transfer_out';
+}
+
+export function getInvoiceSettlementSourceLabel(source: string | null | undefined): string {
+  switch (source) {
+    case 'processor_webhook':
+    case 'processor_sync':
+      return $localize`:@@featureBilling-settlementSourceProcessor:Payment provider`;
+    case 'auto_charge':
+      return $localize`:@@featureBilling-settlementSourceAutoCharge:Automatic charge`;
+    case 'manual':
+      return $localize`:@@featureBilling-settlementSourceManual:Manual`;
+    case 'bank_match':
+      return $localize`:@@featureBilling-settlementSourceBankMatch:Bank transaction`;
+    case 'credit_document':
+      return $localize`:@@featureBilling-settlementSourceCreditDocument:Credit note`;
+    case 'customer_credit':
+      return $localize`:@@featureBilling-settlementSourceCustomerCredit:Customer credit`;
+    case 'promotional':
+      return $localize`:@@featureBilling-settlementSourcePromotional:Promotion`;
+    case 'migration':
+      return $localize`:@@featureBilling-settlementSourceMigration:Migration`;
+    default:
+      return source ?? getUnavailableLabel();
   }
 }
 
@@ -205,6 +262,10 @@ export function getInvoiceStatusBadgeTone(status: string | null | undefined): Fp
       return 'danger';
     case 'void':
       return 'neutral';
+    case 'credited':
+      return 'success';
+    case 'written_off':
+      return 'warning';
     default:
       return 'neutral';
   }

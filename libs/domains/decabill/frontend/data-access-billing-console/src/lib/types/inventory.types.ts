@@ -138,6 +138,8 @@ export interface InventoryArticle {
   isActive: boolean;
   /** Units carry serial numbers (every movement names them). */
   serialTracking: boolean;
+  /** Moving weighted average unit cost of the stock on hand (accounting valuation); absent without accounting. */
+  averageCost?: number | null;
   totalQuantity: number;
   /** On loan (open lendings); not part of `totalQuantity`. */
   lentQuantity: number;
@@ -246,6 +248,10 @@ export interface InventoryPutawayInput {
   reason?: InventoryMovementReason;
   reference?: string | null;
   note?: string | null;
+  /** Supplier invoice the stock was bought with (valuation at its line price). */
+  supplierInvoiceId?: string | null;
+  /** Unit cost override for valuation (net, functional currency). */
+  unitCost?: number | null;
 }
 
 export interface InventoryTransferInput {

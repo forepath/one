@@ -132,6 +132,8 @@ describe('InvoicesRepository', () => {
         InvoiceStatus.PARTIALLY_PAID,
         InvoiceStatus.OVERDUE,
         InvoiceStatus.PAID,
+        InvoiceStatus.CREDITED,
+        InvoiceStatus.WRITTEN_OFF,
         InvoiceStatus.VOID,
       ],
     });
@@ -149,6 +151,8 @@ describe('InvoicesRepository', () => {
         InvoiceStatus.PARTIALLY_PAID,
         InvoiceStatus.OVERDUE,
         InvoiceStatus.PAID,
+        InvoiceStatus.CREDITED,
+        InvoiceStatus.WRITTEN_OFF,
         InvoiceStatus.VOID,
       ],
     });
@@ -164,6 +168,8 @@ describe('InvoicesRepository', () => {
         InvoiceStatus.PARTIALLY_PAID,
         InvoiceStatus.OVERDUE,
         InvoiceStatus.PAID,
+        InvoiceStatus.CREDITED,
+        InvoiceStatus.WRITTEN_OFF,
         InvoiceStatus.VOID,
       ],
     });
@@ -200,6 +206,10 @@ describe('InvoicesRepository', () => {
     expect(mockQueryBuilder.where).toHaveBeenCalledWith('inv.subscription_id = :subscriptionId', {
       subscriptionId: 'sub-1',
     });
+    // An invoice settled completely by customer credit or a credit note is still the period's invoice.
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('inv.status IN (:...statuses)', {
+      statuses: expect.arrayContaining([InvoiceStatus.CREDITED, InvoiceStatus.WRITTEN_OFF, InvoiceStatus.PAID]),
+    });
   });
 
   it('findHistoryByUserId filters paid and void statuses', async () => {
@@ -209,7 +219,7 @@ describe('InvoicesRepository', () => {
 
     await expect(repository.findHistoryByUserId('user-1')).resolves.toEqual(items);
     expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('inv.status IN (:...statuses)', {
-      statuses: [InvoiceStatus.PAID, InvoiceStatus.VOID],
+      statuses: [InvoiceStatus.PAID, InvoiceStatus.CREDITED, InvoiceStatus.WRITTEN_OFF, InvoiceStatus.VOID],
     });
   });
 

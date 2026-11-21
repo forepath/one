@@ -100,6 +100,7 @@ export function mapArticle(
     countryOfOrigin: article.countryOfOrigin ?? null,
     isActive: article.isActive,
     serialTracking: article.serialTracking,
+    averageCost: toNumberOrNull(article.averageCost) ?? undefined,
     totalQuantity,
     lentQuantity,
     locationCount: totals?.locationCount ?? 0,

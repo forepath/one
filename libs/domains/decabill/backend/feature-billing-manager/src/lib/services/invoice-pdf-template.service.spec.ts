@@ -5,6 +5,7 @@ import type { CustomerProfileEntity } from '../entities/customer-profile.entity'
 import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { resetInvoicePdfTemplateCacheForTests } from '../templates/invoice-pdf-template.loader';
+import { buildEpcQrDataUri } from '../utils/epc-qr.util';
 
 import {
   buildCreditNotePdfPresentation,
@@ -12,6 +13,12 @@ import {
   buildPartialCreditNotePdfPresentation,
 } from './invoice-pdf-presentation.util';
 import { InvoicePdfTemplateService } from './invoice-pdf-template.service';
+
+jest.mock('../utils/epc-qr.util', () => {
+  const actual = jest.requireActual('../utils/epc-qr.util');
+
+  return { ...actual, buildEpcQrDataUri: jest.fn(actual.buildEpcQrDataUri) };
+});
 
 describe('InvoicePdfTemplateService', () => {
   const service = new InvoicePdfTemplateService();
@@ -212,6 +219,24 @@ describe('InvoicePdfTemplateService', () => {
       expect(html).toContain('Delivery terms');
       expect(html).toContain('&lt;b&gt;Online&lt;/b&gt; access');
       expect(html).not.toContain('<b>Online</b>');
+    });
+
+    it('puts the RF reference into the QR only with accounting (bank reconciliation) enabled', () => {
+      const withRef = { ...termsInvoice, paymentReference: 'RF18539007547034' } as InvoiceEntity;
+      const presentation = buildInvoicePdfPresentation(withRef, { includePaymentQr: true });
+      const qr = buildEpcQrDataUri as jest.Mock;
+
+      service.buildViewModel(withRef, lineItems, issuer, buyer, presentation);
+      expect(qr).toHaveBeenLastCalledWith(expect.objectContaining({ creditorReference: undefined }));
+
+      new InvoicePdfTemplateService({ isEnabled: () => true } as never).buildViewModel(
+        withRef,
+        lineItems,
+        issuer,
+        buyer,
+        presentation,
+      );
+      expect(qr).toHaveBeenLastCalledWith(expect.objectContaining({ creditorReference: 'RF18539007547034' }));
     });
 
     it('prints a SEPA payment QR on open EUR invoices only when opted in', () => {

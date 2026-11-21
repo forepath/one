@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, input, model, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
   AdminBillingService,
@@ -36,6 +46,8 @@ export interface InventoryReferenceOption {
   value: string;
   /** Second line in the suggestions (customer, supplier, plan). */
   detail: string | null;
+  /** Record id of a picked document (supplier invoices: links the putaway valuation). */
+  id?: string;
 }
 
 const KINDS: Exclude<InventoryReferenceKind, 'other'>[] = [
@@ -169,6 +181,8 @@ export class InventoryReferenceSelectComponent {
   readonly value = model('');
   readonly disabled = input(false);
   readonly inputId = input('inventoryReference');
+  /** The picked option (`null` for free text or clear). */
+  readonly optionPicked = output<InventoryReferenceOption | null>();
 
   private readonly billing = inject(AdminBillingService);
   private readonly offers = inject(AdminOffersService);
@@ -257,6 +271,7 @@ export class InventoryReferenceSelectComponent {
                 kind: 'supplier-invoice' as const,
                 value: invoice.invoiceNumber!,
                 detail: invoice.supplierName ?? null,
+                id: invoice.id,
               })),
           ),
         ),
@@ -323,6 +338,7 @@ export class InventoryReferenceSelectComponent {
     event.preventDefault();
     this.pickedKind.set({ value: option.value, kind: option.kind });
     this.value.set(option.value.slice(0, 255));
+    this.optionPicked.emit(option);
     this.reset();
   }
 
@@ -330,12 +346,14 @@ export class InventoryReferenceSelectComponent {
     event.preventDefault();
     this.pickedKind.set({ value: text.trim().slice(0, 255), kind: 'other' });
     this.value.set(text.trim().slice(0, 255));
+    this.optionPicked.emit(null);
     this.reset();
   }
 
   clear(): void {
     this.pickedKind.set(null);
     this.value.set('');
+    this.optionPicked.emit(null);
     this.reset();
   }
 

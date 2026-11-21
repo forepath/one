@@ -94,6 +94,10 @@ export class InventoryArticleEntity {
   @Column({ type: 'boolean', default: false, name: 'serial_tracking' })
   serialTracking!: boolean;
 
+  /** Moving weighted average unit cost of the stock on hand (accounting valuation). */
+  @Column({ type: 'decimal', precision: 14, scale: 4, nullable: true, name: 'average_cost' })
+  averageCost?: number | string | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

@@ -56,6 +56,7 @@ describe('AutoBillingService', () => {
     stripeCustomerId: 'cus_1',
     defaultPaymentMethodExternalId: 'pm_1',
   };
+  const documentSettlementService = { apply: jest.fn() };
 
   beforeEach(() => {
     jest.resetAllMocks();
@@ -85,7 +86,15 @@ describe('AutoBillingService', () => {
       billingNotificationPublisher as never,
       billingEmailPublisher as never,
       customerTrustScoreService as never,
+      documentSettlementService as never,
     );
+    documentSettlementService.apply.mockResolvedValue({
+      created: true,
+      becameSettled: true,
+      settlement: { id: 'set-1' },
+      document: { id: 'inv-1', status: InvoiceStatus.PAID },
+    });
+    paymentAttemptsRepository.create.mockResolvedValue({ id: 'attempt-1' });
   });
 
   it('rejects enable when payment method is missing', async () => {
@@ -243,10 +252,53 @@ describe('AutoBillingService', () => {
       expect.any(Object),
       expect.objectContaining({ mode: 'auto' }),
     );
+    expect(documentSettlementService.apply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        documentId: 'inv-1',
+        type: 'payment',
+        amount: 50,
+        sourceRef: 'stripe:pi_1',
+        paymentAttemptId: 'attempt-1',
+      }),
+    );
     expect(billingNotificationPublisher.publishInvoice).toHaveBeenCalledWith(
       'invoice.paid',
-      expect.objectContaining({ id: 'inv-1', status: InvoiceStatus.PAID }),
+      expect.objectContaining({ id: 'inv-1', autoPaymentStatus: AutoPaymentStatus.SUCCEEDED }),
     );
+  });
+
+  it('does not re-announce a payment the webhook already settled (same source ref)', async () => {
+    const invoice = {
+      id: 'inv-1',
+      userId: 'u1',
+      status: InvoiceStatus.ISSUED,
+      balanceDue: 50,
+      currency: 'EUR',
+      paymentProcessor: 'stripe',
+      autoPaymentStatus: AutoPaymentStatus.SCHEDULED,
+      autoPaymentAttemptCount: 0,
+    };
+
+    invoicesRepository.findById.mockResolvedValue(invoice);
+    invoicesRepository.claimForAutoPayment.mockResolvedValue({
+      ...invoice,
+      autoPaymentStatus: AutoPaymentStatus.IN_PROGRESS,
+      autoPaymentAttemptCount: 1,
+    });
+    customerProfilesRepository.findByUserId.mockResolvedValue({ ...completeProfileBase, autoBillingEnabled: true });
+    processor.chargeOffSession.mockResolvedValue({ externalId: 'pi_9', status: 'succeeded' });
+    invoicesRepository.update.mockImplementation(async (_id, patch) => ({ id: 'inv-1', ...patch }));
+    documentSettlementService.apply.mockResolvedValue({
+      created: false,
+      becameSettled: false,
+      settlement: { id: 's' },
+      document: invoice,
+    });
+
+    await service.attemptAutoPayment('inv-1');
+
+    expect(billingNotificationPublisher.publishPayment).not.toHaveBeenCalled();
+    expect(billingEmailPublisher.publishPaymentSucceeded).not.toHaveBeenCalled();
   });
 
   it('defers auto-payment with a future nextRetryAt when profile becomes incomplete', async () => {

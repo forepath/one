@@ -35,6 +35,7 @@ describe('DatevBookingMapperService', () => {
     expenseBuKeyStandard: '',
     expenseBuKeyReduced: '',
     includeDocuments: true,
+    includeBankPostings: true,
     dictationAbbr: 'DEC',
     fiscalYearStartMonth: 1,
   };

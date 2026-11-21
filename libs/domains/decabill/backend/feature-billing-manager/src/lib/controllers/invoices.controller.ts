@@ -173,6 +173,27 @@ export class InvoicesController {
   }
 
   @RequireScopes('invoices:read')
+  @Get('ref/:invoiceRefId/einvoice')
+  @Header('Content-Type', 'application/xml; charset=utf-8')
+  async downloadEinvoiceByRef(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Req() req?: RequestWithUser,
+    @Res({ passthrough: true }) res?: Response,
+  ): Promise<StreamableFile> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    const result = await this.invoiceService.getStructuredEinvoiceForUser(invoiceRefId, userInfo.userId);
+
+    res?.setHeader('Content-Disposition', `attachment; filename="${result.fileName}"`);
+
+    return new StreamableFile(Buffer.from(result.xml, 'utf8'));
+  }
+
+  @RequireScopes('invoices:read')
   @Get('ref/:invoiceRefId/void-document/pdf')
   @Header('Content-Type', 'application/pdf')
   async downloadVoidDocumentPdfByRef(

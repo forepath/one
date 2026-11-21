@@ -1,15 +1,19 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 
+import { ACCOUNTING_POSTING_PORT, type AccountingPostingPort } from '../accounting/ports/accounting-posting.port';
 import { isAutoPaymentBlocking } from '../constants/auto-payment-status.constants';
 import { InvoiceStatus, OPEN_OVERDUE_INVOICE_STATUSES } from '../constants/invoice-status.constants';
 import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
+import { SettlementDocumentType, SettlementSource, SettlementType } from '../constants/settlement.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 import { mapDocumentTermsToResponse } from '../dto/document-terms.dto';
 import type { InvoiceDetailResponseDto } from '../dto/invoice-detail-response.dto';
 import type { InvoiceResponseDto } from '../dto/invoice-response.dto';
 import type { InvoicePromotionApplicationDraft } from '../dto/promotion.dto';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
-import type { InvoiceEntity } from '../entities/invoice.entity';
+import { InvoiceCreditDocumentEntity } from '../entities/invoice-credit-document.entity';
+import { InvoiceEntity } from '../entities/invoice.entity';
 import { InventoryArticlesRepository } from '../inventory/repositories/inventory-articles.repository';
 import { assertInventoryArticlesExist } from '../inventory/utils/inventory-article-references.util';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
@@ -25,10 +29,13 @@ import { mapInvoiceToSearchDocument } from '../search/billing-search-document.ma
 import { BillingSearchIndexService } from '../search/billing-search-index.service';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 import { normalizeDocumentNote } from '../utils/document-note.utils';
+import { invoiceCountsTowardOssLedger } from '../utils/oss-ledger.util';
+import { roundMoney } from '../utils/settlement-state.util';
 import { getRequiredTenantId } from '../utils/tenant-query.utils';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
+import { DocumentSettlementService } from './document-settlement.service';
 import { buildCreditNoteNumber } from './e-invoice-document-options';
 import { InvoiceIssuanceService } from './invoice-issuance.service';
 import { InvoicePdfService } from './invoice-pdf.service';
@@ -76,6 +83,9 @@ export class InvoiceService {
     private readonly ossThresholdService: OssThresholdService,
     private readonly billingSearchIndexService: BillingSearchIndexService,
     private readonly inventoryArticlesRepository: InventoryArticlesRepository,
+    private readonly dataSource: DataSource,
+    private readonly documentSettlementService: DocumentSettlementService,
+    @Optional() @Inject(ACCOUNTING_POSTING_PORT) private readonly postingPort?: AccountingPostingPort,
   ) {}
 
   async createAndIssue(params: CreateInvoiceDraftParams): Promise<{ invoiceRefId: string; invoiceNumber?: string }> {
@@ -188,8 +198,12 @@ export class InvoiceService {
       return invoice;
     }
 
-    if (invoice.status === InvoiceStatus.PAID) {
-      throw new BadRequestException('Cannot void a paid invoice');
+    if (
+      invoice.status === InvoiceStatus.PAID ||
+      invoice.status === InvoiceStatus.CREDITED ||
+      invoice.status === InvoiceStatus.WRITTEN_OFF
+    ) {
+      throw new BadRequestException(`Cannot void a ${invoice.status.replace('_', ' ')} invoice`);
     }
 
     if (invoice.status === InvoiceStatus.DRAFT || !invoice.invoiceNumber) {
@@ -197,8 +211,98 @@ export class InvoiceService {
     }
 
     const voidedAt = new Date();
-    const existingVoidDocument = await this.invoiceVoidDocumentsRepository.findByInvoiceId(invoiceId);
     const note = normalizeDocumentNote(options?.note);
+
+    await this.dataSource.transaction(async (manager) => {
+      const creditDocuments = await manager.getRepository(InvoiceCreditDocumentEntity).count({ where: { invoiceId } });
+
+      if (creditDocuments > 0) {
+        // A full void document would reverse the already credited part a second time.
+        throw new BadRequestException(
+          'Invoice has partial credit notes; void is not possible. Write off or settle the remaining balance instead.',
+        );
+      }
+
+      const settlements = await this.documentSettlementService.listForDocument(
+        SettlementDocumentType.INVOICE,
+        invoiceId,
+        manager,
+      );
+      const sum = (types: SettlementType[]): number =>
+        settlements.filter((s) => types.includes(s.type)).reduce((total, s) => total + Number(s.amount), 0);
+      const cashNet = roundMoney(
+        sum([SettlementType.PAYMENT]) - sum([SettlementType.PAYMENT_REVERSAL, SettlementType.REFUND]),
+      );
+
+      if (cashNet > 0.005 || sum([SettlementType.WRITE_OFF, SettlementType.DISCOUNT]) > 0.005) {
+        throw new BadRequestException('Invoice has payments or write-offs; reverse them before voiding');
+      }
+
+      // Customer credit applied to this invoice goes back to the documents it came from.
+      const transferredFrom = new Map<string, number>();
+
+      for (const s of settlements) {
+        if (!s.relatedDocumentId) {
+          continue;
+        }
+
+        const signed =
+          s.type === SettlementType.CREDIT_TRANSFER_IN
+            ? Number(s.amount)
+            : s.type === SettlementType.CREDIT_TRANSFER_OUT
+              ? -Number(s.amount)
+              : 0;
+
+        transferredFrom.set(s.relatedDocumentId, (transferredFrom.get(s.relatedDocumentId) ?? 0) + signed);
+      }
+
+      for (const [sourceId, amount] of transferredFrom) {
+        const rounded = roundMoney(amount);
+
+        if (rounded <= 0.005) {
+          continue;
+        }
+
+        const ref = `void-return:${invoiceId}:${sourceId}`;
+
+        await this.documentSettlementService.apply(
+          {
+            documentType: SettlementDocumentType.INVOICE,
+            documentId: invoiceId,
+            type: SettlementType.CREDIT_TRANSFER_OUT,
+            amount: rounded,
+            occurredAt: voidedAt,
+            source: SettlementSource.CUSTOMER_CREDIT,
+            sourceRef: ref,
+            relatedDocumentId: sourceId,
+          },
+          manager,
+        );
+        await this.documentSettlementService.apply(
+          {
+            documentType: SettlementDocumentType.INVOICE,
+            documentId: sourceId,
+            type: SettlementType.CREDIT_TRANSFER_IN,
+            amount: rounded,
+            occurredAt: voidedAt,
+            source: SettlementSource.CUSTOMER_CREDIT,
+            sourceRef: ref,
+            relatedDocumentId: invoiceId,
+          },
+          manager,
+        );
+      }
+
+      await manager.getRepository(InvoiceEntity).update(invoiceId, {
+        status: InvoiceStatus.VOID,
+        voidedAt,
+        balanceDue: 0,
+      });
+      await this.postingPort?.onInvoiceVoided(manager, invoiceId);
+    });
+
+    // Credit note document and mail only after the void committed (the guards above may still reject it).
+    const existingVoidDocument = await this.invoiceVoidDocumentsRepository.findByInvoiceId(invoiceId);
 
     if (note && !existingVoidDocument && options?.skipNotification) {
       // The note only lives on the credit note record: store it now instead of lazily on the first download.
@@ -213,11 +317,14 @@ export class InvoiceService {
       );
     }
 
-    const voided = await this.invoicesRepository.update(invoiceId, {
-      status: InvoiceStatus.VOID,
-      voidedAt,
-      balanceDue: 0,
-    });
+    const voided = await this.invoicesRepository.findByIdOrThrow(invoiceId);
+
+    if (invoiceCountsTowardOssLedger(invoice) && Number(invoice.subtotalNet) > 0 && invoice.issuedAt) {
+      await this.ossThresholdService.reverseCrossBorderB2cNet({
+        netAmount: Number(invoice.subtotalNet),
+        at: new Date(invoice.issuedAt),
+      });
+    }
 
     await this.promotionApplicationService.revertPromotionApplicationsForInvoice(invoiceId);
 
@@ -306,6 +413,8 @@ export class InvoiceService {
       einvoiceTaxCategoryCode: invoice.einvoiceTaxCategoryCode ?? undefined,
       resolvedTaxRate: invoice.resolvedTaxRate != null ? Number(invoice.resolvedTaxRate) : undefined,
       buyerVatId: invoice.buyerVatId ?? undefined,
+      paymentReference: invoice.paymentReference ?? undefined,
+      einvoiceFormat: invoice.einvoiceFormat ?? undefined,
       lineItems: lineItems.map((line) => ({
         description: line.description,
         quantity: Number(line.quantity),
@@ -413,6 +522,58 @@ export class InvoiceService {
     }
 
     return await this.getVoidPdfBuffer(invoiceId, invoice.subscriptionId);
+  }
+
+  /** Structured e-invoice XML (format snapshotted on the invoice) for customers. */
+  async getStructuredEinvoiceForUser(
+    invoiceId: string,
+    userId: string,
+  ): Promise<{ xml: string; format: string; fileName: string }> {
+    const invoice = await this.invoicesRepository.findByIdForUser(invoiceId, userId);
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    return await this.getStructuredEinvoice(invoiceId, invoice.subscriptionId);
+  }
+
+  async getStructuredEinvoice(
+    invoiceId: string,
+    subscriptionId?: string | null,
+  ): Promise<{ xml: string; format: string; fileName: string }> {
+    const invoice = await this.findInvoiceForAccess(invoiceId, subscriptionId);
+
+    if (invoice.status === InvoiceStatus.DRAFT || !invoice.invoiceNumber) {
+      throw new BadRequestException('Draft invoices have no e-invoice');
+    }
+
+    const lineItems = await this.invoiceLineItemsRepository.findByInvoiceId(invoice.id);
+    const profile = await this.customerProfilesRepository.findByUserId(invoice.userId);
+
+    if (!profile) {
+      throw new NotFoundException('Customer profile required for the e-invoice');
+    }
+
+    this.billingIssuerConfig.assertConfigured();
+
+    const subscription = invoice.subscriptionId
+      ? await this.subscriptionsRepository.findById(invoice.subscriptionId)
+      : null;
+    const plan = subscription ? await this.servicePlansRepository.findById(subscription.planId) : null;
+
+    try {
+      return this.invoicePdfService.buildStructuredXml(
+        invoice,
+        lineItems,
+        this.billingIssuerConfig.getConfig(),
+        profile,
+        resolvePurchaseOrderReference(subscription?.number, invoice.subscriptionId),
+        resolveInvoicingPeriod(invoice, subscription ?? undefined, plan ?? undefined),
+      );
+    } catch (error) {
+      throw new BadRequestException((error as Error).message);
+    }
   }
 
   private async findInvoiceForAccess(invoiceId: string, subscriptionId?: string | null): Promise<InvoiceEntity> {

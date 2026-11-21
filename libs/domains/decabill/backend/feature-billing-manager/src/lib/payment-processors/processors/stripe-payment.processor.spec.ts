@@ -217,6 +217,8 @@ describe('StripePaymentProcessor', () => {
       invoiceId: 'inv-1',
       externalId: 'pi_1',
       status: 'succeeded',
+      paymentIntentId: 'pi_1',
+      occurredAt: undefined,
       amountPaid: 50,
       tenantId: 'forepath',
       userId: undefined,

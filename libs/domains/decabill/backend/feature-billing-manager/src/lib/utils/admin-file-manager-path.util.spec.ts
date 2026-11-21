@@ -61,6 +61,7 @@ describe('admin-file-manager-path.util', () => {
       'export',
       'project',
       'inventory',
+      'accounting',
     ]);
     expect(structuralChildrenForPath(['customer'], AdminFileManagerView.TENANT)).toEqual([
       'invoices',

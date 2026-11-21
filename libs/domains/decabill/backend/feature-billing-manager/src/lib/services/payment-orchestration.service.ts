@@ -7,11 +7,13 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { AutoPaymentStatus, isAutoPaymentBlocking } from '../constants/auto-payment-status.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
+import { SettlementDocumentType, SettlementSource, SettlementType } from '../constants/settlement.constants';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { PaymentAttemptStatus } from '../entities/payment-attempt.entity';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
+import type { PaymentStatusUpdate, SetupStatusUpdate } from '../payment-processors/payment-processor.interface';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { PaymentAttemptsRepository } from '../repositories/payment-attempts.repository';
@@ -21,6 +23,7 @@ import { buildStripeCheckoutReturnUrl } from '../utils/tenant-frontend-url.utils
 
 import { AutoBillingService } from './auto-billing.service';
 import { BillingAuditLogService } from './billing-audit-log.service';
+import { DocumentSettlementService, type ApplySettlementResult } from './document-settlement.service';
 
 @Injectable()
 export class PaymentOrchestrationService {
@@ -37,6 +40,7 @@ export class PaymentOrchestrationService {
     private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly autoBillingService: AutoBillingService,
     private readonly customerTrustScoreService: CustomerTrustScoreService,
+    private readonly documentSettlementService: DocumentSettlementService,
   ) {}
 
   async initiatePayment(invoiceId: string, subscriptionId: string, userId: string): Promise<{ checkoutUrl: string }> {
@@ -165,12 +169,24 @@ export class PaymentOrchestrationService {
     const paymentUpdate = await Promise.resolve(processor.mapWebhookToPaymentUpdate(event));
     const setupUpdate = !paymentUpdate ? await Promise.resolve(processor.mapWebhookToSetupUpdate(event)) : null;
 
+    // Processed first, recorded afterwards: a failure leaves the event unrecorded so the processor's retry is
+    // handled instead of being dropped as a duplicate. Replays are safe (settlements are idempotent).
+    await this.processWebhookUpdates(event.eventId, processorType, paymentUpdate, setupUpdate);
     await this.paymentWebhookEventsRepository.create({
       processor: processorType,
       eventId: event.eventId,
       payloadHash,
       result: paymentUpdate || setupUpdate ? 'processed' : 'ignored',
     });
+  }
+
+  private async processWebhookUpdates(
+    eventId: string,
+    processorType: string,
+    paymentUpdate: PaymentStatusUpdate | null,
+    setupUpdate: SetupStatusUpdate | null,
+  ): Promise<void> {
+    const event = { eventId };
 
     if (setupUpdate) {
       if (!setupUpdate.tenantId || !setupUpdate.userId || !setupUpdate.paymentMethodExternalId) {
@@ -215,6 +231,8 @@ export class PaymentOrchestrationService {
       mode?: 'auto' | 'checkout';
       paymentMethodExternalId?: string;
       stripeCustomerId?: string;
+      occurredAt?: Date;
+      paymentIntentId?: string;
     },
     processorType: string,
   ): Promise<void> {
@@ -230,41 +248,44 @@ export class PaymentOrchestrationService {
     const mode = update.mode ?? (attempt?.metadata?.['kind'] === 'auto' ? 'auto' : 'checkout');
 
     if (update.status === 'succeeded') {
-      if (invoice.status === InvoiceStatus.PAID) {
-        if (mode === 'auto') {
-          await this.autoBillingService.onAutoPaymentSucceeded(invoice, {
-            paymentMethodExternalId: update.paymentMethodExternalId,
-            stripeCustomerId: update.stripeCustomerId,
-          });
-        } else if (update.paymentMethodExternalId && (update.userId || invoice.userId)) {
-          await this.autoBillingService.onCheckoutPaymentMethodCaptured({
-            userId: update.userId ?? invoice.userId,
-            paymentMethodExternalId: update.paymentMethodExternalId,
-            stripeCustomerId: update.stripeCustomerId,
-          });
-        }
+      const amount =
+        update.amountPaid != null && update.amountPaid > 0 ? update.amountPaid : Number(invoice.balanceDue);
+      let result: ApplySettlementResult | null = null;
 
-        if (attempt && attempt.status !== PaymentAttemptStatus.SUCCEEDED) {
-          await this.paymentAttemptsRepository.update(attempt.id, { status: PaymentAttemptStatus.SUCCEEDED });
-        }
-
-        this.logger.log(`Skipping duplicate payment success for invoice ${invoice.id} (already paid)`);
-
-        return;
+      if (invoice.status === InvoiceStatus.VOID || invoice.status === InvoiceStatus.DRAFT) {
+        // Money arrived for a document that cannot take it: keep it visible for a manual refund.
+        await this.auditLog.log({
+          process: 'payment.webhook',
+          level: 'warn',
+          message: `Payment received for invoice in status ${invoice.status}; refund manually`,
+          invoiceId: invoice.id,
+          userId: invoice.userId,
+          context: { externalId: update.externalId, mode, amount },
+        });
+      } else if (amount > 0) {
+        result = await this.documentSettlementService.apply({
+          documentType: SettlementDocumentType.INVOICE,
+          documentId: invoice.id,
+          type: SettlementType.PAYMENT,
+          amount,
+          currency: invoice.currency,
+          occurredAt: update.occurredAt ?? new Date(),
+          source: mode === 'auto' ? SettlementSource.AUTO_CHARGE : SettlementSource.PROCESSOR_WEBHOOK,
+          sourceRef: `${processorType}:${update.externalId}`,
+          processor: processorType,
+          externalId: update.paymentIntentId ?? update.externalId,
+          paymentAttemptId: attempt?.id ?? null,
+        });
       }
 
-      const paid = await this.invoicesRepository.update(invoice.id, {
-        status: InvoiceStatus.PAID,
-        balanceDue: 0,
-        paidAt: new Date(),
-      });
-
-      if (attempt) {
+      if (attempt && attempt.status !== PaymentAttemptStatus.SUCCEEDED) {
         await this.paymentAttemptsRepository.update(attempt.id, { status: PaymentAttemptStatus.SUCCEEDED });
       }
 
+      const current = (result?.document as InvoiceEntity | undefined) ?? invoice;
+
       if (mode === 'auto') {
-        await this.autoBillingService.onAutoPaymentSucceeded(paid, {
+        await this.autoBillingService.onAutoPaymentSucceeded(current, {
           paymentMethodExternalId: update.paymentMethodExternalId,
           stripeCustomerId: update.stripeCustomerId,
         });
@@ -276,26 +297,36 @@ export class PaymentOrchestrationService {
         });
       }
 
+      if (!result?.created) {
+        this.logger.log(`Skipping duplicate payment success for invoice ${invoice.id}`);
+
+        return;
+      }
+
       await this.auditLog.log({
         process: 'payment.webhook',
         level: 'info',
-        message: 'Invoice marked paid',
+        message: result.becameSettled ? 'Invoice marked paid' : 'Partial payment recorded',
         invoiceId: invoice.id,
         userId: invoice.userId,
-        context: { externalId: update.externalId, mode },
+        context: { externalId: update.externalId, mode, amount, balanceDue: current.balanceDue },
       });
 
-      this.billingNotificationPublisher.publishPayment('payment.succeeded', paid, {
+      this.billingNotificationPublisher.publishPayment('payment.succeeded', current, {
         processor: processorType,
         externalId: update.externalId,
         mode,
       });
-      this.billingNotificationPublisher.publishInvoice('invoice.paid', paid);
-      incrementCounter('forepath.decabill', 'decabill.invoices.paid', {
-        tenant_id: getTenantIdOrDefault(),
-        payment_source: mode,
-      });
-      await this.billingEmailPublisher.publishPaymentSucceeded(paid, {
+
+      if (result.becameSettled) {
+        this.billingNotificationPublisher.publishInvoice('invoice.paid', current);
+        incrementCounter('forepath.decabill', 'decabill.invoices.paid', {
+          tenant_id: getTenantIdOrDefault(),
+          payment_source: mode,
+        });
+      }
+
+      await this.billingEmailPublisher.publishPaymentSucceeded(current, {
         processor: processorType,
         externalId: update.externalId,
       });

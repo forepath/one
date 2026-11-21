@@ -1,10 +1,13 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
-import { DataSource, EntityManager } from 'typeorm';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 
+import { ACCOUNTING_POSTING_PORT, type AccountingPostingPort } from '../accounting/ports/accounting-posting.port';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
+import { SettlementDocumentType, SettlementSource, SettlementType } from '../constants/settlement.constants';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import type { InvoiceCreditDocumentEntity } from '../entities/invoice-credit-document.entity';
-import { InvoiceEntity } from '../entities/invoice.entity';
+import { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity';
+import type { InvoiceEntity } from '../entities/invoice.entity';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import type {
   SubscriptionConfigChangeBillingOutcome,
@@ -21,14 +24,18 @@ import {
   configChangeCarrySourceRef,
   configChangePrimarySourceRef,
 } from '../utils/config-change-billing-source-ref.util';
+import { creditFromInvoiceSnapshot } from '../utils/credit-snapshot.util';
+import { invoiceCountsTowardOssLedger } from '../utils/oss-ledger.util';
 import { resolvePlanTaxCategory } from '../utils/plan-tax.utils';
 import { roundMoney } from '../utils/promotion-advantage.util';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
+import { DocumentSettlementService } from './document-settlement.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { InvoiceTaxContextService } from './invoice-tax-context.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
+import { OssThresholdService } from './oss-threshold.service';
 import type {
   PeriodPriceChangeBillingOutcome,
   PeriodPriceChangeSettlementParams,
@@ -92,7 +99,10 @@ export class SubscriptionConfigChangeBillingService {
     private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly auditLog: BillingAuditLogService,
     private readonly dataSource: DataSource,
+    private readonly documentSettlementService: DocumentSettlementService,
     @Optional() private readonly billingNotificationPublisher?: BillingNotificationPublisher,
+    @Optional() @Inject(ACCOUNTING_POSTING_PORT) private readonly postingPort?: AccountingPostingPort,
+    @Optional() private readonly ossThresholdService?: OssThresholdService,
   ) {}
 
   async apply(params: ConfigChangeBillingParams): Promise<SubscriptionConfigChangeBillingOutcome> {
@@ -266,8 +276,13 @@ export class SubscriptionConfigChangeBillingService {
       return 'credited';
     }
 
-    const creditNet = roundMoney(creditNetRequested * (await this.resolvePromotionRetentionRatio(params)));
-    const creditGross = await this.computeGross(creditNet, plan, subscription.userId);
+    const retainedNet = roundMoney(creditNetRequested * (await this.resolvePromotionRetentionRatio(params)));
+    const invoiceLines = await this.dataSource
+      .getRepository(InvoiceLineItemEntity)
+      .find({ where: { invoiceId: invoice.id } });
+    const snapshotCredit = creditFromInvoiceSnapshot(invoice, invoiceLines, retainedNet);
+    const creditNet = snapshotCredit.net;
+    const creditGross = snapshotCredit.gross;
 
     if (creditGross < MIN_BILLABLE_AMOUNT) {
       return 'none';
@@ -298,6 +313,8 @@ export class SubscriptionConfigChangeBillingService {
       documentNumber,
       creditNet,
       creditGross,
+      creditTax: snapshotCredit.tax,
+      taxRate: snapshotCredit.taxRate,
       pdfStorageKey: storageKey,
       reason: params.creditReason,
       withdrawnAt: changedAt,
@@ -313,6 +330,22 @@ export class SubscriptionConfigChangeBillingService {
     }
 
     await this.billingEmailPublisher.publishPartialCreditDocument(invoice, storageKey, documentNumber, creditGross);
+    this.billingNotificationPublisher?.publish(
+      'credit_note.created',
+      {
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        creditNoteNumber: documentNumber,
+        creditNet,
+        creditGross,
+        reason: params.creditReason,
+      },
+      invoice.userId,
+    );
+
+    if (this.ossThresholdService && invoice.issuedAt && invoiceCountsTowardOssLedger(invoice)) {
+      await this.ossThresholdService.reverseCrossBorderB2cNet({ netAmount: creditNet, at: new Date(invoice.issuedAt) });
+    }
 
     const { carriedGross } = await this.finalizePartialCreditSettlement(params, credit);
 
@@ -335,87 +368,52 @@ export class SubscriptionConfigChangeBillingService {
     params: PeriodPriceChangeSettlementParams,
     credit: InvoiceCreditDocumentEntity,
   ): Promise<{ appliedGross: number; carriedGross: number }> {
-    // Set inside the transaction, published only once it committed.
-    const settled: { invoice?: InvoiceEntity } = {};
+    // The full credit note settles the invoice; whatever exceeds the open balance stays on it as customer credit
+    // (negative balance) and is applied to the customer's next invoice. No negative revenue line is created, so
+    // revenue and VAT are reduced exactly once (by the credit note).
     const result = await this.dataSource.transaction(async (manager) => {
       const lockedCredit = await this.invoiceCreditDocumentsRepository.findByIdForUpdate(credit.id, manager);
 
       if (!lockedCredit || lockedCredit.settlementComplete) {
-        return { appliedGross: 0, carriedGross: 0 };
+        return null;
       }
 
-      const invoice = await this.invoicesRepository.findByIdForUpdate(lockedCredit.invoiceId, manager);
-
-      if (!invoice) {
-        throw new Error(`Invoice ${lockedCredit.invoiceId} not found for partial credit settlement`);
-      }
+      await this.postingPort?.onCreditDocumentCreated(manager, lockedCredit.id);
 
       const creditGross = Number(lockedCredit.creditGross);
-      const creditNet = Number(lockedCredit.creditNet);
-      const wasPaid = invoice.status === InvoiceStatus.PAID;
-      const appliedGross = await this.applyCreditToInvoiceBalance(invoice, creditGross, manager);
-
-      if (!wasPaid && invoice.status === InvoiceStatus.PAID) {
-        settled.invoice = invoice;
-      }
-
-      const carriedGross = roundMoney(creditGross - appliedGross);
-
-      if (carriedGross >= MIN_BILLABLE_AMOUNT && creditGross > 0) {
-        const carriedNet = roundMoney(-creditNet * (carriedGross / creditGross));
-
-        await this.openPositionsRepository.createUniqueBySourceRef(
-          {
-            subscriptionId: params.subscription.id,
-            userId: params.subscription.userId,
-            description: params.description,
-            billUntil: params.changedAt,
-            skipIfNoBillableAmount: true,
-            adjustmentNet: carriedNet.toFixed(4),
-            adjustmentKind: params.adjustmentKinds.CREDIT,
-            sourceRef: params.carrySourceRef,
-          },
-          manager,
-        );
-      }
+      const applied = await this.documentSettlementService.apply(
+        {
+          documentType: SettlementDocumentType.INVOICE,
+          documentId: lockedCredit.invoiceId,
+          type: SettlementType.CREDIT,
+          amount: creditGross,
+          occurredAt: new Date(lockedCredit.withdrawnAt),
+          source: SettlementSource.CREDIT_DOCUMENT,
+          sourceRef: `credit:${lockedCredit.id}`,
+          creditDocumentId: lockedCredit.id,
+        },
+        manager,
+      );
 
       await this.invoiceCreditDocumentsRepository.markSettlementComplete(lockedCredit.id, manager);
 
-      return { appliedGross, carriedGross };
+      return { applied, creditGross };
     });
 
-    if (settled.invoice) {
-      this.billingNotificationPublisher?.publishInvoice('invoice.paid', settled.invoice);
+    if (!result) {
+      return { appliedGross: 0, carriedGross: 0 };
     }
 
-    return result;
-  }
+    const carriedGross = roundMoney(Math.max(0, -Number(result.applied.document.balanceDue)));
 
-  /** Returns the gross amount actually taken off the invoice balance. */
-  private async applyCreditToInvoiceBalance(
-    invoice: InvoiceEntity,
-    creditGross: number,
-    manager: EntityManager,
-  ): Promise<number> {
-    const balanceDue = Number(invoice.balanceDue);
-
-    if (!Number.isFinite(balanceDue) || balanceDue <= 0) {
-      return 0;
+    if (result.applied.becameSettled) {
+      this.billingNotificationPublisher?.publishInvoice(
+        result.applied.document.status === InvoiceStatus.PAID ? 'invoice.paid' : 'invoice.credited',
+        result.applied.document as InvoiceEntity,
+      );
     }
 
-    const applied = Math.min(creditGross, balanceDue);
-    const newBalanceDue = Math.max(0, roundMoney(balanceDue - applied));
-
-    invoice.balanceDue = newBalanceDue;
-
-    if (newBalanceDue <= 0) {
-      invoice.status = InvoiceStatus.PAID;
-      invoice.paidAt = invoice.paidAt ?? new Date();
-    }
-
-    await manager.getRepository(InvoiceEntity).save(invoice);
-
-    return roundMoney(applied);
+    return { appliedGross: roundMoney(result.creditGross - carriedGross), carriedGross };
   }
 
   /**

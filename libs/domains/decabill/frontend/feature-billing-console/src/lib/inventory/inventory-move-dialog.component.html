@@ -219,10 +219,40 @@
       >
         <framework-inventory-reference-select
           inputId="inventoryMoveReference"
-          [(value)]="reference"
+          [value]="reference"
+          (valueChange)="onReferenceChange($event)"
+          (optionPicked)="onReferencePicked($event)"
           data-testid="inventory-move-reference"
         />
+        @if (mode() === 'putaway' && supplierInvoice(); as linked) {
+          <div fpcFormFieldHint data-testid="inventory-move-supplier-invoice-link">
+            <i class="bi bi-link-45deg me-1" aria-hidden="true"></i>
+            <span i18n="@@featureInventoryMove-supplierInvoiceLinked"
+              >Linked to supplier invoice {{ linked.number }}: the stock is valued at its line price.</span
+            >
+          </div>
+        }
       </fpc-form-field>
+      @if (mode() === 'putaway' && accountingEnabled()) {
+        <fpc-form-field
+          forId="inventoryMoveUnitCost"
+          i18n-label="@@featureInventoryMove-unitCost"
+          label="Unit cost (net, optional)"
+          i18n-hint="@@featureInventoryMove-unitCostHint"
+          hint="Valuation of the received stock; defaults to the supplier invoice line or the article's purchase price."
+        >
+          <fpc-form-control
+            inputType="number"
+            controlId="inventoryMoveUnitCost"
+            name="inventoryMoveUnitCost"
+            min="0"
+            step="any"
+            [invalid]="!unitCostValid()"
+            [(ngModel)]="unitCost"
+            data-testid="inventory-move-unit-cost"
+          />
+        </fpc-form-field>
+      }
       <fpc-form-field forId="inventoryMoveNote" i18n-label="@@featureInventoryMove-note" label="Note">
         <fpc-form-control
           controlType="textarea"

@@ -40,6 +40,8 @@ export interface SupplierProfileDto {
   country?: string;
   email?: string;
   phone?: string;
+  /** Default expense account number for this supplier's invoices (accounting). */
+  defaultExpenseAccountNumber?: string | null;
 }
 
 export type CreateAdminSupplierProfileDto = SupplierProfileDto;
@@ -80,6 +82,13 @@ export interface SupplierInvoiceLineItemDto {
   unitPriceNet: number;
   taxCategory?: TaxCategory;
   taxRate?: number;
+  /** Account assignment (account number); defaults to the supplier's expense account. */
+  ledgerAccountNumber?: string | null;
+  /** Capitalize as fixed asset instead of expensing. */
+  capitalizeAsAsset?: boolean;
+  assetUsefulLifeMonths?: number | null;
+  /** Stock article bought with this line. */
+  inventoryArticleId?: string | null;
 }
 
 export interface CreateSupplierInvoiceDto {
@@ -109,6 +118,8 @@ export interface IssueSupplierInvoiceDto {
 export interface MarkSupplierInvoicePaymentStatusDto {
   reason?: string;
   paidAt?: string;
+  /** Partial amount (gross); defaults to the full balance due. */
+  amount?: number;
 }
 
 export interface SupplierInvoiceLineItemResponse {
@@ -122,6 +133,10 @@ export interface SupplierInvoiceLineItemResponse {
   lineNet: number;
   lineTax: number;
   lineGross: number;
+  ledgerAccountNumber?: string | null;
+  capitalizeAsAsset?: boolean;
+  assetUsefulLifeMonths?: number | null;
+  inventoryArticleId?: string | null;
 }
 
 export interface AdminSupplierInvoiceListItem {

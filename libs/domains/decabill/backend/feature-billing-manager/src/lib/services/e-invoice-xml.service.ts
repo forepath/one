@@ -23,6 +23,7 @@ export class EInvoiceXmlService {
     purchaseOrderReference: string,
     invoicingPeriod: InvoicingPeriod,
     documentOptions: EInvoiceDocumentOptions,
+    profile?: { guidelineId?: string; buyerReference?: string | null },
   ): string {
     const issueDate = documentOptions.issueDate.toISOString().slice(0, 10);
     const buyerName =
@@ -39,7 +40,7 @@ export class EInvoiceXmlService {
       .ele('rsm:ExchangedDocumentContext')
       .ele('ram:GuidelineSpecifiedDocumentContextParameter')
       .ele('ram:ID')
-      .txt('urn:cen.eu:en16931:2017')
+      .txt(profile?.guidelineId ?? 'urn:cen.eu:en16931:2017')
       .up()
       .up()
       .up()
@@ -129,8 +130,15 @@ export class EInvoiceXmlService {
         .up();
     }
 
-    let chain = doc
-      .ele('ram:ApplicableHeaderTradeAgreement')
+    let agreement = doc.ele('ram:ApplicableHeaderTradeAgreement');
+    const buyerReference = profile?.buyerReference?.trim();
+
+    if (buyerReference) {
+      // BT-10 buyer reference (XRechnung: Leitweg-ID) is the first child of the header trade agreement.
+      agreement = agreement.ele('ram:BuyerReference').txt(buyerReference).up();
+    }
+
+    let chain = agreement
       .ele('ram:SellerTradeParty')
       .ele('ram:Name')
       .txt(issuer.name)
@@ -203,10 +211,14 @@ export class EInvoiceXmlService {
       .up()
       .up()
       .up()
-      .ele('ram:ApplicableHeaderTradeSettlement')
-      .ele('ram:InvoiceCurrencyCode')
-      .txt(invoice.currency)
-      .up();
+      .ele('ram:ApplicableHeaderTradeSettlement');
+
+    // BT-83 remittance information (structured creditor reference), before the currency per the CII sequence.
+    if (documentOptions.includePaymentMeans && invoice.paymentReference) {
+      chain = chain.ele('ram:PaymentReference').txt(invoice.paymentReference).up();
+    }
+
+    chain = chain.ele('ram:InvoiceCurrencyCode').txt(invoice.currency).up();
 
     // Children follow the CII HeaderTradeSettlement sequence: payment means → tax → billing period → payment
     // terms → monetary summation → referenced invoice.
@@ -214,33 +226,36 @@ export class EInvoiceXmlService {
       chain = this.appendPaymentMeans(chain, issuer);
     }
 
+    // BG-23 VAT breakdown: one group per category and rate (BR-CO-17/18); amounts from the frozen lines.
     const headerCategory = String(invoice.einvoiceTaxCategoryCode ?? 'S');
-    const headerRate =
-      invoice.resolvedTaxRate != null ? String(invoice.resolvedTaxRate) : String(lineItems[0]?.taxRate ?? 0);
-    let taxBlock = chain
-      .ele('ram:ApplicableTradeTax')
-      .ele('ram:CalculatedAmount')
-      .txt(this.formatAmount(invoice.taxTotal))
-      .up()
-      .ele('ram:TypeCode')
-      .txt('VAT')
-      .up();
+    const groups = this.taxGroups(lineItems, invoice);
 
-    if (invoice.taxNote?.trim()) {
-      taxBlock = taxBlock.ele('ram:ExemptionReason').txt(invoice.taxNote.trim()).up();
+    for (const group of groups) {
+      let taxBlock = chain
+        .ele('ram:ApplicableTradeTax')
+        .ele('ram:CalculatedAmount')
+        .txt(this.formatAmount(group.tax))
+        .up()
+        .ele('ram:TypeCode')
+        .txt('VAT')
+        .up();
+
+      if (invoice.taxNote?.trim()) {
+        taxBlock = taxBlock.ele('ram:ExemptionReason').txt(invoice.taxNote.trim()).up();
+      }
+
+      chain = taxBlock
+        .ele('ram:BasisAmount')
+        .txt(this.formatAmount(group.basis))
+        .up()
+        .ele('ram:CategoryCode')
+        .txt(headerCategory)
+        .up()
+        .ele('ram:RateApplicablePercent')
+        .txt(group.rate)
+        .up()
+        .up();
     }
-
-    chain = taxBlock
-      .ele('ram:BasisAmount')
-      .txt(this.formatAmount(invoice.subtotalNet))
-      .up()
-      .ele('ram:CategoryCode')
-      .txt(headerCategory)
-      .up()
-      .ele('ram:RateApplicablePercent')
-      .txt(headerRate)
-      .up()
-      .up();
 
     chain = this.appendBillingPeriod(chain, invoicingPeriod);
 
@@ -348,6 +363,31 @@ export class EInvoiceXmlService {
     const date = value instanceof Date ? value : new Date(value);
 
     return Number.isNaN(date.getTime()) ? undefined : date;
+  }
+
+  /** VAT groups (rate → basis / tax) from the invoice lines; a document without lines gets one header group. */
+  taxGroups(
+    lineItems: InvoiceLineItemEntity[],
+    invoice: InvoiceEntity,
+  ): Array<{ rate: string; basis: number; tax: number }> {
+    const groups = new Map<string, { rate: string; basis: number; tax: number }>();
+
+    for (const line of lineItems) {
+      const rate = String(Number(line.taxRate));
+      const group = groups.get(rate) ?? { rate, basis: 0, tax: 0 };
+
+      group.basis = (this.toCents(group.basis) + this.toCents(line.lineNet)) / 100;
+      group.tax = (this.toCents(group.tax) + this.toCents(line.lineTax)) / 100;
+      groups.set(rate, group);
+    }
+
+    if (groups.size === 0) {
+      const rate = invoice.resolvedTaxRate != null ? String(Number(invoice.resolvedTaxRate)) : '0';
+
+      return [{ rate, basis: Number(invoice.subtotalNet), tax: Number(invoice.taxTotal) }];
+    }
+
+    return [...groups.values()];
   }
 
   /** Monetary amounts: exactly two decimals (BR-DEC-*). */

@@ -49,3 +49,18 @@ export const selectAdminInvoiceManagerPageSize = createSelector(
   selectAdminInvoiceManagerState,
   (state) => state.pageSize,
 );
+
+export const selectAdminInvoiceManagerSettlements = createSelector(
+  selectAdminInvoiceManagerState,
+  (state) => state.settlements,
+);
+
+export const selectAdminInvoiceManagerSettlementsInvoiceId = createSelector(
+  selectAdminInvoiceManagerState,
+  (state) => state.settlementsInvoiceId,
+);
+
+export const selectAdminInvoiceManagerSettlementsLoading = createSelector(
+  selectAdminInvoiceManagerState,
+  (state) => state.settlementsLoading,
+);

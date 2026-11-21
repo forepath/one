@@ -40,6 +40,8 @@ describe('BILLING_PAT_SCOPES', () => {
     'files:admin',
     'datev:admin',
     'inventory:admin',
+    'accounting_audit:admin',
+    'accounting:admin',
     'websocket:billing:read',
     'websocket:projects:read',
     'websocket:inventory:read',

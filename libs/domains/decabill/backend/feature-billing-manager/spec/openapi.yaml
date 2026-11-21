@@ -4112,6 +4112,34 @@ paths:
           description: Unauthorized
         '404':
           description: Invoice PDF not found
+  /invoices/ref/{invoiceRefId}/einvoice:
+    get:
+      summary: Download the structured e-invoice XML by reference (no subscription)
+      operationId: downloadInvoiceEinvoiceByRef
+      security:
+        - bearerAuth: [invoices:read]
+      description: |
+        Standalone e-invoice XML of an issued invoice owned by the authenticated user, in the format snapshotted on the
+        invoice (`einvoiceFormat`; CII for Factur-X / XRechnung CII, UBL 2.1 for XRechnung UBL / Peppol BIS / EN 16931 UBL).
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: E-invoice XML (attachment)
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '404':
+          description: Invoice not found or not issued
   /invoices/ref/{invoiceRefId}/void-document/pdf:
     get:
       summary: Download void credit note PDF by reference (no subscription)
@@ -5638,6 +5666,33 @@ paths:
           description: Forbidden
         '404':
           description: Invoice not found
+  /admin/billing/invoices/{invoiceRefId}/einvoice:
+    get:
+      tags: [Admin Billing]
+      summary: Download the structured e-invoice XML (admin only)
+      operationId: downloadAdminInvoiceEinvoice
+      security:
+        - bearerAuth: [invoices:admin]
+      description: Standalone e-invoice XML of an issued invoice in the format snapshotted on the invoice (`einvoiceFormat`).
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: E-invoice XML (attachment)
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Invoice not found or not issued
   /admin/billing/invoices/{invoiceRefId}/void-document/pdf:
     get:
       tags: [Admin Billing]
@@ -6480,6 +6535,9 @@ paths:
     post:
       tags: [Admin Billing]
       summary: Mark invoice paid manually (admin only)
+      description: |
+        Records a manual payment settlement. Optional `amount` books a partial payment (status `partially_paid`);
+        omitted, the full balance due is paid.
       operationId: adminMarkInvoicePaid
       security:
         - bearerAuth: [invoices:admin]
@@ -6500,6 +6558,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminInvoiceListItem'
+        '400':
+          description: Invoice status does not allow payment, nothing left to pay, or amount exceeds the balance due
   /admin/billing/invoices/{invoiceRefId}/mark-unpaid:
     post:
       tags: [Admin Billing]
@@ -6524,6 +6584,91 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminInvoiceListItem'
+  /admin/billing/invoices/{invoiceRefId}/write-off:
+    post:
+      tags: [Admin Billing]
+      summary: Write off an uncollectible balance (admin only)
+      description: |
+        Records a `write_off` settlement (Forderungsverlust). Optional `amount` writes off part of the balance due;
+        omitted, the whole balance is written off and the invoice becomes `written_off`.
+      operationId: adminWriteOffInvoice
+      security:
+        - bearerAuth: [invoices:admin]
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordInvoiceSettlementDto'
+      responses:
+        '201':
+          description: Updated invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInvoiceListItem'
+        '400':
+          description: Invoice status does not allow a write-off, or amount not positive / exceeds the balance due
+        '404':
+          description: Invoice not found
+  /admin/billing/invoices/{invoiceRefId}/refund:
+    post:
+      tags: [Admin Billing]
+      summary: Record a manual refund of a customer credit (admin only)
+      description: |
+        For invoices with a negative `balanceDue` (customer credit from overpayment or credit notes). Records a `refund`
+        settlement; optional `amount` refunds part of the credit, omitted the whole credit.
+      operationId: adminRefundInvoiceCredit
+      security:
+        - bearerAuth: [invoices:admin]
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordInvoiceSettlementDto'
+      responses:
+        '201':
+          description: Updated invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInvoiceListItem'
+        '400':
+          description: Invoice has no customer credit, or amount not positive / exceeds the credit
+        '404':
+          description: Invoice not found
+  /admin/billing/invoices/{invoiceRefId}/settlements:
+    get:
+      tags: [Admin Billing]
+      summary: List settlements (payments, credits, refunds, write-offs, discounts) of an invoice (admin only)
+      operationId: listAdminInvoiceSettlements
+      security:
+        - bearerAuth: [invoices:admin]
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Settlements in chronological order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvoiceSettlementResponse'
+        '404':
+          description: Invoice not found
   /admin/billing/invoices/{invoiceRefId}/audit-logs:
     get:
       tags: [Admin Billing]
@@ -9261,6 +9406,1915 @@ paths:
               schema: { type: string, format: binary }
         '400':
           description: Nothing to print, too many labels or company name missing
+  /admin/billing/accounting/overview:
+    get:
+      tags: [Accounting]
+      summary: Accounting configuration, country profile, feature availability and fiscal years (admin only)
+      description: |
+        All accounting routes return 404 unless `BILLING_ACCOUNTING_ENABLED` is set and its prerequisites (complete
+        issuer) are configured. Tenant-scoped by default; `viewTenantId` (another tenant or `all`) and entity-wide
+        functions need a request tenant on `TENANTS_ALLOW_GLOBAL_VIEWS`.
+      operationId: getAccountingOverview
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingOverview'
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/chart-templates:
+    get:
+      tags: [Accounting]
+      summary: List chart-of-accounts templates of the built-in country profiles (admin only)
+      operationId: listAccountingChartTemplates
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingChartTemplate'
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/charts:
+    get:
+      tags: [Accounting]
+      summary: List charts of accounts (admin only)
+      operationId: listAccountingCharts
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingChart'
+        '404':
+          description: Accounting disabled
+    post:
+      tags: [Accounting]
+      summary: Create a chart of accounts from a template or empty (entity-wide; global views only)
+      operationId: createAccountingChart
+      security:
+        - bearerAuth: [accounting:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountingChartDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingChart'
+        '400':
+          description: Unknown template or invalid code / name
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '409':
+          description: Chart code already exists
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/charts/{chartId}/accounts:
+    get:
+      tags: [Accounting]
+      summary: List general-ledger accounts of a chart (admin only)
+      operationId: listAccountingAccounts
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingChartId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingAccount'
+        '404':
+          description: Accounting disabled or chart not found
+    post:
+      tags: [Accounting]
+      summary: Create a general-ledger account (entity-wide; global views only)
+      operationId: createAccountingAccount
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingChartId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountingAccountInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingAccount'
+        '400':
+          description: Validation failed
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or chart not found
+        '409':
+          description: Account number or role already used in this chart
+  /admin/billing/accounting/charts/{chartId}/accounts/import:
+    post:
+      tags: [Accounting]
+      summary: Import accounts from CSV or DATEV Kontenbeschriftungen (entity-wide; global views only)
+      description: |
+        CSV rows `number;name[;type[;position]]` or a DATEV EXTF file of category 20 (Kontenbeschriftungen).
+        Existing numbers are updated. At most 5 MB.
+      operationId: importAccountingAccounts
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingChartId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '201':
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingAccountImportResult'
+        '400':
+          description: File missing or unparseable
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or chart not found
+  /admin/billing/accounting/accounts/{accountId}:
+    patch:
+      tags: [Accounting]
+      summary: Update a general-ledger account (entity-wide; global views only)
+      operationId: updateAccountingAccount
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingAccountId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountingAccountDto'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingAccount'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or account not found
+    delete:
+      tags: [Accounting]
+      summary: Delete an unused general-ledger account (entity-wide; global views only)
+      operationId: deleteAccountingAccount
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingAccountId'
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingDeletedResponse'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or account not found
+        '400':
+          description: Accounts with bookings cannot be deleted; deactivate them instead
+  /admin/billing/accounting/accounts/{accountId}/ledger:
+    get:
+      tags: [Accounting]
+      summary: Account ledger (Kontoblatt) with opening, running and closing balance (admin only)
+      operationId: getAccountingAccountLedger
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingAccountId'
+        - $ref: '#/components/parameters/AccountingFrom'
+        - $ref: '#/components/parameters/AccountingTo'
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+        - name: offset
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingAccountLedger'
+        '400':
+          description: Invalid date range
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or account not found
+  /admin/billing/accounting/charts/{chartId}/tax-codes:
+    get:
+      tags: [Accounting]
+      summary: List tax codes of a chart (admin only)
+      operationId: listAccountingTaxCodes
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingChartId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingTaxCode'
+        '404':
+          description: Accounting disabled or chart not found
+    post:
+      tags: [Accounting]
+      summary: Create a tax code (entity-wide; global views only)
+      operationId: createAccountingTaxCode
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingChartId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountingTaxCodeInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingTaxCode'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or chart not found
+        '409':
+          description: Tax code already exists in this chart
+  /admin/billing/accounting/tax-codes/{taxCodeId}:
+    patch:
+      tags: [Accounting]
+      summary: Update a tax code (entity-wide; global views only)
+      operationId: updateAccountingTaxCode
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - name: taxCodeId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountingTaxCodeDto'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingTaxCode'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or tax code not found
+  /admin/billing/accounting/fiscal-years:
+    get:
+      tags: [Accounting]
+      summary: List fiscal years with their periods (admin only)
+      operationId: listAccountingFiscalYears
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingFiscalYearWithPeriods'
+        '404':
+          description: Accounting disabled
+    post:
+      tags: [Accounting]
+      summary: Open the next fiscal year (entity-wide; global views only)
+      operationId: openAccountingFiscalYear
+      security:
+        - bearerAuth: [accounting:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenAccountingFiscalYearDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingFiscalYear'
+        '400':
+          description: Invalid end date (fiscal years span at most 12 months)
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '409':
+          description: A fiscal year with this start date already exists
+        '404':
+          description: Accounting disabled or chart not found
+  /admin/billing/accounting/fiscal-years/{id}/chart:
+    patch:
+      tags: [Accounting]
+      summary: Change the chart of a fiscal year without bookings (entity-wide; global views only)
+      operationId: changeAccountingFiscalYearChart
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeAccountingYearChartDto'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingFiscalYear'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or fiscal year / chart not found
+        '400':
+          description: Fiscal year already has bookings or is closed
+  /admin/billing/accounting/fiscal-years/{id}/close/preview:
+    post:
+      tags: [Accounting]
+      summary: Preview year-end closing (balances carried forward, account mapping) (entity-wide; global views only)
+      operationId: previewAccountingFiscalYearClose
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloseAccountingFiscalYearDto'
+      responses:
+        '201':
+          description: Closing preview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingClosePreview'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or fiscal year not found
+  /admin/billing/accounting/fiscal-years/{id}/close:
+    post:
+      tags: [Accounting]
+      summary: Close a fiscal year (carry-forward, result to retained earnings, year becomes immutable) (global views only)
+      operationId: closeAccountingFiscalYear
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloseAccountingFiscalYearDto'
+      responses:
+        '201':
+          description: Closed fiscal year
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingFiscalYear'
+        '400':
+          description: Fiscal year already closed, previous year still open, or unmapped accounts for the next chart
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or fiscal year not found
+  /admin/billing/accounting/periods/{id}/lock:
+    post:
+      tags: [Accounting]
+      summary: Lock a posting period (GoBD Festschreibung; entity-wide; global views only)
+      operationId: lockAccountingPeriod
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      responses:
+        '201':
+          description: Locked period
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingPeriod'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or period not found
+  /admin/billing/accounting/fx-rates:
+    get:
+      tags: [Accounting]
+      summary: List exchange rates (ECB and manual) (admin only)
+      operationId: listAccountingFxRates
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - name: currency
+          in: query
+          schema: { type: string, minLength: 3, maxLength: 3 }
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+        - name: offset
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAccountingFxRates'
+        '404':
+          description: Accounting disabled
+    post:
+      tags: [Accounting]
+      summary: Set a manual exchange rate (overrides the ECB rate of that date; global views only)
+      operationId: setAccountingFxRate
+      security:
+        - bearerAuth: [accounting:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountingFxRateInput'
+      responses:
+        '201':
+          description: Stored rate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingFxRate'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/fx-rates/fetch:
+    post:
+      tags: [Accounting]
+      summary: Fetch ECB reference rates now (global views only)
+      operationId: fetchAccountingFxRates
+      security:
+        - bearerAuth: [accounting:admin]
+      responses:
+        '201':
+          description: Number of rates stored
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [stored]
+                properties:
+                  stored: { type: integer }
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/posting-issues:
+    get:
+      tags: [Accounting]
+      summary: List failed automatic postings (global views only)
+      operationId: listAccountingPostingIssues
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - name: includeResolved
+          in: query
+          schema: { type: string, enum: ['true', 'false'], default: 'false' }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: offset
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAccountingPostingIssues'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/catch-up:
+    post:
+      tags: [Accounting]
+      summary: Run the posting catch-up now (backfill and retry of failed postings; global views only)
+      operationId: runAccountingCatchUp
+      security:
+        - bearerAuth: [accounting:admin]
+      responses:
+        '201':
+          description: Catch-up counts, or skipped=true when another run holds the lock
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AccountingCatchUpResult'
+                  - type: object
+                    required: [skipped]
+                    properties:
+                      skipped: { type: boolean, const: true }
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/journal:
+    get:
+      tags: [Accounting]
+      summary: List journal entries with lines (admin only)
+      operationId: listAccountingJournal
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+        - $ref: '#/components/parameters/AccountingLimit'
+        - $ref: '#/components/parameters/AccountingOffset'
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+        - name: accountId
+          in: query
+          schema: { type: string, format: uuid }
+          description: Entries with at least one line on this account
+        - name: sourceType
+          in: query
+          schema: { $ref: '#/components/schemas/AccountingJournalSourceType' }
+        - name: kind
+          in: query
+          schema: { $ref: '#/components/schemas/AccountingJournalEntryKind' }
+        - name: search
+          in: query
+          schema: { type: string, maxLength: 100 }
+          description: Description, document number or exact entry number
+      responses:
+        '200':
+          description: OK (default page size 50)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAccountingJournalEntries'
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+    post:
+      tags: [Accounting]
+      summary: Create a manual journal entry (admin only)
+      description: |
+        Accounts by number of the fiscal year's chart. Lines with a tax code are entered gross; the VAT line is split
+        off to the tax code's account. Bookings for other tenants (`tenantId`, or `none` for entity-wide) need global
+        views.
+      operationId: createAccountingJournalEntry
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountingManualEntryDto'
+      responses:
+        '201':
+          description: Posted entry with links
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingJournalEntryDetail'
+        '400':
+          description: Unbalanced entry, unknown account / tax code or period locked
+        '403':
+          description: Booking for another tenant without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/journal/statistics:
+    get:
+      tags: [Accounting]
+      summary: Journal KPIs and monthly series (admin only)
+      operationId: getAccountingJournalStatistics
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingFrom'
+        - $ref: '#/components/parameters/AccountingTo'
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingJournalStatistics'
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/journal/reference-label:
+    get:
+      tags: [Accounting]
+      summary: Display label (document number) of a link target (admin only)
+      operationId: getAccountingReferenceLabel
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - name: linkType
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/AccountingJournalLinkType' }
+        - name: targetId
+          in: query
+          required: true
+          schema: { type: string, maxLength: 64 }
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      responses:
+        '200':
+          description: The label, or null when the target is unknown or outside the view tenant
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  label: { type: string, nullable: true }
+        '400':
+          description: linkType and targetId are required
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/journal/by-link:
+    get:
+      tags: [Accounting]
+      summary: Journal entries linked to a document or transaction (reverse lookup) (admin only)
+      operationId: listAccountingJournalByLink
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - name: linkType
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/AccountingJournalLinkType' }
+        - name: targetId
+          in: query
+          required: true
+          schema: { type: string, maxLength: 64 }
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      responses:
+        '200':
+          description: Linked entries (filtered to the view tenant)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingJournalEntry'
+        '400':
+          description: linkType and targetId are required
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/journal/{entryId}:
+    get:
+      tags: [Accounting]
+      summary: Get a journal entry with lines and links (admin only)
+      operationId: getAccountingJournalEntry
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingEntryId'
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingJournalEntryDetail'
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or entry not found / outside the view tenant
+  /admin/billing/accounting/journal/{entryId}/reverse:
+    post:
+      tags: [Accounting]
+      summary: Reverse a journal entry (Storno) (admin only)
+      operationId: reverseAccountingJournalEntry
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingEntryId'
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountingReverseEntryDto'
+      responses:
+        '201':
+          description: The reversal entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingJournalEntryDetail'
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or entry not found
+        '400':
+          description: Entry already reversed or is itself a reversal
+  /admin/billing/accounting/journal/{entryId}/links:
+    post:
+      tags: [Accounting]
+      summary: Link a document or transaction to a journal entry (admin only)
+      operationId: addAccountingJournalLink
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingEntryId'
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountingJournalLinkDto'
+      responses:
+        '201':
+          description: Created link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingEntryLink'
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or entry not found
+  /admin/billing/accounting/journal/{entryId}/links/{linkId}:
+    delete:
+      tags: [Accounting]
+      summary: Remove a link (not possible for entries in locked periods) (admin only)
+      operationId: removeAccountingJournalLink
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingEntryId'
+        - name: linkId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      responses:
+        '200':
+          description: Removed
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [removed]
+                properties:
+                  removed: { type: boolean }
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS, or entry in a locked period
+        '404':
+          description: Accounting disabled, entry or link not found
+        '400':
+          description: The source link of an automatic booking cannot be removed
+  /admin/billing/accounting/journal/{entryId}/receipts:
+    post:
+      tags: [Accounting]
+      summary: Upload a receipt (Beleg) and link it to the entry (admin only)
+      description: PDF, PNG, JPEG, WebP or XML; at most 20 MB.
+      operationId: attachAccountingJournalReceipt
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingEntryId'
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '201':
+          description: Created receipt link (`linkType` stored_file, `role` receipt; `targetId` is the stored file id)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingEntryLink'
+        '400':
+          description: File missing, empty, too large or unsupported type
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or entry not found
+  /admin/billing/accounting/receipts/{storedFileId}:
+    get:
+      tags: [Accounting]
+      summary: Download a receipt (admin only)
+      operationId: downloadAccountingReceipt
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - name: storedFileId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      responses:
+        '200':
+          description: Receipt file (attachment)
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or receipt not found / outside the view tenant
+  /admin/billing/accounting/trial-balance:
+    get:
+      tags: [Accounting]
+      summary: Trial balance (Summen- und Saldenliste) (admin only)
+      operationId: getAccountingTrialBalance
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingFrom'
+        - $ref: '#/components/parameters/AccountingTo'
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingTrialBalanceRow'
+        '400':
+          description: Invalid date range
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/open-items:
+    get:
+      tags: [Accounting]
+      summary: Open items (OP-Liste) of customers or suppliers with aging (admin only)
+      operationId: getAccountingOpenItems
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema: { type: string, enum: [customer, supplier] }
+        - name: asOf
+          in: query
+          schema: { type: string, format: date }
+          description: Defaults to today
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingOpenItemsReport'
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/statements:
+    get:
+      tags: [Accounting]
+      summary: Balance sheet, profit and loss or cash-basis statement (admin only)
+      description: |
+        Tenant-filtered views are management reports; `viewTenantId=all` (global views) is the statutory statement.
+        The balance sheet is as of `to`.
+      operationId: getAccountingStatement
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - name: kind
+          in: query
+          required: true
+          schema:
+            { type: string, enum: [balance_sheet, profit_and_loss, cash_basis] }
+        - $ref: '#/components/parameters/AccountingFrom'
+        - $ref: '#/components/parameters/AccountingTo'
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingStatementReport'
+        '400':
+          description: Invalid range or statement not available for the country profile
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/exports:
+    get:
+      tags: [Accounting]
+      summary: Download a ledger export (journal / trial balance CSV, GDPdU, FEC, SAF-T) (admin only)
+      description: |
+        Statutory exports (`gdpdu`, `fec`, `saft`) always cover the whole entity and need `viewTenantId=all`
+        (global views). Content type by kind - `journal_csv` / `trial_balance_csv` text/csv, `gdpdu` application/zip,
+        `fec` text/plain (ISO-8859-15), `saft` application/xml.
+      operationId: downloadAccountingExport
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - name: kind
+          in: query
+          required: true
+          schema:
+            {
+              type: string,
+              enum: [journal_csv, trial_balance_csv, gdpdu, fec, saft, xaf],
+            }
+        - $ref: '#/components/parameters/AccountingFrom'
+        - $ref: '#/components/parameters/AccountingTo'
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      responses:
+        '200':
+          description: Export file (attachment)
+          content:
+            text/csv:
+              schema: { type: string, format: binary }
+            application/zip:
+              schema: { type: string, format: binary }
+            text/plain:
+              schema: { type: string, format: binary }
+            application/xml:
+              schema: { type: string, format: binary }
+        '400':
+          description: Statutory export without viewTenantId=all, export not available or missing prerequisites
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/vat-returns/definitions:
+    get:
+      tags: [Accounting]
+      summary: VAT return definitions of the active country profile (global views only)
+      operationId: listAccountingVatReturnDefinitions
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingVatReturnDefinition'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/vat-returns:
+    get:
+      tags: [Accounting]
+      summary: List computed VAT returns (global views only)
+      operationId: listAccountingVatReturns
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - name: definitionKey
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: offset
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAccountingVatReturns'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/vat-returns/statistics:
+    get:
+      tags: [Accounting]
+      summary: VAT return KPIs and result series (global views only)
+      operationId: getAccountingVatReturnStatistics
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingVatReturnStatistics'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/vat-returns/compute:
+    post:
+      tags: [Accounting]
+      summary: Compute (or recompute a draft) VAT return for a period (global views only)
+      operationId: computeAccountingVatReturn
+      security:
+        - bearerAuth: [accounting:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComputeAccountingVatReturnDto'
+      responses:
+        '201':
+          description: Computed return
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingVatReturn'
+        '400':
+          description: Invalid period for the definition
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or definition not available for this country
+        '409':
+          description: Return for this period already submitted
+  /admin/billing/accounting/vat-returns/{id}:
+    get:
+      tags: [Accounting]
+      summary: Get a VAT return (global views only)
+      operationId: getAccountingVatReturn
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingVatReturn'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or VAT return not found
+  /admin/billing/accounting/vat-returns/{id}/csv:
+    get:
+      tags: [Accounting]
+      summary: Download a VAT return as CSV (boxes and detail rows) (global views only)
+      operationId: downloadAccountingVatReturnCsv
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      responses:
+        '200':
+          description: CSV (`box;label;amount`, semicolon-separated, UTF-8 with BOM)
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or VAT return not found
+  /admin/billing/accounting/vat-returns/{id}/submit:
+    post:
+      tags: [Accounting]
+      summary: Mark a VAT return as filed (freezes figures, locks periods up to the period end) (global views only)
+      operationId: submitAccountingVatReturn
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitAccountingVatReturnDto'
+      responses:
+        '201':
+          description: Submitted return
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingVatReturn'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or VAT return not found
+        '409':
+          description: Return already submitted
+  /admin/billing/accounting/vat-returns/{id}/payment:
+    post:
+      tags: [Accounting]
+      summary: Book the VAT payment / refund of a submitted return (global views only)
+      operationId: payAccountingVatReturn
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayAccountingVatReturnDto'
+      responses:
+        '201':
+          description: Paid return
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingVatReturn'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or VAT return not found
+        '400':
+          description: Only submitted returns can be paid, or nothing to pay
+  /admin/billing/accounting/banking/accounts:
+    get:
+      tags: [Accounting]
+      summary: List financial accounts (bank, cash, processor) (admin only)
+      description: Tenant-owned accounts are visible to their tenant; shared accounts (`tenantId` null) only in global views.
+      operationId: listAccountingFinancialAccounts
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingFinancialAccount'
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+    post:
+      tags: [Accounting]
+      summary: Create a financial account (admin only; shared or foreign-tenant accounts need global views)
+      operationId: createAccountingFinancialAccount
+      security:
+        - bearerAuth: [accounting:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountingFinancialAccountInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingFinancialAccount'
+        '400':
+          description: Validation failed or ledger account unknown
+        '403':
+          description: Shared / other-tenant account without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/banking/accounts/{id}:
+    patch:
+      tags: [Accounting]
+      summary: Update a financial account (admin only)
+      operationId: updateAccountingFinancialAccount
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountingFinancialAccountInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingFinancialAccount'
+        '403':
+          description: Shared / other-tenant account without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or account not found
+  /admin/billing/accounting/banking/csv-presets:
+    get:
+      tags: [Accounting]
+      summary: Built-in CSV statement presets (admin only)
+      operationId: listAccountingCsvPresets
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingCsvPreset'
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/banking/csv-mappings:
+    get:
+      tags: [Accounting]
+      summary: List saved CSV column mappings (admin only)
+      operationId: listAccountingCsvMappings
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingCsvMapping'
+        '404':
+          description: Accounting disabled
+    post:
+      tags: [Accounting]
+      summary: Save a CSV column mapping (admin only)
+      operationId: createAccountingCsvMapping
+      security:
+        - bearerAuth: [accounting:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountingCsvMappingInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingCsvMapping'
+        '400':
+          description: Invalid mapping
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/banking/csv-mappings/{id}:
+    patch:
+      tags: [Accounting]
+      summary: Update a saved CSV column mapping (admin only)
+      operationId: updateAccountingCsvMapping
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountingCsvMappingInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingCsvMapping'
+        '404':
+          description: Accounting disabled or mapping not found / owned by another tenant
+    delete:
+      tags: [Accounting]
+      summary: Delete a saved CSV column mapping (admin only)
+      operationId: deleteAccountingCsvMapping
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingDeletedResponse'
+        '404':
+          description: Accounting disabled or mapping not found / owned by another tenant
+  /admin/billing/accounting/banking/imports:
+    get:
+      tags: [Accounting]
+      summary: List statement imports (admin only)
+      operationId: listAccountingBankImports
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+        - $ref: '#/components/parameters/AccountingLimit'
+        - $ref: '#/components/parameters/AccountingOffset'
+      responses:
+        '200':
+          description: OK (default page size 20)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAccountingBankImports'
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+    post:
+      tags: [Accounting]
+      summary: Upload a bank / processor statement file (admin only)
+      description: |
+        Formats camt.052/053/054, MT940/942, CODA, Norma 43, CFONB 120, CBI RH, BAI2, OFX, QIF and CSV (presets or saved
+        mappings); detected automatically unless `format` is given. Duplicate transactions are skipped; new ones are
+        auto-matched where possible. Size limit `BILLING_ACCOUNTING_BANK_IMPORT_MAX_BYTES` (at most 200 MB).
+      operationId: uploadAccountingBankImport
+      security:
+        - bearerAuth: [accounting:admin]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AccountingBankImportUpload'
+      responses:
+        '201':
+          description: Import record (status `completed` or `failed` with `errorMessage`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingBankImport'
+        '400':
+          description: File missing, too large or options invalid
+        '403':
+          description: Target account belongs to another tenant or is shared without global views
+        '404':
+          description: Accounting disabled or financial account / mapping not found
+        '409':
+          description: Same file already imported
+  /admin/billing/accounting/banking/imports/{id}:
+    get:
+      tags: [Accounting]
+      summary: Get a statement import (admin only)
+      operationId: getAccountingBankImport
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingBankImport'
+        '404':
+          description: Accounting disabled or import not found / not visible to the tenant
+  /admin/billing/accounting/banking/imports/{id}/file:
+    get:
+      tags: [Accounting]
+      summary: Download the original statement file (admin only)
+      operationId: downloadAccountingBankImportFile
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      responses:
+        '200':
+          description: Original file (attachment)
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Accounting disabled or import / file not found
+  /admin/billing/accounting/banking/imports/{id}/rollback:
+    post:
+      tags: [Accounting]
+      summary: Roll back a statement import (removes its unreconciled transactions) (admin only)
+      operationId: rollbackAccountingBankImport
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      responses:
+        '201':
+          description: Import with status `rolled_back`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingBankImport'
+        '404':
+          description: Accounting disabled or import not found
+        '400':
+          description: Transactions of this import are reconciled; undo them first
+  /admin/billing/accounting/banking/transactions:
+    get:
+      tags: [Accounting]
+      summary: List bank transactions (admin only)
+      operationId: listAccountingBankTransactions
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+        - $ref: '#/components/parameters/AccountingLimit'
+        - $ref: '#/components/parameters/AccountingOffset'
+        - name: financialAccountId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: matchStatus
+          in: query
+          schema:
+            {
+              $ref: '#/components/schemas/AccountingBankTransactionMatchStatus',
+            }
+        - name: importId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: search
+          in: query
+          schema: { type: string, maxLength: 100 }
+          description: Remittance, counterparty name / IBAN or end-to-end id
+      responses:
+        '200':
+          description: OK (default page size 50; `raw` omitted)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAccountingBankTransactions'
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/banking/statistics:
+    get:
+      tags: [Accounting]
+      summary: Banking KPIs, monthly flows, reconciliation status and balances (admin only)
+      operationId: getAccountingBankStatistics
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingFrom'
+        - $ref: '#/components/parameters/AccountingTo'
+        - $ref: '#/components/parameters/AccountingViewTenantId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingBankStatistics'
+        '403':
+          description: Cross-tenant view without TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/banking/transactions/{id}/suggestions:
+    get:
+      tags: [Accounting]
+      summary: Reconciliation suggestions for a transaction (admin only)
+      operationId: listAccountingBankTransactionSuggestions
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      responses:
+        '200':
+          description: Suggestions ordered by score
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingMatchSuggestion'
+        '404':
+          description: Accounting disabled or transaction not found / not visible to the tenant
+  /admin/billing/accounting/banking/transactions/{id}/match:
+    post:
+      tags: [Accounting]
+      summary: Reconcile a transaction against documents and / or accounts (admin only)
+      description: |
+        Document targets (`invoice`, `supplier_invoice`) record settlements; `account` targets book the amount directly
+        and need global views. `learn` stores a match rule for the counterparty.
+      operationId: matchAccountingBankTransaction
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchAccountingBankTransactionDto'
+      responses:
+        '201':
+          description: Reconciled transaction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingBankTransaction'
+        '400':
+          description: Targets do not add up, missing id / account number, transaction already reconciled or pending, or account booking without global access
+        '404':
+          description: Accounting disabled, transaction or document not found
+  /admin/billing/accounting/banking/transactions/{id}/unmatch:
+    post:
+      tags: [Accounting]
+      summary: Undo the reconciliation of a transaction (admin only)
+      operationId: unmatchAccountingBankTransaction
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      responses:
+        '201':
+          description: Transaction back to `unmatched`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingBankTransaction'
+        '404':
+          description: Accounting disabled or transaction not found
+  /admin/billing/accounting/banking/transactions/{id}/ignore:
+    post:
+      tags: [Accounting]
+      summary: Ignore a transaction for reconciliation (admin only)
+      operationId: ignoreAccountingBankTransaction
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      responses:
+        '201':
+          description: Ignored
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ignored]
+                properties:
+                  ignored: { type: boolean }
+        '400':
+          description: Reconciled transactions must be unmatched first
+        '404':
+          description: Accounting disabled or transaction not found
+  /admin/billing/accounting/banking/rules:
+    get:
+      tags: [Accounting]
+      summary: List reconciliation match rules (global views only)
+      operationId: listAccountingMatchRules
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingMatchRule'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+    post:
+      tags: [Accounting]
+      summary: Create a reconciliation match rule (global views only)
+      operationId: createAccountingMatchRule
+      security:
+        - bearerAuth: [accounting:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountingMatchRuleInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingMatchRule'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/banking/rules/{id}:
+    delete:
+      tags: [Accounting]
+      summary: Delete a reconciliation match rule (global views only)
+      operationId: deleteAccountingMatchRule
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingDeletedResponse'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or rule not found
+  /admin/billing/accounting/banking/processor-sync:
+    post:
+      tags: [Accounting]
+      summary: Sync processor balance transactions (fees, payouts) now; also runs on a schedule (global views only)
+      operationId: runAccountingProcessorSync
+      security:
+        - bearerAuth: [accounting:admin]
+      responses:
+        '201':
+          description: Per-account sync result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingProcessorSyncResult'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/assets:
+    get:
+      tags: [Accounting]
+      summary: List fixed assets (Anlagenverzeichnis) (global views only)
+      operationId: listAccountingFixedAssets
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/AccountingFixedAssetStatus' }
+        - name: search
+          in: query
+          description: Asset number or name contains (case-insensitive)
+          schema: { type: string, maxLength: 100 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: offset
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAccountingFixedAssets'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+    post:
+      tags: [Accounting]
+      summary: Register a fixed asset and book its acquisition (global views only)
+      operationId: createAccountingFixedAsset
+      security:
+        - bearerAuth: [accounting:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountingAssetDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingFixedAsset'
+        '400':
+          description: Validation failed or asset account unknown
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/assets/schedule:
+    get:
+      tags: [Accounting]
+      summary: Asset schedule (Anlagenspiegel) for a date range (global views only)
+      operationId: getAccountingAssetSchedule
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingFrom'
+        - $ref: '#/components/parameters/AccountingTo'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingAssetScheduleRow'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/assets/depreciation-run:
+    post:
+      tags: [Accounting]
+      summary: Book depreciation of all active assets through a month (global views only)
+      operationId: runAccountingDepreciation
+      security:
+        - bearerAuth: [accounting:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountingDepreciationRunDto'
+      responses:
+        '201':
+          description: Number of assets depreciated and total amount
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingDepreciationRunResult'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled
+  /admin/billing/accounting/assets/{id}:
+    get:
+      tags: [Accounting]
+      summary: Get a fixed asset with its planned depreciation (global views only)
+      operationId: getAccountingFixedAsset
+      security:
+        - bearerAuth: [accounting_audit:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingFixedAssetDetail'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or asset not found
+  /admin/billing/accounting/assets/{id}/dispose:
+    post:
+      tags: [Accounting]
+      summary: Dispose of a fixed asset (books the remaining book value) (global views only)
+      operationId: disposeAccountingFixedAsset
+      security:
+        - bearerAuth: [accounting:admin]
+      parameters:
+        - $ref: '#/components/parameters/AccountingResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisposeAccountingAssetDto'
+      responses:
+        '201':
+          description: Disposed asset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountingFixedAsset'
+        '403':
+          description: Request tenant not on TENANTS_ALLOW_GLOBAL_VIEWS
+        '404':
+          description: Accounting disabled or asset not found
+        '400':
+          description: Asset already disposed or disposal date before acquisition
 components:
   securitySchemes:
     bearerAuth:
@@ -9396,6 +11450,80 @@ components:
         Tenant id for request scoping. Defaults to `default` when omitted (unless `TENANTS_ALLOW_DEFAULT=false`).
         When default is disabled, missing, blank, or `default` values are rejected. Must be listed in the server
         `TENANTS` allowlist. Invalid values return 400.
+    AccountingViewTenantId:
+      in: query
+      name: viewTenantId
+      required: false
+      schema:
+        type: string
+        maxLength: 64
+      description: |
+        Accounting view scope. Defaults to the request tenant. Another tenant id or `all` (entity-wide, no tenant
+        filter) requires the request tenant on `TENANTS_ALLOW_GLOBAL_VIEWS`; otherwise 403.
+    AccountingFrom:
+      in: query
+      name: from
+      required: true
+      schema:
+        type: string
+        format: date
+      description: Range start (YYYY-MM-DD)
+    AccountingTo:
+      in: query
+      name: to
+      required: true
+      schema:
+        type: string
+        format: date
+      description: Range end (YYYY-MM-DD, inclusive)
+    AccountingLimit:
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+      description: Page size (route-specific default)
+    AccountingOffset:
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      description: Number of results to skip
+    AccountingChartId:
+      in: path
+      name: chartId
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Chart of accounts ID
+    AccountingAccountId:
+      in: path
+      name: accountId
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: General-ledger account ID
+    AccountingEntryId:
+      in: path
+      name: entryId
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Journal entry ID
+    AccountingResourceId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Accounting resource ID
   schemas:
     AppTokenRequestDto:
       type: object
@@ -11742,6 +13870,24 @@ components:
         phone: { type: string }
         customerType: { type: string, enum: [business, consumer] }
         vatId: { type: string, nullable: true, maxLength: 32 }
+        einvoiceFormat:
+          description: E-invoice format override (e.g. XRechnung for public buyers, Peppol); null or empty = issuer default
+          oneOf:
+            - $ref: '#/components/schemas/EInvoiceFormat'
+            - { type: string, enum: [''] }
+            - { type: 'null' }
+        buyerReference:
+          {
+            type: string,
+            nullable: true,
+            maxLength: 64,
+            description: BT-10 buyer reference (Leitweg-ID for German public buyers),
+          }
+        einvoiceEndpoint:
+          type: string
+          nullable: true
+          pattern: '^[0-9A-Z]{2,4}:[^\s]{1,128}$'
+          description: 'Electronic address `scheme:id` (Peppol EAS code), e.g. `0088:4012345000009`; null or empty clears it'
     CustomerProfileResponse:
       type: object
       properties:
@@ -11775,6 +13921,19 @@ components:
         country: { type: string, nullable: true }
         email: { type: string, format: email, nullable: true }
         phone: { type: string, nullable: true }
+        einvoiceFormat:
+          {
+            type: string,
+            nullable: true,
+            description: E-invoice format override (EInvoiceFormat); null = issuer default,
+          }
+        buyerReference: { type: string, nullable: true }
+        einvoiceEndpoint:
+          {
+            type: string,
+            nullable: true,
+            description: Electronic address as scheme and id separated by a colon (Peppol EAS code),
+          }
         stripeCustomerId: { type: string, nullable: true }
         autoBillingEnabled: { type: boolean }
         hasPaymentMethodOnFile: { type: boolean }
@@ -11796,8 +13955,39 @@ components:
         id: { type: string, format: uuid }
         subscriptionId: { type: string, format: uuid }
         invoiceNumber: { type: string, nullable: true }
-        status: { type: string, nullable: true }
-        balance: { type: number, nullable: true, description: Balance due }
+        status:
+          type: string
+          nullable: true
+          enum:
+            [
+              draft,
+              issued,
+              paid,
+              partially_paid,
+              overdue,
+              void,
+              credited,
+              written_off,
+            ]
+          description: '`credited` = settled by credit notes / customer credit without payment; `written_off` = remaining balance written off as uncollectible'
+        balance:
+          {
+            type: number,
+            nullable: true,
+            description: Balance due; negative when the invoice carries a customer credit (overpayment / credit notes),
+          }
+        paymentReference:
+          {
+            type: string,
+            nullable: true,
+            description: ISO 11649 structured creditor reference (RF…) printed on the invoice for bank matching,
+          }
+        einvoiceFormat:
+          {
+            type: string,
+            nullable: true,
+            description: E-invoice format snapshotted on the invoice (see EInvoiceFormat),
+          }
         totalGross:
           { type: number, nullable: true, description: Invoice total (gross) }
         subscriptionNumber: { type: string, nullable: true }
@@ -11838,12 +14028,40 @@ components:
         id: { type: string, format: uuid }
         subscriptionId: { type: string, format: uuid }
         invoiceNumber: { type: string, nullable: true }
-        status: { type: string }
+        status:
+          type: string
+          enum:
+            [
+              draft,
+              issued,
+              paid,
+              partially_paid,
+              overdue,
+              void,
+              credited,
+              written_off,
+            ]
         currency: { type: string }
         subtotalNet: { type: number }
         taxTotal: { type: number }
         totalGross: { type: number }
-        balanceDue: { type: number }
+        balanceDue:
+          {
+            type: number,
+            description: Balance due; negative when the invoice carries a customer credit (overpayment / credit notes),
+          }
+        paymentReference:
+          {
+            type: string,
+            nullable: true,
+            description: ISO 11649 structured creditor reference (RF…) printed on the invoice for bank matching,
+          }
+        einvoiceFormat:
+          {
+            type: string,
+            nullable: true,
+            description: E-invoice format snapshotted on the invoice (see EInvoiceFormat),
+          }
         lineItems:
           type: array
           items:
@@ -12294,6 +14512,12 @@ components:
           globalViewsAllowed,
           viewableTenants,
           fileSigningEnabled,
+          accountingEnabled,
+          accountingGlobalAccess,
+          accountingCountry,
+          accountingMissingPrerequisites,
+          einvoiceFormats,
+          einvoiceDefaultFormat,
         ]
       properties:
         datevExportEnabled:
@@ -12312,6 +14536,47 @@ components:
         fileSigningEnabled:
           type: boolean
           description: True when BILLING_FILE_SIGNING_SECRET is configured
+        accountingEnabled:
+          type: boolean
+          description: Accounting enabled with its prerequisites (BILLING_ACCOUNTING_ENABLED and a complete issuer)
+        accountingGlobalAccess:
+          type: boolean
+          description: Entity-wide accounting functions available (accounting enabled and request tenant in TENANTS_ALLOW_GLOBAL_VIEWS)
+        accountingCountry:
+          type: string
+          nullable: true
+          description: ISO country of the active accounting profile; null when accounting is disabled
+        accountingMissingPrerequisites:
+          type: array
+          items: { type: string }
+          description: Env prerequisites missing for accounting (empty when enabled or not requested)
+        einvoiceFormats:
+          type: array
+          description: Selectable e-invoice formats
+          items:
+            type: object
+            required: [format, label]
+            properties:
+              format: { $ref: '#/components/schemas/EInvoiceFormat' }
+              label: { type: string }
+        einvoiceDefaultFormat:
+          $ref: '#/components/schemas/EInvoiceFormat'
+    EInvoiceFormat:
+      type: string
+      enum:
+        [
+          factur-x-en16931,
+          factur-x-basic,
+          factur-x-extended,
+          xrechnung-cii,
+          xrechnung-ubl,
+          peppol-bis-3,
+          ubl-en16931,
+        ]
+      description: |
+        E-invoice format. Factur-X / ZUGFeRD profiles and XRechnung CII embed CII in the PDF; XRechnung UBL,
+        Peppol BIS Billing 3.0 and EN 16931 UBL are UBL 2.1. XRechnung needs a buyer reference (BT-10) and
+        electronic addresses; Peppol needs electronic addresses.
     AdminFileManagerEntry:
       type: object
       required: [name, path, type]
@@ -12535,6 +14800,67 @@ components:
             format: date-time,
             description: When payment was received; defaults to now when omitted,
           }
+        amount:
+          {
+            type: number,
+            exclusiveMinimum: 0,
+            description: Partial amount (gross; document currency; at most 2 decimals); defaults to the full balance due,
+          }
+    RecordInvoiceSettlementDto:
+      type: object
+      description: Admin write-off of an uncollectible balance or manual refund of a customer credit
+      properties:
+        amount:
+          {
+            type: number,
+            exclusiveMinimum: 0,
+            description: At most 2 decimals; defaults to the whole balance due (write-off) or customer credit (refund),
+          }
+        occurredAt:
+          { type: string, format: date-time, description: Defaults to now }
+        reason: { type: string, maxLength: 500 }
+    InvoiceSettlementResponse:
+      type: object
+      required: [id, type, amount, currency, occurredAt, source, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        type:
+          type: string
+          enum:
+            [
+              payment,
+              payment_reversal,
+              credit,
+              refund,
+              write_off,
+              discount,
+              credit_transfer_in,
+              credit_transfer_out,
+            ]
+          description: payment / credit / write_off / discount / credit_transfer_in reduce the balance due; payment_reversal / refund / credit_transfer_out raise it
+        amount: { type: number, description: Always positive }
+        currency: { type: string }
+        occurredAt: { type: string, format: date-time }
+        source:
+          type: string
+          enum:
+            [
+              processor_webhook,
+              auto_charge,
+              manual,
+              bank_match,
+              processor_sync,
+              credit_document,
+              customer_credit,
+              promotional,
+              migration,
+            ]
+        processor: { type: string, nullable: true }
+        externalId: { type: string, nullable: true }
+        creditDocumentId: { type: string, format: uuid, nullable: true }
+        relatedDocumentId: { type: string, format: uuid, nullable: true }
+        note: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
     BillingAuditLogResponse:
       type: object
       properties:
@@ -12778,6 +15104,11 @@ components:
         country: { type: string, minLength: 2, maxLength: 2 }
         email: { type: string, format: email }
         phone: { type: string }
+        defaultExpenseAccountNumber:
+          type: string
+          nullable: true
+          pattern: '^[0-9A-Za-z][0-9A-Za-z.-]{0,19}$'
+          description: Default expense account number (active chart) for this supplier's invoices (accounting); null or empty clears it
     CreateAdminSupplierProfileDto:
       allOf:
         - $ref: '#/components/schemas/SupplierProfileFieldsDto'
@@ -12875,6 +15206,32 @@ components:
             minimum: 0,
             description: Required when taxCategory is custom,
           }
+        ledgerAccountNumber:
+          {
+            type: string,
+            nullable: true,
+            maxLength: 20,
+            description: Account assignment (account number of the active chart); defaults to the supplier's expense account,
+          }
+        capitalizeAsAsset:
+          {
+            type: boolean,
+            description: Capitalize as fixed asset (register entry and depreciation) instead of expensing,
+          }
+        assetUsefulLifeMonths:
+          {
+            type: integer,
+            nullable: true,
+            minimum: 1,
+            description: Useful life of the capitalized asset,
+          }
+        inventoryArticleId:
+          {
+            type: string,
+            format: uuid,
+            nullable: true,
+            description: Stock article bought with this line (booked to inventory; valuation of the putaway),
+          }
     CreateSupplierInvoiceDto:
       type: object
       required: [supplierId, lineItems]
@@ -12935,6 +15292,12 @@ components:
             format: date-time,
             description: When payment was received; defaults to now when omitted,
           }
+        amount:
+          {
+            type: number,
+            exclusiveMinimum: 0,
+            description: Partial amount (gross; at most 2 decimals); defaults to the full balance due,
+          }
     SupplierInvoiceLineItemResponse:
       type: object
       properties:
@@ -12948,6 +15311,10 @@ components:
         lineNet: { type: number }
         lineTax: { type: number }
         lineGross: { type: number }
+        ledgerAccountNumber: { type: string, nullable: true }
+        capitalizeAsAsset: { type: boolean }
+        assetUsefulLifeMonths: { type: integer, nullable: true }
+        inventoryArticleId: { type: string, format: uuid, nullable: true }
     SupplierInvoiceDetailResponse:
       type: object
       properties:
@@ -14379,6 +16746,12 @@ components:
                 example: ART-000001,
                 description: Internal identifier (Code 128 barcode),
               }
+            averageCost:
+              {
+                type: number,
+                nullable: true,
+                description: Moving weighted average unit cost of the stock on hand (accounting valuation); omitted when unset,
+              }
             totalQuantity: { type: number }
             lentQuantity:
               {
@@ -14425,6 +16798,20 @@ components:
           items: { type: string, maxLength: 300 }
         reference: { type: string, nullable: true }
         note: { type: string, nullable: true }
+        supplierInvoiceId:
+          {
+            type: string,
+            format: uuid,
+            nullable: true,
+            description: Supplier invoice the stock was bought with (valuation at its line price),
+          }
+        unitCost:
+          {
+            type: number,
+            minimum: 0,
+            nullable: true,
+            description: Unit cost override for valuation (net; functional currency; at most 4 decimals); defaults to invoice line / article price,
+          }
     InventoryTransferInput:
       type: object
       required: [articleId, sourceCompartmentId, targetCompartmentId, quantity]
@@ -14658,3 +17045,1519 @@ components:
           { type: array, maxItems: 500, items: { type: string, format: uuid } }
         copies: { type: integer, minimum: 1, maximum: 20 }
         layout: { type: string, enum: [sheet, single] }
+    AccountingDecimal:
+      type: [string, number]
+      description: Decimal amount; database decimals are serialized as strings (e.g. `"119.00"`)
+    AccountingDeletedResponse:
+      type: object
+      required: [deleted]
+      properties:
+        deleted: { type: boolean }
+    AccountingAccountType:
+      type: string
+      enum: [asset, liability, equity, revenue, expense, statistical]
+      description: Account class (statement placement, normal balance, year-end closing); statistical accounts are excluded from statements
+    AccountingAccountRole:
+      type: string
+      description: System role used by posting rules (unique per chart)
+      enum:
+        [
+          receivables,
+          payables,
+          bank,
+          cash,
+          cash_in_transit,
+          processor_clearing,
+          customer_prepayments,
+          revenue_standard,
+          revenue_reduced,
+          revenue_tax_free,
+          revenue_eu_reverse_charge,
+          revenue_oss,
+          revenue_third_country,
+          revenue_reductions,
+          cash_discounts_granted,
+          cash_discounts_received,
+          vat_output_standard,
+          vat_output_reduced,
+          vat_output_oss,
+          vat_output_reverse_charge,
+          vat_input_standard,
+          vat_input_reduced,
+          vat_input_reverse_charge,
+          vat_prepayments,
+          vat_settlement,
+          expense_default,
+          expense_reverse_charge_eu,
+          expense_reverse_charge_third_country,
+          payment_fees,
+          bad_debt,
+          inventory,
+          cost_of_goods_sold,
+          fixed_assets,
+          low_value_assets,
+          asset_pool,
+          depreciation,
+          asset_disposal_gain,
+          asset_disposal_loss,
+          fx_gain,
+          fx_loss,
+          rounding,
+          suspense,
+          owner_drawings,
+          owner_contributions,
+          retained_earnings,
+          annual_result,
+          opening_balance,
+          opening_balance_receivables,
+          opening_balance_payables,
+        ]
+    AccountingTaxCodeKind:
+      type: string
+      enum: [output, input, reverse_charge, exempt]
+    AccountingJournalEntryKind:
+      type: string
+      enum:
+        [
+          automatic,
+          manual,
+          opening,
+          closing,
+          reversal,
+          depreciation,
+          vat_settlement,
+        ]
+    AccountingJournalSourceType:
+      type: string
+      enum:
+        [
+          invoice,
+          credit_document,
+          void_document,
+          settlement,
+          supplier_invoice,
+          bank_transaction,
+          processor_transaction,
+          inventory_movement,
+          fixed_asset,
+          vat_return,
+          fiscal_year,
+          manual,
+          opening_balance,
+        ]
+    AccountingJournalLinkType:
+      type: string
+      enum:
+        [
+          invoice,
+          credit_document,
+          void_document,
+          supplier_invoice,
+          settlement,
+          payment_attempt,
+          payment_refund,
+          bank_transaction,
+          processor_transaction,
+          inventory_movement,
+          fixed_asset,
+          offer,
+          project,
+          subscription,
+          stored_file,
+          vat_return,
+          journal_entry,
+        ]
+    AccountingJournalLinkRole:
+      type: string
+      enum: [source, receipt, settles, related]
+    AccountingFeatureAvailability:
+      type: object
+      required: [key, available, missing]
+      properties:
+        key:
+          {
+            type: string,
+            description: VAT return definition key or export kind,
+          }
+        available: { type: boolean }
+        missing:
+          type: array
+          items: { type: string }
+          description: Env vars still missing for this feature
+    AccountingOverview:
+      type: object
+      properties:
+        enabled: { type: boolean }
+        country:
+          { type: string, description: ISO country of the active profile }
+        profile:
+          type: object
+          properties:
+            country: { type: string }
+            name: { type: string }
+            templates: { type: array, items: { type: string } }
+            defaultTemplate: { type: string }
+            vatReturns:
+              type: array
+              items:
+                type: object
+                properties:
+                  key: { type: string }
+                  name: { type: string }
+                  kind:
+                    {
+                      type: string,
+                      enum: [periodic, annual, ec_sales_list, oss],
+                    }
+                  periods:
+                    type: array
+                    items: { type: string, enum: [month, quarter, year] }
+                  filingChannel: { type: string }
+                  filingUrl: { type: string, nullable: true }
+                  dueRule: { type: string }
+            exports:
+              type: array
+              description: Export kinds implemented for this profile
+              items:
+                {
+                  type: string,
+                  enum:
+                    [datev, gdpdu, fec, saft, journal_csv, trial_balance_csv],
+                }
+            hasCashBasis: { type: boolean }
+            retention:
+              type: object
+              properties:
+                booksYears: { type: integer }
+                vouchersYears: { type: integer }
+            complianceNotice: { type: string, nullable: true }
+            mandatoryChart: { type: boolean }
+        method:
+          {
+            type: string,
+            enum: [accrual, cash],
+            description: Accrual (balance sheet and P&L) or cash-basis profit,
+          }
+        vatBasis:
+          {
+            type: string,
+            enum: [invoice, payment],
+            description: VAT due when invoiced (Soll) or when paid (Ist),
+          }
+        startDate:
+          { type: string, format: date, description: Bookkeeping start }
+        fiscalYearStartMonth: { type: integer, minimum: 1, maximum: 12 }
+        functionalCurrency: { type: string }
+        vatReturnPeriod: { type: string, enum: [month, quarter, year] }
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingFeatureAvailability'
+        fiscalYears:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingFiscalYear'
+        openPostingIssues: { type: integer }
+        globalAccess:
+          {
+            type: boolean,
+            description: Request tenant is on TENANTS_ALLOW_GLOBAL_VIEWS,
+          }
+        tenantFilter:
+          {
+            type: string,
+            nullable: true,
+            description: Tenant filter of this view; null = all tenants,
+          }
+    AccountingChartTemplate:
+      type: object
+      properties:
+        key: { type: string, example: DE-SKR03 }
+        country: { type: string, nullable: true }
+        name: { type: string }
+        description: { type: string }
+        source: { type: string, description: Licence / source note }
+        accountCount: { type: integer }
+        taxCodeCount: { type: integer }
+    AccountingChart:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string, example: DE-SKR03 }
+        name: { type: string }
+        country: { type: string, nullable: true }
+        templateKey: { type: string, nullable: true }
+        accountLength:
+          {
+            type: integer,
+            description: Digits of general-ledger account numbers (DATEV Sachkontenlänge),
+          }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateAccountingChartDto:
+      type: object
+      description: With `templateKey` the chart is created from the template (code / name optional); without it an empty chart needs `code`.
+      properties:
+        templateKey: { type: string, maxLength: 32, example: DE-SKR03 }
+        code: { type: string, pattern: '^[A-Za-z0-9-]{2,32}$' }
+        name: { type: string, minLength: 1, maxLength: 255 }
+        country: { type: string, pattern: '^[A-Z]{2}$' }
+        accountLength: { type: integer, minimum: 3, maximum: 8 }
+    AccountingAccount:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        chartId: { type: string, format: uuid }
+        number: { type: string }
+        name: { type: string }
+        type: { $ref: '#/components/schemas/AccountingAccountType' }
+        role:
+          oneOf:
+            - $ref: '#/components/schemas/AccountingAccountRole'
+            - { type: 'null' }
+        statementPosition:
+          {
+            type: string,
+            nullable: true,
+            description: Statement position code of the country profile (e.g. BS.A.B.IV / PL.1),
+          }
+        isAutomatic:
+          {
+            type: boolean,
+            description: Automatic account (DATEV Automatikkonto); VAT derived from defaultTaxCodeId,
+          }
+        defaultTaxCodeId: { type: string, format: uuid, nullable: true }
+        isActive: { type: boolean }
+        isTemplate: { type: boolean }
+        description: { type: string, nullable: true }
+        externalCodes:
+          type: object
+          nullable: true
+          additionalProperties: { type: string }
+          description: Export mapping codes (saftGroupingCategory, saftGroupingCode, xbrl, fecCompte)
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    UpdateAccountingAccountDto:
+      type: object
+      description: Number and type of accounts with bookings cannot be changed.
+      properties:
+        number: { type: string, pattern: '^[0-9A-Za-z][0-9A-Za-z.-]{0,19}$' }
+        name: { type: string, minLength: 1, maxLength: 255 }
+        type: { $ref: '#/components/schemas/AccountingAccountType' }
+        role:
+          oneOf:
+            - $ref: '#/components/schemas/AccountingAccountRole'
+            - { type: 'null' }
+        statementPosition: { type: string, nullable: true, maxLength: 64 }
+        isAutomatic: { type: boolean }
+        defaultTaxCodeId: { type: string, format: uuid, nullable: true }
+        isActive: { type: boolean }
+        description: { type: string, nullable: true, maxLength: 2000 }
+        externalCodes:
+          type: object
+          nullable: true
+          additionalProperties: { type: string }
+    AccountingAccountInput:
+      allOf:
+        - $ref: '#/components/schemas/UpdateAccountingAccountDto'
+        - type: object
+          required: [number, name, type]
+    AccountingAccountImportResult:
+      type: object
+      properties:
+        created: { type: integer }
+        updated: { type: integer }
+        skipped: { type: integer }
+    AccountingTaxCode:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        chartId: { type: string, format: uuid }
+        code: { type: string, example: OUT_STD }
+        name: { type: string }
+        kind: { $ref: '#/components/schemas/AccountingTaxCodeKind' }
+        rate:
+          type: [string, number, 'null']
+          description: Percent; null = rate taken from the document line (OSS destination rates)
+        accountId:
+          {
+            type: string,
+            format: uuid,
+            nullable: true,
+            description: VAT account (output VAT for output codes; input VAT for input and reverse-charge codes),
+          }
+        reverseAccountId:
+          {
+            type: string,
+            format: uuid,
+            nullable: true,
+            description: Output VAT account of a reverse-charge code,
+          }
+        baseBox:
+          {
+            type: string,
+            nullable: true,
+            description: VAT return box of the net base,
+          }
+        taxBox:
+          {
+            type: string,
+            nullable: true,
+            description: VAT return box of the tax,
+          }
+        reverseTaxBox:
+          {
+            type: string,
+            nullable: true,
+            description: Second tax box of a reverse-charge code (input VAT side),
+          }
+        ecSalesList: { type: boolean }
+        oss: { type: boolean }
+        datevBuKey: { type: string, nullable: true }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    UpdateAccountingTaxCodeDto:
+      type: object
+      properties:
+        name: { type: string, maxLength: 255 }
+        rate: { type: number, nullable: true, minimum: 0, maximum: 100 }
+        accountId: { type: string, format: uuid, nullable: true }
+        reverseAccountId: { type: string, format: uuid, nullable: true }
+        baseBox:
+          { type: string, nullable: true, pattern: '^[A-Za-z0-9._-]{1,16}$' }
+        taxBox:
+          { type: string, nullable: true, pattern: '^[A-Za-z0-9._-]{1,16}$' }
+        reverseTaxBox:
+          { type: string, nullable: true, pattern: '^[A-Za-z0-9._-]{1,16}$' }
+        ecSalesList: { type: boolean }
+        oss: { type: boolean }
+        datevBuKey: { type: string, nullable: true, pattern: '^\d{1,4}$' }
+        isActive: { type: boolean }
+    AccountingTaxCodeInput:
+      allOf:
+        - $ref: '#/components/schemas/UpdateAccountingTaxCodeDto'
+        - type: object
+          required: [code, name, kind]
+          properties:
+            code: { type: string, pattern: '^[A-Z0-9_]{2,32}$' }
+            kind: { $ref: '#/components/schemas/AccountingTaxCodeKind' }
+    AccountingFiscalYear:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        chartId: { type: string, format: uuid }
+        status: { type: string, enum: [open, closed] }
+        closedAt: { type: string, format: date-time, nullable: true }
+        closedByUserId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
+    AccountingPeriod:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        fiscalYearId: { type: string, format: uuid }
+        periodIndex: { type: integer, description: 1-based month index }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        status:
+          {
+            type: string,
+            enum: [open, locked],
+            description: locked = Festschreibung (no new postings),
+          }
+        lockedAt: { type: string, format: date-time, nullable: true }
+        lockedByUserId: { type: string, format: uuid, nullable: true }
+    AccountingFiscalYearWithPeriods:
+      allOf:
+        - $ref: '#/components/schemas/AccountingFiscalYear'
+        - type: object
+          properties:
+            periods:
+              type: array
+              items:
+                $ref: '#/components/schemas/AccountingPeriod'
+    OpenAccountingFiscalYearDto:
+      type: object
+      properties:
+        chartId:
+          {
+            type: string,
+            format: uuid,
+            description: Chart for the new year (defaults to the previous year's chart),
+          }
+        endDate:
+          {
+            type: string,
+            format: date,
+            description: Shortened year end (at most 12 months),
+          }
+    ChangeAccountingYearChartDto:
+      type: object
+      required: [chartId]
+      properties:
+        chartId: { type: string, format: uuid }
+    CloseAccountingFiscalYearDto:
+      type: object
+      properties:
+        nextChartId:
+          {
+            type: string,
+            format: uuid,
+            description: Chart of the next year (only when that year has no bookings yet),
+          }
+        accountMapping:
+          type: object
+          additionalProperties: { type: string }
+          description: Old account number to new account number (chart change at year rollover); default same number then same role
+    AccountingClosePreview:
+      type: object
+      properties:
+        fiscalYear: { $ref: '#/components/schemas/AccountingFiscalYear' }
+        targetChartId: { type: string, format: uuid }
+        chartChanges: { type: boolean }
+        result: { type: number, description: Annual result }
+        balances:
+          type: array
+          items:
+            type: object
+            properties:
+              number: { type: string }
+              name: { type: string }
+              balance: { type: number }
+              targetNumber: { type: string, nullable: true }
+        unmapped:
+          type: array
+          items: { type: string }
+          description: Account numbers without a target in the next chart
+    AccountingFxRate:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        currency: { type: string }
+        rateDate: { type: string, format: date }
+        rate:
+          $ref: '#/components/schemas/AccountingDecimal'
+        source: { type: string, enum: [ecb, manual] }
+        createdByUserId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
+    AccountingFxRateInput:
+      type: object
+      required: [currency, rateDate, rate]
+      properties:
+        currency: { type: string, pattern: '^[A-Z]{3}$' }
+        rateDate: { type: string, format: date }
+        rate:
+          {
+            type: number,
+            exclusiveMinimum: 0,
+            description: Units of currency per 1 EUR (ECB convention),
+          }
+    PaginatedAccountingFxRates:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingFxRate'
+        total: { type: integer }
+    AccountingPostingIssue:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        idempotencyKey: { type: string }
+        sourceType: { $ref: '#/components/schemas/AccountingJournalSourceType' }
+        sourceId: { type: string }
+        sourceLabel:
+          type: string
+          nullable: true
+          description: Document number of the source (e.g. the invoice number), when known
+        sourceEvent: { type: string }
+        tenantId: { type: string, nullable: true }
+        error: { type: string }
+        attempts: { type: integer }
+        resolvedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PaginatedAccountingPostingIssues:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingPostingIssue'
+        total: { type: integer }
+    AccountingCatchUpResult:
+      type: object
+      properties:
+        invoicesIssued: { type: integer }
+        invoicesVoided: { type: integer }
+        creditDocuments: { type: integer }
+        settlements: { type: integer }
+        supplierInvoicesIssued: { type: integer }
+        supplierInvoicesVoided: { type: integer }
+        openingItems: { type: integer }
+    AccountingJournalLine:
+      type: object
+      description: One debit or credit line (amounts in functional currency)
+      properties:
+        id: { type: string, format: uuid }
+        entryId: { type: string, format: uuid }
+        lineNo: { type: integer }
+        accountId: { type: string, format: uuid }
+        debit: { $ref: '#/components/schemas/AccountingDecimal' }
+        credit: { $ref: '#/components/schemas/AccountingDecimal' }
+        originalAmount:
+          type: [string, number, 'null']
+          description: Signed amount in document currency (debit +, credit -) when it differs from the functional currency
+        originalCurrency: { type: string, nullable: true }
+        taxCodeId: { type: string, format: uuid, nullable: true }
+        taxRate: { type: [string, number, 'null'] }
+        taxRole:
+          { type: string, enum: [base, tax, reverse_tax], nullable: true }
+        counterpartyType:
+          { type: string, enum: [customer, supplier], nullable: true }
+        counterpartyId:
+          {
+            type: string,
+            nullable: true,
+            description: Customer user id or supplier profile id,
+          }
+        counterpartyLabel:
+          type: string
+          nullable: true
+          description: Customer / supplier number and name (entry detail only)
+        openItemId:
+          {
+            type: string,
+            format: uuid,
+            nullable: true,
+            description: Invoice / supplier invoice whose open item this line opens or clears,
+          }
+        tenantId: { type: string, nullable: true }
+        costCenter: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        serviceDate: { type: string, format: date, nullable: true }
+        euCountry: { type: string, nullable: true }
+        euVatId: { type: string, nullable: true }
+    AccountingJournalEntry:
+      type: object
+      description: Journal entry (Buchungssatz); immutable, corrected by reversal entries. entryNumber is gap-free per fiscal year.
+      properties:
+        id: { type: string, format: uuid }
+        fiscalYearId: { type: string, format: uuid }
+        periodId: { type: string, format: uuid }
+        entryNumber: { type: integer }
+        postingDate: { type: string, format: date }
+        documentDate: { type: string, format: date }
+        documentNumber: { type: string, nullable: true }
+        description: { type: string }
+        kind: { $ref: '#/components/schemas/AccountingJournalEntryKind' }
+        sourceType: { $ref: '#/components/schemas/AccountingJournalSourceType' }
+        sourceId: { type: string, nullable: true }
+        sourceEvent:
+          {
+            type: string,
+            nullable: true,
+            description: Business event of the source (issued / voided / payment / fee …),
+          }
+        idempotencyKey: { type: string }
+        tenantId:
+          {
+            type: string,
+            nullable: true,
+            description: Tenant dimension; null for entity-wide entries,
+          }
+        currency: { type: string }
+        fxRate: { $ref: '#/components/schemas/AccountingDecimal' }
+        total:
+          $ref: '#/components/schemas/AccountingDecimal'
+        reversalOfEntryId: { type: string, format: uuid, nullable: true }
+        reversedByEntryId: { type: string, format: uuid, nullable: true }
+        createdByUserId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingJournalLine'
+    AccountingEntryLink:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        entryId: { type: string, format: uuid }
+        linkType: { $ref: '#/components/schemas/AccountingJournalLinkType' }
+        targetId: { type: string }
+        targetLabel:
+          type: string
+          nullable: true
+          description: Document number of the target (e.g. the invoice number), when known (entry detail only)
+        role: { $ref: '#/components/schemas/AccountingJournalLinkRole' }
+        label: { type: string, nullable: true }
+        createdByUserId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
+    AccountingJournalEntryDetail:
+      allOf:
+        - $ref: '#/components/schemas/AccountingJournalEntry'
+        - type: object
+          properties:
+            links:
+              type: array
+              items:
+                $ref: '#/components/schemas/AccountingEntryLink'
+    PaginatedAccountingJournalEntries:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingJournalEntry'
+        total: { type: integer }
+    AccountingJournalLinkDto:
+      type: object
+      required: [linkType, targetId]
+      properties:
+        linkType: { $ref: '#/components/schemas/AccountingJournalLinkType' }
+        targetId:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: >-
+            Document number (invoice, credit / void document, supplier invoice, offer, subscription, inventory
+            movement, asset or entry number; resolved within the entry's tenant, ambiguous numbers are rejected), the
+            target id, or the external id of a processor transaction
+        role:
+          { type: string, enum: [receipt, related, settles], default: related }
+        label: { type: string, maxLength: 255 }
+    AccountingManualEntryLineDto:
+      type: object
+      required: [accountNumber]
+      description: Either a positive debit or a positive credit
+      properties:
+        accountNumber:
+          { type: string, pattern: '^[0-9A-Za-z][0-9A-Za-z.-]{0,19}$' }
+        debit: { type: number, minimum: 0 }
+        credit: { type: number, minimum: 0 }
+        taxCode:
+          {
+            type: string,
+            pattern: '^[A-Z0-9_]{2,32}$',
+            description: Amount is gross; the VAT line is split off automatically,
+          }
+        description: { type: string, maxLength: 255 }
+        costCenter: { type: string, maxLength: 32 }
+    AccountingManualEntryDto:
+      type: object
+      required: [documentDate, description, lines]
+      properties:
+        documentDate: { type: string, format: date }
+        documentNumber: { type: string, maxLength: 64 }
+        description: { type: string, minLength: 1, maxLength: 255 }
+        tenantId:
+          {
+            type: string,
+            maxLength: 64,
+            description: Tenant dimension (defaults to the request tenant; other tenants or none only in global views),
+          }
+        lines:
+          type: array
+          minItems: 2
+          maxItems: 200
+          items:
+            $ref: '#/components/schemas/AccountingManualEntryLineDto'
+        links:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/AccountingJournalLinkDto'
+    AccountingReverseEntryDto:
+      type: object
+      properties:
+        documentDate:
+          {
+            type: string,
+            format: date,
+            description: Date of the reversal entry; defaults to today,
+          }
+        reason: { type: string, maxLength: 200 }
+    AccountingJournalStatistics:
+      type: object
+      properties:
+        kpis:
+          type: object
+          properties:
+            entries: { type: integer }
+            manualShare:
+              { type: number, description: Share of manual entries (0..1) }
+            volume: { type: number }
+            revenue: { type: number }
+            expenses: { type: number }
+            result: { type: number }
+        series:
+          type: array
+          items:
+            type: object
+            properties:
+              bucket:
+                {
+                  type: string,
+                  format: date,
+                  description: First day of the month,
+                }
+              entries: { type: integer }
+              volume: { type: number }
+              manual: { type: integer }
+        result:
+          type: array
+          items:
+            type: object
+            properties:
+              month: { type: string, example: 2026-01 }
+              revenue: { type: number }
+              expenses: { type: number }
+        bySource:
+          type: array
+          items:
+            type: object
+            properties:
+              source:
+                { $ref: '#/components/schemas/AccountingJournalSourceType' }
+              entries: { type: integer }
+              volume: { type: number }
+    AccountingAccountLedger:
+      type: object
+      properties:
+        account: { $ref: '#/components/schemas/AccountingAccount' }
+        opening:
+          {
+            type: number,
+            description: Balance (debit minus credit) at range start within the fiscal year,
+          }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              entryId: { type: string, format: uuid }
+              entryNumber: { type: integer }
+              postingDate: { type: string, format: date }
+              documentDate: { type: string, format: date }
+              documentNumber: { type: string, nullable: true }
+              description: { type: string }
+              sourceType:
+                { $ref: '#/components/schemas/AccountingJournalSourceType' }
+              kind: { $ref: '#/components/schemas/AccountingJournalEntryKind' }
+              debit: { type: number }
+              credit: { type: number }
+              counterpartyType: { type: string, nullable: true }
+              counterpartyId: { type: string, nullable: true }
+              tenantId: { type: string, nullable: true }
+              taxRate: { type: number, nullable: true }
+              lineDescription: { type: string, nullable: true }
+              running:
+                { type: number, description: Running balance including opening }
+        total: { type: integer, description: Number of lines in the range }
+        closing: { type: number }
+    AccountingTrialBalanceRow:
+      type: object
+      properties:
+        accountId: { type: string, format: uuid }
+        number: { type: string }
+        name: { type: string }
+        type: { $ref: '#/components/schemas/AccountingAccountType' }
+        statementPosition: { type: string, nullable: true }
+        opening: { type: number }
+        debit: { type: number }
+        credit: { type: number }
+        closing: { type: number }
+    AccountingOpenItemRow:
+      type: object
+      properties:
+        openItemId: { type: string, format: uuid }
+        counterpartyId: { type: string, nullable: true }
+        counterpartyLabel:
+          {
+            type: string,
+            nullable: true,
+            description: Customer / supplier number and name,
+          }
+        documentNumber: { type: string, nullable: true }
+        documentDate: { type: string, format: date, nullable: true }
+        dueDate: { type: string, format: date, nullable: true }
+        amount: { type: number }
+        open: { type: number }
+        daysOverdue: { type: integer }
+        tenantId: { type: string, nullable: true }
+    AccountingOpenItemsReport:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingOpenItemRow'
+        aging:
+          type: object
+          description: Open amount per aging bucket (current, 1-30, 31-60, 61-90, 90+)
+          additionalProperties: { type: number }
+        total: { type: number }
+    AccountingStatementAccountAmount:
+      type: object
+      properties:
+        number: { type: string }
+        name: { type: string }
+        amount: { type: number }
+    AccountingStatementNode:
+      type: object
+      properties:
+        code: { type: string }
+        label: { type: string }
+        amount: { type: number }
+        previousAmount:
+          { type: number, description: Previous year (balance sheet) }
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingStatementAccountAmount'
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingStatementNode'
+    AccountingStatementReport:
+      type: object
+      properties:
+        layoutKey: { type: string }
+        name: { type: string }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        sections:
+          type: array
+          items:
+            type: object
+            properties:
+              key: { type: string }
+              label: { type: string }
+              nodes:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountingStatementNode'
+              total: { type: number }
+        result: { type: number }
+        unassigned:
+          type: array
+          description: Accounts with balances but no statement position
+          items:
+            $ref: '#/components/schemas/AccountingStatementAccountAmount'
+    AccountingVatReturnBox:
+      type: object
+      properties:
+        box: { type: string }
+        label: { type: string }
+        kind: { type: string, enum: [base, tax, computed, manual] }
+        formula:
+          {
+            type: string,
+            description: Computed boxes - expression over other boxes,
+          }
+        roundDown:
+          { type: boolean, description: Round down to whole currency units }
+    AccountingVatReturnDefinition:
+      type: object
+      properties:
+        key: { type: string, example: DE-USTVA }
+        name: { type: string }
+        kind: { type: string, enum: [periodic, annual, ec_sales_list, oss] }
+        periods:
+          type: array
+          items: { type: string, enum: [month, quarter, year] }
+        boxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingVatReturnBox'
+        resultBox:
+          {
+            type: string,
+            description: Box holding the payable / refundable amount,
+          }
+        filingChannel: { type: string }
+        filingUrl: { type: string }
+        dueRule: { type: string }
+    AccountingVatReturn:
+      type: object
+      description: Computed VAT return for manual filing; figures recomputed while draft, frozen on submit.
+      properties:
+        id: { type: string, format: uuid }
+        definitionKey: { type: string }
+        periodStart: { type: string, format: date }
+        periodEnd: { type: string, format: date }
+        status: { type: string, enum: [draft, submitted, paid] }
+        vatBasis: { type: string, enum: [invoice, payment] }
+        figures:
+          type: object
+          description: Box id to amount
+          additionalProperties: { type: number }
+        details:
+          type: array
+          description: Rows of list-type returns (EC sales list per VAT id, OSS per country and rate)
+          items: { type: object, additionalProperties: true }
+        manualValues:
+          type: object
+          additionalProperties: { type: number }
+        resultAmount: { type: [string, number, 'null'] }
+        computedAt: { type: string, format: date-time }
+        submittedAt: { type: string, format: date-time, nullable: true }
+        submittedByUserId: { type: string, format: uuid, nullable: true }
+        filingReference: { type: string, nullable: true }
+        paymentEntryId: { type: string, format: uuid, nullable: true }
+        note: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PaginatedAccountingVatReturns:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingVatReturn'
+        total: { type: integer }
+    AccountingVatReturnStatistics:
+      type: object
+      properties:
+        kpis:
+          type: object
+          properties:
+            returns: { type: integer }
+            drafts: { type: integer }
+            submitted: { type: integer }
+            paid: { type: integer }
+            payableTotal: { type: number }
+        series:
+          type: array
+          items:
+            type: object
+            properties:
+              key: { type: string }
+              period: { type: string, format: date }
+              result: { type: number }
+              status: { type: string, enum: [draft, submitted, paid] }
+    ComputeAccountingVatReturnDto:
+      type: object
+      required: [definitionKey, periodStart, periodEnd]
+      properties:
+        definitionKey: { type: string, maxLength: 32 }
+        periodStart: { type: string, format: date }
+        periodEnd: { type: string, format: date }
+        manualValues:
+          type: object
+          additionalProperties: { type: number }
+          description: Manually entered box values (e.g. DE Kz 39)
+    SubmitAccountingVatReturnDto:
+      type: object
+      properties:
+        filingReference:
+          {
+            type: string,
+            maxLength: 128,
+            description: Filing receipt (ELSTER Transferticket or similar),
+          }
+        note: { type: string, maxLength: 2000 }
+    PayAccountingVatReturnDto:
+      type: object
+      required: [date]
+      properties:
+        date: { type: string, format: date }
+        amount: { type: number, description: Defaults to the return result }
+    AccountingFinancialAccount:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenantId:
+          {
+            type: string,
+            nullable: true,
+            description: Owning tenant; null = shared (global views only),
+          }
+        name: { type: string }
+        kind: { type: string, enum: [bank, cash, processor, other] }
+        iban: { type: string, nullable: true }
+        accountNumber: { type: string, nullable: true }
+        bic: { type: string, nullable: true }
+        currency: { type: string }
+        ledgerAccountNumber: { type: string }
+        processor: { type: string, nullable: true }
+        lastClosingBalance: { type: [string, number, 'null'] }
+        lastClosingDate: { type: string, format: date, nullable: true }
+        syncCursor: { type: string, nullable: true }
+        lastSyncedAt: { type: string, format: date-time, nullable: true }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AccountingFinancialAccountInput:
+      type: object
+      required: [name, kind, currency, ledgerAccountNumber]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 255 }
+        kind: { type: string, enum: [bank, cash, processor, other] }
+        iban:
+          {
+            type: string,
+            nullable: true,
+            description: Spaces stripped and upper-cased before validation,
+          }
+        accountNumber: { type: string, nullable: true, maxLength: 64 }
+        bic: { type: string, nullable: true }
+        currency: { type: string, pattern: '^[A-Z]{3}$' }
+        ledgerAccountNumber:
+          { type: string, pattern: '^[0-9A-Za-z][0-9A-Za-z.-]{0,19}$' }
+        processor:
+          {
+            type: string,
+            enum: [stripe, paypal, mollie, adyen],
+            nullable: true,
+          }
+        tenantId:
+          {
+            type: string,
+            nullable: true,
+            maxLength: 64,
+            description: Owning tenant (default request tenant); null = shared (global views only),
+          }
+        isActive: { type: boolean }
+    AccountingCsvColumnMapping:
+      type: object
+      description: CSV column mapping (delimiter, decimalSeparator, thousandsSeparator, dateFormat, encoding, skipLines, hasHeader, columns …)
+      additionalProperties: true
+    AccountingCsvPreset:
+      type: object
+      properties:
+        key: { type: string }
+        label: { type: string }
+        mapping: { $ref: '#/components/schemas/AccountingCsvColumnMapping' }
+    AccountingCsvMapping:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenantId: { type: string, nullable: true }
+        name: { type: string }
+        mapping: { $ref: '#/components/schemas/AccountingCsvColumnMapping' }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AccountingCsvMappingInput:
+      type: object
+      required: [name, mapping]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 255 }
+        mapping: { $ref: '#/components/schemas/AccountingCsvColumnMapping' }
+    AccountingBankImportUpload:
+      type: object
+      required: [file]
+      properties:
+        file: { type: string, format: binary }
+        financialAccountId:
+          {
+            type: string,
+            format: uuid,
+            description: Target account when the file has no account identifier (CSV / QIF),
+          }
+        format:
+          type: string
+          enum:
+            [
+              camt.052,
+              camt.053,
+              camt.054,
+              mt940,
+              mt942,
+              coda,
+              norma43,
+              cfonb120,
+              cbi-rh,
+              bai2,
+              ofx,
+              qif,
+              csv,
+            ]
+          description: Detected automatically when omitted
+        csvPreset: { type: string, maxLength: 64 }
+        csvMappingId: { type: string, format: uuid }
+        encoding:
+          { type: string, enum: [auto, utf-8, windows-1252, iso-8859-1, cp850] }
+        qifDateFormat: { type: string, enum: [DMY, MDY, auto] }
+    AccountingBankImport:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenantId: { type: string, nullable: true }
+        financialAccountId: { type: string, format: uuid, nullable: true }
+        fileName: { type: string }
+        fileSha256: { type: string }
+        fileSize: { type: integer }
+        storageKey: { type: string, nullable: true }
+        format:
+          {
+            type: string,
+            nullable: true,
+            description: Detected or chosen format (camt.053 / mt940 / csv preset / api processor),
+          }
+        formatVersion: { type: string, nullable: true }
+        encoding: { type: string, nullable: true }
+        csvMapping: { type: string, nullable: true }
+        status:
+          {
+            type: string,
+            enum: [pending, processing, completed, failed, rolled_back],
+          }
+        statementCount: { type: integer }
+        transactionCount: { type: integer }
+        duplicateCount: { type: integer }
+        matchedCount: { type: integer }
+        warnings: { type: array, items: { type: string } }
+        errorMessage: { type: string, nullable: true }
+        uploadedByUserId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
+        completedAt: { type: string, format: date-time, nullable: true }
+    PaginatedAccountingBankImports:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingBankImport'
+        total: { type: integer }
+    AccountingBankTransactionMatchStatus:
+      type: string
+      enum: [unmatched, suggested, matched, booked, ignored, superseded]
+    AccountingBankTransaction:
+      type: object
+      description: Imported bank / processor transaction; amount positive = money in
+      properties:
+        id: { type: string, format: uuid }
+        financialAccountId: { type: string, format: uuid }
+        importId: { type: string, format: uuid }
+        statementId: { type: string, format: uuid, nullable: true }
+        tenantId: { type: string, nullable: true }
+        status: { type: string, enum: [booked, pending, info] }
+        bookingDate: { type: string, format: date }
+        valueDate: { type: string, format: date, nullable: true }
+        amount: { $ref: '#/components/schemas/AccountingDecimal' }
+        currency: { type: string }
+        isReversal: { type: boolean }
+        counterpartyName: { type: string, nullable: true }
+        counterpartyIban: { type: string, nullable: true }
+        counterpartyBic: { type: string, nullable: true }
+        remittance: { type: string, nullable: true }
+        endToEndId: { type: string, nullable: true }
+        structuredReference:
+          {
+            type: string,
+            nullable: true,
+            description: Structured creditor reference (RF / OGM / QRR),
+          }
+        bookingText: { type: string, nullable: true }
+        bankReference: { type: string, nullable: true }
+        bankTransactionCode: { type: string, nullable: true }
+        details:
+          type: array
+          description: Normalized details (batch breakdown, processor gross / fee / net, references)
+          items: { type: object, additionalProperties: true }
+        raw:
+          {
+            type: string,
+            nullable: true,
+            description: Omitted in list responses,
+          }
+        locator: { type: string, nullable: true }
+        dedupeKey: { type: string }
+        dedupeOrdinal: { type: integer }
+        sourceFormat:
+          type: string
+          nullable: true
+          description: 'File format the line came from (camt.053, mt940, csv, …; api for processor sync)'
+        matchStatus:
+          { $ref: '#/components/schemas/AccountingBankTransactionMatchStatus' }
+        supersededById:
+          type: string
+          format: uuid
+          nullable: true
+          description: 'Line that replaced this one (pending → booked) or that this line duplicates (same booking imported in another format)'
+        suggestion:
+          oneOf:
+            - $ref: '#/components/schemas/AccountingMatchSuggestion'
+            - { type: 'null' }
+        journalEntryId: { type: string, format: uuid, nullable: true }
+        matchedByUserId: { type: string, format: uuid, nullable: true }
+        matchedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PaginatedAccountingBankTransactions:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingBankTransaction'
+        total: { type: integer }
+    AccountingBankStatistics:
+      type: object
+      properties:
+        kpis:
+          type: object
+          properties:
+            accounts: { type: integer }
+            transactions: { type: integer }
+            reconciliationRate:
+              {
+                type: number,
+                description: Share matched / booked / ignored (0..1),
+              }
+            unmatched: { type: integer }
+            balance: { type: number }
+        flows:
+          type: array
+          items:
+            type: object
+            properties:
+              month: { type: string, example: 2026-01 }
+              inflow: { type: number }
+              outflow: { type: number }
+              count: { type: integer }
+        statuses:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                {
+                  $ref: '#/components/schemas/AccountingBankTransactionMatchStatus',
+                }
+              count: { type: integer }
+              amount: { type: number }
+        balances:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string, format: uuid }
+              name: { type: string }
+              currency: { type: string }
+              balance: { type: number, nullable: true }
+              date: { type: string, format: date, nullable: true }
+    AccountingMatchTarget:
+      type: object
+      required: [type, amount]
+      properties:
+        type: { type: string, enum: [invoice, supplier_invoice, account] }
+        id:
+          {
+            type: string,
+            format: uuid,
+            description: Document id (invoice / supplier_invoice targets),
+          }
+        number:
+          type: string
+          nullable: true
+          description: Document number of invoice / supplier_invoice targets (display)
+        accountNumber: { type: string, description: Account targets }
+        amount: { type: number }
+        taxCode: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+    AccountingMatchSuggestion:
+      type: object
+      properties:
+        targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingMatchTarget'
+        score: { type: number }
+        reasons: { type: array, items: { type: string } }
+        label: { type: string }
+    MatchAccountingBankTransactionDto:
+      type: object
+      required: [targets]
+      properties:
+        targets:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: object
+            required: [type, amount]
+            properties:
+              type: { type: string, enum: [invoice, supplier_invoice, account] }
+              id:
+                {
+                  type: string,
+                  format: uuid,
+                  description: Invoice / supplier_invoice targets need this or number,
+                }
+              number:
+                type: string
+                minLength: 1
+                maxLength: 64
+                description: Invoice / supplier invoice number (alternative to id; resolved within the bank account's tenant)
+              accountNumber:
+                type: string
+                pattern: '^[0-9A-Za-z][0-9A-Za-z.-]{0,19}$'
+                description: Required for account targets (direct booking; global views only)
+              amount: { type: number, description: At most 2 decimals }
+              taxCode: { type: string, pattern: '^[A-Z0-9_]{2,32}$' }
+              description: { type: string, maxLength: 255 }
+        learn:
+          {
+            type: boolean,
+            description: Remember the counterparty IBAN as a match rule,
+          }
+    AccountingMatchRule:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        kind:
+          {
+            type: string,
+            enum: [iban, text],
+            description: iban = exact counterparty IBAN; text = case-insensitive substring of remittance / name,
+          }
+        pattern: { type: string }
+        targetType: { type: string, enum: [customer, supplier, account] }
+        targetId:
+          { type: string, description: User id / supplier id / account number }
+        targetLabel:
+          type: string
+          nullable: true
+          description: Customer / supplier number and name, or the account number
+        taxCode: { type: string, nullable: true }
+        hits: { type: integer }
+        createdByUserId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
+    AccountingMatchRuleInput:
+      type: object
+      required: [kind, pattern, targetType, targetId]
+      properties:
+        kind: { type: string, enum: [iban, text] }
+        pattern: { type: string, minLength: 3, maxLength: 128 }
+        targetType: { type: string, enum: [customer, supplier, account] }
+        targetId:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: Customer / supplier number (or id; resolved entity-wide, ambiguous numbers are rejected) or account number
+        taxCode: { type: string, pattern: '^[A-Z0-9_]{2,32}$' }
+    AccountingProcessorSyncResult:
+      type: object
+      required: [accountId, imported]
+      properties:
+        accountId: { type: string, format: uuid }
+        imported: { type: integer }
+        error: { type: string }
+    AccountingFixedAssetStatus:
+      type: string
+      enum: [active, fully_depreciated, disposed]
+    AccountingFixedAsset:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenantId: { type: string, nullable: true }
+        assetNumber: { type: string, example: AST-00001 }
+        name: { type: string }
+        acquisitionDate: { type: string, format: date }
+        acquisitionCost:
+          $ref: '#/components/schemas/AccountingDecimal'
+        method: { type: string, enum: [straight_line, immediate, pool] }
+        usefulLifeMonths: { type: integer }
+        assetAccountNumber: { type: string }
+        residualValue: { $ref: '#/components/schemas/AccountingDecimal' }
+        accumulatedDepreciation:
+          { $ref: '#/components/schemas/AccountingDecimal' }
+        depreciatedThrough:
+          {
+            type: string,
+            nullable: true,
+            description: Last month depreciated (YYYY-MM),
+          }
+        status: { $ref: '#/components/schemas/AccountingFixedAssetStatus' }
+        supplierInvoiceId: { type: string, format: uuid, nullable: true }
+        supplierInvoiceLineId: { type: string, format: uuid, nullable: true }
+        inventorySerialUnitId: { type: string, format: uuid, nullable: true }
+        disposalDate: { type: string, format: date, nullable: true }
+        disposalProceeds: { type: [string, number, 'null'] }
+        note: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AccountingFixedAssetDetail:
+      allOf:
+        - $ref: '#/components/schemas/AccountingFixedAsset'
+        - type: object
+          properties:
+            plan:
+              type: array
+              description: Planned depreciation per month
+              items:
+                type: object
+                properties:
+                  month: { type: string, example: 2026-01 }
+                  amount: { type: number }
+    PaginatedAccountingFixedAssets:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountingFixedAsset'
+        total: { type: integer }
+    CreateAccountingAssetDto:
+      type: object
+      required: [name, acquisitionDate, acquisitionCost]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 255 }
+        acquisitionDate: { type: string, format: date }
+        acquisitionCost:
+          {
+            type: number,
+            minimum: 0,
+            description: Net cost (functional currency),
+          }
+        method:
+          {
+            type: string,
+            enum: [straight_line, immediate, pool],
+            description: Classified from the cost when omitted,
+          }
+        usefulLifeMonths: { type: integer, minimum: 1, maximum: 1200 }
+        assetAccountNumber:
+          { type: string, pattern: '^[0-9A-Za-z][0-9A-Za-z.-]{0,19}$' }
+        residualValue: { type: number, minimum: 0 }
+        note: { type: string, maxLength: 2000 }
+    DisposeAccountingAssetDto:
+      type: object
+      required: [date]
+      properties:
+        date: { type: string, format: date }
+        note: { type: string, maxLength: 2000 }
+    AccountingDepreciationRunDto:
+      type: object
+      required: [through]
+      properties:
+        through: { type: string, pattern: '^\d{4}-\d{2}$', example: 2026-10 }
+    AccountingDepreciationRunResult:
+      type: object
+      properties:
+        assets: { type: integer }
+        amount: { type: number }
+    AccountingAssetScheduleRow:
+      type: object
+      description: One asset row of the asset schedule (Anlagenspiegel)
+      properties:
+        id: { type: string, format: uuid }
+        assetNumber: { type: string }
+        name: { type: string }
+        accountNumber: { type: string }
+        method: { type: string, enum: [straight_line, immediate, pool] }
+        acquisitionDate: { type: string, format: date }
+        openingCost: { type: number }
+        additions: { type: number }
+        disposals: { type: number }
+        closingCost: { type: number }
+        openingDepreciation: { type: number }
+        depreciation: { type: number }
+        openingBookValue: { type: number }
+        closingBookValue: { type: number }

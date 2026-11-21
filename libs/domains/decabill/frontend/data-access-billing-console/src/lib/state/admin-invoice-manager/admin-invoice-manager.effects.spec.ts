@@ -13,9 +13,15 @@ import {
   adminInvoiceManagerMarkUnpaid,
   adminInvoiceManagerMarkUnpaidFailure,
   adminInvoiceManagerMarkUnpaidSuccess,
+  adminInvoiceManagerRefund,
+  adminInvoiceManagerRefundFailure,
+  adminInvoiceManagerRefundSuccess,
   adminInvoiceManagerVoid,
   adminInvoiceManagerVoidFailure,
   adminInvoiceManagerVoidSuccess,
+  adminInvoiceManagerWriteOff,
+  adminInvoiceManagerWriteOffFailure,
+  adminInvoiceManagerWriteOffSuccess,
   createManualInvoice,
   createManualInvoiceFailure,
   createManualInvoiceSuccess,
@@ -28,6 +34,9 @@ import {
   loadAdminInvoiceManager,
   loadAdminInvoiceManagerFailure,
   loadAdminInvoiceManagerSuccess,
+  loadAdminInvoiceSettlements,
+  loadAdminInvoiceSettlementsFailure,
+  loadAdminInvoiceSettlementsSuccess,
   updateManualInvoice,
   updateManualInvoiceFailure,
   updateManualInvoiceSuccess,
@@ -35,11 +44,14 @@ import {
 import {
   adminInvoiceManagerMarkPaid$,
   adminInvoiceManagerMarkUnpaid$,
+  adminInvoiceManagerRefund$,
   adminInvoiceManagerVoid$,
+  adminInvoiceManagerWriteOff$,
   createManualInvoice$,
   deleteManualInvoice$,
   issueManualInvoice$,
   loadAdminInvoiceManager$,
+  loadAdminInvoiceSettlements$,
   updateManualInvoice$,
 } from './admin-invoice-manager.effects';
 
@@ -66,6 +78,9 @@ describe('AdminInvoiceManagerEffects', () => {
       voidInvoice: jest.fn(),
       markPaid: jest.fn(),
       markUnpaid: jest.fn(),
+      writeOffInvoice: jest.fn(),
+      refundInvoice: jest.fn(),
+      listInvoiceSettlements: jest.fn(),
     } as never;
     TestBed.configureTestingModule({
       providers: [provideMockActions(() => actions$), { provide: AdminBillingService, useValue: adminBillingService }],
@@ -216,6 +231,90 @@ describe('AdminInvoiceManagerEffects', () => {
 
       adminInvoiceManagerMarkUnpaid$(actions$, adminBillingService).subscribe((result) => {
         expect(result).toEqual(adminInvoiceManagerMarkUnpaidSuccess({ invoice: invoice as never }));
+        done();
+      });
+    });
+  });
+
+  describe('adminInvoiceManagerWriteOff$', () => {
+    it('returns success', (done) => {
+      const invoice = { ...mockInvoice, status: 'written_off' };
+
+      actions$ = of(adminInvoiceManagerWriteOff({ invoiceRefId: 'inv-1', dto: { reason: 'insolvent' } }));
+      adminBillingService.writeOffInvoice.mockReturnValue(of(invoice as never));
+
+      adminInvoiceManagerWriteOff$(actions$, adminBillingService).subscribe((result) => {
+        expect(adminBillingService.writeOffInvoice).toHaveBeenCalledWith('inv-1', { reason: 'insolvent' });
+        expect(result).toEqual(adminInvoiceManagerWriteOffSuccess({ invoice: invoice as never }));
+        done();
+      });
+    });
+
+    it('returns failure', (done) => {
+      actions$ = of(adminInvoiceManagerWriteOff({ invoiceRefId: 'inv-1' }));
+      adminBillingService.writeOffInvoice.mockReturnValue(throwError(() => new Error('Write-off failed')));
+
+      adminInvoiceManagerWriteOff$(actions$, adminBillingService).subscribe((result) => {
+        expect(result).toEqual(adminInvoiceManagerWriteOffFailure({ error: 'Write-off failed' }));
+        done();
+      });
+    });
+  });
+
+  describe('adminInvoiceManagerRefund$', () => {
+    it('returns success', (done) => {
+      const invoice = { ...mockInvoice, status: 'paid', balance: 0 };
+
+      actions$ = of(adminInvoiceManagerRefund({ invoiceRefId: 'inv-1', dto: { amount: 10 } }));
+      adminBillingService.refundInvoice.mockReturnValue(of(invoice as never));
+
+      adminInvoiceManagerRefund$(actions$, adminBillingService).subscribe((result) => {
+        expect(adminBillingService.refundInvoice).toHaveBeenCalledWith('inv-1', { amount: 10 });
+        expect(result).toEqual(adminInvoiceManagerRefundSuccess({ invoice: invoice as never }));
+        done();
+      });
+    });
+
+    it('returns failure', (done) => {
+      actions$ = of(adminInvoiceManagerRefund({ invoiceRefId: 'inv-1' }));
+      adminBillingService.refundInvoice.mockReturnValue(throwError(() => new Error('Refund failed')));
+
+      adminInvoiceManagerRefund$(actions$, adminBillingService).subscribe((result) => {
+        expect(result).toEqual(adminInvoiceManagerRefundFailure({ error: 'Refund failed' }));
+        done();
+      });
+    });
+  });
+
+  describe('loadAdminInvoiceSettlements$', () => {
+    it('returns success', (done) => {
+      const settlements = [
+        {
+          id: 's-1',
+          type: 'payment',
+          amount: 50,
+          currency: 'EUR',
+          occurredAt: '2026-11-01T00:00:00Z',
+          source: 'manual',
+          createdAt: '2026-11-01T00:00:00Z',
+        },
+      ];
+
+      actions$ = of(loadAdminInvoiceSettlements({ invoiceRefId: 'inv-1' }));
+      adminBillingService.listInvoiceSettlements.mockReturnValue(of(settlements));
+
+      loadAdminInvoiceSettlements$(actions$, adminBillingService).subscribe((result) => {
+        expect(result).toEqual(loadAdminInvoiceSettlementsSuccess({ invoiceRefId: 'inv-1', settlements }));
+        done();
+      });
+    });
+
+    it('returns failure', (done) => {
+      actions$ = of(loadAdminInvoiceSettlements({ invoiceRefId: 'inv-1' }));
+      adminBillingService.listInvoiceSettlements.mockReturnValue(throwError(() => new Error('Load failed')));
+
+      loadAdminInvoiceSettlements$(actions$, adminBillingService).subscribe((result) => {
+        expect(result).toEqual(loadAdminInvoiceSettlementsFailure({ invoiceRefId: 'inv-1', error: 'Load failed' }));
         done();
       });
     });

@@ -23,10 +23,13 @@ export function resolveBillingTenantId(environment: BillingTenantEnvironment): s
   return configured && configured.length > 0 ? configured : DEFAULT_BILLING_TENANT_ID;
 }
 
-export function resolveBillingTenantDisplayName(environment: BillingTenantEnvironment): string {
-  const tenantId = resolveBillingTenantId(environment);
+/** Display name of a tenant id (the id with a capital first letter, e.g. `decabill` → `Decabill`). */
+export function billingTenantDisplayName(tenantId: string): string {
+  return tenantId ? tenantId.charAt(0).toUpperCase() + tenantId.slice(1) : tenantId;
+}
 
-  return tenantId.charAt(0).toUpperCase() + tenantId.slice(1);
+export function resolveBillingTenantDisplayName(environment: BillingTenantEnvironment): string {
+  return billingTenantDisplayName(resolveBillingTenantId(environment));
 }
 
 /**

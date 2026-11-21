@@ -527,6 +527,8 @@ export interface InventoryArticleResponseDto {
   countryOfOrigin: string | null;
   isActive: boolean;
   serialTracking: boolean;
+  /** Moving weighted average unit cost of the stock on hand (accounting valuation); omitted when unset. */
+  averageCost?: number | null;
   totalQuantity: number;
   /** Quantity on loan (open lendings); not part of `totalQuantity`. */
   lentQuantity: number;
@@ -592,6 +594,17 @@ export class InventoryPutawayDto {
   @IsString()
   @MaxLength(2000)
   note?: string | null;
+
+  /** Supplier invoice the stock was bought with (valuation at its line price). */
+  @IsOptional()
+  @IsUUID('4')
+  supplierInvoiceId?: string | null;
+
+  /** Unit cost override for valuation (net, functional currency); defaults to invoice line / article price. */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0)
+  unitCost?: number | null;
 }
 
 export class InventoryTransferDto {

@@ -20,7 +20,11 @@ describe('WithdrawalRefundService', () => {
     }),
   };
   const invoicesRepository = { findLatestBillableBySubscription: jest.fn(), update: jest.fn() };
-  const invoiceLineItemsRepository = {};
+  const invoiceLineItemsRepository = {
+    findByInvoiceId: jest.fn().mockResolvedValue([{ lineNet: 100, taxRate: 19 }]),
+  };
+  const dataSource = { transaction: jest.fn((run: (manager: unknown) => unknown) => run({})) };
+  const documentSettlementService = { apply: jest.fn() };
   const invoiceCreditDocumentsRepository = { create: jest.fn() };
   const paymentAttemptsRepository = { findLatestSucceededByInvoiceId: jest.fn() };
   const paymentRefundsRepository = { create: jest.fn(), update: jest.fn() };
@@ -63,6 +67,8 @@ describe('WithdrawalRefundService', () => {
     invoicePdfService as never,
     billingEmailPublisher as never,
     auditLog as never,
+    dataSource as never,
+    documentSettlementService as never,
   );
   const subscription = {
     id: 'sub-1',
@@ -92,6 +98,9 @@ describe('WithdrawalRefundService', () => {
     taxCalculationService.computeLines.mockReturnValue({ totalGross: 119 });
     customerProfilesRepository.findByUserId.mockResolvedValue({ id: 'buyer-1' });
     paymentRefundsRepository.create.mockResolvedValue({ id: 'refund-1' });
+    invoiceCreditDocumentsRepository.create.mockResolvedValue({ id: 'credit-1' });
+    invoiceLineItemsRepository.findByInvoiceId.mockResolvedValue([{ lineNet: 100, taxRate: 19 }]);
+    dataSource.transaction.mockImplementation((run: (manager: unknown) => unknown) => run({}));
   });
 
   it('returns not_applicable when withdrawn at period end', async () => {
@@ -104,15 +113,22 @@ describe('WithdrawalRefundService', () => {
     expect(invoicesRepository.findLatestBillableBySubscription).not.toHaveBeenCalled();
   });
 
-  it('applies credit note and reduces balance for unpaid issued invoice', async () => {
+  it('issues the credit with the invoice tax snapshot and settles it on the invoice (unpaid)', async () => {
     invoicesRepository.findLatestBillableBySubscription.mockResolvedValue({
       id: 'inv-1',
       invoiceNumber: 'INV-001',
       status: InvoiceStatus.ISSUED,
       balanceDue: 119,
       totalGross: 119,
+      subtotalNet: 100,
       currency: 'EUR',
       issuedAt: new Date('2024-01-01'),
+    });
+    documentSettlementService.apply.mockResolvedValue({
+      created: true,
+      becameSettled: false,
+      settlement: { id: 'set-1' },
+      document: { id: 'inv-1', balanceDue: 60 },
     });
 
     const result = await service.applyProvisionedWithdrawalRefund(
@@ -122,54 +138,82 @@ describe('WithdrawalRefundService', () => {
 
     expect(invoicePdfService.generatePartialCreditDocumentAndStore).toHaveBeenCalled();
     expect(invoiceCreditDocumentsRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ reason: 'withdrawal', creditGross: 119 }),
+      expect.objectContaining({ reason: 'withdrawal', taxRate: 19, settlementComplete: true }),
+      expect.anything(),
     );
-    expect(invoicesRepository.update).toHaveBeenCalledWith(
-      'inv-1',
-      expect.objectContaining({ balanceDue: expect.any(Number) }),
+
+    const credit = invoiceCreditDocumentsRepository.create.mock.calls[0][0];
+
+    expect(credit.creditGross).toBeCloseTo(credit.creditNet * 1.19, 2);
+    expect(credit.creditNet).toBeLessThanOrEqual(100);
+    expect(documentSettlementService.apply).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'credit', creditDocumentId: 'credit-1', amount: credit.creditGross }),
+      expect.anything(),
     );
+    expect(invoicesRepository.update).not.toHaveBeenCalled();
     expect(result.paymentRefundStatus).toBe('not_applicable');
     expect(result.creditNoteNumber).toBe('CN-001');
   });
 
-  it('attempts Stripe refund for paid invoice', async () => {
+  it('refunds only the customer credit left after the credit note (paid invoice)', async () => {
     invoicesRepository.findLatestBillableBySubscription.mockResolvedValue({
       id: 'inv-1',
       invoiceNumber: 'INV-001',
       status: InvoiceStatus.PAID,
       balanceDue: 0,
       totalGross: 119,
+      subtotalNet: 100,
       currency: 'EUR',
       externalPaymentId: 'cs_test',
       paymentProcessor: 'stripe',
       issuedAt: new Date('2024-01-01'),
     });
-    paymentProcessorFactory.getProcessor.mockReturnValue({
-      refundPayment: jest.fn().mockResolvedValue({ externalRefundId: 're_1' }),
+    documentSettlementService.apply.mockResolvedValue({
+      created: true,
+      becameSettled: false,
+      settlement: { id: 'set-1' },
+      document: { id: 'inv-1', balanceDue: -30 },
     });
+    paymentAttemptsRepository.findLatestSucceededByInvoiceId.mockResolvedValue({ externalId: 'pi_auto' });
+
+    const refundPayment = jest.fn().mockResolvedValue({ externalRefundId: 're_1' });
+
+    paymentProcessorFactory.getProcessor.mockReturnValue({ refundPayment });
 
     const result = await service.applyProvisionedWithdrawalRefund(
       subscription as never,
       new Date('2024-01-16T00:00:00Z'),
     );
 
-    expect(paymentRefundsRepository.create).toHaveBeenCalled();
+    expect(refundPayment).toHaveBeenCalledWith(
+      expect.objectContaining({ externalCheckoutSessionId: 'pi_auto', amount: 30 }),
+    );
     expect(paymentRefundsRepository.update).toHaveBeenCalledWith('refund-1', {
       status: PaymentRefundStatus.SUCCEEDED,
       externalRefundId: 're_1',
     });
+    expect(documentSettlementService.apply).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'refund', amount: 30, paymentRefundId: 'refund-1' }),
+    );
     expect(result.paymentRefundStatus).toBe('succeeded');
   });
 
-  it('returns failed payment refund status when checkout session is missing', async () => {
+  it('returns failed payment refund status when no payment reference exists', async () => {
     invoicesRepository.findLatestBillableBySubscription.mockResolvedValue({
       id: 'inv-1',
       invoiceNumber: 'INV-001',
       status: InvoiceStatus.PAID,
       balanceDue: 0,
       totalGross: 119,
+      subtotalNet: 100,
       currency: 'EUR',
       issuedAt: new Date('2024-01-01'),
+    });
+    documentSettlementService.apply.mockResolvedValue({
+      created: true,
+      becameSettled: false,
+      settlement: { id: 'set-1' },
+      document: { id: 'inv-1', balanceDue: -30 },
     });
     paymentAttemptsRepository.findLatestSucceededByInvoiceId.mockResolvedValue(null);
 
@@ -229,6 +273,8 @@ describe('WithdrawalRefundService', () => {
       invoicePdfService as never,
       billingEmailPublisher as never,
       auditLog as never,
+      dataSource as never,
+      documentSettlementService as never,
     );
 
     beforeEach(() => {

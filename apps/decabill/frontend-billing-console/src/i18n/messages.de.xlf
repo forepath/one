@@ -10626,6 +10626,3066 @@
         <source>Search units in stock here, or pick all</source>
         <target>Einheiten auf Lager suchen oder alle wählen</target>
       </trans-unit>
+      <trans-unit id="featureAccountingAccounts-importResult" datatype="html">
+        <source>Import finished: <x id="INTERPOLATION" equiv-text="{{ result.created }}"/> created, <x id="INTERPOLATION_1" equiv-text="{{ result.updated }}"/> updated, <x id="INTERPOLATION_2" equiv-text="{{ result.skipped }}"/> skipped.</source>
+        <target>Import abgeschlossen: <x id="INTERPOLATION" equiv-text="{{ result.created }}"/> angelegt, <x id="INTERPOLATION_1" equiv-text="{{ result.updated }}"/> aktualisiert, <x id="INTERPOLATION_2" equiv-text="{{ result.skipped }}"/> übersprungen.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-chart" datatype="html">
+        <source>Chart of accounts</source>
+        <target>Kontenrahmen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-tabsAria" datatype="html">
+        <source>Account views</source>
+        <target>Kontenansichten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-tabAccounts" datatype="html">
+        <source>Accounts</source>
+        <target>Konten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-tabTaxCodes" datatype="html">
+        <source>Tax codes</source>
+        <target>Steuerschlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-tabTrialBalance" datatype="html">
+        <source>Trial balance</source>
+        <target>Summen- und Saldenliste</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-searchAccounts" datatype="html">
+        <source>Search accounts</source>
+        <target>Konten suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-createAccount" datatype="html">
+        <source>Create account</source>
+        <target>Konto anlegen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-importAccounts" datatype="html">
+        <source>Import accounts</source>
+        <target>Konten importieren</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-noAccounts" datatype="html">
+        <source>This chart has no accounts yet.</source>
+        <target>Dieser Kontenrahmen enthält noch keine Konten.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-searchTaxCodes" datatype="html">
+        <source>Search tax codes</source>
+        <target>Steuerschlüssel suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-createTaxCode" datatype="html">
+        <source>Create tax code</source>
+        <target>Steuerschlüssel anlegen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-noTaxCodes" datatype="html">
+        <source>This chart has no tax codes yet.</source>
+        <target>Dieser Kontenrahmen enthält noch keine Steuerschlüssel.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-statistics" datatype="html">
+        <source>Statistics</source>
+        <target>Statistik</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-from" datatype="html">
+        <source>From</source>
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-to" datatype="html">
+        <source>To</source>
+        <target>Bis</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-kpiDebit" datatype="html">
+        <source>Total debit</source>
+        <target>Summe Soll</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-kpiCredit" datatype="html">
+        <source>Total credit</source>
+        <target>Summe Haben</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-kpiWithBalance" datatype="html">
+        <source>Accounts with balance</source>
+        <target>Konten mit Saldo</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-noStatistics" datatype="html">
+        <source>No bookings in the selected period.</source>
+        <target>Keine Buchungen im gewählten Zeitraum.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-trialBalance" datatype="html">
+        <source>Trial balance</source>
+        <target>Summen- und Saldenliste</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-noTrialBalance" datatype="html">
+        <source>No balances in the selected period.</source>
+        <target>Keine Salden im gewählten Zeitraum.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colAccount" datatype="html">
+        <source>Account</source>
+        <target>Konto</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colOpening" datatype="html">
+        <source>Opening</source>
+        <target>Anfangssaldo</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colDebit" datatype="html">
+        <source>Debit</source>
+        <target>Soll</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colCredit" datatype="html">
+        <source>Credit</source>
+        <target>Haben</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colClosing" datatype="html">
+        <source>Closing</source>
+        <target>Endsaldo</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-total" datatype="html">
+        <source>Total</source>
+        <target>Summe</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-deleteTitle" datatype="html">
+        <source>Delete account?</source>
+        <target>Konto löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-deleteMessage" datatype="html">
+        <source>Only accounts without bookings can be deleted; deactivate used accounts instead.</source>
+        <target>Nur Konten ohne Buchungen können gelöscht werden; bebuchte Konten deaktivieren Sie stattdessen.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-delete" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-number" datatype="html">
+        <source>Number</source>
+        <target>Nummer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-name" datatype="html">
+        <source>Name</source>
+        <target>Bezeichnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-type" datatype="html">
+        <source>Type</source>
+        <target>Typ</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-role" datatype="html">
+        <source>System role</source>
+        <target>Systemrolle</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-roleHint" datatype="html">
+        <source>e.g. receivables, bank, revenue_standard</source>
+        <target>z. B. receivables, bank, revenue_standard</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-statementPosition" datatype="html">
+        <source>Statement position</source>
+        <target>Position im Abschluss</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-defaultTaxCode" datatype="html">
+        <source>Default tax code</source>
+        <target>Standard-Steuerschlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-none" datatype="html">
+        <source>None</source>
+        <target>Keiner</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-isAutomatic" datatype="html">
+        <source>Automatic VAT account (splits VAT with the default tax code)</source>
+        <target>Automatikkonto (Umsatzsteuer wird mit dem Standard-Steuerschlüssel herausgerechnet)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-isActive" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-description" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-importHint" datatype="html">
+        <source> CSV with the columns number;name[;type[;position]] or a DATEV account labels file (Kontenbeschriftungen). Existing numbers are updated, new ones created. </source>
+        <target> CSV mit den Spalten number;name[;type[;position]] oder eine DATEV-Datei mit Kontenbeschriftungen. Vorhandene Nummern werden aktualisiert, neue angelegt. </target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-file" datatype="html">
+        <source>File</source>
+        <target>Datei</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-import" datatype="html">
+        <source>Import</source>
+        <target>Importieren</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-code" datatype="html">
+        <source>Code</source>
+        <target>Code</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-codeHint" datatype="html">
+        <source>Uppercase letters, digits, underscores</source>
+        <target>Großbuchstaben, Ziffern, Unterstriche</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-kind" datatype="html">
+        <source>Kind</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-rate" datatype="html">
+        <source>Rate (%)</source>
+        <target>Steuersatz (%)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-rateHint" datatype="html">
+        <source>Empty: rate of the document line (OSS)</source>
+        <target>Leer: Steuersatz der Belegzeile (OSS)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-datevBuKey" datatype="html">
+        <source>DATEV BU key</source>
+        <target>DATEV-BU-Schlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-taxAccount" datatype="html">
+        <source>VAT account</source>
+        <target>Umsatzsteuerkonto</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-reverseAccount" datatype="html">
+        <source>Reverse-charge account</source>
+        <target>Reverse-Charge-Konto</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-baseBox" datatype="html">
+        <source>Base box</source>
+        <target>Kennzahl Bemessungsgrundlage</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-taxBox" datatype="html">
+        <source>Tax box</source>
+        <target>Kennzahl Steuer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-reverseTaxBox" datatype="html">
+        <source>Reverse tax box</source>
+        <target>Kennzahl Steuer (Reverse Charge)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-ecSalesList" datatype="html">
+        <source>EC sales list</source>
+        <target>Zusammenfassende Meldung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-oss" datatype="html">
+        <source>OSS</source>
+        <target>OSS</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-show" datatype="html">
+        <source>Show</source>
+        <target>Anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colEntry" datatype="html">
+        <source>Entry</source>
+        <target>Buchung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colDate" datatype="html">
+        <source>Date</source>
+        <target>Datum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colDocument" datatype="html">
+        <source>Document</source>
+        <target>Beleg</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colText" datatype="html">
+        <source>Text</source>
+        <target>Buchungstext</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colBalance" datatype="html">
+        <source>Balance</source>
+        <target>Saldo</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-opening" datatype="html">
+        <source>Opening balance</source>
+        <target>Anfangssaldo</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-noLedgerItems" datatype="html">
+        <source> No bookings in this period. </source>
+        <target> Keine Buchungen in diesem Zeitraum. </target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-closingBalance" datatype="html">
+        <source>Closing balance</source>
+        <target>Endsaldo</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-ledgerTruncated" datatype="html">
+        <source> Showing the first <x id="INTERPOLATION" equiv-text="{{ data.items.length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ data.total }}"/> bookings; narrow the period to see more. </source>
+        <target> Angezeigt werden die ersten <x id="INTERPOLATION" equiv-text="{{ data.items.length }}"/> von <x id="INTERPOLATION_1" equiv-text="{{ data.total }}"/> Buchungen; grenzen Sie den Zeitraum ein, um weitere zu sehen. </target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-title" datatype="html">
+        <source>Accounts</source>
+        <target>Konten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colNumber" datatype="html">
+        <source>Number</source>
+        <target>Nummer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colName" datatype="html">
+        <source>Name</source>
+        <target>Bezeichnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colType" datatype="html">
+        <source>Type</source>
+        <target>Typ</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colRole" datatype="html">
+        <source>Role</source>
+        <target>Rolle</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colPosition" datatype="html">
+        <source>Statement position</source>
+        <target>Position im Abschluss</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colAutomatic" datatype="html">
+        <source>Automatic VAT</source>
+        <target>Automatikkonto</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colActive" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-active" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-inactive" datatype="html">
+        <source>Inactive</source>
+        <target>Inaktiv</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-ledger" datatype="html">
+        <source>Ledger</source>
+        <target>Kontoblatt</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-deactivate" datatype="html">
+        <source>Deactivate</source>
+        <target>Deaktivieren</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-activate" datatype="html">
+        <source>Activate</source>
+        <target>Aktivieren</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-editAccount" datatype="html">
+        <source>Edit account <x id="number" equiv-text="account.number"/></source>
+        <target>Konto <x id="number" equiv-text="account.number"/> bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colCode" datatype="html">
+        <source>Code</source>
+        <target>Code</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colKind" datatype="html">
+        <source>Kind</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colRate" datatype="html">
+        <source>Rate</source>
+        <target>Steuersatz</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-rateFromDocument" datatype="html">
+        <source>From document</source>
+        <target>Aus dem Beleg</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colTaxAccount" datatype="html">
+        <source>VAT account</source>
+        <target>Umsatzsteuerkonto</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colBoxes" datatype="html">
+        <source>Boxes (base / tax / reverse)</source>
+        <target>Kennzahlen (Bemessungsgrundlage / Steuer / Reverse Charge)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colReporting" datatype="html">
+        <source>Reporting</source>
+        <target>Meldungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-editTaxCode" datatype="html">
+        <source>Edit tax code <x id="code" equiv-text="taxCode.code"/></source>
+        <target>Steuerschlüssel <x id="code" equiv-text="taxCode.code"/> bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-ledgerTitle" datatype="html">
+        <source>Ledger <x id="number" equiv-text="account.number"/> <x id="name" equiv-text="account.name"/></source>
+        <target>Kontoblatt <x id="number" equiv-text="account.number"/> <x id="name" equiv-text="account.name"/></target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-balanceByType" datatype="html">
+        <source>Closing balance by account type</source>
+        <target>Endsaldo nach Kontotyp</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAccounts-closing" datatype="html">
+        <source>Closing balance</source>
+        <target>Endsaldo</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-kpiBookValue" datatype="html">
+        <source>Closing book value</source>
+        <target>Buchwert zum Periodenende</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-kpiAdditions" datatype="html">
+        <source>Additions</source>
+        <target>Zugänge</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-kpiDepreciation" datatype="html">
+        <source>Depreciation</source>
+        <target>Abschreibungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-kpiDisposals" datatype="html">
+        <source>Disposals</source>
+        <target>Abgänge</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-kpiActive" datatype="html">
+        <source>Active assets</source>
+        <target>Aktive Anlagegüter</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-statistics" datatype="html">
+        <source>Statistics</source>
+        <target>Statistik</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-from" datatype="html">
+        <source>From</source>
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-to" datatype="html">
+        <source>To</source>
+        <target>Bis</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-noStatistics" datatype="html">
+        <source>No assets in the selected period.</source>
+        <target>Keine Anlagegüter im gewählten Zeitraum.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-register" datatype="html">
+        <source>Assets</source>
+        <target>Anlagegüter</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-listTabs" datatype="html">
+        <source>Asset views</source>
+        <target>Anlagenansichten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-tabRegister" datatype="html">
+        <source>Register</source>
+        <target>Anlagenverzeichnis</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-tabSchedule" datatype="html">
+        <source>Schedule</source>
+        <target>Anlagenspiegel</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-empty" datatype="html">
+        <source>No fixed assets yet. Supplier invoice lines booked as assets appear here.</source>
+        <target>Noch keine Anlagegüter. Als Anlagevermögen gebuchte Zeilen von Lieferantenrechnungen erscheinen hier.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-scheduleEmpty" datatype="html">
+        <source>No assets in the selected period.</source>
+        <target>Keine Anlagegüter im gewählten Zeitraum.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colNumber" datatype="html">
+        <source>Number</source>
+        <target>Nummer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colName" datatype="html">
+        <source>Name</source>
+        <target>Bezeichnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colAccount" datatype="html">
+        <source>Asset account</source>
+        <target>Anlagenkonto</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colOpeningCost" datatype="html">
+        <source>Opening cost</source>
+        <target>Anschaffungskosten Periodenbeginn</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colClosingCost" datatype="html">
+        <source>Closing cost</source>
+        <target>Anschaffungskosten Periodenende</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colOpeningDepreciation" datatype="html">
+        <source> Opening depreciation </source>
+        <target> Abschreibungen Periodenbeginn </target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colOpeningBookValue" datatype="html">
+        <source> Opening book value </source>
+        <target> Buchwert Periodenbeginn </target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-total" datatype="html">
+        <source>Total</source>
+        <target>Summe</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colAcquired" datatype="html">
+        <source>Acquired</source>
+        <target>Angeschafft am</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-netCost" datatype="html">
+        <source>Net cost</source>
+        <target>Anschaffungskosten (netto)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colMethod" datatype="html">
+        <source>Method</source>
+        <target>Abschreibungsmethode</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-methodHint" datatype="html">
+        <source>Empty: classified by cost (low-value, pool or straight line).</source>
+        <target>Leer: Einstufung nach Anschaffungskosten (GWG, Sammelposten oder linear).</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-methodAuto" datatype="html">
+        <source>Automatic</source>
+        <target>Automatisch</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-methodStraightLine" datatype="html">
+        <source>Straight line</source>
+        <target>Linear</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-methodImmediate" datatype="html">
+        <source>Immediate write-off</source>
+        <target>Sofortabschreibung (GWG)</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-methodPool" datatype="html">
+        <source>Asset pool</source>
+        <target>Sammelposten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colLife" datatype="html">
+        <source>Useful life (months)</source>
+        <target>Nutzungsdauer (Monate)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-residual" datatype="html">
+        <source>Residual value</source>
+        <target>Restwert</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-note" datatype="html">
+        <source>Note</source>
+        <target>Notiz</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-createSubmit" datatype="html">
+        <source>Create</source>
+        <target>Anlegen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-depreciationHint" datatype="html">
+        <source> Books the planned depreciation of all active assets up to and including the month. </source>
+        <target> Bucht die planmäßige Abschreibung aller aktiven Anlagegüter bis einschließlich des gewählten Monats. </target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-through" datatype="html">
+        <source>Through month</source>
+        <target>Bis einschließlich Monat</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-depreciationDone" datatype="html">
+        <source>Depreciation booked for <x id="INTERPOLATION" equiv-text="{{ result.assets }}"/> assets: <x id="INTERPOLATION_1" equiv-text="{{ money(result.amount) }}"/>.</source>
+        <target>Abschreibung für <x id="INTERPOLATION" equiv-text="{{ result.assets }}"/> Anlagegüter gebucht: <x id="INTERPOLATION_1" equiv-text="{{ money(result.amount) }}"/>.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-runSubmit" datatype="html">
+        <source>Run</source>
+        <target>Ausführen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-detailTitle" datatype="html">
+        <source>Asset</source>
+        <target>Anlagegut</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-plan" datatype="html">
+        <source>Depreciation plan</source>
+        <target>Abschreibungsplan</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-planEmpty" datatype="html">
+        <source>No depreciation planned.</source>
+        <target>Keine Abschreibung geplant.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-month" datatype="html">
+        <source>Month</source>
+        <target>Monat</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-amount" datatype="html">
+        <source>Amount</source>
+        <target>Betrag</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-showAll" datatype="html">
+        <source>Show all</source>
+        <target>Alle anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-bookings" datatype="html">
+        <source>Bookings</source>
+        <target>Buchungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-dispose" datatype="html">
+        <source>Dispose</source>
+        <target>Abgang buchen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-disposeTitle" datatype="html">
+        <source>Dispose asset</source>
+        <target>Abgang des Anlageguts buchen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-disposeHint" datatype="html">
+        <source> Books the remaining book value as disposal loss and removes the asset from the register. </source>
+        <target> Bucht den Restbuchwert als Anlagenabgang (Verlust) und entfernt das Anlagegut aus dem Anlagenverzeichnis. </target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-disposeDate" datatype="html">
+        <source>Disposal date</source>
+        <target>Abgangsdatum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-disposeSubmit" datatype="html">
+        <source>Dispose</source>
+        <target>Abgang buchen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-title" datatype="html">
+        <source>Fixed assets</source>
+        <target>Anlagevermögen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-search" datatype="html">
+        <source>Search assets</source>
+        <target>Anlagegüter suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-create" datatype="html">
+        <source>Create asset</source>
+        <target>Anlagegut anlegen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-depreciationRun" datatype="html">
+        <source>Depreciation run</source>
+        <target>Abschreibungslauf</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-chartTitle" datatype="html">
+        <source>Book value, additions and depreciation by acquisition year</source>
+        <target>Buchwert, Zugänge und Abschreibungen nach Anschaffungsjahr</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-seriesBookValue" datatype="html">
+        <source>Book value</source>
+        <target>Buchwert</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-seriesAdditions" datatype="html">
+        <source>Additions</source>
+        <target>Zugänge</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-seriesDepreciation" datatype="html">
+        <source>Depreciation</source>
+        <target>Abschreibungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colCost" datatype="html">
+        <source>Cost</source>
+        <target>Anschaffungskosten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colAccumulated" datatype="html">
+        <source>Accumulated depreciation</source>
+        <target>Kumulierte Abschreibungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colBookValue" datatype="html">
+        <source>Book value</source>
+        <target>Buchwert</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-colThrough" datatype="html">
+        <source>Depreciated through</source>
+        <target>Abgeschrieben bis</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-open" datatype="html">
+        <source>Details</source>
+        <target>Details</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingAssets-disposedOn" datatype="html">
+        <source>Disposed on</source>
+        <target>Abgang am</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-kpiAccounts" datatype="html">
+        <source>Accounts</source>
+        <target>Konten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-transactions" datatype="html">
+        <source>Transactions</source>
+        <target>Umsätze</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-kpiRate" datatype="html">
+        <source>Reconciled</source>
+        <target>Abgeglichen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-kpiUnmatched" datatype="html">
+        <source>Unmatched</source>
+        <target>Nicht zugeordnet</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-kpiBalance" datatype="html">
+        <source>Balance</source>
+        <target>Saldo</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-statistics" datatype="html">
+        <source>Statistics</source>
+        <target>Statistik</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-from" datatype="html">
+        <source>From</source>
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-to" datatype="html">
+        <source>To</source>
+        <target>Bis</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-noFlows" datatype="html">
+        <source>No booked transactions in the selected period.</source>
+        <target>Keine gebuchten Umsätze im gewählten Zeitraum.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-noStatuses" datatype="html">
+        <source>No transactions imported yet.</source>
+        <target>Noch keine Umsätze importiert.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-list" datatype="html">
+        <source>Banking</source>
+        <target>Bank</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-listTabs" datatype="html">
+        <source>Banking views</source>
+        <target>Bankansichten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-tabAccounts" datatype="html">
+        <source>Accounts</source>
+        <target>Konten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-tabMappings" datatype="html">
+        <source>CSV mappings</source>
+        <target>CSV-Zuordnungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-tabRules" datatype="html">
+        <source>Rules</source>
+        <target>Regeln</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-importFilter" datatype="html">
+        <source>Showing the transactions of one import.</source>
+        <target>Angezeigt werden die Umsätze eines Imports.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-allStatuses" datatype="html">
+        <source>All</source>
+        <target>Alle</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colAccount" datatype="html">
+        <source>Account</source>
+        <target>Konto</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-allAccounts" datatype="html">
+        <source>All accounts</source>
+        <target>Alle Konten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-txEmpty" datatype="html">
+        <source>No transactions. Upload a bank statement to get started.</source>
+        <target>Keine Umsätze. Laden Sie einen Kontoauszug hoch, um zu beginnen.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-importsEmpty" datatype="html">
+        <source>No statement files uploaded yet.</source>
+        <target>Noch keine Kontoauszugsdateien hochgeladen.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-accountsEmpty" datatype="html">
+        <source>No bank, cash or processor accounts yet.</source>
+        <target>Noch keine Bank-, Kassen- oder Zahlungsanbieterkonten.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-mappingsEmpty" datatype="html">
+        <source>No saved CSV mappings. Built-in presets cover common banks.</source>
+        <target>Keine gespeicherten CSV-Zuordnungen. Integrierte Vorlagen decken gängige Banken ab.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-rulesEmpty" datatype="html">
+        <source>No match rules. Matching with “learn” creates them.</source>
+        <target>Keine Zuordnungsregeln. Zuordnen mit „Merken“ legt sie an.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-matchTitle" datatype="html">
+        <source>Match transaction</source>
+        <target>Umsatz zuordnen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-suggestions" datatype="html">
+        <source>Suggestions</source>
+        <target>Vorschläge</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-noSuggestions" datatype="html">
+        <source>No suggestions found.</source>
+        <target>Keine Vorschläge gefunden.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-apply" datatype="html">
+        <source>Apply</source>
+        <target>Übernehmen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-targets" datatype="html">
+        <source>Targets</source>
+        <target>Zuordnungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-targetType" datatype="html">
+        <source>Type</source>
+        <target>Typ</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-sourceInvoice" datatype="html">
+        <source>Invoice</source>
+        <target>Rechnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-sourceSupplierInvoice" datatype="html">
+        <source>Supplier invoice</source>
+        <target>Lieferantenrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-targetAccount" datatype="html">
+        <source>Account</source>
+        <target>Konto</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-accountNumber" datatype="html">
+        <source>Account no.</source>
+        <target>Kontonr.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colTaxCode" datatype="html">
+        <source>Tax code</source>
+        <target>Steuerschlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-noTaxCode" datatype="html">
+        <source>None</source>
+        <target>Keiner</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-description" datatype="html">
+        <source>Text</source>
+        <target>Buchungstext</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-documentId" datatype="html">
+        <source>Invoice number</source>
+        <target>Rechnungsnummer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colAmount" datatype="html">
+        <source>Amount</source>
+        <target>Betrag</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-removeTarget" datatype="html">
+        <source>Remove target</source>
+        <target>Zuordnung entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-addTarget" datatype="html">
+        <source>Add target</source>
+        <target>Zuordnung hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-assigned" datatype="html">
+        <source>Assigned</source>
+        <target>Zugeordnet</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-learn" datatype="html">
+        <source>Remember this counterparty (create a match rule)</source>
+        <target>Diesen Geschäftspartner merken (Zuordnungsregel anlegen)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-match" datatype="html">
+        <source>Match</source>
+        <target>Zuordnen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-warnings" datatype="html">
+        <source>Warnings</source>
+        <target>Warnungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-file" datatype="html">
+        <source>Statement file</source>
+        <target>Kontoauszugsdatei</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colFormat" datatype="html">
+        <source>Format</source>
+        <target>Format</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-formatAuto" datatype="html">
+        <source>Detect automatically</source>
+        <target>Automatisch erkennen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-targetAccountField" datatype="html">
+        <source>Target account</source>
+        <target>Zielkonto</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-accountByIban" datatype="html">
+        <source>By IBAN / account number</source>
+        <target>Anhand IBAN / Kontonummer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-csvLayout" datatype="html">
+        <source>CSV layout</source>
+        <target>CSV-Aufbau</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-csvAuto" datatype="html">
+        <source>Detect automatically</source>
+        <target>Automatisch erkennen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-savedMappings" datatype="html">
+        <source>Saved mappings</source>
+        <target>Gespeicherte Zuordnungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-presets" datatype="html">
+        <source>Presets</source>
+        <target>Vorlagen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-encoding" datatype="html">
+        <source>Encoding</source>
+        <target>Zeichenkodierung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-qifDates" datatype="html">
+        <source>QIF dates</source>
+        <target>QIF-Datumsformat</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-qifAuto" datatype="html">
+        <source>Automatic</source>
+        <target>Automatisch</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-close" datatype="html">
+        <source>Close</source>
+        <target>Schließen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-uploadSubmit" datatype="html">
+        <source>Upload</source>
+        <target>Hochladen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-importTitle" datatype="html">
+        <source>Import</source>
+        <target>Import</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-downloadOriginal" datatype="html">
+        <source>Download original</source>
+        <target>Original herunterladen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-showTransactions" datatype="html">
+        <source>Show transactions</source>
+        <target>Umsätze anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-rollback" datatype="html">
+        <source>Roll back</source>
+        <target>Zurücknehmen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colName" datatype="html">
+        <source>Name</source>
+        <target>Bezeichnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colKind" datatype="html">
+        <source>Kind</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-accountNumberField" datatype="html">
+        <source>Account number</source>
+        <target>Kontonummer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-currency" datatype="html">
+        <source>Currency</source>
+        <target>Währung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colLedger" datatype="html">
+        <source>Ledger account</source>
+        <target>Sachkonto</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-processor" datatype="html">
+        <source>Processor</source>
+        <target>Zahlungsanbieter</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-noProcessor" datatype="html">
+        <source>None</source>
+        <target>Keiner</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-sharedAccount" datatype="html">
+        <source>Shared by all tenants</source>
+        <target>Von allen Mandanten gemeinsam genutzt</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colActive" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-startFromPreset" datatype="html">
+        <source>Start from preset</source>
+        <target>Mit Vorlage beginnen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-noPreset" datatype="html">
+        <source>–</source>
+        <target>–</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-mappingJson" datatype="html">
+        <source>Mapping (JSON)</source>
+        <target>Zuordnung (JSON)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-mappingHint" datatype="html">
+        <source>delimiter, decimalSeparator, dateFormat (e.g. DD.MM.YYYY), encoding, hasHeader and columns (bookingDate, amount or debit/credit, counterpartyName, remittance …).</source>
+        <target>delimiter, decimalSeparator, dateFormat (z. B. DD.MM.YYYY), encoding, hasHeader und columns (bookingDate, amount oder debit/credit, counterpartyName, remittance …).</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colRuleKind" datatype="html">
+        <source>Kind</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-ruleText" datatype="html">
+        <source>Text</source>
+        <target>Text</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colPattern" datatype="html">
+        <source>Pattern</source>
+        <target>Muster</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colTarget" datatype="html">
+        <source>Target</source>
+        <target>Ziel</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-targetId" datatype="html">
+        <source>Customer / supplier number or account no.</source>
+        <target>Kunden-/Lieferantennummer oder Kontonr.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-title" datatype="html">
+        <source>Banking</source>
+        <target>Bank</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-flowsTitle" datatype="html">
+        <source>Inflow vs outflow</source>
+        <target>Eingänge und Ausgänge</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-statusTitle" datatype="html">
+        <source>Reconciliation status</source>
+        <target>Abgleichstatus</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-imports" datatype="html">
+        <source>Imports</source>
+        <target>Importe</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-upload" datatype="html">
+        <source>Upload statement</source>
+        <target>Kontoauszug hochladen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-createAccount" datatype="html">
+        <source>Add account</source>
+        <target>Konto hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-createMapping" datatype="html">
+        <source>Add CSV mapping</source>
+        <target>CSV-Zuordnung hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-createRule" datatype="html">
+        <source>Add rule</source>
+        <target>Regel hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-processorSync" datatype="html">
+        <source>Processor sync</source>
+        <target>Zahlungsanbieter abgleichen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-search" datatype="html">
+        <source>Search counterparty, reference, IBAN</source>
+        <target>Geschäftspartner, Verwendungszweck, IBAN suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-inflow" datatype="html">
+        <source>Inflow</source>
+        <target>Eingänge</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-outflow" datatype="html">
+        <source>Outflow</source>
+        <target>Ausgänge</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colDate" datatype="html">
+        <source>Booking date</source>
+        <target>Buchungsdatum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colCounterparty" datatype="html">
+        <source>Counterparty</source>
+        <target>Geschäftspartner</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colRemittance" datatype="html">
+        <source>Reference</source>
+        <target>Verwendungszweck</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colSuggestion" datatype="html">
+        <source>Suggestion</source>
+        <target>Vorschlag</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-unmatch" datatype="html">
+        <source>Undo match</source>
+        <target>Zuordnung aufheben</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-ignore" datatype="html">
+        <source>Ignore</source>
+        <target>Ignorieren</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-bookings" datatype="html">
+        <source>Bookings</source>
+        <target>Buchungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colFile" datatype="html">
+        <source>File</source>
+        <target>Datei</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colStatements" datatype="html">
+        <source>Statements</source>
+        <target>Auszüge</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colDuplicates" datatype="html">
+        <source>Duplicates</source>
+        <target>Duplikate</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colMatched" datatype="html">
+        <source>Matched</source>
+        <target>Zugeordnet</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colCreated" datatype="html">
+        <source>Uploaded</source>
+        <target>Hochgeladen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colNotes" datatype="html">
+        <source>Warnings</source>
+        <target>Warnungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-details" datatype="html">
+        <source>Details</source>
+        <target>Details</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colIban" datatype="html">
+        <source>IBAN / number</source>
+        <target>IBAN / Nummer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colBalance" datatype="html">
+        <source>Balance</source>
+        <target>Saldo</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colBalanceDate" datatype="html">
+        <source>Balance date</source>
+        <target>Saldodatum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colScope" datatype="html">
+        <source>Scope</source>
+        <target>Geltungsbereich</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-shared" datatype="html">
+        <source>Shared</source>
+        <target>Gemeinsam</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-edit" datatype="html">
+        <source>Edit</source>
+        <target>Bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colDateFormat" datatype="html">
+        <source>Date format</source>
+        <target>Datumsformat</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colDelimiter" datatype="html">
+        <source>Delimiter</source>
+        <target>Trennzeichen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colUpdated" datatype="html">
+        <source>Updated</source>
+        <target>Aktualisiert</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-delete" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-colHits" datatype="html">
+        <source>Hits</source>
+        <target>Treffer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-confirmUnmatch" datatype="html">
+        <source>Undo the reconciliation and its bookings?</source>
+        <target>Abgleich und zugehörige Buchungen rückgängig machen?</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-confirmRollback" datatype="html">
+        <source>Roll back this import? Its transactions and their reconciliations are removed.</source>
+        <target>Diesen Import zurücknehmen? Seine Umsätze und deren Abgleiche werden entfernt.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-kindBank" datatype="html">
+        <source>Bank</source>
+        <target>Bank</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-kindCash" datatype="html">
+        <source>Cash</source>
+        <target>Kasse</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-kindProcessor" datatype="html">
+        <source>Payment processor</source>
+        <target>Zahlungsanbieter</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-kindOther" datatype="html">
+        <source>Other</source>
+        <target>Sonstiges</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-mappingInvalidJson" datatype="html">
+        <source>The mapping is not valid JSON: <x id="message" equiv-text="error as Error).message"/></source>
+        <target>Die Zuordnung ist kein gültiges JSON: <x id="message" equiv-text="error as Error).message"/></target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-mappingMissingFields" datatype="html">
+        <source>The mapping needs &quot;columns&quot; and &quot;dateFormat&quot;.</source>
+        <target>Die Zuordnung benötigt „columns“ und „dateFormat“.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-mappingMissingName" datatype="html">
+        <source>Enter a name.</source>
+        <target>Geben Sie einen Namen ein.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-confirmDeleteMapping" datatype="html">
+        <source>Delete the CSV mapping &quot;<x id="name" equiv-text="row.name"/>&quot;?</source>
+        <target>CSV-Zuordnung „<x id="name" equiv-text="row.name"/>“ löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-targetCustomer" datatype="html">
+        <source>Customer</source>
+        <target>Kunde</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-targetSupplier" datatype="html">
+        <source>Supplier</source>
+        <target>Lieferant</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-confirmDeleteRule" datatype="html">
+        <source>Delete this match rule?</source>
+        <target>Diese Zuordnungsregel löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingBanking-syncImported" datatype="html">
+        <source>Processor sync imported <x id="count" equiv-text="imported"/> transactions.</source>
+        <target>Der Abgleich mit dem Zahlungsanbieter hat <x id="count" equiv-text="imported"/> Umsätze importiert.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkContextTitle" datatype="html">
+        <source>Bookings of document</source>
+        <target>Buchungen zum Beleg</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkContextBook" datatype="html">
+        <source>Book manually</source>
+        <target>Manuell buchen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkContextClear" datatype="html">
+        <source>Show all bookings</source>
+        <target>Alle Buchungen anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkContextEmpty" datatype="html">
+        <source> No bookings for this document yet. </source>
+        <target> Noch keine Buchungen zu diesem Beleg. </target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-colNumber" datatype="html">
+        <source>No.</source>
+        <target>Nr.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-colPostingDate" datatype="html">
+        <source>Posting date</source>
+        <target>Buchungsdatum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-colDescription" datatype="html">
+        <source>Description</source>
+        <target>Buchungstext</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-colKind" datatype="html">
+        <source>Kind</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-colTotal" datatype="html">
+        <source>Amount</source>
+        <target>Betrag</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-from" datatype="html">
+        <source>From</source>
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-to" datatype="html">
+        <source>To</source>
+        <target>Bis</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-noStatistics" datatype="html">
+        <source>No bookings in the selected period.</source>
+        <target>Keine Buchungen im gewählten Zeitraum.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-noResult" datatype="html">
+        <source>No revenue or expenses in the selected period.</source>
+        <target>Keine Erlöse oder Aufwendungen im gewählten Zeitraum.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-kind" datatype="html">
+        <source>Kind</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-any" datatype="html">
+        <source>Any</source>
+        <target>Alle</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-source" datatype="html">
+        <source>Source</source>
+        <target>Herkunft</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-account" datatype="html">
+        <source>Account</source>
+        <target>Konto</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-empty" datatype="html">
+        <source>No bookings. Invoices, payments and supplier invoices are booked automatically.</source>
+        <target>Keine Buchungen. Rechnungen, Zahlungen und Lieferantenrechnungen werden automatisch gebucht.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-reversedNotice" datatype="html">
+        <source>This entry was reversed.</source>
+        <target>Diese Buchung wurde storniert.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-reversalOf" datatype="html">
+        <source>Reverses entry</source>
+        <target>Storniert Buchung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-openOriginal" datatype="html">
+        <source>Open original</source>
+        <target>Ursprüngliche Buchung öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-lines" datatype="html">
+        <source>Lines</source>
+        <target>Buchungszeilen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineAccount" datatype="html">
+        <source>Account</source>
+        <target>Konto</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineDebit" datatype="html">
+        <source>Debit</source>
+        <target>Soll</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineCredit" datatype="html">
+        <source>Credit</source>
+        <target>Haben</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineTaxRate" datatype="html">
+        <source>Tax rate</source>
+        <target>Steuersatz</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineDescription" datatype="html">
+        <source>Description</source>
+        <target>Buchungstext</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineCounterparty" datatype="html">
+        <source>Counterparty</source>
+        <target>Geschäftspartner</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-links" datatype="html">
+        <source>Links and receipts</source>
+        <target>Verknüpfungen und Belege</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-noLinks" datatype="html">
+        <source>No linked documents.</source>
+        <target>Keine verknüpften Dokumente.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-downloadReceipt" datatype="html">
+        <source>Download receipt</source>
+        <target>Beleg herunterladen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-removeLink" datatype="html">
+        <source>Remove link</source>
+        <target>Verknüpfung entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkType" datatype="html">
+        <source>Document type</source>
+        <target>Dokumenttyp</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkTarget" datatype="html">
+        <source>Document number</source>
+        <target>Belegnummer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkRole" datatype="html">
+        <source>Role</source>
+        <target>Rolle</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-roleRelated" datatype="html">
+        <source>Related</source>
+        <target>Zugehörig</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-roleSettles" datatype="html">
+        <source>Settles</source>
+        <target>Gleicht aus</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-roleReceipt" datatype="html">
+        <source>Receipt</source>
+        <target>Beleg</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkLabel" datatype="html">
+        <source>Label</source>
+        <target>Bezeichnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-addLink" datatype="html">
+        <source>Add link</source>
+        <target>Verknüpfung hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-uploadReceipt" datatype="html">
+        <source>Upload receipt</source>
+        <target>Beleg hochladen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-reverseTitle" datatype="html">
+        <source>Reverse entry</source>
+        <target>Buchung stornieren</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-reverseDate" datatype="html">
+        <source>Reversal date</source>
+        <target>Stornodatum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-reverseReason" datatype="html">
+        <source>Reason</source>
+        <target>Grund</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-cancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-reverseSubmit" datatype="html">
+        <source>Book reversal</source>
+        <target>Stornobuchung erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-reverse" datatype="html">
+        <source>Reverse</source>
+        <target>Stornieren</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-manualLinked" datatype="html">
+        <source>The booking will be linked to the selected document.</source>
+        <target>Die Buchung wird mit dem ausgewählten Dokument verknüpft.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-documentDate" datatype="html">
+        <source>Document date</source>
+        <target>Belegdatum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-documentNumber" datatype="html">
+        <source>Document number</source>
+        <target>Belegnummer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-description" datatype="html">
+        <source>Description</source>
+        <target>Buchungstext</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-tenant" datatype="html">
+        <source>Tenant</source>
+        <target>Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-tenantHint" datatype="html">
+        <source>Empty = current tenant</source>
+        <target>Leer = aktueller Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-selectAccount" datatype="html">
+        <source>Account…</source>
+        <target>Konto …</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineTaxCode" datatype="html">
+        <source>Tax code</source>
+        <target>Steuerschlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-noTaxCode" datatype="html">
+        <source>No tax</source>
+        <target>Ohne Steuer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-removeLine" datatype="html">
+        <source>Remove line</source>
+        <target>Zeile entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-addLine" datatype="html">
+        <source>Add line</source>
+        <target>Zeile hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-debitTotal" datatype="html">
+        <source>Debit</source>
+        <target>Soll</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-creditTotal" datatype="html">
+        <source>Credit</source>
+        <target>Haben</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-balanced" datatype="html">
+        <source>Balanced</source>
+        <target>Ausgeglichen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-unbalanced" datatype="html">
+        <source>Debit and credit differ</source>
+        <target>Soll und Haben weichen voneinander ab</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-grossHint" datatype="html">
+        <source> Lines with a tax code are entered gross; the VAT is split off to the tax code&apos;s account. </source>
+        <target> Zeilen mit Steuerschlüssel werden brutto erfasst; die Umsatzsteuer wird auf das Konto des Steuerschlüssels herausgerechnet. </target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-book" datatype="html">
+        <source>Book</source>
+        <target>Buchen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-title" datatype="html">
+        <source>Journal</source>
+        <target>Journal</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-statistics" datatype="html">
+        <source>Statistics</source>
+        <target>Statistik</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-journal" datatype="html">
+        <source>Bookings</source>
+        <target>Buchungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-search" datatype="html">
+        <source>Search description, document, number</source>
+        <target>Buchungstext, Beleg, Nummer suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-createEntry" datatype="html">
+        <source>Manual booking</source>
+        <target>Manuelle Buchung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-kpiEntries" datatype="html">
+        <source>Entries</source>
+        <target>Buchungssätze</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-kpiVolume" datatype="html">
+        <source>Volume</source>
+        <target>Volumen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-kpiManualShare" datatype="html">
+        <source>Manual share</source>
+        <target>Anteil manuell</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-kpiRevenue" datatype="html">
+        <source>Revenue</source>
+        <target>Erlöse</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-kpiExpenses" datatype="html">
+        <source>Expenses</source>
+        <target>Aufwendungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-kpiResult" datatype="html">
+        <source>Result</source>
+        <target>Ergebnis</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-chartBookings" datatype="html">
+        <source>Bookings per month</source>
+        <target>Buchungen pro Monat</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-chartVolume" datatype="html">
+        <source>Volume per month</source>
+        <target>Volumen pro Monat</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-chartResult" datatype="html">
+        <source>Revenue vs expenses</source>
+        <target>Erlöse und Aufwendungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-chartSources" datatype="html">
+        <source>Volume by source</source>
+        <target>Volumen nach Herkunft</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryTitle" datatype="html">
+        <source>Journal entry</source>
+        <target>Buchungssatz</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-chartManual" datatype="html">
+        <source>Manual</source>
+        <target>Manuell</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-colDocument" datatype="html">
+        <source>Document</source>
+        <target>Beleg</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-colSource" datatype="html">
+        <source>Source</source>
+        <target>Herkunft</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-colTenant" datatype="html">
+        <source>Tenant</source>
+        <target>Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryNumber" datatype="html">
+        <source>Entry number</source>
+        <target>Buchungsnummer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryPosting" datatype="html">
+        <source>Posting date</source>
+        <target>Buchungsdatum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryDocumentDate" datatype="html">
+        <source>Document date</source>
+        <target>Belegdatum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryDocumentNumber" datatype="html">
+        <source>Document number</source>
+        <target>Belegnummer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryKind" datatype="html">
+        <source>Kind</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-entrySource" datatype="html">
+        <source>Source</source>
+        <target>Herkunft</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryTotal" datatype="html">
+        <source>Amount</source>
+        <target>Betrag</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryTenant" datatype="html">
+        <source>Tenant</source>
+        <target>Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingJournal-receiptDownloadFailed" datatype="html">
+        <source>The receipt could not be downloaded.</source>
+        <target>Der Beleg konnte nicht heruntergeladen werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingNav-aria" datatype="html">
+        <source>Accounting sections</source>
+        <target>Buchhaltungsbereiche</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingNav-overview" datatype="html">
+        <source>Overview</source>
+        <target>Übersicht</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingNav-journal" datatype="html">
+        <source>Journal</source>
+        <target>Journal</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingNav-accounts" datatype="html">
+        <source>Accounts</source>
+        <target>Konten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingNav-banking" datatype="html">
+        <source>Banking</source>
+        <target>Bank</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingNav-openItems" datatype="html">
+        <source>Open items</source>
+        <target>Offene Posten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingNav-statements" datatype="html">
+        <source>Statements</source>
+        <target>Abschlüsse</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingNav-vatReturns" datatype="html">
+        <source>VAT returns</source>
+        <target>USt-Voranmeldungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingNav-assets" datatype="html">
+        <source>Assets</source>
+        <target>Anlagen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-typeAria" datatype="html">
+        <source>Counterparty type</source>
+        <target>Art des Geschäftspartners</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-asOf" datatype="html">
+        <source>As of</source>
+        <target>Stichtag</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-noAging" datatype="html">
+        <source>No open items as of this date.</source>
+        <target>Keine offenen Posten zu diesem Stichtag.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-search" datatype="html">
+        <source>Search document, counterparty</source>
+        <target>Beleg, Geschäftspartner suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-empty" datatype="html">
+        <source>No open items.</source>
+        <target>Keine offenen Posten.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-overdue90" datatype="html">
+        <source><x id="days" equiv-text="row.daysOverdue"/> days overdue</source>
+        <target><x id="days" equiv-text="row.daysOverdue"/> Tage überfällig</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-overdue" datatype="html">
+        <source><x id="days" equiv-text="row.daysOverdue"/> days overdue</source>
+        <target><x id="days" equiv-text="row.daysOverdue"/> Tage überfällig</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-notDue" datatype="html">
+        <source>Not due</source>
+        <target>Nicht fällig</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-title" datatype="html">
+        <source>Open items</source>
+        <target>Offene Posten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-statistics" datatype="html">
+        <source>Statistics</source>
+        <target>Statistik</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-items" datatype="html">
+        <source>Items</source>
+        <target>Posten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-customers" datatype="html">
+        <source>Customers</source>
+        <target>Debitoren</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-suppliers" datatype="html">
+        <source>Suppliers</source>
+        <target>Kreditoren</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-kpiTotal" datatype="html">
+        <source>Total open</source>
+        <target>Summe offen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-kpiCount" datatype="html">
+        <source>Items</source>
+        <target>Posten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-kpiOverdue" datatype="html">
+        <source>Overdue</source>
+        <target>Überfällig</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-kpiOverdue90" datatype="html">
+        <source>More than 90 days</source>
+        <target>Mehr als 90 Tage</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-agingChart" datatype="html">
+        <source>Aging</source>
+        <target>Fälligkeitsstruktur</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-bookings" datatype="html">
+        <source>Bookings</source>
+        <target>Buchungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colState" datatype="html">
+        <source>State</source>
+        <target>Zustand</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colDocument" datatype="html">
+        <source>Document</source>
+        <target>Beleg</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colDocumentDate" datatype="html">
+        <source>Document date</source>
+        <target>Belegdatum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colDueDate" datatype="html">
+        <source>Due date</source>
+        <target>Fälligkeitsdatum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colAmount" datatype="html">
+        <source>Amount</source>
+        <target>Betrag</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colOpen" datatype="html">
+        <source>Open</source>
+        <target>Offen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colDaysOverdue" datatype="html">
+        <source>Days overdue</source>
+        <target>Tage überfällig</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colCounterparty" datatype="html">
+        <source>Counterparty</source>
+        <target>Geschäftspartner</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colTenant" datatype="html">
+        <source>Tenant</source>
+        <target>Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-kpiOpenYears" datatype="html">
+        <source>Open fiscal years</source>
+        <target>Offene Geschäftsjahre</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-kpiIssues" datatype="html">
+        <source>Open posting issues</source>
+        <target>Offene Buchungsfehler</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-kpiCharts" datatype="html">
+        <source>Charts of accounts</source>
+        <target>Kontenrahmen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-kpiMethod" datatype="html">
+        <source>Method</source>
+        <target>Gewinnermittlung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-sectionsAria" datatype="html">
+        <source>Overview sections</source>
+        <target>Übersichtsbereiche</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-tabSetup" datatype="html">
+        <source>Profile</source>
+        <target>Profil</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-tabYears" datatype="html">
+        <source>Fiscal years</source>
+        <target>Geschäftsjahre</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-tabCharts" datatype="html">
+        <source>Charts</source>
+        <target>Kontenrahmen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-tabIssues" datatype="html">
+        <source>Posting issues</source>
+        <target>Buchungsfehler</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-tabFx" datatype="html">
+        <source>Exchange rates</source>
+        <target>Wechselkurse</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-complianceHeading" datatype="html">
+        <source>Compliance notice</source>
+        <target>Hinweis zur Ordnungsmäßigkeit</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-profilePanel" datatype="html">
+        <source>Country profile</source>
+        <target>Länderprofil</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-featuresPanel" datatype="html">
+        <source>VAT returns and exports</source>
+        <target>Umsatzsteuermeldungen und Exporte</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-noFeatures" datatype="html">
+        <source>This country profile defines no VAT returns or exports.</source>
+        <target>Dieses Länderprofil definiert keine Umsatzsteuermeldungen oder Exporte.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colFeature" datatype="html">
+        <source>Feature</source>
+        <target>Funktion</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colAvailability" datatype="html">
+        <source>Availability</source>
+        <target>Verfügbarkeit</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-available" datatype="html">
+        <source>Available</source>
+        <target>Verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-unavailable" datatype="html">
+        <source>Unavailable</source>
+        <target>Nicht verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-missingEnv" datatype="html">
+        <source>Missing settings:</source>
+        <target>Fehlende Einstellungen:</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-yearsTitle" datatype="html">
+        <source>Fiscal years and periods</source>
+        <target>Geschäftsjahre und Buchungsperioden</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-openNextYear" datatype="html">
+        <source>Open next fiscal year</source>
+        <target>Nächstes Geschäftsjahr eröffnen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-noYears" datatype="html">
+        <source>No fiscal years yet. The first booking opens the fiscal year of the bookkeeping start.</source>
+        <target>Noch keine Geschäftsjahre. Die erste Buchung eröffnet das Geschäftsjahr des Buchführungsbeginns.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-yearClosed" datatype="html">
+        <source>Closed</source>
+        <target>Abgeschlossen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-yearOpen" datatype="html">
+        <source>Open</source>
+        <target>Offen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-closeYear" datatype="html">
+        <source>Close year</source>
+        <target>Jahresabschluss durchführen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colPeriod" datatype="html">
+        <source>Period</source>
+        <target>Periode</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colFrom" datatype="html">
+        <source>From</source>
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colTo" datatype="html">
+        <source>To</source>
+        <target>Bis</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-periodLocked" datatype="html">
+        <source>Locked</source>
+        <target>Festgeschrieben</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-periodOpen" datatype="html">
+        <source>Open</source>
+        <target>Offen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-lock" datatype="html">
+        <source>Lock</source>
+        <target>Festschreiben</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-createChart" datatype="html">
+        <source>Create chart of accounts</source>
+        <target>Kontenrahmen anlegen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-noCharts" datatype="html">
+        <source>No chart of accounts yet. Create one from a template of the country profile.</source>
+        <target>Noch kein Kontenrahmen. Legen Sie einen aus einer Vorlage des Länderprofils an.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-catchUp" datatype="html">
+        <source>Run catch-up</source>
+        <target>Nachbuchung ausführen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-noIssues" datatype="html">
+        <source>No open posting issues. Every document is booked.</source>
+        <target>Keine offenen Buchungsfehler. Alle Belege sind gebucht.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-ecbStored" datatype="html">
+        <source>ECB reference rates fetched: <x id="INTERPOLATION" equiv-text="{{ ecbResult() }}"/> rates stored.</source>
+        <target>EZB-Referenzkurse abgerufen: <x id="INTERPOLATION" equiv-text="{{ ecbResult() }}"/> Kurse gespeichert.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-addRate" datatype="html">
+        <source>Add manual rate</source>
+        <target>Manuellen Kurs hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-fetchEcb" datatype="html">
+        <source>Fetch ECB rates</source>
+        <target>EZB-Kurse abrufen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-noRates" datatype="html">
+        <source>No exchange rates stored yet.</source>
+        <target>Noch keine Wechselkurse gespeichert.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-lockTitle" datatype="html">
+        <source>Lock period?</source>
+        <target>Periode festschreiben?</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-lockMessage" datatype="html">
+        <source>Locked periods accept no new bookings and their entries become immutable (corrections go into an open period). Earlier periods are locked as well. This cannot be undone.</source>
+        <target>Festgeschriebene Perioden nehmen keine neuen Buchungen an, und ihre Buchungen werden unveränderlich (Korrekturen erfolgen in einer offenen Periode). Frühere Perioden werden ebenfalls festgeschrieben. Dies kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-openYearTitle" datatype="html">
+        <source>Open next fiscal year?</source>
+        <target>Nächstes Geschäftsjahr eröffnen?</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-openYearMessage" datatype="html">
+        <source>Opens the fiscal year after the latest one with the same chart of accounts.</source>
+        <target>Eröffnet das Geschäftsjahr nach dem letzten mit demselben Kontenrahmen.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-openYearConfirm" datatype="html">
+        <source>Open year</source>
+        <target>Jahr eröffnen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-chartStart" datatype="html">
+        <source>Start from</source>
+        <target>Ausgangspunkt</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-fromTemplate" datatype="html">
+        <source>Template</source>
+        <target>Vorlage</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-fromEmpty" datatype="html">
+        <source>Empty chart</source>
+        <target>Leerer Kontenrahmen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-template" datatype="html">
+        <source>Template</source>
+        <target>Vorlage</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-chooseTemplate" datatype="html">
+        <source>Choose a template</source>
+        <target>Vorlage auswählen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-chartCode" datatype="html">
+        <source>Code</source>
+        <target>Code</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-chartCodeHint" datatype="html">
+        <source>2–32 letters, digits or dashes; templates default to their key.</source>
+        <target>2–32 Buchstaben, Ziffern oder Bindestriche; bei Vorlagen standardmäßig deren Schlüssel.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-chartName" datatype="html">
+        <source>Name</source>
+        <target>Bezeichnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-chartCountry" datatype="html">
+        <source>Country</source>
+        <target>Land</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-chartAccountLength" datatype="html">
+        <source>Account number length</source>
+        <target>Kontonummernlänge</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-create" datatype="html">
+        <source>Create</source>
+        <target>Anlegen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-fxCurrency" datatype="html">
+        <source>Currency</source>
+        <target>Währung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-fxDate" datatype="html">
+        <source>Date</source>
+        <target>Datum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-fxRate" datatype="html">
+        <source>Rate (units per 1 EUR)</source>
+        <target>Kurs (Einheiten je 1 EUR)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-closeYearTitle" datatype="html">
+        <source>Close fiscal year</source>
+        <target>Geschäftsjahr abschließen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-closeYearHint" datatype="html">
+        <source> Balance-sheet accounts and open items carry forward into the next year, the result goes to retained earnings and the closed year becomes immutable. </source>
+        <target> Bestandskonten und offene Posten werden als Saldenvortrag in das nächste Jahr übernommen, das Ergebnis wird auf den Gewinnvortrag gebucht und das abgeschlossene Jahr wird unveränderlich. </target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-nextChart" datatype="html">
+        <source>Chart of the next year</source>
+        <target>Kontenrahmen des nächsten Jahres</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-nextChartHint" datatype="html">
+        <source>Only changeable while the next year has no bookings.</source>
+        <target>Nur änderbar, solange das nächste Jahr keine Buchungen enthält.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-keepChart" datatype="html">
+        <source>Keep the current chart</source>
+        <target>Aktuellen Kontenrahmen beibehalten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-yearResult" datatype="html">
+        <source>Result of <x id="INTERPOLATION" equiv-text="{{ year.name }}"/>:</source>
+        <target>Ergebnis <x id="INTERPOLATION" equiv-text="{{ year.name }}"/>:</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-unmapped" datatype="html">
+        <source>Accounts without a target in the next chart: <x id="INTERPOLATION" equiv-text="{{ preview.unmapped.join(&apos;, &apos;) }}"/>. Map them below.</source>
+        <target>Konten ohne Ziel im nächsten Kontenrahmen: <x id="INTERPOLATION" equiv-text="{{ preview.unmapped.join(&apos;, &apos;) }}"/>. Ordnen Sie sie unten zu.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colAccount" datatype="html">
+        <source>Account</source>
+        <target>Konto</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colBalance" datatype="html">
+        <source>Balance</source>
+        <target>Saldo</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colTarget" datatype="html">
+        <source>Carried to</source>
+        <target>Vorgetragen auf</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-refreshPreview" datatype="html">
+        <source>Refresh preview</source>
+        <target>Vorschau aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-title" datatype="html">
+        <source>Accounting</source>
+        <target>Buchhaltung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-yes" datatype="html">
+        <source>Yes</source>
+        <target>Ja</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-no" datatype="html">
+        <source>No</source>
+        <target>Nein</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-profile" datatype="html">
+        <source>Country profile</source>
+        <target>Länderprofil</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-country" datatype="html">
+        <source>Country</source>
+        <target>Land</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-method" datatype="html">
+        <source>Method</source>
+        <target>Gewinnermittlung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-vatBasis" datatype="html">
+        <source>VAT basis</source>
+        <target>Versteuerungsart</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-vatBasisPayment" datatype="html">
+        <source>When paid (cash basis)</source>
+        <target>Bei Zahlung (Ist-Versteuerung)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-vatBasisInvoice" datatype="html">
+        <source>When invoiced (accrual basis)</source>
+        <target>Bei Rechnungsstellung (Soll-Versteuerung)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-startDate" datatype="html">
+        <source>Bookkeeping start</source>
+        <target>Buchführungsbeginn</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-fiscalYearStart" datatype="html">
+        <source>Fiscal year starts in month</source>
+        <target>Geschäftsjahr beginnt im Monat</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-currency" datatype="html">
+        <source>Functional currency</source>
+        <target>Buchungswährung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-vatPeriod" datatype="html">
+        <source>VAT return period</source>
+        <target>Voranmeldungszeitraum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-retention" datatype="html">
+        <source>Retention (books / vouchers)</source>
+        <target>Aufbewahrung (Bücher / Belege)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-retentionYears" datatype="html">
+        <source><x id="books" equiv-text="o.profile.retention.booksYears"/> / <x id="vouchers" equiv-text="o.profile.retention.vouchersYears"/> years</source>
+        <target><x id="books" equiv-text="o.profile.retention.booksYears"/> / <x id="vouchers" equiv-text="o.profile.retention.vouchersYears"/> Jahre</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-defaultTemplate" datatype="html">
+        <source>Default chart template</source>
+        <target>Standard-Kontenrahmenvorlage</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-mandatoryChart" datatype="html">
+        <source>Chart legally mandatory</source>
+        <target>Kontenrahmen gesetzlich vorgeschrieben</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-cashBasis" datatype="html">
+        <source>Cash-basis statement</source>
+        <target>Einnahmenüberschussrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colCode" datatype="html">
+        <source>Code</source>
+        <target>Code</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colName" datatype="html">
+        <source>Name</source>
+        <target>Bezeichnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colCountry" datatype="html">
+        <source>Country</source>
+        <target>Land</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colTemplate" datatype="html">
+        <source>Template</source>
+        <target>Vorlage</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-emptyChart" datatype="html">
+        <source>Empty</source>
+        <target>Leer</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colAccountLength" datatype="html">
+        <source>Account length</source>
+        <target>Kontonummernlänge</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colSource" datatype="html">
+        <source>Source</source>
+        <target>Herkunft</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colSourceId" datatype="html">
+        <source>Document</source>
+        <target>Beleg</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colError" datatype="html">
+        <source>Error</source>
+        <target>Fehler</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colAttempts" datatype="html">
+        <source>Attempts</source>
+        <target>Versuche</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colUpdated" datatype="html">
+        <source>Last attempt</source>
+        <target>Letzter Versuch</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colCurrency" datatype="html">
+        <source>Currency</source>
+        <target>Währung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colRateDate" datatype="html">
+        <source>Date</source>
+        <target>Datum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colRate" datatype="html">
+        <source>Rate per EUR</source>
+        <target>Kurs je EUR</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-colRateSource" datatype="html">
+        <source>Source</source>
+        <target>Quelle</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-rateManual" datatype="html">
+        <source>Manual</source>
+        <target>Manuell</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-methodCash" datatype="html">
+        <source>Cash basis</source>
+        <target>Einnahmenüberschussrechnung (EÜR)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-methodAccrual" datatype="html">
+        <source>Double entry (accrual)</source>
+        <target>Doppelte Buchführung (Bilanzierung)</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-catchUpSkipped" datatype="html">
+        <source>Catch-up skipped (already running).</source>
+        <target>Nachbuchung übersprungen (läuft bereits).</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingOverview-catchUpDone" datatype="html">
+        <source>Catch-up posted <x id="count" equiv-text="total"/> documents and <x id="opening" equiv-text="result.openingItems ?? 0"/> opening items.</source>
+        <target>Nachbuchung hat <x id="count" equiv-text="total"/> Belege und <x id="opening" equiv-text="result.openingItems ?? 0"/> Eröffnungsposten gebucht.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-kind" datatype="html">
+        <source>Statement</source>
+        <target>Auswertung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-balanceSheet" datatype="html">
+        <source>Balance sheet</source>
+        <target>Bilanz</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-profitAndLoss" datatype="html">
+        <source>Profit and loss</source>
+        <target>Gewinn- und Verlustrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-cashBasis" datatype="html">
+        <source>Cash-basis result</source>
+        <target>Einnahmenüberschussrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-from" datatype="html">
+        <source>From</source>
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-showAccounts" datatype="html">
+        <source>Show accounts</source>
+        <target>Konten anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-managementReport" datatype="html">
+        <source>Filtered by tenant: this is a management report. Select All tenants for the statutory statement.</source>
+        <target>Nach Mandant gefiltert: Dies ist eine interne Auswertung. Wählen Sie „Alle Mandanten“ für den gesetzlichen Abschluss.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-position" datatype="html">
+        <source>Position</source>
+        <target>Position</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-amount" datatype="html">
+        <source>Amount</source>
+        <target>Betrag</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-previousYear" datatype="html">
+        <source>Previous year</source>
+        <target>Vorjahr</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-sectionTotal" datatype="html">
+        <source>Total</source>
+        <target>Summe</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-result" datatype="html">
+        <source>Result</source>
+        <target>Ergebnis</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-unassigned" datatype="html">
+        <source>These accounts have balances but no statement position. Assign a position in the chart of accounts.</source>
+        <target>Diese Konten haben einen Saldo, aber keine Position im Abschluss. Weisen Sie im Kontenrahmen eine Position zu.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-empty" datatype="html">
+        <source>Choose a statement and period.</source>
+        <target>Wählen Sie eine Auswertung und einen Zeitraum.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-exportsHint" datatype="html">
+        <source> Exports cover the period above. Statutory formats always include every tenant. </source>
+        <target> Exporte umfassen den oben gewählten Zeitraum. Gesetzliche Formate enthalten immer alle Mandanten. </target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-title" datatype="html">
+        <source>Statements and exports</source>
+        <target>Abschlüsse und Exporte</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-statement" datatype="html">
+        <source>Statement</source>
+        <target>Auswertung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-exports" datatype="html">
+        <source>Exports</source>
+        <target>Exporte</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-asOf" datatype="html">
+        <source>As of</source>
+        <target>Stichtag</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-to" datatype="html">
+        <source>To</source>
+        <target>Bis</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-needsGlobal" datatype="html">
+        <source>Statutory exports need entity-wide access.</source>
+        <target>Gesetzliche Exporte erfordern Zugriff auf das gesamte Unternehmen.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-missingConfig" datatype="html">
+        <source>Not configured. Missing: <x id="missing" equiv-text="feature.missing.join(&apos;, &apos;)"/></source>
+        <target>Nicht konfiguriert. Es fehlt: <x id="missing" equiv-text="feature.missing.join(&apos;, &apos;)"/></target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-unavailable" datatype="html">
+        <source>Not available for this configuration.</source>
+        <target>Für diese Konfiguration nicht verfügbar.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-needsAll" datatype="html">
+        <source>Statutory exports cover all tenants; select All tenants.</source>
+        <target>Gesetzliche Exporte umfassen alle Mandanten; wählen Sie „Alle Mandanten“.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingStatements-downloadFailed" datatype="html">
+        <source>The export could not be created. Check the period and try again.</source>
+        <target>Der Export konnte nicht erstellt werden. Prüfen Sie den Zeitraum und versuchen Sie es erneut.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-current" datatype="html">
+        <source>Current</source>
+        <target>Aktuell</target>
+      </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-other" datatype="html">
+        <source>Available</source>
+        <target>Verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-title" datatype="html">
+        <source>Switch tenant</source>
+        <target>Mandant wechseln</target>
+      </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-table" datatype="html">
+        <source>Tenants</source>
+        <target>Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-search" datatype="html">
+        <source>Search tenants</source>
+        <target>Mandanten durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-empty" datatype="html">
+        <source>No matching tenants</source>
+        <target>Keine passenden Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-colState" datatype="html">
+        <source>State</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-colTenant" datatype="html">
+        <source>Tenant</source>
+        <target>Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-colNote" datatype="html">
+        <source>Note</source>
+        <target>Hinweis</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingTenantSwitch-home" datatype="html">
+        <source>Home tenant</source>
+        <target>Stammmandant</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingTenantSwitch-allNote" datatype="html">
+        <source>Entity-wide view across all tenants</source>
+        <target>Unternehmensweite Sicht über alle Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-unifiedNote" datatype="html">
+        <source>One export across all tenants</source>
+        <target>Ein Export über alle Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-unifiedNote" datatype="html">
+        <source>Files of all tenants</source>
+        <target>Dateien aller Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingTenantTabs-all" datatype="html">
+        <source>All tenants</source>
+        <target>Alle Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-typeAsset" datatype="html">
+        <source>Asset</source>
+        <target>Aktiva</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-typeLiability" datatype="html">
+        <source>Liability</source>
+        <target>Verbindlichkeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-typeEquity" datatype="html">
+        <source>Equity</source>
+        <target>Eigenkapital</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-typeRevenue" datatype="html">
+        <source>Revenue</source>
+        <target>Erlöse</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-typeExpense" datatype="html">
+        <source>Expense</source>
+        <target>Aufwand</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-typeStatistical" datatype="html">
+        <source>Statistical</source>
+        <target>Statistisch</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-taxKindOutput" datatype="html">
+        <source>Output VAT</source>
+        <target>Umsatzsteuer</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-taxKindInput" datatype="html">
+        <source>Input VAT</source>
+        <target>Vorsteuer</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-taxKindReverseCharge" datatype="html">
+        <source>Reverse charge</source>
+        <target>Reverse Charge</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-taxKindExempt" datatype="html">
+        <source>Exempt</source>
+        <target>Steuerfrei</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-kindAutomatic" datatype="html">
+        <source>Automatic</source>
+        <target>Automatisch</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-kindManual" datatype="html">
+        <source>Manual</source>
+        <target>Manuell</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-kindOpening" datatype="html">
+        <source>Opening</source>
+        <target>Eröffnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-kindClosing" datatype="html">
+        <source>Closing</source>
+        <target>Abschluss</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-kindReversal" datatype="html">
+        <source>Reversal</source>
+        <target>Storno</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-kindDepreciation" datatype="html">
+        <source>Depreciation</source>
+        <target>Abschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-kindVatSettlement" datatype="html">
+        <source>VAT settlement</source>
+        <target>Umsatzsteuer-Zahllast</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-sourceCreditDocument" datatype="html">
+        <source>Credit note</source>
+        <target>Gutschrift</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-sourceVoidDocument" datatype="html">
+        <source>Void document</source>
+        <target>Stornobeleg</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-sourceSettlement" datatype="html">
+        <source>Payment</source>
+        <target>Zahlung</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-sourceBankTransaction" datatype="html">
+        <source>Bank transaction</source>
+        <target>Bankumsatz</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-sourceProcessorTransaction" datatype="html">
+        <source>Processor transaction</source>
+        <target>Zahlungsanbieter-Umsatz</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-sourceInventoryMovement" datatype="html">
+        <source>Inventory movement</source>
+        <target>Lagerbewegung</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-sourceFixedAsset" datatype="html">
+        <source>Fixed asset</source>
+        <target>Anlagegut</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-sourceVatReturn" datatype="html">
+        <source>VAT return</source>
+        <target>USt-Voranmeldung</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-sourceFiscalYear" datatype="html">
+        <source>Fiscal year</source>
+        <target>Geschäftsjahr</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-sourceManual" datatype="html">
+        <source>Manual</source>
+        <target>Manuell</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-sourceOpeningBalance" datatype="html">
+        <source>Opening balance</source>
+        <target>Eröffnungssaldo</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-linkOffer" datatype="html">
+        <source>Offer</source>
+        <target>Angebot</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-linkProject" datatype="html">
+        <source>Project</source>
+        <target>Projekt</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-linkSubscription" datatype="html">
+        <source>Subscription</source>
+        <target>Abonnement</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-linkStoredFile" datatype="html">
+        <source>Receipt file</source>
+        <target>Belegdatei</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-linkPaymentAttempt" datatype="html">
+        <source>Payment attempt</source>
+        <target>Zahlungsversuch</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-linkPaymentRefund" datatype="html">
+        <source>Refund</source>
+        <target>Erstattung</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-linkJournalEntry" datatype="html">
+        <source>Journal entry</source>
+        <target>Buchungssatz</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-matchUnmatched" datatype="html">
+        <source>Unmatched</source>
+        <target>Nicht zugeordnet</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-matchSuggested" datatype="html">
+        <source>Suggested</source>
+        <target>Vorgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-matchMatched" datatype="html">
+        <source>Matched</source>
+        <target>Zugeordnet</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-matchBooked" datatype="html">
+        <source>Booked</source>
+        <target>Gebucht</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-matchIgnored" datatype="html">
+        <source>Ignored</source>
+        <target>Ignoriert</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-matchSuperseded" datatype="html">
+        <source>Superseded (booked or duplicate)</source>
+        <target>Ersetzt (gebucht oder Duplikat)</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-importPending" datatype="html">
+        <source>Pending</source>
+        <target>Ausstehend</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-importProcessing" datatype="html">
+        <source>Processing</source>
+        <target>In Verarbeitung</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-importCompleted" datatype="html">
+        <source>Completed</source>
+        <target>Abgeschlossen</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-importFailed" datatype="html">
+        <source>Failed</source>
+        <target>Fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-importRolledBack" datatype="html">
+        <source>Rolled back</source>
+        <target>Zurückgenommen</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-vatDraft" datatype="html">
+        <source>Draft</source>
+        <target>Entwurf</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-vatSubmitted" datatype="html">
+        <source>Submitted</source>
+        <target>Übermittelt</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-vatPaid" datatype="html">
+        <source>Paid</source>
+        <target>Bezahlt</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-assetActive" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-assetFullyDepreciated" datatype="html">
+        <source>Fully depreciated</source>
+        <target>Vollständig abgeschrieben</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-assetDisposed" datatype="html">
+        <source>Disposed</source>
+        <target>Abgegangen</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-exportJournalCsv" datatype="html">
+        <source>Journal (CSV)</source>
+        <target>Journal (CSV)</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-exportTrialBalanceCsv" datatype="html">
+        <source>Trial balance (CSV)</source>
+        <target>Summen- und Saldenliste (CSV)</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-exportGdpdu" datatype="html">
+        <source>GDPdU / GoBD</source>
+        <target>GDPdU / GoBD</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-exportFec" datatype="html">
+        <source>FEC</source>
+        <target>FEC</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-exportSaft" datatype="html">
+        <source>SAF-T</source>
+        <target>SAF-T</target>
+      </trans-unit>
+      <trans-unit id="featureAccounting-agingCurrent" datatype="html">
+        <source>Not due</source>
+        <target>Nicht fällig</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-kpiReturns" datatype="html">
+        <source>Returns</source>
+        <target>Voranmeldungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-kpiDrafts" datatype="html">
+        <source>Drafts</source>
+        <target>Entwürfe</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-kpiSubmitted" datatype="html">
+        <source>Submitted</source>
+        <target>Übermittelt</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-kpiPaid" datatype="html">
+        <source>Paid</source>
+        <target>Bezahlt</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-kpiPayable" datatype="html">
+        <source>Payable total</source>
+        <target>Zahllast gesamt</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-statistics" datatype="html">
+        <source>Statistics</source>
+        <target>Statistik</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-noStatistics" datatype="html">
+        <source>No computed VAT returns yet.</source>
+        <target>Noch keine berechneten Voranmeldungen.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-returns" datatype="html">
+        <source>Returns</source>
+        <target>Voranmeldungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-listTabs" datatype="html">
+        <source>VAT return views</source>
+        <target>Voranmeldungsansichten</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-tabReturn" datatype="html">
+        <source>Return</source>
+        <target>Voranmeldung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-tabHistory" datatype="html">
+        <source>History</source>
+        <target>Verlauf</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-definition" datatype="html">
+        <source>Return</source>
+        <target>Meldung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-periodType" datatype="html">
+        <source>Period</source>
+        <target>Zeitraum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-year" datatype="html">
+        <source>Year</source>
+        <target>Jahr</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-filingChannel" datatype="html">
+        <source>Filing</source>
+        <target>Übermittlung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-due" datatype="html">
+        <source>Due</source>
+        <target>Fällig</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-unavailable" datatype="html">
+        <source>This return needs configuration first. Missing: <x id="INTERPOLATION" equiv-text="{{ feature.missing.join(&apos;, &apos;) }}"/></source>
+        <target>Diese Meldung muss zuerst konfiguriert werden. Es fehlt: <x id="INTERPOLATION" equiv-text="{{ feature.missing.join(&apos;, &apos;) }}"/></target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-compute" datatype="html">
+        <source>Compute</source>
+        <target>Berechnen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-csv" datatype="html">
+        <source>CSV</source>
+        <target>CSV</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-recompute" datatype="html">
+        <source>Recompute</source>
+        <target>Neu berechnen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-submit" datatype="html">
+        <source>Mark as filed</source>
+        <target>Als übermittelt markieren</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-recordPayment" datatype="html">
+        <source>Record payment</source>
+        <target>Zahlung erfassen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-box" datatype="html">
+        <source>Box</source>
+        <target>Kennzahl</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-label" datatype="html">
+        <source>Label</source>
+        <target>Bezeichnung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-amount" datatype="html">
+        <source>Amount</source>
+        <target>Betrag</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-details" datatype="html">
+        <source>Details</source>
+        <target>Details</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-noReturn" datatype="html">
+        <source>Choose a return and period, then compute it.</source>
+        <target>Wählen Sie eine Meldung und einen Zeitraum und berechnen Sie sie.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-empty" datatype="html">
+        <source>No VAT returns computed yet.</source>
+        <target>Noch keine Voranmeldungen berechnet.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-submitTitle" datatype="html">
+        <source>Mark VAT return as filed</source>
+        <target>Voranmeldung als übermittelt markieren</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-submitWarning" datatype="html">
+        <source>Filing freezes the figures and locks all accounting periods up to the period end.</source>
+        <target>Die Übermittlung friert die Werte ein und schreibt alle Buchungsperioden bis zum Ende des Zeitraums fest.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-colReference" datatype="html">
+        <source>Filing reference</source>
+        <target>Übermittlungsreferenz</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-note" datatype="html">
+        <source>Note</source>
+        <target>Notiz</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-submitConfirm" datatype="html">
+        <source>Mark as filed</source>
+        <target>Als übermittelt markieren</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-payTitle" datatype="html">
+        <source>Record VAT payment</source>
+        <target>Umsatzsteuerzahlung erfassen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-payDate" datatype="html">
+        <source>Payment date</source>
+        <target>Zahlungsdatum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-payAmountHint" datatype="html">
+        <source>Defaults to the computed result. Negative amounts are refunds from the tax office.</source>
+        <target>Standardmäßig das berechnete Ergebnis. Negative Beträge sind Erstattungen des Finanzamts.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-downloadFailed" datatype="html">
+        <source>The CSV could not be created. Please try again.</source>
+        <target>Die CSV-Datei konnte nicht erstellt werden. Bitte versuchen Sie es erneut.</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-paySubmit" datatype="html">
+        <source>Book payment</source>
+        <target>Zahlung buchen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-title" datatype="html">
+        <source>VAT returns</source>
+        <target>USt-Voranmeldungen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-chartTitle" datatype="html">
+        <source>Payable / refund per period</source>
+        <target>Zahllast / Erstattung je Zeitraum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-search" datatype="html">
+        <source>Search VAT returns</source>
+        <target>Voranmeldungen suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-seriesResult" datatype="html">
+        <source>Payable / refund</source>
+        <target>Zahllast / Erstattung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-colReturn" datatype="html">
+        <source>Return</source>
+        <target>Meldung</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-colPeriod" datatype="html">
+        <source>Period</source>
+        <target>Zeitraum</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-colResult" datatype="html">
+        <source>Result</source>
+        <target>Ergebnis</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-colSubmitted" datatype="html">
+        <source>Submitted</source>
+        <target>Übermittelt</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-month" datatype="html">
+        <source>Month</source>
+        <target>Monat</target>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-quarter" datatype="html">
+        <source>Quarter</source>
+        <target>Quartal</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-refundCustomerCredit" datatype="html">
+        <source>Customer credit on this invoice: <x id="INTERPOLATION" equiv-text="{{ customerCredit(refundInvoice) | fpcMoney }}"/>. Record the money paid back to the customer.</source>
+        <target>Kundenguthaben auf dieser Rechnung: <x id="INTERPOLATION" equiv-text="{{ customerCredit(refundInvoice) | fpcMoney }}"/>. Erfassen Sie den an den Kunden zurückgezahlten Betrag.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-writeOffHint" datatype="html">
+        <source>The amount is booked as an uncollectible receivable (bad debt). Leave the amount empty to write off the full open balance.</source>
+        <target>Der Betrag wird als uneinbringliche Forderung (Forderungsverlust) ausgebucht. Lassen Sie den Betrag leer, um den gesamten offenen Betrag auszubuchen.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-occurredAtLabel" datatype="html">
+        <source>Booking date</source>
+        <target>Buchungsdatum</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-occurredAtHelp" datatype="html">
+        <source>Defaults to now.</source>
+        <target>Standardmäßig jetzt.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-actionAmountLabel" datatype="html">
+        <source>Amount (optional)</source>
+        <target>Betrag (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementsTitle" datatype="html">
+        <source>Settlement history</source>
+        <target>Ausgleichsverlauf</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementsLoading" datatype="html">
+        <source>Loading settlements...</source>
+        <target>Ausgleiche werden geladen...</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementsEmpty" datatype="html">
+        <source> No payments, credits or write-offs recorded yet. </source>
+        <target> Noch keine Zahlungen, Gutschriften oder Ausbuchungen erfasst. </target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementDate" datatype="html">
+        <source>Date</source>
+        <target>Datum</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementType" datatype="html">
+        <source>Type</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementSource" datatype="html">
+        <source>Source</source>
+        <target>Herkunft</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementNote" datatype="html">
+        <source>Note</source>
+        <target>Notiz</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementAmount" datatype="html">
+        <source> Amount </source>
+        <target> Betrag </target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineAccounting" datatype="html">
+        <source>Accounting</source>
+        <target>Buchhaltung</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineStockArticle" datatype="html">
+        <source>Stock article</source>
+        <target>Lagerartikel</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineInventoryArticle" datatype="html">
+        <source>Stock article (optional)</source>
+        <target>Lagerartikel (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineInventoryArticleHint" datatype="html">
+        <source>The article bought with this line; its putaway is valued at this line&apos;s price.</source>
+        <target>Der mit dieser Zeile gekaufte Artikel; seine Einlagerung wird mit dem Preis dieser Zeile bewertet.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineLedgerAccount" datatype="html">
+        <source>Account number (optional)</source>
+        <target>Kontonummer (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineLedgerAccountHint" datatype="html">
+        <source>Defaults to the supplier&apos;s expense account.</source>
+        <target>Standardmäßig das Aufwandskonto des Lieferanten.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineCapitalize" datatype="html">
+        <source>Capitalize as fixed asset</source>
+        <target>Als Anlagegut aktivieren</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineUsefulLife" datatype="html">
+        <source>Useful life (months)</source>
+        <target>Nutzungsdauer (Monate)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineUsefulLifeHint" datatype="html">
+        <source>Depreciation period; empty uses the account&apos;s default.</source>
+        <target>Abschreibungsdauer; leer verwendet den Standardwert des Kontos.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-amountHintPaid" datatype="html">
+        <source>Leave empty to record the full open balance (<x id="amount" equiv-text="limit"/>). A smaller amount records a partial payment.</source>
+        <target>Leer lassen, um den gesamten offenen Betrag (<x id="amount" equiv-text="limit"/>) zu erfassen. Ein kleinerer Betrag wird als Teilzahlung erfasst.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-amountHintPaidNoLimit" datatype="html">
+        <source>Leave empty to record the full open balance. A smaller amount records a partial payment.</source>
+        <target>Leer lassen, um den gesamten offenen Betrag zu erfassen. Ein kleinerer Betrag wird als Teilzahlung erfasst.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-amountHintWriteOff" datatype="html">
+        <source>Leave empty to write off the full open balance (<x id="amount" equiv-text="limit"/>).</source>
+        <target>Leer lassen, um den gesamten offenen Betrag (<x id="amount" equiv-text="limit"/>) auszubuchen.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-amountHintWriteOffNoLimit" datatype="html">
+        <source>Leave empty to write off the full open balance.</source>
+        <target>Leer lassen, um den gesamten offenen Betrag auszubuchen.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-amountHintRefund" datatype="html">
+        <source>Leave empty to refund the full customer credit (<x id="amount" equiv-text="limit"/>).</source>
+        <target>Leer lassen, um das gesamte Kundenguthaben (<x id="amount" equiv-text="limit"/>) zu erstatten.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-amountHintRefundNoLimit" datatype="html">
+        <source>Leave empty to refund the full customer credit.</source>
+        <target>Leer lassen, um das gesamte Kundenguthaben zu erstatten.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-einvoiceHeading" datatype="html">
+        <source>E-invoicing</source>
+        <target>E-Rechnung</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-defaultExpenseAccount" datatype="html">
+        <source>Default expense account (optional)</source>
+        <target>Standard-Aufwandskonto (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-defaultExpenseAccountHint" datatype="html">
+        <source>Account number of the active chart used for this supplier&apos;s invoice lines unless a line names its own account.</source>
+        <target>Kontonummer des aktiven Kontenrahmens, die für die Rechnungszeilen dieses Lieferanten verwendet wird, sofern eine Zeile kein eigenes Konto angibt.</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-accountingPage" datatype="html">
+        <source>Accounting</source>
+        <target>Buchhaltung</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-accountingJournalPage" datatype="html">
+        <source>Journal</source>
+        <target>Journal</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-accountingAccountsPage" datatype="html">
+        <source>Chart of accounts</source>
+        <target>Kontenrahmen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-accountingBankingPage" datatype="html">
+        <source>Banking</source>
+        <target>Bank</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-accountingOpenItemsPage" datatype="html">
+        <source>Open items</source>
+        <target>Offene Posten</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-accountingStatementsPage" datatype="html">
+        <source>Statements &amp; exports</source>
+        <target>Abschlüsse &amp; Exporte</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-accountingVatReturnsPage" datatype="html">
+        <source>VAT returns</source>
+        <target>USt-Voranmeldungen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-accountingAssetsPage" datatype="html">
+        <source>Fixed assets</source>
+        <target>Anlagevermögen</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-statusCredited" datatype="html">
+        <source>Credited</source>
+        <target>Gutgeschrieben</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-statusWrittenOff" datatype="html">
+        <source>Written off</source>
+        <target>Ausgebucht</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementPayment" datatype="html">
+        <source>Payment</source>
+        <target>Zahlung</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementPaymentReversal" datatype="html">
+        <source>Payment reversal</source>
+        <target>Zahlungsstorno</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementCredit" datatype="html">
+        <source>Credit note</source>
+        <target>Gutschrift</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementRefund" datatype="html">
+        <source>Refund</source>
+        <target>Erstattung</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementWriteOff" datatype="html">
+        <source>Write-off</source>
+        <target>Ausbuchung</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementDiscount" datatype="html">
+        <source>Cash discount</source>
+        <target>Skonto</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementCreditTransferIn" datatype="html">
+        <source>Customer credit applied</source>
+        <target>Kundenguthaben verrechnet</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementCreditTransferOut" datatype="html">
+        <source>Customer credit moved</source>
+        <target>Kundenguthaben übertragen</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceProcessor" datatype="html">
+        <source>Payment provider</source>
+        <target>Zahlungsanbieter</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceAutoCharge" datatype="html">
+        <source>Automatic charge</source>
+        <target>Automatische Belastung</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceManual" datatype="html">
+        <source>Manual</source>
+        <target>Manuell</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceBankMatch" datatype="html">
+        <source>Bank transaction</source>
+        <target>Bankumsatz</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceCreditDocument" datatype="html">
+        <source>Credit note</source>
+        <target>Gutschrift</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceCustomerCredit" datatype="html">
+        <source>Customer credit</source>
+        <target>Kundenguthaben</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementSourcePromotional" datatype="html">
+        <source>Promotion</source>
+        <target>Aktion</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceMigration" datatype="html">
+        <source>Migration</source>
+        <target>Migration</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminAccountingTitle" datatype="html">
+        <source>Accounting</source>
+        <target>Buchhaltung</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminAccounting" datatype="html">
+        <source>Accounting</source>
+        <target>Buchhaltung</target>
+      </trans-unit>
+      <trans-unit id="featureEinvoice-formatLabel" datatype="html">
+        <source>E-invoice format</source>
+        <target>E-Rechnungsformat</target>
+      </trans-unit>
+      <trans-unit id="featureEinvoice-buyerReferenceLabel" datatype="html">
+        <source>Buyer reference / Leitweg-ID</source>
+        <target>Käuferreferenz / Leitweg-ID</target>
+      </trans-unit>
+      <trans-unit id="featureEinvoice-endpointLabel" datatype="html">
+        <source>E-invoice address (scheme:id)</source>
+        <target>E-Rechnungsadresse (Schema:ID)</target>
+      </trans-unit>
+      <trans-unit id="featureEinvoice-issuerDefault" datatype="html">
+        <source>Issuer default (<x id="format" equiv-text="label"/>)</source>
+        <target>Standard des Ausstellers (<x id="format" equiv-text="label"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureEinvoice-issuerDefaultUnknown" datatype="html">
+        <source>Issuer default</source>
+        <target>Standard des Ausstellers</target>
+      </trans-unit>
+      <trans-unit id="featureEinvoice-formatHintXrechnung" datatype="html">
+        <source>XRechnung needs a buyer reference (Leitweg-ID for German public buyers) and an e-invoice address.</source>
+        <target>XRechnung benötigt eine Käuferreferenz (Leitweg-ID bei deutschen öffentlichen Auftraggebern) und eine E-Rechnungsadresse.</target>
+      </trans-unit>
+      <trans-unit id="featureEinvoice-formatHintPeppol" datatype="html">
+        <source>Peppol needs the customer&apos;s e-invoice address (scheme:id).</source>
+        <target>Peppol benötigt die E-Rechnungsadresse des Kunden (Schema:ID).</target>
+      </trans-unit>
+      <trans-unit id="featureEinvoice-formatHint" datatype="html">
+        <source>Structured invoice data embedded in or sent with every invoice of this customer.</source>
+        <target>Strukturierte Rechnungsdaten, die in jede Rechnung dieses Kunden eingebettet oder mit ihr versendet werden.</target>
+      </trans-unit>
+      <trans-unit id="featureEinvoice-buyerReferenceRequired" datatype="html">
+        <source>Required for XRechnung: the Leitweg-ID or the reference the buyer gave you.</source>
+        <target>Für XRechnung erforderlich: die Leitweg-ID oder die Referenz, die Ihnen der Käufer mitgeteilt hat.</target>
+      </trans-unit>
+      <trans-unit id="featureEinvoice-buyerReferenceHint" datatype="html">
+        <source>Optional reference of the buyer (BT-10), printed on the invoice.</source>
+        <target>Optionale Referenz des Käufers (BT-10), wird auf die Rechnung gedruckt.</target>
+      </trans-unit>
+      <trans-unit id="featureEinvoice-endpointInvalid" datatype="html">
+        <source>Use scheme:id, e.g. 0088:4012345000009 (GLN) or 9930:DE123456789 (VAT ID).</source>
+        <target>Verwenden Sie Schema:ID, z. B. 0088:4012345000009 (GLN) oder 9930:DE123456789 (USt-IdNr.).</target>
+      </trans-unit>
+      <trans-unit id="featureEinvoice-endpointRequired" datatype="html">
+        <source>Required for Peppol / XRechnung; defaults to the VAT ID when empty.</source>
+        <target>Für Peppol / XRechnung erforderlich; leer wird die USt-IdNr. verwendet.</target>
+      </trans-unit>
+      <trans-unit id="featureEinvoice-endpointHint" datatype="html">
+        <source>Optional electronic address (Peppol participant ID).</source>
+        <target>Optionale elektronische Adresse (Peppol-Teilnehmer-ID).</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-averageCost" datatype="html">
+        <source>Average cost</source>
+        <target>Durchschnittlicher Einstandspreis</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-supplierInvoiceLinked" datatype="html">
+        <source>Linked to supplier invoice <x id="INTERPOLATION" equiv-text="{{ linked.number }}"/>: the stock is valued at its line price.</source>
+        <target>Mit Lieferantenrechnung <x id="INTERPOLATION" equiv-text="{{ linked.number }}"/> verknüpft: Der Bestand wird mit deren Zeilenpreis bewertet.</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-unitCost" datatype="html">
+        <source>Unit cost (net, optional)</source>
+        <target>Einstandspreis je Einheit (netto, optional)</target>
+      </trans-unit>
+      <trans-unit id="featureInventoryMove-unitCostHint" datatype="html">
+        <source>Valuation of the received stock; defaults to the supplier invoice line or the article&apos;s purchase price.</source>
+        <target>Bewertung des eingegangenen Bestands; standardmäßig der Preis der Lieferantenrechnungszeile oder der Einkaufspreis des Artikels.</target>
+      </trans-unit>
+      <trans-unit id="featureDataList-writeOff" datatype="html">
+        <source>Write off</source>
+        <target>Ausbuchen</target>
+      </trans-unit>
+      <trans-unit id="featureDataList-refund" datatype="html">
+        <source>Record refund</source>
+        <target>Erstattung erfassen</target>
+      </trans-unit>
+      <trans-unit id="featureDataList-bookings" datatype="html">
+        <source>Bookings</source>
+        <target>Buchungen</target>
+      </trans-unit>
+      <trans-unit id="featureDataList-einvoiceXml" datatype="html">
+        <source>E-invoice (XML)</source>
+        <target>E-Rechnung (XML)</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-customerCredit" datatype="html">
+        <source>Customer credit</source>
+        <target>Kundenguthaben</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-einvoiceHeading" datatype="html">
+        <source>E-invoicing</source>
+        <target>E-Rechnung</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

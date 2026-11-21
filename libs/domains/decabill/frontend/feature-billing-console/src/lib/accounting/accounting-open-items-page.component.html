@@ -1,0 +1,136 @@
+<div class="accounting-page border-top d-flex flex-column flex-grow-1 min-h-0" data-testid="accounting-open-items-page">
+  <fpc-page-header [title]="pageTitle">
+    <framework-accounting-tenant-switch fpcPageHeaderContext />
+  </fpc-page-header>
+  <framework-accounting-nav active="open-items" />
+
+  <fpc-tab-group
+    class="flex-shrink-0"
+    [activeId]="type()"
+    (activeIdChange)="onTypeChange($event)"
+    i18n-ariaLabel="@@featureAccountingOpenItems-typeAria"
+    ariaLabel="Counterparty type"
+    data-testid="accounting-open-items-type"
+  >
+    <fpc-tab id="customer" icon="person-badge" [label]="customersLabel" />
+    <fpc-tab id="supplier" icon="truck" [label]="suppliersLabel" />
+  </fpc-tab-group>
+
+  <fpc-list-toolbar
+    class="flex-shrink-0"
+    [open]="filtersOpen()"
+    (openChange)="onFiltersOpenChange($event)"
+    [title]="filtersTitle"
+    [activeCount]="asOf === today ? 0 : 1"
+    (applied)="applyFilters()"
+    (cleared)="resetFilters()"
+    data-testid="accounting-open-items-filters"
+  >
+    <span fpcListToolbarLead class="accounting-statistics-scope small text-body-secondary text-truncate">{{
+      asOfLabel + ' ' + formatDate(asOf)
+    }}</span>
+    <fpc-form-field forId="openItemsAsOf" [label]="asOfLabel">
+      <fpc-form-control controlId="openItemsAsOf" inputType="date" [(ngModel)]="draftAsOf" name="openItemsAsOf" />
+    </fpc-form-field>
+  </fpc-list-toolbar>
+
+  @if (openItems().error; as error) {
+    <fpc-alert [flush]="true" variant="danger" [message]="error" />
+  }
+
+  <fpc-summary-bar [columns]="4">
+    <fpc-summary-card icon="cash-stack" [label]="totalOpenLabel" [value]="money(kpis()?.total ?? null)" />
+    <fpc-summary-card icon="list-ol" [label]="countLabel" [value]="kpis() ? '' + kpis()!.count : '-'" />
+    <fpc-summary-card
+      icon="exclamation-triangle"
+      tone="warning"
+      [label]="overdueLabel"
+      [value]="money(kpis()?.overdue ?? null)"
+    />
+    <fpc-summary-card
+      icon="x-octagon"
+      tone="danger"
+      [label]="overdue90Label"
+      [value]="money(kpis()?.overdue90 ?? null)"
+    />
+  </fpc-summary-bar>
+
+  <!-- Phone: one lane at a time; md and up show Statistics and Items side by side. -->
+  <fpc-tab-group class="d-md-none flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="onTabChange($event)">
+    <fpc-tab id="statistics" [label]="tabLabel('statistics')" />
+    <fpc-tab id="items" [label]="tabLabel('items')" />
+  </fpc-tab-group>
+
+  <fpc-section-row class="flex-grow-1 min-h-0" [nowrap]="true">
+    <fpc-section-column class="d-flex d-md-flex" [class.d-none]="activeTab() !== 'statistics'">
+      <fpc-board-lane class="h-100">
+        <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+          <span fpcLaneHeaderTitle>{{ statisticsTitle }}</span>
+        </fpc-lane-header>
+        <fpc-panel-grid [columns]="1" [bordered]="false">
+          <fpc-panel [title]="agingChartTitle">
+            @if (openItems().loading) {
+              <fpc-empty-state size="sm" loading />
+            } @else if (agingChart(); as chart) {
+              <apx-chart
+                [series]="chart.series"
+                [chart]="chart.chart"
+                [colors]="chart.colors"
+                [plotOptions]="chart.plotOptions"
+                [dataLabels]="chart.dataLabels"
+                [legend]="chart.legend"
+                [xaxis]="chart.xaxis"
+                [yaxis]="chart.yaxis"
+                [grid]="chart.grid"
+                [tooltip]="chart.tooltip"
+                [responsive]="chart.responsive"
+              ></apx-chart>
+            } @else {
+              <fpc-empty-state
+                size="sm"
+                message="No open items as of this date."
+                i18n-message="@@featureAccountingOpenItems-noAging"
+              />
+            }
+          </fpc-panel>
+        </fpc-panel-grid>
+      </fpc-board-lane>
+    </fpc-section-column>
+
+    <fpc-section-column class="d-md-flex" [class.d-none]="activeTab() !== 'items'">
+      <fpc-board-lane class="h-100">
+        <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+          <span fpcLaneHeaderTitle>{{ itemsTitle }}</span>
+        </fpc-lane-header>
+        <fpc-data-table
+          class="flex-grow-1 min-h-0"
+          [ariaLabel]="itemsTitle"
+          [columns]="columns"
+          [rows]="rows()"
+          [rowId]="openItemRowId"
+          paging="client"
+          persistKey="decabill-accounting-open-items"
+          i18n-searchPlaceholder="@@featureAccountingOpenItems-search"
+          searchPlaceholder="Search document, counterparty"
+          [loading]="openItems().loading"
+          refreshable
+          (refresh)="load()"
+          [rowMenu]="rowMenu"
+          (rowAction)="onRowAction($event.row, $event.item.id)"
+          (rowActivate)="showBookings($event)"
+          emptyIcon="hourglass-split"
+          data-testid="accounting-open-items-table"
+        >
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="hourglass-split"
+              i18n-message="@@featureAccountingOpenItems-empty"
+              message="No open items."
+            />
+          </span>
+        </fpc-data-table>
+      </fpc-board-lane>
+    </fpc-section-column>
+  </fpc-section-row>
+</div>

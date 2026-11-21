@@ -20,6 +20,8 @@ export interface InvoicePdfPaymentDetailsView {
   bank?: string;
   iban?: string;
   bic?: string;
+  /** ISO 11649 creditor reference to quote with the transfer (grouped for reading). */
+  paymentReference?: string;
 }
 
 export interface InvoicePdfViewModel {

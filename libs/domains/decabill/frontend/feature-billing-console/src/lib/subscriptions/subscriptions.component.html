@@ -2331,6 +2331,15 @@
         </fpc-form-field>
       </div>
     </div>
+    @if (profileForm.customerType === 'business') {
+      <h3 class="h6 mt-3" i18n="@@featureSubscriptions-einvoiceHeading">E-invoicing</h3>
+      <framework-einvoice-settings-fields
+        prefix="profile"
+        [disabled]="(customerProfileUpdating$ | async) === true"
+        [(buyerReference)]="profileForm.buyerReference"
+        [(endpoint)]="profileForm.einvoiceEndpoint"
+      />
+    }
     @if (customerProfile$ | async; as profile) {
       @if (profile.supportsAutoPayment !== false && (isCustomerProfileComplete$ | async) === true) {
         <div class="bg-body-tertiary border rounded p-4 mt-3">

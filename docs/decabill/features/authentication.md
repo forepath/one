@@ -284,6 +284,8 @@ Scopes follow `<resource>:<level>` with three hierarchical levels per resource (
 | `billing`            | admin                | Billing summary, capabilities, tax preview, bill-now, statistics                                                                                      |
 | `files`              | admin                | Managed storage file explorer                                                                                                                         |
 | `datev`              | admin                | DATEV exports                                                                                                                                         |
+| `accounting_audit`   | admin                | Accounting read access: journal, ledgers, reports, statements, VAT returns, banking lists, exports (auditor / tax-advisor tokens)                     |
+| `accounting`         | admin                | Accounting writes: bookings, imports, reconciliation, closing, charts, settings                                                                       |
 | `websocket:billing`  | read                 | `socket/billing` (dashboard status, subscription meters)                                                                                              |
 | `websocket:projects` | read                 | `socket/projects` (project board events)                                                                                                              |
 | `users`              | admin                | User management                                                                                                                                       |

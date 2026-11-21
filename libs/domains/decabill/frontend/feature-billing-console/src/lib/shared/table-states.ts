@@ -46,6 +46,8 @@ export function invoiceState(status: string | null | undefined): FpcTableState {
     paid: 'check-circle-fill',
     overdue: 'exclamation-octagon-fill',
     void: 'slash-circle',
+    credited: 'receipt-cutoff',
+    written_off: 'x-circle',
   };
 
   return { label: getInvoiceStatusLabel(status), tone: getInvoiceStatusBadgeTone(status), icon: icons[status ?? ''] };

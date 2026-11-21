@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import {
   AdminSupplierProfilesFacade,
   AdminSupplierProfilesService,
+  BillingCapabilitiesFacade,
   type AdminSupplierProfileListItem,
   type SupplierProfileDto,
   type VatIdValidationStatus,
@@ -87,6 +88,9 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
 
   private readonly facade = inject(AdminSupplierProfilesFacade);
   private readonly profilesService = inject(AdminSupplierProfilesService);
+  private readonly capabilitiesFacade = inject(BillingCapabilitiesFacade);
+  /** Accounting module active: suppliers get a default expense account. */
+  readonly accountingEnabled = toSignal(this.capabilitiesFacade.accountingEnabled$, { initialValue: false });
   private readonly destroyRef = inject(DestroyRef);
   private readonly datePipe = inject(DatePipe);
 
@@ -196,6 +200,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
   customDataLoading = signal(false);
 
   ngOnInit(): void {
+    this.capabilitiesFacade.loadCapabilities();
     this.registerModalCloseWatchers();
   }
 
@@ -250,6 +255,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
           state: full.state ?? '',
           country: full.country ?? DEFAULT_BILLING_COUNTRY_CODE,
           phone: full.phone ?? '',
+          defaultExpenseAccountNumber: full.defaultExpenseAccountNumber ?? '',
         };
         showBillingModal(this.editModalOpen);
       },
@@ -298,7 +304,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
   }
 
   submitCreate(): void {
-    this.facade.createProfile(withOptionalCountry(this.createForm));
+    this.facade.createProfile(withOptionalCountry(this.withExpenseAccount(this.createForm)));
   }
 
   submitEdit(): void {
@@ -313,7 +319,22 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
       ...dto
     } = this.editForm;
 
-    this.facade.updateProfile(id, withOptionalCountry(dto));
+    this.facade.updateProfile(id, withOptionalCountry(this.withExpenseAccount(dto)));
+  }
+
+  /** Default expense account: trimmed, empty cleared (`null`); omitted while accounting is off. */
+  private withExpenseAccount<T extends SupplierProfileDto>(dto: T): T {
+    const next: T = { ...dto };
+
+    if (!this.accountingEnabled()) {
+      delete next.defaultExpenseAccountNumber;
+
+      return next;
+    }
+
+    next.defaultExpenseAccountNumber = dto.defaultExpenseAccountNumber?.trim() || null;
+
+    return next;
   }
 
   submitCustomData(): void {
@@ -409,6 +430,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
       state: '',
       country: DEFAULT_BILLING_COUNTRY_CODE,
       phone: '',
+      defaultExpenseAccountNumber: '',
     };
   }
 

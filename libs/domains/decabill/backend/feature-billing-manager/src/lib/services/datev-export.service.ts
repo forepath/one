@@ -2,9 +2,14 @@ import { PassThrough } from 'stream';
 
 import { DEFAULT_TENANT, runWithTenantId } from '@forepath/shared/backend';
 import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ZipArchive } from 'archiver';
 
+import { JournalLinkType } from '../accounting/constants/accounting.constants';
+import { AccountingDatevLedgerService } from '../accounting/exports/accounting-datev-ledger.service';
+import { AccountingChartService } from '../accounting/services/accounting-chart.service';
+import { AccountingConfigService } from '../accounting/services/accounting-config.service';
+import { toBookingDate } from '../accounting/utils/accounting-date.util';
 import { DatevExportScope, DatevExportStatus } from '../constants/datev-export.constants';
 import type { DatevExportEntity } from '../entities/datev-export.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
@@ -89,6 +94,9 @@ export class DatevExportService {
     private readonly documentArchiveService: DatevDocumentArchiveService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly storedFileRegistry: StoredFileRegistryService,
+    @Optional() private readonly ledgerDatev?: AccountingDatevLedgerService,
+    @Optional() private readonly accountingConfig?: AccountingConfigService,
+    @Optional() private readonly accountingCharts?: AccountingChartService,
   ) {}
 
   async runExport(params: DatevExportRunParams): Promise<DatevExportEntity> {
@@ -328,6 +336,12 @@ export class DatevExportService {
     includedTenantIds: string[];
   }> {
     const bookingRows: string[][] = [];
+    // Document date per legacy booking row: in ledger mode rows of documents before the accounting start stay.
+    const legacyRowDates = new Map<string[], Date>();
+    const pushLegacy = (date: Date, row: string[]): void => {
+      legacyRowDates.set(row, date);
+      bookingRows.push(row);
+    };
     const debtorRows: string[][] = [];
     const creditorRows: string[][] = [];
     const debtorNumbers = new Map<string, number>();
@@ -337,6 +351,8 @@ export class DatevExportService {
     const invoiceIds = new Set<string>();
     const missingProfileInvoiceIds: string[] = [];
     const missingSupplierProfileIds: string[] = [];
+    /** Receipt path per journal source (`invoice:{id}:issued` …) for ledger-based Beleglinks. */
+    const documentPaths = new Map<string, string>();
 
     for (const tagged of input.taggedInvoices) {
       const { invoice, tenantId: invoiceTenantId, isVoid } = tagged;
@@ -368,21 +384,36 @@ export class DatevExportService {
           debtorRows.push(this.debtorMapper.mapDebtorRow(profile, debtorNumber));
         }
 
-        for (const line of invoice.lineItems ?? []) {
-          const pdfFileName = isVoid
-            ? `${invoice.invoiceNumber ?? invoice.id}-void.pdf`
-            : `${invoice.invoiceNumber ?? invoice.id}.pdf`;
-          const relativePath = this.documentArchiveService.buildDocumentRelativePath(
-            input.scope,
-            invoiceTenantId,
-            pdfFileName,
-          );
-          const documentLink = tenantConfig.includeDocuments
-            ? this.documentArchiveService.buildBeleglink(relativePath)
-            : undefined;
+        const pdfFileName = isVoid
+          ? `${invoice.invoiceNumber ?? invoice.id}-void.pdf`
+          : `${invoice.invoiceNumber ?? invoice.id}.pdf`;
+        const relativePath = this.documentArchiveService.buildDocumentRelativePath(
+          input.scope,
+          invoiceTenantId,
+          pdfFileName,
+        );
+        // One archive entry per document; rows link it only when the PDF exists (no dangling BEDI links).
+        const pdfBuffer = tenantConfig.includeDocuments
+          ? isVoid
+            ? await this.readVoidPdf(invoice)
+            : await this.documentArchiveService.readInvoicePdf(invoice)
+          : null;
+        const documentLink = pdfBuffer ? this.documentArchiveService.buildBeleglink(relativePath) : undefined;
 
+        if (pdfBuffer) {
+          documentPaths.set(`invoice:${invoice.id}:${isVoid ? 'voided' : 'issued'}`, relativePath);
+          zipEntries.push({ name: relativePath, content: pdfBuffer });
+          documentEntries.push({
+            relativePath,
+            invoiceNumber: invoice.invoiceNumber ?? invoice.id,
+            documentDate: isVoid ? (invoice.voidedAt ?? new Date()) : (invoice.issuedAt ?? invoice.createdAt),
+          });
+        }
+
+        for (const line of invoice.lineItems ?? []) {
           if (isVoid) {
-            bookingRows.push(
+            pushLegacy(
+              invoice.voidedAt ?? new Date(),
               this.bookingMapper.mapVoidedLineItem({
                 line,
                 invoice,
@@ -395,7 +426,8 @@ export class DatevExportService {
               }),
             );
           } else {
-            bookingRows.push(
+            pushLegacy(
+              invoice.issuedAt ?? invoice.createdAt,
               this.bookingMapper.mapIssuedLineItem({
                 line,
                 invoice,
@@ -406,21 +438,6 @@ export class DatevExportService {
                 documentLink,
               }),
             );
-          }
-
-          if (tenantConfig.includeDocuments) {
-            const pdfBuffer = isVoid
-              ? await this.readVoidPdf(invoice)
-              : await this.documentArchiveService.readInvoicePdf(invoice);
-
-            if (pdfBuffer) {
-              zipEntries.push({ name: relativePath, content: pdfBuffer });
-              documentEntries.push({
-                relativePath,
-                invoiceNumber: invoice.invoiceNumber ?? invoice.id,
-                documentDate: isVoid ? (invoice.voidedAt ?? new Date()) : (invoice.issuedAt ?? invoice.createdAt),
-              });
-            }
           }
         }
 
@@ -450,21 +467,37 @@ export class DatevExportService {
           creditorRows.push(this.creditorMapper.mapCreditorRow(profile, creditorNumber));
         }
 
-        for (const line of invoice.lineItems ?? []) {
-          const pdfFileName = isVoid
-            ? `${invoice.invoiceNumber ?? invoice.id}-void.pdf`
-            : `${invoice.invoiceNumber ?? invoice.id}.pdf`;
-          const relativePath = this.documentArchiveService.buildDocumentRelativePath(
-            input.scope,
-            invoiceTenantId,
-            pdfFileName,
-          );
-          const documentLink = tenantConfig.includeDocuments
-            ? this.documentArchiveService.buildBeleglink(relativePath)
-            : undefined;
+        const pdfFileName = isVoid
+          ? `${invoice.invoiceNumber ?? invoice.id}-void.pdf`
+          : `${invoice.invoiceNumber ?? invoice.id}.pdf`;
+        const relativePath = this.documentArchiveService.buildDocumentRelativePath(
+          input.scope,
+          invoiceTenantId,
+          pdfFileName,
+        );
+        const pdfBuffer = tenantConfig.includeDocuments
+          ? await this.documentArchiveService.readSupplierInvoicePdf(invoice)
+          : null;
+        const documentLink = pdfBuffer ? this.documentArchiveService.buildBeleglink(relativePath) : undefined;
 
+        if (pdfBuffer) {
+          documentPaths.set(`supplier_invoice:${invoice.id}:${isVoid ? 'voided' : 'issued'}`, relativePath);
+          zipEntries.push({ name: relativePath, content: pdfBuffer });
+          documentEntries.push({
+            relativePath,
+            invoiceNumber: invoice.invoiceNumber ?? invoice.id,
+            documentDate: isVoid
+              ? (invoice.voidedAt ?? new Date())
+              : invoice.issueDate
+                ? new Date(invoice.issueDate)
+                : (invoice.issuedAt ?? invoice.createdAt),
+          });
+        }
+
+        for (const line of invoice.lineItems ?? []) {
           if (isVoid) {
-            bookingRows.push(
+            pushLegacy(
+              invoice.voidedAt ?? new Date(),
               this.bookingMapper.mapVoidedSupplierLineItem({
                 line,
                 invoice,
@@ -477,7 +510,10 @@ export class DatevExportService {
               }),
             );
           } else {
-            bookingRows.push(
+            pushLegacy(
+              invoice.issueDate
+                ? new Date(`${String(invoice.issueDate).slice(0, 10)}T12:00:00Z`)
+                : (invoice.issuedAt ?? invoice.createdAt),
               this.bookingMapper.mapIssuedSupplierLineItem({
                 line,
                 invoice,
@@ -488,23 +524,6 @@ export class DatevExportService {
                 documentLink,
               }),
             );
-          }
-
-          if (tenantConfig.includeDocuments) {
-            const pdfBuffer = await this.documentArchiveService.readSupplierInvoicePdf(invoice);
-
-            if (pdfBuffer) {
-              zipEntries.push({ name: relativePath, content: pdfBuffer });
-              documentEntries.push({
-                relativePath,
-                invoiceNumber: invoice.invoiceNumber ?? invoice.id,
-                documentDate: isVoid
-                  ? (invoice.voidedAt ?? new Date())
-                  : invoice.issueDate
-                    ? new Date(invoice.issueDate)
-                    : (invoice.issuedAt ?? invoice.createdAt),
-              });
-            }
           }
         }
 
@@ -553,11 +572,32 @@ export class DatevExportService {
           creditTenantId,
           pdfFileName,
         );
-        const documentLink = tenantConfig.includeDocuments
-          ? this.documentArchiveService.buildBeleglink(relativePath)
-          : undefined;
+        let creditPdf: Buffer | null = null;
 
-        bookingRows.push(
+        if (tenantConfig.includeDocuments) {
+          try {
+            creditPdf = await this.invoicePdfService.readPdf(credit.pdfStorageKey);
+          } catch (error) {
+            this.logger.warn(
+              `Skipping partial credit PDF ${credit.documentNumber}: ${error instanceof Error ? error.message : 'read failed'}`,
+            );
+          }
+        }
+
+        if (creditPdf) {
+          documentPaths.set(`credit_document:${credit.id}:created`, relativePath);
+          zipEntries.push({ name: relativePath, content: creditPdf });
+          documentEntries.push({
+            relativePath,
+            invoiceNumber: credit.documentNumber,
+            documentDate: credit.withdrawnAt,
+          });
+        }
+
+        const documentLink = creditPdf ? this.documentArchiveService.buildBeleglink(relativePath) : undefined;
+
+        pushLegacy(
+          credit.withdrawnAt,
           this.bookingMapper.mapPartialCreditDocument({
             credit,
             invoice,
@@ -568,23 +608,6 @@ export class DatevExportService {
             documentLink,
           }),
         );
-
-        if (tenantConfig.includeDocuments) {
-          try {
-            const pdfBuffer = await this.invoicePdfService.readPdf(credit.pdfStorageKey);
-
-            zipEntries.push({ name: relativePath, content: pdfBuffer });
-            documentEntries.push({
-              relativePath,
-              invoiceNumber: credit.documentNumber,
-              documentDate: credit.withdrawnAt,
-            });
-          } catch (error) {
-            this.logger.warn(
-              `Skipping partial credit PDF ${credit.documentNumber}: ${error instanceof Error ? error.message : 'read failed'}`,
-            );
-          }
-        }
       });
     }
 
@@ -596,6 +619,92 @@ export class DatevExportService {
       throw new Error(`Supplier profile missing for invoice(s): ${missingSupplierProfileIds.join(', ')}`);
     }
 
+    let locked = false;
+    let accountLabels: Array<[string, string]> = [];
+
+    if (this.ledgerDatev?.isActive()) {
+      // Accounting enabled: the journal is the single source of all bookings (documents, payments, fees, COGS,
+      // depreciation, manual and opening entries). The loops above still provide PDFs and master data.
+      const archived = new Set(zipEntries.map((e) => e.name));
+      const ledger = await this.ledgerDatev.buildRows({
+        tenantId: input.scope === DatevExportScope.UNIFIED ? null : input.tenantId,
+        periodStart: input.periodStart,
+        periodEnd: input.periodEnd,
+        includeBankPostings: input.config.includeBankPostings,
+        unified: input.scope === DatevExportScope.UNIFIED,
+        resolveDebtor: async (tenantId, userId) => {
+          const key = `${tenantId}:${userId}`;
+          const known = debtorNumbers.get(key);
+
+          if (known != null) {
+            return known;
+          }
+
+          return await runWithTenantId(tenantId, async () => {
+            const tenantConfig = this.configService.resolveForTenant(tenantId) ?? input.config;
+            const number = await this.debtorAccountService.resolveDebtorNumber(tenantId, userId, tenantConfig);
+            const profile = await this.customerProfilesRepository.findByUserId(userId);
+
+            debtorNumbers.set(key, number);
+
+            if (profile) {
+              debtorRows.push(this.debtorMapper.mapDebtorRow(profile, number));
+            }
+
+            return number;
+          });
+        },
+        resolveCreditor: async (tenantId, supplierId) => {
+          const key = `${tenantId}:${supplierId}`;
+          const known = creditorNumbers.get(key);
+
+          if (known != null) {
+            return known;
+          }
+
+          return await runWithTenantId(tenantId, async () => {
+            const tenantConfig = this.configService.resolveForTenant(tenantId) ?? input.config;
+            const number = await this.creditorAccountService.resolveCreditorNumber(tenantId, supplierId, tenantConfig);
+            const profile = await this.supplierProfilesRepository.findByIdOrThrow(supplierId);
+
+            creditorNumbers.set(key, number);
+            creditorRows.push(this.creditorMapper.mapCreditorRow(profile, number));
+
+            return number;
+          });
+        },
+        documentLink: (entry, links) => {
+          if (!input.config.includeDocuments || !entry.sourceId) {
+            return undefined;
+          }
+
+          const direct = documentPaths.get(`${entry.sourceType}:${entry.sourceId}:${entry.sourceEvent ?? ''}`);
+          const settled = links.find(
+            (l) => l.linkType === JournalLinkType.INVOICE || l.linkType === JournalLinkType.SUPPLIER_INVOICE,
+          );
+          const path =
+            direct ?? (settled ? documentPaths.get(`${settled.linkType}:${settled.targetId}:issued`) : undefined);
+
+          // Only link documents that are actually in the archive (documents without a stored PDF have none).
+          return path && archived.has(path) ? this.documentArchiveService.buildBeleglink(path) : undefined;
+        },
+      });
+      // Documents dated before the bookkeeping start date were never posted to the journal: their bookings still
+      // come from the documents, so periods before / around the start export completely.
+      const startDate = this.accountingConfig?.getConfig().startDate;
+      const preStart = startDate
+        ? bookingRows.filter((row) => {
+            const date = legacyRowDates.get(row);
+
+            return date != null && toBookingDate(date) < startDate;
+          })
+        : [];
+
+      bookingRows.splice(0, bookingRows.length, ...preStart, ...ledger.rows);
+      locked = ledger.allLocked;
+      accountLabels = await this.ledgerAccountLabels(ledger.rows);
+    }
+
     const batchLabel = `${input.periodStart.getUTCFullYear()}-${String(input.periodStart.getUTCMonth() + 1).padStart(2, '0')}`;
     const bookingCsv = this.extfCsvService.buildBookingBatchCsv({
       config: input.config,
@@ -603,6 +712,8 @@ export class DatevExportService {
       periodEnd: input.periodEnd,
       batchLabel,
       bookingRows,
+      locked,
+      currency: this.accountingConfig?.isEnabled() ? this.accountingConfig.getConfig().functionalCurrency : 'EUR',
     });
 
     zipEntries.unshift({
@@ -616,6 +727,7 @@ export class DatevExportService {
         content: this.extfCsvService.buildDebtorBatchCsv({
           config: input.config,
           debtorRows,
+          periodStart: input.periodStart,
         }),
       });
     }
@@ -626,6 +738,18 @@ export class DatevExportService {
         content: this.extfCsvService.buildCreditorBatchCsv({
           config: input.config,
           debtorRows: creditorRows,
+          periodStart: input.periodStart,
+        }),
+      });
+    }
+
+    if (accountLabels.length > 0) {
+      zipEntries.push({
+        name: `EXTF_Kontenbeschriftungen_${formatDatevHeaderDate(input.periodStart)}_${formatDatevHeaderDate(input.periodEnd)}.csv`,
+        content: this.extfCsvService.buildAccountLabelsCsv({
+          config: input.config,
+          periodStart: input.periodStart,
+          accounts: accountLabels,
         }),
       });
     }
@@ -644,6 +768,37 @@ export class DatevExportService {
       debtorCount: debtorRows.length,
       includedTenantIds: input.includedTenantIds,
     };
+  }
+
+  /** Labels of the general-ledger accounts used in the rows (custom accounts must exist in DATEV too). */
+  private async ledgerAccountLabels(rows: string[][]): Promise<Array<[string, string]>> {
+    if (!this.accountingCharts || !this.accountingConfig?.isEnabled()) {
+      return [];
+    }
+
+    const numbers = new Set<string>();
+
+    for (const row of rows) {
+      for (const value of [row[6], row[7]]) {
+        // Personal accounts (debtors / creditors) are longer than the general-ledger length.
+        if (value && value.length <= 8 && !/^[1-9]\d{4,}$/.test(value)) {
+          numbers.add(value);
+        }
+      }
+    }
+
+    const charts = await this.accountingCharts.listCharts();
+    const labels = new Map<string, string>();
+
+    for (const chart of charts) {
+      for (const account of await this.accountingCharts.listAccounts(chart.id)) {
+        if (numbers.has(account.number) && !labels.has(account.number)) {
+          labels.set(account.number, account.name);
+        }
+      }
+    }
+
+    return [...labels.entries()].sort(([a], [b]) => a.localeCompare(b));
   }
 
   private async readVoidPdf(invoice: InvoiceEntity): Promise<Buffer | null> {

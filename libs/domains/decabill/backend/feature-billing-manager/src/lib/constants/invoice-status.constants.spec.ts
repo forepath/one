@@ -15,7 +15,12 @@ describe('invoice-status.constants', () => {
     ).toEqual([InvoiceStatus.DRAFT]);
   });
 
-  it('defines history as paid and void', () => {
-    expect(HISTORY_INVOICE_STATUSES).toEqual([InvoiceStatus.PAID, InvoiceStatus.VOID]);
+  it('defines history as settled (paid, credited, written off) and void', () => {
+    expect(HISTORY_INVOICE_STATUSES).toEqual([
+      InvoiceStatus.PAID,
+      InvoiceStatus.CREDITED,
+      InvoiceStatus.WRITTEN_OFF,
+      InvoiceStatus.VOID,
+    ]);
   });
 });

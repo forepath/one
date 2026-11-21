@@ -1,4 +1,4 @@
-import { IsDateString, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsDateString, IsNumber, IsOptional, IsPositive, IsString, IsUUID, MaxLength } from 'class-validator';
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 
@@ -72,6 +72,44 @@ export class MarkInvoicePaymentStatusDto {
   @IsOptional()
   @IsDateString({}, { message: 'Paid at must be an ISO 8601 datetime' })
   paidAt?: string;
+
+  /** Partial amount (gross, document currency); defaults to the full balance due. */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'Amount must be a number with at most 2 decimals' })
+  @IsPositive({ message: 'Amount must be positive' })
+  amount?: number;
+}
+
+export class InvoiceSettlementResponseDto {
+  id!: string;
+  type!: string;
+  amount!: number;
+  currency!: string;
+  occurredAt!: string;
+  source!: string;
+  processor?: string | null;
+  externalId?: string | null;
+  creditDocumentId?: string | null;
+  relatedDocumentId?: string | null;
+  note?: string | null;
+  createdAt!: string;
+}
+
+/** Admin write-off of an uncollectible balance or manual refund of a customer credit. */
+export class RecordInvoiceSettlementDto {
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'Amount must be a number with at most 2 decimals' })
+  @IsPositive({ message: 'Amount must be positive' })
+  amount?: number;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Date must be an ISO 8601 datetime' })
+  occurredAt?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Reason must be a string' })
+  @MaxLength(500)
+  reason?: string;
 }
 
 export class BillingAuditLogResponseDto {

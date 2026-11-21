@@ -1,5 +1,13 @@
 <div class="admin-file-explorer border-top d-flex flex-column flex-grow-1 min-h-0">
   <fpc-page-header [title]="pageTitle">
+    @if (showViewTabs$ | async) {
+      <framework-billing-tenant-switch
+        fpcPageHeaderContext
+        [options]="tenantSwitchOptions()"
+        [activeId]="activeTabId() ?? homeTenantId"
+        (selectTenant)="onTabChange($event)"
+      />
+    }
     @if (fileSigningEnabled$ | async) {
       <ng-container ngProjectAs="[fpcPageHeaderActions]">
         <fpc-button
@@ -33,19 +41,6 @@
       <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
     </fpc-button>
   </fpc-page-header>
-
-  @if (showViewTabs$ | async) {
-    <fpc-tab-group
-      class="flex-shrink-0"
-      [activeId]="(activeTabId$ | async) ?? homeTenantId"
-      (activeIdChange)="onTabChange($event)"
-    >
-      @for (tenantId of viewableTenants(); track tenantId) {
-        <fpc-tab [id]="tenantId" [label]="tenantTabLabel(tenantId)" />
-      }
-      <fpc-tab id="unified" [label]="unifiedTabLabel" />
-    </fpc-tab-group>
-  }
 
   <div class="flex-grow-1 overflow-auto min-h-0 d-flex flex-column">
     @if ((loadingPath$ | async) === '' && treeNodes().length === 0) {

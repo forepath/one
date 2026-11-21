@@ -8,16 +8,37 @@ Decabill stores invoices in PostgreSQL with immutable issued states. PDFs follow
 
 ## Invoice Statuses
 
-| Status           | Description                                 |
-| ---------------- | ------------------------------------------- |
-| `draft`          | Editable; admin manual invoices only        |
-| `issued`         | Finalized; line items and amounts immutable |
-| `paid`           | Fully paid                                  |
-| `partially_paid` | Partial payment recorded                    |
-| `overdue`        | Past due date without full payment          |
-| `void`           | Voided; void document PDF available         |
+| Status           | Description                                              |
+| ---------------- | -------------------------------------------------------- |
+| `draft`          | Editable; admin manual invoices only                     |
+| `issued`         | Finalized; line items and amounts immutable              |
+| `paid`           | Settled, at least partly by cash (payments)              |
+| `partially_paid` | Part of the balance is settled                           |
+| `overdue`        | Past due date without full settlement                    |
+| `credited`       | Settled by credit notes / customer credit only (no cash) |
+| `written_off`    | Remaining balance written off as uncollectible           |
+| `void`           | Voided; void document PDF available                      |
 
-**Immutability:** Only `draft` invoices can be edited or deleted. Issued invoices can be voided (when unpaid) or marked paid or unpaid by admins.
+**Immutability:** Only `draft` invoices can be edited or deleted. Issued invoices can be voided while nothing was paid, credited or written off; otherwise settle the balance instead.
+
+## Settlements
+
+Balance due and status are derived from the invoice total and its **settlements** (`billing_document_settlements`, also used for supplier invoices):
+
+| Settlement                                   | Effect on the balance | Created by                                                                                                                                                 |
+| -------------------------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `payment`                                    | −                     | Stripe webhook / auto charge (real amount and event time), admin _mark paid_ (optional partial `amount`, `paidAt`), bank reconciliation, processor sync    |
+| `payment_reversal`                           | +                     | Admin _mark unpaid_ (reverses all cash received; credits stay applied — an invoice settled only by credit notes has no cash to reverse), undone bank match |
+| `credit`                                     | −                     | Partial credit notes (withdrawal, configuration change, price recalculation)                                                                               |
+| `refund`                                     | +                     | Processor refund of a customer credit, admin _refund_ (`POST /admin/billing/invoices/:id/refund`)                                                          |
+| `write_off`                                  | −                     | Admin _write off_ (`POST /admin/billing/invoices/:id/write-off`)                                                                                           |
+| `credit_transfer_in` / `credit_transfer_out` | − / +                 | Customer credit (negative balance) automatically applied to the customer's next invoice at issuance                                                        |
+
+A credit that exceeds the open balance leaves the **customer credit** on the invoice (negative balance) — it is applied to the next invoice or refunded; there is no negative carry-forward revenue line, so revenue and VAT are reduced exactly once. Credit notes keep the tax of the credited invoice (`credit_tax`, `tax_rate`) and never exceed the invoiced net. Settlements are idempotent per source (a webhook and the synchronous auto-charge of the same payment are recorded once) and run under a row lock in the same transaction as the booking. History: `GET /admin/billing/invoices/:id/settlements`.
+
+## Payment reference
+
+Every issued invoice carries an ISO 11649 creditor reference (`RF…`, `paymentReference`) printed on the PDF and used as BT-83 in the e-invoice; with accounting enabled it is also the structured reference of the SEPA GiroCode (otherwise the GiroCode keeps the invoice number as remittance text). The reference is unique across tenants. Bank reconciliation matches it deterministically. See [Accounting](./accounting.md#banking) and [E-invoice formats](./e-invoice-formats.md).
 
 Invoice numbers (`INV-{year}-{nnnnn}`) are allocated from a shared pool by default; see [Numbering](./numbering.md) and `TENANTS_SHARED_NUMBERS`.
 

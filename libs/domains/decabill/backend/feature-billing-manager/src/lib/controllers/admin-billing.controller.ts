@@ -21,7 +21,8 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 
-import { MarkInvoicePaymentStatusDto, VoidInvoiceDto } from '../dto/admin-billing.dto';
+import { AccountingConfigService } from '../accounting/services/accounting-config.service';
+import { MarkInvoicePaymentStatusDto, RecordInvoiceSettlementDto, VoidInvoiceDto } from '../dto/admin-billing.dto';
 import {
   AdminBillNowDto,
   type AdminBillNowResponseDto,
@@ -34,7 +35,7 @@ import {
   type PaginatedAdminSubscriptionsResponseDto,
   type PaginatedBillingAuditLogsResponseDto,
 } from '../dto/admin-billing.dto';
-import type { AdminInvoiceListItemDto } from '../dto/admin-billing.dto';
+import type { AdminInvoiceListItemDto, InvoiceSettlementResponseDto } from '../dto/admin-billing.dto';
 import type { BillingCapabilitiesResponseDto } from '../dto/admin-datev-export.dto';
 import { CancelSubscriptionDto } from '../dto/cancel-subscription.dto';
 import { type EffectiveDocumentTermsResponseDto, mapEffectiveDocumentTermsToResponse } from '../dto/document-terms.dto';
@@ -57,6 +58,7 @@ import { BillingDocumentTermsConfigService } from '../services/billing-document-
 import { BillingStatisticsQueryService } from '../services/billing-statistics-query.service';
 import { BillingTenantService } from '../services/billing-tenant.service';
 import { DatevExportConfigService } from '../services/datev-export-config.service';
+import { EInvoiceFormatConfigService } from '../services/e-invoice-format-config.service';
 import { InvoiceAdminService } from '../services/invoice-admin.service';
 import { InvoiceService } from '../services/invoice.service';
 import { ManualInvoiceService } from '../services/manual-invoice.service';
@@ -83,6 +85,8 @@ export class AdminBillingController {
     private readonly taxPreviewService: TaxPreviewService,
     private readonly storedFileSigningConfig: StoredFileSigningConfigService,
     private readonly documentTermsConfig: BillingDocumentTermsConfigService,
+    private readonly accountingConfig: AccountingConfigService,
+    private readonly einvoiceFormats: EInvoiceFormatConfigService,
   ) {}
 
   @RequireScopes('billing:admin')
@@ -110,6 +114,14 @@ export class AdminBillingController {
       globalViewsAllowed,
       viewableTenants: globalViewsAllowed ? [...this.billingTenantService.getConfiguredTenants()] : [tenantId],
       fileSigningEnabled: Boolean(this.storedFileSigningConfig.getSecret()),
+      accountingEnabled: this.accountingConfig.isEnabled(),
+      accountingGlobalAccess: this.accountingConfig.isEnabled() && globalViewsAllowed,
+      accountingCountry: this.accountingConfig.isEnabled() ? this.accountingConfig.getConfig().country : null,
+      accountingMissingPrerequisites: this.accountingConfig.isEnabled()
+        ? []
+        : this.accountingConfig.getMissingCorePrerequisites(),
+      einvoiceFormats: this.einvoiceFormats.list().map((f) => ({ format: f.format, label: f.label })),
+      einvoiceDefaultFormat: this.einvoiceFormats.getDefault(),
     };
   }
 
@@ -338,6 +350,60 @@ export class AdminBillingController {
     }
 
     return await this.invoiceAdminService.markUnpaidManual(invoiceRefId, userInfo.userId, dto);
+  }
+
+  @RequireScopes('invoices:admin')
+  @Post('invoices/:invoiceRefId/write-off')
+  async writeOff(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Body() dto: RecordInvoiceSettlementDto,
+    @Req() req?: RequestWithUser,
+  ): Promise<AdminInvoiceListItemDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return await this.invoiceAdminService.writeOff(invoiceRefId, userInfo.userId, dto);
+  }
+
+  @RequireScopes('invoices:admin')
+  @Post('invoices/:invoiceRefId/refund')
+  async recordRefund(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Body() dto: RecordInvoiceSettlementDto,
+    @Req() req?: RequestWithUser,
+  ): Promise<AdminInvoiceListItemDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return await this.invoiceAdminService.recordManualRefund(invoiceRefId, userInfo.userId, dto);
+  }
+
+  @RequireScopes('invoices:admin')
+  @Get('invoices/:invoiceRefId/settlements')
+  async listSettlements(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+  ): Promise<InvoiceSettlementResponseDto[]> {
+    return await this.invoiceAdminService.listSettlements(invoiceRefId);
+  }
+
+  @RequireScopes('invoices:admin')
+  @Get('invoices/:invoiceRefId/einvoice')
+  @Header('Content-Type', 'application/xml; charset=utf-8')
+  async downloadInvoiceEinvoice(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Res({ passthrough: true }) res?: Response,
+  ): Promise<StreamableFile> {
+    const result = await this.invoiceService.getStructuredEinvoice(invoiceRefId);
+
+    res?.setHeader('Content-Disposition', `attachment; filename="${result.fileName}"`);
+
+    return new StreamableFile(Buffer.from(result.xml, 'utf8'));
   }
 
   @RequireScopes('invoices:admin')
