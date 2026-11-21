@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.3.0](https://github.com/forepath/one/compare/v5.2.0...v5.3.0) (2026-11-21)
+
+
+### Features
+
+* **agenstra:** openai api compatibility ([#745](https://github.com/forepath/one/issues/745)) ([13d2dd0](https://github.com/forepath/one/commit/13d2dd01f53b82b652ec79269f7cc172df0c81d4))
+* **decabill:** document notes ([#752](https://github.com/forepath/one/issues/752)) ([7e451d3](https://github.com/forepath/one/commit/7e451d3d9215400a734bdb4940bb4d271fb7413d))
+* **decabill:** inventory management ([#757](https://github.com/forepath/one/issues/757)) ([57a12ca](https://github.com/forepath/one/commit/57a12ca853e96a747b9f054da5cf1bb356233c4f))
+* **decabill:** project maximum and fixed prices ([#751](https://github.com/forepath/one/issues/751)) ([419be7b](https://github.com/forepath/one/commit/419be7b0938a50f019f719ca1825f22a9e5dcd0e))
+* **decabill:** servers without cloudinit ([#747](https://github.com/forepath/one/issues/747)) ([3b9ec9b](https://github.com/forepath/one/commit/3b9ec9b2057397add0d51d8f53a747e679cc5c17))
+* **shared:** interaction-less account creation ([#753](https://github.com/forepath/one/issues/753)) ([15ebff2](https://github.com/forepath/one/commit/15ebff2a65c0cf55b052f32ee524855d55c4a464))
+* **shared:** openai api mini harness ([#755](https://github.com/forepath/one/issues/755)) ([823d030](https://github.com/forepath/one/commit/823d03056e93ccc225a7684aeefd8e1d6c366958))
+
+
+### Bug Fixes
+
+* **decabill:** electronic invoice archiving conformity ([#748](https://github.com/forepath/one/issues/748)) ([830f001](https://github.com/forepath/one/commit/830f001d00848d3aaa808299be9755e40b5f7007))
+* **shared:** missing linter config overrides ([#750](https://github.com/forepath/one/issues/750)) ([b7f95a5](https://github.com/forepath/one/commit/b7f95a53b13d1030cee99f70e9f973d69f457512))
+* **shared:** native applications frame ([#759](https://github.com/forepath/one/issues/759)) ([fe6005b](https://github.com/forepath/one/commit/fe6005bc2818b561960712607aba0d6d5b76505e))
+
 ## [5.2.0](https://github.com/forepath/one/compare/v5.1.0...v5.2.0) (2026-11-14)
 
 
