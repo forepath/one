@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 
 import { getMinCheckoutPaymentAmount } from '../../constants/payment-amount.constants';
 import { TaxCategory } from '../../constants/tax-category.constants';
+import { shouldNotify } from '../../dto/document-delivery.dto';
 import { BillingEmailPublisher } from '../../email/billing-email.publisher';
 import { InvoicesRepository } from '../../repositories/invoices.repository';
 import { SubscriptionsRepository } from '../../repositories/subscriptions.repository';
@@ -186,7 +187,15 @@ export class ProjectBillingService {
       throw new BadRequestException('Issued invoice is missing PDF storage key');
     }
 
-    await this.billingEmailPublisher.publishInvoiceIssued(issuedWithTimeReport, issuedWithTimeReport.pdfStorageKey);
+    // One email with the invoice and its time report, unless the admin bills silently (send later from the invoice).
+    const notifyCustomer = shouldNotify(dto.notifyCustomer);
+
+    if (
+      notifyCustomer &&
+      (await this.billingEmailPublisher.publishInvoiceIssued(issuedWithTimeReport, issuedWithTimeReport.pdfStorageKey))
+    ) {
+      await this.invoicesRepository.update(issued.id, { sentAt: new Date() });
+    }
 
     await this.auditLog.log({
       process: 'project.bill_time',
@@ -206,6 +215,7 @@ export class ProjectBillingService {
         to: to.toISOString(),
         subscriptionId: dto.subscriptionId,
         customLineItemCount: customLineInputs.length,
+        notifyCustomer,
       },
     });
 

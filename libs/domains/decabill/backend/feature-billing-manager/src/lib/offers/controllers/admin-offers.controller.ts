@@ -19,7 +19,9 @@ import {
 import type { PaginatedBillingAuditLogsResponseDto } from '../../dto/admin-billing.dto';
 import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
 import {
+  ArchiveAdminOfferDto,
   CreateAdminOfferDto,
+  RevokeAdminOfferDto,
   UpdateAdminOfferDto,
   type AdminOfferDetailResponseDto,
   type OfferStatisticsResponseDto,
@@ -99,18 +101,30 @@ export class AdminOffersController {
   @RequireScopes('offers:admin')
   async archive(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: ArchiveAdminOfferDto,
     @Req() req: AdminRequest,
   ): Promise<AdminOfferDetailResponseDto> {
-    return await this.offersAdminService.archive(id, getUserFromRequest(req)?.userId);
+    return await this.offersAdminService.archive(id, getUserFromRequest(req)?.userId, dto);
+  }
+
+  /** Sends an offer that was archived without notification (email + visible to the customer). */
+  @Post(':id/send')
+  @RequireScopes('offers:admin')
+  async send(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() req: AdminRequest,
+  ): Promise<AdminOfferDetailResponseDto> {
+    return await this.offersAdminService.send(id, getUserFromRequest(req)?.userId);
   }
 
   @Post(':id/revoke')
   @RequireScopes('offers:admin')
   async revoke(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: RevokeAdminOfferDto,
     @Req() req: AdminRequest,
   ): Promise<AdminOfferDetailResponseDto> {
-    return await this.offersAdminService.revoke(id, getUserFromRequest(req)?.userId);
+    return await this.offersAdminService.revoke(id, getUserFromRequest(req)?.userId, dto);
   }
 
   @Get(':id/pdf')

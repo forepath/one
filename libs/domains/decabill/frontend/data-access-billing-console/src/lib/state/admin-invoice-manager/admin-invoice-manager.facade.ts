@@ -15,6 +15,8 @@ import {
   adminInvoiceManagerMarkPaid,
   adminInvoiceManagerMarkUnpaid,
   adminInvoiceManagerRefund,
+  adminInvoiceManagerSend,
+  adminInvoiceManagerSendCreditNote,
   adminInvoiceManagerVoid,
   adminInvoiceManagerWriteOff,
   createManualInvoice,
@@ -101,6 +103,16 @@ export class AdminInvoiceManagerFacade {
 
   voidInvoice(invoiceRefId: string, dto?: VoidInvoiceDto): void {
     this.store.dispatch(adminInvoiceManagerVoid({ invoiceRefId, ...(dto ? { dto } : {}) }));
+  }
+
+  /** Emails an invoice that was issued without notification. */
+  sendInvoice(invoiceRefId: string): void {
+    this.store.dispatch(adminInvoiceManagerSend({ invoiceRefId }));
+  }
+
+  /** Emails the credit note of an invoice that was voided without notification. */
+  sendCreditNote(invoiceRefId: string): void {
+    this.store.dispatch(adminInvoiceManagerSendCreditNote({ invoiceRefId }));
   }
 
   markPaid(invoiceRefId: string, dto?: MarkInvoicePaymentStatusDto): void {

@@ -1,7 +1,7 @@
 import { UserEntity } from '@forepath/identity/backend';
 import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 
 import { hydrateEntitiesBySearchIds } from '../../search/billing-search-hydrate.util';
 import { applyBillingSearchIlike } from '../../search/billing-search-ilike.util';
@@ -60,6 +60,22 @@ export class OffersRepository {
     return entity;
   }
 
+  /**
+   * Email attachment authorization: the storage key is the PDF of a (non-draft) offer of the current tenant. Drafts
+   * have no document; another tenant's key never matches.
+   */
+  async existsAuthorizedByPdfStorageKey(storageKey: string): Promise<boolean> {
+    const qb = this.repository
+      .createQueryBuilder('offer')
+      .innerJoin('users', 'user', 'user.id = offer.user_id')
+      .where('offer.pdf_storage_key = :storageKey', { storageKey })
+      .andWhere('offer.status <> :draft', { draft: OfferStatus.DRAFT });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return (await qb.getCount()) > 0;
+  }
+
   async create(data: Partial<OfferEntity>): Promise<OfferEntity> {
     const entity = this.repository.create(data);
 
@@ -71,6 +87,22 @@ export class OffersRepository {
     await this.repository.update(id, data);
 
     return await this.findByIdOrThrow(id, true);
+  }
+
+  /**
+   * Atomically marks an archived offer as sent, only while it is still archived and unsent: concurrent send requests
+   * (or a send racing a revoke) cannot both win. Resolves `false` when the offer changed in between. Call after a
+   * tenant-scoped lookup (`findByIdOrThrow`); the update itself matches the id.
+   */
+  async claimSent(id: string, at: Date): Promise<boolean> {
+    const result = await this.repository.update({ id, status: OfferStatus.ARCHIVED, sentAt: IsNull() }, { sentAt: at });
+
+    return (result.affected ?? 0) === 1;
+  }
+
+  /** Undoes `claimSent` when the email could not be queued, so the offer can be sent again. */
+  async releaseSent(id: string, at: Date): Promise<void> {
+    await this.repository.update({ id, sentAt: at }, { sentAt: null });
   }
 
   async delete(id: string): Promise<void> {

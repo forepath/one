@@ -117,16 +117,80 @@ describe('AdminOffersPageComponent (data list)', () => {
     expect(component.auditLogsTotal()).toBe(40);
   });
 
-  it('bulk Send to customer archives each selected draft with per-item results (incl. denied)', async () => {
+  it('bulk Archive asks first, then archives each selected draft with the chosen notification (per-item result)', async () => {
     service.archive.mockImplementation((id: string) => (id === 'd2' ? throwError(() => ({ status: 403 })) : of({})));
     component.selected.set(['d1', 'd2', 'p1']);
 
-    await component.sendSelected();
+    component.archiveSelected();
+
+    expect(component.pendingArchive()?.map((o) => o.id)).toEqual(['d1', 'd2']);
+    expect(service.archive).not.toHaveBeenCalled();
+    expect(component.archiveNotifyCustomer).toBe(true);
+
+    component.archiveNotifyCustomer = false;
+    await component.confirmArchive();
 
     expect(service.archive).toHaveBeenCalledTimes(2);
-    expect(service.archive).not.toHaveBeenCalledWith('p1');
+    expect(service.archive).toHaveBeenCalledWith('d1', { notifyCustomer: false, notifyOnExpiry: true });
+    expect(service.archive).not.toHaveBeenCalledWith('p1', expect.anything());
+    expect(component.pendingArchive()).toBeNull();
     expect(component.bulkResult()?.message).toContain('1 done');
     expect(component.bulkResult()?.message).toContain('1 not allowed');
+  });
+
+  it('row Archive opens the dialog (notifications on by default) and archives through the store', async () => {
+    component.onRowAction(offer('d1', 'draft'), 'archive');
+
+    expect(component.pendingArchive()?.map((o) => o.id)).toEqual(['d1']);
+    expect(facade['archiveOffer']).not.toHaveBeenCalled();
+
+    component.archiveNotifyOnExpiry = false;
+    await component.confirmArchive();
+
+    expect(facade['archiveOffer']).toHaveBeenCalledWith('d1', { notifyCustomer: true, notifyOnExpiry: false });
+    expect(service.archive).not.toHaveBeenCalled();
+  });
+
+  it('offers Send to customer for archived offers that were not sent, after a confirm', () => {
+    const unsent = { ...offer('p2', 'archived'), sentAt: null, canSend: true };
+    const sent = { ...offer('p1', 'archived'), sentAt: '2026-10-02T00:00:00Z', canSend: false };
+    const ids = (row: AdminOfferListItem) => component.rowMenu(row).map((item) => item.id);
+
+    expect(ids(offer('d1', 'draft'))).toEqual(expect.arrayContaining(['archive']));
+    expect(ids(offer('d1', 'draft'))).not.toContain('send');
+    expect(ids(unsent)).toEqual(expect.arrayContaining(['send', 'revoke']));
+    expect(ids(sent)).not.toContain('send');
+    expect(component.columns[0].state?.(unsent)).toEqual(
+      expect.objectContaining({ icon: 'send-slash', label: 'Pending response (not sent)' }),
+    );
+    expect(component.columns[0].state?.(sent)?.icon).not.toBe('send-slash');
+
+    component.onRowAction(sent, 'send');
+    expect(component.pendingSend()).toBeNull();
+
+    component.onRowAction(unsent, 'send');
+    expect(component.pendingSend()?.id).toBe('p2');
+    expect(facade['sendOffer']).not.toHaveBeenCalled();
+
+    component.confirmSend();
+    expect(facade['sendOffer']).toHaveBeenCalledWith('p2');
+    expect(component.pendingSend()).toBeNull();
+  });
+
+  it('row Revoke asks first and passes the notification choice', () => {
+    component.onRowAction({ ...offer('p2', 'archived'), sentAt: null }, 'revoke');
+    expect(component.revokeNotifyCustomer).toBe(false);
+
+    component.onRowAction({ ...offer('p1', 'archived'), sentAt: '2026-10-02T00:00:00Z' }, 'revoke');
+
+    expect(component.pendingRevoke()?.id).toBe('p1');
+    expect(component.revokeNotifyCustomer).toBe(true);
+    expect(facade['revokeOffer']).not.toHaveBeenCalled();
+
+    component.revokeNotifyCustomer = false;
+    component.confirmRevoke();
+
+    expect(facade['revokeOffer']).toHaveBeenCalledWith('p1', { notifyCustomer: false });
   });
 
   it('bulk Revoke / Delete drafts run after confirm on the allowed subset only', async () => {
@@ -134,10 +198,11 @@ describe('AdminOffersPageComponent (data list)', () => {
     service.delete.mockImplementation(() => throwError(() => ({ status: 403 })));
     component.selected.set(['d1', 'p1', 'a1']);
 
-    component.pendingBulk.set('revoke');
+    component.openBulkConfirm('revoke');
+    expect(component.bulkRevokeNotifyCustomer).toBe(true);
     await component.runPendingBulk();
     expect(service.revoke).toHaveBeenCalledTimes(1);
-    expect(service.revoke).toHaveBeenCalledWith('p1');
+    expect(service.revoke).toHaveBeenCalledWith('p1', { notifyCustomer: true });
 
     component.selected.set(['d1', 'a1']);
     component.pendingBulk.set('delete');

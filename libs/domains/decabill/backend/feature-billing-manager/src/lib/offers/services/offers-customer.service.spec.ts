@@ -88,6 +88,7 @@ describe('OffersCustomerService status guards', () => {
       userId: 'user-1',
       status: OfferStatus.ACCEPTED,
       expiresAt: new Date('2099-01-01T00:00:00.000Z'),
+      sentAt: new Date('2026-01-01T00:00:00.000Z'),
     });
 
     await expect(service.accept('user-1', 'offer-1')).rejects.toBeInstanceOf(BadRequestException);
@@ -109,6 +110,7 @@ describe('OffersCustomerService status guards', () => {
       id: 'offer-1',
       userId: 'user-1',
       status: OfferStatus.ARCHIVED,
+      sentAt: new Date('2026-01-01T00:00:00.000Z'),
       currency: 'EUR',
       subtotalNet: 100,
       taxTotal: 19,
@@ -129,6 +131,26 @@ describe('OffersCustomerService status guards', () => {
         deliveryTermsPlace: null,
         deliveryTermsText: 'Online access',
       }),
+    );
+  });
+
+  it('shows archived offers that were not emailed yet, like invoices issued without notification', async () => {
+    offersRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'offer-1',
+      userId: 'user-1',
+      status: OfferStatus.ARCHIVED,
+      sentAt: null,
+      currency: 'EUR',
+      subtotalNet: 10,
+      taxTotal: 1.9,
+      totalGross: 11.9,
+      billToOpenPositions: false,
+      expiresAt: new Date('2099-01-01T00:00:00.000Z'),
+    });
+    offerLineItemsRepository.findByOfferId.mockResolvedValue([]);
+
+    await expect(service.getDetail('user-1', 'offer-1')).resolves.toEqual(
+      expect.objectContaining({ id: 'offer-1', status: OfferStatus.ARCHIVED }),
     );
   });
 
@@ -155,6 +177,7 @@ describe('OffersCustomerService status guards', () => {
       totalGross: 119,
       billToOpenPositions: false,
       archivedAt: new Date('2026-01-01T00:00:00.000Z'),
+      sentAt: new Date('2026-01-01T00:00:00.000Z'),
       acceptedAt: null,
       declinedAt: null,
     };

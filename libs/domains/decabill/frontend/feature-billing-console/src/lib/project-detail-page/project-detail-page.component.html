@@ -506,6 +506,16 @@
       <i class="bi bi-plus" aria-hidden="true"></i>
     </fpc-button>
     <framework-document-note-field class="d-block mt-3" controlId="billTimeNote" [(value)]="billNote" />
+    <fpc-form-check
+      class="d-block mt-3"
+      checkId="billTimeNotifyCustomer"
+      [(checked)]="billNotifyCustomer"
+      i18n-label="@@featureAdminInvoices-issueNotify"
+      label="Email the invoice to the customer"
+      i18n-hint="@@featureAdminInvoices-issueNotifyHint"
+      hint="Otherwise you can send it later from the invoice."
+      data-testid="project-bill-time-notify"
+    />
     @if (error$ | async; as err) {
       <fpc-alert class="mt-3" variant="danger" [message]="err" />
     }

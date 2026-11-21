@@ -1,0 +1,9 @@
+Offer withdrawn
+
+Dear {{recipientName}},
+
+We have withdrawn offer {{offerNumber}}.
+
+Total amount: {{amountLabel}}
+
+The offer can no longer be accepted. If you have any questions or would like a new offer, please get in touch with us.

@@ -1,15 +1,20 @@
 import type { EmailAttachmentRef, EmailAttachmentResolver } from '@forepath/shared/backend';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 
+import { OffersRepository } from '../offers/repositories/offers.repository';
+import { OfferPdfService } from '../offers/services/offer-pdf.service';
 import { ProjectTimeReportPdfService } from '../projects/services/project-time-report-pdf.service';
 import { InvoiceCreditDocumentsRepository } from '../repositories/invoice-credit-documents.repository';
 import { InvoiceVoidDocumentsRepository } from '../repositories/invoice-void-documents.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { InvoicePdfService } from '../services/invoice-pdf.service';
 
+type AttachmentSource = 'invoice' | 'offer';
+
 /**
  * Resolves email PDF attachments only after verifying the storage key belongs to
- * a tenant-scoped invoice, void, or credit document (or its time report).
+ * a tenant-scoped invoice, void, or credit document (or its time report), or to a tenant-scoped, non-draft offer.
+ * Offer PDFs live in their own storage area and are read from there.
  */
 @Injectable()
 export class BillingEmailAttachmentResolver implements EmailAttachmentResolver {
@@ -19,6 +24,8 @@ export class BillingEmailAttachmentResolver implements EmailAttachmentResolver {
     private readonly invoicesRepository: InvoicesRepository,
     private readonly voidDocumentsRepository: InvoiceVoidDocumentsRepository,
     private readonly creditDocumentsRepository: InvoiceCreditDocumentsRepository,
+    @Optional() private readonly offersRepository?: OffersRepository,
+    @Optional() private readonly offerPdfService?: OfferPdfService,
   ) {}
 
   async resolve(refs: EmailAttachmentRef[]): Promise<Array<{ filename: string; content: Buffer }>> {
@@ -34,10 +41,14 @@ export class BillingEmailAttachmentResolver implements EmailAttachmentResolver {
   }
 
   private async readAuthorizedAttachment(ref: EmailAttachmentRef): Promise<Buffer> {
-    const authorized = await this.isAuthorizedStorageKey(ref.storageKey);
+    const source = await this.resolveAuthorizedSource(ref.storageKey);
 
-    if (!authorized) {
+    if (!source) {
       throw new Error('Email attachment storage key is not authorized for this tenant');
+    }
+
+    if (source === 'offer' && this.offerPdfService) {
+      return await this.offerPdfService.readPdf(ref.storageKey);
     }
 
     if (ref.filename.startsWith('time-report-')) {
@@ -47,15 +58,25 @@ export class BillingEmailAttachmentResolver implements EmailAttachmentResolver {
     return await this.invoicePdfService.readPdf(ref.storageKey);
   }
 
-  private async isAuthorizedStorageKey(storageKey: string): Promise<boolean> {
+  private async resolveAuthorizedSource(storageKey: string): Promise<AttachmentSource | null> {
     if (await this.invoicesRepository.existsAuthorizedByPdfOrTimeReportStorageKey(storageKey)) {
-      return true;
+      return 'invoice';
     }
 
     if (await this.voidDocumentsRepository.existsAuthorizedByPdfStorageKey(storageKey)) {
-      return true;
+      return 'invoice';
     }
 
-    return await this.creditDocumentsRepository.existsAuthorizedByPdfStorageKey(storageKey);
+    if (await this.creditDocumentsRepository.existsAuthorizedByPdfStorageKey(storageKey)) {
+      return 'invoice';
+    }
+
+    if (this.offersRepository && this.offerPdfService) {
+      if (await this.offersRepository.existsAuthorizedByPdfStorageKey(storageKey)) {
+        return 'offer';
+      }
+    }
+
+    return null;
   }
 }

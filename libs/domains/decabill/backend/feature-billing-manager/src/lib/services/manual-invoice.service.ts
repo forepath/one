@@ -1,6 +1,7 @@
 import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
+import { shouldNotify } from '../dto/document-delivery.dto';
 import type { CreateManualInvoiceDto, IssueManualInvoiceDto, UpdateManualInvoiceDto } from '../dto/manual-invoice.dto';
 import type { ManualInvoiceDetailResponseDto } from '../dto/manual-invoice.dto';
 import { InventoryArticlesRepository } from '../inventory/repositories/inventory-articles.repository';
@@ -10,6 +11,7 @@ import { InvoicesRepository } from '../repositories/invoices.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { normalizeDocumentNote } from '../utils/document-note.utils';
 import { normalizeDeliveryTermsInput, normalizePaymentDueDaysInput } from '../utils/document-terms.utils';
+import { invoiceDeliveryFields } from '../utils/invoice-delivery.util';
 import { assertDraftEditable } from '../utils/invoice-mutability.util';
 import { mapManualInvoiceLineItemsToInputs } from '../utils/map-manual-invoice-line-items.util';
 
@@ -156,7 +158,9 @@ export class ManualInvoiceService {
       throw new BadRequestException('Customer profile must be complete before issuing invoice');
     }
 
+    const notifyCustomer = shouldNotify(dto?.notifyCustomer);
     const issued = await this.invoiceIssuanceService.issueDraft(invoiceRefId, {
+      skipNotification: !notifyCustomer,
       terms: {
         paymentDueDays: normalizePaymentDueDaysInput(dto?.dueInDays),
         deliveryTerms: normalizeDeliveryTermsInput(dto ?? {}),
@@ -173,6 +177,7 @@ export class ManualInvoiceService {
         adminUserId,
         dueInDays: issued.paymentDueDays ?? null,
         deliveryTermsCode: issued.deliveryTermsCode ?? null,
+        notifyCustomer,
       },
     });
 
@@ -200,9 +205,11 @@ export class ManualInvoiceService {
   async getDetail(invoiceRefId: string): Promise<ManualInvoiceDetailResponseDto> {
     const detail = await this.invoiceService.getDetailById(invoiceRefId);
     const user = await this.usersRepository.findByIdForTenant(detail.userId ?? '');
+    const invoice = await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
 
     return {
       ...detail,
+      ...invoiceDeliveryFields(invoice),
       userId: detail.userId!,
       userEmail: user?.email,
     };

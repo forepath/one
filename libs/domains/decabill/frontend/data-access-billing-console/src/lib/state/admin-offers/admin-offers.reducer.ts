@@ -26,6 +26,9 @@ import {
   revokeAdminOffer,
   revokeAdminOfferFailure,
   revokeAdminOfferSuccess,
+  sendAdminOffer,
+  sendAdminOfferFailure,
+  sendAdminOfferSuccess,
   updateAdminOffer,
   updateAdminOfferFailure,
   updateAdminOfferSuccess,
@@ -42,6 +45,7 @@ export interface AdminOffersState {
   updating: boolean;
   deleting: boolean;
   archiving: boolean;
+  sending: boolean;
   revoking: boolean;
   error: string | null;
   search: string | null;
@@ -66,6 +70,7 @@ export const initialAdminOffersState: AdminOffersState = {
   updating: false,
   deleting: false,
   archiving: false,
+  sending: false,
   revoking: false,
   error: null,
   search: null,
@@ -165,6 +170,13 @@ export const adminOffersReducer = createReducer(
     offers: upsertOffer(state.offers, offer),
   })),
   on(archiveAdminOfferFailure, (state, { error }) => ({ ...state, archiving: false, error })),
+  on(sendAdminOffer, (state) => ({ ...state, sending: true, error: null })),
+  on(sendAdminOfferSuccess, (state, { offer }) => ({
+    ...state,
+    sending: false,
+    offers: upsertOffer(state.offers, offer),
+  })),
+  on(sendAdminOfferFailure, (state, { error }) => ({ ...state, sending: false, error })),
   on(revokeAdminOffer, (state) => ({ ...state, revoking: true, error: null })),
   on(revokeAdminOfferSuccess, (state, { offer }) => ({
     ...state,

@@ -102,4 +102,45 @@ describe('BillingEmailAttachmentResolver', () => {
       { filename: 'time-report-INV-1.pdf', content: Buffer.from('time') },
     ]);
   });
+
+  describe('offer PDFs', () => {
+    const offersRepository = { existsAuthorizedByPdfStorageKey: jest.fn() };
+    const offerPdfService = { readPdf: jest.fn() };
+    const withOffers = new BillingEmailAttachmentResolver(
+      invoicePdfService as never,
+      timeReportPdfService as never,
+      invoicesRepository as never,
+      voidDocumentsRepository as never,
+      creditDocumentsRepository as never,
+      offersRepository as never,
+      offerPdfService as never,
+    );
+
+    it('authorizes tenant-scoped offer keys and reads them from the offer storage', async () => {
+      offersRepository.existsAuthorizedByPdfStorageKey.mockResolvedValue(true);
+      offerPdfService.readPdf.mockResolvedValue(Buffer.from('offer'));
+
+      const result = await withOffers.resolve([{ storageKey: 'user-1/offer.pdf', filename: 'OFF-1.pdf' }]);
+
+      expect(offersRepository.existsAuthorizedByPdfStorageKey).toHaveBeenCalledWith('user-1/offer.pdf');
+      expect(offerPdfService.readPdf).toHaveBeenCalledWith('user-1/offer.pdf');
+      expect(invoicePdfService.readPdf).not.toHaveBeenCalled();
+      expect(result).toEqual([{ filename: 'OFF-1.pdf', content: Buffer.from('offer') }]);
+    });
+
+    it('rejects offer keys that are not authorized for the tenant', async () => {
+      offersRepository.existsAuthorizedByPdfStorageKey.mockResolvedValue(false);
+
+      await expect(withOffers.resolve([{ storageKey: 'other/offer.pdf', filename: 'OFF-2.pdf' }])).rejects.toThrow(
+        'not authorized',
+      );
+      expect(offerPdfService.readPdf).not.toHaveBeenCalled();
+    });
+
+    it('fails closed for offer keys when the offer services are not wired', async () => {
+      await expect(resolver.resolve([{ storageKey: 'user-1/offer.pdf', filename: 'OFF-1.pdf' }])).rejects.toThrow(
+        'not authorized',
+      );
+    });
+  });
 });

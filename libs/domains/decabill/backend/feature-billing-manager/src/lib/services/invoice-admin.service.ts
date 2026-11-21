@@ -13,12 +13,14 @@ import type {
   RecordInvoiceSettlementDto,
   VoidInvoiceDto,
 } from '../dto/admin-billing.dto';
+import { shouldNotify } from '../dto/document-delivery.dto';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 import { resolveCustomerNamesByUserId } from '../utils/customer-display-name.util';
+import { invoiceDeliveryFields } from '../utils/invoice-delivery.util';
 import { resolvePaymentReceivedAt } from '../utils/resolve-payment-received-at.util';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
@@ -64,6 +66,7 @@ export class InvoiceAdminService {
     return {
       items: items.map((invoice) => ({
         ...this.invoiceService.mapToResponse(invoice, invoice.subscription?.number),
+        ...invoiceDeliveryFields(invoice),
         userId: invoice.userId,
         userEmail: userEmailById.get(invoice.userId),
         customerName: customerNameById.get(invoice.userId),
@@ -76,15 +79,50 @@ export class InvoiceAdminService {
 
   async voidInvoice(invoiceRefId: string, adminUserId: string, dto?: VoidInvoiceDto): Promise<AdminInvoiceListItemDto> {
     const invoice = await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
+    const notifyCustomer = shouldNotify(dto?.notifyCustomer);
     const voided = await this.invoiceService.voidInvoice(
       invoiceRefId,
       invoice.subscriptionId,
       adminUserId,
-      { adminUserId },
-      { note: dto?.note },
+      { adminUserId, notifyCustomer },
+      { note: dto?.note, skipNotification: !notifyCustomer },
     );
 
     return this.mapAdminItem(voided);
+  }
+
+  /** Emails an invoice that was issued without notification. */
+  async sendInvoice(invoiceRefId: string, adminUserId: string): Promise<AdminInvoiceListItemDto> {
+    const invoice = await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
+    const sent = await this.invoiceService.sendIssuedInvoice(invoice);
+
+    await this.auditLog.log({
+      process: 'invoice.send',
+      level: 'info',
+      message: `Sent invoice ${invoice.invoiceNumber ?? invoiceRefId} to the customer`,
+      invoiceId: invoiceRefId,
+      userId: invoice.userId,
+      context: { adminUserId, invoiceNumber: invoice.invoiceNumber },
+    });
+
+    return this.mapAdminItem(sent);
+  }
+
+  /** Emails the credit note of an invoice that was voided without notification. */
+  async sendCreditNote(invoiceRefId: string, adminUserId: string): Promise<AdminInvoiceListItemDto> {
+    const invoice = await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
+    const sent = await this.invoiceService.sendVoidDocument(invoice);
+
+    await this.auditLog.log({
+      process: 'invoice.void_document_send',
+      level: 'info',
+      message: `Sent credit note for invoice ${invoice.invoiceNumber ?? invoiceRefId} to the customer`,
+      invoiceId: invoiceRefId,
+      userId: invoice.userId,
+      context: { adminUserId, invoiceNumber: invoice.invoiceNumber },
+    });
+
+    return this.mapAdminItem(sent);
   }
 
   async markPaidManual(
@@ -336,6 +374,7 @@ export class InvoiceAdminService {
 
     return {
       ...base,
+      ...invoiceDeliveryFields(invoice),
       userId: invoice.userId,
       userEmail: user?.email,
     };

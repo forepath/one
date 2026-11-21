@@ -6084,8 +6084,40 @@ paths:
   /admin/billing/offers/{id}/archive:
     post:
       tags: [Admin Billing]
-      summary: Archive offer and send to customer (admin)
+      summary: Archive offer, optionally sending it to the customer (admin)
+      description: |
+        Finalizes a draft (number, totals, frozen terms, PDF); the offer is visible in the customer's account either
+        way. With `notifyCustomer` (default `true`) it is also emailed right away; with `false` it can be emailed
+        later via `POST …/send`.
       operationId: archiveAdminOffer
+      security:
+        - bearerAuth: [offers:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArchiveAdminOfferDto'
+      responses:
+        '200':
+          description: Archived offer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOfferDetailResponseDto'
+  /admin/billing/offers/{id}/send:
+    post:
+      tags: [Admin Billing]
+      summary: Send an archived offer that was not sent yet (admin)
+      description: |
+        Emails the offer PDF to the customer. 400 when the offer is not
+        archived, was already sent, has expired, or the customer has no billing email address (nothing is sent then).
+      operationId: sendAdminOffer
       security:
         - bearerAuth: [offers:admin]
       parameters:
@@ -6095,7 +6127,7 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '200':
-          description: Archived offer
+          description: Sent offer
           content:
             application/json:
               schema:
@@ -6104,6 +6136,8 @@ paths:
     post:
       tags: [Admin Billing]
       summary: Revoke archived offer (admin)
+      description: |
+        The customer is emailed that the offer was withdrawn unless `notifyCustomer` is `false`.
       operationId: revokeAdminOffer
       security:
         - bearerAuth: [offers:admin]
@@ -6112,6 +6146,12 @@ paths:
           in: path
           required: true
           schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokeAdminOfferDto'
       responses:
         '200':
           description: Revoked offer
@@ -6527,6 +6567,50 @@ paths:
       responses:
         '200':
           description: Voided invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInvoiceListItem'
+  /admin/billing/invoices/{invoiceRefId}/send:
+    post:
+      tags: [Admin Billing]
+      summary: Email an invoice that was issued without notification (admin only)
+      description: |
+        400 when the invoice is a draft or voided, was already sent, or the customer has no billing email address
+        (nothing is sent then).
+      operationId: adminSendInvoice
+      security:
+        - bearerAuth: [invoices:admin]
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Sent invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInvoiceListItem'
+  /admin/billing/invoices/{invoiceRefId}/send-credit-note:
+    post:
+      tags: [Admin Billing]
+      summary: Email the credit note of an invoice voided without notification (admin only)
+      description: |
+        400 when the invoice is not voided, its credit note was already sent, or the customer has no billing email
+        address (nothing is sent then).
+      operationId: adminSendInvoiceCreditNote
+      security:
+        - bearerAuth: [invoices:admin]
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Voided invoice with the credit note sent
           content:
             application/json:
               schema:
@@ -14745,6 +14829,30 @@ components:
                 nullable: true,
                 description: 'Billing-profile name (company, else first + last name)',
               }
+            sentAt:
+              {
+                type: string,
+                format: date-time,
+                nullable: true,
+                description: 'When the invoice was emailed; null when issued without notification',
+              }
+            voidDocumentSentAt:
+              {
+                type: string,
+                format: date-time,
+                nullable: true,
+                description: 'When the credit note of a voided invoice was emailed; null when not sent',
+              }
+            canSend:
+              {
+                type: boolean,
+                description: 'Issued, not voided and not emailed yet',
+              }
+            canSendCreditNote:
+              {
+                type: boolean,
+                description: 'Voided and the credit note not emailed yet',
+              }
     PaginatedAdminInvoicesResponse:
       type: object
       properties:
@@ -14958,6 +15066,10 @@ components:
         note:
           $ref: '#/components/schemas/DocumentNote'
           description: Printed on the credit note (void document); the invoice's own note is not copied.
+        notifyCustomer:
+          type: boolean
+          default: true
+          description: Email the credit note right away; `false` voids silently (send later via `send-credit-note`).
     CreateManualInvoiceDto:
       type: object
       required: [userId, lineItems]
@@ -14995,6 +15107,10 @@ components:
           $ref: '#/components/schemas/DeliveryTermsPlace'
         deliveryTermsText:
           $ref: '#/components/schemas/DeliveryTermsText'
+        notifyCustomer:
+          type: boolean
+          default: true
+          description: Email the invoice right away; `false` issues silently (send later via `send`).
     ManualInvoiceDetailResponse:
       allOf:
         - $ref: '#/components/schemas/InvoiceDetailResponse'
@@ -15002,6 +15118,30 @@ components:
           properties:
             userId: { type: string, format: uuid }
             userEmail: { type: string, format: email, nullable: true }
+            sentAt:
+              {
+                type: string,
+                format: date-time,
+                nullable: true,
+                description: 'When the invoice was emailed; null when issued without notification',
+              }
+            voidDocumentSentAt:
+              {
+                type: string,
+                format: date-time,
+                nullable: true,
+                description: 'When the credit note of a voided invoice was emailed; null when not sent',
+              }
+            canSend:
+              {
+                type: boolean,
+                description: 'Issued, not voided and not emailed yet',
+              }
+            canSendCreditNote:
+              {
+                type: boolean,
+                description: 'Voided and the credit note not emailed yet',
+              }
     AdminCustomerProfileListItem:
       type: object
       properties:
@@ -15757,6 +15897,10 @@ components:
             $ref: '#/components/schemas/ManualInvoiceLineItemDto'
         note:
           $ref: '#/components/schemas/DocumentNote'
+        notifyCustomer:
+          type: boolean
+          default: true
+          description: Email the invoice (with time report) right away; `false` bills silently.
     ProjectUnbilledTimeBounds:
       type: object
       required: [entryCount]
@@ -16244,6 +16388,41 @@ components:
         expiresAt: { type: string, format: date-time, nullable: true }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+        sentAt:
+          {
+            type: string,
+            format: date-time,
+            nullable: true,
+            description: 'When the offer was emailed to the customer; null for drafts and offers archived silently',
+          }
+        canSend:
+          {
+            type: boolean,
+            description: 'Archived, not sent yet and not expired',
+          }
+        notifyOnExpiry:
+          {
+            type: boolean,
+            description: 'Customer is emailed when the offer expires',
+          }
+    ArchiveAdminOfferDto:
+      type: object
+      properties:
+        notifyCustomer:
+          type: boolean
+          default: true
+          description: Email the offer (PDF attached) right away.
+        notifyOnExpiry:
+          type: boolean
+          default: true
+          description: Email the customer when the offer expires.
+    RevokeAdminOfferDto:
+      type: object
+      properties:
+        notifyCustomer:
+          type: boolean
+          default: true
+          description: Email the customer that the offer was withdrawn.
     AdminOfferDetailResponseDto:
       allOf:
         - $ref: '#/components/schemas/AdminOfferListItemDto'

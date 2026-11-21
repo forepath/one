@@ -168,6 +168,8 @@ describe('ProjectBillingService', () => {
       timeReportStorageKey: 'sub-1/inv-1-time-report.pdf',
     });
 
+    billingEmailPublisher.publishInvoiceIssued.mockResolvedValue(true);
+
     const result = await service.billUnbilledTime('p1', 'admin-1', { from, to });
 
     expect(result.billedMinutes).toBe(90);
@@ -207,6 +209,35 @@ describe('ProjectBillingService', () => {
     );
     expect(projectBoardSummary.emitSummaryChanged).toHaveBeenCalledWith(project);
     expect(projectsRepository.incrementBilledAmountNet).toHaveBeenCalledWith('p1', 150);
+    expect(invoicesRepository.update).toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date) });
+  });
+
+  it('bills silently with notifyCustomer false (no email, sentAt unset)', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue(project);
+    customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile' });
+    customerProfilesService.isProfileComplete.mockReturnValue(true);
+    timeEntriesRepository.findUnbilledByProjectInRangeForUpdate.mockResolvedValue([{ id: 'e1', durationMinutes: 60 }]);
+    invoiceService.createDraft.mockResolvedValue({ id: 'draft-1' });
+    invoiceIssuanceService.issueDraft.mockResolvedValue({
+      id: 'inv-1',
+      invoiceNumber: 'INV-1',
+      pdfStorageKey: 'sub-1/inv-1.pdf',
+    });
+    invoicesRepository.update.mockResolvedValue({
+      id: 'inv-1',
+      invoiceNumber: 'INV-1',
+      pdfStorageKey: 'sub-1/inv-1.pdf',
+      timeReportStorageKey: 'sub-1/inv-1-time-report.pdf',
+    });
+
+    await service.billUnbilledTime('p1', 'admin-1', { from, to, notifyCustomer: false });
+
+    expect(invoiceIssuanceService.issueDraft).toHaveBeenCalledWith('draft-1', { skipNotification: true });
+    expect(billingEmailPublisher.publishInvoiceIssued).not.toHaveBeenCalled();
+    expect(invoicesRepository.update).not.toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date) });
+    expect(auditLog.log).toHaveBeenCalledWith(
+      expect.objectContaining({ context: expect.objectContaining({ notifyCustomer: false }) }),
+    );
   });
 
   it('voids duplicate invoice when entries were billed concurrently', async () => {

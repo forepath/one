@@ -17,6 +17,25 @@ export function offerCapabilityFlags(offer: Pick<OfferEntity, 'status'>): {
   return { canPreview: previewable, canDownload: previewable };
 }
 
+/**
+ * Delivery state for the admin UI: an archived offer is sendable until it was sent (or released) to the customer,
+ * and only while it has not expired yet (a customer could not accept it anymore).
+ */
+export function offerDeliveryFields(
+  offer: Pick<OfferEntity, 'status' | 'sentAt' | 'expiresAt' | 'notifyOnExpiry'>,
+  now: Date = new Date(),
+): { sentAt: string | null; canSend: boolean; notifyOnExpiry: boolean } {
+  return {
+    sentAt: offer.sentAt?.toISOString() ?? null,
+    canSend: offer.status === OfferStatus.ARCHIVED && !offer.sentAt && !isOfferPastExpiry(offer, now),
+    notifyOnExpiry: offer.notifyOnExpiry === true,
+  };
+}
+
+export function isOfferPastExpiry(offer: Pick<OfferEntity, 'expiresAt'>, now: Date = new Date()): boolean {
+  return Boolean(offer.expiresAt && offer.expiresAt.getTime() <= now.getTime());
+}
+
 /** Rejects drafts before any PDF lookup, as `getPdfBuffer` does for draft invoices. */
 export function assertOfferHasPdf(offer: Pick<OfferEntity, 'status'>): void {
   if (offer.status === OfferStatus.DRAFT) {

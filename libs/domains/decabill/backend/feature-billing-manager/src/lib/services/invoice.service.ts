@@ -309,12 +309,15 @@ export class InvoiceService {
       await this.ensureVoidDocumentStored(invoice, voidedAt, note);
     } else if (!options?.skipNotification && !existingVoidDocument) {
       const voidDocumentStorageKey = await this.ensureVoidDocumentStored(invoice, voidedAt, note);
-
-      await this.billingEmailPublisher.publishVoidDocument(
+      const emailed = await this.billingEmailPublisher.publishVoidDocument(
         invoice,
         voidDocumentStorageKey,
         buildCreditNoteNumber(invoice.invoiceNumber),
       );
+
+      if (emailed) {
+        await this.invoicesRepository.update(invoiceId, { voidDocumentSentAt: new Date() });
+      }
     }
 
     const voided = await this.invoicesRepository.findByIdOrThrow(invoiceId);
@@ -588,6 +591,107 @@ export class InvoiceService {
     }
 
     return await this.invoicesRepository.findByIdOrThrow(invoiceId);
+  }
+
+  /**
+   * Emails an issued invoice that was issued without notification (PDF, time report for project invoices). The send is
+   * claimed atomically first, so concurrent requests email the customer once; it is released again when no mail could
+   * be queued. Callers load the invoice tenant-scoped.
+   */
+  async sendIssuedInvoice(invoice: InvoiceEntity): Promise<InvoiceEntity> {
+    if (invoice.status === InvoiceStatus.DRAFT || invoice.status === InvoiceStatus.VOID || !invoice.invoiceNumber) {
+      throw new BadRequestException('Only issued invoices that are not voided can be sent');
+    }
+
+    if (invoice.sentAt) {
+      throw new BadRequestException('Invoice has already been sent');
+    }
+
+    const storageKey = await this.getStoredPdfKey(invoice);
+    const fresh = await this.invoicesRepository.findByIdOrThrow(invoice.id);
+
+    await this.claimAndDeliver(invoice.id, 'sentAt', 'Invoice has already been sent', () =>
+      this.billingEmailPublisher.publishInvoiceIssued(fresh, storageKey),
+    );
+
+    return await this.invoicesRepository.findByIdOrThrow(invoice.id);
+  }
+
+  /** Emails the credit note of an invoice that was voided without notification (same claim rules as invoices). */
+  async sendVoidDocument(invoice: InvoiceEntity): Promise<InvoiceEntity> {
+    if (invoice.status !== InvoiceStatus.VOID || !invoice.invoiceNumber) {
+      throw new BadRequestException('Only voided invoices have a credit note to send');
+    }
+
+    if (invoice.voidDocumentSentAt) {
+      throw new BadRequestException('Credit note has already been sent');
+    }
+
+    const invoiceNumber = invoice.invoiceNumber;
+    const storageKey = await this.getStoredVoidDocumentKey(invoice);
+
+    await this.claimAndDeliver(invoice.id, 'voidDocumentSentAt', 'Credit note has already been sent', () =>
+      this.billingEmailPublisher.publishVoidDocument(invoice, storageKey, buildCreditNoteNumber(invoiceNumber)),
+    );
+
+    return await this.invoicesRepository.findByIdOrThrow(invoice.id);
+  }
+
+  private async claimAndDeliver(
+    invoiceId: string,
+    field: 'sentAt' | 'voidDocumentSentAt',
+    alreadySentMessage: string,
+    deliver: () => Promise<boolean>,
+  ): Promise<void> {
+    const at = new Date();
+
+    if (!(await this.invoicesRepository.claimDelivery(invoiceId, field, at))) {
+      throw new BadRequestException(alreadySentMessage);
+    }
+
+    let emailed = false;
+
+    try {
+      emailed = await deliver();
+    } catch (error) {
+      await this.invoicesRepository.releaseDelivery(invoiceId, field, at);
+
+      throw error;
+    }
+
+    if (!emailed) {
+      await this.invoicesRepository.releaseDelivery(invoiceId, field, at);
+
+      throw new BadRequestException('Customer has no billing email address; nothing was sent');
+    }
+  }
+
+  /** Storage key of the invoice PDF for emailing; rendered and stored first when missing or unreadable. */
+  async getStoredPdfKey(invoice: InvoiceEntity): Promise<string> {
+    if (invoice.status === InvoiceStatus.DRAFT) {
+      throw new BadRequestException('Draft invoices have no PDF');
+    }
+
+    if (invoice.pdfStorageKey && !this.shouldSkipFileCache()) {
+      try {
+        await this.invoicePdfService.readPdf(invoice.pdfStorageKey);
+
+        return invoice.pdfStorageKey;
+      } catch {
+        // Stored file missing or unreadable — regenerate below.
+      }
+    }
+
+    return await this.ensurePdfStored(invoice);
+  }
+
+  /** Storage key of the credit note of a voided invoice; stored first when it was never rendered (silent void). */
+  async getStoredVoidDocumentKey(invoice: InvoiceEntity): Promise<string> {
+    if (invoice.status !== InvoiceStatus.VOID) {
+      throw new BadRequestException('Only voided invoices have a credit note');
+    }
+
+    return await this.ensureVoidDocumentStored(invoice, invoice.voidedAt ?? new Date());
   }
 
   private async ensurePdfStored(invoice: InvoiceEntity): Promise<string> {

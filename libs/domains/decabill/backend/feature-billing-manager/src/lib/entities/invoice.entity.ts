@@ -95,6 +95,14 @@ export class InvoiceEntity {
   @Column({ type: 'timestamp', nullable: true, name: 'voided_at' })
   voidedAt?: Date;
 
+  /** When the invoice was emailed to the customer; null while it was issued without notification. */
+  @Column({ type: 'timestamp', nullable: true, name: 'sent_at' })
+  sentAt?: Date | null;
+
+  /** When the credit note of a voided invoice was emailed to the customer; null while it was not sent. */
+  @Column({ type: 'timestamp', nullable: true, name: 'void_document_sent_at' })
+  voidDocumentSentAt?: Date | null;
+
   @Column({ type: 'timestamp', nullable: true, name: 'paid_at' })
   paidAt?: Date | null;
 

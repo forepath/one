@@ -84,6 +84,7 @@ describe('ManualInvoiceService', () => {
   beforeEach(() => {
     jest.resetAllMocks();
     usersRepository.findByIdForTenant.mockResolvedValue({ id: 'user-1', email: 'user@example.com' });
+    invoicesRepository.findByIdOrThrow.mockResolvedValue(draftInvoice);
     invoiceService.createDraft.mockResolvedValue(draftInvoice);
     invoiceService.getDetailById.mockResolvedValue({
       id: 'inv-1',
@@ -270,6 +271,7 @@ describe('ManualInvoiceService', () => {
     });
 
     expect(invoiceIssuanceService.issueDraft).toHaveBeenCalledWith('inv-1', {
+      skipNotification: false,
       terms: {
         paymentDueDays: 7,
         deliveryTerms: { code: DeliveryTermsCode.DAP, place: 'Berlin', text: null },
@@ -293,8 +295,26 @@ describe('ManualInvoiceService', () => {
     await service.issueDraft('inv-1', 'admin-1');
 
     expect(invoiceIssuanceService.issueDraft).toHaveBeenCalledWith('inv-1', {
+      skipNotification: false,
       terms: { paymentDueDays: null, deliveryTerms: null },
     });
+  });
+
+  it('issueDraft with notifyCustomer false issues without emailing the customer', async () => {
+    invoicesRepository.findByIdOrThrow.mockResolvedValue(draftInvoice);
+    customerProfilesService.getByUserId.mockResolvedValue({ userId: 'user-1' });
+    customerProfilesService.isProfileComplete.mockReturnValue(true);
+    invoiceIssuanceService.issueDraft.mockResolvedValue({ id: 'inv-1', paymentDueDays: null });
+
+    await service.issueDraft('inv-1', 'admin-1', { notifyCustomer: false });
+
+    expect(invoiceIssuanceService.issueDraft).toHaveBeenCalledWith(
+      'inv-1',
+      expect.objectContaining({ skipNotification: true }),
+    );
+    expect(auditLog.log).toHaveBeenCalledWith(
+      expect.objectContaining({ context: expect.objectContaining({ notifyCustomer: false }) }),
+    );
   });
 
   it('issueDraft rejects custom delivery terms without text before issuing', async () => {
@@ -320,5 +340,20 @@ describe('ManualInvoiceService', () => {
     const result = await service.getDetail('inv-1');
 
     expect(result.userEmail).toBe('user@example.com');
+  });
+
+  it('getDetail carries the delivery state (silently issued invoice can be sent)', async () => {
+    invoicesRepository.findByIdOrThrow.mockResolvedValue({
+      ...draftInvoice,
+      status: InvoiceStatus.ISSUED,
+      invoiceNumber: 'INV-2026-00001',
+      sentAt: null,
+    });
+
+    const result = await service.getDetail('inv-1');
+
+    expect(result).toEqual(
+      expect.objectContaining({ sentAt: null, canSend: true, canSendCreditNote: false, voidDocumentSentAt: null }),
+    );
   });
 });

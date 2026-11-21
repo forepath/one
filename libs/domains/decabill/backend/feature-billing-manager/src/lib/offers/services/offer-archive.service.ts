@@ -1,6 +1,7 @@
 import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
+import { shouldNotify } from '../../dto/document-delivery.dto';
 import { BillingEmailPublisher } from '../../email/billing-email.publisher';
 import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import { mapOfferToSearchDocument } from '../../search/billing-search-document.mapper';
@@ -21,7 +22,12 @@ import { OfferLineItemsRepository } from '../repositories/offer-line-items.repos
 import { OfferNumberSequencesRepository } from '../repositories/offer-number-sequences.repository';
 import { OffersRepository } from '../repositories/offers.repository';
 import { mapOfferLineItemToResponse } from '../utils/map-offer-line-items.util';
-import { assertOfferHasPdf, offerCapabilityFlags } from '../utils/offer-capabilities.util';
+import {
+  assertOfferHasPdf,
+  isOfferPastExpiry,
+  offerCapabilityFlags,
+  offerDeliveryFields,
+} from '../utils/offer-capabilities.util';
 import { mapAdminOfferDocumentTerms } from '../utils/offer-document-terms.util';
 import { assertOfferDraftEditable } from '../utils/offer-mutability.util';
 
@@ -48,7 +54,16 @@ export class OfferArchiveService {
     private readonly documentTermsConfig: BillingDocumentTermsConfigService,
   ) {}
 
-  async archive(id: string, adminUserId?: string): Promise<AdminOfferDetailResponseDto> {
+  /**
+   * Finalizes a draft: number, totals, frozen terms and PDF; the customer sees it in their account either way. With
+   * `notifyCustomer` (default) the offer is also emailed right away; otherwise it can be emailed later via `send`.
+   */
+  async archive(
+    id: string,
+    adminUserId?: string,
+    options: { notifyCustomer?: boolean; notifyOnExpiry?: boolean } = {},
+  ): Promise<AdminOfferDetailResponseDto> {
+    const notifyCustomer = shouldNotify(options.notifyCustomer);
     const offer = await this.offersRepository.findByIdOrThrow(id, true);
 
     assertOfferDraftEditable(offer);
@@ -104,6 +119,9 @@ export class OfferArchiveService {
       numberScope: allocated.numberScope,
       status: OfferStatus.ARCHIVED,
       archivedAt,
+      // Like invoices: always visible to the customer once archived; `sentAt` only records the email.
+      sentAt: notifyCustomer ? archivedAt : null,
+      notifyOnExpiry: shouldNotify(options.notifyOnExpiry),
       subtotalNet: totals.subtotalNet,
       taxTotal: totals.taxTotal,
       totalGross: totals.totalGross,
@@ -135,14 +153,96 @@ export class OfferArchiveService {
       message: `Archived offer ${allocated.number}`,
       offerId: id,
       userId: offer.userId,
-      context: { adminUserId, offerNumber: allocated.number, totalGross: archived.totalGross },
+      context: {
+        adminUserId,
+        offerNumber: allocated.number,
+        totalGross: archived.totalGross,
+        notifyCustomer,
+        notifyOnExpiry: archived.notifyOnExpiry,
+      },
     });
 
-    await this.billingEmailPublisher.publishOfferArchived(archived, pdfStorageKey);
+    if (notifyCustomer) {
+      await this.billingEmailPublisher.publishOfferArchived(archived, pdfStorageKey);
+    }
+
     this.billingNotificationPublisher.publishOffer('offer.archived', archived);
     this.billingSearchIndexService.scheduleUpsert('offers', mapOfferToSearchDocument(archived, getRequiredTenantId()));
 
     return await this.mapDetail(id);
+  }
+
+  /**
+   * Emails an offer that was archived without notification (PDF attached). The send is claimed atomically first, so
+   * concurrent requests email the customer once.
+   */
+  async send(id: string, adminUserId?: string): Promise<AdminOfferDetailResponseDto> {
+    const offer = await this.offersRepository.findByIdOrThrow(id);
+
+    if (offer.status !== OfferStatus.ARCHIVED) {
+      throw new BadRequestException('Only archived offers can be sent');
+    }
+
+    if (offer.sentAt) {
+      throw new BadRequestException('Offer has already been sent');
+    }
+
+    if (isOfferPastExpiry(offer)) {
+      throw new BadRequestException('Offer has expired');
+    }
+
+    const pdfStorageKey = await this.getStoredPdfKey(offer);
+    const sentAt = new Date();
+
+    if (!(await this.offersRepository.claimSent(id, sentAt))) {
+      throw new BadRequestException('Offer has already been sent or is no longer pending');
+    }
+
+    let emailed = false;
+
+    try {
+      emailed = await this.billingEmailPublisher.publishOfferArchived({ ...offer, sentAt }, pdfStorageKey);
+    } catch (error) {
+      await this.offersRepository.releaseSent(id, sentAt);
+
+      throw error;
+    }
+
+    if (!emailed) {
+      await this.offersRepository.releaseSent(id, sentAt);
+
+      throw new BadRequestException('Customer has no billing email address; the offer was not sent');
+    }
+
+    await this.auditLog.log({
+      process: 'offer.send',
+      level: 'info',
+      message: `Sent offer ${offer.offerNumber ?? id} to the customer`,
+      offerId: id,
+      userId: offer.userId,
+      context: { adminUserId, offerNumber: offer.offerNumber },
+    });
+
+    const sent = await this.offersRepository.findByIdOrThrow(id);
+
+    this.billingSearchIndexService.scheduleUpsert('offers', mapOfferToSearchDocument(sent, getRequiredTenantId()));
+
+    return await this.mapDetail(id);
+  }
+
+  /** Stored PDF of a non-draft offer, rendered and stored first when missing or unreadable. */
+  private async getStoredPdfKey(offer: OfferEntity): Promise<string> {
+    if (offer.pdfStorageKey && process.env.BILLING_SKIP_FILE_CACHE !== 'true') {
+      try {
+        await this.offerPdfService.readPdf(offer.pdfStorageKey);
+
+        return offer.pdfStorageKey;
+      } catch {
+        // Stored file missing or unreadable — regenerate below.
+      }
+    }
+
+    return await this.ensurePdfStored(offer);
   }
 
   private async repreparePlanLines(
@@ -256,6 +356,7 @@ export class OfferArchiveService {
       createdAt: offer.createdAt.toISOString(),
       updatedAt: offer.updatedAt.toISOString(),
       ...offerCapabilityFlags(offer),
+      ...offerDeliveryFields(offer),
       subtotalNet: Number(offer.subtotalNet),
       taxTotal: Number(offer.taxTotal),
       billToOpenPositions: offer.billToOpenPositions,

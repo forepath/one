@@ -703,9 +703,6 @@
       <trans-unit id="featureAccounting-sourceInvoice" datatype="html">
         <source>Invoice</source>
         </trans-unit>
-      <trans-unit id="featureAccounting-sourceSupplierInvoice" datatype="html">
-        <source> Supplier invoice </source>
-        </trans-unit>
       <trans-unit id="featureAccountingBanking-targetAccount" datatype="html">
         <source>Account</source>
         </trans-unit>
@@ -838,9 +835,6 @@
       <trans-unit id="featureAccountingBanking-mappingJson" datatype="html">
         <source>Mapping (JSON)</source>
         </trans-unit>
-      <trans-unit id="featureAccountingBanking-mappingHint" datatype="html">
-        <source>delimiter, decimalSeparator, dateFormat (e.g. DD.MM.YYYY), encoding, hasHeader and columns (bookingDate, amount or debit/credit, counterpartyName, remittance …).</source>
-        </trans-unit>
       <trans-unit id="featureAccountingBanking-colRuleKind" datatype="html">
         <source>Kind</source>
         </trans-unit>
@@ -861,6 +855,9 @@
         </trans-unit>
       <trans-unit id="featureAccountingBanking-filters" datatype="html">
         <source>Filters</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-mappingHint" datatype="html">
+        <source>delimiter, decimalSeparator, dateFormat (e.g. DD.MM.YYYY), encoding, hasHeader and columns (bookingDate, amount or debit/credit, counterpartyName, remittance …).</source>
         </trans-unit>
       <trans-unit id="featureAccountingBanking-flowsTitle" datatype="html">
         <source>Inflow vs outflow</source>
@@ -1807,47 +1804,14 @@
       <trans-unit id="featureAccountingStatements-downloadFailed" datatype="html">
         <source>The export could not be created. Check the period and try again.</source>
         </trans-unit>
-      <trans-unit id="featureBillingTenantSwitch-current" datatype="html">
-        <source>Current</source>
-        </trans-unit>
-      <trans-unit id="featureBillingTenantSwitch-other" datatype="html">
-        <source>Available</source>
-        </trans-unit>
-      <trans-unit id="featureBillingTenantSwitch-title" datatype="html">
-        <source>Switch tenant</source>
-        </trans-unit>
-      <trans-unit id="featureBillingTenantSwitch-table" datatype="html">
-        <source>Tenants</source>
-        </trans-unit>
-      <trans-unit id="featureBillingTenantSwitch-search" datatype="html">
-        <source>Search tenants</source>
-        </trans-unit>
-      <trans-unit id="featureBillingTenantSwitch-empty" datatype="html">
-        <source>No matching tenants</source>
-        </trans-unit>
-      <trans-unit id="featureBillingTenantSwitch-colState" datatype="html">
-        <source>State</source>
-        </trans-unit>
-      <trans-unit id="featureBillingTenantSwitch-colTenant" datatype="html">
-        <source>Tenant</source>
-        </trans-unit>
-      <trans-unit id="featureBillingTenantSwitch-colNote" datatype="html">
-        <source>Note</source>
+      <trans-unit id="featureAccountingTenantTabs-all" datatype="html">
+        <source>All tenants</source>
         </trans-unit>
       <trans-unit id="featureAccountingTenantSwitch-home" datatype="html">
         <source>Home tenant</source>
         </trans-unit>
       <trans-unit id="featureAccountingTenantSwitch-allNote" datatype="html">
         <source>Entity-wide view across all tenants</source>
-        </trans-unit>
-      <trans-unit id="featureAdminDatevExports-unifiedNote" datatype="html">
-        <source>One export across all tenants</source>
-        </trans-unit>
-      <trans-unit id="featureAdminFileExplorer-unifiedNote" datatype="html">
-        <source>Files of all tenants</source>
-        </trans-unit>
-      <trans-unit id="featureAccountingTenantTabs-all" datatype="html">
-        <source>All tenants</source>
         </trans-unit>
       <trans-unit id="featureAccounting-typeAsset" datatype="html">
         <source>Asset</source>
@@ -1908,6 +1872,9 @@
         </trans-unit>
       <trans-unit id="featureAccounting-sourceSettlement" datatype="html">
         <source>Payment</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceSupplierInvoice" datatype="html">
+        <source>Supplier invoice</source>
         </trans-unit>
       <trans-unit id="featureAccounting-sourceBankTransaction" datatype="html">
         <source>Bank transaction</source>
@@ -2131,9 +2098,6 @@
       <trans-unit id="featureAccountingVat-payAmountHint" datatype="html">
         <source>Defaults to the computed result. Negative amounts are refunds from the tax office.</source>
         </trans-unit>
-      <trans-unit id="featureAccountingVat-downloadFailed" datatype="html">
-        <source>The CSV could not be created. Please try again.</source>
-      </trans-unit>
       <trans-unit id="featureAccountingVat-paySubmit" datatype="html">
         <source>Book payment</source>
         </trans-unit>
@@ -2169,6 +2133,9 @@
         </trans-unit>
       <trans-unit id="featureAccountingVat-quarter" datatype="html">
         <source>Quarter</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-downloadFailed" datatype="html">
+        <source>The CSV could not be created. Please try again.</source>
         </trans-unit>
       <trans-unit id="featureAddons-empty" datatype="html">
         <source>No add-ons yet</source>
@@ -2487,6 +2454,18 @@
       <trans-unit id="featureAdminBilling-creditNoteNote" datatype="html">
         <source>Note on the credit note (optional)</source>
         </trans-unit>
+      <trans-unit id="featureAdminBilling-voidNotify" datatype="html">
+        <source>Email the credit note to the customer</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-voidNotifyHint" datatype="html">
+        <source>Otherwise you can send a credit note later from the invoice.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-sendInvoiceMessage" datatype="html">
+        <source> The invoice is emailed to the customer with its PDF attached (and the time report of a project invoice). </source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-sendCreditNoteMessage" datatype="html">
+        <source> The credit note of this voided invoice is emailed to the customer with its PDF attached. </source>
+        </trans-unit>
       <trans-unit id="featureAdminBilling-reasonOptional" datatype="html">
         <source>Reason (optional)</source>
         </trans-unit>
@@ -2622,6 +2601,12 @@
       <trans-unit id="featureAdminInvoices-issueTitle" datatype="html">
         <source>Issue invoice</source>
         </trans-unit>
+      <trans-unit id="featureAdminInvoices-issueNotify" datatype="html">
+        <source>Email the invoice to the customer</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-issueNotifyHint" datatype="html">
+        <source>Otherwise you can send it later from the invoice.</source>
+        </trans-unit>
       <trans-unit id="featureAdminInvoices-issue" datatype="html">
         <source> Issue </source>
         </trans-unit>
@@ -2697,6 +2682,9 @@
       <trans-unit id="featureAdminSupplierInvoices-lineUsefulLifeHint" datatype="html">
         <source>Depreciation period; empty uses the account&apos;s default.</source>
         </trans-unit>
+      <trans-unit id="featureAdminBilling-bulkVoidNotify" datatype="html">
+        <source>Email the credit notes to the customers</source>
+        </trans-unit>
       <trans-unit id="featureAdminBilling-title" datatype="html">
         <source>Billing</source>
         </trans-unit>
@@ -2720,6 +2708,12 @@
         </trans-unit>
       <trans-unit id="featureAdminInvoices-lineTaxCategoryCustom" datatype="html">
         <source>Custom</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-sendToCustomer" datatype="html">
+        <source>Send to customer</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-sendCreditNote" datatype="html">
+        <source>Send credit note</source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-amountHintPaid" datatype="html">
         <source>Leave empty to record the full open balance (<x id="amount" equiv-text="limit"/>). A smaller amount records a partial payment.</source>
@@ -3066,6 +3060,9 @@
       <trans-unit id="featureAdminDatevExports-tabUnified" datatype="html">
         <source>Unified</source>
         </trans-unit>
+      <trans-unit id="featureAdminDatevExports-unifiedNote" datatype="html">
+        <source>One export across all tenants</source>
+        </trans-unit>
       <trans-unit id="featureAdminDatevExports-searchPlaceholder" datatype="html">
         <source>Search exports</source>
         </trans-unit>
@@ -3149,6 +3146,9 @@
         </trans-unit>
       <trans-unit id="featureAdminFileExplorer-tabUnified" datatype="html">
         <source>Unified</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-unifiedNote" datatype="html">
+        <source>Files of all tenants</source>
         </trans-unit>
       <trans-unit id="featureAdminFileExplorer-refresh" datatype="html">
         <source>Refresh</source>
@@ -3291,6 +3291,24 @@
       <trans-unit id="featureAdminOffers-empty" datatype="html">
         <source>No offers yet</source>
         </trans-unit>
+      <trans-unit id="featureAdminOffers-revokeNotifyBulk" datatype="html">
+        <source>Notify the customers by email</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveNotifyCustomer" datatype="html">
+        <source>Send to the customer now</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveNotifyCustomerHint" datatype="html">
+        <source>Otherwise you can send it later from the offer.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveNotifyOnExpiry" datatype="html">
+        <source>Email the customer when the offer expires</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveNotifyOnExpiryHint" datatype="html">
+        <source>Applies to offers with an expiry date.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-revokeNotify" datatype="html">
+        <source>Notify the customer by email</source>
+        </trans-unit>
       <trans-unit id="featureAdminOffers-createTitle" datatype="html">
         <source>Create offer</source>
         </trans-unit>
@@ -3401,6 +3419,27 @@
         </trans-unit>
       <trans-unit id="featureAdminOffers-bulkDeleteTitle" datatype="html">
         <source>Delete draft offers?</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveBulkTitle" datatype="html">
+        <source>Archive <x id="count" equiv-text="this.pendingArchive()?.length ?? 0"/> draft offers?</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveTitle" datatype="html">
+        <source>Archive offer?</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveMessage" datatype="html">
+        <source>The offer is numbered, its prices and terms are frozen and the PDF is created. It can no longer be edited afterwards.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-sendTitle" datatype="html">
+        <source>Send offer to the customer?</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-sendMessage" datatype="html">
+        <source>Offer <x id="number" equiv-text="this.offerDisplayTitle(offer)"/> is emailed to <x id="customer" equiv-text="this.customerLabel(offer)"/> with the PDF attached.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-revokeTitle" datatype="html">
+        <source>Revoke offer?</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOffers-revokeMessage" datatype="html">
+        <source>The customer can no longer accept the offer. This cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureAdminOffers-bulkRevokeMessage" datatype="html">
         <source><x id="count" equiv-text="this.selectedPendingResponse().length"/> offers awaiting a response will be revoked. Customers can no longer accept them.</source>
@@ -8004,6 +8043,39 @@
         </trans-unit>
       <trans-unit id="featureInvoices-balanceDue" datatype="html">
         <source>Balance due</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-invoiceStatusUnsent" datatype="html">
+        <source><x id="status" equiv-text="getInvoiceStatusLabel(status)"/> (not sent)</source>
+        </trans-unit>
+      <trans-unit id="featureOffers-statusArchivedUnsent" datatype="html">
+        <source><x id="status" equiv-text="getOfferStatusLabel(status)"/> (not sent)</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-current" datatype="html">
+        <source>Current</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-other" datatype="html">
+        <source>Available</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-title" datatype="html">
+        <source>Switch tenant</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-table" datatype="html">
+        <source>Tenants</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-search" datatype="html">
+        <source>Search tenants</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-empty" datatype="html">
+        <source>No matching tenants</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-colState" datatype="html">
+        <source>State</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-colTenant" datatype="html">
+        <source>Tenant</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-colNote" datatype="html">
+        <source>Note</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-editProfileButtonTitle" datatype="html">
         <source>Edit billing profile</source>

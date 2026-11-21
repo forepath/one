@@ -49,6 +49,74 @@ describe('BillingEmailPublisher', () => {
     );
   });
 
+  it('reports whether the delivery email was queued (true / false)', async () => {
+    await expect(publisher.publishInvoiceIssued(invoice as never, 'pdf-key')).resolves.toBe(true);
+    await expect(publisher.publishVoidDocument(invoice as never, 'void-key', 'INV-1-CN')).resolves.toBe(true);
+    await expect(
+      publisher.publishOfferArchived(
+        { id: 'o1', userId: 'user-1', offerNumber: 'OFF-1', totalGross: 1, currency: 'EUR' } as never,
+        'k',
+      ),
+    ).resolves.toBe(true);
+
+    customerProfilesRepository.findByUserId.mockResolvedValue(null);
+    usersRepository.findByIdForTenant.mockResolvedValue(null);
+
+    await expect(publisher.publishInvoiceIssued(invoice as never, 'pdf-key')).resolves.toBe(false);
+    await expect(publisher.publishVoidDocument(invoice as never, 'void-key', 'INV-1-CN')).resolves.toBe(false);
+    await expect(publisher.publishInvoiceIssued({ ...invoice, invoiceNumber: null } as never, 'k')).resolves.toBe(
+      false,
+    );
+  });
+
+  it('publishes offer revoked and expired emails without attachment', async () => {
+    const offer = {
+      id: 'offer-1',
+      userId: 'user-1',
+      offerNumber: 'OFF-2026-00001',
+      totalGross: 119,
+      currency: 'EUR',
+      expiresAt: new Date('2026-12-31T00:00:00Z'),
+    };
+
+    await expect(publisher.publishOfferRevoked(offer as never)).resolves.toBe(true);
+    await expect(publisher.publishOfferExpired(offer as never)).resolves.toBe(true);
+
+    expect(emailDispatcher.publish).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        eventType: 'offer.revoked',
+        templateKey: 'offer-revoked',
+        to: 'billing@example.com',
+        templateContext: expect.objectContaining({ offerNumber: 'OFF-2026-00001', amountLabel: '119.00 EUR' }),
+      }),
+    );
+    expect(emailDispatcher.publish).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        eventType: 'offer.expired',
+        templateKey: 'offer-expired',
+        templateContext: expect.objectContaining({ expiresAtLabel: expect.any(String) }),
+      }),
+    );
+    expect(emailDispatcher.publish.mock.calls[0]?.[0]).not.toHaveProperty('attachments');
+  });
+
+  it('skips offer revoked / expired emails without number or recipient', async () => {
+    await expect(publisher.publishOfferRevoked({ userId: 'user-1', offerNumber: null } as never)).resolves.toBe(false);
+
+    customerProfilesRepository.findByUserId.mockResolvedValue(null);
+    await expect(
+      publisher.publishOfferExpired({
+        userId: 'user-1',
+        offerNumber: 'OFF-1',
+        totalGross: 1,
+        currency: 'EUR',
+      } as never),
+    ).resolves.toBe(false);
+    expect(emailDispatcher.publish).not.toHaveBeenCalled();
+  });
+
   it('includes time report attachment when present', async () => {
     await publisher.publishInvoiceIssued({ ...invoice, timeReportStorageKey: 'time-key' } as never, 'pdf-key');
 

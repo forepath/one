@@ -27,6 +27,9 @@ import {
   revokeAdminOffer,
   revokeAdminOfferFailure,
   revokeAdminOfferSuccess,
+  sendAdminOffer,
+  sendAdminOfferFailure,
+  sendAdminOfferSuccess,
   updateAdminOffer,
   updateAdminOfferFailure,
   updateAdminOfferSuccess,
@@ -118,10 +121,24 @@ export const archiveAdminOffer$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminOffersService)) =>
     actions$.pipe(
       ofType(archiveAdminOffer),
-      switchMap(({ id }) =>
-        service.archive(id).pipe(
+      switchMap(({ id, dto }) =>
+        service.archive(id, dto).pipe(
           map((offer) => archiveAdminOfferSuccess({ offer })),
           catchError((error) => of(archiveAdminOfferFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const sendAdminOffer$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminOffersService)) =>
+    actions$.pipe(
+      ofType(sendAdminOffer),
+      switchMap(({ id }) =>
+        service.send(id).pipe(
+          map((offer) => sendAdminOfferSuccess({ offer })),
+          catchError((error) => of(sendAdminOfferFailure({ error: normalizeError(error) }))),
         ),
       ),
     ),
@@ -132,8 +149,8 @@ export const revokeAdminOffer$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminOffersService)) =>
     actions$.pipe(
       ofType(revokeAdminOffer),
-      switchMap(({ id }) =>
-        service.revoke(id).pipe(
+      switchMap(({ id, dto }) =>
+        service.revoke(id, dto).pipe(
           map((offer) => revokeAdminOfferSuccess({ offer })),
           catchError((error) => of(revokeAdminOfferFailure({ error: normalizeError(error) }))),
         ),
@@ -150,6 +167,7 @@ export const reloadAdminOfferStatisticsAfterMutation$ = createEffect(
         updateAdminOfferSuccess,
         deleteAdminOfferSuccess,
         archiveAdminOfferSuccess,
+        sendAdminOfferSuccess,
         revokeAdminOfferSuccess,
       ),
       map(() => loadAdminOfferStatistics({ params: {} })),

@@ -1,7 +1,7 @@
 import { UserEntity } from '@forepath/identity/backend';
 import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, In, Repository } from 'typeorm';
+import { EntityManager, In, IsNull, Repository } from 'typeorm';
 
 import { AutoPaymentStatus } from '../constants/auto-payment-status.constants';
 import {
@@ -677,6 +677,29 @@ export class InvoicesRepository {
     Object.assign(entity, dto);
 
     return await this.repository.save(entity);
+  }
+
+  /**
+   * Atomically marks an invoice (or its credit note) as sent, only while it is still unsent: concurrent send requests
+   * cannot both win, so the customer is emailed once. Resolves `false` when another request sent it first. Call after
+   * a tenant-scoped lookup (`findByIdOrThrow`); the update itself matches the id.
+   */
+  async claimDelivery(id: string, field: 'sentAt' | 'voidDocumentSentAt', at: Date): Promise<boolean> {
+    const result =
+      field === 'sentAt'
+        ? await this.repository.update({ id, sentAt: IsNull() }, { sentAt: at })
+        : await this.repository.update({ id, voidDocumentSentAt: IsNull() }, { voidDocumentSentAt: at });
+
+    return (result.affected ?? 0) === 1;
+  }
+
+  /** Undoes `claimDelivery` when the email could not be queued, so the document can be sent again. */
+  async releaseDelivery(id: string, field: 'sentAt' | 'voidDocumentSentAt', at: Date): Promise<void> {
+    if (field === 'sentAt') {
+      await this.repository.update({ id, sentAt: at }, { sentAt: null });
+    } else {
+      await this.repository.update({ id, voidDocumentSentAt: at }, { voidDocumentSentAt: null });
+    }
   }
 
   async create(dto: Partial<InvoiceEntity>): Promise<InvoiceEntity> {

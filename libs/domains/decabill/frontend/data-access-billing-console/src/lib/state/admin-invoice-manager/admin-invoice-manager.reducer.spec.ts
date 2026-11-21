@@ -5,6 +5,10 @@ import {
   adminInvoiceManagerMarkUnpaidFailure,
   adminInvoiceManagerRefund,
   adminInvoiceManagerRefundSuccess,
+  adminInvoiceManagerSend,
+  adminInvoiceManagerSendCreditNoteSuccess,
+  adminInvoiceManagerSendFailure,
+  adminInvoiceManagerSendSuccess,
   adminInvoiceManagerVoid,
   adminInvoiceManagerVoidFailure,
   adminInvoiceManagerVoidSuccess,
@@ -151,6 +155,45 @@ describe('adminInvoiceManagerReducer', () => {
 
     expect(state.issuing).toBe(false);
     expect(state.invoices[0].status).toBe('issued');
+  });
+
+  it('keeps the delivery state when a silently issued invoice is upserted from its detail', () => {
+    const state = adminInvoiceManagerReducer(
+      { ...initialAdminInvoiceManagerState, invoices: [listItem], issuing: true },
+      issueManualInvoiceSuccess({ invoice: { ...detail, sentAt: null, canSend: true } as never }),
+    );
+
+    expect(state.invoices[0]).toEqual(
+      expect.objectContaining({ sentAt: null, canSend: true, canSendCreditNote: false }),
+    );
+  });
+
+  it('tracks send / send credit note like the other row actions', () => {
+    const loading = adminInvoiceManagerReducer(
+      { ...initialAdminInvoiceManagerState, invoices: [{ ...listItem, canSend: true }] },
+      adminInvoiceManagerSend({ invoiceRefId: 'inv-1' }),
+    );
+
+    expect(loading.actionLoading).toBe(true);
+
+    const sent = adminInvoiceManagerReducer(
+      loading,
+      adminInvoiceManagerSendSuccess({ invoice: { ...listItem, canSend: false, sentAt: '2026-11-21' } as never }),
+    );
+
+    expect(sent.actionLoading).toBe(false);
+    expect(sent.invoices[0]).toEqual(expect.objectContaining({ canSend: false }));
+
+    const creditSent = adminInvoiceManagerReducer(
+      loading,
+      adminInvoiceManagerSendCreditNoteSuccess({ invoice: { ...listItem, canSendCreditNote: false } as never }),
+    );
+
+    expect(creditSent.actionLoading).toBe(false);
+
+    const failed = adminInvoiceManagerReducer(loading, adminInvoiceManagerSendFailure({ error: 'no email' }));
+
+    expect(failed).toEqual(expect.objectContaining({ actionLoading: false, error: 'no email' }));
   });
 
   it('stores error on issue failure', () => {

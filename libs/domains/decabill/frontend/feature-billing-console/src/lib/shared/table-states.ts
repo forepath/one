@@ -38,7 +38,11 @@ export function subscriptionState(status: string | null | undefined): FpcTableSt
   };
 }
 
-export function invoiceState(status: string | null | undefined): FpcTableState {
+/**
+ * `unsent`: finalized but not emailed to the customer yet (issued silently, or voided without sending the credit
+ * note); the label says so and the icon changes, the tone stays the status tone.
+ */
+export function invoiceState(status: string | null | undefined, options: { unsent?: boolean } = {}): FpcTableState {
   const icons: Record<string, string> = {
     draft: 'pencil-square',
     issued: 'send',
@@ -49,6 +53,14 @@ export function invoiceState(status: string | null | undefined): FpcTableState {
     credited: 'receipt-cutoff',
     written_off: 'x-circle',
   };
+
+  if (options.unsent) {
+    return {
+      label: $localize`:@@featureBilling-invoiceStatusUnsent:${getInvoiceStatusLabel(status)}:status: (not sent)`,
+      tone: getInvoiceStatusBadgeTone(status),
+      icon: 'send-slash',
+    };
+  }
 
   return { label: getInvoiceStatusLabel(status), tone: getInvoiceStatusBadgeTone(status), icon: icons[status ?? ''] };
 }
@@ -124,7 +136,16 @@ export function redemptionState(status: string | null | undefined): FpcTableStat
 }
 
 /** Offer state (draft / pending response / accepted / declined / expired / revoked). */
-export function offerState(status: string | null | undefined): FpcTableState {
+/** `unsent`: archived without emailing the customer yet (like invoices: the label says so and the icon changes). */
+export function offerState(status: string | null | undefined, options: { unsent?: boolean } = {}): FpcTableState {
+  if (options.unsent) {
+    return {
+      label: $localize`:@@featureOffers-statusArchivedUnsent:${getOfferStatusLabel(status)}:status: (not sent)`,
+      tone: getOfferStatusBadgeTone(status),
+      icon: 'send-slash',
+    };
+  }
+
   const icons: Record<string, string> = {
     draft: 'pencil-square',
     archived: 'hourglass-split',

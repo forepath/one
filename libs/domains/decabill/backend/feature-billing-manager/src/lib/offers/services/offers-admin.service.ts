@@ -3,6 +3,8 @@ import { BadRequestException, Injectable, NotFoundException, Optional } from '@n
 
 import { TaxCategory } from '../../constants/tax-category.constants';
 import type { PaginatedBillingAuditLogsResponseDto } from '../../dto/admin-billing.dto';
+import { shouldNotify } from '../../dto/document-delivery.dto';
+import { BillingEmailPublisher } from '../../email/billing-email.publisher';
 import { InventoryArticlesRepository } from '../../inventory/repositories/inventory-articles.repository';
 import { assertInventoryArticlesExist } from '../../inventory/utils/inventory-article-references.util';
 import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
@@ -24,12 +26,14 @@ import type {
   OfferArticleLineDto,
   AdminOfferDetailResponseDto,
   AdminOfferListItemDto,
+  ArchiveAdminOfferDto,
   CreateAdminOfferDto,
   OfferLineInputDto,
   OfferPlanTemplateLineDto,
   OfferProjectTemplateLineDto,
   OfferStandardLineDto,
   PaginatedAdminOffersResponseDto,
+  RevokeAdminOfferDto,
   UpdateAdminOfferDto,
 } from '../dto/offer.dto';
 import type { OfferLineItemEntity } from '../entities/offer-line-item.entity';
@@ -44,7 +48,7 @@ import {
   mapOfferStandardLineToTaxInput,
   resolveOfferProjectTemplateLinePricing,
 } from '../utils/map-offer-line-items.util';
-import { offerCapabilityFlags } from '../utils/offer-capabilities.util';
+import { offerCapabilityFlags, offerDeliveryFields } from '../utils/offer-capabilities.util';
 import { buildOfferDraftDocumentTerms, mapAdminOfferDocumentTerms } from '../utils/offer-document-terms.util';
 import { assertOfferRevocable } from '../utils/offer-mutability.util';
 import { assertOfferDeletable, assertOfferDraftEditable } from '../utils/offer-mutability.util';
@@ -77,6 +81,7 @@ export class OffersAdminService {
     private readonly documentTermsConfig: BillingDocumentTermsConfigService,
     private readonly inventoryArticlesRepository: InventoryArticlesRepository,
     @Optional() private readonly customerProfilesRepository?: CustomerProfilesRepository,
+    @Optional() private readonly billingEmailPublisher?: BillingEmailPublisher,
   ) {}
 
   async list(
@@ -152,11 +157,18 @@ export class OffersAdminService {
     return await this.get(offer.id);
   }
 
-  async archive(id: string, adminUserId?: string): Promise<AdminOfferDetailResponseDto> {
-    return await this.offerArchiveService.archive(id, adminUserId);
+  async archive(id: string, adminUserId?: string, dto?: ArchiveAdminOfferDto): Promise<AdminOfferDetailResponseDto> {
+    return await this.offerArchiveService.archive(id, adminUserId, {
+      notifyCustomer: dto?.notifyCustomer,
+      notifyOnExpiry: dto?.notifyOnExpiry,
+    });
   }
 
-  async revoke(id: string, adminUserId?: string): Promise<AdminOfferDetailResponseDto> {
+  async send(id: string, adminUserId?: string): Promise<AdminOfferDetailResponseDto> {
+    return await this.offerArchiveService.send(id, adminUserId);
+  }
+
+  async revoke(id: string, adminUserId?: string, dto?: RevokeAdminOfferDto): Promise<AdminOfferDetailResponseDto> {
     const offer = await this.offersRepository.findByIdOrThrow(id);
 
     assertOfferRevocable(offer);
@@ -165,6 +177,11 @@ export class OffersAdminService {
       status: OfferStatus.REVOKED,
       revokedAt: new Date(),
     });
+    // Like a void: the customer is told unless suppressed; drafts never reached the customer.
+    const notifyCustomer = shouldNotify(dto?.notifyCustomer) && offer.status === OfferStatus.ARCHIVED;
+    const emailed = notifyCustomer
+      ? ((await this.billingEmailPublisher?.publishOfferRevoked(revoked)) ?? false)
+      : false;
 
     await this.auditLog.log({
       process: 'offer.revoke',
@@ -172,7 +189,7 @@ export class OffersAdminService {
       message: 'Admin revoked offer',
       offerId: id,
       userId: offer.userId,
-      context: { adminUserId, offerNumber: revoked.offerNumber },
+      context: { adminUserId, offerNumber: revoked.offerNumber, customerNotified: emailed },
     });
 
     this.billingNotificationPublisher.publishOffer('offer.revoked', revoked);
@@ -213,6 +230,10 @@ export class OffersAdminService {
       status: OfferStatus.EXPIRED,
       expiredAt: new Date(),
     });
+    // The expiry email was chosen when archiving.
+    const emailed = expired.notifyOnExpiry
+      ? ((await this.billingEmailPublisher?.publishOfferExpired(expired)) ?? false)
+      : false;
 
     await this.auditLog.log({
       process: 'offer.expire',
@@ -220,7 +241,7 @@ export class OffersAdminService {
       message: 'Offer expired',
       offerId: id,
       userId: offer.userId,
-      context: { offerNumber: expired.offerNumber },
+      context: { offerNumber: expired.offerNumber, customerNotified: emailed },
     });
 
     this.billingNotificationPublisher.publishOffer('offer.expired', expired);
@@ -488,6 +509,7 @@ export class OffersAdminService {
       createdAt: offer.createdAt.toISOString(),
       updatedAt: offer.updatedAt.toISOString(),
       ...offerCapabilityFlags(offer),
+      ...offerDeliveryFields(offer),
     };
   }
 

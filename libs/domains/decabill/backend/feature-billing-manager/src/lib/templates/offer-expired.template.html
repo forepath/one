@@ -1,0 +1,13 @@
+{{#> email-layout}}
+<h1 class="email-title">Offer expired</h1>
+<p>Dear {{recipientName}},</p>
+<p>Offer <strong>{{offerNumber}}</strong> has expired without being accepted.</p>
+<p>Total amount: <strong>{{amountLabel}}</strong></p>
+{{#if expiresAtLabel}}
+<p>Valid until: <strong>{{expiresAtLabel}}</strong></p>
+{{/if}}
+<p>
+  The offer can no longer be accepted. If you are still interested, please get in touch with us and we will be happy to
+  send you a new offer.
+</p>
+{{/email-layout}}

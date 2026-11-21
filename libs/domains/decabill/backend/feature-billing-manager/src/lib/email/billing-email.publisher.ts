@@ -22,11 +22,12 @@ export class BillingEmailPublisher {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  async publishInvoiceIssued(invoice: InvoiceEntity, pdfStorageKey: string): Promise<void> {
+  /** Emails the issued invoice (PDF + time report); resolves `false` when no mail was queued. */
+  async publishInvoiceIssued(invoice: InvoiceEntity, pdfStorageKey: string): Promise<boolean> {
     if (!invoice.invoiceNumber) {
       this.logger.debug(`Invoice ${invoice.id} has no invoice number, skipping invoice email`);
 
-      return;
+      return false;
     }
 
     const profile = await this.customerProfilesRepository.findByUserId(invoice.userId);
@@ -35,7 +36,7 @@ export class BillingEmailPublisher {
     if (!to) {
       this.logger.warn(`No billing email found for user ${invoice.userId}, skipping invoice email`);
 
-      return;
+      return false;
     }
 
     const dueDateLabel = this.formatDueDate(invoice.dueDate);
@@ -61,13 +62,16 @@ export class BillingEmailPublisher {
       },
       attachments,
     });
+
+    return true;
   }
 
-  async publishOfferArchived(offer: OfferEntity, pdfStorageKey: string): Promise<void> {
+  /** Emails the archived offer (PDF attached); resolves `false` when no mail was queued. */
+  async publishOfferArchived(offer: OfferEntity, pdfStorageKey: string): Promise<boolean> {
     if (!offer.offerNumber) {
       this.logger.debug(`Offer ${offer.id} has no offer number, skipping offer email`);
 
-      return;
+      return false;
     }
 
     const profile = await this.customerProfilesRepository.findByUserId(offer.userId);
@@ -76,7 +80,7 @@ export class BillingEmailPublisher {
     if (!to) {
       this.logger.warn(`No billing email found for user ${offer.userId}, skipping offer email`);
 
-      return;
+      return false;
     }
 
     const expiresAtLabel = offer.expiresAt ? this.formatDueDate(offer.expiresAt) : undefined;
@@ -94,6 +98,8 @@ export class BillingEmailPublisher {
       },
       attachments: [{ storageKey: pdfStorageKey, filename: `${offer.offerNumber}.pdf` }],
     });
+
+    return true;
   }
 
   async publishOfferAcceptedConfirmation(offer: OfferEntity): Promise<void> {
@@ -123,9 +129,56 @@ export class BillingEmailPublisher {
     });
   }
 
-  async publishVoidDocument(invoice: InvoiceEntity, pdfStorageKey: string, creditNoteNumber: string): Promise<void> {
+  /** Tells the customer that a sent offer was withdrawn and can no longer be accepted. */
+  async publishOfferRevoked(offer: OfferEntity): Promise<boolean> {
+    return await this.publishOfferClosed(offer, 'offer.revoked', 'offer-revoked');
+  }
+
+  /** Tells the customer that a sent offer expired without an answer. */
+  async publishOfferExpired(offer: OfferEntity): Promise<boolean> {
+    return await this.publishOfferClosed(offer, 'offer.expired', 'offer-expired');
+  }
+
+  private async publishOfferClosed(
+    offer: OfferEntity,
+    eventType: 'offer.revoked' | 'offer.expired',
+    templateKey: 'offer-revoked' | 'offer-expired',
+  ): Promise<boolean> {
+    if (!offer.offerNumber) {
+      return false;
+    }
+
+    const profile = await this.customerProfilesRepository.findByUserId(offer.userId);
+    const to = await this.resolveRecipientEmail(offer.userId, profile);
+
+    if (!to) {
+      this.logger.warn(`No billing email found for user ${offer.userId}, skipping ${eventType} email`);
+
+      return false;
+    }
+
+    const expiresAtLabel = offer.expiresAt ? this.formatDueDate(offer.expiresAt) : undefined;
+
+    await this.emailDispatcher.publish({
+      eventType,
+      scopeKey: getTenantIdOrDefault(),
+      to,
+      templateKey,
+      templateContext: {
+        recipientName: this.greeting(profile),
+        offerNumber: offer.offerNumber,
+        amountLabel: this.formatAmount(Number(offer.totalGross), offer.currency),
+        ...(expiresAtLabel ? { expiresAtLabel } : {}),
+      },
+    });
+
+    return true;
+  }
+
+  /** Emails the credit note of a voided invoice; resolves `false` when no mail was queued. */
+  async publishVoidDocument(invoice: InvoiceEntity, pdfStorageKey: string, creditNoteNumber: string): Promise<boolean> {
     if (!invoice.invoiceNumber) {
-      return;
+      return false;
     }
 
     const profile = await this.customerProfilesRepository.findByUserId(invoice.userId);
@@ -134,7 +187,7 @@ export class BillingEmailPublisher {
     if (!to) {
       this.logger.warn(`No billing email found for user ${invoice.userId}, skipping void email`);
 
-      return;
+      return false;
     }
 
     await this.emailDispatcher.publish({
@@ -149,6 +202,8 @@ export class BillingEmailPublisher {
       },
       attachments: [{ storageKey: pdfStorageKey, filename: `${creditNoteNumber}.pdf` }],
     });
+
+    return true;
   }
 
   async publishPartialCreditDocument(

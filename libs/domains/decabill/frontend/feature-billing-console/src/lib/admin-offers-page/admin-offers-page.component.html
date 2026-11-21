@@ -162,7 +162,7 @@
             <span fpcLaneHeaderTitle i18n="@@featureAdminOffers-mobileOffers">Offers</span>
           </fpc-lane-header>
           <!-- Server-paged offers: State · Offer number · customer · total · dates; ⋮ Edit / Preview / Download PDF /
-               Audit / Send / Revoke / Delete / Copy ID; bulk Send / Revoke / Delete drafts. -->
+               Audit / Archive / Send / Revoke / Delete / Copy ID; bulk Archive / Revoke / Delete drafts. -->
           <fpc-data-table
             class="flex-grow-1 min-h-0"
             [ariaLabel]="pageTitle"
@@ -218,19 +218,19 @@
               fpcDataTableBatch
               variant="secondary"
               [disabled]="selectedDrafts().length === 0"
-              (clicked)="sendSelected()"
-              data-testid="admin-offers-bulk-send"
+              (clicked)="archiveSelected()"
+              data-testid="admin-offers-bulk-archive"
               iconOnly
-              [ariaLabel]="sendLabel"
-              [title]="sendLabel"
+              [ariaLabel]="archiveLabel"
+              [title]="archiveLabel"
             >
-              <i class="bi bi-send" aria-hidden="true"></i>
+              <i class="bi bi-archive" aria-hidden="true"></i>
             </fpc-button>
             <fpc-button
               fpcDataTableBatch
               variant="secondary"
               [disabled]="selectedPendingResponse().length === 0"
-              (clicked)="pendingBulk.set('revoke')"
+              (clicked)="openBulkConfirm('revoke')"
               data-testid="admin-offers-bulk-revoke"
               iconOnly
               [ariaLabel]="revokeLabel"
@@ -242,7 +242,7 @@
               fpcDataTableBatch
               variant="danger"
               [disabled]="selectedDrafts().length === 0"
-              (clicked)="pendingBulk.set('delete')"
+              (clicked)="openBulkConfirm('delete')"
               data-testid="admin-offers-bulk-delete"
               iconOnly
               [ariaLabel]="deleteDraftsLabel"
@@ -279,7 +279,79 @@
   [confirmLabel]="bulkConfirmLabel()"
   [danger]="true"
   (confirmed)="runPendingBulk()"
+>
+  @if (pendingBulk() === 'revoke') {
+    <fpc-form-check
+      class="d-block mt-3"
+      checkId="bulkRevokeNotifyCustomer"
+      [(checked)]="bulkRevokeNotifyCustomer"
+      i18n-label="@@featureAdminOffers-revokeNotifyBulk"
+      label="Notify the customers by email"
+      data-testid="admin-offers-bulk-revoke-notify"
+    />
+  }
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [open]="pendingArchive() !== null"
+  (openChange)="!$event && pendingArchive.set(null)"
+  [title]="archiveConfirmTitle()"
+  [message]="archiveConfirmMessage"
+  [confirmLabel]="archiveLabel"
+  (confirmed)="confirmArchive()"
+  data-testid="admin-offers-archive-dialog"
+>
+  <fpc-form-check
+    class="d-block mt-3"
+    checkId="archiveNotifyCustomer"
+    [(checked)]="archiveNotifyCustomer"
+    i18n-label="@@featureAdminOffers-archiveNotifyCustomer"
+    label="Send to the customer now"
+    i18n-hint="@@featureAdminOffers-archiveNotifyCustomerHint"
+    hint="Otherwise you can send it later from the offer."
+    data-testid="admin-offers-archive-notify"
+  />
+  <fpc-form-check
+    class="d-block mt-2"
+    checkId="archiveNotifyOnExpiry"
+    [(checked)]="archiveNotifyOnExpiry"
+    i18n-label="@@featureAdminOffers-archiveNotifyOnExpiry"
+    label="Email the customer when the offer expires"
+    i18n-hint="@@featureAdminOffers-archiveNotifyOnExpiryHint"
+    hint="Applies to offers with an expiry date."
+    data-testid="admin-offers-archive-notify-expiry"
+  />
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [open]="pendingSend() !== null"
+  (openChange)="!$event && pendingSend.set(null)"
+  [title]="sendConfirmTitle"
+  [message]="sendConfirmMessage()"
+  [confirmLabel]="sendLabel"
+  (confirmed)="confirmSend()"
+  data-testid="admin-offers-send-dialog"
 />
+
+<fpc-confirm-dialog
+  [open]="pendingRevoke() !== null"
+  (openChange)="!$event && pendingRevoke.set(null)"
+  [title]="revokeConfirmTitle"
+  [message]="revokeConfirmMessage"
+  [confirmLabel]="revokeLabel"
+  [danger]="true"
+  (confirmed)="confirmRevoke()"
+  data-testid="admin-offers-revoke-dialog"
+>
+  <fpc-form-check
+    class="d-block mt-3"
+    checkId="revokeNotifyCustomer"
+    [(checked)]="revokeNotifyCustomer"
+    i18n-label="@@featureAdminOffers-revokeNotify"
+    label="Notify the customer by email"
+    data-testid="admin-offers-revoke-notify"
+  />
+</fpc-confirm-dialog>
 
 <fpc-modal [(open)]="createModalOpen" size="lg" i18n-title="@@featureAdminOffers-createTitle" title="Create offer">
   <fpc-form-field forId="createOfferCustomer" i18n-label="@@featureAdminOffers-customer" label="Customer">
@@ -560,12 +632,20 @@
     </article>
   }
   @if (previewDetail(); as detail) {
-    @if (canDownloadOffer(detail)) {
+    @if (canDownloadOffer(detail) || canSendOffer(detail)) {
       <div *fpcModalFooter class="d-flex justify-content-end gap-2">
-        <fpc-button variant="dark" (clicked)="downloadOfferPdf(detail)" data-testid="admin-offer-preview-download">
-          <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>
-          <span i18n="@@featureOffers-downloadPdf">Download</span>
-        </fpc-button>
+        @if (canSendOffer(detail)) {
+          <fpc-button variant="primary" (clicked)="openSendDialog(detail)" data-testid="admin-offer-preview-send">
+            <i class="bi bi-send me-1" aria-hidden="true"></i>
+            <span>{{ sendLabel }}</span>
+          </fpc-button>
+        }
+        @if (canDownloadOffer(detail)) {
+          <fpc-button variant="dark" (clicked)="downloadOfferPdf(detail)" data-testid="admin-offer-preview-download">
+            <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>
+            <span i18n="@@featureOffers-downloadPdf">Download</span>
+          </fpc-button>
+        }
       </div>
     }
   }

@@ -88,6 +88,16 @@ describe('BILLING_EMAIL_SUBJECTS', () => {
     );
   });
 
+  it('builds offer revoked / expired subjects and allowlists their events', () => {
+    expect(resolveEmailSubject(BILLING_EMAIL_SUBJECTS, 'offer-revoked', { offerNumber: 'OFF-1' })).toBe(
+      'Offer OFF-1 withdrawn',
+    );
+    expect(resolveEmailSubject(BILLING_EMAIL_SUBJECTS, 'offer-expired', { offerNumber: 'OFF-1' })).toBe(
+      'Offer OFF-1 expired',
+    );
+    expect(BILLING_EMAIL_EVENTS).toEqual(expect.arrayContaining(['offer.revoked', 'offer.expired']));
+  });
+
   it('builds ssh access granted subject', () => {
     expect(resolveEmailSubject(BILLING_EMAIL_SUBJECTS, 'ssh-access-granted', { planName: 'Pro' })).toBe(
       'SSH access key revealed: Pro',

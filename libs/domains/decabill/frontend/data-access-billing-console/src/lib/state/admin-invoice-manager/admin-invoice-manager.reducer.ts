@@ -13,6 +13,12 @@ import {
   adminInvoiceManagerRefund,
   adminInvoiceManagerRefundFailure,
   adminInvoiceManagerRefundSuccess,
+  adminInvoiceManagerSend,
+  adminInvoiceManagerSendCreditNote,
+  adminInvoiceManagerSendCreditNoteFailure,
+  adminInvoiceManagerSendCreditNoteSuccess,
+  adminInvoiceManagerSendFailure,
+  adminInvoiceManagerSendSuccess,
   adminInvoiceManagerVoid,
   adminInvoiceManagerVoidFailure,
   adminInvoiceManagerVoidSuccess,
@@ -109,6 +115,10 @@ function mapDetailToListItem(invoice: {
   canDownloadVoidDocument?: boolean;
   canDownloadTimeReport?: boolean;
   voidDocumentNumber?: string | null;
+  sentAt?: string | null;
+  voidDocumentSentAt?: string | null;
+  canSend?: boolean;
+  canSendCreditNote?: boolean;
 }): AdminInvoiceListItem {
   return {
     id: invoice.id,
@@ -126,6 +136,10 @@ function mapDetailToListItem(invoice: {
     canDownloadVoidDocument: invoice.canDownloadVoidDocument,
     canDownloadTimeReport: invoice.canDownloadTimeReport,
     voidDocumentNumber: invoice.voidDocumentNumber ?? undefined,
+    sentAt: invoice.sentAt ?? null,
+    voidDocumentSentAt: invoice.voidDocumentSentAt ?? null,
+    canSend: invoice.canSend ?? false,
+    canSendCreditNote: invoice.canSendCreditNote ?? false,
   };
 }
 
@@ -188,6 +202,8 @@ export const adminInvoiceManagerReducer = createReducer(
   on(deleteManualInvoiceFailure, (state, { error }) => ({ ...state, deleting: false, error })),
   on(
     adminInvoiceManagerVoid,
+    adminInvoiceManagerSend,
+    adminInvoiceManagerSendCreditNote,
     adminInvoiceManagerMarkPaid,
     adminInvoiceManagerMarkUnpaid,
     adminInvoiceManagerWriteOff,
@@ -200,6 +216,8 @@ export const adminInvoiceManagerReducer = createReducer(
   ),
   on(
     adminInvoiceManagerVoidSuccess,
+    adminInvoiceManagerSendSuccess,
+    adminInvoiceManagerSendCreditNoteSuccess,
     adminInvoiceManagerMarkPaidSuccess,
     adminInvoiceManagerMarkUnpaidSuccess,
     adminInvoiceManagerWriteOffSuccess,
@@ -212,6 +230,8 @@ export const adminInvoiceManagerReducer = createReducer(
   ),
   on(
     adminInvoiceManagerVoidFailure,
+    adminInvoiceManagerSendFailure,
+    adminInvoiceManagerSendCreditNoteFailure,
     adminInvoiceManagerMarkPaidFailure,
     adminInvoiceManagerMarkUnpaidFailure,
     adminInvoiceManagerWriteOffFailure,

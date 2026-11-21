@@ -112,6 +112,8 @@ export interface BillProjectTimeDto {
   lineItems?: ManualInvoiceLineItemDto[];
   /** Optional document note printed on the project invoice. */
   note?: string | null;
+  /** Email the invoice (with time report) right away (server default `true`). */
+  notifyCustomer?: boolean;
 }
 
 export interface ProjectTimeReportRequestDto {

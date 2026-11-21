@@ -11,7 +11,12 @@ describe('InvoiceAdminService', () => {
     findByIdOrThrow: jest.fn(),
     update: jest.fn(),
   };
-  const invoiceService = { mapToResponse: jest.fn(), voidInvoice: jest.fn() };
+  const invoiceService = {
+    mapToResponse: jest.fn(),
+    voidInvoice: jest.fn(),
+    sendIssuedInvoice: jest.fn(),
+    sendVoidDocument: jest.fn(),
+  };
   const auditLog = { log: jest.fn() };
   const usersRepository = { findByIdForTenant: jest.fn() };
   const customerTrustScoreService = { triggerRecomputeForUser: jest.fn() };
@@ -209,8 +214,52 @@ describe('InvoiceAdminService', () => {
       'inv-1',
       'sub-1',
       'admin-1',
-      { adminUserId: 'admin-1' },
-      { note: 'Cancelled' },
+      { adminUserId: 'admin-1', notifyCustomer: true },
+      { note: 'Cancelled', skipNotification: false },
     );
+  });
+
+  it('voidInvoice with notifyCustomer false voids without emailing the credit note', async () => {
+    invoicesRepository.findByIdOrThrow.mockResolvedValue(baseInvoice);
+    invoiceService.voidInvoice.mockResolvedValue(baseInvoice);
+
+    await service.voidInvoice('inv-1', 'admin-1', { notifyCustomer: false });
+
+    expect(invoiceService.voidInvoice).toHaveBeenCalledWith(
+      'inv-1',
+      'sub-1',
+      'admin-1',
+      { adminUserId: 'admin-1', notifyCustomer: false },
+      { note: undefined, skipNotification: true },
+    );
+  });
+
+  it('sendInvoice emails through the invoice service and audits the send', async () => {
+    invoicesRepository.findByIdOrThrow.mockResolvedValue(baseInvoice);
+    invoiceService.sendIssuedInvoice.mockResolvedValue({ ...baseInvoice, sentAt: new Date('2026-11-21T10:00:00Z') });
+
+    const result = await service.sendInvoice('inv-1', 'admin-1');
+
+    expect(invoiceService.sendIssuedInvoice).toHaveBeenCalledWith(baseInvoice);
+    expect(auditLog.log).toHaveBeenCalledWith(expect.objectContaining({ process: 'invoice.send', invoiceId: 'inv-1' }));
+    expect(result).toEqual(expect.objectContaining({ sentAt: '2026-11-21T10:00:00.000Z', canSend: false }));
+  });
+
+  it('sendCreditNote emails the credit note through the invoice service and audits it', async () => {
+    const voided = { ...baseInvoice, status: InvoiceStatus.VOID };
+
+    invoicesRepository.findByIdOrThrow.mockResolvedValue(voided);
+    invoiceService.sendVoidDocument.mockResolvedValue({
+      ...voided,
+      voidDocumentSentAt: new Date('2026-11-21T10:00:00Z'),
+    });
+
+    const result = await service.sendCreditNote('inv-1', 'admin-1');
+
+    expect(invoiceService.sendVoidDocument).toHaveBeenCalledWith(voided);
+    expect(auditLog.log).toHaveBeenCalledWith(
+      expect.objectContaining({ process: 'invoice.void_document_send', invoiceId: 'inv-1' }),
+    );
+    expect(result).toEqual(expect.objectContaining({ canSendCreditNote: false }));
   });
 });

@@ -10,6 +10,7 @@ export const selectAdminOffersCreating = createSelector(selectAdminOffersState, 
 export const selectAdminOffersUpdating = createSelector(selectAdminOffersState, (state) => state.updating);
 export const selectAdminOffersDeleting = createSelector(selectAdminOffersState, (state) => state.deleting);
 export const selectAdminOffersArchiving = createSelector(selectAdminOffersState, (state) => state.archiving);
+export const selectAdminOffersSending = createSelector(selectAdminOffersState, (state) => state.sending);
 export const selectAdminOffersRevoking = createSelector(selectAdminOffersState, (state) => state.revoking);
 export const selectAdminOffersError = createSelector(selectAdminOffersState, (state) => state.error);
 
@@ -53,6 +54,8 @@ export const selectAdminOffersMutating = createSelector(
   selectAdminOffersUpdating,
   selectAdminOffersDeleting,
   selectAdminOffersArchiving,
+  selectAdminOffersSending,
   selectAdminOffersRevoking,
-  (creating, updating, deleting, archiving, revoking) => creating || updating || deleting || archiving || revoking,
+  (creating, updating, deleting, archiving, sending, revoking) =>
+    creating || updating || deleting || archiving || sending || revoking,
 );

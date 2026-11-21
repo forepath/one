@@ -161,10 +161,18 @@ describe('ProjectDetailPageComponent (time entries bulk Delete)', () => {
     expect(projectsFacade['billProjectTime']).toHaveBeenCalledWith(
       'pr1',
       expect.objectContaining({
+        notifyCustomer: true,
         lineItems: [
           { description: 'Switch', quantity: 1, unitPriceNet: 80, taxCategory: 'reduced', inventoryArticleId: 'art-1' },
         ],
       }),
+    );
+
+    component.billNotifyCustomer = false;
+    component.submitBillTime();
+    expect(projectsFacade['billProjectTime']).toHaveBeenLastCalledWith(
+      'pr1',
+      expect.objectContaining({ notifyCustomer: false }),
     );
   });
 });

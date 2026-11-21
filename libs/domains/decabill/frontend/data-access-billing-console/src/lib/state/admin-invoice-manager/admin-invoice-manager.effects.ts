@@ -15,6 +15,12 @@ import {
   adminInvoiceManagerRefund,
   adminInvoiceManagerRefundFailure,
   adminInvoiceManagerRefundSuccess,
+  adminInvoiceManagerSend,
+  adminInvoiceManagerSendCreditNote,
+  adminInvoiceManagerSendCreditNoteFailure,
+  adminInvoiceManagerSendCreditNoteSuccess,
+  adminInvoiceManagerSendFailure,
+  adminInvoiceManagerSendSuccess,
   adminInvoiceManagerVoid,
   adminInvoiceManagerVoidFailure,
   adminInvoiceManagerVoidSuccess,
@@ -131,6 +137,34 @@ export const adminInvoiceManagerVoid$ = createEffect(
         service.voidInvoice(invoiceRefId, dto).pipe(
           map((invoice) => adminInvoiceManagerVoidSuccess({ invoice })),
           catchError((error) => of(adminInvoiceManagerVoidFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const adminInvoiceManagerSend$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
+    actions$.pipe(
+      ofType(adminInvoiceManagerSend),
+      switchMap(({ invoiceRefId }) =>
+        service.sendInvoice(invoiceRefId).pipe(
+          map((invoice) => adminInvoiceManagerSendSuccess({ invoice })),
+          catchError((error) => of(adminInvoiceManagerSendFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const adminInvoiceManagerSendCreditNote$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
+    actions$.pipe(
+      ofType(adminInvoiceManagerSendCreditNote),
+      switchMap(({ invoiceRefId }) =>
+        service.sendCreditNote(invoiceRefId).pipe(
+          map((invoice) => adminInvoiceManagerSendCreditNoteSuccess({ invoice })),
+          catchError((error) => of(adminInvoiceManagerSendCreditNoteFailure({ error: normalizeError(error) }))),
         ),
       ),
     ),

@@ -320,6 +320,38 @@ export class AdminBillingController {
     return await this.invoiceAdminService.voidInvoice(invoiceRefId, userInfo.userId, dto);
   }
 
+  /** Emails an invoice that was issued without notification. */
+  @RequireScopes('invoices:admin')
+  @Post('invoices/:invoiceRefId/send')
+  async sendInvoice(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<AdminInvoiceListItemDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return await this.invoiceAdminService.sendInvoice(invoiceRefId, userInfo.userId);
+  }
+
+  /** Emails the credit note of an invoice that was voided without notification. */
+  @RequireScopes('invoices:admin')
+  @Post('invoices/:invoiceRefId/send-credit-note')
+  async sendCreditNote(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<AdminInvoiceListItemDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return await this.invoiceAdminService.sendCreditNote(invoiceRefId, userInfo.userId);
+  }
+
   @RequireScopes('invoices:admin')
   @Post('invoices/:invoiceRefId/mark-paid')
   async markPaid(

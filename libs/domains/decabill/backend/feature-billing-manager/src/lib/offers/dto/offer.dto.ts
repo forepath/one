@@ -18,6 +18,7 @@ import {
 import { DeliveryTermsCode } from '../../constants/document-terms.constants';
 import { TaxCategory } from '../../constants/tax-category.constants';
 import { CreateSubscriptionDto } from '../../dto/create-subscription.dto';
+import { IsOptionalNotifyFlag } from '../../dto/document-delivery.dto';
 import { IsOptionalDocumentNote } from '../../dto/document-note.dto';
 import { DocumentTermsInputDto, EffectiveDocumentTermsResponseDto } from '../../dto/document-terms.dto';
 import { ProjectPricingModel } from '../../projects/entities/project.enums';
@@ -207,6 +208,30 @@ export class AdminOfferListItemDto {
   canPreview!: boolean;
   /** `false` for drafts and while no PDF is stored. */
   canDownload!: boolean;
+  /** When the offer was emailed to the customer; null for drafts and offers archived without notification. */
+  sentAt!: string | null;
+  /** `true` for archived offers not yet sent (and not past their expiry): the send action applies. */
+  canSend!: boolean;
+  /** Whether the customer is emailed when the offer expires. */
+  notifyOnExpiry!: boolean;
+}
+
+/** `POST /admin/billing/offers/:id/archive`: finalize the draft, optionally without sending it yet. */
+export class ArchiveAdminOfferDto {
+  /** Email the offer (PDF attached) to the customer right away. Default `true`. */
+  @IsOptionalNotifyFlag()
+  notifyCustomer?: boolean;
+
+  /** Email the customer when the offer expires. Default `true`. */
+  @IsOptionalNotifyFlag('notifyOnExpiry')
+  notifyOnExpiry?: boolean;
+}
+
+/** `POST /admin/billing/offers/:id/revoke`: like a void, the customer is emailed unless suppressed. */
+export class RevokeAdminOfferDto {
+  /** Email the customer that the offer was withdrawn. Default `true`. */
+  @IsOptionalNotifyFlag()
+  notifyCustomer?: boolean;
 }
 
 export class AdminOfferDetailResponseDto extends AdminOfferListItemDto {

@@ -358,10 +358,34 @@ describe('InvoiceIssuanceService', () => {
     expect(billingNotificationPublisher.publishInvoice).not.toHaveBeenCalledWith('invoice.paid', expect.anything());
   });
 
-  it('skips invoice email when skipNotification is set', async () => {
+  it('skips invoice email when skipNotification is set (sentAt stays unset)', async () => {
     await service.issueDraft('inv-1', { skipNotification: true });
 
     expect(billingEmailPublisher.publishInvoiceIssued).not.toHaveBeenCalled();
+    expect(invoicesRepository.update).not.toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date) });
+  });
+
+  it('records sentAt once the invoice email was queued', async () => {
+    billingEmailPublisher.publishInvoiceIssued.mockResolvedValueOnce(true);
+    // Third write: the sentAt update after the email was queued.
+    invoicesRepository.update.mockResolvedValueOnce({
+      ...draftInvoice,
+      invoiceNumber: 'INV-2026-00001',
+      status: InvoiceStatus.ISSUED,
+      sentAt: new Date(),
+    });
+
+    await service.issueDraft('inv-1');
+
+    expect(invoicesRepository.update).toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date) });
+  });
+
+  it('leaves sentAt unset when no invoice email could be queued (no billing email)', async () => {
+    billingEmailPublisher.publishInvoiceIssued.mockResolvedValueOnce(false);
+
+    await service.issueDraft('inv-1');
+
+    expect(invoicesRepository.update).not.toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date) });
   });
 
   describe('payment and delivery terms', () => {
