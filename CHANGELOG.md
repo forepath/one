@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.4.0](https://github.com/forepath/one/compare/v5.3.0...v5.4.0) (2026-11-21)
+
+
+### Features
+
+* **decabill:** full accounting ([#758](https://github.com/forepath/one/issues/758)) ([8d2cdc4](https://github.com/forepath/one/commit/8d2cdc4163b0335c68d37bf8e11dcff32c4998ca))
+* **decabill:** notification supression ([#760](https://github.com/forepath/one/issues/760)) ([36984ae](https://github.com/forepath/one/commit/36984ae06bf9d08ab0398c5cd195de18a56f67db))
+
+
+### Bug Fixes
+
+* **decabill:** frontend number processing ([#762](https://github.com/forepath/one/issues/762)) ([556737e](https://github.com/forepath/one/commit/556737e864019684211a599183da419bea3bbc0a))
+
 ## [5.3.0](https://github.com/forepath/one/compare/v5.2.0...v5.3.0) (2026-11-21)
 
 ### Features
