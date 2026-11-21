@@ -8,10 +8,12 @@ import type { PaginatedBillingAuditLogsResponse } from '../types/billing.types';
 import type {
   AdminOfferDetailResponse,
   AdminOfferStatisticsParams,
+  ArchiveAdminOfferDto,
   CreateAdminOfferDto,
   OfferListParams,
   OfferStatisticsResponse,
   PaginatedOffersResponse,
+  RevokeAdminOfferDto,
   UpdateAdminOfferDto,
 } from '../types/offers.types';
 import type { AdminOfferListItem } from '../types/offers.types';
@@ -49,12 +51,17 @@ export class AdminOffersService {
     return this.http.delete<void>(`${this.apiUrl}/admin/billing/offers/${id}`);
   }
 
-  archive(id: string): Observable<AdminOfferDetailResponse> {
-    return this.http.post<AdminOfferDetailResponse>(`${this.apiUrl}/admin/billing/offers/${id}/archive`, {});
+  archive(id: string, dto?: ArchiveAdminOfferDto): Observable<AdminOfferDetailResponse> {
+    return this.http.post<AdminOfferDetailResponse>(`${this.apiUrl}/admin/billing/offers/${id}/archive`, dto ?? {});
   }
 
-  revoke(id: string): Observable<AdminOfferDetailResponse> {
-    return this.http.post<AdminOfferDetailResponse>(`${this.apiUrl}/admin/billing/offers/${id}/revoke`, {});
+  /** Sends an offer that was archived without notification. */
+  send(id: string): Observable<AdminOfferDetailResponse> {
+    return this.http.post<AdminOfferDetailResponse>(`${this.apiUrl}/admin/billing/offers/${id}/send`, {});
+  }
+
+  revoke(id: string, dto?: RevokeAdminOfferDto): Observable<AdminOfferDetailResponse> {
+    return this.http.post<AdminOfferDetailResponse>(`${this.apiUrl}/admin/billing/offers/${id}/revoke`, dto ?? {});
   }
 
   /** Stored PDF of a sent offer (`404` while the offer is a draft). */

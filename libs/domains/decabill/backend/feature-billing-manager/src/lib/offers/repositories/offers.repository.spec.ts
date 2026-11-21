@@ -30,6 +30,31 @@ describe('OffersRepository customer pages', () => {
     expect(qb['skip']).toHaveBeenCalledWith(50);
   });
 
+  it('customer pages and counts include offers archived without email (like invoices)', async () => {
+    const qb = queryBuilder([], 0);
+    const repository = new OffersRepository({ createQueryBuilder: jest.fn(() => qb) } as never);
+
+    await repository.findPendingByUserId('user-1');
+    await repository.findHistoryByUserId('user-1');
+    await repository.countPendingForUser('user-1');
+    await repository.countByUserAndStatus('user-1', [OfferStatus.ACCEPTED]);
+
+    expect(qb['andWhere'].mock.calls.some(([sql]) => String(sql).includes('sent_at'))).toBe(false);
+  });
+
+  it('claims a send only for an archived, unsent offer', async () => {
+    const update = jest.fn().mockResolvedValueOnce({ affected: 1 }).mockResolvedValueOnce({ affected: 0 });
+    const repository = new OffersRepository({ update } as never);
+    const at = new Date('2026-11-21T10:00:00Z');
+
+    await expect(repository.claimSent('offer-1', at)).resolves.toBe(true);
+    await expect(repository.claimSent('offer-1', at)).resolves.toBe(false);
+    expect(update).toHaveBeenCalledWith(
+      { id: 'offer-1', status: OfferStatus.ARCHIVED, sentAt: expect.objectContaining({ _type: 'isNull' }) },
+      { sentAt: at },
+    );
+  });
+
   it('keeps the user scope on index search hits and pages in SQL', async () => {
     const qb = queryBuilder([], 0);
     const searchIndex = { searchIds: jest.fn().mockResolvedValue({ ids: ['o-9'], total: 1 }) };

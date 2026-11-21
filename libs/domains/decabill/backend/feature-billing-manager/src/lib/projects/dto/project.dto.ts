@@ -15,6 +15,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+import { IsOptionalNotifyFlag } from '../../dto/document-delivery.dto';
 import { IsOptionalDocumentNote } from '../../dto/document-note.dto';
 import { ManualInvoiceLineItemDto } from '../../dto/manual-invoice.dto';
 import { ProjectPricingModel, ProjectStatus } from '../entities/project.enums';
@@ -216,6 +217,10 @@ export class BillProjectTimeDto {
   /** Optional document note printed on the project invoice and embedded as invoice note (BT-22). */
   @IsOptionalDocumentNote()
   note?: string | null;
+
+  /** Email the invoice (with time report) to the customer right away. Default `true`; `false` bills silently. */
+  @IsOptionalNotifyFlag()
+  notifyCustomer?: boolean;
 }
 
 export class ProjectTimeReportRequestDto {

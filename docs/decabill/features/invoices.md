@@ -109,6 +109,21 @@ Admin routes under `/admin/billing/invoices`:
 - Mark paid or unpaid
 - Audit logs per invoice
 - PDF and void document download
+- Send an invoice or credit note that was finalized without notification (see below)
+
+### Finalize and send
+
+Issuing an invoice and voiding it (credit note) normally email the customer in the same step. The console asks first: the issue dialog, the void dialog, the bulk void confirmation and the project bill-time dialog each carry an **Email … to the customer** checkbox (on by default; for a void it defaults to on only when the invoice itself was sent). Unchecked, the document is finalized, booked and visible in the customer's account as before, but no email goes out; the list shows it as **… (not sent)** and the row menu offers **Send to customer** / **Send credit note**.
+
+| Endpoint                                                       | Body                                        |
+| -------------------------------------------------------------- | ------------------------------------------- |
+| `POST /admin/billing/invoices/{invoiceRefId}/issue`            | `notifyCustomer?` (default `true`)          |
+| `POST /admin/billing/invoices/{invoiceRefId}/void`             | `note?`, `notifyCustomer?` (default `true`) |
+| `POST /admin/billing/projects/{projectId}/bill-time`           | `…`, `notifyCustomer?` (default `true`)     |
+| `POST /admin/billing/invoices/{invoiceRefId}/send`             | —                                           |
+| `POST /admin/billing/invoices/{invoiceRefId}/send-credit-note` | —                                           |
+
+`sentAt` / `voidDocumentSentAt` record when the invoice / credit note was emailed; admin list items carry them with `canSend` / `canSendCreditNote`. A send is refused (400, nothing sent) for drafts, for already sent documents and when the customer has no billing email address; it is claimed atomically, so concurrent requests email once. Subscription invoices from the billing run and invoices created on offer acceptance are still emailed automatically. Documents finalized before this option existed count as sent.
 
 **Bill now:** `POST /admin/billing/bill-now` forces invoice generation for selected users outside the scheduler.
 
@@ -166,7 +181,7 @@ See **[Projects](./projects.md)** for KPIs, reassignment rules, and minimum bill
 
 1. `POST /admin/billing/invoices/manual` - Create draft with user, optional subscription, custom line items, optional `note`
 2. `POST /admin/billing/invoices/{invoiceRefId}` - Update draft line items (and `note`; omitted keeps it)
-3. `POST /admin/billing/invoices/{invoiceRefId}/issue` - Issue draft (requires complete customer profile); optional `dueInDays` and delivery terms override the plan / global defaults
+3. `POST /admin/billing/invoices/{invoiceRefId}/issue` - Issue draft (requires complete customer profile); optional `dueInDays` and delivery terms override the plan / global defaults; `notifyCustomer: false` issues without emailing (send later via `…/send`)
 4. `DELETE /admin/billing/invoices/{invoiceRefId}` - Delete draft only
 
 ## API Endpoints Summary

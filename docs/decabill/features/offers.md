@@ -4,8 +4,9 @@ Decabill customer offers let admins compose draft quotations for a customer, arc
 
 ## Terminology
 
-- **Archive** (offer) — finalize a draft and send it to the customer (not the same as invoice issuance).
-- **Pending** — `archived` status, not expired, awaiting customer action.
+- **Archive** (offer) — finalize a draft: number, frozen prices and terms, PDF (not the same as invoice issuance). By default the offer is sent to the customer in the same step; it can also be archived without sending it.
+- **Send** — email the offer PDF to the customer. Done on archive, or later for an offer archived without sending (`sentAt` records when). Like invoices, archived offers are visible in the customer's account either way.
+- **Pending** — `archived` status, sent, not expired, awaiting customer action.
 - **History** — accepted, declined, expired, or revoked offers.
 
 Offer numbers use the `OFF-{year}-{nnnnn}` pattern (see [Numbering](./numbering.md)).
@@ -14,16 +15,22 @@ Offer numbers use the `OFF-{year}-{nnnnn}` pattern (see [Numbering](./numbering.
 
 See also the [offer lifecycle sequence diagram](../offers-lifecycle.mmd).
 
-| Status     | Meaning                                  |
-| ---------- | ---------------------------------------- |
-| `draft`    | Admin-editable; not visible to customer  |
-| `archived` | Sent to customer; PDF stored; may expire |
-| `accepted` | Customer accepted; fulfillment runs      |
-| `declined` | Customer declined                        |
-| `expired`  | Past `expires_at` while still archived   |
-| `revoked`  | Admin revoked from `draft` or `archived` |
+| Status     | Meaning                                                    |
+| ---------- | ---------------------------------------------------------- |
+| `draft`    | Admin-editable; not visible to customer                    |
+| `archived` | Finalized; PDF stored; visible to the customer; may expire |
+| `accepted` | Customer accepted; fulfillment runs                        |
+| `declined` | Customer declined                                          |
+| `expired`  | Past `expires_at` while still archived                     |
+| `revoked`  | Admin revoked from `draft` or `archived`                   |
 
 Revocation is allowed only in `draft` or `archived`. Terminal states cannot be revoked.
+
+### Finalize and send
+
+The console asks before archiving (row action or bulk **Archive**) whether to send the offer right away (default on) and whether to email the customer when it expires (default on). An offer archived without sending is shown as **Pending response (not sent)**; like a silently issued invoice it is still visible in the customer's account and can be accepted there, only the email is held back. **Send to customer** (row menu or the preview) emails it later; this is refused for offers that were already sent, are no longer archived or are past their expiry date, and when the customer has no billing email address (nothing changes then). The send is claimed atomically, so concurrent clicks email the customer once.
+
+Revoking asks whether to notify the customer, like voiding an invoice: the checkbox defaults to on when the offer was sent, off otherwise (bulk revoke: on). The expiry email follows the choice made when archiving. Offers archived before this option existed keep their previous behaviour (sent, no expiry email).
 
 ## Line types
 
@@ -56,7 +63,8 @@ Base path: `/admin/billing/offers` — scope `offers:admin`.
 
 - List with pagination and `?search=` (OpenSearch + PostgreSQL ILIKE fallback)
 - `GET /statistics` — pipeline KPIs (not invoice turnover)
-- CRUD on drafts, `POST :id/archive`, `POST :id/revoke`
+- CRUD on drafts, `POST :id/archive` (`{ notifyCustomer?, notifyOnExpiry? }`, both default `true`), `POST :id/send`, `POST :id/revoke` (`{ notifyCustomer? }`, default `true`)
+- List items and details carry `sentAt`, `canSend` and `notifyOnExpiry`
 - `GET :id/pdf`, `GET :id/audit-logs`
 
 ## Customer API
@@ -90,10 +98,14 @@ Offers can also carry an optional free-text note (offer editor), printed on the 
 
 Webhook events: `offer.created`, `offer.updated`, `offer.archived`, `offer.revoked`, `offer.accepted`, `offer.declined`, `offer.expired`, `offer.line.fulfilled`, `offer.line.fulfillment_failed`.
 
-| Event            | Email template                | Attachment |
-| ---------------- | ----------------------------- | ---------- |
-| `offer.archived` | `offer-archived`              | Offer PDF  |
-| `offer.accepted` | `offer-accepted-confirmation` | No         |
+| Event            | Email template                | Attachment | Sent when                                      |
+| ---------------- | ----------------------------- | ---------- | ---------------------------------------------- |
+| `offer.archived` | `offer-archived`              | Offer PDF  | Archived with notification, or sent later      |
+| `offer.accepted` | `offer-accepted-confirmation` | No         | Customer accepted                              |
+| `offer.revoked`  | `offer-revoked`               | No         | Revoked with notification                      |
+| `offer.expired`  | `offer-expired`               | No         | Expired, archived with the expiry notification |
+
+The `offer.archived` webhook fires on archive whether or not the offer was sent to the customer.
 
 ## Search
 

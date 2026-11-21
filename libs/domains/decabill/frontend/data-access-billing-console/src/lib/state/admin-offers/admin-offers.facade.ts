@@ -3,7 +3,13 @@ import { Store } from '@ngrx/store';
 import { take } from 'rxjs';
 
 import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
-import type { AdminOfferStatisticsParams, CreateAdminOfferDto, UpdateAdminOfferDto } from '../../types/offers.types';
+import type {
+  AdminOfferStatisticsParams,
+  ArchiveAdminOfferDto,
+  CreateAdminOfferDto,
+  RevokeAdminOfferDto,
+  UpdateAdminOfferDto,
+} from '../../types/offers.types';
 
 import {
   archiveAdminOffer,
@@ -13,6 +19,7 @@ import {
   loadAdminOfferStatistics,
   loadAdminOffers,
   revokeAdminOffer,
+  sendAdminOffer,
   updateAdminOffer,
 } from './admin-offers.actions';
 import {
@@ -35,6 +42,7 @@ import {
   selectAdminOffersLoading,
   selectAdminOffersMutating,
   selectAdminOffersRevoking,
+  selectAdminOffersSending,
   selectAdminOffersState,
   selectAdminOffersUpdating,
 } from './admin-offers.selectors';
@@ -49,6 +57,7 @@ export class AdminOffersFacade {
   readonly updating$ = this.store.select(selectAdminOffersUpdating);
   readonly deleting$ = this.store.select(selectAdminOffersDeleting);
   readonly archiving$ = this.store.select(selectAdminOffersArchiving);
+  readonly sending$ = this.store.select(selectAdminOffersSending);
   readonly revoking$ = this.store.select(selectAdminOffersRevoking);
   readonly mutating$ = this.store.select(selectAdminOffersMutating);
   readonly error$ = this.store.select(selectAdminOffersError);
@@ -109,12 +118,18 @@ export class AdminOffersFacade {
     this.store.dispatch(deleteAdminOffer({ id }));
   }
 
-  archiveOffer(id: string): void {
-    this.store.dispatch(archiveAdminOffer({ id }));
+  /** Finalizes a draft; `dto.notifyCustomer: false` archives it without sending it yet. */
+  archiveOffer(id: string, dto?: ArchiveAdminOfferDto): void {
+    this.store.dispatch(archiveAdminOffer({ id, dto }));
   }
 
-  revokeOffer(id: string): void {
-    this.store.dispatch(revokeAdminOffer({ id }));
+  /** Sends an offer that was archived without notification. */
+  sendOffer(id: string): void {
+    this.store.dispatch(sendAdminOffer({ id }));
+  }
+
+  revokeOffer(id: string, dto?: RevokeAdminOfferDto): void {
+    this.store.dispatch(revokeAdminOffer({ id, dto }));
   }
 
   /** One page of an offer's audit log (replace-page; 1-based page, 25 by default). */

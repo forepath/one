@@ -89,6 +89,32 @@ export const adminInvoiceManagerVoidFailure = createAction(
   props<{ error: string }>(),
 );
 
+export const adminInvoiceManagerSend = createAction(
+  '[AdminInvoiceManager] Send Invoice',
+  props<{ invoiceRefId: string }>(),
+);
+export const adminInvoiceManagerSendSuccess = createAction(
+  '[AdminInvoiceManager] Send Invoice Success',
+  props<{ invoice: AdminInvoiceListItem }>(),
+);
+export const adminInvoiceManagerSendFailure = createAction(
+  '[AdminInvoiceManager] Send Invoice Failure',
+  props<{ error: string }>(),
+);
+
+export const adminInvoiceManagerSendCreditNote = createAction(
+  '[AdminInvoiceManager] Send Credit Note',
+  props<{ invoiceRefId: string }>(),
+);
+export const adminInvoiceManagerSendCreditNoteSuccess = createAction(
+  '[AdminInvoiceManager] Send Credit Note Success',
+  props<{ invoice: AdminInvoiceListItem }>(),
+);
+export const adminInvoiceManagerSendCreditNoteFailure = createAction(
+  '[AdminInvoiceManager] Send Credit Note Failure',
+  props<{ error: string }>(),
+);
+
 export const adminInvoiceManagerMarkPaid = createAction(
   '[AdminInvoiceManager] Mark Paid',
   props<{ invoiceRefId: string; dto?: MarkInvoicePaymentStatusDto }>(),

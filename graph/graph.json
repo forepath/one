@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-21T14:58:02.074Z",
+  "generatedAt": "2026-11-21T18:53:29.635Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -8912,6 +8912,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/document-delivery.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/document-delivery.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/document-note.dto.ts",
       "type": "dto",
       "attrs": {
@@ -15846,6 +15855,34 @@
         "memberFiles": [
           "offer-archived.template.html",
           "offer-archived.template.txt"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/offer-expired",
+      "type": "email",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/offer-expired",
+        "languageOrKind": "template",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "templateName": "offer-expired",
+        "memberFiles": [
+          "offer-expired.template.html",
+          "offer-expired.template.txt"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/offer-revoked",
+      "type": "email",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/offer-revoked",
+        "languageOrKind": "template",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "templateName": "offer-revoked",
+        "memberFiles": [
+          "offer-revoked.template.html",
+          "offer-revoked.template.txt"
         ]
       }
     },
@@ -23605,7 +23642,18 @@
         "method": "POST",
         "pathOrChannel": "/admin/billing/offers/{id}/archive",
         "operationId": "archiveAdminOffer",
-        "summary": "Archive offer and send to customer (admin)",
+        "summary": "Archive offer, optionally sending it to the customer (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/offers/{id}/send",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/offers/{id}/send",
+        "operationId": "sendAdminOffer",
+        "summary": "Send an archived offer that was not sent yet (admin)",
         "specKind": "openapi"
       }
     },
@@ -23815,6 +23863,28 @@
         "pathOrChannel": "/admin/billing/invoices/{invoiceRefId}/void",
         "operationId": "adminVoidInvoice",
         "summary": "Void invoice (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/invoices/{invoiceRefId}/send",
+        "operationId": "adminSendInvoice",
+        "summary": "Email an invoice that was issued without notification (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/invoices/{invoiceRefId}/send-credit-note",
+        "operationId": "adminSendInvoiceCreditNote",
+        "summary": "Email the credit note of an invoice voided without notification (admin only)",
         "specKind": "openapi"
       }
     },
@@ -47110,6 +47180,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/document-delivery.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/document-note.dto.ts",
       "type": "contains"
     },
@@ -50910,6 +50985,16 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/offer-expired",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/offer-revoked",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/payment-failed",
       "type": "contains"
     },
@@ -54220,6 +54305,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
       "type": "contains"
     },
@@ -54311,6 +54401,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/void",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note",
       "type": "contains"
     },
     {
@@ -69030,6 +69130,16 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
       "type": "implements"
     },
@@ -69216,6 +69326,26 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/void",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note",
       "type": "implements"
     },
     {
@@ -71145,6 +71275,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
       "type": "implements"
     },
@@ -71236,6 +71371,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/void",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note",
       "type": "implements"
     },
     {
@@ -73721,6 +73866,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/offers/{id}/archive",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send",
       "type": "implements"
     },
     {
@@ -87155,6 +87305,16 @@
     },
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-paid",
       "type": "calls"
     },
@@ -87456,6 +87616,11 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
       "to": "api:HTTP:POST:/admin/billing/offers/{id}/archive",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send",
       "type": "calls"
     },
     {
@@ -94796,6 +94961,81 @@
     {
       "from": "concept:decabill-admin-invoice-operations",
       "to": "api:HTTP:GET:/admin/billing/invoices",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:GET:/admin/billing/invoices/{invoiceRefId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:DELETE:/admin/billing/invoices/{invoiceRefId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/issue",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/void",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:GET:/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:GET:/projects/{projectId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:GET:/admin/billing/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:POST:/admin/billing/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:GET:/admin/billing/projects/{projectId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:DELETE:/admin/billing/projects/{projectId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-invoice-operations",
+      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}/bill-time",
       "type": "documents"
     },
     {

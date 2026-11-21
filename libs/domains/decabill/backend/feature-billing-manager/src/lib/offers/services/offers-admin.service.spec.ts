@@ -268,3 +268,146 @@ describe('OffersAdminService', () => {
     );
   });
 });
+
+describe('OffersAdminService revoke / expiry notifications', () => {
+  let stored: Record<string, unknown>;
+  const offersRepository = {
+    findByIdOrThrow: jest.fn(async () => stored),
+    update: jest.fn(async (_id: string, patch: Record<string, unknown>) => {
+      stored = { ...stored, ...patch };
+
+      return stored;
+    }),
+  };
+  const billingEmailPublisher = { publishOfferRevoked: jest.fn(), publishOfferExpired: jest.fn() };
+  const auditLog = { log: jest.fn() };
+  const offerArchiveService = { archive: jest.fn(), send: jest.fn() };
+  const service = new OffersAdminService(
+    offersRepository as never,
+    { findByOfferId: jest.fn().mockResolvedValue([]) } as never,
+    { findByIdForTenant: jest.fn().mockResolvedValue({ id: 'user-1', email: 'user@example.com' }) } as never,
+    {} as never,
+    {} as never,
+    auditLog as never,
+    {} as never,
+    offerArchiveService as never,
+    { publishOffer: jest.fn() } as never,
+    { scheduleUpsert: jest.fn() } as never,
+    new BillingDocumentTermsConfigService(),
+    { findByIds: jest.fn().mockResolvedValue([]) } as never,
+    undefined,
+    billingEmailPublisher as never,
+  );
+  const offer = (patch: Record<string, unknown> = {}) => ({
+    id: 'offer-1',
+    userId: 'user-1',
+    offerNumber: 'OFF-2026-00001',
+    status: OfferStatus.ARCHIVED,
+    currency: 'EUR',
+    totalGross: 119,
+    subtotalNet: 100,
+    taxTotal: 19,
+    billToOpenPositions: false,
+    sentAt: new Date('2026-01-01T00:00:00Z'),
+    notifyOnExpiry: true,
+    expiresAt: new Date('2026-02-01T00:00:00Z'),
+    createdAt: new Date('2026-01-01T00:00:00Z'),
+    updatedAt: new Date('2026-01-01T00:00:00Z'),
+    lineItems: [],
+    ...patch,
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    billingEmailPublisher.publishOfferRevoked.mockResolvedValue(true);
+    billingEmailPublisher.publishOfferExpired.mockResolvedValue(true);
+  });
+
+  it('emails the customer when a sent offer is revoked (default)', async () => {
+    stored = offer();
+
+    await service.revoke('offer-1', 'admin-1');
+
+    expect(billingEmailPublisher.publishOfferRevoked).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'offer-1', status: OfferStatus.REVOKED }),
+    );
+    expect(auditLog.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        process: 'offer.revoke',
+        context: expect.objectContaining({ customerNotified: true }),
+      }),
+    );
+  });
+
+  it('suppresses the revoke email when notifyCustomer is false', async () => {
+    stored = offer();
+
+    await service.revoke('offer-1', 'admin-1', { notifyCustomer: false });
+
+    expect(billingEmailPublisher.publishOfferRevoked).not.toHaveBeenCalled();
+  });
+
+  it('emails about revoking an archived offer that was not emailed yet when asked (like a void)', async () => {
+    stored = offer({ sentAt: null });
+
+    await service.revoke('offer-1', 'admin-1', { notifyCustomer: true });
+
+    expect(billingEmailPublisher.publishOfferRevoked).toHaveBeenCalledTimes(1);
+  });
+
+  it('never emails about revoking a draft', async () => {
+    stored = offer({ status: OfferStatus.DRAFT, sentAt: null });
+
+    await service.revoke('offer-1', 'admin-1', { notifyCustomer: true });
+
+    expect(billingEmailPublisher.publishOfferRevoked).not.toHaveBeenCalled();
+  });
+
+  it('emails the customer when a sent offer expires and the expiry email was chosen', async () => {
+    stored = offer();
+
+    await service.expireOffer('offer-1');
+
+    expect(offersRepository.update).toHaveBeenCalledWith(
+      'offer-1',
+      expect.objectContaining({ status: OfferStatus.EXPIRED }),
+    );
+    expect(billingEmailPublisher.publishOfferExpired).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not email on expiry when the expiry email was not chosen', async () => {
+    stored = offer({ notifyOnExpiry: false });
+
+    await service.expireOffer('offer-1');
+
+    expect(billingEmailPublisher.publishOfferExpired).not.toHaveBeenCalled();
+  });
+
+  it('emails on expiry for an offer that was not emailed yet when the expiry email was chosen', async () => {
+    stored = offer({ sentAt: null, notifyOnExpiry: true });
+
+    await service.expireOffer('offer-1');
+
+    expect(billingEmailPublisher.publishOfferExpired).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not expire (or email about) offers that are no longer archived', async () => {
+    stored = offer({ status: OfferStatus.ACCEPTED });
+
+    await service.expireOffer('offer-1');
+
+    expect(offersRepository.update).not.toHaveBeenCalled();
+    expect(billingEmailPublisher.publishOfferExpired).not.toHaveBeenCalled();
+  });
+
+  it('passes the archive options through and delegates send', async () => {
+    await service.archive('offer-1', 'admin-1', { notifyCustomer: false, notifyOnExpiry: false });
+    await service.send('offer-1', 'admin-1');
+
+    expect(offerArchiveService.archive).toHaveBeenCalledWith('offer-1', 'admin-1', {
+      notifyCustomer: false,
+      notifyOnExpiry: false,
+    });
+    expect(offerArchiveService.send).toHaveBeenCalledWith('offer-1', 'admin-1');
+  });
+});

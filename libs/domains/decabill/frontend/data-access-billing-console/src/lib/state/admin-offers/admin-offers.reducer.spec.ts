@@ -3,6 +3,9 @@ import {
   createAdminOfferSuccess,
   loadAdminOffersSuccess,
   loadAdminOfferStatisticsSuccess,
+  sendAdminOffer,
+  sendAdminOfferFailure,
+  sendAdminOfferSuccess,
 } from './admin-offers.actions';
 import { adminOffersReducer, initialAdminOffersState } from './admin-offers.reducer';
 
@@ -55,5 +58,29 @@ describe('adminOffersReducer', () => {
     );
 
     expect(archived.offers[0].status).toBe('archived');
+  });
+
+  it('tracks the send lifecycle (sending flag, upsert, error)', () => {
+    const loaded = adminOffersReducer(
+      initialAdminOffersState,
+      loadAdminOffersSuccess({ offers: [{ ...offer, status: 'archived', sentAt: null, canSend: true }], total: 1 }),
+    );
+    const sending = adminOffersReducer(loaded, sendAdminOffer({ id: 'offer-1' }));
+
+    expect(sending.sending).toBe(true);
+
+    const sent = adminOffersReducer(
+      sending,
+      sendAdminOfferSuccess({
+        offer: { ...offer, status: 'archived', sentAt: '2026-11-21T10:00:00Z', canSend: false } as never,
+      }),
+    );
+
+    expect(sent.sending).toBe(false);
+    expect(sent.offers[0]).toEqual(expect.objectContaining({ sentAt: '2026-11-21T10:00:00Z', canSend: false }));
+
+    const failed = adminOffersReducer(sending, sendAdminOfferFailure({ error: 'no billing email' }));
+
+    expect(failed).toEqual(expect.objectContaining({ sending: false, error: 'no billing email' }));
   });
 });

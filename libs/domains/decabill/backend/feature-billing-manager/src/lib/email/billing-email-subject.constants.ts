@@ -8,6 +8,8 @@ export const BILLING_EMAIL_SUBJECTS: EmailSubjectRegistry = {
   'invoice-issued': (ctx) => `Your invoice ${asString(ctx.invoiceNumber)} is ready`,
   'offer-archived': (ctx) => `Your offer ${asString(ctx.offerNumber)} is ready`,
   'offer-accepted-confirmation': (ctx) => `Offer ${asString(ctx.offerNumber)} accepted`,
+  'offer-revoked': (ctx) => `Offer ${asString(ctx.offerNumber)} withdrawn`,
+  'offer-expired': (ctx) => `Offer ${asString(ctx.offerNumber)} expired`,
   'invoice-voided': (ctx) => `Credit note ${asString(ctx.creditNoteNumber)} for invoice ${asString(ctx.invoiceNumber)}`,
   'invoice-partial-credit': (ctx) =>
     `Credit note ${asString(ctx.creditNoteNumber)} for invoice ${asString(ctx.invoiceNumber)}`,
@@ -38,6 +40,8 @@ export const BILLING_EMAIL_EVENTS = [
   'invoice.issued',
   'offer.archived',
   'offer.accepted',
+  'offer.revoked',
+  'offer.expired',
   'invoice.voided',
   'invoice.partial_credit_issued',
   'subscription.renewal_reminder',

@@ -17,6 +17,7 @@ import {
 import { PAYMENT_DUE_DAYS_MAX } from '../constants/document-terms.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 
+import { IsOptionalNotifyFlag } from './document-delivery.dto';
 import { IsOptionalDocumentNote } from './document-note.dto';
 import { DeliveryTermsInputDto } from './document-terms.dto';
 import { InvoiceDetailResponseDto } from './invoice-detail-response.dto';
@@ -88,9 +89,18 @@ export class IssueManualInvoiceDto extends DeliveryTermsInputDto {
   @Min(0, { message: 'Due in days must be at least 0' })
   @Max(PAYMENT_DUE_DAYS_MAX, { message: `Due in days must be at most ${PAYMENT_DUE_DAYS_MAX}` })
   dueInDays?: number | null;
+
+  /** Email the invoice to the customer right away. Default `true`; `false` issues silently (send later). */
+  @IsOptionalNotifyFlag()
+  notifyCustomer?: boolean;
 }
 
 export class ManualInvoiceDetailResponseDto extends InvoiceDetailResponseDto {
   userId!: string;
   userEmail?: string;
+  /** Delivery state (admin only), as on `AdminInvoiceListItemDto`. */
+  sentAt?: string | null;
+  voidDocumentSentAt?: string | null;
+  canSend?: boolean;
+  canSendCreditNote?: boolean;
 }

@@ -5,8 +5,10 @@ import type {
   AdminOfferDetailResponse,
   AdminOfferListItem,
   AdminOfferStatisticsParams,
+  ArchiveAdminOfferDto,
   CreateAdminOfferDto,
   OfferStatisticsResponse,
+  RevokeAdminOfferDto,
   UpdateAdminOfferDto,
 } from '../../types/offers.types';
 
@@ -54,14 +56,27 @@ export const deleteAdminOffer = createAction('[AdminOffers] Delete Offer', props
 export const deleteAdminOfferSuccess = createAction('[AdminOffers] Delete Offer Success', props<{ id: string }>());
 export const deleteAdminOfferFailure = createAction('[AdminOffers] Delete Offer Failure', props<{ error: string }>());
 
-export const archiveAdminOffer = createAction('[AdminOffers] Archive Offer', props<{ id: string }>());
+export const archiveAdminOffer = createAction(
+  '[AdminOffers] Archive Offer',
+  props<{ id: string; dto?: ArchiveAdminOfferDto }>(),
+);
 export const archiveAdminOfferSuccess = createAction(
   '[AdminOffers] Archive Offer Success',
   props<{ offer: AdminOfferDetailResponse }>(),
 );
 export const archiveAdminOfferFailure = createAction('[AdminOffers] Archive Offer Failure', props<{ error: string }>());
 
-export const revokeAdminOffer = createAction('[AdminOffers] Revoke Offer', props<{ id: string }>());
+export const sendAdminOffer = createAction('[AdminOffers] Send Offer', props<{ id: string }>());
+export const sendAdminOfferSuccess = createAction(
+  '[AdminOffers] Send Offer Success',
+  props<{ offer: AdminOfferDetailResponse }>(),
+);
+export const sendAdminOfferFailure = createAction('[AdminOffers] Send Offer Failure', props<{ error: string }>());
+
+export const revokeAdminOffer = createAction(
+  '[AdminOffers] Revoke Offer',
+  props<{ id: string; dto?: RevokeAdminOfferDto }>(),
+);
 export const revokeAdminOfferSuccess = createAction(
   '[AdminOffers] Revoke Offer Success',
   props<{ offer: AdminOfferDetailResponse }>(),

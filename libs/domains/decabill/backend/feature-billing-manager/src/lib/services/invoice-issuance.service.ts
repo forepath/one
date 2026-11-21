@@ -39,6 +39,7 @@ import { OssThresholdService } from './oss-threshold.service';
 import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
 
 export interface IssueDraftOptions {
+  /** Issue without emailing the customer (`sentAt` stays null; the invoice can be sent later). */
   skipNotification?: boolean;
   /**
    * Document-level payment / delivery terms (manual issue dialog, accepted offer). Unset facets inherit from the
@@ -159,7 +160,7 @@ export class InvoiceIssuanceService {
       resolvePurchaseOrderReference(subscription?.number, subscription?.id),
       resolveInvoicingPeriod(updated, subscription ?? undefined, plan ?? undefined),
     );
-    const issued = await this.invoicesRepository.update(invoiceId, { pdfStorageKey });
+    let issued = await this.invoicesRepository.update(invoiceId, { pdfStorageKey });
 
     await this.auditLog.log({
       process: 'invoice.issue',
@@ -182,7 +183,9 @@ export class InvoiceIssuanceService {
     }
 
     if (!options?.skipNotification && !isPromotionalZeroBalance) {
-      await this.billingEmailPublisher.publishInvoiceIssued(issued, pdfStorageKey);
+      if (await this.billingEmailPublisher.publishInvoiceIssued(issued, pdfStorageKey)) {
+        issued = await this.invoicesRepository.update(invoiceId, { sentAt: new Date() });
+      }
     }
 
     this.billingNotificationPublisher.publishInvoice('invoice.issued', issued);

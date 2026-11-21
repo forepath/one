@@ -13686,6 +13686,102 @@
         <source>E-invoicing</source>
         <target>E-Rechnung</target>
       </trans-unit>
+      <trans-unit id="featureAdminBilling-voidNotify" datatype="html">
+        <source>Email the credit note to the customer</source>
+        <target>Gutschrift per E-Mail an den Kunden senden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-voidNotifyHint" datatype="html">
+        <source>Otherwise you can send a credit note later from the invoice.</source>
+        <target>Andernfalls können Sie die Gutschrift später über die Rechnung senden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-sendInvoiceMessage" datatype="html">
+        <source> The invoice is emailed to the customer with its PDF attached (and the time report of a project invoice). </source>
+        <target>Die Rechnung wird dem Kunden mit dem PDF im Anhang per E-Mail gesendet (bei Projektrechnungen zusätzlich mit dem Zeitnachweis).</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-sendCreditNoteMessage" datatype="html">
+        <source> The credit note of this voided invoice is emailed to the customer with its PDF attached. </source>
+        <target>Die Gutschrift dieser stornierten Rechnung wird dem Kunden mit dem PDF im Anhang per E-Mail gesendet.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-issueNotify" datatype="html">
+        <source>Email the invoice to the customer</source>
+        <target>Rechnung per E-Mail an den Kunden senden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-issueNotifyHint" datatype="html">
+        <source>Otherwise you can send it later from the invoice.</source>
+        <target>Andernfalls können Sie sie später über die Rechnung senden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-bulkVoidNotify" datatype="html">
+        <source>Email the credit notes to the customers</source>
+        <target>Gutschriften per E-Mail an die Kunden senden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-sendToCustomer" datatype="html">
+        <source>Send to customer</source>
+        <target>An Kunden senden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-sendCreditNote" datatype="html">
+        <source>Send credit note</source>
+        <target>Gutschrift senden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-revokeNotifyBulk" datatype="html">
+        <source>Notify the customers by email</source>
+        <target>Kunden per E-Mail benachrichtigen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveNotifyCustomer" datatype="html">
+        <source>Send to the customer now</source>
+        <target>Jetzt an den Kunden senden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveNotifyCustomerHint" datatype="html">
+        <source>Otherwise you can send it later from the offer.</source>
+        <target>Andernfalls können Sie es später über das Angebot senden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveNotifyOnExpiry" datatype="html">
+        <source>Email the customer when the offer expires</source>
+        <target>Kunden per E-Mail benachrichtigen, wenn das Angebot abläuft</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveNotifyOnExpiryHint" datatype="html">
+        <source>Applies to offers with an expiry date.</source>
+        <target>Gilt für Angebote mit Ablaufdatum.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-revokeNotify" datatype="html">
+        <source>Notify the customer by email</source>
+        <target>Kunden per E-Mail benachrichtigen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveBulkTitle" datatype="html">
+        <source>Archive <x id="count" equiv-text="this.pendingArchive()?.length ?? 0"/> draft offers?</source>
+        <target><x id="count" equiv-text="this.pendingArchive()?.length ?? 0"/> Angebotsentwürfe archivieren?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveTitle" datatype="html">
+        <source>Archive offer?</source>
+        <target>Angebot archivieren?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-archiveMessage" datatype="html">
+        <source>The offer is numbered, its prices and terms are frozen and the PDF is created. It can no longer be edited afterwards.</source>
+        <target>Das Angebot erhält eine Nummer, Preise und Bedingungen werden festgeschrieben und das PDF wird erstellt. Danach kann es nicht mehr bearbeitet werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-sendTitle" datatype="html">
+        <source>Send offer to the customer?</source>
+        <target>Angebot an den Kunden senden?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-sendMessage" datatype="html">
+        <source>Offer <x id="number" equiv-text="this.offerDisplayTitle(offer)"/> is emailed to <x id="customer" equiv-text="this.customerLabel(offer)"/> with the PDF attached.</source>
+        <target>Angebot <x id="number" equiv-text="this.offerDisplayTitle(offer)"/> wird mit dem PDF im Anhang per E-Mail an <x id="customer" equiv-text="this.customerLabel(offer)"/> gesendet.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-revokeTitle" datatype="html">
+        <source>Revoke offer?</source>
+        <target>Angebot widerrufen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-revokeMessage" datatype="html">
+        <source>The customer can no longer accept the offer. This cannot be undone.</source>
+        <target>Der Kunde kann das Angebot danach nicht mehr annehmen. Dies kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-invoiceStatusUnsent" datatype="html">
+        <source><x id="status" equiv-text="getInvoiceStatusLabel(status)"/> (not sent)</source>
+        <target><x id="status" equiv-text="getInvoiceStatusLabel(status)"/> (nicht gesendet)</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-statusArchivedUnsent" datatype="html">
+        <source><x id="status" equiv-text="getOfferStatusLabel(status)"/> (not sent)</source>
+        <target><x id="status" equiv-text="getOfferStatusLabel(status)"/> (nicht gesendet)</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

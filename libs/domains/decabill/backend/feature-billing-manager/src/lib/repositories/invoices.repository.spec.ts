@@ -52,6 +52,28 @@ describe('InvoicesRepository', () => {
     repository = new InvoicesRepository(mockRepository as never);
   });
 
+  it('claims a delivery only while the document is unsent, and releases only its own claim', async () => {
+    const update = jest.fn().mockResolvedValueOnce({ affected: 1 }).mockResolvedValueOnce({ affected: 0 });
+    const claimRepository = new InvoicesRepository({ update } as never);
+    const at = new Date('2026-11-21T10:00:00Z');
+
+    await expect(claimRepository.claimDelivery('inv-1', 'sentAt', at)).resolves.toBe(true);
+    await expect(claimRepository.claimDelivery('inv-1', 'voidDocumentSentAt', at)).resolves.toBe(false);
+    expect(update).toHaveBeenNthCalledWith(
+      1,
+      { id: 'inv-1', sentAt: expect.objectContaining({ _type: 'isNull' }) },
+      { sentAt: at },
+    );
+    expect(update).toHaveBeenNthCalledWith(
+      2,
+      { id: 'inv-1', voidDocumentSentAt: expect.objectContaining({ _type: 'isNull' }) },
+      { voidDocumentSentAt: at },
+    );
+
+    await claimRepository.releaseDelivery('inv-1', 'sentAt', at);
+    expect(update).toHaveBeenLastCalledWith({ id: 'inv-1', sentAt: at }, { sentAt: null });
+  });
+
   it('findByIdForUser returns invoice when user owns it', async () => {
     const invoice = { id: 'inv-1', userId: 'user-1', status: InvoiceStatus.ISSUED };
 

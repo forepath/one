@@ -113,6 +113,7 @@ import {
 } from '../named-label.util';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import {
+  DB_DL_ARCHIVE,
   DB_DL_DELETE,
   dbBulkSummary,
   dbCopyIdItem,
@@ -136,6 +137,11 @@ import {
 import { AdminOfferLineEditorComponent } from './admin-offer-line-editor.component';
 
 type AdminOffersTab = 'offers' | 'statistics';
+
+/** Archived offer that was not emailed to the customer yet. */
+function isUnsentOffer(offer: Pick<AdminOfferListItem, 'status' | 'sentAt'>): boolean {
+  return offer.status === 'archived' && !offer.sentAt;
+}
 
 @Component({
   selector: 'framework-admin-offers-page',
@@ -350,7 +356,7 @@ export class AdminOffersPageComponent implements OnInit {
       id: 'status',
       label: $localize`:@@featureOffers-colStatus:Status`,
       type: 'state',
-      state: (offer) => offerState(offer.status),
+      state: (offer) => offerState(offer.status, { unsent: isUnsentOffer(offer) }),
     },
     {
       id: 'name',
@@ -388,6 +394,7 @@ export class AdminOffersPageComponent implements OnInit {
 
   readonly auditLabel = $localize`:@@featureAdminOffers-audit:Audit log`;
   readonly sendLabel = $localize`:@@featureAdminOffers-archive:Send to customer`;
+  readonly archiveLabel = DB_DL_ARCHIVE;
   readonly revokeLabel = $localize`:@@featureAdminOffers-revoke:Revoke`;
   readonly deleteLabel = DB_DL_DELETE;
   readonly deleteDraftsLabel = $localize`:@@featureAdminOffers-bulkDeleteDrafts:Delete drafts`;
@@ -404,12 +411,43 @@ export class AdminOffersPageComponent implements OnInit {
   readonly selectedPendingResponse = computed(() =>
     this.selectedOffers().filter((offer) => this.canRevokeOffer(offer)),
   );
+
   readonly bulkConfirmTitle = computed(() =>
     this.pendingBulk() === 'revoke'
       ? $localize`:@@featureAdminOffers-bulkRevokeTitle:Revoke offers?`
       : $localize`:@@featureAdminOffers-bulkDeleteTitle:Delete draft offers?`,
   );
   readonly bulkConfirmLabel = computed(() => (this.pendingBulk() === 'revoke' ? this.revokeLabel : this.deleteLabel));
+  /** Bulk revoke: email the customers (like bulk void). */
+  bulkRevokeNotifyCustomer = true;
+
+  /** Archive dialog (row or bulk): the drafts to finalize; sending them right away is optional. */
+  readonly pendingArchive = signal<readonly AdminOfferListItem[] | null>(null);
+  archiveNotifyCustomer = true;
+  archiveNotifyOnExpiry = true;
+  readonly archiveConfirmTitle = computed(() =>
+    (this.pendingArchive()?.length ?? 0) > 1
+      ? $localize`:@@featureAdminOffers-archiveBulkTitle:Archive ${this.pendingArchive()?.length ?? 0}:count: draft offers?`
+      : $localize`:@@featureAdminOffers-archiveTitle:Archive offer?`,
+  );
+  readonly archiveConfirmMessage = $localize`:@@featureAdminOffers-archiveMessage:The offer is numbered, its prices and terms are frozen and the PDF is created. It can no longer be edited afterwards.`;
+
+  /** Send dialog for an offer that was archived without notification. */
+  readonly pendingSend = signal<AdminOfferListItem | null>(null);
+  readonly sendConfirmTitle = $localize`:@@featureAdminOffers-sendTitle:Send offer to the customer?`;
+  readonly sendConfirmMessage = computed(() => {
+    const offer = this.pendingSend();
+
+    return offer
+      ? $localize`:@@featureAdminOffers-sendMessage:Offer ${this.offerDisplayTitle(offer)}:number: is emailed to ${this.customerLabel(offer)}:customer: with the PDF attached.`
+      : '';
+  });
+
+  /** Revoke dialog: like a void, the email defaults to on only when the offer itself was sent. */
+  readonly pendingRevoke = signal<AdminOfferListItem | null>(null);
+  revokeNotifyCustomer = true;
+  readonly revokeConfirmTitle = $localize`:@@featureAdminOffers-revokeTitle:Revoke offer?`;
+  readonly revokeConfirmMessage = $localize`:@@featureAdminOffers-revokeMessage:The customer can no longer accept the offer. This cannot be undone.`;
   readonly bulkConfirmMessage = computed(() =>
     this.pendingBulk() === 'revoke'
       ? $localize`:@@featureAdminOffers-bulkRevokeMessage:${this.selectedPendingResponse().length}:count: offers awaiting a response will be revoked. Customers can no longer accept them.`
@@ -420,7 +458,8 @@ export class AdminOffersPageComponent implements OnInit {
     ...(this.canPreviewOffer(offer) ? [{ id: 'preview', label: DB_DL_PREVIEW, icon: 'eye' }] : []),
     ...(this.canDownloadOffer(offer) ? [{ id: 'download', label: DB_DL_DOWNLOAD_PDF, icon: 'file-earmark-pdf' }] : []),
     { id: 'audit', label: this.auditLabel, icon: 'clock-history' },
-    ...(this.canArchiveOffer(offer) ? [{ id: 'send', label: DB_DL_SEND, icon: 'send' }] : []),
+    ...(this.canArchiveOffer(offer) ? [{ id: 'archive', label: DB_DL_ARCHIVE, icon: 'archive' }] : []),
+    ...(this.canSendOffer(offer) ? [{ id: 'send', label: DB_DL_SEND, icon: 'send' }] : []),
     ...(this.canRevokeOffer(offer) ? [{ id: 'revoke', label: this.revokeLabel, icon: 'slash-circle' }] : []),
     ...(this.canDeleteOffer(offer)
       ? [{ id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true }]
@@ -534,21 +573,87 @@ export class AdminOffersPageComponent implements OnInit {
     else if (action === 'preview') this.openPreview(offer);
     else if (action === 'download') this.downloadOfferPdf(offer);
     else if (action === 'audit') this.openAuditHistory(offer);
-    else if (action === 'send') this.archiveOffer(offer);
-    else if (action === 'revoke') this.revokeOffer(offer);
+    else if (action === 'archive') this.openArchiveDialog([offer]);
+    else if (action === 'send') this.openSendDialog(offer);
+    else if (action === 'revoke') this.openRevokeDialog(offer);
     else if (action === 'delete') this.openDeleteModal(offer);
     else if (action === 'copy-id') fpcCopyText(offer.id);
   }
 
-  /** Bulk Send to customer: one `POST /admin/billing/offers/:id/archive` per draft. */
-  async sendSelected(): Promise<void> {
-    const drafts = this.selectedDrafts();
+  /** Bulk Archive: opens the archive dialog for the selected drafts. */
+  archiveSelected(): void {
+    this.openArchiveDialog(this.selectedDrafts());
+  }
+
+  openArchiveDialog(offers: readonly AdminOfferListItem[]): void {
+    const drafts = offers.filter((offer) => this.canArchiveOffer(offer));
 
     if (drafts.length === 0) return;
 
-    const result = await fpcRunBulk(drafts, (offer) => firstValueFrom(this.adminOffersService.archive(offer.id)));
+    this.archiveNotifyCustomer = true;
+    this.archiveNotifyOnExpiry = true;
+    this.pendingArchive.set(drafts);
+  }
+
+  /**
+   * Archives the drafts of the archive dialog: one row through the store (errors show on the page), several as a bulk
+   * run (one `POST /admin/billing/offers/:id/archive` per draft, per-item result).
+   */
+  async confirmArchive(): Promise<void> {
+    const drafts = this.pendingArchive() ?? [];
+    const dto = { notifyCustomer: this.archiveNotifyCustomer, notifyOnExpiry: this.archiveNotifyOnExpiry };
+
+    this.pendingArchive.set(null);
+
+    if (drafts.length === 0) return;
+
+    const [single] = drafts;
+
+    if (drafts.length === 1 && single) {
+      this.facade.archiveOffer(single.id, dto);
+
+      return;
+    }
+
+    const result = await fpcRunBulk(drafts, (offer) => firstValueFrom(this.adminOffersService.archive(offer.id, dto)));
 
     this.finishBulk(dbBulkSummary(result, (offer) => this.offerDisplayTitle(offer)));
+  }
+
+  openSendDialog(offer: AdminOfferListItem): void {
+    if (!this.canSendOffer(offer)) return;
+
+    this.previewOfferModalOpen.set(false);
+    this.pendingSend.set(offer);
+  }
+
+  confirmSend(): void {
+    const offer = this.pendingSend();
+
+    this.pendingSend.set(null);
+
+    if (offer) this.facade.sendOffer(offer.id);
+  }
+
+  openRevokeDialog(offer: AdminOfferListItem): void {
+    if (!this.canRevokeOffer(offer)) return;
+
+    this.revokeNotifyCustomer = Boolean(offer.sentAt);
+    this.pendingRevoke.set(offer);
+  }
+
+  confirmRevoke(): void {
+    const offer = this.pendingRevoke();
+
+    this.pendingRevoke.set(null);
+
+    if (offer) this.facade.revokeOffer(offer.id, { notifyCustomer: this.revokeNotifyCustomer });
+  }
+
+  /** Opens the bulk confirm dialog; the revoke notification defaults to on. */
+  openBulkConfirm(action: 'revoke' | 'delete'): void {
+    this.bulkRevokeNotifyCustomer = true;
+    this.pendingBulk.set(action);
   }
 
   /** Bulk Revoke (`POST …/:id/revoke`) / Delete drafts (`DELETE …/:id`), after the confirm dialog. */
@@ -562,7 +667,8 @@ export class AdminOffersPageComponent implements OnInit {
 
       if (offers.length === 0) return;
 
-      const result = await fpcRunBulk(offers, (offer) => firstValueFrom(this.adminOffersService.revoke(offer.id)));
+      const dto = { notifyCustomer: this.bulkRevokeNotifyCustomer };
+      const result = await fpcRunBulk(offers, (offer) => firstValueFrom(this.adminOffersService.revoke(offer.id, dto)));
 
       this.finishBulk(dbBulkSummary(result, (offer) => this.offerDisplayTitle(offer)));
     } else if (pending === 'delete') {
@@ -752,14 +858,6 @@ export class AdminOffersPageComponent implements OnInit {
     this.facade.deleteOffer(this.selectedOffer.id);
   }
 
-  archiveOffer(offer: AdminOfferListItem): void {
-    this.facade.archiveOffer(offer.id);
-  }
-
-  revokeOffer(offer: AdminOfferListItem): void {
-    this.facade.revokeOffer(offer.id);
-  }
-
   formatDate(value?: string | null): string {
     if (!value) return getUnavailableLabel();
 
@@ -788,6 +886,11 @@ export class AdminOffersPageComponent implements OnInit {
 
   canArchiveOffer(offer: AdminOfferListItem): boolean {
     return offer.status === 'draft';
+  }
+
+  /** Server flag: archived without notification and not expired yet. */
+  canSendOffer(offer: Pick<AdminOfferListItem, 'canSend'>): boolean {
+    return offer.canSend === true;
   }
 
   canRevokeOffer(offer: AdminOfferListItem): boolean {

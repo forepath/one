@@ -204,7 +204,7 @@ interface SupplierInvoiceFormLineItem extends SupplierInvoiceLineItemDto {
   accountingOpen?: boolean;
 }
 
-type AdminInvoiceAction = 'void' | 'markPaid' | 'markUnpaid' | 'writeOff' | 'refund';
+type AdminInvoiceAction = 'void' | 'markPaid' | 'markUnpaid' | 'writeOff' | 'refund' | 'send' | 'sendCreditNote';
 
 interface InvoicePreviewLineItem {
   description: string;
@@ -431,10 +431,22 @@ export class AdminBillingPageComponent implements OnInit {
         return DB_DL_WRITE_OFF;
       case 'refund':
         return DB_DL_REFUND;
+      case 'send':
+        return this.sendToCustomerLabel;
+      case 'sendCreditNote':
+        return this.sendCreditNoteLabel;
       default:
         return DB_DL_VOID;
     }
   });
+  readonly sendToCustomerLabel = $localize`:@@featureAdminInvoices-sendToCustomer:Send to customer`;
+  readonly sendCreditNoteLabel = $localize`:@@featureAdminInvoices-sendCreditNote:Send credit note`;
+  /** Void: email the credit note right away (defaults to on when the invoice itself was sent). */
+  readonly actionNotifyCustomer = signal(true);
+  /** Issue dialog: email the invoice right away. */
+  issueNotifyCustomer = true;
+  /** Bulk void: email the credit notes right away. */
+  bulkVoidNotifyCustomer = true;
   /**
    * Optional amount of mark paid (partial payment), write-off and refund; empty = the full open balance
    * (refund: the full customer credit).
@@ -627,7 +639,7 @@ export class AdminBillingPageComponent implements OnInit {
       id: 'status',
       label: $localize`:@@featureInvoices-colStatus:Status`,
       type: 'state',
-      state: (inv) => invoiceState(inv.status),
+      state: (inv) => invoiceState(inv.status, { unsent: inv.canSend === true || inv.canSendCreditNote === true }),
     },
     {
       id: 'invoice',
@@ -759,6 +771,11 @@ export class AdminBillingPageComponent implements OnInit {
         menu.push({ id: 'markUnpaid', label: DB_DL_MARK_UNPAID, icon: 'arrow-counterclockwise' });
 
       if (this.canRefund(inv)) menu.push({ id: 'refund', label: DB_DL_REFUND, icon: 'cash-coin' });
+
+      if (inv.canSend) menu.push({ id: 'send', label: this.sendToCustomerLabel, icon: 'send' });
+
+      if (inv.canSendCreditNote)
+        menu.push({ id: 'send-credit-note', label: this.sendCreditNoteLabel, icon: 'envelope-arrow-up' });
 
       if (inv.canDownload) {
         menu.push({ id: 'download', label: DB_DL_DOWNLOAD_PDF, icon: 'file-earmark-pdf' });
@@ -1039,6 +1056,7 @@ export class AdminBillingPageComponent implements OnInit {
 
   openIssueModal(invoice: AdminInvoiceListItem): void {
     this.issueInvoiceId = invoice.id;
+    this.issueNotifyCustomer = true;
     this.issueTermsForm = emptyDocumentTermsForm();
     showBillingModal(this.issueModalOpen);
   }
@@ -1402,7 +1420,11 @@ export class AdminBillingPageComponent implements OnInit {
 
     const { paymentDueDays, ...deliveryTerms } = documentTermsFormToInput(this.issueTermsForm);
 
-    this.invoiceManagerFacade.issueManualInvoice(this.issueInvoiceId, { dueInDays: paymentDueDays, ...deliveryTerms });
+    this.invoiceManagerFacade.issueManualInvoice(this.issueInvoiceId, {
+      dueInDays: paymentDueDays,
+      ...deliveryTerms,
+      notifyCustomer: this.issueNotifyCustomer,
+    });
   }
 
   confirmDelete(): void {
@@ -1425,6 +1447,8 @@ export class AdminBillingPageComponent implements OnInit {
     this.actionNote.set('');
     this.actionAmount.set(null);
     this.actionPaidAt.set(this.actionHasDate(action) ? this.defaultPaidAtLocalInput() : '');
+    // A credit note for an invoice the customer never received is not sent by default.
+    this.actionNotifyCustomer.set(action !== 'void' || Boolean(invoice.sentAt));
     showBillingModal(this.actionConfirmModalOpen);
   }
 
@@ -1455,7 +1479,14 @@ export class AdminBillingPageComponent implements OnInit {
     if (action === 'void') {
       const note = documentNoteToInput(this.actionNote());
 
-      this.invoiceManagerFacade.voidInvoice(invoice.id, note ? { note } : undefined);
+      this.invoiceManagerFacade.voidInvoice(invoice.id, {
+        ...(note ? { note } : {}),
+        notifyCustomer: this.actionNotifyCustomer(),
+      });
+    } else if (action === 'send') {
+      this.invoiceManagerFacade.sendInvoice(invoice.id);
+    } else if (action === 'sendCreditNote') {
+      this.invoiceManagerFacade.sendCreditNote(invoice.id);
     } else if (action === 'markPaid') {
       if (!this.actionAmountValid()) return;
 
@@ -1629,6 +1660,8 @@ export class AdminBillingPageComponent implements OnInit {
     else if (action === 'issue') this.openIssueModal(inv);
     else if (action === 'delete') this.openDeleteModal(inv);
     else if (action === 'preview') this.openPreview(inv);
+    else if (action === 'send') this.openActionModal('send', inv);
+    else if (action === 'send-credit-note') this.openActionModal('sendCreditNote', inv);
     else if (
       action === 'void' ||
       action === 'markPaid' ||
@@ -1690,7 +1723,7 @@ export class AdminBillingPageComponent implements OnInit {
         action === 'markPaid'
           ? this.adminBillingService.markPaid(inv.id, {})
           : action === 'void'
-            ? this.adminBillingService.voidInvoice(inv.id)
+            ? this.adminBillingService.voidInvoice(inv.id, { notifyCustomer: this.bulkVoidNotifyCustomer })
             : this.adminBillingService.deleteManualInvoice(inv.id),
       ),
     );
@@ -1717,6 +1750,12 @@ export class AdminBillingPageComponent implements OnInit {
     this.bulkResult.set(dbBulkSummary(result, (inv) => this.supplierInvoiceDisplayTitle(inv)));
     this.selectedSupplierInvoices.set([]);
     this.supplierInvoicePaging.reload();
+  }
+
+  /** Opens the bulk confirm dialog; the credit-note email of a bulk void defaults to on. */
+  openBulkConfirm(action: 'void' | 'delete' | 'supplier-delete'): void {
+    this.bulkVoidNotifyCustomer = true;
+    this.pendingBulk.set(action);
   }
 
   confirmPendingBulk(): void {

@@ -2,6 +2,7 @@ import { IsDateString, IsNumber, IsOptional, IsPositive, IsString, IsUUID, MaxLe
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 
+import { IsOptionalNotifyFlag } from './document-delivery.dto';
 import { IsOptionalDocumentNote } from './document-note.dto';
 import { InvoiceResponseDto } from './invoice-response.dto';
 import { SubscriptionResponseDto } from './subscription-response.dto';
@@ -32,6 +33,14 @@ export class AdminInvoiceListItemDto extends InvoiceResponseDto {
   userEmail?: string;
   /** Billing-profile name (company, else first + last name); admin lists show it instead of the email. */
   customerName?: string;
+  /** When the invoice was emailed to the customer; null when it was issued without notification. */
+  sentAt?: string | null;
+  /** When the credit note of a voided invoice was emailed to the customer; null when not sent. */
+  voidDocumentSentAt?: string | null;
+  /** Issued (not voided) invoice that was not emailed yet: the send action applies. */
+  canSend?: boolean;
+  /** Voided invoice whose credit note was not emailed yet: the send-credit-note action applies. */
+  canSendCreditNote?: boolean;
 }
 
 export class PaginatedAdminInvoicesResponseDto {
@@ -62,6 +71,10 @@ export class PaginatedAdminSubscriptionsResponseDto {
 export class VoidInvoiceDto {
   @IsOptionalDocumentNote()
   note?: string | null;
+
+  /** Email the credit note to the customer right away. Default `true`; `false` voids silently (send later). */
+  @IsOptionalNotifyFlag()
+  notifyCustomer?: boolean;
 }
 
 export class MarkInvoicePaymentStatusDto {

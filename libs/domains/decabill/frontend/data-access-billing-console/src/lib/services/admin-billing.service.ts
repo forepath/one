@@ -94,6 +94,19 @@ export class AdminBillingService {
     );
   }
 
+  /** Emails an invoice that was issued without notification. */
+  sendInvoice(invoiceRefId: string): Observable<AdminInvoiceListItem> {
+    return this.http.post<AdminInvoiceListItem>(`${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/send`, {});
+  }
+
+  /** Emails the credit note of an invoice that was voided without notification. */
+  sendCreditNote(invoiceRefId: string): Observable<AdminInvoiceListItem> {
+    return this.http.post<AdminInvoiceListItem>(
+      `${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/send-credit-note`,
+      {},
+    );
+  }
+
   markPaid(invoiceRefId: string, dto?: MarkInvoicePaymentStatusDto): Observable<AdminInvoiceListItem> {
     return this.http.post<AdminInvoiceListItem>(
       `${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/mark-paid`,

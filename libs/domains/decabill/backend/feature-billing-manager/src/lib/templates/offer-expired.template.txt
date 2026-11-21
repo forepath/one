@@ -1,0 +1,10 @@
+Offer expired
+
+Dear {{recipientName}},
+
+Offer {{offerNumber}} has expired without being accepted.
+
+Total amount: {{amountLabel}}{{#if expiresAtLabel}}
+Valid until: {{expiresAtLabel}}{{/if}}
+
+The offer can no longer be accepted. If you are still interested, please get in touch with us and we will be happy to send you a new offer.

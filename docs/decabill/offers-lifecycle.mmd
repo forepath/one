@@ -12,9 +12,15 @@ sequenceDiagram
     Admin->>AdminAPI: POST draft (standard + plan + project lines)
     AdminAPI-->>Admin: draft offer
 
-    Admin->>AdminAPI: POST :id/archive
+    Admin->>AdminAPI: POST :id/archive { notifyCustomer, notifyOnExpiry }
     AdminAPI->>PDF: generate eInvoice 330 PDF
-    AdminAPI->>Email: publishOfferArchived
+    alt notifyCustomer (default)
+        AdminAPI->>Email: publishOfferArchived (sentAt = archivedAt)
+    else archived without sending
+        Note over AdminAPI: sentAt null, offer visible but not emailed
+        Admin->>AdminAPI: POST :id/send (later)
+        AdminAPI->>Email: publishOfferArchived (claim sentAt)
+    end
     AdminAPI->>Search: upsert offer document
     AdminAPI-->>Admin: archived offer
 
@@ -37,5 +43,11 @@ sequenceDiagram
         CustomerAPI-->>Customer: declined offer
     end
 
+    opt Admin revokes (notifyCustomer)
+        Admin->>AdminAPI: POST :id/revoke
+        AdminAPI->>Email: publishOfferRevoked
+    end
+
     Note over Jobs: offer-expiration marks archived offers past expiresAt
+    Jobs->>Email: publishOfferExpired (notifyOnExpiry)
     Note over Admin,AdminAPI: revoke allowed only in draft or archived

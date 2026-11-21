@@ -184,3 +184,199 @@ describe('OfferArchiveService.archive', () => {
     );
   });
 });
+
+describe('OfferArchiveService finalize and send', () => {
+  const draft = {
+    id: 'offer-1',
+    userId: 'user-1',
+    status: OfferStatus.DRAFT,
+    currency: 'EUR',
+    lineItems: [
+      {
+        id: 'line-1',
+        lineType: OfferLineType.STANDARD,
+        description: 'Consulting',
+        quantity: 1,
+        unitPriceNet: 100,
+        taxCategory: 'standard',
+      },
+    ],
+    createdAt: new Date('2026-01-01T00:00:00Z'),
+    updatedAt: new Date('2026-01-01T00:00:00Z'),
+  } as unknown as OfferEntity;
+  let stored: OfferEntity;
+  const offersRepository = {
+    findByIdOrThrow: jest.fn(async () => stored),
+    update: jest.fn(async (_id: string, patch: Partial<OfferEntity>) => {
+      stored = { ...stored, ...patch } as OfferEntity;
+
+      return stored;
+    }),
+    claimSent: jest.fn(),
+    releaseSent: jest.fn(),
+  };
+  const offerLineItemsRepository = { findByOfferId: jest.fn(async () => draft.lineItems), update: jest.fn() };
+  const offerPdfService = {
+    generateAndStore: jest.fn().mockResolvedValue('user-1/offer-1.pdf'),
+    readPdf: jest.fn().mockResolvedValue(Buffer.from('%PDF')),
+  };
+  const billingEmailPublisher = { publishOfferArchived: jest.fn() };
+  const auditLog = { log: jest.fn() };
+  const searchIndex = { scheduleUpsert: jest.fn() };
+  const service = new OfferArchiveService(
+    offersRepository as never,
+    offerLineItemsRepository as never,
+    { nextOfferNumber: jest.fn().mockResolvedValue({ number: 'OFF-2026-00001', numberScope: 'shared' }) } as never,
+    { findByIdForTenant: jest.fn().mockResolvedValue({ email: 'user@example.com' }) } as never,
+    { prepareForUser: jest.fn() } as never,
+    {
+      computeLines: jest.fn().mockReturnValue({
+        lines: [
+          {
+            description: 'Consulting',
+            quantity: 1,
+            unitPriceNet: 100,
+            taxCategory: 'standard',
+            taxRate: 19,
+            lineNet: 100,
+            lineTax: 19,
+            lineGross: 119,
+          },
+        ],
+        subtotalNet: 100,
+        taxTotal: 19,
+        totalGross: 119,
+        resolvedTaxRate: 19,
+      }),
+    } as never,
+    {
+      resolveForUser: jest.fn().mockResolvedValue({
+        treatment: { taxMode: 'domestic_vat', taxCountryCode: 'DE', einvoiceTaxCategoryCode: 'S', issuerIsInEu: true },
+        forceChargeNonEuIssuerEuB2b: false,
+      }),
+    } as never,
+    {
+      getByUserId: jest.fn().mockResolvedValue({ userId: 'user-1' }),
+      isProfileComplete: jest.fn().mockReturnValue(true),
+    } as never,
+    { assertConfigured: jest.fn(), getConfig: jest.fn(() => ({ name: 'Issuer' })) } as never,
+    offerPdfService as never,
+    billingEmailPublisher as never,
+    { publishOffer: jest.fn() } as never,
+    searchIndex as never,
+    auditLog as never,
+    new BillingDocumentTermsConfigService(),
+  );
+  const archived = (patch: Partial<OfferEntity> = {}): OfferEntity =>
+    ({
+      ...draft,
+      status: OfferStatus.ARCHIVED,
+      offerNumber: 'OFF-2026-00001',
+      pdfStorageKey: 'user-1/offer-1.pdf',
+      sentAt: null,
+      notifyOnExpiry: true,
+      expiresAt: new Date('2099-01-01T00:00:00Z'),
+      ...patch,
+    }) as OfferEntity;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    stored = draft;
+    billingEmailPublisher.publishOfferArchived.mockResolvedValue(true);
+    offersRepository.claimSent.mockResolvedValue(true);
+  });
+
+  it('archives and sends by default (sentAt = archivedAt, expiry email on)', async () => {
+    const result = await service.archive('offer-1', 'admin-1');
+    const patch = offersRepository.update.mock.calls[0]?.[1] as Partial<OfferEntity>;
+
+    expect(patch.sentAt).toBeInstanceOf(Date);
+    expect(patch.sentAt).toBe(patch.archivedAt);
+    expect(patch.notifyOnExpiry).toBe(true);
+    expect(billingEmailPublisher.publishOfferArchived).toHaveBeenCalledTimes(1);
+    expect(result).toEqual(expect.objectContaining({ canSend: false, notifyOnExpiry: true }));
+    expect(result.sentAt).not.toBeNull();
+  });
+
+  it('archives without sending: no email, sentAt stays null, the offer can be sent later', async () => {
+    const result = await service.archive('offer-1', 'admin-1', { notifyCustomer: false, notifyOnExpiry: false });
+
+    expect(offersRepository.update).toHaveBeenNthCalledWith(
+      1,
+      'offer-1',
+      expect.objectContaining({ status: OfferStatus.ARCHIVED, sentAt: null, notifyOnExpiry: false }),
+    );
+    expect(billingEmailPublisher.publishOfferArchived).not.toHaveBeenCalled();
+    expect(auditLog.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        process: 'offer.archive',
+        context: expect.objectContaining({ notifyCustomer: false, notifyOnExpiry: false }),
+      }),
+    );
+    expect(result).toEqual(expect.objectContaining({ sentAt: null, canSend: true, notifyOnExpiry: false }));
+  });
+
+  it('sends an archived offer: claims the send, emails the stored PDF, audits', async () => {
+    stored = archived();
+
+    await service.send('offer-1', 'admin-1');
+
+    expect(offersRepository.claimSent).toHaveBeenCalledWith('offer-1', expect.any(Date));
+    expect(billingEmailPublisher.publishOfferArchived).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'offer-1', sentAt: expect.any(Date) }),
+      'user-1/offer-1.pdf',
+    );
+    expect(offerPdfService.generateAndStore).not.toHaveBeenCalled();
+    expect(offersRepository.releaseSent).not.toHaveBeenCalled();
+    expect(auditLog.log).toHaveBeenCalledWith(expect.objectContaining({ process: 'offer.send', offerId: 'offer-1' }));
+    expect(searchIndex.scheduleUpsert).toHaveBeenCalled();
+  });
+
+  it.each([
+    ['a draft', { status: OfferStatus.DRAFT }],
+    ['an accepted offer', { status: OfferStatus.ACCEPTED }],
+    ['a revoked offer', { status: OfferStatus.REVOKED }],
+    ['an offer already sent', { sentAt: new Date('2026-01-02T00:00:00Z') }],
+    ['an offer past its expiry', { expiresAt: new Date('2020-01-01T00:00:00Z') }],
+  ])('refuses to send %s without emailing', async (_label, patch) => {
+    stored = archived(patch as Partial<OfferEntity>);
+
+    await expect(service.send('offer-1', 'admin-1')).rejects.toBeInstanceOf(BadRequestException);
+    expect(offersRepository.claimSent).not.toHaveBeenCalled();
+    expect(billingEmailPublisher.publishOfferArchived).not.toHaveBeenCalled();
+  });
+
+  it('does not email when a concurrent request won the claim', async () => {
+    stored = archived();
+    offersRepository.claimSent.mockResolvedValue(false);
+
+    await expect(service.send('offer-1', 'admin-1')).rejects.toBeInstanceOf(BadRequestException);
+    expect(billingEmailPublisher.publishOfferArchived).not.toHaveBeenCalled();
+  });
+
+  it('releases the claim when the customer has no billing email (nothing sent)', async () => {
+    stored = archived();
+    billingEmailPublisher.publishOfferArchived.mockResolvedValue(false);
+
+    await expect(service.send('offer-1', 'admin-1')).rejects.toThrow(/no billing email/);
+    expect(offersRepository.releaseSent).toHaveBeenCalledWith('offer-1', expect.any(Date));
+    expect(auditLog.log).not.toHaveBeenCalled();
+  });
+
+  it('releases the claim when queueing the email fails', async () => {
+    stored = archived();
+    billingEmailPublisher.publishOfferArchived.mockRejectedValue(new Error('redis down'));
+
+    await expect(service.send('offer-1', 'admin-1')).rejects.toThrow('redis down');
+    expect(offersRepository.releaseSent).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the PDF first when the stored file is missing', async () => {
+    stored = archived({ pdfStorageKey: null });
+
+    await service.send('offer-1', 'admin-1');
+
+    expect(offerPdfService.generateAndStore).toHaveBeenCalledTimes(1);
+    expect(billingEmailPublisher.publishOfferArchived).toHaveBeenCalledWith(expect.anything(), 'user-1/offer-1.pdf');
+  });
+});

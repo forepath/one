@@ -47,7 +47,10 @@ sequenceDiagram
     Billing->>Billing: incrementBilledAmountNet(projectId, time line net)
     Billing->>Billing: generateAndStore time report PDF
     Billing->>Invoice: update timeReportStorageKey
-    Billing->>Email: notifyInvoiceIssued(invoice + time report)
+    opt notifyCustomer (default true)
+        Billing->>Email: notifyInvoiceIssued(invoice + time report)
+        Billing->>Invoice: update sentAt
+    end
     Billing->>Audit: log project.bill_time
     Billing->>Summary: buildSummary(project)
     Billing->>RT: projectSummaryChanged(summary)

@@ -119,12 +119,15 @@ describe('AdminBillingPageComponent (bulk actions)', () => {
       id === 'i1' ? throwError(() => ({ status: 403 })) : of({}),
     );
     component.selectedInvoices.set(['d1', 'i1', 'i2', 'p1']);
-    component.pendingBulk.set('void');
+    component.openBulkConfirm('void');
     expect(component.bulkConfirmMessage()).toContain('2 selected invoices');
+    expect(component.bulkVoidNotifyCustomer).toBe(true);
+    component.bulkVoidNotifyCustomer = false;
 
     await component.runInvoiceBulk('void');
 
     expect(billingService['voidInvoice']).toHaveBeenCalledTimes(2);
+    expect(billingService['voidInvoice']).toHaveBeenCalledWith('i2', { notifyCustomer: false });
     expect(billingService['voidInvoice']).not.toHaveBeenCalledWith('p1');
     expect(component.bulkResult()?.message).toContain('1 not allowed');
   });
@@ -166,13 +169,72 @@ describe('AdminBillingPageComponent (bulk actions)', () => {
     component.openActionModal('void', issued);
     component.actionNote.set('  Cancelled on request  ');
     component.confirmAction();
-    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', { note: 'Cancelled on request' });
+    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', {
+      note: 'Cancelled on request',
+      notifyCustomer: false,
+    });
 
     component.openActionModal('void', issued);
     expect(component.actionNote()).toBe('');
     component.actionNote.set('   ');
     component.confirmAction();
-    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', undefined);
+    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', { notifyCustomer: false });
+  });
+
+  it('void confirm: emails the credit note by default only when the invoice itself was sent', () => {
+    const managerFacade = TestBed.inject(AdminInvoiceManagerFacade) as unknown as Record<string, jest.Mock>;
+    const sent = { ...invoice('i1', 'issued'), sentAt: '2026-11-01T00:00:00Z' } as never;
+
+    component.openActionModal('void', sent);
+    expect(component.actionNotifyCustomer()).toBe(true);
+    component.confirmAction();
+    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', { notifyCustomer: true });
+
+    component.openActionModal('void', sent);
+    component.actionNotifyCustomer.set(false);
+    component.confirmAction();
+    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', { notifyCustomer: false });
+  });
+
+  it('send actions: offered for unsent documents only, confirmed through the action modal', () => {
+    const managerFacade = TestBed.inject(AdminInvoiceManagerFacade) as unknown as Record<string, jest.Mock>;
+    const unsent = { ...invoice('i1', 'issued'), canSend: true } as never;
+    const voided = { ...invoice('v1', 'void'), canSendCreditNote: true } as never;
+    const ids = (inv: never) => component.invoiceMenu(inv).map((item) => item.id);
+
+    expect(ids(unsent)).toContain('send');
+    expect(ids(invoice('i2', 'issued') as never)).not.toContain('send');
+    expect(ids(voided)).toContain('send-credit-note');
+    expect(component.invoiceColumns[0].state?.(unsent)?.label).toContain('not sent');
+    expect(component.invoiceColumns[0].state?.(invoice('i2', 'issued') as never)?.label).not.toContain('not sent');
+
+    component.onInvoiceAction(unsent, 'send');
+    expect(component.pendingAction()).toBe('send');
+    expect(component.actionConfirmLabel()).toBe('Send to customer');
+    component.confirmAction();
+    expect(managerFacade['sendInvoice']).toHaveBeenCalledWith('i1');
+
+    component.onInvoiceAction(voided, 'send-credit-note');
+    expect(component.actionConfirmLabel()).toBe('Send credit note');
+    component.confirmAction();
+    expect(managerFacade['sendCreditNote']).toHaveBeenCalledWith('v1');
+  });
+
+  it('issue dialog: emails the invoice by default, silently when unchecked', () => {
+    const managerFacade = TestBed.inject(AdminInvoiceManagerFacade) as unknown as Record<string, jest.Mock>;
+
+    component.openIssueModal(invoice('d1', 'draft') as never);
+    expect(component.issueNotifyCustomer).toBe(true);
+    component.issueNotifyCustomer = false;
+    component.submitIssue();
+
+    expect(managerFacade['issueManualInvoice']).toHaveBeenLastCalledWith(
+      'd1',
+      expect.objectContaining({ notifyCustomer: false }),
+    );
+
+    component.openIssueModal(invoice('d1', 'draft') as never);
+    expect(component.issueNotifyCustomer).toBe(true);
   });
 
   it('manual invoice: create and edit submit the note (null when blank)', () => {

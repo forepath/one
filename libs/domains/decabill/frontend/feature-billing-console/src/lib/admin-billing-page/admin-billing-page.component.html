@@ -296,7 +296,7 @@
                 fpcDataTableBatch
                 variant="danger"
                 [disabled]="invoiceBulkTargets('void').length === 0"
-                (clicked)="pendingBulk.set('void')"
+                (clicked)="openBulkConfirm('void')"
                 data-testid="admin-invoices-bulk-void"
                 iconOnly
                 [ariaLabel]="voidLabel"
@@ -308,7 +308,7 @@
                 fpcDataTableBatch
                 variant="danger"
                 [disabled]="invoiceBulkTargets('delete').length === 0"
-                (clicked)="pendingBulk.set('delete')"
+                (clicked)="openBulkConfirm('delete')"
                 data-testid="admin-invoices-bulk-delete"
                 iconOnly
                 [ariaLabel]="deleteDraftsLabel"
@@ -537,7 +537,7 @@
                 fpcDataTableBatch
                 variant="danger"
                 [disabled]="supplierBulkTargets('delete').length === 0"
-                (clicked)="pendingBulk.set('supplier-delete')"
+                (clicked)="openBulkConfirm('supplier-delete')"
                 data-testid="admin-supplier-invoices-bulk-delete"
                 iconOnly
                 [ariaLabel]="deleteDraftsLabel"
@@ -712,17 +712,38 @@
       [value]="actionNote()"
       (valueChange)="actionNote.set($event)"
     />
-  }
-  <fpc-form-field forId="actionReason" i18n-label="@@featureAdminBilling-reasonOptional" label="Reason (optional)">
-    <fpc-form-control
-      controlType="textarea"
-      controlId="actionReason"
-      [rows]="2"
-      name="actionReason"
-      [ngModel]="actionReason()"
-      (ngModelChange)="actionReason.set($event)"
+    <fpc-form-check
+      class="d-block mb-3"
+      checkId="actionNotifyCustomer"
+      [checked]="actionNotifyCustomer()"
+      (checkedChange)="actionNotifyCustomer.set($event)"
+      i18n-label="@@featureAdminBilling-voidNotify"
+      label="Email the credit note to the customer"
+      i18n-hint="@@featureAdminBilling-voidNotifyHint"
+      hint="Otherwise you can send a credit note later from the invoice."
+      data-testid="admin-invoice-void-notify"
     />
-  </fpc-form-field>
+  }
+  @if (pendingAction() === 'send') {
+    <p class="mb-0" i18n="@@featureAdminBilling-sendInvoiceMessage">
+      The invoice is emailed to the customer with its PDF attached (and the time report of a project invoice).
+    </p>
+  } @else if (pendingAction() === 'sendCreditNote') {
+    <p class="mb-0" i18n="@@featureAdminBilling-sendCreditNoteMessage">
+      The credit note of this voided invoice is emailed to the customer with its PDF attached.
+    </p>
+  } @else {
+    <fpc-form-field forId="actionReason" i18n-label="@@featureAdminBilling-reasonOptional" label="Reason (optional)">
+      <fpc-form-control
+        controlType="textarea"
+        controlId="actionReason"
+        [rows]="2"
+        name="actionReason"
+        [ngModel]="actionReason()"
+        (ngModelChange)="actionReason.set($event)"
+      />
+    </fpc-form-field>
+  }
   @if (pendingSupplierInvoice() ? (supplierInvoicesError$ | async) : (actionError$ | async); as err) {
     <fpc-alert class="mt-2" variant="danger" [message]="err" />
   }
@@ -1324,6 +1345,16 @@
     </div>
   } @else {
     <framework-document-terms-fields [form]="issueTermsForm" idPrefix="issueInvoice" />
+    <fpc-form-check
+      class="d-block mt-3"
+      checkId="issueNotifyCustomer"
+      [(checked)]="issueNotifyCustomer"
+      i18n-label="@@featureAdminInvoices-issueNotify"
+      label="Email the invoice to the customer"
+      i18n-hint="@@featureAdminInvoices-issueNotifyHint"
+      hint="Otherwise you can send it later from the invoice."
+      data-testid="admin-invoice-issue-notify"
+    />
   }
   <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button
@@ -1634,4 +1665,17 @@
   [confirmLabel]="bulkConfirmLabel()"
   [danger]="true"
   (confirmed)="confirmPendingBulk()"
-/>
+>
+  @if (pendingBulk() === 'void') {
+    <fpc-form-check
+      class="d-block mt-3"
+      checkId="bulkVoidNotifyCustomer"
+      [(checked)]="bulkVoidNotifyCustomer"
+      i18n-label="@@featureAdminBilling-bulkVoidNotify"
+      label="Email the credit notes to the customers"
+      i18n-hint="@@featureAdminBilling-voidNotifyHint"
+      hint="Otherwise you can send a credit note later from the invoice."
+      data-testid="admin-billing-bulk-void-notify"
+    />
+  }
+</fpc-confirm-dialog>

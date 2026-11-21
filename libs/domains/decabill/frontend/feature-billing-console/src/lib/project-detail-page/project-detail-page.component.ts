@@ -328,6 +328,8 @@ export class ProjectDetailPageComponent implements OnInit {
   billCustomLineItems: BillTimeFormLineItem[] = [];
   /** Document note printed on the project invoice. */
   billNote = '';
+  /** Email the project invoice (with time report) to the customer right away. */
+  billNotifyCustomer = true;
   readonly billBoundsLoading = signal(false);
   readonly billBoundsEntryCount = signal(0);
   readonly billTimeSubscriptions = signal<SubscriptionResponse[]>([]);
@@ -588,6 +590,7 @@ export class ProjectDetailPageComponent implements OnInit {
       from: this.datetimeLocalToIso(this.billFormFrom),
       to: this.datetimeLocalToIso(this.billFormTo),
       subscriptionId: this.billSubscriptionId.trim() || undefined,
+      notifyCustomer: this.billNotifyCustomer,
     };
 
     if (this.billPricingModel() === 'fixed' && this.billAmountNet != null && Number(this.billAmountNet) > 0) {
@@ -967,6 +970,7 @@ export class ProjectDetailPageComponent implements OnInit {
     this.billSubscriptionId = '';
     this.billCustomLineItems = [];
     this.billNote = '';
+    this.billNotifyCustomer = true;
     this.billTimeSubscriptions.set([]);
     this.billTimeSubscriptionsLoading.set(false);
     this.billTimeSubscriptionsRequest?.unsubscribe();

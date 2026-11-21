@@ -16,6 +16,11 @@ import {
   adminInvoiceManagerRefund,
   adminInvoiceManagerRefundFailure,
   adminInvoiceManagerRefundSuccess,
+  adminInvoiceManagerSend,
+  adminInvoiceManagerSendCreditNote,
+  adminInvoiceManagerSendCreditNoteSuccess,
+  adminInvoiceManagerSendFailure,
+  adminInvoiceManagerSendSuccess,
   adminInvoiceManagerVoid,
   adminInvoiceManagerVoidFailure,
   adminInvoiceManagerVoidSuccess,
@@ -45,6 +50,8 @@ import {
   adminInvoiceManagerMarkPaid$,
   adminInvoiceManagerMarkUnpaid$,
   adminInvoiceManagerRefund$,
+  adminInvoiceManagerSend$,
+  adminInvoiceManagerSendCreditNote$,
   adminInvoiceManagerVoid$,
   adminInvoiceManagerWriteOff$,
   createManualInvoice$,
@@ -76,6 +83,8 @@ describe('AdminInvoiceManagerEffects', () => {
       issueManualInvoice: jest.fn(),
       deleteManualInvoice: jest.fn(),
       voidInvoice: jest.fn(),
+      sendInvoice: jest.fn(),
+      sendCreditNote: jest.fn(),
       markPaid: jest.fn(),
       markUnpaid: jest.fn(),
       writeOffInvoice: jest.fn(),
@@ -144,6 +153,46 @@ describe('AdminInvoiceManagerEffects', () => {
 
       createManualInvoice$(actions$, adminBillingService).subscribe((result) => {
         expect(result).toEqual(createManualInvoiceSuccess({ invoice: invoice as never }));
+        done();
+      });
+    });
+  });
+
+  describe('send$ / sendCreditNote$', () => {
+    it('sends the invoice and the credit note through the admin endpoints', (done) => {
+      const sent = { ...mockInvoice, status: 'issued', sentAt: '2026-11-21T10:00:00Z', canSend: false };
+
+      adminBillingService.sendInvoice.mockReturnValue(of(sent as never));
+      adminBillingService.sendCreditNote.mockReturnValue(of(sent as never));
+
+      adminInvoiceManagerSendCreditNote$(
+        of(adminInvoiceManagerSendCreditNote({ invoiceRefId: 'inv-1' })) as never,
+        adminBillingService,
+      ).subscribe((result) => {
+        expect(result).toEqual(adminInvoiceManagerSendCreditNoteSuccess({ invoice: sent as never }));
+        expect(adminBillingService.sendCreditNote).toHaveBeenCalledWith('inv-1');
+      });
+
+      adminInvoiceManagerSend$(
+        of(adminInvoiceManagerSend({ invoiceRefId: 'inv-1' })) as never,
+        adminBillingService,
+      ).subscribe((result) => {
+        expect(result).toEqual(adminInvoiceManagerSendSuccess({ invoice: sent as never }));
+        expect(adminBillingService.sendInvoice).toHaveBeenCalledWith('inv-1');
+        done();
+      });
+    });
+
+    it('maps send errors (e.g. no billing email) to failure', (done) => {
+      adminBillingService.sendInvoice.mockReturnValue(
+        throwError(() => ({ error: { message: 'Customer has no billing email address; nothing was sent' } })),
+      );
+
+      adminInvoiceManagerSend$(
+        of(adminInvoiceManagerSend({ invoiceRefId: 'inv-1' })) as never,
+        adminBillingService,
+      ).subscribe((result) => {
+        expect(result.type).toBe(adminInvoiceManagerSendFailure.type);
         done();
       });
     });

@@ -1416,6 +1416,14 @@ export interface AdminInvoiceListItem extends InvoiceResponse {
   userEmail?: string;
   /** Billing-profile name (company, else first + last name); shown instead of the email in admin lists. */
   customerName?: string;
+  /** When the invoice was emailed to the customer; null when issued without notification. */
+  sentAt?: string | null;
+  /** When the credit note of a voided invoice was emailed; null when not sent. */
+  voidDocumentSentAt?: string | null;
+  /** Issued (not voided) and not emailed yet: the send action applies. */
+  canSend?: boolean;
+  /** Voided and its credit note not emailed yet: the send-credit-note action applies. */
+  canSendCreditNote?: boolean;
 }
 
 export interface PaginatedAdminInvoicesResponse {
@@ -1587,16 +1595,25 @@ export interface UpdateManualInvoiceDto {
 /** Optional note printed on the credit note (void document). */
 export interface VoidInvoiceDto {
   note?: string | null;
+  /** Email the credit note right away (server default `true`). */
+  notifyCustomer?: boolean;
 }
 
 /** Payment terms (`dueInDays`) and delivery terms; omitted / null values inherit (plan → global default). */
 export interface IssueManualInvoiceDto extends Omit<DocumentTermsInput, 'paymentDueDays'> {
   dueInDays?: number | null;
+  /** Email the invoice right away (server default `true`). */
+  notifyCustomer?: boolean;
 }
 
 export interface ManualInvoiceDetailResponse extends InvoiceDetailResponse {
   userId: string;
   userEmail?: string;
+  /** Delivery state, as on `AdminInvoiceListItem`. */
+  sentAt?: string | null;
+  voidDocumentSentAt?: string | null;
+  canSend?: boolean;
+  canSendCreditNote?: boolean;
 }
 
 export interface AdminCustomerProfileListItem {

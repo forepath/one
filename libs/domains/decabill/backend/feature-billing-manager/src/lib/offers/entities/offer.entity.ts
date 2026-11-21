@@ -90,6 +90,17 @@ export class OfferEntity {
   @Column({ type: 'timestamp', nullable: true, name: 'revoked_at' })
   revokedAt?: Date | null;
 
+  /**
+   * When the offer was emailed to the customer; null for drafts and for offers archived without notification (they
+   * are visible in the customer's account either way, like invoices).
+   */
+  @Column({ type: 'timestamp', nullable: true, name: 'sent_at' })
+  sentAt?: Date | null;
+
+  /** Email the customer when the (sent) offer expires; chosen when archiving. */
+  @Column({ type: 'boolean', default: false, name: 'notify_on_expiry' })
+  notifyOnExpiry!: boolean;
+
   @Column({ type: 'boolean', default: false, name: 'bill_to_open_positions' })
   billToOpenPositions!: boolean;
 

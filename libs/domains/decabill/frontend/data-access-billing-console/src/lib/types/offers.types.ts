@@ -92,6 +92,25 @@ export interface AdminOfferListItem {
   canPreview: boolean;
   /** `false` for drafts and while no PDF is stored. */
   canDownload: boolean;
+  /** When the offer was sent to the customer; null for drafts and offers archived without notification. */
+  sentAt?: string | null;
+  /** Archived, not yet sent and not expired: the send action applies. */
+  canSend?: boolean;
+  /** Whether the customer is emailed when the offer expires. */
+  notifyOnExpiry?: boolean;
+}
+
+/** Archive options; omitted flags default to `true` on the server. */
+export interface ArchiveAdminOfferDto {
+  /** Send the offer to the customer right away (email + visible in their account). */
+  notifyCustomer?: boolean;
+  /** Email the customer when the offer expires. */
+  notifyOnExpiry?: boolean;
+}
+
+/** Revoke options; the customer is only notified about offers that were sent to them. */
+export interface RevokeAdminOfferDto {
+  notifyCustomer?: boolean;
 }
 
 export interface AdminOfferDetailResponse extends AdminOfferListItem {
