@@ -49,6 +49,19 @@ export interface TurnoverByCountryRow {
   totalGross: number;
 }
 
+/**
+ * Issued invoices a period adjustment (config change, withdrawal) can refer to. CREDITED / WRITTEN_OFF stay included:
+ * customer credit or an earlier credit note can settle the current period's invoice completely.
+ */
+const BILLABLE_INVOICE_STATUSES = [
+  InvoiceStatus.ISSUED,
+  InvoiceStatus.PAID,
+  InvoiceStatus.PARTIALLY_PAID,
+  InvoiceStatus.OVERDUE,
+  InvoiceStatus.CREDITED,
+  InvoiceStatus.WRITTEN_OFF,
+];
+
 @Injectable()
 export class InvoicesRepository {
   constructor(
@@ -104,7 +117,7 @@ export class InvoicesRepository {
       .innerJoin('users', 'user', 'user.id = inv.user_id')
       .where('inv.subscription_id = :subscriptionId', { subscriptionId })
       .andWhere('inv.status IN (:...statuses)', {
-        statuses: [InvoiceStatus.ISSUED, InvoiceStatus.PAID, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.OVERDUE],
+        statuses: BILLABLE_INVOICE_STATUSES,
       })
       .andWhere('inv.invoice_number IS NOT NULL')
       .orderBy('inv.createdAt', 'DESC')
@@ -136,7 +149,7 @@ export class InvoicesRepository {
         subscriptionId,
       })
       .andWhere('inv.status IN (:...statuses)', {
-        statuses: [InvoiceStatus.ISSUED, InvoiceStatus.PAID, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.OVERDUE],
+        statuses: BILLABLE_INVOICE_STATUSES,
       })
       .andWhere('inv.invoice_number IS NOT NULL')
       .orderBy('inv.createdAt', 'DESC')

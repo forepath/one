@@ -53,6 +53,11 @@ export const BILLING_PAT_SCOPES = [
   'datev:admin',
   // Inventory: warehouses, compartments, articles, stock movements and withdrawal requests (admin-only)
   'inventory:admin',
+  // Accounting is admin-only (role-gated). Two resources keep a read-only token possible:
+  // accounting_audit = read journal, ledgers, reports, statements, VAT returns, exports (auditors / tax advisors);
+  // accounting = write: postings, imports, reconciliation, closing, charts and settings.
+  'accounting_audit:admin',
+  'accounting:admin',
   // WebSockets (connect + subscribe). Events stay capped by the domain scopes above (see billing-websocket.scopes.ts).
   'websocket:billing:read',
   'websocket:projects:read',

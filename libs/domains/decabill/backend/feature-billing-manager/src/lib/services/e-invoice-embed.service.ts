@@ -21,6 +21,8 @@ export interface FacturXDocumentMetadata {
   title: string;
   /** Issuer name (Info /Author and dc:creator). */
   author: string;
+  /** Factur-X conformance level of the embedded XML (default EN 16931). */
+  conformanceLevel?: 'BASIC' | 'EN 16931' | 'EXTENDED' | 'XRECHNUNG';
 }
 
 @Injectable()
@@ -41,7 +43,7 @@ export class EInvoiceEmbedService {
 
     await pdfDoc.attach(new TextEncoder().encode(xmlContent), FACTUR_X_FILENAME, {
       mimeType: 'text/xml',
-      description: 'Factur-X / ZUGFeRD EN 16931 invoice data',
+      description: `Factur-X / ZUGFeRD ${metadata.conformanceLevel ?? FACTUR_X_CONFORMANCE_LEVEL} invoice data`,
       creationDate: now,
       modificationDate: now,
       afRelationship: AFRelationship.Alternative,
@@ -57,10 +59,13 @@ export class EInvoiceEmbedService {
     removeInfoEntries(pdfDoc, ['Subject', 'Keywords', 'Trapped']);
 
     // Uncompressed UTF-8 packet (PDF/A forbids filters on the metadata stream).
-    const metadataStream = pdfDoc.context.stream(new TextEncoder().encode(buildXmp({ title, author, date: now })), {
-      Type: 'Metadata',
-      Subtype: 'XML',
-    });
+    const metadataStream = pdfDoc.context.stream(
+      new TextEncoder().encode(buildXmp({ title, author, date: now, conformanceLevel: metadata.conformanceLevel })),
+      {
+        Type: 'Metadata',
+        Subtype: 'XML',
+      },
+    );
 
     pdfDoc.catalog.set(PDFName.of('Metadata'), pdfDoc.context.register(metadataStream));
 
@@ -110,7 +115,17 @@ function xmpDate(date: Date): string {
   return date.toISOString().replace(/\.\d{3}Z$/, 'Z');
 }
 
-function buildXmp({ title, author, date }: { title: string; author: string; date: Date }): string {
+function buildXmp({
+  title,
+  author,
+  date,
+  conformanceLevel = FACTUR_X_CONFORMANCE_LEVEL,
+}: {
+  title: string;
+  author: string;
+  date: Date;
+  conformanceLevel?: string;
+}): string {
   const fxProperty = (name: string, description: string) => `
               <rdf:li rdf:parseType="Resource">
                 <pdfaProperty:name>${name}</pdfaProperty:name>
@@ -144,7 +159,7 @@ function buildXmp({ title, author, date }: { title: string; author: string; date
       <fx:DocumentType>INVOICE</fx:DocumentType>
       <fx:DocumentFileName>${FACTUR_X_FILENAME}</fx:DocumentFileName>
       <fx:Version>1.0</fx:Version>
-      <fx:ConformanceLevel>${FACTUR_X_CONFORMANCE_LEVEL}</fx:ConformanceLevel>
+      <fx:ConformanceLevel>${conformanceLevel}</fx:ConformanceLevel>
     </rdf:Description>
     <rdf:Description rdf:about=""
         xmlns:pdfaExtension="http://www.aiim.org/pdfa/ns/extension/"

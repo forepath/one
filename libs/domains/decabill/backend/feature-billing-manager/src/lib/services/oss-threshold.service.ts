@@ -69,25 +69,23 @@ export class OssThresholdService {
     const tenantId = params.tenantId ?? getTenantIdOrDefault() ?? 'unified';
     const at = params.at ?? new Date();
     const year = at.getUTCFullYear();
-    const ledger = await this.ledgersRepository.findOrCreate(tenantId, year);
-    const previous = Number(ledger.crossBorderB2cNetTotal);
-    const threshold = Number(ledger.thresholdEur);
-    const next = Math.round((previous + params.netAmount) * 100) / 100;
-    const wasExceeded = previous >= threshold || Boolean(ledger.thresholdExceededAt);
+    const {
+      previous,
+      next,
+      thresholdEur: threshold,
+      thresholdExceededAt,
+    } = await this.ledgersRepository.adjustTotal(tenantId, year, params.netAmount);
+    const wasExceeded = previous >= threshold || Boolean(thresholdExceededAt);
+    const ledger = { thresholdExceededAt };
 
-    ledger.crossBorderB2cNetTotal = next;
-
-    if (!wasExceeded && next >= threshold) {
+    if (!wasExceeded && next >= threshold && (await this.ledgersRepository.markThresholdExceeded(tenantId, year, at))) {
       ledger.thresholdExceededAt = at;
-      await this.ledgersRepository.save(ledger);
       this.notifications.publish('oss.threshold_exceeded', {
         tenantId,
         calendarYear: year,
         crossBorderB2cNetTotal: next,
         thresholdEur: threshold,
       });
-    } else {
-      await this.ledgersRepository.save(ledger);
     }
 
     return {
@@ -97,5 +95,19 @@ export class OssThresholdService {
       thresholdExceeded: next >= threshold || Boolean(ledger.thresholdExceededAt),
       registeredOverride: false,
     };
+  }
+
+  /**
+   * Takes a voided invoice / credit note out of the cross-border B2C total of the year it was counted in. Once
+   * the threshold was crossed the year stays on destination rates (no switching back mid-year).
+   */
+  async reverseCrossBorderB2cNet(params: { netAmount: number; tenantId?: string; at: Date }): Promise<void> {
+    if (this.isOssRegisteredOverride() || params.netAmount <= 0) {
+      return;
+    }
+
+    const tenantId = params.tenantId ?? getTenantIdOrDefault() ?? 'unified';
+
+    await this.ledgersRepository.adjustTotal(tenantId, params.at.getUTCFullYear(), -params.netAmount);
   }
 }

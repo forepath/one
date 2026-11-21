@@ -9,6 +9,16 @@ export interface BillingCapabilitiesResponseDto {
   globalViewsAllowed: boolean;
   viewableTenants: string[];
   fileSigningEnabled: boolean;
+  /** Accounting enabled with its prerequisites (BILLING_ACCOUNTING_ENABLED + complete issuer). */
+  accountingEnabled: boolean;
+  /** Entity-wide accounting functions (request tenant on TENANTS_ALLOW_GLOBAL_VIEWS). */
+  accountingGlobalAccess: boolean;
+  accountingCountry: string | null;
+  /** Env prerequisites missing for accounting (empty when enabled or not requested). */
+  accountingMissingPrerequisites: string[];
+  /** Selectable e-invoice formats and the issuer default. */
+  einvoiceFormats: Array<{ format: string; label: string }>;
+  einvoiceDefaultFormat: string;
 }
 
 export interface AdminDatevExportListItemDto {

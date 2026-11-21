@@ -31,13 +31,16 @@ describe('datev-format.util', () => {
     expect(escapeDatevField('say "hi"')).toBe('"say ""hi"""');
   });
 
-  it('transliterates umlauts in CSV fields to ASCII', () => {
-    expect(escapeDatevField('Müller GmbH')).toBe('Mueller GmbH');
-    expect(escapeDatevField('BU-Schlüssel')).toBe('BU-Schluessel');
+  it('keeps Windows-1252 characters so names match DATEV master data', () => {
+    expect(escapeDatevField('Müller GmbH')).toBe('Müller GmbH');
+    expect(escapeDatevField('Société Générale')).toBe('Société Générale');
+    expect(encodeDatevCsv('Müller').equals(Buffer.from([0x4d, 0xfc, 0x6c, 0x6c, 0x65, 0x72]))).toBe(true);
   });
 
-  it('sanitizes text to printable ASCII', () => {
-    expect(sanitizeDatevText('Café ☕')).toBe('Caf');
+  it('decomposes characters outside Windows-1252 and drops symbols and control characters', () => {
+    expect(sanitizeDatevText('Café ☕')).toBe('Café');
+    expect(sanitizeDatevText('Łódź\u0007')).toBe('Lódz');
+    expect(sanitizeDatevText('a\u0000b')).toBe('ab');
   });
 
   it('joins lines with CRLF', () => {

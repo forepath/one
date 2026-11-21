@@ -31,6 +31,26 @@ export const selectFileSigningEnabled = createSelector(
   (capabilities) => capabilities?.fileSigningEnabled ?? false,
 );
 
+export const selectAccountingEnabled = createSelector(
+  selectBillingCapabilities,
+  (capabilities) => capabilities?.accountingEnabled ?? false,
+);
+
+export const selectAccountingGlobalAccess = createSelector(
+  selectBillingCapabilities,
+  (capabilities) => capabilities?.accountingGlobalAccess ?? false,
+);
+
+export const selectEinvoiceFormats = createSelector(
+  selectBillingCapabilities,
+  (capabilities) => capabilities?.einvoiceFormats ?? [],
+);
+
+export const selectEinvoiceDefaultFormat = createSelector(
+  selectBillingCapabilities,
+  (capabilities) => capabilities?.einvoiceDefaultFormat ?? null,
+);
+
 export const selectBillingCapabilitiesLoading = createSelector(
   selectBillingCapabilitiesState,
   (state) => state.loading,

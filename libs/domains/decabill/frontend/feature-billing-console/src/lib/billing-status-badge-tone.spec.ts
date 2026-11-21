@@ -21,6 +21,8 @@ describe('billing status badge tones', () => {
     expect(getInvoiceStatusBadgeTone('paid')).toBe('success');
     expect(getInvoiceStatusBadgeTone('overdue')).toBe('danger');
     expect(getInvoiceStatusBadgeTone('void')).toBe('neutral');
+    expect(getInvoiceStatusBadgeTone('credited')).toBe('success');
+    expect(getInvoiceStatusBadgeTone('written_off')).toBe('warning');
     expect(getInvoiceStatusBadgeTone(null)).toBe('neutral');
   });
 

@@ -47,6 +47,15 @@ describe('AdminBillingController', () => {
   };
   const taxPreviewService = { preview: jest.fn() };
   const storedFileSigningConfig = { getSecret: jest.fn().mockReturnValue('test-secret') };
+  const accountingConfig = {
+    isEnabled: jest.fn(),
+    getConfig: jest.fn(),
+    getMissingCorePrerequisites: jest.fn(),
+  };
+  const einvoiceFormats = {
+    list: jest.fn(),
+    getDefault: jest.fn(),
+  };
   const controller = new AdminBillingController(
     billingAdminService as never,
     adminBillNowService as never,
@@ -62,12 +71,27 @@ describe('AdminBillingController', () => {
     taxPreviewService as never,
     storedFileSigningConfig as never,
     new BillingDocumentTermsConfigService(),
+    accountingConfig as never,
+    einvoiceFormats as never,
   );
 
   beforeEach(() => {
     jest.resetAllMocks();
     storedFileSigningConfig.getSecret.mockReturnValue('test-secret');
+    accountingConfig.isEnabled.mockReturnValue(false);
+    accountingConfig.getMissingCorePrerequisites.mockReturnValue(['BILLING_ACCOUNTING_ENABLED']);
+    einvoiceFormats.list.mockReturnValue([{ format: 'factur-x-en16931', label: 'Factur-X / ZUGFeRD EN 16931' }]);
+    einvoiceFormats.getDefault.mockReturnValue('factur-x-en16931');
   });
+
+  const accountingDisabledCapabilities = {
+    accountingEnabled: false,
+    accountingGlobalAccess: false,
+    accountingCountry: null,
+    accountingMissingPrerequisites: ['BILLING_ACCOUNTING_ENABLED'],
+    einvoiceFormats: [{ format: 'factur-x-en16931', label: 'Factur-X / ZUGFeRD EN 16931' }],
+    einvoiceDefaultFormat: 'factur-x-en16931',
+  };
 
   it('has admin role guards on controller', () => {
     const usersRoles = Reflect.getMetadata(USERS_ROLES_KEY, AdminBillingController);
@@ -96,7 +120,28 @@ describe('AdminBillingController', () => {
       globalViewsAllowed: true,
       viewableTenants: ['default', 'acme'],
       fileSigningEnabled: true,
+      ...accountingDisabledCapabilities,
     });
+  });
+
+  it('getCapabilities grants entity-wide accounting only to global-view tenants', () => {
+    accountingConfig.isEnabled.mockReturnValue(true);
+    accountingConfig.getConfig.mockReturnValue({ country: 'DE' });
+    tenantsGlobalViewsConfig.isGlobalViewsAllowedForTenant.mockReturnValue(false);
+    billingTenantService.getConfiguredTenants.mockReturnValue(['default']);
+
+    expect(controller.getCapabilities()).toEqual(
+      expect.objectContaining({
+        accountingEnabled: true,
+        accountingGlobalAccess: false,
+        accountingCountry: 'DE',
+        accountingMissingPrerequisites: [],
+      }),
+    );
+
+    tenantsGlobalViewsConfig.isGlobalViewsAllowedForTenant.mockReturnValue(true);
+
+    expect(controller.getCapabilities()).toEqual(expect.objectContaining({ accountingGlobalAccess: true }));
   });
 
   it('getCapabilities limits viewableTenants when global views disallowed', () => {
@@ -111,6 +156,7 @@ describe('AdminBillingController', () => {
       globalViewsAllowed: false,
       viewableTenants: ['default'],
       fileSigningEnabled: false,
+      ...accountingDisabledCapabilities,
     });
   });
 

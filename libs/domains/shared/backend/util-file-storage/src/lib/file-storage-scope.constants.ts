@@ -11,6 +11,8 @@ export const FileStorageScope = {
   projectTicketAttachments: 'projectTicketAttachments',
   agenstraAttachments: 'agenstraAttachments',
   inventoryDocuments: 'inventoryDocuments',
+  accountingImports: 'accountingImports',
+  accountingReceipts: 'accountingReceipts',
 } as const;
 
 export type FileStorageScope = (typeof FileStorageScope)[keyof typeof FileStorageScope];
@@ -25,6 +27,8 @@ export const FILE_STORAGE_SCOPE_SEGMENTS: Readonly<Record<FileStorageScope, stri
   [FileStorageScope.projectTicketAttachments]: 'project/tickets/attachments',
   [FileStorageScope.agenstraAttachments]: 'agenstra/attachments',
   [FileStorageScope.inventoryDocuments]: 'inventory/documents',
+  [FileStorageScope.accountingImports]: 'accounting/imports',
+  [FileStorageScope.accountingReceipts]: 'accounting/receipts',
 };
 
 export const FILE_STORAGE_SCOPES: readonly FileStorageScope[] = [
@@ -36,6 +40,8 @@ export const FILE_STORAGE_SCOPES: readonly FileStorageScope[] = [
   FileStorageScope.projectTicketAttachments,
   FileStorageScope.agenstraAttachments,
   FileStorageScope.inventoryDocuments,
+  FileStorageScope.accountingImports,
+  FileStorageScope.accountingReceipts,
 ];
 
 /**

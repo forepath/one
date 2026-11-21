@@ -58,6 +58,12 @@ export class SupplierProfileFieldsDto {
   @IsOptional()
   @IsString({ message: 'Phone must be a string' })
   phone?: string;
+
+  /** Default expense account number for this supplier's invoices (accounting). */
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== '')
+  @Matches(/^[0-9A-Za-z][0-9A-Za-z.-]{0,19}$/, { message: 'Invalid account number' })
+  defaultExpenseAccountNumber?: string | null;
 }
 
 export class CreateAdminSupplierProfileDto extends SupplierProfileFieldsDto {}

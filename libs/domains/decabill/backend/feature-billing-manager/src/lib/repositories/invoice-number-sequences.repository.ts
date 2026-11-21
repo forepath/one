@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 
 import { InvoiceNumberSequenceEntity } from '../entities/invoice-number-sequence.entity';
 import { resolveNumberScopeKey } from '../utils/number-scope.utils';
@@ -12,10 +12,10 @@ export class InvoiceNumberSequencesRepository {
     private readonly repository: Repository<InvoiceNumberSequenceEntity>,
   ) {}
 
-  async nextInvoiceNumber(year: number): Promise<string> {
+  /** Allocates the next number; pass the issuing transaction's manager so a failed issue does not burn a number. */
+  async nextInvoiceNumber(year: number, outerManager?: EntityManager): Promise<string> {
     const tenantId = resolveNumberScopeKey();
-
-    return await this.repository.manager.transaction(async (manager) => {
+    const run = async (manager: EntityManager): Promise<string> => {
       const rows = await manager.query(
         `
           INSERT INTO billing_invoice_number_sequences (tenant_id, year, last_value)
@@ -33,6 +33,8 @@ export class InvoiceNumberSequencesRepository {
       }
 
       return `INV-${year}-${String(lastValue).padStart(5, '0')}`;
-    });
+    };
+
+    return outerManager ? await run(outerManager) : await this.repository.manager.transaction(run);
   }
 }

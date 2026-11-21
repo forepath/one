@@ -455,6 +455,11 @@
               <span class="payment-item-label">BIC</span>
               <span class="payment-item-value">{{paymentDetails.bic}}</span>
             </div>
+            {{/if}} {{#if paymentDetails.paymentReference}}
+            <div>
+              <span class="payment-item-label">Payment reference</span>
+              <span class="payment-item-value">{{paymentDetails.paymentReference}}</span>
+            </div>
             {{/if}}
           </div>
           {{#if epcQrDataUri}}

@@ -79,6 +79,7 @@ import {
   DB_DL_PAY,
   DB_DL_DOWNLOAD,
   DB_DL_DOWNLOAD_PDF,
+  DB_DL_EINVOICE_XML,
   DB_DL_CREDIT_NOTE,
   DB_DL_TIME_REPORT,
 } from '../shared/data-list';
@@ -202,6 +203,7 @@ export class InvoicesComponent implements OnInit {
   readonly searchHistoryLabel = $localize`:@@featureInvoices-searchHistory:Search invoice history`;
   readonly downloadPdfsLabel = $localize`:@@featureInvoices-downloadSelected:Download PDFs`;
   readonly downloadLabel = DB_DL_DOWNLOAD;
+  readonly einvoiceXmlLabel = DB_DL_EINVOICE_XML;
 
   /** Open / overdue: State · Invoice · subscription · balance · issued · due. */
   readonly openColumns = this.invoiceColumns(false);
@@ -233,7 +235,10 @@ export class InvoicesComponent implements OnInit {
       });
     }
 
-    if (inv.canDownload) menu.push({ id: 'download', label: DB_DL_DOWNLOAD_PDF, icon: 'file-earmark-pdf' });
+    if (inv.canDownload) {
+      menu.push({ id: 'download', label: DB_DL_DOWNLOAD_PDF, icon: 'file-earmark-pdf' });
+      menu.push({ id: 'download-einvoice', label: DB_DL_EINVOICE_XML, icon: 'filetype-xml' });
+    }
 
     if (inv.canDownloadVoidDocument) {
       menu.push({ id: 'download-void', label: DB_DL_CREDIT_NOTE, icon: 'file-earmark-x' });
@@ -487,6 +492,13 @@ export class InvoicesComponent implements OnInit {
     );
   }
 
+  /** Structured e-invoice XML (the invoice's e-invoice format: XRechnung, Peppol, Factur-X CII …). */
+  downloadEinvoice(inv: Pick<InvoiceResponse, 'id' | 'invoiceNumber' | 'canDownload'>): void {
+    if (!inv.canDownload) return;
+
+    this.downloadPdfBlob(this.invoicesFacade.downloadEinvoiceXml(inv.id), `${inv.invoiceNumber ?? inv.id}.xml`);
+  }
+
   downloadVoidDocument(subscriptionId: string | undefined, inv: InvoiceResponse): void {
     if (!inv.canDownloadVoidDocument) return;
 
@@ -531,6 +543,7 @@ export class InvoicesComponent implements OnInit {
     if (action === 'preview') this.openPreview(undefined, inv);
     else if (action === 'pay') this.payInvoice(undefined, inv);
     else if (action === 'download') this.downloadInvoice(undefined, inv);
+    else if (action === 'download-einvoice') this.downloadEinvoice(inv);
     else if (action === 'download-void') this.downloadVoidDocument(undefined, inv);
     else if (action === 'download-time') this.downloadTimeReport(undefined, inv);
     else if (action === 'copy-id') fpcCopyText(inv.id);

@@ -626,6 +626,26 @@
   i18n-title="@@featureAdminBilling-confirmActionTitle"
   title="Confirm action"
 >
+  @if (pendingAction() === 'refund') {
+    @if (pendingInvoice(); as refundInvoice) {
+      <fpc-alert
+        class="d-block mb-3"
+        variant="info"
+        i18n-message="@@featureAdminBilling-refundCustomerCredit"
+        message="Customer credit on this invoice: {{
+          customerCredit(refundInvoice) | fpcMoney
+        }}. Record the money paid back to the customer."
+      />
+    }
+  }
+  @if (pendingAction() === 'writeOff') {
+    <fpc-alert
+      class="d-block mb-3"
+      variant="warning"
+      i18n-message="@@featureAdminBilling-writeOffHint"
+      message="The amount is booked as an uncollectible receivable (bad debt). Leave the amount empty to write off the full open balance."
+    />
+  }
   @if (pendingAction() === 'markPaid') {
     <fpc-form-field
       forId="actionPaidAt"
@@ -642,6 +662,45 @@
         [ngModel]="actionPaidAt()"
         (ngModelChange)="actionPaidAt.set($event)"
         required
+      />
+    </fpc-form-field>
+  } @else if (actionHasDate(pendingAction())) {
+    <fpc-form-field
+      forId="actionOccurredAt"
+      i18n-label="@@featureAdminBilling-occurredAtLabel"
+      label="Booking date"
+      i18n-hint="@@featureAdminBilling-occurredAtHelp"
+      hint="Defaults to now."
+      required
+    >
+      <fpc-form-control
+        controlId="actionOccurredAt"
+        inputType="datetime-local"
+        name="actionOccurredAt"
+        [ngModel]="actionPaidAt()"
+        (ngModelChange)="actionPaidAt.set($event)"
+        required
+      />
+    </fpc-form-field>
+  }
+  @if (actionHasAmount(pendingAction())) {
+    <fpc-form-field
+      forId="actionAmount"
+      i18n-label="@@featureAdminBilling-actionAmountLabel"
+      label="Amount (optional)"
+      [hint]="actionAmountHint()"
+    >
+      <fpc-form-control
+        controlId="actionAmount"
+        inputType="number"
+        name="actionAmount"
+        min="0.01"
+        step="0.01"
+        [max]="actionMaxAmount()"
+        [invalid]="!actionAmountValid()"
+        [ngModel]="actionAmount()"
+        (ngModelChange)="actionAmount.set($event)"
+        data-testid="admin-invoice-action-amount"
       />
     </fpc-form-field>
   }
@@ -671,7 +730,10 @@
     <fpc-button
       variant="primary"
       (clicked)="confirmAction()"
-      [disabled]="(pendingSupplierInvoice() ? (supplierActionLoading$ | async) : (actionLoading$ | async)) === true"
+      [disabled]="
+        !actionAmountValid() ||
+        (pendingSupplierInvoice() ? (supplierActionLoading$ | async) : (actionLoading$ | async)) === true
+      "
       [loading]="(pendingSupplierInvoice() ? (supplierActionLoading$ | async) : (actionLoading$ | async)) === true"
     >
       {{ actionConfirmLabel() }}
@@ -809,14 +871,85 @@
           </div>
         </div>
       </div>
+
+      @if (previewInvoice(); as previewed) {
+        <div class="card" data-testid="admin-invoice-settlements">
+          <fpc-lane-header>
+            <span fpcLaneHeaderTitle i18n="@@featureAdminBilling-settlementsTitle">Settlement history</span>
+            @if (accountingEnabled()) {
+              <a
+                fpcLaneHeaderActions
+                class="btn btn-sm btn-outline-secondary"
+                routerLink="/administration/accounting/journal"
+                [queryParams]="bookingsQueryParams(previewed)"
+                data-testid="admin-invoice-bookings-link"
+              >
+                <i class="bi bi-journal-text me-1" aria-hidden="true"></i>
+                <span>{{ bookingsLabel }}</span>
+              </a>
+            }
+          </fpc-lane-header>
+          @if (settlementsLoading()) {
+            <div class="p-3 d-flex align-items-center gap-2">
+              <fpc-spinner size="sm" />
+              <span i18n="@@featureAdminBilling-settlementsLoading">Loading settlements...</span>
+            </div>
+          } @else if (settlements().length === 0) {
+            <p class="p-3 mb-0 text-body-secondary" i18n="@@featureAdminBilling-settlementsEmpty">
+              No payments, credits or write-offs recorded yet.
+            </p>
+          } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th scope="col" i18n="@@featureAdminBilling-settlementDate">Date</th>
+                    <th scope="col" i18n="@@featureAdminBilling-settlementType">Type</th>
+                    <th scope="col" i18n="@@featureAdminBilling-settlementSource">Source</th>
+                    <th scope="col" i18n="@@featureAdminBilling-settlementNote">Note</th>
+                    <th scope="col" class="text-end text-nowrap" i18n="@@featureAdminBilling-settlementAmount">
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (settlement of settlements(); track settlement.id) {
+                    <tr>
+                      <td class="text-nowrap">{{ settlement.occurredAt | fpcDate: 'datetime' }}</td>
+                      <td>{{ settlementTypeLabel(settlement) }}</td>
+                      <td>{{ settlementSourceLabel(settlement) }}</td>
+                      <td class="text-break">{{ settlement.note ?? '' }}</td>
+                      <td class="text-end text-nowrap">{{ settlementAmount(settlement) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      }
     </article>
   }
-  @if (previewDetail() && previewDownload(); as download) {
+  @if (previewDetail() && (previewDownload() || previewInvoice()?.canDownload)) {
     <div *fpcModalFooter class="d-flex justify-content-end gap-2">
-      <fpc-button variant="dark" (clicked)="download()" data-testid="admin-invoice-preview-download">
-        <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>
-        <span>{{ downloadLabel }}</span>
-      </fpc-button>
+      @if (previewInvoice(); as previewed) {
+        @if (previewed.canDownload) {
+          <fpc-button
+            variant="outline-secondary"
+            (clicked)="downloadEinvoice(previewed)"
+            data-testid="admin-invoice-preview-download-einvoice"
+          >
+            <i class="bi bi-filetype-xml me-1" aria-hidden="true"></i>
+            <span>{{ einvoiceXmlLabel }}</span>
+          </fpc-button>
+        }
+      }
+      @if (previewDownload(); as download) {
+        <fpc-button variant="dark" (clicked)="download()" data-testid="admin-invoice-preview-download">
+          <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>
+          <span>{{ downloadLabel }}</span>
+        </fpc-button>
+      }
     </div>
   }
 </fpc-modal>
@@ -1250,54 +1383,56 @@
       </fpc-button>
     }
     <div>
-      <div class="mb-3">
-        <fpc-form-check-group
-          inline
-          [legendId]="prefix + 'PositionTypeLegend' + i"
-          i18n-label="@@featureAdminInvoices-positionType"
-          label="Position type"
-        >
-          <fpc-form-check
-            type="radio"
+      @if (!isSupplierTarget(target)) {
+        <div class="mb-3">
+          <fpc-form-check-group
             inline
-            [name]="prefix + 'PositionType' + i"
-            [checkId]="prefix + 'PositionType' + i + '_standard'"
-            value="standard"
-            [checked]="line.positionType !== 'article'"
-            (valueSelect)="onPositionTypeChange(line, 'standard')"
-            i18n-label="@@featureAdminInvoices-positionTypeStandard"
-            label="Standard"
-          />
-          <fpc-form-check
-            type="radio"
-            inline
-            [name]="prefix + 'PositionType' + i"
-            [checkId]="prefix + 'PositionType' + i + '_article'"
-            value="article"
-            [checked]="line.positionType === 'article'"
-            (valueSelect)="onPositionTypeChange(line, 'article')"
-            i18n-label="@@featureAdminInvoices-positionTypeArticle"
+            [legendId]="prefix + 'PositionTypeLegend' + i"
+            i18n-label="@@featureAdminInvoices-positionType"
+            label="Position type"
+          >
+            <fpc-form-check
+              type="radio"
+              inline
+              [name]="prefix + 'PositionType' + i"
+              [checkId]="prefix + 'PositionType' + i + '_standard'"
+              value="standard"
+              [checked]="line.positionType !== 'article'"
+              (valueSelect)="onPositionTypeChange(line, 'standard')"
+              i18n-label="@@featureAdminInvoices-positionTypeStandard"
+              label="Standard"
+            />
+            <fpc-form-check
+              type="radio"
+              inline
+              [name]="prefix + 'PositionType' + i"
+              [checkId]="prefix + 'PositionType' + i + '_article'"
+              value="article"
+              [checked]="line.positionType === 'article'"
+              (valueSelect)="onPositionTypeChange(line, 'article')"
+              i18n-label="@@featureAdminInvoices-positionTypeArticle"
+              label="Article"
+            />
+          </fpc-form-check-group>
+        </div>
+        @if (line.positionType === 'article') {
+          <fpc-form-field
+            [forId]="prefix + 'LineArticle' + i"
+            i18n-label="@@featureAdminInvoices-lineArticle"
             label="Article"
-          />
-        </fpc-form-check-group>
-      </div>
-      @if (line.positionType === 'article') {
-        <fpc-form-field
-          [forId]="prefix + 'LineArticle' + i"
-          i18n-label="@@featureAdminInvoices-lineArticle"
-          label="Article"
-          i18n-hint="@@featureAdminInvoices-lineArticleHint"
-          hint="Issuing the invoice raises a withdrawal request for the quantity in the inventory."
-          required
-        >
-          <framework-inventory-article-select
-            [inputId]="prefix + 'LineArticle' + i"
-            [(selectedArticleId)]="line.inventoryArticleId"
-            (articlePicked)="onPositionArticlePicked(line, $event)"
-            [required]="true"
-            data-testid="invoice-line-article-select"
-          />
-        </fpc-form-field>
+            i18n-hint="@@featureAdminInvoices-lineArticleHint"
+            hint="Issuing the invoice raises a withdrawal request for the quantity in the inventory."
+            required
+          >
+            <framework-inventory-article-select
+              [inputId]="prefix + 'LineArticle' + i"
+              [(selectedArticleId)]="line.inventoryArticleId"
+              (articlePicked)="onPositionArticlePicked(line, $event)"
+              [required]="true"
+              data-testid="invoice-line-article-select"
+            />
+          </fpc-form-field>
+        }
       }
       <fpc-form-field
         [forId]="prefix + 'LineDesc' + i"
@@ -1386,6 +1521,102 @@
           </div>
         }
       </div>
+      @if (isSupplierTarget(target)) {
+        <div class="mt-3 border-top pt-2">
+          <fpc-button
+            variant="link"
+            size="sm"
+            btnClass="px-0"
+            [ariaExpanded]="!!line.accountingOpen"
+            [ariaControls]="prefix + 'LineAccounting' + i"
+            (clicked)="toggleSupplierLineAccounting(line)"
+            data-testid="supplier-line-accounting-toggle"
+          >
+            <i
+              class="bi me-1"
+              [class.bi-chevron-down]="line.accountingOpen"
+              [class.bi-chevron-right]="!line.accountingOpen"
+              aria-hidden="true"
+            ></i>
+            @if (accountingEnabled()) {
+              <span i18n="@@featureAdminSupplierInvoices-lineAccounting">Accounting</span>
+            } @else {
+              <span i18n="@@featureAdminSupplierInvoices-lineStockArticle">Stock article</span>
+            }
+          </fpc-button>
+          @if (line.accountingOpen) {
+            <div class="mt-2" [id]="prefix + 'LineAccounting' + i">
+              <fpc-form-field
+                [forId]="prefix + 'LineStockArticle' + i"
+                i18n-label="@@featureAdminSupplierInvoices-lineInventoryArticle"
+                label="Stock article (optional)"
+                i18n-hint="@@featureAdminSupplierInvoices-lineInventoryArticleHint"
+                hint="The article bought with this line; its putaway is valued at this line's price."
+              >
+                <framework-inventory-article-select
+                  [inputId]="prefix + 'LineStockArticle' + i"
+                  [(selectedArticleId)]="line.inventoryArticleId"
+                  (articlePicked)="onSupplierLineArticlePicked(line, $event)"
+                  data-testid="supplier-line-article-select"
+                />
+              </fpc-form-field>
+              @if (accountingEnabled()) {
+                <div class="row g-2">
+                  <div class="col-sm-6">
+                    <fpc-form-field
+                      [forId]="prefix + 'LineLedgerAccount' + i"
+                      i18n-label="@@featureAdminSupplierInvoices-lineLedgerAccount"
+                      label="Account number (optional)"
+                      i18n-hint="@@featureAdminSupplierInvoices-lineLedgerAccountHint"
+                      hint="Defaults to the supplier's expense account."
+                    >
+                      <fpc-form-control
+                        [controlId]="prefix + 'LineLedgerAccount' + i"
+                        [name]="prefix + 'LedgerAccount' + i"
+                        maxLength="20"
+                        [(ngModel)]="line.ledgerAccountNumber"
+                      />
+                    </fpc-form-field>
+                  </div>
+                  <div class="col-sm-6">
+                    <fpc-form-check
+                      class="d-block mt-sm-4"
+                      [checkId]="prefix + 'LineCapitalize' + i"
+                      [name]="prefix + 'Capitalize' + i"
+                      [checked]="!!line.capitalizeAsAsset"
+                      (checkedChange)="onSupplierLineCapitalizeChange(line, $event)"
+                      i18n-label="@@featureAdminSupplierInvoices-lineCapitalize"
+                      label="Capitalize as fixed asset"
+                    />
+                  </div>
+                </div>
+                @if (line.capitalizeAsAsset) {
+                  <div class="row g-2 mt-1">
+                    <div class="col-sm-6">
+                      <fpc-form-field
+                        [forId]="prefix + 'LineUsefulLife' + i"
+                        i18n-label="@@featureAdminSupplierInvoices-lineUsefulLife"
+                        label="Useful life (months)"
+                        i18n-hint="@@featureAdminSupplierInvoices-lineUsefulLifeHint"
+                        hint="Depreciation period; empty uses the account's default."
+                      >
+                        <fpc-form-control
+                          inputType="number"
+                          [controlId]="prefix + 'LineUsefulLife' + i"
+                          [name]="prefix + 'UsefulLife' + i"
+                          [(ngModel)]="line.assetUsefulLifeMonths"
+                          min="1"
+                          step="1"
+                        />
+                      </fpc-form-field>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          }
+        </div>
+      }
     </div>
     @if (itemCount > 1) {
       <div class="mt-2">

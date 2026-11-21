@@ -16,12 +16,20 @@ describe('billingCapabilitiesReducer', () => {
           globalViewsAllowed: false,
           viewableTenants: ['default'],
           fileSigningEnabled: true,
+          accountingEnabled: true,
+          accountingGlobalAccess: false,
+          accountingCountry: 'DE',
+          accountingMissingPrerequisites: [],
+          einvoiceFormats: [{ format: 'factur-x-en16931', label: 'Factur-X / ZUGFeRD EN 16931' }],
+          einvoiceDefaultFormat: 'factur-x-en16931',
         },
       }),
     );
 
     expect(state.capabilities?.datevExportEnabled).toBe(true);
     expect(state.capabilities?.fileSigningEnabled).toBe(true);
+    expect(state.capabilities?.accountingEnabled).toBe(true);
+    expect(state.capabilities?.einvoiceDefaultFormat).toBe('factur-x-en16931');
     expect(state.loading).toBe(false);
   });
 

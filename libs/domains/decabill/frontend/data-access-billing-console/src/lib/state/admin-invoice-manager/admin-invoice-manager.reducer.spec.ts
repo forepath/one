@@ -3,9 +3,14 @@ import {
   adminInvoiceManagerMarkPaidSuccess,
   adminInvoiceManagerMarkUnpaid,
   adminInvoiceManagerMarkUnpaidFailure,
+  adminInvoiceManagerRefund,
+  adminInvoiceManagerRefundSuccess,
   adminInvoiceManagerVoid,
   adminInvoiceManagerVoidFailure,
   adminInvoiceManagerVoidSuccess,
+  adminInvoiceManagerWriteOff,
+  adminInvoiceManagerWriteOffFailure,
+  adminInvoiceManagerWriteOffSuccess,
   createManualInvoice,
   createManualInvoiceFailure,
   createManualInvoiceSuccess,
@@ -16,6 +21,9 @@ import {
   loadAdminInvoiceManager,
   loadAdminInvoiceManagerFailure,
   loadAdminInvoiceManagerSuccess,
+  loadAdminInvoiceSettlements,
+  loadAdminInvoiceSettlementsFailure,
+  loadAdminInvoiceSettlementsSuccess,
   updateManualInvoiceFailure,
   updateManualInvoiceSuccess,
 } from './admin-invoice-manager.actions';
@@ -251,5 +259,104 @@ describe('adminInvoiceManagerReducer', () => {
     );
 
     expect(state.creating).toBe(true);
+  });
+
+  it('sets actionLoading on write-off and refund', () => {
+    expect(
+      adminInvoiceManagerReducer(
+        initialAdminInvoiceManagerState,
+        adminInvoiceManagerWriteOff({ invoiceRefId: 'inv-1' }),
+      ).actionLoading,
+    ).toBe(true);
+    expect(
+      adminInvoiceManagerReducer(initialAdminInvoiceManagerState, adminInvoiceManagerRefund({ invoiceRefId: 'inv-1' }))
+        .actionLoading,
+    ).toBe(true);
+  });
+
+  it('upserts invoice on write-off and refund success', () => {
+    const writtenOff = adminInvoiceManagerReducer(
+      { ...initialAdminInvoiceManagerState, invoices: [listItem], actionLoading: true },
+      adminInvoiceManagerWriteOffSuccess({ invoice: { ...listItem, status: 'written_off' } }),
+    );
+
+    expect(writtenOff.actionLoading).toBe(false);
+    expect(writtenOff.invoices[0].status).toBe('written_off');
+
+    const refunded = adminInvoiceManagerReducer(
+      { ...initialAdminInvoiceManagerState, invoices: [listItem], actionLoading: true },
+      adminInvoiceManagerRefundSuccess({ invoice: { ...listItem, status: 'paid', balance: 0 } }),
+    );
+
+    expect(refunded.invoices[0].balance).toBe(0);
+  });
+
+  it('stores error on write-off failure', () => {
+    const state = adminInvoiceManagerReducer(
+      { ...initialAdminInvoiceManagerState, actionLoading: true },
+      adminInvoiceManagerWriteOffFailure({ error: 'Write-off failed' }),
+    );
+
+    expect(state.actionLoading).toBe(false);
+    expect(state.error).toBe('Write-off failed');
+  });
+
+  describe('settlements', () => {
+    const settlement = {
+      id: 's-1',
+      type: 'payment',
+      amount: 50,
+      currency: 'EUR',
+      occurredAt: '2026-11-01T00:00:00Z',
+      source: 'manual',
+      createdAt: '2026-11-01T00:00:00Z',
+    };
+
+    it('starts loading and clears settlements of another invoice', () => {
+      const state = adminInvoiceManagerReducer(
+        { ...initialAdminInvoiceManagerState, settlementsInvoiceId: 'inv-0', settlements: [settlement] },
+        loadAdminInvoiceSettlements({ invoiceRefId: 'inv-1' }),
+      );
+
+      expect(state.settlementsLoading).toBe(true);
+      expect(state.settlementsInvoiceId).toBe('inv-1');
+      expect(state.settlements).toEqual([]);
+    });
+
+    it('stores settlements of the requested invoice only', () => {
+      const loading = adminInvoiceManagerReducer(
+        initialAdminInvoiceManagerState,
+        loadAdminInvoiceSettlements({ invoiceRefId: 'inv-1' }),
+      );
+      const loaded = adminInvoiceManagerReducer(
+        loading,
+        loadAdminInvoiceSettlementsSuccess({ invoiceRefId: 'inv-1', settlements: [settlement] }),
+      );
+
+      expect(loaded.settlements).toEqual([settlement]);
+      expect(loaded.settlementsLoading).toBe(false);
+
+      const stale = adminInvoiceManagerReducer(
+        loading,
+        loadAdminInvoiceSettlementsSuccess({ invoiceRefId: 'inv-9', settlements: [settlement] }),
+      );
+
+      expect(stale.settlements).toEqual([]);
+      expect(stale.settlementsLoading).toBe(true);
+    });
+
+    it('stops loading on failure', () => {
+      const loading = adminInvoiceManagerReducer(
+        initialAdminInvoiceManagerState,
+        loadAdminInvoiceSettlements({ invoiceRefId: 'inv-1' }),
+      );
+      const state = adminInvoiceManagerReducer(
+        loading,
+        loadAdminInvoiceSettlementsFailure({ invoiceRefId: 'inv-1', error: 'failed' }),
+      );
+
+      expect(state.settlementsLoading).toBe(false);
+      expect(state.settlements).toEqual([]);
+    });
   });
 });

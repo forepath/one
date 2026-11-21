@@ -1,5 +1,7 @@
 import { create as createQrCode } from 'qrcode';
 
+import { isValidRfReference } from '../accounting/bank-import/bank-parse.utils';
+
 /**
  * SEPA credit transfer QR code ("GiroCode") per EPC069-12 (Quick Response Code — Guidelines to Enable Data Capture
  * for the Initiation of a SEPA Credit Transfer), version 002, UTF-8, error correction level M, QR version ≤ 13.
@@ -12,6 +14,8 @@ export interface EpcQrInput {
   amount: number | string;
   /** Unstructured remittance information (e.g. the invoice number), max 140 characters. */
   remittanceText: string;
+  /** ISO 11649 creditor reference; when valid it replaces the unstructured text (EPC: one or the other). */
+  creditorReference?: string;
 }
 
 const MAX_PAYLOAD_BYTES = 331;
@@ -65,6 +69,8 @@ export function buildEpcQrPayload(input: EpcQrInput): string | null {
   }
 
   const bic = (input.bic ?? '').replace(/\s+/g, '').toUpperCase();
+  const reference = (input.creditorReference ?? '').replace(/\s+/g, '').toUpperCase();
+  const structuredReference = reference && isValidRfReference(reference) ? reference : '';
   const lines = [
     'BCD',
     '002',
@@ -75,8 +81,8 @@ export function buildEpcQrPayload(input: EpcQrInput): string | null {
     iban,
     `EUR${(cents / 100).toFixed(2)}`,
     '', // purpose
-    '', // structured creditor reference (RF) — unstructured text is used instead
-    cleanField(input.remittanceText, 140),
+    structuredReference, // structured creditor reference (RF)
+    structuredReference ? '' : cleanField(input.remittanceText, 140),
   ];
   const payload = lines.join('\n');
 

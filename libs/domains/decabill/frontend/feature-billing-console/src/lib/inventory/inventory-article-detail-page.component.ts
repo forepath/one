@@ -247,6 +247,16 @@ export class InventoryArticleDetailPageComponent implements OnInit, OnDestroy {
         label: $localize`:@@featureInventoryArticleForm-salesPrice:Sales price`,
         value: formatInventoryPrice(article.salesPriceNet, article.currency),
       },
+      // Moving average unit cost of the stock on hand (accounting valuation); only once the API reports one.
+      ...(article.averageCost != null
+        ? [
+            {
+              key: 'averageCost',
+              label: $localize`:@@featureInventoryArticleDetail-averageCost:Average cost`,
+              value: formatInventoryPrice(article.averageCost, article.currency),
+            },
+          ]
+        : []),
       {
         key: 'reorder',
         label: $localize`:@@featureInventoryArticleForm-reorderPoint:Reorder point`,

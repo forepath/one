@@ -560,6 +560,51 @@ export class AdminFileManagerService {
       );
     }
 
+    // Accounting: uploaded bank / processor statement files and booking receipts.
+    const importRows: Array<{ storage_key: string; created_at: Date }> = await this.dataSource.query(
+      `
+      SELECT b.storage_key, b.created_at
+      FROM billing_accounting_bank_imports b
+      WHERE b.tenant_id = $1 AND b.storage_key IS NOT NULL
+      `,
+      [tenantId],
+    );
+
+    for (const row of importRows) {
+      refs.push(
+        this.toRef(
+          tenantId,
+          unifiedLayout,
+          FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.accountingImports],
+          FileStorageScope.accountingImports,
+          row.storage_key,
+          row.created_at,
+        ),
+      );
+    }
+
+    const receiptRows: Array<{ storage_key: string; created_at: Date }> = await this.dataSource.query(
+      `
+      SELECT f.storage_key, f.created_at
+      FROM billing_stored_files f
+      WHERE f.tenant_id = $1 AND f.scope = $2
+      `,
+      [tenantId, FileStorageScope.accountingReceipts],
+    );
+
+    for (const row of receiptRows) {
+      refs.push(
+        this.toRef(
+          tenantId,
+          unifiedLayout,
+          FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.accountingReceipts],
+          FileStorageScope.accountingReceipts,
+          row.storage_key,
+          row.created_at,
+        ),
+      );
+    }
+
     return refs;
   }
 

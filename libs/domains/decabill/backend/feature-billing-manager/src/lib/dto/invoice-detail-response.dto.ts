@@ -37,6 +37,10 @@ export class InvoiceDetailResponseDto {
   einvoiceTaxCategoryCode?: string;
   resolvedTaxRate?: number;
   buyerVatId?: string;
+  /** ISO 11649 structured creditor reference (`RF…`) assigned at issuance. */
+  paymentReference?: string;
+  /** E-invoice format snapshotted at issuance (customer override or issuer default). */
+  einvoiceFormat?: string;
   lineItems!: InvoiceLineItemResponseDto[];
   taxBreakdown!: InvoiceTaxBreakdownDto[];
   issuedAt?: Date;

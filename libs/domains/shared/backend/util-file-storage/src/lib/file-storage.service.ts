@@ -166,6 +166,22 @@ export class FileStorageService {
     return await this.readFile(FileStorageScope.agenstraAttachments, storageKey);
   }
 
+  async writeAccountingImportFile(storageKey: string, content: Buffer): Promise<void> {
+    await this.writeFile(FileStorageScope.accountingImports, storageKey, content);
+  }
+
+  async readAccountingImportFile(storageKey: string): Promise<Buffer> {
+    return await this.readFile(FileStorageScope.accountingImports, storageKey);
+  }
+
+  async writeAccountingReceiptFile(storageKey: string, content: Buffer): Promise<void> {
+    await this.writeFile(FileStorageScope.accountingReceipts, storageKey, content);
+  }
+
+  async readAccountingReceiptFile(storageKey: string): Promise<Buffer> {
+    return await this.readFile(FileStorageScope.accountingReceipts, storageKey);
+  }
+
   async writeInventoryDocumentFile(storageKey: string, content: Buffer): Promise<void> {
     await this.writeFile(FileStorageScope.inventoryDocuments, storageKey, content);
   }

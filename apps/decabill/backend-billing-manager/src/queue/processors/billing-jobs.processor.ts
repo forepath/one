@@ -1,4 +1,8 @@
 import {
+  AccountingCatchUpService,
+  AccountingConfigService,
+  AccountingFxService,
+  AccountingProcessorSyncService,
   AdminBillNowService,
   BackorderRetryJobHandler,
   BillingTenantService,
@@ -93,6 +97,10 @@ export class BillingJobsProcessor extends WorkerHost {
     private readonly storedFilesBackfillJobHandler: StoredFilesBackfillJobHandler,
     private readonly offerExpiration: OfferExpirationJobHandler,
     private readonly offerFulfillment: OfferFulfillmentJobHandler,
+    private readonly accountingCatchUp: AccountingCatchUpService,
+    private readonly accountingFx: AccountingFxService,
+    private readonly accountingProcessorSync: AccountingProcessorSyncService,
+    private readonly accountingConfig: AccountingConfigService,
   ) {
     super();
   }
@@ -125,6 +133,18 @@ export class BillingJobsProcessor extends WorkerHost {
         break;
       case BillingJobName.SUBSCRIPTION_CONFIG_CHANGE_COORDINATOR:
         await this.runSubscriptionConfigChangeCoordinator();
+        break;
+      case BillingJobName.ACCOUNTING_CATCH_UP_COORDINATOR:
+        await this.accountingCatchUp.run();
+        break;
+      case BillingJobName.ACCOUNTING_FX_RATES_COORDINATOR:
+        if (this.accountingConfig.isEnabled()) {
+          await this.accountingFx.fetchEcbRates();
+        }
+
+        break;
+      case BillingJobName.ACCOUNTING_PROCESSOR_SYNC_COORDINATOR:
+        await this.accountingProcessorSync.syncAll();
         break;
       case BillingJobName.INVOICE_OVERDUE_COORDINATOR:
         await this.runInvoiceOverdueCoordinator();
@@ -434,6 +454,8 @@ export class BillingJobsProcessor extends WorkerHost {
   private async runInvoiceOverdueCoordinator(): Promise<void> {
     await this.forEachConfiguredTenant(async (tenantId) => {
       let offset = 0;
+
+      await this.invoiceOverdue.markOverdueSupplierInvoices();
 
       // eslint-disable-next-line no-constant-condition
       while (true) {

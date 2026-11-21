@@ -119,6 +119,2057 @@
       <trans-unit id="fpcListToolbar-removeFilter" datatype="html">
         <source>Remove filter</source>
         </trans-unit>
+      <trans-unit id="featureAccountingAccounts-importResult" datatype="html">
+        <source>Import finished: <x id="INTERPOLATION" equiv-text="{{ result.created }}"/> created, <x id="INTERPOLATION_1" equiv-text="{{ result.updated }}"/> updated, <x id="INTERPOLATION_2" equiv-text="{{
+        result.skipped
+      }}"/> skipped.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-chart" datatype="html">
+        <source>Chart of accounts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-tabsAria" datatype="html">
+        <source>Account views</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-tabAccounts" datatype="html">
+        <source>Accounts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-tabTaxCodes" datatype="html">
+        <source>Tax codes</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-tabTrialBalance" datatype="html">
+        <source>Trial balance</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-searchAccounts" datatype="html">
+        <source>Search accounts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-createAccount" datatype="html">
+        <source>Create account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-importAccounts" datatype="html">
+        <source>Import accounts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-noAccounts" datatype="html">
+        <source>This chart has no accounts yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-searchTaxCodes" datatype="html">
+        <source>Search tax codes</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-createTaxCode" datatype="html">
+        <source>Create tax code</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-noTaxCodes" datatype="html">
+        <source>This chart has no tax codes yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-statistics" datatype="html">
+        <source>Statistics</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-from" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-to" datatype="html">
+        <source>To</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-kpiDebit" datatype="html">
+        <source>Total debit</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-kpiCredit" datatype="html">
+        <source>Total credit</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-kpiWithBalance" datatype="html">
+        <source>Accounts with balance</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-noStatistics" datatype="html">
+        <source>No bookings in the selected period.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-trialBalance" datatype="html">
+        <source>Trial balance</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-noTrialBalance" datatype="html">
+        <source>No balances in the selected period.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colAccount" datatype="html">
+        <source>Account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colOpening" datatype="html">
+        <source>Opening</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colDebit" datatype="html">
+        <source>Debit</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colCredit" datatype="html">
+        <source>Credit</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colClosing" datatype="html">
+        <source>Closing</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-total" datatype="html">
+        <source>Total</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-deleteTitle" datatype="html">
+        <source>Delete account?</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-deleteMessage" datatype="html">
+        <source>Only accounts without bookings can be deleted; deactivate used accounts instead.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-number" datatype="html">
+        <source>Number</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-name" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-type" datatype="html">
+        <source>Type</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-role" datatype="html">
+        <source>System role</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-roleHint" datatype="html">
+        <source>e.g. receivables, bank, revenue_standard</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-statementPosition" datatype="html">
+        <source>Statement position</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-defaultTaxCode" datatype="html">
+        <source>Default tax code</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-none" datatype="html">
+        <source>None</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-isAutomatic" datatype="html">
+        <source>Automatic VAT account (splits VAT with the default tax code)</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-isActive" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-description" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-importHint" datatype="html">
+        <source> CSV with the columns number;name[;type[;position]] or a DATEV account labels file (Kontenbeschriftungen). Existing numbers are updated, new ones created. </source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-file" datatype="html">
+        <source>File</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-import" datatype="html">
+        <source>Import</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-code" datatype="html">
+        <source>Code</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-codeHint" datatype="html">
+        <source>Uppercase letters, digits, underscores</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-kind" datatype="html">
+        <source>Kind</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-rate" datatype="html">
+        <source>Rate (%)</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-rateHint" datatype="html">
+        <source>Empty: rate of the document line (OSS)</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-datevBuKey" datatype="html">
+        <source>DATEV BU key</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-taxAccount" datatype="html">
+        <source>VAT account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-reverseAccount" datatype="html">
+        <source>Reverse-charge account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-baseBox" datatype="html">
+        <source>Base box</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-taxBox" datatype="html">
+        <source>Tax box</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-reverseTaxBox" datatype="html">
+        <source>Reverse tax box</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-ecSalesList" datatype="html">
+        <source>EC sales list</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-oss" datatype="html">
+        <source>OSS</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-show" datatype="html">
+        <source>Show</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colEntry" datatype="html">
+        <source>Entry</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colDate" datatype="html">
+        <source>Date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colDocument" datatype="html">
+        <source>Document</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colText" datatype="html">
+        <source>Text</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colBalance" datatype="html">
+        <source>Balance</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-opening" datatype="html">
+        <source>Opening balance</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-noLedgerItems" datatype="html">
+        <source> No bookings in this period. </source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-closingBalance" datatype="html">
+        <source>Closing balance</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-ledgerTruncated" datatype="html">
+        <source> Showing the first <x id="INTERPOLATION" equiv-text="{{ data.items.length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ data.total }}"/> bookings; narrow the period to see more. </source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-title" datatype="html">
+        <source>Accounts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colNumber" datatype="html">
+        <source>Number</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colName" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colType" datatype="html">
+        <source>Type</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colRole" datatype="html">
+        <source>Role</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colPosition" datatype="html">
+        <source>Statement position</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colAutomatic" datatype="html">
+        <source>Automatic VAT</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colActive" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-active" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-inactive" datatype="html">
+        <source>Inactive</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-ledger" datatype="html">
+        <source>Ledger</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-deactivate" datatype="html">
+        <source>Deactivate</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-activate" datatype="html">
+        <source>Activate</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-editAccount" datatype="html">
+        <source>Edit account <x id="number" equiv-text="account.number"/></source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colCode" datatype="html">
+        <source>Code</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colKind" datatype="html">
+        <source>Kind</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colRate" datatype="html">
+        <source>Rate</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-rateFromDocument" datatype="html">
+        <source>From document</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colTaxAccount" datatype="html">
+        <source>VAT account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colBoxes" datatype="html">
+        <source>Boxes (base / tax / reverse)</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-colReporting" datatype="html">
+        <source>Reporting</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-editTaxCode" datatype="html">
+        <source>Edit tax code <x id="code" equiv-text="taxCode.code"/></source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-ledgerTitle" datatype="html">
+        <source>Ledger <x id="number" equiv-text="account.number"/> <x id="name" equiv-text="account.name"/></source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-filters" datatype="html">
+        <source>Filters</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-balanceByType" datatype="html">
+        <source>Closing balance by account type</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAccounts-closing" datatype="html">
+        <source>Closing balance</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-kpiBookValue" datatype="html">
+        <source>Closing book value</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-kpiAdditions" datatype="html">
+        <source>Additions</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-kpiDepreciation" datatype="html">
+        <source>Depreciation</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-kpiDisposals" datatype="html">
+        <source>Disposals</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-kpiActive" datatype="html">
+        <source>Active assets</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-statistics" datatype="html">
+        <source>Statistics</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-from" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-to" datatype="html">
+        <source>To</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-noStatistics" datatype="html">
+        <source>No assets in the selected period.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-register" datatype="html">
+        <source>Assets</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-listTabs" datatype="html">
+        <source>Asset views</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-tabRegister" datatype="html">
+        <source>Register</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-tabSchedule" datatype="html">
+        <source>Schedule</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-empty" datatype="html">
+        <source>No fixed assets yet. Supplier invoice lines booked as assets appear here.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-scheduleEmpty" datatype="html">
+        <source>No assets in the selected period.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colNumber" datatype="html">
+        <source>Number</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colName" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colAccount" datatype="html">
+        <source>Asset account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colOpeningCost" datatype="html">
+        <source>Opening cost</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colClosingCost" datatype="html">
+        <source>Closing cost</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colOpeningDepreciation" datatype="html">
+        <source> Opening depreciation </source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colOpeningBookValue" datatype="html">
+        <source> Opening book value </source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-total" datatype="html">
+        <source>Total</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colAcquired" datatype="html">
+        <source>Acquired</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-netCost" datatype="html">
+        <source>Net cost</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colMethod" datatype="html">
+        <source>Method</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-methodHint" datatype="html">
+        <source>Empty: classified by cost (low-value, pool or straight line).</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-methodAuto" datatype="html">
+        <source>Automatic</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-methodStraightLine" datatype="html">
+        <source>Straight line</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-methodImmediate" datatype="html">
+        <source>Immediate write-off</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-methodPool" datatype="html">
+        <source>Asset pool</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colLife" datatype="html">
+        <source>Useful life (months)</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-residual" datatype="html">
+        <source>Residual value</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-note" datatype="html">
+        <source>Note</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-createSubmit" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-depreciationHint" datatype="html">
+        <source> Books the planned depreciation of all active assets up to and including the month. </source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-through" datatype="html">
+        <source>Through month</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-depreciationDone" datatype="html">
+        <source>Depreciation booked for <x id="INTERPOLATION" equiv-text="{{ result.assets }}"/> assets: <x id="INTERPOLATION_1" equiv-text="{{ money(result.amount) }}"/>.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-runSubmit" datatype="html">
+        <source>Run</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-detailTitle" datatype="html">
+        <source>Asset</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-plan" datatype="html">
+        <source>Depreciation plan</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-planEmpty" datatype="html">
+        <source>No depreciation planned.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-month" datatype="html">
+        <source>Month</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-amount" datatype="html">
+        <source>Amount</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-showAll" datatype="html">
+        <source>Show all</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-bookings" datatype="html">
+        <source>Bookings</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-dispose" datatype="html">
+        <source>Dispose</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-disposeTitle" datatype="html">
+        <source>Dispose asset</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-disposeHint" datatype="html">
+        <source> Books the remaining book value as disposal loss and removes the asset from the register. </source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-disposeDate" datatype="html">
+        <source>Disposal date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-disposeSubmit" datatype="html">
+        <source>Dispose</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-title" datatype="html">
+        <source>Fixed assets</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-filters" datatype="html">
+        <source>Filters</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-search" datatype="html">
+        <source>Search assets</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-create" datatype="html">
+        <source>Create asset</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-depreciationRun" datatype="html">
+        <source>Depreciation run</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-chartTitle" datatype="html">
+        <source>Book value, additions and depreciation by acquisition year</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-seriesBookValue" datatype="html">
+        <source>Book value</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-seriesAdditions" datatype="html">
+        <source>Additions</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-seriesDepreciation" datatype="html">
+        <source>Depreciation</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colStatus" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colCost" datatype="html">
+        <source>Cost</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colAccumulated" datatype="html">
+        <source>Accumulated depreciation</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colBookValue" datatype="html">
+        <source>Book value</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-colThrough" datatype="html">
+        <source>Depreciated through</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-open" datatype="html">
+        <source>Details</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingAssets-disposedOn" datatype="html">
+        <source>Disposed on</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-kpiAccounts" datatype="html">
+        <source>Accounts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-transactions" datatype="html">
+        <source>Transactions</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-kpiRate" datatype="html">
+        <source>Reconciled</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-kpiUnmatched" datatype="html">
+        <source>Unmatched</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-kpiBalance" datatype="html">
+        <source>Balance</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-statistics" datatype="html">
+        <source>Statistics</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-from" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-to" datatype="html">
+        <source>To</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-noFlows" datatype="html">
+        <source>No booked transactions in the selected period.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-noStatuses" datatype="html">
+        <source>No transactions imported yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-list" datatype="html">
+        <source>Banking</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-listTabs" datatype="html">
+        <source>Banking views</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-tabAccounts" datatype="html">
+        <source>Accounts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-tabMappings" datatype="html">
+        <source>CSV mappings</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-tabRules" datatype="html">
+        <source>Rules</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-importFilter" datatype="html">
+        <source>Showing the transactions of one import.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colStatus" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-allStatuses" datatype="html">
+        <source>All</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colAccount" datatype="html">
+        <source>Account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-allAccounts" datatype="html">
+        <source>All accounts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-txEmpty" datatype="html">
+        <source>No transactions. Upload a bank statement to get started.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-importsEmpty" datatype="html">
+        <source>No statement files uploaded yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-accountsEmpty" datatype="html">
+        <source>No bank, cash or processor accounts yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-mappingsEmpty" datatype="html">
+        <source>No saved CSV mappings. Built-in presets cover common banks.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-rulesEmpty" datatype="html">
+        <source>No match rules. Matching with “learn” creates them.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-matchTitle" datatype="html">
+        <source>Match transaction</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-suggestions" datatype="html">
+        <source>Suggestions</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-noSuggestions" datatype="html">
+        <source>No suggestions found.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-apply" datatype="html">
+        <source>Apply</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-targets" datatype="html">
+        <source>Targets</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-targetType" datatype="html">
+        <source>Type</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceInvoice" datatype="html">
+        <source>Invoice</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceSupplierInvoice" datatype="html">
+        <source> Supplier invoice </source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-targetAccount" datatype="html">
+        <source>Account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-accountNumber" datatype="html">
+        <source>Account no.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colTaxCode" datatype="html">
+        <source>Tax code</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-noTaxCode" datatype="html">
+        <source>None</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-description" datatype="html">
+        <source>Text</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-documentId" datatype="html">
+        <source>Invoice number</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colAmount" datatype="html">
+        <source>Amount</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-removeTarget" datatype="html">
+        <source>Remove target</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-addTarget" datatype="html">
+        <source>Add target</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-assigned" datatype="html">
+        <source>Assigned</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-learn" datatype="html">
+        <source>Remember this counterparty (create a match rule)</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-match" datatype="html">
+        <source>Match</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-warnings" datatype="html">
+        <source>Warnings</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-file" datatype="html">
+        <source>Statement file</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colFormat" datatype="html">
+        <source>Format</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-formatAuto" datatype="html">
+        <source>Detect automatically</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-targetAccountField" datatype="html">
+        <source>Target account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-accountByIban" datatype="html">
+        <source>By IBAN / account number</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-csvLayout" datatype="html">
+        <source>CSV layout</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-csvAuto" datatype="html">
+        <source>Detect automatically</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-savedMappings" datatype="html">
+        <source>Saved mappings</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-presets" datatype="html">
+        <source>Presets</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-encoding" datatype="html">
+        <source>Encoding</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-qifDates" datatype="html">
+        <source>QIF dates</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-qifAuto" datatype="html">
+        <source>Automatic</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-close" datatype="html">
+        <source>Close</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-uploadSubmit" datatype="html">
+        <source>Upload</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-importTitle" datatype="html">
+        <source>Import</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-downloadOriginal" datatype="html">
+        <source>Download original</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-showTransactions" datatype="html">
+        <source>Show transactions</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-rollback" datatype="html">
+        <source>Roll back</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colName" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colKind" datatype="html">
+        <source>Kind</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-accountNumberField" datatype="html">
+        <source>Account number</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-currency" datatype="html">
+        <source>Currency</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colLedger" datatype="html">
+        <source>Ledger account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-processor" datatype="html">
+        <source>Processor</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-noProcessor" datatype="html">
+        <source>None</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-sharedAccount" datatype="html">
+        <source>Shared by all tenants</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colActive" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-startFromPreset" datatype="html">
+        <source>Start from preset</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-noPreset" datatype="html">
+        <source>–</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-mappingJson" datatype="html">
+        <source>Mapping (JSON)</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-mappingHint" datatype="html">
+        <source>delimiter, decimalSeparator, dateFormat (e.g. DD.MM.YYYY), encoding, hasHeader and columns (bookingDate, amount or debit/credit, counterpartyName, remittance …).</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colRuleKind" datatype="html">
+        <source>Kind</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-ruleText" datatype="html">
+        <source>Text</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colPattern" datatype="html">
+        <source>Pattern</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colTarget" datatype="html">
+        <source>Target</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-targetId" datatype="html">
+        <source>Customer / supplier number or account no.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-title" datatype="html">
+        <source>Banking</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-filters" datatype="html">
+        <source>Filters</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-flowsTitle" datatype="html">
+        <source>Inflow vs outflow</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-statusTitle" datatype="html">
+        <source>Reconciliation status</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-imports" datatype="html">
+        <source>Imports</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-upload" datatype="html">
+        <source>Upload statement</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-createAccount" datatype="html">
+        <source>Add account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-createMapping" datatype="html">
+        <source>Add CSV mapping</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-createRule" datatype="html">
+        <source>Add rule</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-processorSync" datatype="html">
+        <source>Processor sync</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-search" datatype="html">
+        <source>Search counterparty, reference, IBAN</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-inflow" datatype="html">
+        <source>Inflow</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-outflow" datatype="html">
+        <source>Outflow</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colDate" datatype="html">
+        <source>Booking date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colCounterparty" datatype="html">
+        <source>Counterparty</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colRemittance" datatype="html">
+        <source>Reference</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colSuggestion" datatype="html">
+        <source>Suggestion</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-unmatch" datatype="html">
+        <source>Undo match</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-ignore" datatype="html">
+        <source>Ignore</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-bookings" datatype="html">
+        <source>Bookings</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colFile" datatype="html">
+        <source>File</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colStatements" datatype="html">
+        <source>Statements</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colDuplicates" datatype="html">
+        <source>Duplicates</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colMatched" datatype="html">
+        <source>Matched</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colCreated" datatype="html">
+        <source>Uploaded</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colNotes" datatype="html">
+        <source>Warnings</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-details" datatype="html">
+        <source>Details</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colIban" datatype="html">
+        <source>IBAN / number</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colBalance" datatype="html">
+        <source>Balance</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colBalanceDate" datatype="html">
+        <source>Balance date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colScope" datatype="html">
+        <source>Scope</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-shared" datatype="html">
+        <source>Shared</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-edit" datatype="html">
+        <source>Edit</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colDateFormat" datatype="html">
+        <source>Date format</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colDelimiter" datatype="html">
+        <source>Delimiter</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colUpdated" datatype="html">
+        <source>Updated</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-colHits" datatype="html">
+        <source>Hits</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-confirmUnmatch" datatype="html">
+        <source>Undo the reconciliation and its bookings?</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-confirmRollback" datatype="html">
+        <source>Roll back this import? Its transactions and their reconciliations are removed.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-kindBank" datatype="html">
+        <source>Bank</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-kindCash" datatype="html">
+        <source>Cash</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-kindProcessor" datatype="html">
+        <source>Payment processor</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-kindOther" datatype="html">
+        <source>Other</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-mappingInvalidJson" datatype="html">
+        <source>The mapping is not valid JSON: <x id="message" equiv-text="error as Error).message"/></source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-mappingMissingFields" datatype="html">
+        <source>The mapping needs &quot;columns&quot; and &quot;dateFormat&quot;.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-mappingMissingName" datatype="html">
+        <source>Enter a name.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-confirmDeleteMapping" datatype="html">
+        <source>Delete the CSV mapping &quot;<x id="name" equiv-text="row.name"/>&quot;?</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-targetCustomer" datatype="html">
+        <source>Customer</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-targetSupplier" datatype="html">
+        <source>Supplier</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-confirmDeleteRule" datatype="html">
+        <source>Delete this match rule?</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingBanking-syncImported" datatype="html">
+        <source>Processor sync imported <x id="count" equiv-text="imported"/> transactions.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkContextTitle" datatype="html">
+        <source>Bookings of document</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkContextBook" datatype="html">
+        <source>Book manually</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkContextClear" datatype="html">
+        <source>Show all bookings</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkContextEmpty" datatype="html">
+        <source> No bookings for this document yet. </source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-colNumber" datatype="html">
+        <source>No.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-colPostingDate" datatype="html">
+        <source>Posting date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-colDescription" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-colKind" datatype="html">
+        <source>Kind</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-colTotal" datatype="html">
+        <source>Amount</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-from" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-to" datatype="html">
+        <source>To</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-noStatistics" datatype="html">
+        <source>No bookings in the selected period.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-noResult" datatype="html">
+        <source>No revenue or expenses in the selected period.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-kind" datatype="html">
+        <source>Kind</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-any" datatype="html">
+        <source>Any</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-source" datatype="html">
+        <source>Source</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-account" datatype="html">
+        <source>Account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-empty" datatype="html">
+        <source>No bookings. Invoices, payments and supplier invoices are booked automatically.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-reversedNotice" datatype="html">
+        <source>This entry was reversed.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-reversalOf" datatype="html">
+        <source>Reverses entry</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-openOriginal" datatype="html">
+        <source>Open original</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-lines" datatype="html">
+        <source>Lines</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineAccount" datatype="html">
+        <source>Account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineDebit" datatype="html">
+        <source>Debit</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineCredit" datatype="html">
+        <source>Credit</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineTaxRate" datatype="html">
+        <source>Tax rate</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineDescription" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineCounterparty" datatype="html">
+        <source>Counterparty</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-links" datatype="html">
+        <source>Links and receipts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-noLinks" datatype="html">
+        <source>No linked documents.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-downloadReceipt" datatype="html">
+        <source>Download receipt</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-removeLink" datatype="html">
+        <source>Remove link</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkType" datatype="html">
+        <source>Document type</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkTarget" datatype="html">
+        <source>Document number</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkRole" datatype="html">
+        <source>Role</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-roleRelated" datatype="html">
+        <source>Related</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-roleSettles" datatype="html">
+        <source>Settles</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-roleReceipt" datatype="html">
+        <source>Receipt</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-linkLabel" datatype="html">
+        <source>Label</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-addLink" datatype="html">
+        <source>Add link</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-uploadReceipt" datatype="html">
+        <source>Upload receipt</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-reverseTitle" datatype="html">
+        <source>Reverse entry</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-reverseDate" datatype="html">
+        <source>Reversal date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-reverseReason" datatype="html">
+        <source>Reason</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-cancel" datatype="html">
+        <source>Cancel</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-reverseSubmit" datatype="html">
+        <source>Book reversal</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-reverse" datatype="html">
+        <source>Reverse</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-manualLinked" datatype="html">
+        <source>The booking will be linked to the selected document.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-documentDate" datatype="html">
+        <source>Document date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-documentNumber" datatype="html">
+        <source>Document number</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-description" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-tenant" datatype="html">
+        <source>Tenant</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-tenantHint" datatype="html">
+        <source>Empty = current tenant</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-selectAccount" datatype="html">
+        <source>Account…</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-lineTaxCode" datatype="html">
+        <source>Tax code</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-noTaxCode" datatype="html">
+        <source>No tax</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-removeLine" datatype="html">
+        <source>Remove line</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-addLine" datatype="html">
+        <source>Add line</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-debitTotal" datatype="html">
+        <source>Debit</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-creditTotal" datatype="html">
+        <source>Credit</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-balanced" datatype="html">
+        <source>Balanced</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-unbalanced" datatype="html">
+        <source>Debit and credit differ</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-grossHint" datatype="html">
+        <source> Lines with a tax code are entered gross; the VAT is split off to the tax code&apos;s account. </source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-book" datatype="html">
+        <source>Book</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-title" datatype="html">
+        <source>Journal</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-statistics" datatype="html">
+        <source>Statistics</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-journal" datatype="html">
+        <source>Bookings</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-filters" datatype="html">
+        <source>Filters</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-search" datatype="html">
+        <source>Search description, document, number</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-createEntry" datatype="html">
+        <source>Manual booking</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-kpiEntries" datatype="html">
+        <source>Entries</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-kpiVolume" datatype="html">
+        <source>Volume</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-kpiManualShare" datatype="html">
+        <source>Manual share</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-kpiRevenue" datatype="html">
+        <source>Revenue</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-kpiExpenses" datatype="html">
+        <source>Expenses</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-kpiResult" datatype="html">
+        <source>Result</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-chartBookings" datatype="html">
+        <source>Bookings per month</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-chartVolume" datatype="html">
+        <source>Volume per month</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-chartResult" datatype="html">
+        <source>Revenue vs expenses</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-chartSources" datatype="html">
+        <source>Volume by source</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryTitle" datatype="html">
+        <source>Journal entry</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-chartManual" datatype="html">
+        <source>Manual</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-colDocument" datatype="html">
+        <source>Document</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-colSource" datatype="html">
+        <source>Source</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-colTenant" datatype="html">
+        <source>Tenant</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryNumber" datatype="html">
+        <source>Entry number</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryPosting" datatype="html">
+        <source>Posting date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryDocumentDate" datatype="html">
+        <source>Document date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryDocumentNumber" datatype="html">
+        <source>Document number</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryKind" datatype="html">
+        <source>Kind</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-entrySource" datatype="html">
+        <source>Source</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryTotal" datatype="html">
+        <source>Amount</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-entryTenant" datatype="html">
+        <source>Tenant</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingJournal-receiptDownloadFailed" datatype="html">
+        <source>The receipt could not be downloaded.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingNav-aria" datatype="html">
+        <source>Accounting sections</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingNav-overview" datatype="html">
+        <source>Overview</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingNav-journal" datatype="html">
+        <source>Journal</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingNav-accounts" datatype="html">
+        <source>Accounts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingNav-banking" datatype="html">
+        <source>Banking</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingNav-openItems" datatype="html">
+        <source>Open items</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingNav-statements" datatype="html">
+        <source>Statements</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingNav-vatReturns" datatype="html">
+        <source>VAT returns</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingNav-assets" datatype="html">
+        <source>Assets</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-typeAria" datatype="html">
+        <source>Counterparty type</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-noAging" datatype="html">
+        <source>No open items as of this date.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-search" datatype="html">
+        <source>Search document, counterparty</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-empty" datatype="html">
+        <source>No open items.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-overdue90" datatype="html">
+        <source><x id="days" equiv-text="row.daysOverdue"/> days overdue</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-overdue" datatype="html">
+        <source><x id="days" equiv-text="row.daysOverdue"/> days overdue</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-notDue" datatype="html">
+        <source>Not due</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-title" datatype="html">
+        <source>Open items</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-statistics" datatype="html">
+        <source>Statistics</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-items" datatype="html">
+        <source>Items</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-customers" datatype="html">
+        <source>Customers</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-suppliers" datatype="html">
+        <source>Suppliers</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-kpiTotal" datatype="html">
+        <source>Total open</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-kpiCount" datatype="html">
+        <source>Items</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-kpiOverdue" datatype="html">
+        <source>Overdue</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-kpiOverdue90" datatype="html">
+        <source>More than 90 days</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-agingChart" datatype="html">
+        <source>Aging</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-bookings" datatype="html">
+        <source>Bookings</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-asOf" datatype="html">
+        <source>As of</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colState" datatype="html">
+        <source>State</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colDocument" datatype="html">
+        <source>Document</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colDocumentDate" datatype="html">
+        <source>Document date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colDueDate" datatype="html">
+        <source>Due date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colAmount" datatype="html">
+        <source>Amount</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colOpen" datatype="html">
+        <source>Open</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colDaysOverdue" datatype="html">
+        <source>Days overdue</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colCounterparty" datatype="html">
+        <source>Counterparty</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOpenItems-colTenant" datatype="html">
+        <source>Tenant</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-kpiOpenYears" datatype="html">
+        <source>Open fiscal years</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-kpiIssues" datatype="html">
+        <source>Open posting issues</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-kpiCharts" datatype="html">
+        <source>Charts of accounts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-kpiMethod" datatype="html">
+        <source>Method</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-sectionsAria" datatype="html">
+        <source>Overview sections</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-tabSetup" datatype="html">
+        <source>Profile</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-tabYears" datatype="html">
+        <source>Fiscal years</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-tabCharts" datatype="html">
+        <source>Charts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-tabIssues" datatype="html">
+        <source>Posting issues</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-tabFx" datatype="html">
+        <source>Exchange rates</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-complianceHeading" datatype="html">
+        <source>Compliance notice</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-profilePanel" datatype="html">
+        <source>Country profile</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-featuresPanel" datatype="html">
+        <source>VAT returns and exports</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-noFeatures" datatype="html">
+        <source>This country profile defines no VAT returns or exports.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colFeature" datatype="html">
+        <source>Feature</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colAvailability" datatype="html">
+        <source>Availability</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-available" datatype="html">
+        <source>Available</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-unavailable" datatype="html">
+        <source>Unavailable</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-missingEnv" datatype="html">
+        <source>Missing settings:</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-yearsTitle" datatype="html">
+        <source>Fiscal years and periods</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-openNextYear" datatype="html">
+        <source>Open next fiscal year</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-noYears" datatype="html">
+        <source>No fiscal years yet. The first booking opens the fiscal year of the bookkeeping start.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-yearClosed" datatype="html">
+        <source>Closed</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-yearOpen" datatype="html">
+        <source>Open</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-closeYear" datatype="html">
+        <source>Close year</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colPeriod" datatype="html">
+        <source>Period</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colFrom" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colTo" datatype="html">
+        <source>To</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colStatus" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-periodLocked" datatype="html">
+        <source>Locked</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-periodOpen" datatype="html">
+        <source>Open</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-lock" datatype="html">
+        <source>Lock</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-createChart" datatype="html">
+        <source>Create chart of accounts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-noCharts" datatype="html">
+        <source>No chart of accounts yet. Create one from a template of the country profile.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-catchUp" datatype="html">
+        <source>Run catch-up</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-noIssues" datatype="html">
+        <source>No open posting issues. Every document is booked.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-ecbStored" datatype="html">
+        <source>ECB reference rates fetched: <x id="INTERPOLATION" equiv-text="{{ ecbResult() }}"/> rates stored.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-addRate" datatype="html">
+        <source>Add manual rate</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-fetchEcb" datatype="html">
+        <source>Fetch ECB rates</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-noRates" datatype="html">
+        <source>No exchange rates stored yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-lockTitle" datatype="html">
+        <source>Lock period?</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-lockMessage" datatype="html">
+        <source>Locked periods accept no new bookings and their entries become immutable (corrections go into an open period). Earlier periods are locked as well. This cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-openYearTitle" datatype="html">
+        <source>Open next fiscal year?</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-openYearMessage" datatype="html">
+        <source>Opens the fiscal year after the latest one with the same chart of accounts.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-openYearConfirm" datatype="html">
+        <source>Open year</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-chartStart" datatype="html">
+        <source>Start from</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-fromTemplate" datatype="html">
+        <source>Template</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-fromEmpty" datatype="html">
+        <source>Empty chart</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-template" datatype="html">
+        <source>Template</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-chooseTemplate" datatype="html">
+        <source>Choose a template</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-chartCode" datatype="html">
+        <source>Code</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-chartCodeHint" datatype="html">
+        <source>2–32 letters, digits or dashes; templates default to their key.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-chartName" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-chartCountry" datatype="html">
+        <source>Country</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-chartAccountLength" datatype="html">
+        <source>Account number length</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-fxCurrency" datatype="html">
+        <source>Currency</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-fxDate" datatype="html">
+        <source>Date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-fxRate" datatype="html">
+        <source>Rate (units per 1 EUR)</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-closeYearTitle" datatype="html">
+        <source>Close fiscal year</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-closeYearHint" datatype="html">
+        <source> Balance-sheet accounts and open items carry forward into the next year, the result goes to retained earnings and the closed year becomes immutable. </source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-nextChart" datatype="html">
+        <source>Chart of the next year</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-nextChartHint" datatype="html">
+        <source>Only changeable while the next year has no bookings.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-keepChart" datatype="html">
+        <source>Keep the current chart</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-yearResult" datatype="html">
+        <source>Result of <x id="INTERPOLATION" equiv-text="{{ year.name }}"/>:</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-unmapped" datatype="html">
+        <source>Accounts without a target in the next chart: <x id="INTERPOLATION" equiv-text="{{ preview.unmapped.join(&apos;, &apos;) }}"/>. Map them below.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colAccount" datatype="html">
+        <source>Account</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colBalance" datatype="html">
+        <source>Balance</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colTarget" datatype="html">
+        <source>Carried to</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-refreshPreview" datatype="html">
+        <source>Refresh preview</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-title" datatype="html">
+        <source>Accounting</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-yes" datatype="html">
+        <source>Yes</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-no" datatype="html">
+        <source>No</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-profile" datatype="html">
+        <source>Country profile</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-country" datatype="html">
+        <source>Country</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-method" datatype="html">
+        <source>Method</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-vatBasis" datatype="html">
+        <source>VAT basis</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-vatBasisPayment" datatype="html">
+        <source>When paid (cash basis)</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-vatBasisInvoice" datatype="html">
+        <source>When invoiced (accrual basis)</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-startDate" datatype="html">
+        <source>Bookkeeping start</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-fiscalYearStart" datatype="html">
+        <source>Fiscal year starts in month</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-currency" datatype="html">
+        <source>Functional currency</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-vatPeriod" datatype="html">
+        <source>VAT return period</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-retention" datatype="html">
+        <source>Retention (books / vouchers)</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-retentionYears" datatype="html">
+        <source><x id="books" equiv-text="o.profile.retention.booksYears"/> / <x id="vouchers" equiv-text="o.profile.retention.vouchersYears"/> years</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-defaultTemplate" datatype="html">
+        <source>Default chart template</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-mandatoryChart" datatype="html">
+        <source>Chart legally mandatory</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-cashBasis" datatype="html">
+        <source>Cash-basis statement</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colCode" datatype="html">
+        <source>Code</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colName" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colCountry" datatype="html">
+        <source>Country</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colTemplate" datatype="html">
+        <source>Template</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-emptyChart" datatype="html">
+        <source>Empty</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colAccountLength" datatype="html">
+        <source>Account length</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colSource" datatype="html">
+        <source>Source</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colSourceId" datatype="html">
+        <source>Document</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colError" datatype="html">
+        <source>Error</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colAttempts" datatype="html">
+        <source>Attempts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colUpdated" datatype="html">
+        <source>Last attempt</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colCurrency" datatype="html">
+        <source>Currency</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colRateDate" datatype="html">
+        <source>Date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colRate" datatype="html">
+        <source>Rate per EUR</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-colRateSource" datatype="html">
+        <source>Source</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-rateManual" datatype="html">
+        <source>Manual</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-methodCash" datatype="html">
+        <source>Cash basis</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-methodAccrual" datatype="html">
+        <source>Double entry (accrual)</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-catchUpSkipped" datatype="html">
+        <source>Catch-up skipped (already running).</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingOverview-catchUpDone" datatype="html">
+        <source>Catch-up posted <x id="count" equiv-text="total"/> documents and <x id="opening" equiv-text="result.openingItems ?? 0"/> opening items.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-kind" datatype="html">
+        <source>Statement</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-balanceSheet" datatype="html">
+        <source>Balance sheet</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-profitAndLoss" datatype="html">
+        <source>Profit and loss</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-cashBasis" datatype="html">
+        <source>Cash-basis result</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-from" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-showAccounts" datatype="html">
+        <source>Show accounts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-managementReport" datatype="html">
+        <source>Filtered by tenant: this is a management report. Select All tenants for the statutory statement.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-position" datatype="html">
+        <source>Position</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-amount" datatype="html">
+        <source>Amount</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-previousYear" datatype="html">
+        <source>Previous year</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-sectionTotal" datatype="html">
+        <source>Total</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-result" datatype="html">
+        <source>Result</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-unassigned" datatype="html">
+        <source>These accounts have balances but no statement position. Assign a position in the chart of accounts.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-empty" datatype="html">
+        <source>Choose a statement and period.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-exportsHint" datatype="html">
+        <source> Exports cover the period above. Statutory formats always include every tenant. </source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-title" datatype="html">
+        <source>Statements and exports</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-statement" datatype="html">
+        <source>Statement</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-exports" datatype="html">
+        <source>Exports</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-asOf" datatype="html">
+        <source>As of</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-to" datatype="html">
+        <source>To</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-needsGlobal" datatype="html">
+        <source>Statutory exports need entity-wide access.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-missingConfig" datatype="html">
+        <source>Not configured. Missing: <x id="missing" equiv-text="feature.missing.join(&apos;, &apos;)"/></source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-unavailable" datatype="html">
+        <source>Not available for this configuration.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-needsAll" datatype="html">
+        <source>Statutory exports cover all tenants; select All tenants.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingStatements-downloadFailed" datatype="html">
+        <source>The export could not be created. Check the period and try again.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-current" datatype="html">
+        <source>Current</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-other" datatype="html">
+        <source>Available</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-title" datatype="html">
+        <source>Switch tenant</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-table" datatype="html">
+        <source>Tenants</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-search" datatype="html">
+        <source>Search tenants</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-empty" datatype="html">
+        <source>No matching tenants</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-colState" datatype="html">
+        <source>State</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-colTenant" datatype="html">
+        <source>Tenant</source>
+        </trans-unit>
+      <trans-unit id="featureBillingTenantSwitch-colNote" datatype="html">
+        <source>Note</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingTenantSwitch-home" datatype="html">
+        <source>Home tenant</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingTenantSwitch-allNote" datatype="html">
+        <source>Entity-wide view across all tenants</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-unifiedNote" datatype="html">
+        <source>One export across all tenants</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-unifiedNote" datatype="html">
+        <source>Files of all tenants</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingTenantTabs-all" datatype="html">
+        <source>All tenants</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-typeAsset" datatype="html">
+        <source>Asset</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-typeLiability" datatype="html">
+        <source>Liability</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-typeEquity" datatype="html">
+        <source>Equity</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-typeRevenue" datatype="html">
+        <source>Revenue</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-typeExpense" datatype="html">
+        <source>Expense</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-typeStatistical" datatype="html">
+        <source>Statistical</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-taxKindOutput" datatype="html">
+        <source>Output VAT</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-taxKindInput" datatype="html">
+        <source>Input VAT</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-taxKindReverseCharge" datatype="html">
+        <source>Reverse charge</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-taxKindExempt" datatype="html">
+        <source>Exempt</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-kindAutomatic" datatype="html">
+        <source>Automatic</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-kindManual" datatype="html">
+        <source>Manual</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-kindOpening" datatype="html">
+        <source>Opening</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-kindClosing" datatype="html">
+        <source>Closing</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-kindReversal" datatype="html">
+        <source>Reversal</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-kindDepreciation" datatype="html">
+        <source>Depreciation</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-kindVatSettlement" datatype="html">
+        <source>VAT settlement</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceCreditDocument" datatype="html">
+        <source>Credit note</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceVoidDocument" datatype="html">
+        <source>Void document</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceSettlement" datatype="html">
+        <source>Payment</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceBankTransaction" datatype="html">
+        <source>Bank transaction</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceProcessorTransaction" datatype="html">
+        <source>Processor transaction</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceInventoryMovement" datatype="html">
+        <source>Inventory movement</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceFixedAsset" datatype="html">
+        <source>Fixed asset</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceVatReturn" datatype="html">
+        <source>VAT return</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceFiscalYear" datatype="html">
+        <source>Fiscal year</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceManual" datatype="html">
+        <source>Manual</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-sourceOpeningBalance" datatype="html">
+        <source>Opening balance</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-linkOffer" datatype="html">
+        <source>Offer</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-linkProject" datatype="html">
+        <source>Project</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-linkSubscription" datatype="html">
+        <source>Subscription</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-linkStoredFile" datatype="html">
+        <source>Receipt file</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-linkPaymentAttempt" datatype="html">
+        <source>Payment attempt</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-linkPaymentRefund" datatype="html">
+        <source>Refund</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-linkJournalEntry" datatype="html">
+        <source>Journal entry</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-matchUnmatched" datatype="html">
+        <source>Unmatched</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-matchSuggested" datatype="html">
+        <source>Suggested</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-matchMatched" datatype="html">
+        <source>Matched</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-matchBooked" datatype="html">
+        <source>Booked</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-matchIgnored" datatype="html">
+        <source>Ignored</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-matchSuperseded" datatype="html">
+        <source>Superseded (booked or duplicate)</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-importPending" datatype="html">
+        <source>Pending</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-importProcessing" datatype="html">
+        <source>Processing</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-importCompleted" datatype="html">
+        <source>Completed</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-importFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-importRolledBack" datatype="html">
+        <source>Rolled back</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-vatDraft" datatype="html">
+        <source>Draft</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-vatSubmitted" datatype="html">
+        <source>Submitted</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-vatPaid" datatype="html">
+        <source>Paid</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-assetActive" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-assetFullyDepreciated" datatype="html">
+        <source>Fully depreciated</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-assetDisposed" datatype="html">
+        <source>Disposed</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-exportJournalCsv" datatype="html">
+        <source>Journal (CSV)</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-exportTrialBalanceCsv" datatype="html">
+        <source>Trial balance (CSV)</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-exportGdpdu" datatype="html">
+        <source>GDPdU / GoBD</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-exportFec" datatype="html">
+        <source>FEC</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-exportSaft" datatype="html">
+        <source>SAF-T</source>
+        </trans-unit>
+      <trans-unit id="featureAccounting-agingCurrent" datatype="html">
+        <source>Not due</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-kpiReturns" datatype="html">
+        <source>Returns</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-kpiDrafts" datatype="html">
+        <source>Drafts</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-kpiSubmitted" datatype="html">
+        <source>Submitted</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-kpiPaid" datatype="html">
+        <source>Paid</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-kpiPayable" datatype="html">
+        <source>Payable total</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-statistics" datatype="html">
+        <source>Statistics</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-noStatistics" datatype="html">
+        <source>No computed VAT returns yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-returns" datatype="html">
+        <source>Returns</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-listTabs" datatype="html">
+        <source>VAT return views</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-tabReturn" datatype="html">
+        <source>Return</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-tabHistory" datatype="html">
+        <source>History</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-definition" datatype="html">
+        <source>Return</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-periodType" datatype="html">
+        <source>Period</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-year" datatype="html">
+        <source>Year</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-filingChannel" datatype="html">
+        <source>Filing</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-due" datatype="html">
+        <source>Due</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-unavailable" datatype="html">
+        <source>This return needs configuration first. Missing: <x id="INTERPOLATION" equiv-text="{{ feature.missing.join(&apos;, &apos;) }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-compute" datatype="html">
+        <source>Compute</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-csv" datatype="html">
+        <source>CSV</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-recompute" datatype="html">
+        <source>Recompute</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-submit" datatype="html">
+        <source>Mark as filed</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-recordPayment" datatype="html">
+        <source>Record payment</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-box" datatype="html">
+        <source>Box</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-label" datatype="html">
+        <source>Label</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-amount" datatype="html">
+        <source>Amount</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-details" datatype="html">
+        <source>Details</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-noReturn" datatype="html">
+        <source>Choose a return and period, then compute it.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-empty" datatype="html">
+        <source>No VAT returns computed yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-submitTitle" datatype="html">
+        <source>Mark VAT return as filed</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-submitWarning" datatype="html">
+        <source>Filing freezes the figures and locks all accounting periods up to the period end.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-colReference" datatype="html">
+        <source>Filing reference</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-note" datatype="html">
+        <source>Note</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-submitConfirm" datatype="html">
+        <source>Mark as filed</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-payTitle" datatype="html">
+        <source>Record VAT payment</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-payDate" datatype="html">
+        <source>Payment date</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-payAmountHint" datatype="html">
+        <source>Defaults to the computed result. Negative amounts are refunds from the tax office.</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-downloadFailed" datatype="html">
+        <source>The CSV could not be created. Please try again.</source>
+      </trans-unit>
+      <trans-unit id="featureAccountingVat-paySubmit" datatype="html">
+        <source>Book payment</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-title" datatype="html">
+        <source>VAT returns</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-chartTitle" datatype="html">
+        <source>Payable / refund per period</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-search" datatype="html">
+        <source>Search VAT returns</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-seriesResult" datatype="html">
+        <source>Payable / refund</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-colStatus" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-colReturn" datatype="html">
+        <source>Return</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-colPeriod" datatype="html">
+        <source>Period</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-colResult" datatype="html">
+        <source>Result</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-colSubmitted" datatype="html">
+        <source>Submitted</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-month" datatype="html">
+        <source>Month</source>
+        </trans-unit>
+      <trans-unit id="featureAccountingVat-quarter" datatype="html">
+        <source>Quarter</source>
+        </trans-unit>
       <trans-unit id="featureAddons-empty" datatype="html">
         <source>No add-ons yet</source>
         </trans-unit>
@@ -410,11 +2461,28 @@
       <trans-unit id="featureAdminBilling-confirmActionTitle" datatype="html">
         <source>Confirm action</source>
         </trans-unit>
+      <trans-unit id="featureAdminBilling-refundCustomerCredit" datatype="html">
+        <source>Customer credit on this invoice: <x id="INTERPOLATION" equiv-text="{{
+          customerCredit(refundInvoice) | fpcMoney
+        }}"/>. Record the money paid back to the customer.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-writeOffHint" datatype="html">
+        <source>The amount is booked as an uncollectible receivable (bad debt). Leave the amount empty to write off the full open balance.</source>
+        </trans-unit>
       <trans-unit id="featureAdminBilling-paidAtLabel" datatype="html">
         <source>Payment received at</source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-paidAtHelp" datatype="html">
         <source>Defaults to now. Change this if payment was received on a different date or time.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-occurredAtLabel" datatype="html">
+        <source>Booking date</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-occurredAtHelp" datatype="html">
+        <source>Defaults to now.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-actionAmountLabel" datatype="html">
+        <source>Amount (optional)</source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-creditNoteNote" datatype="html">
         <source>Note on the credit note (optional)</source>
@@ -469,6 +2537,30 @@
         </trans-unit>
       <trans-unit id="featureInvoices-summary" datatype="html">
         <source>Summary</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementsTitle" datatype="html">
+        <source>Settlement history</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementsLoading" datatype="html">
+        <source>Loading settlements...</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementsEmpty" datatype="html">
+        <source> No payments, credits or write-offs recorded yet. </source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementDate" datatype="html">
+        <source>Date</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementType" datatype="html">
+        <source>Type</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementSource" datatype="html">
+        <source>Source</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementNote" datatype="html">
+        <source>Note</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-settlementAmount" datatype="html">
+        <source> Amount </source>
         </trans-unit>
       <trans-unit id="featureAdminInvoices-createTitle" datatype="html">
         <source>Create manual invoice</source>
@@ -578,6 +2670,33 @@
       <trans-unit id="featureAdminInvoices-lineTaxRateCustom" datatype="html">
         <source>Rate (%)</source>
         </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineAccounting" datatype="html">
+        <source>Accounting</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineStockArticle" datatype="html">
+        <source>Stock article</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineInventoryArticle" datatype="html">
+        <source>Stock article (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineInventoryArticleHint" datatype="html">
+        <source>The article bought with this line; its putaway is valued at this line&apos;s price.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineLedgerAccount" datatype="html">
+        <source>Account number (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineLedgerAccountHint" datatype="html">
+        <source>Defaults to the supplier&apos;s expense account.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineCapitalize" datatype="html">
+        <source>Capitalize as fixed asset</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineUsefulLife" datatype="html">
+        <source>Useful life (months)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-lineUsefulLifeHint" datatype="html">
+        <source>Depreciation period; empty uses the account&apos;s default.</source>
+        </trans-unit>
       <trans-unit id="featureAdminBilling-title" datatype="html">
         <source>Billing</source>
         </trans-unit>
@@ -601,6 +2720,24 @@
         </trans-unit>
       <trans-unit id="featureAdminInvoices-lineTaxCategoryCustom" datatype="html">
         <source>Custom</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-amountHintPaid" datatype="html">
+        <source>Leave empty to record the full open balance (<x id="amount" equiv-text="limit"/>). A smaller amount records a partial payment.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-amountHintPaidNoLimit" datatype="html">
+        <source>Leave empty to record the full open balance. A smaller amount records a partial payment.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-amountHintWriteOff" datatype="html">
+        <source>Leave empty to write off the full open balance (<x id="amount" equiv-text="limit"/>).</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-amountHintWriteOffNoLimit" datatype="html">
+        <source>Leave empty to write off the full open balance.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-amountHintRefund" datatype="html">
+        <source>Leave empty to refund the full customer credit (<x id="amount" equiv-text="limit"/>).</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-amountHintRefundNoLimit" datatype="html">
+        <source>Leave empty to refund the full customer credit.</source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-activeSubscriptions" datatype="html">
         <source>Active subscriptions</source>
@@ -835,6 +2972,9 @@
         </trans-unit>
       <trans-unit id="featureAdminProfiles-phone" datatype="html">
         <source>Phone</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-einvoiceHeading" datatype="html">
+        <source>E-invoicing</source>
         </trans-unit>
       <trans-unit id="featureAdminProfiles-title" datatype="html">
         <source>Customer profiles</source>
@@ -1799,6 +3939,12 @@
       <trans-unit id="featureAdminSupplierProfiles-phone" datatype="html">
         <source>Phone</source>
         </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-defaultExpenseAccount" datatype="html">
+        <source>Default expense account (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-defaultExpenseAccountHint" datatype="html">
+        <source>Account number of the active chart used for this supplier&apos;s invoice lines unless a line names its own account.</source>
+        </trans-unit>
       <trans-unit id="featureAdminSupplierProfiles-title" datatype="html">
         <source>Supplier profiles</source>
         </trans-unit>
@@ -1973,6 +4119,30 @@
       <trans-unit id="featureContainer-inventoryLendingsPage" datatype="html">
         <source>Lendings</source>
         </trans-unit>
+      <trans-unit id="featureContainer-accountingPage" datatype="html">
+        <source>Accounting</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-accountingJournalPage" datatype="html">
+        <source>Journal</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-accountingAccountsPage" datatype="html">
+        <source>Chart of accounts</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-accountingBankingPage" datatype="html">
+        <source>Banking</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-accountingOpenItemsPage" datatype="html">
+        <source>Open items</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-accountingStatementsPage" datatype="html">
+        <source>Statements &amp; exports</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-accountingVatReturnsPage" datatype="html">
+        <source>VAT returns</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-accountingAssetsPage" datatype="html">
+        <source>Fixed assets</source>
+        </trans-unit>
       <trans-unit id="featureContainer-adminDatevExportsPage" datatype="html">
         <source>DATEV exports</source>
         </trans-unit>
@@ -2108,8 +4278,62 @@
       <trans-unit id="featureInvoices-statusVoid" datatype="html">
         <source>Void</source>
         </trans-unit>
+      <trans-unit id="featureInvoices-statusCredited" datatype="html">
+        <source>Credited</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-statusWrittenOff" datatype="html">
+        <source>Written off</source>
+        </trans-unit>
       <trans-unit id="featureBilling-invoiceStatusUnknown" datatype="html">
         <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementPayment" datatype="html">
+        <source>Payment</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementPaymentReversal" datatype="html">
+        <source>Payment reversal</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementCredit" datatype="html">
+        <source>Credit note</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementRefund" datatype="html">
+        <source>Refund</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementWriteOff" datatype="html">
+        <source>Write-off</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementDiscount" datatype="html">
+        <source>Cash discount</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementCreditTransferIn" datatype="html">
+        <source>Customer credit applied</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementCreditTransferOut" datatype="html">
+        <source>Customer credit moved</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceProcessor" datatype="html">
+        <source>Payment provider</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceAutoCharge" datatype="html">
+        <source>Automatic charge</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceManual" datatype="html">
+        <source>Manual</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceBankMatch" datatype="html">
+        <source>Bank transaction</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceCreditDocument" datatype="html">
+        <source>Credit note</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceCustomerCredit" datatype="html">
+        <source>Customer credit</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementSourcePromotional" datatype="html">
+        <source>Promotion</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-settlementSourceMigration" datatype="html">
+        <source>Migration</source>
         </trans-unit>
       <trans-unit id="featureBilling-activeStatusActive" datatype="html">
         <source>Active</source>
@@ -2642,6 +4866,12 @@
       <trans-unit id="featureContainer-adminDatevExports" datatype="html">
         <source>DATEV</source>
         </trans-unit>
+      <trans-unit id="featureContainer-adminAccountingTitle" datatype="html">
+        <source>Accounting</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminAccounting" datatype="html">
+        <source>Accounting</source>
+        </trans-unit>
       <trans-unit id="featureDocumentNote-label" datatype="html">
         <source>Note (optional)</source>
         </trans-unit>
@@ -2755,6 +4985,45 @@
         </trans-unit>
       <trans-unit id="featureDocumentTerms-placeTooLong" datatype="html">
         <source>Use at most <x id="max" equiv-text="DELIVERY_TERMS_PLACE_MAX_LENGTH"/> characters.</source>
+        </trans-unit>
+      <trans-unit id="featureEinvoice-formatLabel" datatype="html">
+        <source>E-invoice format</source>
+        </trans-unit>
+      <trans-unit id="featureEinvoice-buyerReferenceLabel" datatype="html">
+        <source>Buyer reference / Leitweg-ID</source>
+        </trans-unit>
+      <trans-unit id="featureEinvoice-endpointLabel" datatype="html">
+        <source>E-invoice address (scheme:id)</source>
+        </trans-unit>
+      <trans-unit id="featureEinvoice-issuerDefault" datatype="html">
+        <source>Issuer default (<x id="format" equiv-text="label"/>)</source>
+        </trans-unit>
+      <trans-unit id="featureEinvoice-issuerDefaultUnknown" datatype="html">
+        <source>Issuer default</source>
+        </trans-unit>
+      <trans-unit id="featureEinvoice-formatHintXrechnung" datatype="html">
+        <source>XRechnung needs a buyer reference (Leitweg-ID for German public buyers) and an e-invoice address.</source>
+        </trans-unit>
+      <trans-unit id="featureEinvoice-formatHintPeppol" datatype="html">
+        <source>Peppol needs the customer&apos;s e-invoice address (scheme:id).</source>
+        </trans-unit>
+      <trans-unit id="featureEinvoice-formatHint" datatype="html">
+        <source>Structured invoice data embedded in or sent with every invoice of this customer.</source>
+        </trans-unit>
+      <trans-unit id="featureEinvoice-buyerReferenceRequired" datatype="html">
+        <source>Required for XRechnung: the Leitweg-ID or the reference the buyer gave you.</source>
+        </trans-unit>
+      <trans-unit id="featureEinvoice-buyerReferenceHint" datatype="html">
+        <source>Optional reference of the buyer (BT-10), printed on the invoice.</source>
+        </trans-unit>
+      <trans-unit id="featureEinvoice-endpointInvalid" datatype="html">
+        <source>Use scheme:id, e.g. 0088:4012345000009 (GLN) or 9930:DE123456789 (VAT ID).</source>
+        </trans-unit>
+      <trans-unit id="featureEinvoice-endpointRequired" datatype="html">
+        <source>Required for Peppol / XRechnung; defaults to the VAT ID when empty.</source>
+        </trans-unit>
+      <trans-unit id="featureEinvoice-endpointHint" datatype="html">
+        <source>Optional electronic address (Peppol participant ID).</source>
         </trans-unit>
       <trans-unit id="featureInventory-inactive" datatype="html">
         <source>Inactive</source>
@@ -2887,6 +5156,9 @@
         </trans-unit>
       <trans-unit id="featureInventoryArticleForm-salesPrice" datatype="html">
         <source>Sales price</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryArticleDetail-averageCost" datatype="html">
+        <source>Average cost</source>
         </trans-unit>
       <trans-unit id="featureInventoryArticleForm-reorderPoint" datatype="html">
         <source>Reorder point</source>
@@ -3343,6 +5615,15 @@
         </trans-unit>
       <trans-unit id="featureInventoryLend-dueDateHint" datatype="html">
         <source>Optional. Open lendings past this date are flagged as overdue.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-supplierInvoiceLinked" datatype="html">
+        <source>Linked to supplier invoice <x id="INTERPOLATION" equiv-text="{{ linked.number }}"/>: the stock is valued at its line price.</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-unitCost" datatype="html">
+        <source>Unit cost (net, optional)</source>
+        </trans-unit>
+      <trans-unit id="featureInventoryMove-unitCostHint" datatype="html">
+        <source>Valuation of the received stock; defaults to the supplier invoice line or the article&apos;s purchase price.</source>
         </trans-unit>
       <trans-unit id="featureInventoryMove-serialsHintPutaway" datatype="html">
         <source>One serial number per unit. Ranges count up the last number.</source>
@@ -5634,6 +7915,15 @@
       <trans-unit id="featureDataList-markUnpaid" datatype="html">
         <source>Mark unpaid</source>
         </trans-unit>
+      <trans-unit id="featureDataList-writeOff" datatype="html">
+        <source>Write off</source>
+        </trans-unit>
+      <trans-unit id="featureDataList-refund" datatype="html">
+        <source>Record refund</source>
+        </trans-unit>
+      <trans-unit id="featureDataList-bookings" datatype="html">
+        <source>Bookings</source>
+        </trans-unit>
       <trans-unit id="featureDataList-history" datatype="html">
         <source>History</source>
         </trans-unit>
@@ -5642,6 +7932,9 @@
         </trans-unit>
       <trans-unit id="featureDataList-downloadPdf" datatype="html">
         <source>Download PDF</source>
+        </trans-unit>
+      <trans-unit id="featureDataList-einvoiceXml" datatype="html">
+        <source>E-invoice (XML)</source>
         </trans-unit>
       <trans-unit id="featureDataList-timeReport" datatype="html">
         <source>Time report</source>
@@ -5705,6 +7998,9 @@
         </trans-unit>
       <trans-unit id="featureDataList-bulkFailed" datatype="html">
         <source>{count} failed</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-customerCredit" datatype="html">
+        <source>Customer credit</source>
         </trans-unit>
       <trans-unit id="featureInvoices-balanceDue" datatype="html">
         <source>Balance due</source>
@@ -6053,6 +8349,9 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-phone" datatype="html">
         <source>Phone</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-einvoiceHeading" datatype="html">
+        <source>E-invoicing</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-autoBillingHeading" datatype="html">
         <source>Auto-billing</source>

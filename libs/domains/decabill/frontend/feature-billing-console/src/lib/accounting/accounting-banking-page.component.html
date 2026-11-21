@@ -1,0 +1,1027 @@
+<div class="accounting-page border-top d-flex flex-column flex-grow-1 min-h-0" data-testid="accounting-banking-page">
+  <fpc-page-header [title]="pageTitle">
+    <framework-accounting-tenant-switch fpcPageHeaderContext />
+  </fpc-page-header>
+  <framework-accounting-nav active="banking" />
+
+  @let kpis = statistics().data?.kpis;
+  <fpc-summary-bar [columns]="5">
+    <fpc-summary-card
+      icon="bank"
+      i18n-label="@@featureAccountingBanking-kpiAccounts"
+      label="Accounts"
+      [value]="kpis ? '' + kpis.accounts : '-'"
+    />
+    <fpc-summary-card
+      icon="list-ul"
+      i18n-label="@@featureAccountingBanking-transactions"
+      label="Transactions"
+      [value]="kpis ? '' + kpis.transactions : '-'"
+    />
+    <fpc-summary-card
+      icon="check2-all"
+      i18n-label="@@featureAccountingBanking-kpiRate"
+      label="Reconciled"
+      [value]="kpis ? percent(kpis.reconciliationRate) : '-'"
+    />
+    <fpc-summary-card
+      icon="question-circle"
+      i18n-label="@@featureAccountingBanking-kpiUnmatched"
+      label="Unmatched"
+      [value]="kpis ? '' + kpis.unmatched : '-'"
+      [tone]="kpis && kpis.unmatched > 0 ? 'warning' : 'default'"
+    />
+    <fpc-summary-card
+      icon="wallet2"
+      i18n-label="@@featureAccountingBanking-kpiBalance"
+      label="Balance"
+      [value]="kpis ? money(kpis.balance) : '-'"
+    />
+  </fpc-summary-bar>
+
+  @if (syncResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      variant="info"
+      [message]="syncSummary(result)"
+      [dismissible]="true"
+      (closed)="syncResult.set(null)"
+      data-testid="accounting-banking-sync-result"
+    />
+  }
+  @if (mutationError(); as err) {
+    @if (!matchOpen() && !uploadOpen() && !accountOpen() && !mappingOpen() && !ruleOpen()) {
+      <fpc-alert [flush]="true" variant="danger" [message]="err" [dismissible]="true" />
+    }
+  }
+
+  <fpc-tab-group class="d-md-none flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="onTabChange($event)">
+    <fpc-tab id="statistics" [label]="tabLabel('statistics')" />
+    <fpc-tab id="list" [label]="tabLabel('list')" />
+  </fpc-tab-group>
+
+  <fpc-section-row class="flex-grow-1 min-h-0" [nowrap]="true">
+    <fpc-section-column class="d-flex d-md-flex" [class.d-none]="activeTab() !== 'statistics'">
+      <fpc-board-lane class="h-100">
+        <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+          <span fpcLaneHeaderTitle i18n="@@featureAccountingBanking-statistics">Statistics</span>
+        </fpc-lane-header>
+        <fpc-list-toolbar
+          fpcBoardLaneSearch
+          [(open)]="statsOpen"
+          [title]="filtersTitle"
+          [activeCount]="statsFilterCount()"
+          (applied)="applyStatsFilters()"
+          (cleared)="resetStatsFilters()"
+        >
+          <span fpcListToolbarLead class="accounting-statistics-scope small text-body-secondary text-truncate">{{
+            scopeLabel()
+          }}</span>
+          <fpc-form-field forId="bankStatsFrom" i18n-label="@@featureAccountingBanking-from" label="From">
+            <fpc-form-control controlId="bankStatsFrom" inputType="date" [(ngModel)]="fromDraft" name="bankStatsFrom" />
+          </fpc-form-field>
+          <fpc-form-field forId="bankStatsTo" i18n-label="@@featureAccountingBanking-to" label="To">
+            <fpc-form-control controlId="bankStatsTo" inputType="date" [(ngModel)]="toDraft" name="bankStatsTo" />
+          </fpc-form-field>
+        </fpc-list-toolbar>
+
+        @if (statistics().error; as err) {
+          <fpc-alert [flush]="true" variant="danger" [message]="err" />
+        }
+
+        <fpc-panel-grid [columns]="1" [bordered]="false">
+          <fpc-panel [title]="flowsTitle">
+            @if (statistics().loading) {
+              <fpc-empty-state size="sm" loading />
+            } @else if (flowsChart(); as chart) {
+              <apx-chart
+                [series]="chart.series"
+                [chart]="chart.chart"
+                [colors]="chart.colors"
+                [plotOptions]="chart.plotOptions"
+                [dataLabels]="chart.dataLabels"
+                [legend]="chart.legend"
+                [xaxis]="chart.xaxis"
+                [yaxis]="chart.yaxis"
+                [grid]="chart.grid"
+                [tooltip]="chart.tooltip"
+                [responsive]="chart.responsive"
+              ></apx-chart>
+            } @else {
+              <fpc-empty-state
+                size="sm"
+                icon="bar-chart"
+                i18n-message="@@featureAccountingBanking-noFlows"
+                message="No booked transactions in the selected period."
+              />
+            }
+          </fpc-panel>
+          <fpc-panel [title]="statusTitle">
+            @if (statistics().loading) {
+              <fpc-empty-state size="sm" loading />
+            } @else if (statusChart(); as chart) {
+              <apx-chart
+                [series]="chart.series"
+                [chart]="chart.chart"
+                [labels]="chart.labels"
+                [colors]="chart.colors"
+                [dataLabels]="chart.dataLabels"
+                [legend]="chart.legend"
+                [tooltip]="chart.tooltip"
+                [responsive]="chart.responsive"
+              ></apx-chart>
+            } @else {
+              <fpc-empty-state
+                size="sm"
+                icon="pie-chart"
+                i18n-message="@@featureAccountingBanking-noStatuses"
+                message="No transactions imported yet."
+              />
+            }
+          </fpc-panel>
+        </fpc-panel-grid>
+      </fpc-board-lane>
+    </fpc-section-column>
+
+    <fpc-section-column class="d-md-flex" [class.d-none]="activeTab() !== 'list'">
+      <fpc-board-lane class="h-100">
+        <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+          <span fpcLaneHeaderTitle i18n="@@featureAccountingBanking-list">Banking</span>
+        </fpc-lane-header>
+        <fpc-tab-group
+          class="flex-shrink-0"
+          [activeId]="listTab()"
+          (activeIdChange)="onListTabChange($event)"
+          i18n-ariaLabel="@@featureAccountingBanking-listTabs"
+          ariaLabel="Banking views"
+        >
+          <fpc-tab id="transactions" icon="list-ul" [label]="transactionsLabel" />
+          <fpc-tab id="imports" icon="upload" [label]="importsLabel" />
+          <fpc-tab id="accounts" icon="bank" i18n-label="@@featureAccountingBanking-tabAccounts" label="Accounts" />
+          <fpc-tab
+            id="mappings"
+            icon="filetype-csv"
+            i18n-label="@@featureAccountingBanking-tabMappings"
+            label="CSV mappings"
+          />
+          @if (globalAccess()) {
+            <fpc-tab id="rules" icon="magic" i18n-label="@@featureAccountingBanking-tabRules" label="Rules" />
+          }
+        </fpc-tab-group>
+
+        @switch (listTab()) {
+          @case ('transactions') {
+            @if (importId()) {
+              <fpc-alert
+                [flush]="true"
+                variant="info"
+                i18n-message="@@featureAccountingBanking-importFilter"
+                message="Showing the transactions of one import."
+                [dismissible]="true"
+                (closed)="clearImportFilter()"
+              />
+            }
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="transactionsLabel"
+              [columns]="txColumns"
+              [rows]="transactions().data?.items ?? []"
+              paging="server"
+              [total]="transactions().data?.total ?? 0"
+              [(page)]="paging.page"
+              [(pageSize)]="paging.pageSize"
+              persistKey="decabill-accounting-bank-transactions"
+              [(query)]="paging.search"
+              [searchPlaceholder]="searchPlaceholder"
+              showFilterButton
+              [(filtersOpen)]="txFiltersOpen"
+              [filtersActive]="txFilterCount()"
+              (filtersApplied)="applyTxFilters()"
+              (filtersCleared)="clearTxFilters()"
+              [loading]="transactions().loading"
+              refreshable
+              (refresh)="paging.reload()"
+              [error]="transactions().error"
+              [rowMenu]="txMenu"
+              (rowAction)="onTxAction($event.row, $event.item.id)"
+              (rowActivate)="onTxActivate($event)"
+              emptyIcon="bank"
+              data-testid="accounting-bank-transactions"
+            >
+              @if (globalAccess()) {
+                <fpc-button
+                  fpcDataTableToolbar
+                  variant="secondary"
+                  iconOnly
+                  [ariaLabel]="syncLabel"
+                  [title]="syncLabel"
+                  [disabled]="mutating()"
+                  (clicked)="runProcessorSync()"
+                  data-testid="accounting-banking-sync"
+                >
+                  <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                </fpc-button>
+              }
+              <fpc-form-field
+                fpcDataTableFilters
+                forId="bankTxStatus"
+                i18n-label="@@featureAccountingBanking-colStatus"
+                label="Status"
+              >
+                <fpc-form-control
+                  controlType="select"
+                  controlId="bankTxStatus"
+                  [(ngModel)]="matchStatusDraft"
+                  name="bankTxStatus"
+                >
+                  <option value="" i18n="@@featureAccountingBanking-allStatuses">All</option>
+                  @for (status of statuses; track status) {
+                    <option [value]="status">{{ statusLabel(status) }}</option>
+                  }
+                </fpc-form-control>
+              </fpc-form-field>
+              <fpc-form-field
+                fpcDataTableFilters
+                forId="bankTxAccount"
+                i18n-label="@@featureAccountingBanking-colAccount"
+                label="Account"
+              >
+                <fpc-form-control
+                  controlType="select"
+                  controlId="bankTxAccount"
+                  [(ngModel)]="financialAccountDraft"
+                  name="bankTxAccount"
+                >
+                  <option value="" i18n="@@featureAccountingBanking-allAccounts">All accounts</option>
+                  @for (account of accounts().data ?? []; track account.id) {
+                    <option [value]="account.id">{{ account.name }}</option>
+                  }
+                </fpc-form-control>
+              </fpc-form-field>
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  size="sm"
+                  icon="bank"
+                  i18n-message="@@featureAccountingBanking-txEmpty"
+                  message="No transactions. Upload a bank statement to get started."
+                />
+              </span>
+            </fpc-data-table>
+          }
+          @case ('imports') {
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [ariaLabel]="importsLabel"
+              [columns]="importColumns"
+              [rows]="imports().data?.items ?? []"
+              paging="client"
+              persistKey="decabill-accounting-bank-imports"
+              [loading]="imports().loading"
+              [error]="imports().error"
+              [rowMenu]="importMenu"
+              (rowAction)="onImportAction($event.row, $event.item.id)"
+              (rowActivate)="openImportDetail($event)"
+              emptyIcon="upload"
+              data-testid="accounting-bank-imports"
+            >
+              <fpc-button
+                fpcDataTableToolbar
+                variant="primary"
+                iconOnly
+                [ariaLabel]="uploadLabel"
+                [title]="uploadLabel"
+                (clicked)="openUpload()"
+                data-testid="accounting-banking-upload"
+              >
+                <i class="bi bi-upload" aria-hidden="true"></i>
+              </fpc-button>
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  size="sm"
+                  icon="upload"
+                  i18n-message="@@featureAccountingBanking-importsEmpty"
+                  message="No statement files uploaded yet."
+                />
+              </span>
+            </fpc-data-table>
+          }
+          @case ('accounts') {
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [columns]="accountColumns"
+              [rows]="accounts().data ?? []"
+              paging="client"
+              persistKey="decabill-accounting-financial-accounts"
+              [loading]="accounts().loading"
+              [error]="accounts().error"
+              [rowMenu]="accountMenu"
+              (rowAction)="onAccountAction($event.row, $event.item.id)"
+              (rowActivate)="openAccount($event)"
+              emptyIcon="bank"
+              data-testid="accounting-financial-accounts"
+            >
+              <fpc-button
+                fpcDataTableToolbar
+                variant="primary"
+                iconOnly
+                [ariaLabel]="createAccountLabel"
+                [title]="createAccountLabel"
+                (clicked)="openAccount()"
+              >
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+              </fpc-button>
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  size="sm"
+                  icon="bank"
+                  i18n-message="@@featureAccountingBanking-accountsEmpty"
+                  message="No bank, cash or processor accounts yet."
+                />
+              </span>
+            </fpc-data-table>
+          }
+          @case ('mappings') {
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [columns]="mappingColumns"
+              [rows]="mappings().data ?? []"
+              paging="client"
+              persistKey="decabill-accounting-csv-mappings"
+              [loading]="mappings().loading"
+              [error]="mappings().error"
+              [rowMenu]="mappingMenu"
+              (rowAction)="onMappingAction($event.row, $event.item.id)"
+              (rowActivate)="openMapping($event)"
+              emptyIcon="filetype-csv"
+              data-testid="accounting-csv-mappings"
+            >
+              <fpc-button
+                fpcDataTableToolbar
+                variant="primary"
+                iconOnly
+                [ariaLabel]="createMappingLabel"
+                [title]="createMappingLabel"
+                (clicked)="openMapping()"
+              >
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+              </fpc-button>
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  size="sm"
+                  icon="filetype-csv"
+                  i18n-message="@@featureAccountingBanking-mappingsEmpty"
+                  message="No saved CSV mappings. Built-in presets cover common banks."
+                />
+              </span>
+            </fpc-data-table>
+          }
+          @case ('rules') {
+            <fpc-data-table
+              class="flex-grow-1 min-h-0"
+              [columns]="ruleColumns"
+              [rows]="rules().data ?? []"
+              paging="client"
+              persistKey="decabill-accounting-match-rules"
+              [loading]="rules().loading"
+              [error]="rules().error"
+              [rowMenu]="ruleMenu"
+              (rowAction)="onRuleAction($event.row, $event.item.id)"
+              emptyIcon="magic"
+              data-testid="accounting-match-rules"
+            >
+              <fpc-button
+                fpcDataTableToolbar
+                variant="primary"
+                iconOnly
+                [ariaLabel]="createRuleLabel"
+                [title]="createRuleLabel"
+                (clicked)="openRule()"
+              >
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+              </fpc-button>
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  size="sm"
+                  icon="magic"
+                  i18n-message="@@featureAccountingBanking-rulesEmpty"
+                  message="No match rules. Matching with “learn” creates them."
+                />
+              </span>
+            </fpc-data-table>
+          }
+        }
+      </fpc-board-lane>
+    </fpc-section-column>
+  </fpc-section-row>
+</div>
+
+<!-- Match -->
+<fpc-modal
+  [(open)]="matchOpen"
+  size="lg"
+  i18n-title="@@featureAccountingBanking-matchTitle"
+  title="Match transaction"
+  data-testid="accounting-banking-match-modal"
+>
+  @if (matchTx(); as tx) {
+    @if (mutationError(); as err) {
+      <fpc-alert variant="danger" [message]="err" />
+    }
+    <p class="mb-2 d-flex flex-wrap align-items-baseline column-gap-3">
+      <strong>{{ money(tx.amount, tx.currency) }}</strong>
+      @for (detail of matchHeaderDetails(tx); track $index) {
+        <span class="text-body-secondary">{{ detail }}</span>
+      }
+    </p>
+    @if (tx.remittance) {
+      <p class="small text-body-secondary">{{ tx.remittance }}</p>
+    }
+
+    <h6 class="accounting-section-title" i18n="@@featureAccountingBanking-suggestions">Suggestions</h6>
+    @if (suggestions().loading) {
+      <fpc-empty-state size="sm" loading />
+    } @else if ((suggestions().data ?? []).length === 0) {
+      <p class="small text-body-secondary" i18n="@@featureAccountingBanking-noSuggestions">No suggestions found.</p>
+    } @else {
+      <ul class="list-unstyled mb-2">
+        @for (suggestion of suggestions().data ?? []; track $index) {
+          <li class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge text-bg-secondary">{{ scorePercent(suggestion.score) }}</span>
+            <span class="flex-grow-1 small">{{ suggestionText(suggestion) }}</span>
+            <fpc-button variant="outline-primary" size="sm" (clicked)="applySuggestion(suggestion)">
+              <span i18n="@@featureAccountingBanking-apply">Apply</span>
+            </fpc-button>
+          </li>
+        }
+      </ul>
+    }
+
+    <h6 class="accounting-section-title" i18n="@@featureAccountingBanking-targets">Targets</h6>
+    @for (target of matchTargets(); track $index; let index = $index) {
+      <div class="row g-3 mb-3 align-items-end" data-testid="accounting-banking-match-target">
+        <div class="col-md-3">
+          <fpc-form-field [forId]="'matchType' + index" i18n-label="@@featureAccountingBanking-targetType" label="Type">
+            <fpc-form-control
+              controlType="select"
+              [controlId]="'matchType' + index"
+              [ngModel]="target.type"
+              (ngModelChange)="patchTarget(index, { type: $event })"
+              [name]="'matchType' + index"
+            >
+              <option value="invoice" i18n="@@featureAccounting-sourceInvoice">Invoice</option>
+              <option value="supplier_invoice">{{ supplierInvoiceLabel }}</option>
+              <option value="account" i18n="@@featureAccountingBanking-targetAccount">Account</option>
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        @if (target.type === 'account') {
+          <div class="col-md-2">
+            <fpc-form-field
+              [forId]="'matchAccount' + index"
+              i18n-label="@@featureAccountingBanking-accountNumber"
+              label="Account no."
+            >
+              <fpc-form-control
+                [controlId]="'matchAccount' + index"
+                [ngModel]="target.accountNumber"
+                (ngModelChange)="patchTarget(index, { accountNumber: $event })"
+                [name]="'matchAccount' + index"
+              />
+            </fpc-form-field>
+          </div>
+          <div class="col-md-2">
+            <fpc-form-field
+              [forId]="'matchTax' + index"
+              i18n-label="@@featureAccountingBanking-colTaxCode"
+              label="Tax code"
+            >
+              <fpc-form-control
+                controlType="select"
+                [controlId]="'matchTax' + index"
+                [ngModel]="target.taxCode"
+                (ngModelChange)="patchTarget(index, { taxCode: $event })"
+                [name]="'matchTax' + index"
+              >
+                <option value="" i18n="@@featureAccountingBanking-noTaxCode">None</option>
+                @for (code of taxCodes().data ?? []; track code.id) {
+                  <option [value]="code.code">{{ code.code }} – {{ code.name }}</option>
+                }
+              </fpc-form-control>
+            </fpc-form-field>
+          </div>
+          <div class="col-md-2">
+            <fpc-form-field
+              [forId]="'matchDescription' + index"
+              i18n-label="@@featureAccountingBanking-description"
+              label="Text"
+            >
+              <fpc-form-control
+                [controlId]="'matchDescription' + index"
+                [ngModel]="target.description"
+                (ngModelChange)="patchTarget(index, { description: $event })"
+                [name]="'matchDescription' + index"
+              />
+            </fpc-form-field>
+          </div>
+        } @else {
+          <div class="col-md-6">
+            <fpc-form-field
+              [forId]="'matchId' + index"
+              i18n-label="@@featureAccountingBanking-documentId"
+              label="Invoice number"
+            >
+              <fpc-form-control
+                [controlId]="'matchId' + index"
+                [ngModel]="target.number"
+                (ngModelChange)="patchTarget(index, { number: $event, id: '' })"
+                [name]="'matchId' + index"
+              />
+            </fpc-form-field>
+          </div>
+        }
+        <div class="col-md-2">
+          <fpc-form-field
+            [forId]="'matchAmount' + index"
+            i18n-label="@@featureAccountingBanking-colAmount"
+            label="Amount"
+          >
+            <fpc-form-control
+              inputType="number"
+              step="0.01"
+              min="0"
+              [controlId]="'matchAmount' + index"
+              [ngModel]="target.amount"
+              (ngModelChange)="patchTarget(index, { amount: $event })"
+              [name]="'matchAmount' + index"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-md-1">
+          <fpc-button
+            variant="outline-danger"
+            iconOnly
+            i18n-ariaLabel="@@featureAccountingBanking-removeTarget"
+            ariaLabel="Remove target"
+            [disabled]="matchTargets().length <= 1"
+            (clicked)="removeTarget(index)"
+          >
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </fpc-button>
+        </div>
+      </div>
+    }
+    <div class="d-flex align-items-center gap-3 mb-2">
+      <fpc-button variant="outline-secondary" size="sm" (clicked)="addTarget()">
+        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>
+        <span i18n="@@featureAccountingBanking-addTarget">Add target</span>
+      </fpc-button>
+      <span class="small" [class.text-danger]="!matchValid()">
+        <span i18n="@@featureAccountingBanking-assigned">Assigned</span>: {{ money(matchSum(), tx.currency) }} /
+        {{ money(matchExpected(), tx.currency) }}
+      </span>
+    </div>
+    @if (globalAccess()) {
+      <fpc-form-check
+        checkId="matchLearn"
+        [(checked)]="matchLearn"
+        i18n-label="@@featureAccountingBanking-learn"
+        label="Remember this counterparty (create a match rule)"
+      />
+    }
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button
+      variant="primary"
+      (clicked)="submitMatch()"
+      [disabled]="mutating() || !matchValid()"
+      data-testid="accounting-banking-match-submit"
+    >
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingBanking-match">Match</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<!-- Upload -->
+<fpc-modal [(open)]="uploadOpen" size="lg" [title]="uploadLabel" data-testid="accounting-banking-upload-modal">
+  @if (mutationError(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  @if (uploadDone() && importDetail().data; as result) {
+    <fpc-alert
+      [variant]="result.status === 'failed' ? 'danger' : 'success'"
+      [message]="result.errorMessage ?? null"
+      [heading]="result.fileName"
+    />
+    <fpc-key-value-list [items]="importDetailItems()" [columns]="2" />
+    @if (result.warnings.length) {
+      <h6 class="accounting-section-title" i18n="@@featureAccountingBanking-warnings">Warnings</h6>
+      <ul class="small">
+        @for (warning of result.warnings; track $index) {
+          <li>{{ warning }}</li>
+        }
+      </ul>
+    }
+  } @else {
+    <fpc-form-field
+      forId="bankUploadFile"
+      i18n-label="@@featureAccountingBanking-file"
+      label="Statement file"
+      [required]="true"
+    >
+      <input
+        id="bankUploadFile"
+        type="file"
+        class="form-control"
+        accept=".xml,.zip,.sta,.mt940,.mt942,.940,.942,.txt,.csv,.tsv,.cod,.coda,.n43,.aeb,.q43,.cfonb,.120,.cbi,.bai,.bai2,.ofx,.qfx,.qif,.dat"
+        (change)="onFileSelected($event)"
+      />
+    </fpc-form-field>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <fpc-form-field forId="bankUploadFormat" i18n-label="@@featureAccountingBanking-colFormat" label="Format">
+          <fpc-form-control
+            controlType="select"
+            controlId="bankUploadFormat"
+            [(ngModel)]="uploadFormat"
+            name="bankUploadFormat"
+          >
+            <option value="auto" i18n="@@featureAccountingBanking-formatAuto">Detect automatically</option>
+            @for (format of formats; track format) {
+              <option [value]="format">{{ format }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-md-6">
+        <fpc-form-field
+          forId="bankUploadAccount"
+          i18n-label="@@featureAccountingBanking-targetAccountField"
+          label="Target account"
+        >
+          <fpc-form-control
+            controlType="select"
+            controlId="bankUploadAccount"
+            [(ngModel)]="uploadAccountId"
+            name="bankUploadAccount"
+          >
+            <option value="" i18n="@@featureAccountingBanking-accountByIban">By IBAN / account number</option>
+            @for (account of accounts().data ?? []; track account.id) {
+              <option [value]="account.id">{{ account.name }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      @if (showCsvOptions()) {
+        <div class="col-md-6">
+          <fpc-form-field forId="bankUploadCsv" i18n-label="@@featureAccountingBanking-csvLayout" label="CSV layout">
+            <fpc-form-control
+              controlType="select"
+              controlId="bankUploadCsv"
+              [(ngModel)]="uploadCsvSource"
+              name="bankUploadCsv"
+            >
+              <option value="" i18n="@@featureAccountingBanking-csvAuto">Detect automatically</option>
+              @if ((mappings().data ?? []).length > 0) {
+                <optgroup i18n-label="@@featureAccountingBanking-savedMappings" label="Saved mappings">
+                  @for (mapping of mappings().data ?? []; track mapping.id) {
+                    <option [value]="'mapping:' + mapping.id">{{ mapping.name }}</option>
+                  }
+                </optgroup>
+              }
+              <optgroup i18n-label="@@featureAccountingBanking-presets" label="Presets">
+                @for (preset of presets().data ?? []; track preset.key) {
+                  <option [value]="'preset:' + preset.key">{{ preset.label }}</option>
+                }
+              </optgroup>
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+      }
+      <div class="col-md-3">
+        <fpc-form-field forId="bankUploadEncoding" i18n-label="@@featureAccountingBanking-encoding" label="Encoding">
+          <fpc-form-control
+            controlType="select"
+            controlId="bankUploadEncoding"
+            [(ngModel)]="uploadEncoding"
+            name="bankUploadEncoding"
+          >
+            @for (encoding of encodings; track encoding) {
+              <option [value]="encoding">{{ encoding }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      @if (showQifOptions()) {
+        <div class="col-md-3">
+          <fpc-form-field forId="bankUploadQif" i18n-label="@@featureAccountingBanking-qifDates" label="QIF dates">
+            <fpc-form-control
+              controlType="select"
+              controlId="bankUploadQif"
+              [(ngModel)]="uploadQifDateFormat"
+              name="bankUploadQif"
+            >
+              <option value="auto" i18n="@@featureAccountingBanking-qifAuto">Automatic</option>
+              <option value="DMY">DD/MM/YYYY</option>
+              <option value="MDY">MM/DD/YYYY</option>
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+      }
+    </div>
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    @if (uploadDone()) {
+      <fpc-button variant="secondary" (clicked)="uploadOpen.set(false)">
+        <span i18n="@@featureAccountingBanking-close">Close</span>
+      </fpc-button>
+    } @else {
+      <fpc-button
+        variant="primary"
+        (clicked)="submitUpload()"
+        [disabled]="mutating() || !uploadFile"
+        data-testid="accounting-banking-upload-submit"
+      >
+        @if (mutating()) {
+          <fpc-spinner size="sm" />
+        } @else {
+          <span i18n="@@featureAccountingBanking-uploadSubmit">Upload</span>
+        }
+      </fpc-button>
+    }
+  </div>
+</fpc-modal>
+
+<!-- Import detail -->
+<fpc-modal [(open)]="importDetailOpen" size="lg" i18n-title="@@featureAccountingBanking-importTitle" title="Import">
+  @if (importDetail().loading) {
+    <fpc-empty-state size="sm" loading />
+  } @else if (importDetail().error; as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  } @else if (importDetail().data; as detail) {
+    @if (detail.errorMessage) {
+      <fpc-alert variant="danger" [message]="detail.errorMessage" />
+    }
+    <fpc-key-value-list [items]="importDetailItems()" [columns]="2" />
+    @if (detail.warnings.length) {
+      <h6 class="accounting-section-title" i18n="@@featureAccountingBanking-warnings">Warnings</h6>
+      <ul class="small">
+        @for (warning of detail.warnings; track $index) {
+          <li>{{ warning }}</li>
+        }
+      </ul>
+    }
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+      <fpc-button variant="secondary" (clicked)="downloadImport(detail)">
+        <span i18n="@@featureAccountingBanking-downloadOriginal">Download original</span>
+      </fpc-button>
+      <fpc-button variant="secondary" (clicked)="showImportTransactions(detail.id)">
+        <span i18n="@@featureAccountingBanking-showTransactions">Show transactions</span>
+      </fpc-button>
+      @if (detail.status === 'completed') {
+        <fpc-button variant="danger" (clicked)="onImportAction(detail, 'rollback')">
+          <span i18n="@@featureAccountingBanking-rollback">Roll back</span>
+        </fpc-button>
+      }
+    </div>
+  }
+</fpc-modal>
+
+<!-- Financial account -->
+<fpc-modal [(open)]="accountOpen" size="lg" [title]="createAccountLabel">
+  @if (mutationError(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  <div class="row g-3 mb-3">
+    <div class="col-md-8">
+      <fpc-form-field forId="faName" i18n-label="@@featureAccountingBanking-colName" label="Name" [required]="true">
+        <fpc-form-control controlId="faName" [(ngModel)]="accountForm.name" name="faName" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-4">
+      <fpc-form-field forId="faKind" i18n-label="@@featureAccountingBanking-colKind" label="Kind">
+        <fpc-form-control controlType="select" controlId="faKind" [(ngModel)]="accountForm.kind" name="faKind">
+          <option value="bank">{{ kindLabel('bank') }}</option>
+          <option value="cash">{{ kindLabel('cash') }}</option>
+          <option value="processor">{{ kindLabel('processor') }}</option>
+          <option value="other">{{ kindLabel('other') }}</option>
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field forId="faIban" label="IBAN">
+        <fpc-form-control controlId="faIban" [(ngModel)]="accountForm.iban" name="faIban" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-3">
+      <fpc-form-field forId="faBic" label="BIC">
+        <fpc-form-control controlId="faBic" [(ngModel)]="accountForm.bic" name="faBic" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-3">
+      <fpc-form-field
+        forId="faNumber"
+        i18n-label="@@featureAccountingBanking-accountNumberField"
+        label="Account number"
+      >
+        <fpc-form-control controlId="faNumber" [(ngModel)]="accountForm.accountNumber" name="faNumber" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-3">
+      <fpc-form-field
+        forId="faCurrency"
+        i18n-label="@@featureAccountingBanking-currency"
+        label="Currency"
+        [required]="true"
+      >
+        <fpc-form-control controlId="faCurrency" [(ngModel)]="accountForm.currency" name="faCurrency" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-5">
+      <fpc-form-field
+        forId="faLedger"
+        i18n-label="@@featureAccountingBanking-colLedger"
+        label="Ledger account"
+        [required]="true"
+      >
+        <fpc-form-control controlId="faLedger" [(ngModel)]="accountForm.ledgerAccountNumber" name="faLedger" />
+      </fpc-form-field>
+    </div>
+    @if (accountForm.kind === 'processor') {
+      <div class="col-md-4">
+        <fpc-form-field forId="faProcessor" i18n-label="@@featureAccountingBanking-processor" label="Processor">
+          <fpc-form-control
+            controlType="select"
+            controlId="faProcessor"
+            [(ngModel)]="accountForm.processor"
+            name="faProcessor"
+          >
+            <option value="" i18n="@@featureAccountingBanking-noProcessor">None</option>
+            <option value="stripe">Stripe</option>
+            <option value="paypal">PayPal</option>
+            <option value="mollie">Mollie</option>
+            <option value="adyen">Adyen</option>
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+    }
+  </div>
+  @if (globalAccess()) {
+    <fpc-form-check
+      checkId="faShared"
+      [(checked)]="accountForm.shared"
+      i18n-label="@@featureAccountingBanking-sharedAccount"
+      label="Shared by all tenants"
+    />
+  }
+  <fpc-form-check
+    checkId="faActive"
+    [(checked)]="accountForm.isActive"
+    i18n-label="@@featureAccountingBanking-colActive"
+    label="Active"
+  />
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="primary" (clicked)="submitAccount()" [disabled]="mutating() || !accountFormValid()">
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingBanking-save">Save</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<!-- CSV mapping -->
+<fpc-modal [(open)]="mappingOpen" size="lg" [title]="createMappingLabel">
+  @if (mutationError(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  @if (mappingError(); as err) {
+    <fpc-alert variant="warning" [message]="err" />
+  }
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <fpc-form-field
+        forId="mappingName"
+        i18n-label="@@featureAccountingBanking-colName"
+        label="Name"
+        [required]="true"
+      >
+        <fpc-form-control controlId="mappingName" [(ngModel)]="mappingName" name="mappingName" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field
+        forId="mappingPreset"
+        i18n-label="@@featureAccountingBanking-startFromPreset"
+        label="Start from preset"
+      >
+        <fpc-form-control
+          controlType="select"
+          controlId="mappingPreset"
+          [ngModel]="mappingPreset"
+          (ngModelChange)="applyPreset($event)"
+          name="mappingPreset"
+        >
+          <option value="" i18n="@@featureAccountingBanking-noPreset">–</option>
+          @for (preset of presets().data ?? []; track preset.key) {
+            <option [value]="preset.key">{{ preset.label }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+  </div>
+  <!-- Too long for a one-line field hint (hints truncate): the key list is a paragraph above the editor. -->
+  <p class="small text-body-secondary mb-2">{{ mappingHint }}</p>
+  <fpc-form-field forId="mappingJson" i18n-label="@@featureAccountingBanking-mappingJson" label="Mapping (JSON)">
+    <fpc-form-control
+      controlType="textarea"
+      controlId="mappingJson"
+      controlClass="font-monospace small"
+      [rows]="14"
+      [(ngModel)]="mappingJson"
+      name="mappingJson"
+    />
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="primary" (clicked)="submitMapping()" [disabled]="mutating() || !mappingJson.trim()">
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingBanking-save">Save</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<!-- Match rule -->
+<fpc-modal [(open)]="ruleOpen" [title]="createRuleLabel">
+  @if (mutationError(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  <fpc-form-field forId="ruleKind" i18n-label="@@featureAccountingBanking-colRuleKind" label="Kind">
+    <fpc-form-control controlType="select" controlId="ruleKind" [(ngModel)]="ruleForm.kind" name="ruleKind">
+      <option value="iban">IBAN</option>
+      <option value="text" i18n="@@featureAccountingBanking-ruleText">Text</option>
+    </fpc-form-control>
+  </fpc-form-field>
+  <fpc-form-field
+    forId="rulePattern"
+    i18n-label="@@featureAccountingBanking-colPattern"
+    label="Pattern"
+    [required]="true"
+  >
+    <fpc-form-control controlId="rulePattern" [(ngModel)]="ruleForm.pattern" name="rulePattern" />
+  </fpc-form-field>
+  <div class="row g-3 mb-3">
+    <div class="col-md-5">
+      <fpc-form-field forId="ruleTargetType" i18n-label="@@featureAccountingBanking-colTarget" label="Target">
+        <fpc-form-control
+          controlType="select"
+          controlId="ruleTargetType"
+          [(ngModel)]="ruleForm.targetType"
+          name="ruleTargetType"
+        >
+          <option value="customer">{{ ruleTargetLabel('customer') }}</option>
+          <option value="supplier">{{ ruleTargetLabel('supplier') }}</option>
+          <option value="account">{{ ruleTargetLabel('account') }}</option>
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-md-7">
+      <fpc-form-field
+        forId="ruleTargetId"
+        i18n-label="@@featureAccountingBanking-targetId"
+        label="Customer / supplier number or account no."
+        [required]="true"
+      >
+        <fpc-form-control controlId="ruleTargetId" [(ngModel)]="ruleForm.targetId" name="ruleTargetId" />
+      </fpc-form-field>
+    </div>
+  </div>
+  @if (ruleForm.targetType === 'account') {
+    <fpc-form-field forId="ruleTaxCode" i18n-label="@@featureAccountingBanking-colTaxCode" label="Tax code">
+      <fpc-form-control controlId="ruleTaxCode" [(ngModel)]="ruleForm.taxCode" name="ruleTaxCode" />
+    </fpc-form-field>
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="primary" (clicked)="submitRule()" [disabled]="mutating() || !ruleValid()">
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingBanking-save">Save</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="confirmOpen"
+  [message]="confirmMessage()"
+  [danger]="true"
+  [busy]="mutating()"
+  (confirmed)="onConfirmed()"
+/>

@@ -1157,16 +1157,24 @@ export class FpcDataTableComponent<T = unknown> implements OnInit {
 
   /**
    * Leading axis: the toolbar's search magnifier sits on the same vertical axis as the first column's marks: the
-   * selection check boxes when the table is selectable, otherwise the icon-only state glyphs (head + row badges).
+   * selection check boxes when the table is selectable, otherwise the icon-only state glyphs (head + row badges) when
+   * the state column is the first visible column.
    * Publishes that centre, measured from the search strip's start at scroll 0, as `--fpc-data-table-state-axis` (read
    * by `fpc-search-field`); without either column (or while the head is hidden, e.g. stacked cards) the search keeps
    * its default inset.
    */
   private syncStateAxis(head: HTMLTableElement, scrollLeft: number): void {
     const hostEl = this.host.nativeElement;
+    // Only a leading state column counts: one further right (e.g. a trailing "Automatic VAT" flag) would push the
+    // magnifier across the strip and wrap the search input under it.
+    const firstHead = Array.from(head.querySelectorAll<HTMLElement>('thead > tr:first-child > th')).find(
+      (cell) => getComputedStyle(cell).display !== 'none',
+    );
     const glyph =
       head.querySelector<HTMLElement>('.fpc-data-table__check .form-check-input') ??
-      head.querySelector<HTMLElement>('.fpc-data-table__cell--state-icon .fpc-data-table__state-head > .bi');
+      (firstHead?.classList.contains('fpc-data-table__cell--state-icon')
+        ? firstHead.querySelector<HTMLElement>('.fpc-data-table__state-head > .bi')
+        : null);
     const strip = hostEl.querySelector<HTMLElement>('.fpc-data-table__search .search-input-container');
     const glyphRect = glyph?.getBoundingClientRect();
 

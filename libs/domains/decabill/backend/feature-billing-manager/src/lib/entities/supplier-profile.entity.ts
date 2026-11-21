@@ -92,6 +92,10 @@ export class SupplierProfileEntity {
   })
   customData!: Record<string, string>;
 
+  /** Default expense account number for this supplier's invoices (accounting; chart-independent by number). */
+  @Column({ type: 'varchar', length: 20, nullable: true, name: 'default_expense_account_number' })
+  defaultExpenseAccountNumber?: string | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

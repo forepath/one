@@ -30,11 +30,34 @@ const DATEV_BOOKING_COLUMN_NAMES = [
   'Buchungstext',
 ];
 
+/** 0-based indices of booking columns Decabill fills beyond the first 14 (EXTF Buchungsstapel, format 13). */
+export const DATEV_BOOKING_FIELD = {
+  generalReversal: 17,
+  documentLink: 19,
+  costCenter1: 36,
+  costCenter2: 37,
+  euCountryVatId: 39,
+  euTaxRate: 40,
+  lock: 113,
+  serviceDate: 114,
+} as const;
+
+const DATEV_EXTRA_COLUMN_NAMES: Record<number, string> = {
+  17: 'Generalumkehr (GU)',
+  19: 'Beleglink',
+  36: 'KOST1 - Kostenstelle',
+  37: 'KOST2 - Kostenstelle',
+  39: 'EU-Land u. UStID (Bestimmung)',
+  40: 'EU-Steuersatz (Bestimmung)',
+  113: 'Festschreibung',
+  114: 'Leistungsdatum',
+};
+
 export function buildDatevBookingColumnHeaders(): string[] {
   const headers = [...DATEV_BOOKING_COLUMN_NAMES];
 
   while (headers.length < DATEV_BOOKING_ROW_FIELD_COUNT) {
-    headers.push('');
+    headers.push(DATEV_EXTRA_COLUMN_NAMES[headers.length] ?? '');
   }
 
   return headers.slice(0, DATEV_BOOKING_ROW_FIELD_COUNT);

@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import {
   AdminCustomerProfilesFacade,
   AdminCustomerProfilesService,
+  BillingCapabilitiesFacade,
   type AdminCustomerProfileListItem,
   type CustomerTrustLevel,
   type CustomerTrustScoreDetail,
@@ -48,6 +49,8 @@ import {
   getUnavailableLabel,
   getVatIdValidationStatusLabel,
 } from '../billing-status-labels';
+import { EinvoiceSettingsFieldsComponent } from '../einvoice/einvoice-settings-fields.component';
+import { einvoiceSettingsPayload, isEinvoiceEndpointValid } from '../einvoice/einvoice-settings.util';
 import {
   DB_DL_DELETE,
   dbBulkSummary,
@@ -68,6 +71,7 @@ import { trustState } from '../shared/table-states';
     CommonModule,
     FormsModule,
     BillingAdminUserSelectComponent,
+    EinvoiceSettingsFieldsComponent,
     FpcAlertComponent,
     FpcButtonComponent,
     FpcDataTableComponent,
@@ -95,6 +99,10 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   readonly customDataModalOpen = signal(false);
 
   readonly pageTitle = $localize`:@@featureAdminProfiles-title:Customer profiles`;
+  private readonly capabilitiesFacade = inject(BillingCapabilitiesFacade);
+  /** Selectable e-invoice formats and the issuer default (capabilities). */
+  readonly einvoiceFormats = toSignal(this.capabilitiesFacade.einvoiceFormats$, { initialValue: [] });
+  readonly einvoiceDefaultFormat = toSignal(this.capabilitiesFacade.einvoiceDefaultFormat$, { initialValue: null });
   readonly addProfileAriaLabel = $localize`:@@featureAdminProfiles-add:Add`;
   readonly searchPlaceholder = $localize`:@@featureAdminProfiles-searchPlaceholder:Search profiles`;
 
@@ -263,6 +271,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.authFacade.loadUsers();
+    this.capabilitiesFacade.loadCapabilities();
     this.registerModalCloseWatchers();
   }
 
@@ -344,6 +353,9 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
           state: full.state ?? '',
           country: full.country ?? DEFAULT_BILLING_COUNTRY_CODE,
           phone: full.phone ?? '',
+          einvoiceFormat: full.einvoiceFormat ?? null,
+          buyerReference: full.buyerReference ?? '',
+          einvoiceEndpoint: full.einvoiceEndpoint ?? '',
         };
         showBillingModal(this.editModalOpen);
       },
@@ -400,9 +412,11 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   submitCreate(): void {
     if (!this.createForm.userId) return;
 
+    if (!isEinvoiceEndpointValid(this.createForm.einvoiceEndpoint)) return;
+
     const { userId, ...dto } = this.createForm;
 
-    this.facade.createProfile(withOptionalCountry({ userId, ...dto }));
+    this.facade.createProfile(withOptionalCountry({ userId, ...dto, ...einvoiceSettingsPayload(dto) }));
   }
 
   submitEdit(): void {
@@ -417,7 +431,9 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
       ...dto
     } = this.editForm;
 
-    this.facade.updateProfile(id, withOptionalCountry(dto));
+    if (!isEinvoiceEndpointValid(dto.einvoiceEndpoint)) return;
+
+    this.facade.updateProfile(id, withOptionalCountry({ ...dto, ...einvoiceSettingsPayload(dto) }));
   }
 
   submitCustomData(): void {
@@ -550,6 +566,9 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
       state: '',
       country: DEFAULT_BILLING_COUNTRY_CODE,
       phone: '',
+      einvoiceFormat: null,
+      buyerReference: '',
+      einvoiceEndpoint: '',
     };
   }
 
@@ -579,6 +598,9 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
       state: '',
       country: DEFAULT_BILLING_COUNTRY_CODE,
       phone: '',
+      einvoiceFormat: null,
+      buyerReference: '',
+      einvoiceEndpoint: '',
     };
   }
 

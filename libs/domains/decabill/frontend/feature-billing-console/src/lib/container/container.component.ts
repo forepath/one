@@ -179,6 +179,10 @@ export class BillingConsoleContainerComponent implements OnInit {
     initialValue: false,
   });
 
+  readonly accountingEnabled = toSignal(this.billingCapabilitiesFacade.accountingEnabled$, {
+    initialValue: false,
+  });
+
   readonly isAdminRouteActive = toSignal(
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
@@ -378,7 +382,7 @@ export class BillingConsoleContainerComponent implements OnInit {
     this.authenticationFacade.logout(result.invalidateAllSessions);
   }
 
-  /** Admin tile grid; recomputed when DATEV capability flips. */
+  /** Admin tile grid; recomputed when the DATEV / accounting capabilities flip. */
   adminNavItems(): ContributorNavItem[] {
     const items: ContributorNavItem[] = [
       {
@@ -517,6 +521,16 @@ export class BillingConsoleContainerComponent implements OnInit {
         icon: 'bi-file-earmark-spreadsheet',
         title: $localize`:@@featureContainer-adminDatevExportsTitle:DATEV Exports`,
         label: $localize`:@@featureContainer-adminDatevExports:DATEV`,
+      });
+    }
+
+    if (this.accountingEnabled()) {
+      items.push({
+        routerLink: ['/administration/accounting'],
+        activePaths: ['/administration/accounting'],
+        icon: 'bi-journal-bookmark',
+        title: $localize`:@@featureContainer-adminAccountingTitle:Accounting`,
+        label: $localize`:@@featureContainer-adminAccounting:Accounting`,
       });
     }
 

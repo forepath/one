@@ -17,11 +17,29 @@ export interface DatevExtfBookingBatchParams {
   periodEnd: Date;
   batchLabel: string;
   bookingRows: string[][];
+  /** Festschreibung flag of the batch (all contained periods locked). */
+  locked?: boolean;
+  /** Batch currency (functional currency of the ledger). */
+  currency?: string;
 }
 
 export interface DatevExtfDebtorBatchParams {
   config: DatevTenantExportConfig;
   debtorRows: string[][];
+  /** Period the master data belongs to (decides the fiscal-year start in the header). */
+  periodStart?: Date;
+}
+
+export interface DatevExtfAccountLabelsParams {
+  config: DatevTenantExportConfig;
+  periodStart: Date;
+  /** [account number, label] pairs. */
+  accounts: Array<[string, string]>;
+}
+
+/** DATEV `Sachkontenrahmen` header value of the configured chart (`03` / `04`). */
+function skrCode(chart: string): string {
+  return /04/.test(chart) ? '04' : '03';
 }
 
 @Injectable()
@@ -33,7 +51,7 @@ export class DatevExtfCsvService {
       '700',
       '21',
       'Buchungsstapel',
-      '12',
+      '13',
       formatDatevTimestamp(new Date()),
       '',
       '',
@@ -49,13 +67,13 @@ export class DatevExtfCsvService {
       params.config.dictationAbbr,
       '1',
       '',
-      '0',
-      'EUR',
+      params.locked ? '1' : '0',
+      (params.currency ?? 'EUR').toUpperCase(),
       '',
       '',
       '',
       '',
-      '03',
+      skrCode(params.config.chartOfAccounts),
     ];
     const lines = [
       joinDatevRow(headerFields),
@@ -84,7 +102,9 @@ export class DatevExtfCsvService {
       '',
       params.config.consultantNumber,
       params.config.clientNumber,
-      formatDatevHeaderDate(new Date(new Date().getUTCFullYear(), params.config.fiscalYearStartMonth - 1, 1)),
+      formatDatevHeaderDate(
+        this.resolveFiscalYearStart(params.periodStart ?? new Date(), params.config.fiscalYearStartMonth),
+      ),
       String(params.config.accountLength),
     ];
     const debtorHeaders = Array.from({ length: DATEV_DEBTOR_ROW_FIELD_COUNT }, () => '');
@@ -104,6 +124,33 @@ export class DatevExtfCsvService {
       joinDatevRow(headerFields),
       joinDatevRow(debtorHeaders),
       ...params.debtorRows.map((row) => joinDatevRow(row)),
+    ];
+
+    return encodeDatevCsv(joinDatevLines(lines));
+  }
+
+  /** Kontenbeschriftungen (EXTF category 20): labels of the general-ledger accounts used. */
+  buildAccountLabelsCsv(params: DatevExtfAccountLabelsParams): Buffer {
+    const headerFields = [
+      'EXTF',
+      '700',
+      '20',
+      'Kontenbeschriftungen',
+      '2',
+      formatDatevTimestamp(new Date()),
+      '',
+      '',
+      '',
+      '',
+      params.config.consultantNumber,
+      params.config.clientNumber,
+      formatDatevHeaderDate(this.resolveFiscalYearStart(params.periodStart, params.config.fiscalYearStartMonth)),
+      String(params.config.accountLength),
+    ];
+    const lines = [
+      joinDatevRow(headerFields),
+      joinDatevRow(['Konto', 'Kontenbeschriftung', 'Sprach-ID']),
+      ...params.accounts.map(([number, label]) => joinDatevRow([number, label.slice(0, 40), 'de-DE'])),
     ];
 
     return encodeDatevCsv(joinDatevLines(lines));

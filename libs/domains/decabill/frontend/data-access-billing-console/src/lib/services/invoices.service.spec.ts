@@ -129,6 +129,19 @@ describe('InvoicesService', () => {
     req.flush(blob);
   });
 
+  it('should download the e-invoice xml by ref', (done) => {
+    const blob = new Blob(['<Invoice/>']);
+
+    service.downloadEinvoiceXml('inv-1').subscribe((res) => {
+      expect(res).toEqual(blob);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/ref/inv-1/einvoice`);
+
+    expect(req.request.responseType).toBe('blob');
+    req.flush(blob);
+  });
+
   it('should download void document pdf', (done) => {
     const blob = new Blob(['void-pdf']);
 

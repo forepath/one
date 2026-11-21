@@ -93,4 +93,23 @@ describe('InventoryReferenceSelectComponent', () => {
     fixture.detectChanges();
     expect(select.value()).toBe('');
   });
+
+  it('emits the picked option (with its id) and null for free text / clear', () => {
+    const { select } = create();
+    const picked: unknown[] = [];
+
+    select.optionPicked.subscribe((option) => picked.push(option));
+    select.pick(
+      { kind: 'supplier-invoice', value: 'SUP-2026-00001', detail: 'Parts Ltd', id: 'si-1' },
+      new Event('mousedown'),
+    );
+    select.pickOther('DN-4711', new Event('mousedown'));
+    select.clear();
+
+    expect(picked).toEqual([
+      { kind: 'supplier-invoice', value: 'SUP-2026-00001', detail: 'Parts Ltd', id: 'si-1' },
+      null,
+      null,
+    ]);
+  });
 });

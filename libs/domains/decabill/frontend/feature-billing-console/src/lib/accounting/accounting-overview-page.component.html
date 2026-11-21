@@ -1,0 +1,641 @@
+<div class="accounting-page border-top d-flex flex-column flex-grow-1 min-h-0" data-testid="accounting-overview-page">
+  <fpc-page-header [title]="pageTitle">
+    <framework-accounting-tenant-switch fpcPageHeaderContext />
+  </fpc-page-header>
+  <framework-accounting-nav active="overview" />
+
+  @if (overview().error; as err) {
+    <fpc-alert [flush]="true" variant="danger" [message]="err" />
+  }
+  @if (mutationError(); as err) {
+    <fpc-alert
+      [flush]="true"
+      variant="danger"
+      [message]="err"
+      [dismissible]="true"
+      data-testid="accounting-overview-mutation-error"
+    />
+  }
+
+  <fpc-summary-bar [columns]="globalAccess() ? 4 : 3">
+    <fpc-summary-card
+      icon="calendar-range"
+      i18n-label="@@featureAccountingOverview-kpiOpenYears"
+      label="Open fiscal years"
+      [value]="'' + openYearCount()"
+    />
+    <!-- Posting issues are entity-wide; the API withholds the count from tenant-scoped viewers. -->
+    @if (globalAccess()) {
+      <fpc-summary-card
+        icon="exclamation-triangle"
+        i18n-label="@@featureAccountingOverview-kpiIssues"
+        label="Open posting issues"
+        [tone]="openIssueCount() > 0 ? 'warning' : 'default'"
+        [value]="'' + openIssueCount()"
+      />
+    }
+    <fpc-summary-card
+      icon="list-ol"
+      i18n-label="@@featureAccountingOverview-kpiCharts"
+      label="Charts of accounts"
+      [value]="'' + chartCount()"
+    />
+    <fpc-summary-card
+      icon="journal-text"
+      i18n-label="@@featureAccountingOverview-kpiMethod"
+      label="Method"
+      [value]="methodLabel()"
+    />
+  </fpc-summary-bar>
+
+  <fpc-tab-group
+    class="flex-shrink-0"
+    [activeId]="activeSection()"
+    (activeIdChange)="onSectionChange($event)"
+    i18n-ariaLabel="@@featureAccountingOverview-sectionsAria"
+    ariaLabel="Overview sections"
+  >
+    <fpc-tab id="setup" icon="flag" i18n-label="@@featureAccountingOverview-tabSetup" label="Profile" />
+    <fpc-tab id="years" icon="calendar3" i18n-label="@@featureAccountingOverview-tabYears" label="Fiscal years" />
+    <fpc-tab id="charts" icon="list-ol" i18n-label="@@featureAccountingOverview-tabCharts" label="Charts" />
+    @if (globalAccess()) {
+      <fpc-tab
+        id="issues"
+        icon="exclamation-triangle"
+        i18n-label="@@featureAccountingOverview-tabIssues"
+        label="Posting issues"
+        [badge]="openIssueCount() > 0 ? openIssueCount() : null"
+      />
+    }
+    <fpc-tab id="fx" icon="currency-exchange" i18n-label="@@featureAccountingOverview-tabFx" label="Exchange rates" />
+  </fpc-tab-group>
+
+  <!-- Flex column so the profile grid can fill the height (its column divider spans the whole area). -->
+  <div class="accounting-scroll d-flex flex-column">
+    @switch (activeSection()) {
+      @case ('setup') {
+        @if (overview().loading && !overview().data) {
+          <fpc-empty-state size="sm" loading />
+        } @else if (overview().data; as o) {
+          @if (o.profile.complianceNotice) {
+            <fpc-alert
+              flush
+              variant="warning"
+              i18n-heading="@@featureAccountingOverview-complianceHeading"
+              heading="Compliance notice"
+              [message]="o.profile.complianceNotice"
+              data-testid="accounting-compliance-notice"
+            />
+          }
+          <fpc-panel-grid [columns]="2" [bordered]="false" fill>
+            <fpc-panel i18n-title="@@featureAccountingOverview-profilePanel" title="Country profile">
+              <fpc-key-value-list [items]="profileItems()" />
+            </fpc-panel>
+            <fpc-panel i18n-title="@@featureAccountingOverview-featuresPanel" title="VAT returns and exports">
+              @if (features().length === 0) {
+                <fpc-empty-state
+                  size="sm"
+                  icon="file-earmark"
+                  i18n-message="@@featureAccountingOverview-noFeatures"
+                  message="This country profile defines no VAT returns or exports."
+                />
+              } @else {
+                <table class="accounting-table" data-testid="accounting-features">
+                  <thead>
+                    <tr>
+                      <th i18n="@@featureAccountingOverview-colFeature">Feature</th>
+                      <th i18n="@@featureAccountingOverview-colAvailability">Availability</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (feature of features(); track feature.key) {
+                      <tr>
+                        <td>
+                          {{ feature.name }}
+                          <div class="small text-body-secondary accounting-mono">{{ feature.key }}</div>
+                        </td>
+                        <td>
+                          @if (feature.available) {
+                            <fpc-badge tone="success"
+                              ><span i18n="@@featureAccountingOverview-available">Available</span></fpc-badge
+                            >
+                          } @else {
+                            <fpc-badge tone="warning"
+                              ><span i18n="@@featureAccountingOverview-unavailable">Unavailable</span></fpc-badge
+                            >
+                            @if (feature.missing.length > 0) {
+                              <div class="small text-body-secondary mt-1">
+                                <span i18n="@@featureAccountingOverview-missingEnv">Missing settings:</span>
+                                <span class="accounting-mono">{{ missingText(feature.missing) }}</span>
+                              </div>
+                            }
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </fpc-panel>
+          </fpc-panel-grid>
+        }
+      }
+
+      @case ('years') {
+        <fpc-lane-header>
+          <span fpcLaneHeaderTitle i18n="@@featureAccountingOverview-yearsTitle">Fiscal years and periods</span>
+          @if (globalAccess()) {
+            <fpc-button
+              variant="secondary"
+              size="sm"
+              [disabled]="mutating()"
+              (clicked)="openYearConfirm.set(true)"
+              data-testid="accounting-open-year"
+            >
+              <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>
+              <span i18n="@@featureAccountingOverview-openNextYear">Open next fiscal year</span>
+            </fpc-button>
+          }
+        </fpc-lane-header>
+        @if (fiscalYears().loading && years().length === 0) {
+          <fpc-empty-state size="sm" loading />
+        } @else if (years().length === 0) {
+          <fpc-empty-state
+            size="sm"
+            icon="calendar3"
+            i18n-message="@@featureAccountingOverview-noYears"
+            message="No fiscal years yet. The first booking opens the fiscal year of the bookkeeping start."
+          />
+        }
+        @for (year of years(); track year.id) {
+          <section class="px-3 mb-4" data-testid="accounting-fiscal-year">
+            <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+              <h6 class="mb-0 fw-semibold">{{ year.name }}</h6>
+              <span class="small text-body-secondary">{{ date(year.startDate) }} – {{ date(year.endDate) }}</span>
+              <span class="small text-body-secondary">{{ chartName()(year.chartId) }}</span>
+              @if (year.status === 'closed') {
+                <fpc-badge tone="neutral"><span i18n="@@featureAccountingOverview-yearClosed">Closed</span></fpc-badge>
+              } @else {
+                <fpc-badge tone="success"><span i18n="@@featureAccountingOverview-yearOpen">Open</span></fpc-badge>
+                @if (globalAccess()) {
+                  <fpc-button
+                    class="ms-auto"
+                    variant="secondary"
+                    size="sm"
+                    [disabled]="mutating()"
+                    (clicked)="openCloseYear(year)"
+                  >
+                    <span i18n="@@featureAccountingOverview-closeYear">Close year</span>
+                  </fpc-button>
+                }
+              }
+            </div>
+            @if (year.periods?.length) {
+              <table class="accounting-table mt-2">
+                <thead>
+                  <tr>
+                    <th i18n="@@featureAccountingOverview-colPeriod">Period</th>
+                    <th i18n="@@featureAccountingOverview-colFrom">From</th>
+                    <th i18n="@@featureAccountingOverview-colTo">To</th>
+                    <th i18n="@@featureAccountingOverview-colStatus">Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (period of year.periods; track period.id) {
+                    <tr>
+                      <td>{{ period.periodIndex }}</td>
+                      <td>{{ date(period.startDate) }}</td>
+                      <td>{{ date(period.endDate) }}</td>
+                      <td>
+                        @if (period.status === 'locked') {
+                          <span class="text-body-secondary"
+                            ><i class="bi bi-lock-fill me-1" aria-hidden="true"></i
+                            ><span i18n="@@featureAccountingOverview-periodLocked">Locked</span></span
+                          >
+                        } @else {
+                          <span i18n="@@featureAccountingOverview-periodOpen">Open</span>
+                        }
+                      </td>
+                      <td class="text-end">
+                        @if (globalAccess() && period.status === 'open') {
+                          <fpc-button
+                            variant="link"
+                            size="sm"
+                            [disabled]="mutating()"
+                            (clicked)="requestLock(period)"
+                            data-testid="accounting-lock-period"
+                          >
+                            <span i18n="@@featureAccountingOverview-lock">Lock</span>
+                          </fpc-button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </section>
+        }
+      }
+
+      @case ('charts') {
+        <fpc-data-table
+          [ariaLabel]="pageTitle"
+          [columns]="chartColumns"
+          [rows]="charts().data ?? []"
+          paging="client"
+          [loading]="charts().loading"
+          refreshable
+          (refresh)="reloadCharts()"
+          [error]="charts().error"
+          emptyIcon="list-ol"
+          data-testid="accounting-charts"
+        >
+          @if (globalAccess()) {
+            <fpc-button
+              fpcDataTableToolbar
+              variant="primary"
+              iconOnly
+              i18n-ariaLabel="@@featureAccountingOverview-createChart"
+              ariaLabel="Create chart of accounts"
+              i18n-title="@@featureAccountingOverview-createChart"
+              title="Create chart of accounts"
+              (clicked)="openChartModal()"
+            >
+              <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            </fpc-button>
+          }
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="list-ol"
+              i18n-message="@@featureAccountingOverview-noCharts"
+              message="No chart of accounts yet. Create one from a template of the country profile."
+            />
+          </span>
+        </fpc-data-table>
+      }
+
+      @case ('issues') {
+        @if (catchUpResult(); as result) {
+          <fpc-alert flush variant="success" [message]="catchUpSummary(result)" [dismissible]="true" />
+        }
+        <fpc-data-table
+          [ariaLabel]="pageTitle"
+          [columns]="issueColumns"
+          [rows]="postingIssues().data?.items ?? []"
+          paging="client"
+          [loading]="postingIssues().loading"
+          [error]="postingIssues().error"
+          emptyIcon="check2-circle"
+          data-testid="accounting-posting-issues"
+        >
+          <fpc-button
+            fpcDataTableToolbar
+            variant="primary"
+            [disabled]="mutating()"
+            (clicked)="runCatchUp()"
+            data-testid="accounting-catch-up"
+          >
+            @if (mutating()) {
+              <fpc-spinner size="sm" />
+            } @else {
+              <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>
+            }
+            <span i18n="@@featureAccountingOverview-catchUp">Run catch-up</span>
+          </fpc-button>
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="check2-circle"
+              i18n-message="@@featureAccountingOverview-noIssues"
+              message="No open posting issues. Every document is booked."
+            />
+          </span>
+        </fpc-data-table>
+      }
+
+      @case ('fx') {
+        @if (ecbResult() !== null) {
+          <fpc-alert
+            flush
+            variant="success"
+            [dismissible]="true"
+            i18n-message="@@featureAccountingOverview-ecbStored"
+            message="ECB reference rates fetched: {{ ecbResult() }} rates stored."
+          />
+        }
+        <fpc-data-table
+          [ariaLabel]="pageTitle"
+          [columns]="fxColumns"
+          [rows]="fxRates().data?.items ?? []"
+          paging="client"
+          [loading]="fxRates().loading"
+          [error]="fxRates().error"
+          emptyIcon="currency-exchange"
+          data-testid="accounting-fx-rates"
+        >
+          @if (globalAccess()) {
+            <fpc-button
+              fpcDataTableToolbar
+              variant="primary"
+              iconOnly
+              i18n-ariaLabel="@@featureAccountingOverview-addRate"
+              ariaLabel="Add manual rate"
+              i18n-title="@@featureAccountingOverview-addRate"
+              title="Add manual rate"
+              (clicked)="openFxModal()"
+            >
+              <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            </fpc-button>
+          }
+          @if (globalAccess()) {
+            <fpc-button
+              fpcDataTableToolbar
+              variant="secondary"
+              iconOnly
+              [disabled]="mutating()"
+              i18n-ariaLabel="@@featureAccountingOverview-fetchEcb"
+              ariaLabel="Fetch ECB rates"
+              i18n-title="@@featureAccountingOverview-fetchEcb"
+              title="Fetch ECB rates"
+              (clicked)="fetchEcbRates()"
+              data-testid="accounting-fetch-ecb"
+            >
+              <i class="bi bi-cloud-download" aria-hidden="true"></i>
+            </fpc-button>
+          }
+          <span fpcDataTableEmpty>
+            <fpc-empty-state
+              size="sm"
+              icon="currency-exchange"
+              i18n-message="@@featureAccountingOverview-noRates"
+              message="No exchange rates stored yet."
+            />
+          </span>
+        </fpc-data-table>
+      }
+    }
+  </div>
+</div>
+
+<fpc-confirm-dialog
+  [open]="lockTarget() !== null"
+  (openChange)="!$event && lockTarget.set(null)"
+  i18n-title="@@featureAccountingOverview-lockTitle"
+  title="Lock period?"
+  i18n-message="@@featureAccountingOverview-lockMessage"
+  message="Locked periods accept no new bookings and their entries become immutable (corrections go into an open period). Earlier periods are locked as well. This cannot be undone."
+  i18n-confirmLabel="@@featureAccountingOverview-lock"
+  confirmLabel="Lock"
+  [warning]="true"
+  (confirmed)="confirmLock()"
+/>
+
+<fpc-confirm-dialog
+  [(open)]="openYearConfirm"
+  i18n-title="@@featureAccountingOverview-openYearTitle"
+  title="Open next fiscal year?"
+  i18n-message="@@featureAccountingOverview-openYearMessage"
+  message="Opens the fiscal year after the latest one with the same chart of accounts."
+  i18n-confirmLabel="@@featureAccountingOverview-openYearConfirm"
+  confirmLabel="Open year"
+  (confirmed)="confirmOpenYear()"
+/>
+
+<fpc-modal
+  [(open)]="chartModalOpen"
+  i18n-title="@@featureAccountingOverview-createChart"
+  title="Create chart of accounts"
+  data-testid="accounting-chart-modal"
+>
+  <fpc-form-field forId="accChartMode" i18n-label="@@featureAccountingOverview-chartStart" label="Start from">
+    <fpc-form-control controlType="select" controlId="accChartMode" [(ngModel)]="chartForm.mode" name="accChartMode">
+      <option value="template" i18n="@@featureAccountingOverview-fromTemplate">Template</option>
+      <option value="empty" i18n="@@featureAccountingOverview-fromEmpty">Empty chart</option>
+    </fpc-form-control>
+  </fpc-form-field>
+  @if (chartForm.mode === 'template') {
+    <fpc-form-field forId="accChartTemplate" i18n-label="@@featureAccountingOverview-template" label="Template">
+      <fpc-form-control
+        controlType="select"
+        controlId="accChartTemplate"
+        [(ngModel)]="chartForm.templateKey"
+        name="accChartTemplate"
+      >
+        <option value="" disabled i18n="@@featureAccountingOverview-chooseTemplate">Choose a template</option>
+        @for (template of templates().data ?? []; track template.key) {
+          <option [value]="template.key">
+            {{ template.name }} ({{ template.key }}, {{ template.accountCount }} / {{ template.taxCodeCount }})
+          </option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+    @for (template of templates().data ?? []; track template.key) {
+      @if (template.key === chartForm.templateKey) {
+        <p class="small text-body-secondary">{{ template.description }}</p>
+        <p class="small text-body-secondary">{{ template.source }}</p>
+      }
+    }
+  }
+  <fpc-form-field
+    forId="accChartCode"
+    i18n-label="@@featureAccountingOverview-chartCode"
+    label="Code"
+    [required]="chartForm.mode === 'empty'"
+    i18n-hint="@@featureAccountingOverview-chartCodeHint"
+    hint="2–32 letters, digits or dashes; templates default to their key."
+  >
+    <fpc-form-control controlId="accChartCode" [(ngModel)]="chartForm.code" name="accChartCode" />
+  </fpc-form-field>
+  <fpc-form-field
+    forId="accChartName"
+    i18n-label="@@featureAccountingOverview-chartName"
+    label="Name"
+    [required]="chartForm.mode === 'empty'"
+  >
+    <fpc-form-control controlId="accChartName" [(ngModel)]="chartForm.name" name="accChartName" />
+  </fpc-form-field>
+  @if (chartForm.mode === 'empty') {
+    <fpc-form-field forId="accChartCountry" i18n-label="@@featureAccountingOverview-chartCountry" label="Country">
+      <fpc-form-control
+        controlId="accChartCountry"
+        [(ngModel)]="chartForm.country"
+        name="accChartCountry"
+        placeholder="DE"
+      />
+    </fpc-form-field>
+    <fpc-form-field
+      forId="accChartLength"
+      i18n-label="@@featureAccountingOverview-chartAccountLength"
+      label="Account number length"
+    >
+      <fpc-form-control
+        controlId="accChartLength"
+        inputType="number"
+        min="3"
+        max="8"
+        [(ngModel)]="chartForm.accountLength"
+        name="accChartLength"
+      />
+    </fpc-form-field>
+  }
+  @if (mutationError(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="primary" [disabled]="mutating() || !chartFormValid()" (clicked)="submitChart()">
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingOverview-create">Create</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="fxModalOpen"
+  i18n-title="@@featureAccountingOverview-addRate"
+  title="Add manual rate"
+  data-testid="accounting-fx-modal"
+>
+  <fpc-form-field forId="accFxCurrency" i18n-label="@@featureAccountingOverview-fxCurrency" label="Currency" required>
+    <fpc-form-control controlId="accFxCurrency" [(ngModel)]="fxForm.currency" name="accFxCurrency" placeholder="USD" />
+  </fpc-form-field>
+  <fpc-form-field forId="accFxDate" i18n-label="@@featureAccountingOverview-fxDate" label="Date" required>
+    <fpc-form-control controlId="accFxDate" inputType="date" [(ngModel)]="fxForm.rateDate" name="accFxDate" />
+  </fpc-form-field>
+  <fpc-form-field
+    forId="accFxRate"
+    i18n-label="@@featureAccountingOverview-fxRate"
+    label="Rate (units per 1 EUR)"
+    required
+  >
+    <fpc-form-control
+      controlId="accFxRate"
+      inputType="number"
+      step="0.000001"
+      min="0"
+      [(ngModel)]="fxForm.rate"
+      name="accFxRate"
+    />
+  </fpc-form-field>
+  @if (mutationError(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="primary" [disabled]="mutating() || !fxFormValid()" (clicked)="submitFxRate()">
+      <span i18n="@@featureAccountingOverview-save">Save</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal
+  class="accounting-wide-modal"
+  [(open)]="closeModalOpen"
+  size="lg"
+  i18n-title="@@featureAccountingOverview-closeYearTitle"
+  title="Close fiscal year"
+  data-testid="accounting-close-year-modal"
+>
+  @if (closingYear(); as year) {
+    <p class="small text-body-secondary" i18n="@@featureAccountingOverview-closeYearHint">
+      Balance-sheet accounts and open items carry forward into the next year, the result goes to retained earnings and
+      the closed year becomes immutable.
+    </p>
+    <fpc-form-field
+      forId="accCloseChart"
+      i18n-label="@@featureAccountingOverview-nextChart"
+      label="Chart of the next year"
+      i18n-hint="@@featureAccountingOverview-nextChartHint"
+      hint="Only changeable while the next year has no bookings."
+    >
+      <fpc-form-control
+        controlType="select"
+        controlId="accCloseChart"
+        [(ngModel)]="closeNextChartId"
+        (ngModelChange)="loadClosePreview()"
+        name="accCloseChart"
+      >
+        <option value="" i18n="@@featureAccountingOverview-keepChart">Keep the current chart</option>
+        @for (chart of charts().data ?? []; track chart.id) {
+          <option [value]="chart.id">{{ chart.name }} ({{ chart.code }})</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+
+    @if (closePreview().loading) {
+      <fpc-empty-state size="sm" loading />
+    } @else if (closePreview().error; as err) {
+      <fpc-alert variant="danger" [message]="err" />
+    } @else if (closePreview().data; as preview) {
+      <p class="mb-2">
+        <span i18n="@@featureAccountingOverview-yearResult">Result of {{ year.name }}:</span>
+        <strong class="ms-1">{{ money(preview.result) }}</strong>
+      </p>
+      @if (preview.unmapped.length > 0) {
+        <fpc-alert
+          variant="warning"
+          i18n-message="@@featureAccountingOverview-unmapped"
+          message="Accounts without a target in the next chart: {{ preview.unmapped.join(', ') }}. Map them below."
+          data-testid="accounting-close-unmapped"
+        />
+      }
+      <table class="accounting-table">
+        <thead>
+          <tr>
+            <th i18n="@@featureAccountingOverview-colAccount">Account</th>
+            <th class="accounting-amount" i18n="@@featureAccountingOverview-colBalance">Balance</th>
+            <th i18n="@@featureAccountingOverview-colTarget">Carried to</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of preview.balances; track row.number) {
+            <tr>
+              <td>
+                <span class="accounting-mono">{{ row.number }}</span> {{ row.name }}
+              </td>
+              <td class="accounting-amount">{{ money(row.balance) }}</td>
+              <td>
+                @if (preview.chartChanges || preview.unmapped.length > 0) {
+                  <input
+                    class="form-control form-control-sm accounting-mono"
+                    [attr.aria-label]="row.number"
+                    [value]="mappingValue(row)"
+                    (change)="setMapping(row.number, $any($event.target).value)"
+                  />
+                } @else {
+                  <span class="accounting-mono">{{ row.targetNumber ?? row.number }}</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      @if (preview.chartChanges || preview.unmapped.length > 0) {
+        <fpc-button class="mt-2" variant="link" size="sm" (clicked)="loadClosePreview()">
+          <span i18n="@@featureAccountingOverview-refreshPreview">Refresh preview</span>
+        </fpc-button>
+      }
+    }
+    @if (mutationError(); as err) {
+      <fpc-alert variant="danger" [message]="err" />
+    }
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button
+      variant="danger"
+      [disabled]="mutating() || !canCloseYear()"
+      (clicked)="submitCloseYear()"
+      data-testid="accounting-close-year-submit"
+    >
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingOverview-closeYear">Close year</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>

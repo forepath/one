@@ -82,6 +82,7 @@ describe('AdminFileManagerService', () => {
     const result = await runWithTenantId('default', () => service.listDirectory('', AdminFileManagerView.TENANT));
 
     expect(result.entries.map((entry) => entry.name)).toEqual([
+      'accounting',
       'customer',
       'export',
       'inventory',
@@ -89,6 +90,15 @@ describe('AdminFileManagerService', () => {
       'supplier',
     ]);
     expect(result.viewTenantId).toBe('default');
+  });
+
+  it('materializes the accounting imports and receipts folders', async () => {
+    const result = await runWithTenantId('default', () =>
+      service.listDirectory('accounting', AdminFileManagerView.TENANT),
+    );
+
+    expect(result.entries.map((entry) => entry.name)).toEqual(['imports', 'receipts']);
+    expect(result.entries.every((entry) => entry.type === 'directory')).toBe(true);
   });
 
   it('materializes empty structural folders under customer', async () => {

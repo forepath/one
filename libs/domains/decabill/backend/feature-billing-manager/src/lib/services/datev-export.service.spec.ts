@@ -56,6 +56,7 @@ describe('DatevExportService', () => {
       expenseBuKeyStandard: '',
       expenseBuKeyReduced: '',
       includeDocuments: false,
+      includeBankPostings: true,
       dictationAbbr: 'DEC',
       fiscalYearStartMonth: 1,
     }),
@@ -175,6 +176,7 @@ describe('DatevExportService', () => {
       expenseBuKeyStandard: '',
       expenseBuKeyReduced: '',
       includeDocuments: false,
+      includeBankPostings: true,
       dictationAbbr: 'DEC',
       fiscalYearStartMonth: 1,
     });
@@ -315,6 +317,64 @@ describe('DatevExportService', () => {
     expect(tenantIds).toContain('acme');
   });
 
+  it('archives each PDF once and links only documents that have a stored PDF', async () => {
+    const withPdf = {
+      id: 'inv-a',
+      userId: 'user-1',
+      invoiceNumber: 'INV-A',
+      pdfStorageKey: 'a.pdf',
+      issuedAt: new Date('2026-01-10'),
+      createdAt: new Date('2026-01-10'),
+      lineItems: [
+        { description: 'Line 1', lineGross: 10, taxCategory: 'standard' },
+        { description: 'Line 2', lineGross: 20, taxCategory: 'standard' },
+      ],
+    };
+    const withoutPdf = {
+      ...withPdf,
+      id: 'inv-b',
+      invoiceNumber: 'INV-B',
+      pdfStorageKey: null,
+      lineItems: [withPdf.lineItems[0]],
+    };
+
+    configService.resolveForTenant.mockReturnValue({ ...configService.resolveForTenant(), includeDocuments: true });
+    invoicesRepository.findIssuedInPeriod.mockResolvedValue([withPdf, withoutPdf]);
+    customerProfilesRepository.findByUserId.mockResolvedValue({ userId: 'user-1', company: 'Acme' });
+    debtorAccountService.resolveDebtorNumber.mockResolvedValue(10_001);
+    bookingMapper.mapIssuedLineItem.mockReturnValue(['row']);
+    documentArchiveService.buildDocumentRelativePath.mockImplementation(
+      (_scope, _tenant, fileName) => `belege/${fileName}`,
+    );
+    documentArchiveService.buildBeleglink.mockImplementation((path) => `BEDI "${path}"`);
+    documentArchiveService.readInvoicePdf.mockImplementation(async (invoice: { pdfStorageKey: string | null }) =>
+      invoice.pdfStorageKey ? Buffer.from('%PDF') : null,
+    );
+
+    await service.runExport({
+      scope: DatevExportScope.TENANT,
+      tenantId: 'default',
+      year: 2026,
+      month: 1,
+      periodStart: new Date('2026-01-01'),
+      periodEnd: new Date('2026-01-31'),
+      triggeredBy: 'scheduler',
+    });
+
+    expect(documentArchiveService.readInvoicePdf).toHaveBeenCalledTimes(2);
+
+    const links = bookingMapper.mapIssuedLineItem.mock.calls.map((call) => [
+      (call[0] as { invoice: { id: string } }).invoice.id,
+      (call[0] as { documentLink?: string }).documentLink,
+    ]);
+
+    expect(links).toEqual([
+      ['inv-a', 'BEDI "belege/INV-A.pdf"'],
+      ['inv-a', 'BEDI "belege/INV-A.pdf"'],
+      ['inv-b', undefined],
+    ]);
+  });
+
   it('books both the original and the cancellation for an invoice issued and voided in the same period', async () => {
     const invoice = {
       id: 'inv-v',
@@ -346,6 +406,76 @@ describe('DatevExportService', () => {
 
     expect(bookingMapper.mapIssuedLineItem).toHaveBeenCalledWith(expect.objectContaining({ invoice }));
     expect(bookingMapper.mapVoidedLineItem).toHaveBeenCalledWith(expect.objectContaining({ invoice }));
+  });
+
+  it('in ledger mode keeps document bookings dated before the accounting start next to the journal rows', async () => {
+    const ledgerDatev = {
+      isActive: () => true,
+      buildRows: jest.fn().mockResolvedValue({ rows: [['journal-row']], allLocked: false }),
+    };
+    const accountingConfig = {
+      isEnabled: () => true,
+      getConfig: () => ({ startDate: '2026-01-11', functionalCurrency: 'EUR' }),
+    };
+    const ledgerService = new DatevExportService(
+      configService as never,
+      billingTenantService as never,
+      invoicesRepository as never,
+      customerProfilesRepository as never,
+      supplierInvoicesRepository as never,
+      supplierProfilesRepository as never,
+      voidDocumentsRepository as never,
+      creditDocumentsRepository as never,
+      invoicePdfService as never,
+      exportRepository as never,
+      fileStorage as never,
+      bookingMapper as never,
+      debtorMapper as never,
+      debtorAccountService as never,
+      creditorAccountService as never,
+      creditorMapper as never,
+      extfCsvService as never,
+      documentArchiveService as never,
+      billingNotificationPublisher as never,
+      { registerFromBuffer: jest.fn().mockResolvedValue({}) } as never,
+      ledgerDatev as never,
+      accountingConfig as never,
+    );
+    const invoice = (id: string, issuedAt: string) => ({
+      id,
+      userId: 'user-1',
+      invoiceNumber: id,
+      status: 'issued',
+      issuedAt: new Date(issuedAt),
+      createdAt: new Date(issuedAt),
+      lineItems: [{ description: 'Line', lineGross: 10, taxCategory: 'standard' }],
+    });
+
+    invoicesRepository.findIssuedInPeriod.mockResolvedValue([
+      invoice('INV-BEFORE', '2026-01-05T10:00:00Z'),
+      invoice('INV-AFTER', '2026-01-20T10:00:00Z'),
+    ]);
+    invoicesRepository.findVoidedInPeriod.mockResolvedValue([]);
+    customerProfilesRepository.findByUserId.mockResolvedValue({ userId: 'user-1', company: 'Acme' });
+    debtorAccountService.resolveDebtorNumber.mockResolvedValue(10_001);
+    bookingMapper.mapIssuedLineItem.mockImplementation(({ invoice: inv }: { invoice: { id: string } }) => [
+      `row-${inv.id}`,
+    ]);
+
+    await ledgerService.runExport({
+      scope: DatevExportScope.TENANT,
+      tenantId: 'default',
+      year: 2026,
+      month: 1,
+      periodStart: new Date('2026-01-01'),
+      periodEnd: new Date('2026-01-31'),
+      triggeredBy: 'scheduler',
+      force: true,
+    } as never);
+
+    expect(extfCsvService.buildBookingBatchCsv).toHaveBeenLastCalledWith(
+      expect.objectContaining({ bookingRows: [['row-INV-BEFORE'], ['journal-row']] }),
+    );
   });
 
   it('fails unified export when an invoice has no customer profile', async () => {
@@ -406,6 +536,7 @@ describe('DatevExportService', () => {
       buKeyOss: '',
       buKeyThirdCountry: '',
       includeDocuments: false,
+      includeBankPostings: true,
       dictationAbbr: 'DEC',
       fiscalYearStartMonth: 1,
     };

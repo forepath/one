@@ -79,6 +79,36 @@ describe('InvoiceIssuanceService', () => {
   };
   const documentTermsConfig = new BillingDocumentTermsConfigService();
   const inventoryWithdrawalRequests = { raiseForInvoiceLines: jest.fn().mockResolvedValue(undefined) };
+  /** Transaction manager routing the invoice writes through the repository mock (assertions stay on update). */
+  let lastWritten: unknown;
+  const takenReferences = new Set<string>();
+  const invoiceRepoInTx = {
+    createQueryBuilder: () => {
+      let candidate: string | undefined;
+      const qb = {
+        where: (_sql: string, params?: { candidate?: string }) => {
+          candidate = params?.candidate;
+
+          return qb;
+        },
+        andWhere: () => qb,
+        setLock: () => qb,
+        getOne: async () => await invoicesRepository.findByIdOrThrow('inv-1'),
+        getCount: async () => (candidate && takenReferences.has(candidate) ? 1 : 0),
+      };
+
+      return qb;
+    },
+    update: async (id: string, patch: unknown) => {
+      lastWritten = await invoicesRepository.update(id, patch);
+
+      return lastWritten;
+    },
+    findOneOrFail: async () => lastWritten,
+  };
+  const manager = { getRepository: () => invoiceRepoInTx };
+  const dataSource = { transaction: async (run: (m: unknown) => unknown) => await run(manager) };
+  const documentSettlementService = { applyAvailableCustomerCredit: jest.fn() };
   const service = new InvoiceIssuanceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -100,6 +130,8 @@ describe('InvoiceIssuanceService', () => {
     billingSearchIndexService as never,
     documentTermsConfig,
     inventoryWithdrawalRequests as never,
+    dataSource as never,
+    documentSettlementService as never,
   );
   const draftInvoice = {
     id: 'inv-1',
@@ -115,6 +147,8 @@ describe('InvoiceIssuanceService', () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+    lastWritten = undefined;
+    documentSettlementService.applyAvailableCustomerCredit.mockResolvedValue(0);
     process.env.BILLING_DEFAULT_PAYMENT_PROCESSOR = 'stripe';
     billingIssuerConfig.getConfig.mockReturnValue({
       name: 'Issuer',
@@ -191,11 +225,43 @@ describe('InvoiceIssuanceService', () => {
     invoicePdfService.generateAndStore.mockResolvedValue('sub-1/inv-1.pdf');
   });
 
+  it('picks another RF reference when the first choice is already taken by another invoice', async () => {
+    const { buildInvoicePaymentReference } = await import('../utils/payment-reference.util');
+    const id = '3f2a9c10-aaaa-bbbb-cccc-000000000001';
+    // nextInvoiceNumber is mocked to INV-2026-00001.
+    const first = buildInvoicePaymentReference('INV-2026-00001', id, 0);
+
+    takenReferences.add(first);
+
+    try {
+      await service.issueDraft(id);
+
+      expect(invoicesRepository.update).toHaveBeenCalledWith(
+        id,
+        expect.objectContaining({ paymentReference: buildInvoicePaymentReference('INV-2026-00001', id, 1) }),
+      );
+    } finally {
+      takenReferences.clear();
+    }
+  });
+
   it('issues draft invoice with number, dates, and PDF', async () => {
     const result = await service.issueDraft('inv-1');
 
     expect(billingIssuerConfig.assertConfigured).toHaveBeenCalled();
-    expect(invoiceNumberSequencesRepository.nextInvoiceNumber).toHaveBeenCalledWith(new Date().getFullYear());
+    expect(invoiceNumberSequencesRepository.nextInvoiceNumber).toHaveBeenCalledWith(
+      new Date().getFullYear(),
+      expect.anything(),
+    );
+    expect(invoicesRepository.update).toHaveBeenCalledWith(
+      'inv-1',
+      expect.objectContaining({ paymentReference: expect.stringMatching(/^RF\d{2}INV202600001/) }),
+    );
+    expect(documentSettlementService.applyAvailableCustomerCredit).toHaveBeenCalledWith(
+      'inv-1',
+      expect.anything(),
+      expect.any(Date),
+    );
     expect(invoicesRepository.update).toHaveBeenCalledWith(
       'inv-1',
       expect.objectContaining({

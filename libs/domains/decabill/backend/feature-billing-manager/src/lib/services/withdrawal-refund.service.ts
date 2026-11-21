@@ -1,6 +1,9 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 
+import { ACCOUNTING_POSTING_PORT, type AccountingPostingPort } from '../accounting/ports/accounting-posting.port';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
+import { SettlementDocumentType, SettlementSource, SettlementType } from '../constants/settlement.constants';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { PaymentRefundStatus } from '../entities/payment-refund.entity';
@@ -16,15 +19,19 @@ import { PaymentRefundsRepository } from '../repositories/payment-refunds.reposi
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { calculateProratedAmount } from '../utils/billing-proration.util';
+import { creditFromInvoiceSnapshot } from '../utils/credit-snapshot.util';
+import { invoiceCountsTowardOssLedger } from '../utils/oss-ledger.util';
 import { resolvePlanTaxCategory } from '../utils/plan-tax.utils';
 import { resolveSubscriptionBillingBaseOverride } from '../utils/server-type-billing.utils';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
 import { BillingScheduleService } from './billing-schedule.service';
+import { DocumentSettlementService } from './document-settlement.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { InvoiceTaxContextService } from './invoice-tax-context.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
+import { OssThresholdService } from './oss-threshold.service';
 import { PricingService } from './pricing.service';
 import { ProviderServerTypesService } from './provider-server-types.service';
 import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
@@ -64,15 +71,12 @@ export class WithdrawalRefundService {
     private readonly invoicePdfService: InvoicePdfService,
     private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly auditLog: BillingAuditLogService,
+    private readonly dataSource: DataSource,
+    private readonly documentSettlementService: DocumentSettlementService,
     @Optional() private readonly billingNotificationPublisher?: BillingNotificationPublisher,
+    @Optional() @Inject(ACCOUNTING_POSTING_PORT) private readonly postingPort?: AccountingPostingPort,
+    @Optional() private readonly ossThresholdService?: OssThresholdService,
   ) {}
-
-  /** Webhook `invoice.paid` when a credit settles the remaining balance (not when the invoice already was paid). */
-  private publishInvoicePaidTransition(wasPaid: boolean, invoice: InvoiceEntity | null | undefined): void {
-    if (!wasPaid && invoice?.status === InvoiceStatus.PAID) {
-      this.billingNotificationPublisher?.publishInvoice('invoice.paid', invoice);
-    }
-  }
 
   async estimateRefundGross(subscription: SubscriptionEntity): Promise<number | undefined> {
     const amounts = await this.calculateRefundAmounts(subscription, new Date());
@@ -100,6 +104,8 @@ export class WithdrawalRefundService {
       };
     }
 
+    // Credit from the invoice that was actually issued (its tax snapshot, never more than it charged).
+    const snapshotAmounts = await this.capToInvoice(invoice, amounts);
     const suffix = withdrawnAt.getTime().toString(36);
     const lineDescription = `Unused subscription period (${subscription.number})`;
     const buyer = await this.customerProfilesRepository.findByUserId(subscription.userId);
@@ -120,62 +126,90 @@ export class WithdrawalRefundService {
       buyer,
       purchaseOrderReference,
       invoicingPeriod,
-      amounts.refundNet,
-      amounts.refundGross,
+      snapshotAmounts.refundNet,
+      snapshotAmounts.refundGross,
       lineDescription,
       suffix,
       taxCategory,
     );
+    const sourceRef = `withdrawal:${subscription.id}:${withdrawnAt.getTime()}`;
+    const settled = await this.dataSource.transaction(async (manager) => {
+      const credit = await this.invoiceCreditDocumentsRepository.create(
+        {
+          invoiceId: invoice.id,
+          documentNumber,
+          creditNet: snapshotAmounts.refundNet,
+          creditGross: snapshotAmounts.refundGross,
+          creditTax: Math.round((snapshotAmounts.refundGross - snapshotAmounts.refundNet) * 100) / 100,
+          taxRate: snapshotAmounts.taxRate,
+          pdfStorageKey: storageKey,
+          reason: 'withdrawal',
+          withdrawnAt,
+          taxCategory,
+          description: lineDescription,
+          sourceRef,
+          settlementComplete: true,
+        },
+        manager,
+      );
 
-    await this.invoiceCreditDocumentsRepository.create({
-      invoiceId: invoice.id,
-      documentNumber,
-      creditNet: amounts.refundNet,
-      creditGross: amounts.refundGross,
-      pdfStorageKey: storageKey,
-      reason: 'withdrawal',
-      withdrawnAt,
-      taxCategory,
-      description: lineDescription,
+      await this.postingPort?.onCreditDocumentCreated(manager, credit.id);
+
+      return await this.documentSettlementService.apply(
+        {
+          documentType: SettlementDocumentType.INVOICE,
+          documentId: invoice.id,
+          type: SettlementType.CREDIT,
+          amount: snapshotAmounts.refundGross,
+          currency: invoice.currency,
+          occurredAt: withdrawnAt,
+          source: SettlementSource.CREDIT_DOCUMENT,
+          sourceRef: `credit:${credit.id}`,
+          creditDocumentId: credit.id,
+        },
+        manager,
+      );
     });
 
+    await this.reverseOssShare(invoice, snapshotAmounts.refundNet);
     await this.billingEmailPublisher.publishPartialCreditDocument(
       invoice,
       storageKey,
       documentNumber,
-      amounts.refundGross,
+      snapshotAmounts.refundGross,
+    );
+    this.billingNotificationPublisher?.publishInvoice('invoice.settlement_recorded', settled.document as InvoiceEntity);
+    this.billingNotificationPublisher?.publish(
+      'credit_note.created',
+      {
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        creditNoteNumber: documentNumber,
+        creditNet: snapshotAmounts.refundNet,
+        creditGross: snapshotAmounts.refundGross,
+        reason: 'withdrawal',
+      },
+      invoice.userId,
     );
 
     let paymentRefundStatus: PaymentRefundOutcome = 'not_applicable';
-    const creditApplied = Math.min(amounts.refundGross, Number(invoice.balanceDue));
+    // Customer credit left after the credit note (negative balance) is paid back through the processor.
+    const customerCredit = Math.max(0, -Number(settled.document.balanceDue));
+    const refundPaymentAmount = Math.round(Math.min(snapshotAmounts.refundGross, customerCredit) * 100) / 100;
 
-    if (invoice.status === InvoiceStatus.PAID || invoice.status === InvoiceStatus.PARTIALLY_PAID) {
-      const paidAmount =
-        invoice.status === InvoiceStatus.PAID
-          ? Number(invoice.totalGross)
-          : Math.max(0, Number(invoice.totalGross) - Number(invoice.balanceDue));
-      const refundPaymentAmount = Math.min(amounts.refundGross, paidAmount);
+    if (refundPaymentAmount >= MIN_BILLABLE_AMOUNT) {
+      paymentRefundStatus = await this.attemptPaymentRefund(invoice, refundPaymentAmount, withdrawnAt);
+    }
 
-      if (refundPaymentAmount >= MIN_BILLABLE_AMOUNT) {
-        paymentRefundStatus = await this.attemptPaymentRefund(invoice, refundPaymentAmount, withdrawnAt);
+    if (settled.becameSettled) {
+      const finalInvoice = await this.invoicesRepository.findById(invoice.id);
+
+      if (finalInvoice) {
+        this.billingNotificationPublisher?.publishInvoice(
+          finalInvoice.status === InvoiceStatus.PAID ? 'invoice.paid' : 'invoice.credited',
+          finalInvoice,
+        );
       }
-
-      const newBalanceDue = Math.max(0, Math.round((Number(invoice.balanceDue) - creditApplied) * 100) / 100);
-      const wasPaid = invoice.status === InvoiceStatus.PAID;
-      const updated = await this.invoicesRepository.update(invoice.id, {
-        balanceDue: newBalanceDue,
-        ...(newBalanceDue <= 0 ? { status: InvoiceStatus.PAID, paidAt: invoice.paidAt ?? new Date() } : {}),
-      });
-
-      this.publishInvoicePaidTransition(wasPaid, updated);
-    } else if (invoice.status === InvoiceStatus.ISSUED || invoice.status === InvoiceStatus.OVERDUE) {
-      const newBalanceDue = Math.max(0, Math.round((Number(invoice.balanceDue) - creditApplied) * 100) / 100);
-      const updated = await this.invoicesRepository.update(invoice.id, {
-        balanceDue: newBalanceDue,
-        ...(newBalanceDue <= 0 ? { status: InvoiceStatus.PAID, paidAt: invoice.paidAt ?? new Date() } : {}),
-      });
-
-      this.publishInvoicePaidTransition(false, updated);
     }
 
     await this.auditLog.log({
@@ -186,19 +220,40 @@ export class WithdrawalRefundService {
       invoiceId: invoice.id,
       context: {
         subscriptionId: subscription.id,
-        refundNet: amounts.refundNet,
-        refundGross: amounts.refundGross,
+        refundNet: snapshotAmounts.refundNet,
+        refundGross: snapshotAmounts.refundGross,
         creditNoteNumber: documentNumber,
         paymentRefundStatus,
       },
     });
 
     return {
-      refundNet: amounts.refundNet,
-      refundGross: amounts.refundGross,
+      refundNet: snapshotAmounts.refundNet,
+      refundGross: snapshotAmounts.refundGross,
       creditNoteNumber: documentNumber,
       paymentRefundStatus,
     };
+  }
+
+  /**
+   * Re-prices the credit with the original invoice's tax snapshot (rate of the matching line, or no VAT for
+   * zero-rated modes) and caps it at the invoiced net, so a credit never exceeds what was charged.
+   */
+  /** Credit notes reduce the OSS cross-border B2C total the invoice added. */
+  private async reverseOssShare(invoice: InvoiceEntity, creditNet: number): Promise<void> {
+    if (this.ossThresholdService && invoice.issuedAt && invoiceCountsTowardOssLedger(invoice)) {
+      await this.ossThresholdService.reverseCrossBorderB2cNet({ netAmount: creditNet, at: new Date(invoice.issuedAt) });
+    }
+  }
+
+  private async capToInvoice(
+    invoice: InvoiceEntity,
+    amounts: { refundNet: number; refundGross: number },
+  ): Promise<{ refundNet: number; refundGross: number; taxRate: number }> {
+    const lines = await this.invoiceLineItemsRepository.findByInvoiceId(invoice.id);
+    const credit = creditFromInvoiceSnapshot(invoice, lines, amounts.refundNet);
+
+    return { refundNet: credit.net, refundGross: credit.gross, taxRate: credit.taxRate };
   }
 
   private async calculateRefundAmounts(
@@ -256,7 +311,8 @@ export class WithdrawalRefundService {
     const processorType = invoice.paymentProcessor ?? process.env.BILLING_DEFAULT_PAYMENT_PROCESSOR ?? 'stripe';
     const checkoutSessionId = invoice.externalPaymentId;
     const attempt = await this.paymentAttemptsRepository.findLatestSucceededByInvoiceId(invoice.id);
-    const externalId = checkoutSessionId ?? attempt?.externalId;
+    // Prefer the payment that actually succeeded (auto charges store a PaymentIntent, checkouts a session).
+    const externalId = attempt?.externalId ?? checkoutSessionId;
 
     if (!externalId) {
       this.logger.warn(`No checkout session found for invoice ${invoice.id}; skipping payment refund`);
@@ -285,6 +341,24 @@ export class WithdrawalRefundService {
         status: PaymentRefundStatus.SUCCEEDED,
         externalRefundId: result.externalRefundId,
       });
+      await this.documentSettlementService.apply({
+        documentType: SettlementDocumentType.INVOICE,
+        documentId: invoice.id,
+        type: SettlementType.REFUND,
+        amount,
+        currency: invoice.currency,
+        occurredAt: new Date(),
+        source: SettlementSource.PROCESSOR_WEBHOOK,
+        sourceRef: `refund:${refundRecord.id}`,
+        processor: processorType,
+        externalId: result.externalRefundId,
+        paymentRefundId: refundRecord.id,
+      });
+      this.billingNotificationPublisher?.publishPayment(
+        'payment.refunded',
+        (await this.invoicesRepository.findById(invoice.id)) ?? (invoice as InvoiceEntity),
+        { processor: processorType, externalRefundId: result.externalRefundId, amount },
+      );
 
       return 'succeeded';
     } catch (error) {

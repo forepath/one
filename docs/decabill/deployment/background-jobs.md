@@ -35,26 +35,29 @@ Job registration (queue names, repeatable intervals, job names) lives in:
 
 Registered by the scheduler from `getBillingRepeatableJobs()`:
 
-| Coordinator job name                      | Env interval variable                      | Default interval |
-| ----------------------------------------- | ------------------------------------------ | ---------------- |
-| `subscription-billing.coordinator`        | `BILLING_SCHEDULER_INTERVAL`               | 60s              |
-| `subscription-expiration.coordinator`     | `EXPIRATION_SCHEDULER_INTERVAL`            | 60s              |
-| `subscription-withdrawal.coordinator`     | `WITHDRAWAL_SCHEDULER_INTERVAL`            | 60s              |
-| `subscription-instant-cancel.coordinator` | `INSTANT_CANCEL_SCHEDULER_INTERVAL`        | 60s              |
-| `subscription-provisioning.coordinator`   | `PROVISIONING_SCHEDULER_INTERVAL`          | 30s              |
-| `subscription-config-change.coordinator`  | `CONFIG_CHANGE_SCHEDULER_INTERVAL`         | 30s              |
-| `invoice-overdue.coordinator`             | `INVOICE_OVERDUE_SCHEDULER_INTERVAL`       | 24h              |
-| `invoice-auto-payment.coordinator`        | `INVOICE_AUTO_PAYMENT_SCHEDULER_INTERVAL`  | 60s              |
-| `open-position-invoice.coordinator`       | `OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL` | 24h              |
-| `renewal-reminder.coordinator`            | `REMINDER_SCHEDULER_INTERVAL`              | 1h               |
-| `subscription-item-update.coordinator`    | `SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL`   | 24h              |
-| `backorder-retry.coordinator`             | `BACKORDER_RETRY_INTERVAL_MS`              | 60s              |
-| `datev-export.coordinator`                | `BILLING_DATEV_EXPORT_CRON` (cron)         | 1st of month     |
-| `price-recalc.coordinator`                | `BILLING_PRICE_RECALC_CRON` (cron)         | daily 00:00      |
-| `update-check`                            | `UPDATE_CHECK_CRON` (cron)                 | daily 00:00      |
-| `search-reindex.coordinator`              | `SEARCH_REINDEX_INTERVAL`                  | 15m              |
+| Coordinator job name                      | Env interval variable                           | Default interval |
+| ----------------------------------------- | ----------------------------------------------- | ---------------- |
+| `subscription-billing.coordinator`        | `BILLING_SCHEDULER_INTERVAL`                    | 60s              |
+| `subscription-expiration.coordinator`     | `EXPIRATION_SCHEDULER_INTERVAL`                 | 60s              |
+| `subscription-withdrawal.coordinator`     | `WITHDRAWAL_SCHEDULER_INTERVAL`                 | 60s              |
+| `subscription-instant-cancel.coordinator` | `INSTANT_CANCEL_SCHEDULER_INTERVAL`             | 60s              |
+| `subscription-provisioning.coordinator`   | `PROVISIONING_SCHEDULER_INTERVAL`               | 30s              |
+| `subscription-config-change.coordinator`  | `CONFIG_CHANGE_SCHEDULER_INTERVAL`              | 30s              |
+| `invoice-overdue.coordinator`             | `INVOICE_OVERDUE_SCHEDULER_INTERVAL`            | 24h              |
+| `invoice-auto-payment.coordinator`        | `INVOICE_AUTO_PAYMENT_SCHEDULER_INTERVAL`       | 60s              |
+| `open-position-invoice.coordinator`       | `OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL`      | 24h              |
+| `renewal-reminder.coordinator`            | `REMINDER_SCHEDULER_INTERVAL`                   | 1h               |
+| `subscription-item-update.coordinator`    | `SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL`        | 24h              |
+| `backorder-retry.coordinator`             | `BACKORDER_RETRY_INTERVAL_MS`                   | 60s              |
+| `datev-export.coordinator`                | `BILLING_DATEV_EXPORT_CRON` (cron)              | 1st of month     |
+| `price-recalc.coordinator`                | `BILLING_PRICE_RECALC_CRON` (cron)              | daily 00:00      |
+| `update-check`                            | `UPDATE_CHECK_CRON` (cron)                      | daily 00:00      |
+| `search-reindex.coordinator`              | `SEARCH_REINDEX_INTERVAL`                       | 15m              |
+| `accounting-catch-up.coordinator`         | `BILLING_ACCOUNTING_CATCH_UP_INTERVAL_MS`       | 15m              |
+| `accounting-fx-rates.coordinator`         | `BILLING_ACCOUNTING_FX_CRON` (cron)             | weekdays 16:30   |
+| `accounting-processor-sync.coordinator`   | `BILLING_ACCOUNTING_PROCESSOR_SYNC_CRON` (cron) | hourly :15       |
 
-The DATEV coordinator is registered only when `BILLING_DATEV_EXPORT_ENABLED=true`. The price-recalc coordinator is registered only when `BILLING_PRICE_RECALC_ENABLED=true` (default true). See [Automatic daily price recalculation](../features/automatic-price-recalculation.md).
+The accounting coordinators are registered only when `BILLING_ACCOUNTING_ENABLED=true` (and are removed from Valkey when it is switched off); they additionally do nothing while the accounting prerequisites are missing. See [Accounting](../features/accounting.md). The DATEV coordinator is registered only when `BILLING_DATEV_EXPORT_ENABLED=true`. The invoice-overdue coordinator also marks supplier invoices overdue. The price-recalc coordinator is registered only when `BILLING_PRICE_RECALC_ENABLED=true` (default true). See [Automatic daily price recalculation](../features/automatic-price-recalculation.md).
 
 The `update-check` job fetches the latest GitHub release for application update reporting (timezone `UPDATE_CHECK_TIMEZONE`, default `Europe/Berlin`). See [Application updates](../features/application-updates.md).
 

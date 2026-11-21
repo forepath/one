@@ -6,6 +6,7 @@ import {
   AdminOffersService,
   AdminProjectsService,
   AdminSupplierInvoicesService,
+  BillingCapabilitiesFacade,
   InventoryFacade,
   type InventoryStock,
 } from '@forepath/decabill/frontend/data-access-billing-console';
@@ -49,7 +50,11 @@ describe('InventoryMoveDialogComponent', () => {
     ),
   };
 
-  function create(mode: 'putaway' | 'transfer' | 'withdrawal' | 'lending', serialTracking = false) {
+  function create(
+    mode: 'putaway' | 'transfer' | 'withdrawal' | 'lending',
+    serialTracking = false,
+    accountingEnabled = false,
+  ) {
     TestBed.configureTestingModule({
       imports: [InventoryMoveDialogComponent],
       providers: [
@@ -61,6 +66,9 @@ describe('InventoryMoveDialogComponent', () => {
         { provide: AdminSupplierInvoicesService, useValue: {} },
         { provide: AdminProjectsService, useValue: {} },
         { provide: AdminCustomerProfilesService, useValue: {} },
+        ...(accountingEnabled
+          ? [{ provide: BillingCapabilitiesFacade, useValue: { accountingEnabled$: of(true) } }]
+          : []),
       ],
     });
 
@@ -196,5 +204,46 @@ describe('InventoryMoveDialogComponent', () => {
       kind: 'lend',
       dto: expect.objectContaining({ borrowerUserId: 'u1', dueDate: null }),
     });
+  });
+
+  it('putaway: links a supplier invoice picked as reference and sends the unit cost with accounting', () => {
+    const dialog = create('putaway', false, true);
+
+    dialog.target.set({ compartmentId: 'c2', compartmentCode: 'C2', warehouseCode: 'WH1' });
+    dialog.quantity = 3;
+    dialog.onReferenceChange('SUP-2026-00001');
+    dialog.onReferencePicked({ kind: 'supplier-invoice', value: 'SUP-2026-00001', detail: null, id: 'si-1' });
+    dialog.unitCost = 12.5;
+    dialog.submit();
+
+    expect(facade.mutate).toHaveBeenCalledWith({
+      kind: 'putaway',
+      dto: expect.objectContaining({
+        articleId: 'a1',
+        quantity: 3,
+        reference: 'SUP-2026-00001',
+        targetCompartmentId: 'c2',
+        supplierInvoiceId: 'si-1',
+        unitCost: 12.5,
+      }),
+    });
+  });
+
+  it('putaway: a changed reference drops the supplier invoice link; no unit cost without accounting', () => {
+    const dialog = create('putaway');
+
+    dialog.target.set({ compartmentId: 'c2', compartmentCode: 'C2', warehouseCode: 'WH1' });
+    dialog.quantity = 1;
+    dialog.onReferencePicked({ kind: 'supplier-invoice', value: 'SUP-2026-00001', detail: null, id: 'si-1' });
+    dialog.onReferenceChange('DN-4711');
+    expect(dialog.supplierInvoice()).toBeNull();
+
+    dialog.unitCost = 9;
+    dialog.submit();
+
+    const dto = facade.mutate.mock.calls[0][0].dto;
+
+    expect(dto).not.toHaveProperty('supplierInvoiceId');
+    expect(dto).not.toHaveProperty('unitCost');
   });
 });

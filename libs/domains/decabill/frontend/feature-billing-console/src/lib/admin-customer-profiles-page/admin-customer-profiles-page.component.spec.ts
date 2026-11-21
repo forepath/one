@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import {
   AdminCustomerProfilesFacade,
   AdminCustomerProfilesService,
+  BillingCapabilitiesFacade,
   type AdminCustomerProfileListItem,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { AuthenticationFacade } from '@forepath/identity/frontend';
@@ -14,6 +15,7 @@ jest.mock('../billing-country-options', () => ({
   BILLING_COUNTRY_OPTIONS: [],
   DEFAULT_BILLING_COUNTRY_CODE: 'DE',
   getCountryDisplayName: (code: string) => code,
+  withOptionalCountry: jest.requireActual('../billing-country-default').withOptionalCountry,
 }));
 
 const profile = (id: string, trustLevel?: 'green' | 'red'): AdminCustomerProfileListItem =>
@@ -47,6 +49,8 @@ describe('AdminCustomerProfilesPageComponent (data list)', () => {
       trustScoreRefreshing$: of(false),
       total$: of(3),
       loadProfiles: jest.fn(),
+      createProfile: jest.fn(),
+      updateProfile: jest.fn(),
     };
     TestBed.configureTestingModule({
       providers: [
@@ -54,6 +58,14 @@ describe('AdminCustomerProfilesPageComponent (data list)', () => {
         { provide: AdminCustomerProfilesFacade, useValue: facade },
         { provide: AdminCustomerProfilesService, useValue: service },
         { provide: AuthenticationFacade, useValue: { users$: of([]), loadUsers: jest.fn() } },
+        {
+          provide: BillingCapabilitiesFacade,
+          useValue: {
+            einvoiceFormats$: of([{ format: 'xrechnung-cii', label: 'XRechnung 3.0 (CII)' }]),
+            einvoiceDefaultFormat$: of('factur-x-en16931'),
+            loadCapabilities: jest.fn(),
+          },
+        },
       ],
     });
     component = TestBed.runInInjectionContext(() => new AdminCustomerProfilesPageComponent());
@@ -102,5 +114,57 @@ describe('AdminCustomerProfilesPageComponent (data list)', () => {
 
     expect(service.delete).toHaveBeenCalledTimes(2);
     expect(component.bulkResult()?.message).toContain('1 failed');
+  });
+
+  it('exposes the e-invoice formats of the capabilities', () => {
+    expect(component.einvoiceFormats()).toEqual([{ format: 'xrechnung-cii', label: 'XRechnung 3.0 (CII)' }]);
+    expect(component.einvoiceDefaultFormat()).toBe('factur-x-en16931');
+  });
+
+  it('edit: loads and saves the e-invoice settings (empty = issuer default / cleared)', () => {
+    service.getById.mockReturnValue(
+      of({
+        id: 'p1',
+        customerNumber: 'C-p1',
+        country: 'DE',
+        einvoiceFormat: 'xrechnung-cii',
+        buyerReference: '991-12345-67',
+        einvoiceEndpoint: null,
+      }),
+    );
+    component.openEditModal(profile('p1'));
+
+    expect(component.editForm).toEqual(
+      expect.objectContaining({
+        einvoiceFormat: 'xrechnung-cii',
+        buyerReference: '991-12345-67',
+        einvoiceEndpoint: '',
+      }),
+    );
+
+    component.editForm.buyerReference = ' 991-12345-67 ';
+    component.submitEdit();
+
+    expect(facade['updateProfile']).toHaveBeenCalledWith(
+      'p1',
+      expect.objectContaining({
+        einvoiceFormat: 'xrechnung-cii',
+        buyerReference: '991-12345-67',
+        einvoiceEndpoint: null,
+      }),
+    );
+  });
+
+  it('does not submit an invalid e-invoice address', () => {
+    component.createForm.userId = 'u-1';
+    component.createForm.einvoiceEndpoint = '4012345000009';
+    component.submitCreate();
+    expect(facade['createProfile']).not.toHaveBeenCalled();
+
+    component.createForm.einvoiceEndpoint = '0088:4012345000009';
+    component.submitCreate();
+    expect(facade['createProfile']).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'u-1', einvoiceEndpoint: '0088:4012345000009', einvoiceFormat: null }),
+    );
   });
 });

@@ -26,6 +26,52 @@ import { DynamicModule, Module, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { BankStatementParserService } from './accounting/bank-import/bank-statement-parser.service';
+import { AdminAccountingAssetsController } from './accounting/controllers/admin-accounting-assets.controller';
+import { AdminAccountingBankingController } from './accounting/controllers/admin-accounting-banking.controller';
+import { AdminAccountingJournalController } from './accounting/controllers/admin-accounting-journal.controller';
+import { AdminAccountingSetupController } from './accounting/controllers/admin-accounting-setup.controller';
+import { AdminAccountingVatController } from './accounting/controllers/admin-accounting-vat.controller';
+import { AccountingAccountEntity } from './accounting/entities/accounting-account.entity';
+import { AccountingBankImportEntity } from './accounting/entities/accounting-bank-import.entity';
+import { AccountingBankStatementEntity } from './accounting/entities/accounting-bank-statement.entity';
+import { AccountingBankTransactionEntity } from './accounting/entities/accounting-bank-transaction.entity';
+import { AccountingChartEntity } from './accounting/entities/accounting-chart.entity';
+import { AccountingCsvMappingEntity } from './accounting/entities/accounting-csv-mapping.entity';
+import { AccountingEntryLinkEntity } from './accounting/entities/accounting-entry-link.entity';
+import { AccountingEntryNumberSequenceEntity } from './accounting/entities/accounting-entry-number-sequence.entity';
+import { AccountingFinancialAccountEntity } from './accounting/entities/accounting-financial-account.entity';
+import { AccountingFiscalYearEntity } from './accounting/entities/accounting-fiscal-year.entity';
+import { AccountingFixedAssetEntity } from './accounting/entities/accounting-fixed-asset.entity';
+import { AccountingFxRateEntity } from './accounting/entities/accounting-fx-rate.entity';
+import { AccountingJournalEntryEntity } from './accounting/entities/accounting-journal-entry.entity';
+import { AccountingJournalLineEntity } from './accounting/entities/accounting-journal-line.entity';
+import { AccountingMatchRuleEntity } from './accounting/entities/accounting-match-rule.entity';
+import { AccountingPeriodEntity } from './accounting/entities/accounting-period.entity';
+import { AccountingPostingIssueEntity } from './accounting/entities/accounting-posting-issue.entity';
+import { AccountingTaxCodeEntity } from './accounting/entities/accounting-tax-code.entity';
+import { AccountingVatReturnEntity } from './accounting/entities/accounting-vat-return.entity';
+import { AccountingDatevLedgerService } from './accounting/exports/accounting-datev-ledger.service';
+import { AccountingExportService } from './accounting/exports/accounting-export.service';
+import { AccountingEnabledGuard } from './accounting/guards/accounting-enabled.guard';
+import { ACCOUNTING_POSTING_PORT } from './accounting/ports/accounting-posting.port';
+import { AccountingAdminService } from './accounting/services/accounting-admin.service';
+import { AccountingBankImportService } from './accounting/services/accounting-bank-import.service';
+import { AccountingCatchUpService } from './accounting/services/accounting-catch-up.service';
+import { AccountingChartService } from './accounting/services/accounting-chart.service';
+import { AccountingClosingService } from './accounting/services/accounting-closing.service';
+import { AccountingConfigService } from './accounting/services/accounting-config.service';
+import { AccountingFiscalYearService } from './accounting/services/accounting-fiscal-year.service';
+import { AccountingFixedAssetService } from './accounting/services/accounting-fixed-asset.service';
+import { AccountingFxService } from './accounting/services/accounting-fx.service';
+import { AccountingInventoryValuationService } from './accounting/services/accounting-inventory-valuation.service';
+import { AccountingJournalService } from './accounting/services/accounting-journal.service';
+import { AccountingPostingService } from './accounting/services/accounting-posting.service';
+import { AccountingProcessorSyncService } from './accounting/services/accounting-processor-sync.service';
+import { AccountingReconciliationService } from './accounting/services/accounting-reconciliation.service';
+import { AccountingReferenceService } from './accounting/services/accounting-reference.service';
+import { AccountingReportsService } from './accounting/services/accounting-reports.service';
+import { AccountingVatReturnService } from './accounting/services/accounting-vat-return.service';
 import { PAYMENT_PROCESSOR_INIT } from './constants/payment-processor-init.token';
 import { AgenstraControllerContributorModule } from './contributors/agenstra-controller/agenstra-controller.contributor.module';
 import { AgenstraManagerContributorModule } from './contributors/agenstra-manager/agenstra-manager.contributor.module';
@@ -79,6 +125,7 @@ import { CustomerProfileEntity } from './entities/customer-profile.entity';
 import { DatevCreditorAccountEntity } from './entities/datev-creditor-account.entity';
 import { DatevDebtorAccountEntity } from './entities/datev-debtor-account.entity';
 import { DatevExportEntity } from './entities/datev-export.entity';
+import { DocumentSettlementEntity } from './entities/document-settlement.entity';
 import { InvoiceCreditDocumentEntity } from './entities/invoice-credit-document.entity';
 import { InvoiceLineItemEntity } from './entities/invoice-line-item.entity';
 import { InvoiceNumberSequenceEntity } from './entities/invoice-number-sequence.entity';
@@ -149,6 +196,7 @@ import { InventoryLendingsService } from './inventory/services/inventory-lending
 import { InventoryLocationsService } from './inventory/services/inventory-locations.service';
 import { InventoryMovementPdfService } from './inventory/services/inventory-movement-pdf.service';
 import { InventoryMovementsService } from './inventory/services/inventory-movements.service';
+import { INVENTORY_VALUATION_HOOK } from './inventory/services/inventory-movements.service';
 import { InventoryRealtimeNotifier } from './inventory/services/inventory-realtime-notifier.service';
 import { InventoryRealtimeService } from './inventory/services/inventory-realtime.service';
 import { InventorySerialUnitsService } from './inventory/services/inventory-serial-units.service';
@@ -308,8 +356,11 @@ import { DatevExportConfigService } from './services/datev-export-config.service
 import { DatevExportJobHandler } from './services/datev-export.job-handler';
 import { DatevExportService } from './services/datev-export.service';
 import { DatevExtfCsvService } from './services/datev-extf-csv.service';
+import { DocumentSettlementService } from './services/document-settlement.service';
 import { EInvoiceEmbedService } from './services/e-invoice-embed.service';
+import { EInvoiceFormatConfigService } from './services/e-invoice-format-config.service';
 import { EInvoiceInboundParseService } from './services/e-invoice-inbound-parse.service';
+import { EInvoiceUblService } from './services/e-invoice-ubl.service';
 import { EInvoiceXmlService } from './services/e-invoice-xml.service';
 import { HostnameReservationService } from './services/hostname-reservation.service';
 import { IntegratedStackRegistryService } from './services/integrated-stack-registry.service';
@@ -455,6 +506,26 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
       InventoryArticleEntity,
       InventoryStockEntity,
       InventoryMovementEntity,
+      DocumentSettlementEntity,
+      AccountingChartEntity,
+      AccountingAccountEntity,
+      AccountingTaxCodeEntity,
+      AccountingFiscalYearEntity,
+      AccountingPeriodEntity,
+      AccountingEntryNumberSequenceEntity,
+      AccountingJournalEntryEntity,
+      AccountingJournalLineEntity,
+      AccountingEntryLinkEntity,
+      AccountingFxRateEntity,
+      AccountingPostingIssueEntity,
+      AccountingVatReturnEntity,
+      AccountingFinancialAccountEntity,
+      AccountingBankImportEntity,
+      AccountingBankStatementEntity,
+      AccountingBankTransactionEntity,
+      AccountingCsvMappingEntity,
+      AccountingMatchRuleEntity,
+      AccountingFixedAssetEntity,
       InventoryWithdrawalRequestEntity,
       InventoryNumberSequenceEntity,
       InventorySerialUnitEntity,
@@ -476,6 +547,11 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     BillingIdentityEmailBridgeModule,
   ],
   controllers: [
+    AdminAccountingSetupController,
+    AdminAccountingJournalController,
+    AdminAccountingVatController,
+    AdminAccountingBankingController,
+    AdminAccountingAssetsController,
     ServiceTypesController,
     CloudInitConfigsController,
     AddonsController,
@@ -592,6 +668,32 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     StoredFilesBackfillJobHandler,
     BillingStatisticsQueryService,
     InvoiceAdminService,
+    DocumentSettlementService,
+    AccountingConfigService,
+    AccountingChartService,
+    AccountingFiscalYearService,
+    AccountingJournalService,
+    AccountingFxService,
+    AccountingFixedAssetService,
+    AccountingPostingService,
+    AccountingCatchUpService,
+    AccountingReportsService,
+    AccountingVatReturnService,
+    AccountingReconciliationService,
+    AccountingBankImportService,
+    AccountingProcessorSyncService,
+    AccountingInventoryValuationService,
+    AccountingClosingService,
+    AccountingAdminService,
+    AccountingReferenceService,
+    AccountingExportService,
+    AccountingDatevLedgerService,
+    BankStatementParserService,
+    AccountingEnabledGuard,
+    EInvoiceFormatConfigService,
+    EInvoiceUblService,
+    { provide: ACCOUNTING_POSTING_PORT, useExisting: AccountingPostingService },
+    { provide: INVENTORY_VALUATION_HOOK, useExisting: AccountingInventoryValuationService },
     ManualInvoiceService,
     EInvoiceXmlService,
     EInvoiceEmbedService,
@@ -814,6 +916,10 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     },
   ],
   exports: [
+    AccountingCatchUpService,
+    AccountingFxService,
+    AccountingProcessorSyncService,
+    AccountingConfigService,
     AdminBillNowService,
     AvailabilityService,
     BackorderService,

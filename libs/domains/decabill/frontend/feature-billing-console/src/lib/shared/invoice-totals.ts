@@ -36,6 +36,17 @@ export function invoiceSummaryItems(
     },
     { key: 'tax', label: $localize`:@@featureInvoices-taxTotal:Tax total`, value: money(detail.taxTotal) },
     { key: 'total', label: $localize`:@@featureInvoices-totalGross:Total`, value: money(detail.totalGross) },
-    { key: 'balance', label: $localize`:@@featureInvoices-balanceDue:Balance due`, value: money(detail.balanceDue) },
+    // A negative balance is a customer credit (overpayment / credit note exceeding the open amount).
+    Number(detail.balanceDue) < 0
+      ? {
+          key: 'balance',
+          label: $localize`:@@featureInvoices-customerCredit:Customer credit`,
+          value: money(Math.abs(Number(detail.balanceDue))),
+        }
+      : {
+          key: 'balance',
+          label: $localize`:@@featureInvoices-balanceDue:Balance due`,
+          value: money(detail.balanceDue),
+        },
   ];
 }

@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
+import { DataSource, EntityManager } from 'typeorm';
 
+import { ACCOUNTING_POSTING_PORT, type AccountingPostingPort } from '../accounting/ports/accounting-posting.port';
 import { isEuMemberState } from '../constants/eu-member-states.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { TaxMode } from '../constants/tax-mode.constants';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
-import type { InvoiceEntity } from '../entities/invoice.entity';
+import { InvoiceEntity } from '../entities/invoice.entity';
 import { InventoryWithdrawalRequestsService } from '../inventory/services/inventory-withdrawal-requests.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
@@ -21,12 +23,15 @@ import {
   type DocumentTermsLayer,
   toDocumentTermsColumns,
 } from '../utils/document-terms.utils';
+import { buildInvoicePaymentReference } from '../utils/payment-reference.util';
 import { getRequiredTenantId } from '../utils/tenant-query.utils';
 
 import { AutoBillingService } from './auto-billing.service';
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingDocumentTermsConfigService } from './billing-document-terms-config.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
+import { DocumentSettlementService } from './document-settlement.service';
+import { EInvoiceFormatConfigService } from './e-invoice-format-config.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { InvoiceTaxContextService } from './invoice-tax-context.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
@@ -63,6 +68,10 @@ export class InvoiceIssuanceService {
     private readonly billingSearchIndexService: BillingSearchIndexService,
     private readonly documentTermsConfig: BillingDocumentTermsConfigService,
     private readonly inventoryWithdrawalRequests: InventoryWithdrawalRequestsService,
+    private readonly dataSource: DataSource,
+    private readonly documentSettlementService: DocumentSettlementService,
+    @Optional() @Inject(ACCOUNTING_POSTING_PORT) private readonly postingPort?: AccountingPostingPort,
+    @Optional() private readonly einvoiceFormats?: EInvoiceFormatConfigService,
   ) {}
 
   async issueDraft(invoiceId: string, options?: IssueDraftOptions): Promise<InvoiceEntity> {
@@ -90,28 +99,57 @@ export class InvoiceIssuanceService {
       documentTermsLayerFromFields(invoice),
       documentTermsLayerFromFields(plan),
     );
-    const year = new Date().getFullYear();
-    const invoiceNumber = await this.invoiceNumberSequencesRepository.nextInvoiceNumber(year);
     const issuedAt = new Date();
+    const year = issuedAt.getFullYear();
     const dueDate = new Date(issuedAt);
 
     dueDate.setDate(dueDate.getDate() + terms.paymentDueDays);
 
     const balanceDue = Math.max(0, Number(invoice.balanceDue));
     const isPromotionalZeroBalance = balanceDue === 0;
-    const updated = await this.invoicesRepository.update(invoiceId, {
-      invoiceNumber,
-      status: isPromotionalZeroBalance ? InvoiceStatus.PAID : InvoiceStatus.ISSUED,
-      issuedAt,
-      paidAt: isPromotionalZeroBalance ? issuedAt : undefined,
-      dueDate: isPromotionalZeroBalance ? undefined : dueDate,
-      // Frozen with the document; a promotional zero balance is paid on issue, so it carries no payment terms.
-      ...toDocumentTermsColumns(terms),
-      ...(isPromotionalZeroBalance ? { paymentDueDays: null } : {}),
-      balanceDue,
-      paymentProcessor: isPromotionalZeroBalance
-        ? undefined
-        : (process.env.BILLING_DEFAULT_PAYMENT_PROCESSOR ?? 'stripe'),
+    // Number, status, booking and customer-credit settlement commit together: a failure neither burns an
+    // invoice number nor leaves an issued invoice without its booking.
+    const { updated, invoiceNumber, creditApplied } = await this.dataSource.transaction(async (manager) => {
+      const locked = await manager
+        .getRepository(InvoiceEntity)
+        .createQueryBuilder('inv')
+        .where('inv.id = :id', { id: invoiceId })
+        .setLock('pessimistic_write')
+        .getOne();
+
+      if (!locked || locked.status !== InvoiceStatus.DRAFT) {
+        throw new Error(`Invoice ${invoiceId} is not a draft`);
+      }
+
+      const allocated = await this.invoiceNumberSequencesRepository.nextInvoiceNumber(year, manager);
+      const paymentReference = await this.uniquePaymentReference(manager, allocated, invoiceId);
+
+      await manager.getRepository(InvoiceEntity).update(invoiceId, {
+        invoiceNumber: allocated,
+        paymentReference,
+        einvoiceFormat: this.einvoiceFormats?.resolveForBuyer(profile) ?? null,
+        status: isPromotionalZeroBalance ? InvoiceStatus.PAID : InvoiceStatus.ISSUED,
+        issuedAt,
+        paidAt: isPromotionalZeroBalance ? issuedAt : undefined,
+        dueDate: isPromotionalZeroBalance ? undefined : dueDate,
+        // Frozen with the document; a promotional zero balance is paid on issue, so it carries no payment terms.
+        ...toDocumentTermsColumns(terms),
+        ...(isPromotionalZeroBalance ? { paymentDueDays: null } : {}),
+        balanceDue,
+        paymentProcessor: isPromotionalZeroBalance
+          ? undefined
+          : (process.env.BILLING_DEFAULT_PAYMENT_PROCESSOR ?? 'stripe'),
+      });
+      await this.postingPort?.onInvoiceIssued(manager, invoiceId);
+
+      const applied = isPromotionalZeroBalance
+        ? 0
+        : await this.documentSettlementService.applyAvailableCustomerCredit(invoiceId, manager, issuedAt);
+      const reloaded = await manager
+        .getRepository(InvoiceEntity)
+        .findOneOrFail({ where: { id: invoiceId }, relations: ['subscription'] });
+
+      return { updated: reloaded, invoiceNumber: allocated, creditApplied: applied };
     });
     const pdfStorageKey = await this.invoicePdfService.generateAndStore(
       updated,
@@ -129,7 +167,7 @@ export class InvoiceIssuanceService {
       message: `Issued invoice ${invoiceNumber}`,
       invoiceId,
       userId: invoice.userId,
-      context: { invoiceNumber, totalGross: issued.totalGross },
+      context: { invoiceNumber, totalGross: issued.totalGross, customerCreditApplied: creditApplied },
     });
 
     if (isPromotionalZeroBalance) {
@@ -183,8 +221,12 @@ export class InvoiceIssuanceService {
       });
     }
 
-    if (!isPromotionalZeroBalance) {
+    if (!isPromotionalZeroBalance && Number(issued.balanceDue) > 0) {
       await this.autoBillingService.scheduleIfEligible(issued);
+    }
+
+    if (creditApplied > 0 && Number(issued.balanceDue) <= 0) {
+      this.billingNotificationPublisher.publishInvoice('invoice.credited', issued);
     }
 
     this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
@@ -193,5 +235,28 @@ export class InvoiceIssuanceService {
     await this.inventoryWithdrawalRequests.raiseForInvoiceLines(issued, lineItems);
 
     return issued;
+  }
+
+  /** RF reference not used by another invoice yet (the column is globally unique; a clash must not block issuing). */
+  private async uniquePaymentReference(
+    manager: EntityManager,
+    invoiceNumber: string,
+    invoiceId: string,
+  ): Promise<string> {
+    for (let variant = 0; variant < 4; variant += 1) {
+      const candidate = buildInvoicePaymentReference(invoiceNumber, invoiceId, variant);
+      const taken = await manager
+        .getRepository(InvoiceEntity)
+        .createQueryBuilder('inv')
+        .where('inv.paymentReference = :candidate', { candidate })
+        .andWhere('inv.id <> :invoiceId', { invoiceId })
+        .getCount();
+
+      if (taken === 0) {
+        return candidate;
+      }
+    }
+
+    throw new Error(`No free payment reference for invoice ${invoiceId}`);
   }
 }

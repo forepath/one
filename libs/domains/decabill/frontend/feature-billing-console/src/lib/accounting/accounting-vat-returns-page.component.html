@@ -1,0 +1,404 @@
+<div
+  class="accounting-page border-top d-flex flex-column flex-grow-1 min-h-0"
+  data-testid="accounting-vat-returns-page"
+>
+  <fpc-page-header [title]="pageTitle" />
+  <framework-accounting-nav active="vat-returns" />
+
+  @if (statistics().data?.kpis; as kpis) {
+    <fpc-summary-bar [columns]="5">
+      <fpc-summary-card
+        icon="files"
+        i18n-label="@@featureAccountingVat-kpiReturns"
+        label="Returns"
+        [value]="'' + kpis.returns"
+      />
+      <fpc-summary-card
+        icon="pencil-square"
+        i18n-label="@@featureAccountingVat-kpiDrafts"
+        label="Drafts"
+        [value]="'' + kpis.drafts"
+        [tone]="kpis.drafts > 0 ? 'warning' : 'default'"
+      />
+      <fpc-summary-card
+        icon="send"
+        i18n-label="@@featureAccountingVat-kpiSubmitted"
+        label="Submitted"
+        [value]="'' + kpis.submitted"
+      />
+      <fpc-summary-card
+        icon="check2-circle"
+        i18n-label="@@featureAccountingVat-kpiPaid"
+        label="Paid"
+        [value]="'' + kpis.paid"
+      />
+      <fpc-summary-card
+        icon="cash-coin"
+        i18n-label="@@featureAccountingVat-kpiPayable"
+        label="Payable total"
+        [value]="money(kpis.payableTotal)"
+      />
+    </fpc-summary-bar>
+  }
+
+  <fpc-tab-group class="d-md-none flex-shrink-0" [activeId]="activeTab()" (activeIdChange)="onTabChange($event)">
+    <fpc-tab id="statistics" [label]="tabLabel('statistics')" />
+    <fpc-tab id="list" [label]="tabLabel('list')" />
+  </fpc-tab-group>
+
+  <fpc-section-row class="flex-grow-1 min-h-0" [nowrap]="true">
+    <fpc-section-column class="d-md-flex" [class.d-none]="activeTab() !== 'statistics'">
+      <fpc-board-lane class="h-100">
+        <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+          <span fpcLaneHeaderTitle i18n="@@featureAccountingVat-statistics">Statistics</span>
+        </fpc-lane-header>
+        @if (statistics().error; as err) {
+          <fpc-alert [flush]="true" variant="danger" [message]="err" />
+        }
+        <fpc-panel-grid [columns]="1" [bordered]="false">
+          <fpc-panel [title]="chartTitle">
+            @if (statistics().loading) {
+              <fpc-empty-state size="sm" loading />
+            } @else if (trendChart(); as chart) {
+              <apx-chart
+                [series]="chart.series"
+                [chart]="chart.chart"
+                [colors]="chart.colors"
+                [plotOptions]="chart.plotOptions"
+                [dataLabels]="chart.dataLabels"
+                [legend]="chart.legend"
+                [xaxis]="chart.xaxis"
+                [yaxis]="chart.yaxis"
+                [grid]="chart.grid"
+                [tooltip]="chart.tooltip"
+                [responsive]="chart.responsive"
+              ></apx-chart>
+            } @else {
+              <fpc-empty-state
+                size="sm"
+                icon="bar-chart"
+                i18n-message="@@featureAccountingVat-noStatistics"
+                message="No computed VAT returns yet."
+              />
+            }
+          </fpc-panel>
+        </fpc-panel-grid>
+      </fpc-board-lane>
+    </fpc-section-column>
+
+    <fpc-section-column class="d-flex d-md-flex" [class.d-none]="activeTab() !== 'list'">
+      <fpc-board-lane class="h-100">
+        <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+          <span fpcLaneHeaderTitle i18n="@@featureAccountingVat-returns">Returns</span>
+        </fpc-lane-header>
+        <fpc-tab-group
+          class="flex-shrink-0"
+          [activeId]="listTab()"
+          (activeIdChange)="onListTabChange($event)"
+          i18n-ariaLabel="@@featureAccountingVat-listTabs"
+          ariaLabel="VAT return views"
+        >
+          <fpc-tab id="return" icon="calculator" i18n-label="@@featureAccountingVat-tabReturn" label="Return" />
+          <fpc-tab id="history" icon="clock-history" i18n-label="@@featureAccountingVat-tabHistory" label="History" />
+        </fpc-tab-group>
+
+        @if (listTab() === 'return') {
+          <div class="accounting-scroll p-3" data-testid="accounting-vat-return-panel">
+            @if (definitions().error; as err) {
+              <fpc-alert variant="danger" [message]="err" />
+            }
+            <div class="row g-2 align-items-end">
+              <div class="col-md-4">
+                <fpc-form-field forId="vatDefinition" i18n-label="@@featureAccountingVat-definition" label="Return">
+                  <fpc-form-control
+                    controlType="select"
+                    controlId="vatDefinition"
+                    [ngModel]="definition()?.key ?? ''"
+                    (ngModelChange)="setDefinition($event)"
+                    name="vatDefinition"
+                  >
+                    @for (def of definitions().data ?? []; track def.key) {
+                      <option [value]="def.key">{{ def.name }}</option>
+                    }
+                  </fpc-form-control>
+                </fpc-form-field>
+              </div>
+              <div class="col-md-3">
+                <fpc-form-field forId="vatPeriodType" i18n-label="@@featureAccountingVat-periodType" label="Period">
+                  <fpc-form-control
+                    controlType="select"
+                    controlId="vatPeriodType"
+                    [ngModel]="periodType()"
+                    (ngModelChange)="setPeriodType($event)"
+                    name="vatPeriodType"
+                  >
+                    @for (type of periodTypes(); track type) {
+                      <option [value]="type">{{ periodTypeLabel(type) }}</option>
+                    }
+                  </fpc-form-control>
+                </fpc-form-field>
+              </div>
+              <div class="col-md-2">
+                <fpc-form-field forId="vatYear" i18n-label="@@featureAccountingVat-year" label="Year">
+                  <fpc-form-control
+                    controlId="vatYear"
+                    inputType="number"
+                    min="2000"
+                    max="2100"
+                    [ngModel]="year()"
+                    (ngModelChange)="year.set(+$event)"
+                    name="vatYear"
+                  />
+                </fpc-form-field>
+              </div>
+              @if (periodOptions().length > 0) {
+                <div class="col-md-3">
+                  <fpc-form-field forId="vatPeriodIndex" [label]="periodTypeLabel(periodType())">
+                    <fpc-form-control
+                      controlType="select"
+                      controlId="vatPeriodIndex"
+                      [ngModel]="periodIndex()"
+                      (ngModelChange)="periodIndex.set(+$event)"
+                      name="vatPeriodIndex"
+                    >
+                      @for (n of periodOptions(); track n) {
+                        <option [value]="n">{{ periodType() === 'quarter' ? 'Q' + n : n }}</option>
+                      }
+                    </fpc-form-control>
+                  </fpc-form-field>
+                </div>
+              }
+            </div>
+
+            @if (definition(); as def) {
+              <div class="small text-body-secondary d-flex flex-wrap column-gap-3 row-gap-1 my-2">
+                <span>{{ date(bounds().periodStart) }} – {{ date(bounds().periodEnd) }}</span>
+                <span>
+                  <span i18n="@@featureAccountingVat-filingChannel">Filing</span>: {{ def.filingChannel }}
+                  @if (def.filingUrl) {
+                    (<a [href]="def.filingUrl" target="_blank" rel="noopener noreferrer">{{ def.filingUrl }}</a
+                    >)
+                  }
+                </span>
+                <span><span i18n="@@featureAccountingVat-due">Due</span>: {{ def.dueRule }}</span>
+              </div>
+            }
+            @if (availability(); as feature) {
+              @if (!feature.available) {
+                <fpc-alert
+                  variant="warning"
+                  i18n-message="@@featureAccountingVat-unavailable"
+                  message="This return needs configuration first. Missing: {{ feature.missing.join(', ') }}"
+                />
+              }
+            }
+            @if (mutationError(); as err) {
+              <fpc-alert variant="danger" [message]="err" [dismissible]="true" />
+            }
+            <div class="d-flex gap-2 mb-3">
+              <fpc-button
+                variant="primary"
+                (clicked)="compute()"
+                [disabled]="mutating() || !canCompute()"
+                data-testid="accounting-vat-compute"
+              >
+                @if (mutating() && mutationKind() === 'computeVatReturn') {
+                  <fpc-spinner size="sm" />
+                } @else {
+                  <span i18n="@@featureAccountingVat-compute">Compute</span>
+                }
+              </fpc-button>
+            </div>
+
+            @if (vatReturn().loading) {
+              <fpc-empty-state size="sm" loading />
+            } @else if (vatReturn().data; as row) {
+              @if (downloadError(); as error) {
+                <fpc-alert variant="danger" [message]="error" [dismissible]="true" (closed)="downloadError.set(null)" />
+              }
+              <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <fpc-badge [tone]="stateOf(row).tone">{{ stateOf(row).label }}</fpc-badge>
+                <strong>{{ definitionName(row.definitionKey) }}</strong>
+                <span class="text-body-secondary small">{{ date(row.periodStart) }} – {{ date(row.periodEnd) }}</span>
+                @if (row.filingReference) {
+                  <span class="text-body-secondary small">{{ row.filingReference }}</span>
+                }
+                <span class="ms-auto d-flex gap-2">
+                  <fpc-button variant="secondary" size="sm" (clicked)="downloadCsv()">
+                    <i class="bi bi-download me-1" aria-hidden="true"></i>
+                    <span i18n="@@featureAccountingVat-csv">CSV</span>
+                  </fpc-button>
+                  @if (row.status === 'draft') {
+                    <fpc-button variant="secondary" size="sm" (clicked)="recompute()" [disabled]="mutating()">
+                      <span i18n="@@featureAccountingVat-recompute">Recompute</span>
+                    </fpc-button>
+                    <fpc-button
+                      variant="primary"
+                      size="sm"
+                      (clicked)="openSubmit()"
+                      data-testid="accounting-vat-submit"
+                    >
+                      <span i18n="@@featureAccountingVat-submit">Mark as filed</span>
+                    </fpc-button>
+                  }
+                  @if (row.status === 'submitted') {
+                    <fpc-button variant="primary" size="sm" (clicked)="openPay()">
+                      <span i18n="@@featureAccountingVat-recordPayment">Record payment</span>
+                    </fpc-button>
+                  }
+                </span>
+              </div>
+
+              @if (resultDefinition(); as def) {
+                <table class="accounting-table" data-testid="accounting-vat-boxes">
+                  <thead>
+                    <tr>
+                      <th i18n="@@featureAccountingVat-box">Box</th>
+                      <th i18n="@@featureAccountingVat-label">Label</th>
+                      <th class="accounting-amount" i18n="@@featureAccountingVat-amount">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (box of def.boxes; track box.box) {
+                      <tr [class.fw-semibold]="isResultBox(box)" [class.table-active]="isResultBox(box)">
+                        <td class="accounting-mono">{{ box.box }}</td>
+                        <td>{{ box.label }}</td>
+                        <td class="accounting-amount">
+                          @if (box.kind === 'manual' && row.status === 'draft') {
+                            <fpc-form-control
+                              inputType="number"
+                              step="0.01"
+                              size="sm"
+                              [controlId]="'vatManual-' + box.box"
+                              [ariaLabel]="box.label"
+                              [(ngModel)]="manualDraft[box.box]"
+                              [name]="'vatManual-' + box.box"
+                            />
+                          } @else {
+                            {{ money(boxAmount(box)) }}
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+
+              @if (row.details.length) {
+                <h6 class="accounting-section-title" i18n="@@featureAccountingVat-details">Details</h6>
+                <table class="accounting-table" data-testid="accounting-vat-details">
+                  <thead>
+                    <tr>
+                      @for (column of detailColumns(); track column) {
+                        <th>{{ column }}</th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (detail of row.details; track $index) {
+                      <tr>
+                        @for (column of detailColumns(); track column) {
+                          <td>{{ detailValue(detail, column) }}</td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            } @else {
+              <fpc-empty-state
+                size="sm"
+                icon="calculator"
+                i18n-message="@@featureAccountingVat-noReturn"
+                message="Choose a return and period, then compute it."
+              />
+            }
+          </div>
+        } @else {
+          <fpc-data-table
+            class="flex-grow-1 min-h-0"
+            [ariaLabel]="pageTitle"
+            [columns]="columns"
+            [rows]="returns().data?.items ?? []"
+            paging="client"
+            persistKey="decabill-accounting-vat-returns"
+            [searchPlaceholder]="searchPlaceholder"
+            [loading]="returns().loading"
+            [error]="returns().error"
+            (rowActivate)="onRowActivate($event)"
+            emptyIcon="percent"
+            data-testid="accounting-vat-returns-table"
+          >
+            <span fpcDataTableEmpty>
+              <fpc-empty-state
+                size="sm"
+                icon="percent"
+                i18n-message="@@featureAccountingVat-empty"
+                message="No VAT returns computed yet."
+              />
+            </span>
+          </fpc-data-table>
+        }
+      </fpc-board-lane>
+    </fpc-section-column>
+  </fpc-section-row>
+</div>
+
+<fpc-modal [(open)]="submitOpen" i18n-title="@@featureAccountingVat-submitTitle" title="Mark VAT return as filed">
+  @if (mutationError(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  <fpc-alert
+    variant="warning"
+    i18n-message="@@featureAccountingVat-submitWarning"
+    message="Filing freezes the figures and locks all accounting periods up to the period end."
+  />
+  <fpc-form-field forId="vatFilingReference" i18n-label="@@featureAccountingVat-colReference" label="Filing reference">
+    <fpc-form-control controlId="vatFilingReference" [(ngModel)]="filingReference" name="vatFilingReference" />
+  </fpc-form-field>
+  <fpc-form-field forId="vatSubmitNote" i18n-label="@@featureAccountingVat-note" label="Note">
+    <fpc-form-control controlType="textarea" controlId="vatSubmitNote" [(ngModel)]="submitNote" name="vatSubmitNote" />
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="primary" (clicked)="submit()" [disabled]="mutating()">
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingVat-submitConfirm">Mark as filed</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal [(open)]="payOpen" i18n-title="@@featureAccountingVat-payTitle" title="Record VAT payment">
+  @if (mutationError(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  <fpc-form-field forId="vatPayDate" i18n-label="@@featureAccountingVat-payDate" label="Payment date">
+    <fpc-form-control controlId="vatPayDate" inputType="date" [(ngModel)]="payDate" name="vatPayDate" />
+  </fpc-form-field>
+  <fpc-form-field
+    forId="vatPayAmount"
+    i18n-label="@@featureAccountingVat-amount"
+    label="Amount"
+    i18n-hint="@@featureAccountingVat-payAmountHint"
+    hint="Defaults to the computed result. Negative amounts are refunds from the tax office."
+  >
+    <fpc-form-control
+      controlId="vatPayAmount"
+      inputType="number"
+      step="0.01"
+      [(ngModel)]="payAmount"
+      name="vatPayAmount"
+    />
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="primary" (clicked)="pay()" [disabled]="mutating() || !payDate">
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingVat-paySubmit">Book payment</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>

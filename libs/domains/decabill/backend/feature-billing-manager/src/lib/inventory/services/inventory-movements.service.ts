@@ -1,6 +1,14 @@
 import { UsersRepository } from '@forepath/identity/backend';
 import { parseSerialNumberInput } from '@forepath/shared/shared/util-barcode';
-import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 
 import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
@@ -73,6 +81,21 @@ export interface BookMovementParams {
   /** `lending` / `lending_return`: the lending the movement belongs to. */
   lendingId?: string | null;
   lendingSnapshot?: InventoryLendingSnapshot | null;
+  /** Receipts: supplier invoice the stock was bought with (valuation source). */
+  supplierInvoiceId?: string | null;
+  /** Receipts: explicit unit cost for valuation. */
+  unitCost?: number | null;
+}
+
+/** Accounting valuation hook (moving average + bookings), registered by the accounting module. */
+export const INVENTORY_VALUATION_HOOK = Symbol('INVENTORY_VALUATION_HOOK');
+
+export interface InventoryValuationHook {
+  onMovementBooked(
+    manager: EntityManager,
+    movement: InventoryMovementEntity,
+    params: BookMovementParams,
+  ): Promise<void>;
 }
 
 /** At most this many serial numbers are named in an error message. */
@@ -106,6 +129,7 @@ export class InventoryMovementsService {
     private readonly realtime: InventoryRealtimeNotifier,
     private readonly auditLog: BillingAuditLogService,
     private readonly notifications: BillingNotificationPublisher,
+    @Optional() @Inject(INVENTORY_VALUATION_HOOK) private readonly valuation?: InventoryValuationHook,
   ) {}
 
   async list(
@@ -154,6 +178,8 @@ export class InventoryMovementsService {
       reference: dto.reference,
       note: dto.note,
       performedByUserId,
+      supplierInvoiceId: dto.supplierInvoiceId ?? null,
+      unitCost: dto.unitCost ?? null,
     });
   }
 
@@ -325,6 +351,8 @@ export class InventoryMovementsService {
     if (serials && units) {
       await this.moveSerialUnits(manager, params, article.id, serials, units, target, movement.id);
     }
+
+    await this.valuation?.onMovementBooked(manager, movement, params);
 
     return movement;
   }

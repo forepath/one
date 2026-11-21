@@ -21,7 +21,7 @@ describe('InvoicesFacade', () => {
   let facade: InvoicesFacade;
   let store: jest.Mocked<Store>;
   let invoicesService: jest.Mocked<
-    Pick<InvoicesService, 'downloadInvoicePdf' | 'downloadVoidDocumentPdf' | 'voidInvoice'>
+    Pick<InvoicesService, 'downloadInvoicePdf' | 'downloadEinvoiceXml' | 'downloadVoidDocumentPdf' | 'voidInvoice'>
   >;
   const subscriptionId = 'sub-1';
   const mockInvoice: InvoiceResponse = {
@@ -37,6 +37,7 @@ describe('InvoicesFacade', () => {
     store = { select: jest.fn(), dispatch: jest.fn() } as never;
     invoicesService = {
       downloadInvoicePdf: jest.fn(),
+      downloadEinvoiceXml: jest.fn(),
       downloadVoidDocumentPdf: jest.fn(),
       voidInvoice: jest.fn(),
     };
@@ -202,6 +203,17 @@ describe('InvoicesFacade', () => {
       facade.downloadInvoicePdf(undefined, 'inv-manual').subscribe((result) => {
         expect(result).toBe(blob);
         expect(invoicesService.downloadInvoicePdf).toHaveBeenCalledWith(undefined, 'inv-manual');
+        done();
+      });
+    });
+
+    it('should delegate downloadEinvoiceXml to service', (done) => {
+      const blob = new Blob(['<Invoice/>']);
+
+      invoicesService.downloadEinvoiceXml.mockReturnValue(of(blob));
+      facade.downloadEinvoiceXml('inv-1').subscribe((result) => {
+        expect(result).toBe(blob);
+        expect(invoicesService.downloadEinvoiceXml).toHaveBeenCalledWith('inv-1');
         done();
       });
     });

@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import * as Handlebars from 'handlebars';
 
+import { AccountingConfigService } from '../accounting/services/accounting-config.service';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity';
@@ -10,6 +11,7 @@ import { resolveCountryDisplayName } from '../utils/country-display-name.util';
 import { normalizeDocumentNote } from '../utils/document-note.utils';
 import { deliveryTermsFromColumns, formatDeliveryTerms, formatPaymentTerms } from '../utils/document-terms.utils';
 import { buildEpcQrDataUri } from '../utils/epc-qr.util';
+import { formatPaymentReference } from '../utils/payment-reference.util';
 
 import type { BillingIssuerConfig } from './billing-issuer-config.service';
 import { formatAmount, formatDate, formatServicePeriod, toAmount } from './invoice-pdf-amount.util';
@@ -24,6 +26,8 @@ import type {
 @Injectable()
 export class InvoicePdfTemplateService {
   private readonly compiledTemplate = Handlebars.compile(loadInvoicePdfTemplate());
+
+  constructor(@Optional() private readonly accountingConfig?: AccountingConfigService) {}
 
   buildHtml(
     invoice: InvoiceEntity,
@@ -46,7 +50,11 @@ export class InvoicePdfTemplateService {
     presentation: InvoicePdfPresentationOptions = buildInvoicePdfPresentation(invoice),
     authenticityShortSha?: string,
   ): InvoicePdfViewModel {
-    const paymentDetails = presentation.includePaymentDetails ? this.buildPaymentDetails(issuer) : undefined;
+    const basePaymentDetails = presentation.includePaymentDetails ? this.buildPaymentDetails(issuer) : undefined;
+    const paymentDetails =
+      basePaymentDetails && invoice.paymentReference && presentation.showBalanceDue
+        ? { ...basePaymentDetails, paymentReference: formatPaymentReference(invoice.paymentReference) }
+        : basePaymentDetails;
     const servicePeriod = formatServicePeriod(presentation.servicePeriod);
     const epcQrDataUri =
       paymentDetails && presentation.includePaymentQr && presentation.showBalanceDue
@@ -57,6 +65,9 @@ export class InvoicePdfTemplateService {
             currency: invoice.currency,
             amount: invoice.balanceDue,
             remittanceText: presentation.documentNumber,
+            // EPC allows either the structured RF reference or free text. RF only pays off with bank reconciliation
+            // (accounting); without it payers keep seeing the invoice number, which manual matching relies on.
+            creditorReference: this.accountingConfig?.isEnabled() ? (invoice.paymentReference ?? undefined) : undefined,
           })
         : undefined;
     const paymentTerms =

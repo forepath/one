@@ -1,20 +1,14 @@
 <div class="admin-datev-exports border-top d-flex flex-column flex-grow-1 min-h-0">
-  <fpc-page-header [title]="pageTitle" />
-
-  @if (showViewTabs$ | async) {
-    <fpc-tab-group
-      class="flex-shrink-0"
-      [activeId]="(activeTabId$ | async) ?? homeTenantId"
-      (activeIdChange)="onScopeTabChange($event)"
-    >
-      @for (tenantId of viewableTenants(); track tenantId) {
-        <fpc-tab [id]="tenantId" [label]="tenantTabLabel(tenantId)" />
-      }
-      @if (unifiedExportAllowed$ | async) {
-        <fpc-tab id="unified" [label]="unifiedTabLabel" />
-      }
-    </fpc-tab-group>
-  }
+  <fpc-page-header [title]="pageTitle">
+    @if (showViewTabs$ | async) {
+      <framework-billing-tenant-switch
+        fpcPageHeaderContext
+        [options]="tenantSwitchOptions()"
+        [activeId]="activeTabId() ?? homeTenantId"
+        (selectTenant)="onScopeTabChange($event)"
+      />
+    }
+  </fpc-page-header>
 
   @if (bulkResult(); as result) {
     <fpc-alert

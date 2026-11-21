@@ -55,6 +55,9 @@ describe('PaymentOrchestrationService', () => {
   const customerTrustScoreService = {
     triggerRecomputeForUser: jest.fn(),
   };
+  const documentSettlementService = {
+    apply: jest.fn(),
+  };
 
   beforeEach(() => {
     jest.resetAllMocks();
@@ -92,6 +95,7 @@ describe('PaymentOrchestrationService', () => {
       billingEmailPublisher as never,
       autoBillingService as never,
       customerTrustScoreService as never,
+      documentSettlementService as never,
     );
   });
 
@@ -260,7 +264,7 @@ describe('PaymentOrchestrationService', () => {
   });
 
   describe('handleWebhook', () => {
-    it('marks invoice paid on succeeded checkout session', async () => {
+    it('records the paid amount as a settlement and publishes invoice.paid when settled', async () => {
       processor.verifyWebhookSignature.mockReturnValue(true);
       processor.parseWebhookEvent.mockReturnValue({
         eventId: 'evt_1',
@@ -271,6 +275,9 @@ describe('PaymentOrchestrationService', () => {
         invoiceId: 'inv-1',
         externalId: 'cs_1',
         status: 'succeeded',
+        amountPaid: 119,
+        occurredAt: new Date('2026-11-20T10:00:00Z'),
+        paymentIntentId: 'pi_1',
         tenantId: 'default',
       });
       paymentWebhookEventsRepository.exists.mockResolvedValue(false);
@@ -278,18 +285,121 @@ describe('PaymentOrchestrationService', () => {
       invoicesRepository.findById.mockResolvedValue({
         id: 'inv-1',
         userId: 'user-1',
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 119,
+        currency: 'EUR',
       });
       paymentAttemptsRepository.findByExternalId.mockResolvedValue({ id: 'attempt-1' });
-      invoicesRepository.update.mockResolvedValue({});
       paymentAttemptsRepository.update.mockResolvedValue({});
+      documentSettlementService.apply.mockResolvedValue({
+        created: true,
+        becameSettled: true,
+        settlement: { id: 'set-1' },
+        document: { id: 'inv-1', userId: 'user-1', status: InvoiceStatus.PAID, balanceDue: 0 },
+      });
 
       await service.handleWebhook('stripe', Buffer.from('{}'), 'sig');
 
-      expect(invoicesRepository.update).toHaveBeenCalledWith('inv-1', {
-        status: InvoiceStatus.PAID,
-        balanceDue: 0,
-        paidAt: expect.any(Date),
+      expect(documentSettlementService.apply).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documentId: 'inv-1',
+          type: 'payment',
+          amount: 119,
+          sourceRef: 'stripe:cs_1',
+          externalId: 'pi_1',
+          occurredAt: new Date('2026-11-20T10:00:00Z'),
+          paymentAttemptId: 'attempt-1',
+        }),
+      );
+      expect(billingNotificationPublisher.publishInvoice).toHaveBeenCalledWith('invoice.paid', expect.anything());
+      expect(paymentWebhookEventsRepository.create).toHaveBeenCalled();
+    });
+
+    it('does not publish invoice.paid for a partial payment', async () => {
+      processor.verifyWebhookSignature.mockReturnValue(true);
+      processor.parseWebhookEvent.mockReturnValue({ eventId: 'evt_2', type: 'checkout.session.completed', data: {} });
+      processor.mapWebhookToPaymentUpdate.mockResolvedValue({
+        invoiceId: 'inv-1',
+        externalId: 'cs_2',
+        status: 'succeeded',
+        amountPaid: 50,
+        tenantId: 'default',
       });
+      paymentWebhookEventsRepository.exists.mockResolvedValue(false);
+      invoicesRepository.findById.mockResolvedValue({
+        id: 'inv-1',
+        userId: 'user-1',
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 119,
+        currency: 'EUR',
+      });
+      paymentAttemptsRepository.findByExternalId.mockResolvedValue(null);
+      documentSettlementService.apply.mockResolvedValue({
+        created: true,
+        becameSettled: false,
+        settlement: { id: 'set-2' },
+        document: { id: 'inv-1', userId: 'user-1', status: InvoiceStatus.PARTIALLY_PAID, balanceDue: 69 },
+      });
+
+      await service.handleWebhook('stripe', Buffer.from('{}'), 'sig');
+
+      expect(documentSettlementService.apply).toHaveBeenCalledWith(expect.objectContaining({ amount: 50 }));
+      expect(billingNotificationPublisher.publishPayment).toHaveBeenCalledWith(
+        'payment.succeeded',
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(billingNotificationPublisher.publishInvoice).not.toHaveBeenCalledWith('invoice.paid', expect.anything());
+    });
+
+    it('does not record the webhook event when processing fails (processor retry stays possible)', async () => {
+      processor.verifyWebhookSignature.mockReturnValue(true);
+      processor.parseWebhookEvent.mockReturnValue({ eventId: 'evt_3', type: 'checkout.session.completed', data: {} });
+      processor.mapWebhookToPaymentUpdate.mockResolvedValue({
+        invoiceId: 'inv-1',
+        externalId: 'cs_3',
+        status: 'succeeded',
+        tenantId: 'default',
+      });
+      paymentWebhookEventsRepository.exists.mockResolvedValue(false);
+      invoicesRepository.findById.mockResolvedValue({
+        id: 'inv-1',
+        userId: 'user-1',
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 10,
+        currency: 'EUR',
+      });
+      paymentAttemptsRepository.findByExternalId.mockResolvedValue(null);
+      documentSettlementService.apply.mockRejectedValue(new Error('db down'));
+
+      await expect(service.handleWebhook('stripe', Buffer.from('{}'), 'sig')).rejects.toThrow('db down');
+      expect(paymentWebhookEventsRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('never settles a voided invoice (logs for a manual refund)', async () => {
+      processor.verifyWebhookSignature.mockReturnValue(true);
+      processor.parseWebhookEvent.mockReturnValue({ eventId: 'evt_4', type: 'checkout.session.completed', data: {} });
+      processor.mapWebhookToPaymentUpdate.mockResolvedValue({
+        invoiceId: 'inv-1',
+        externalId: 'cs_4',
+        status: 'succeeded',
+        amountPaid: 10,
+        tenantId: 'default',
+      });
+      paymentWebhookEventsRepository.exists.mockResolvedValue(false);
+      invoicesRepository.findById.mockResolvedValue({
+        id: 'inv-1',
+        userId: 'user-1',
+        status: InvoiceStatus.VOID,
+        balanceDue: 0,
+        currency: 'EUR',
+      });
+      paymentAttemptsRepository.findByExternalId.mockResolvedValue(null);
+
+      await service.handleWebhook('stripe', Buffer.from('{}'), 'sig');
+
+      expect(documentSettlementService.apply).not.toHaveBeenCalled();
+      expect(auditLog.log).toHaveBeenCalledWith(expect.objectContaining({ level: 'warn' }));
     });
 
     it('skips duplicate webhook events', async () => {
@@ -408,6 +518,12 @@ describe('PaymentOrchestrationService', () => {
       paymentAttemptsRepository.findByExternalId.mockResolvedValue({
         id: 'attempt-1',
         status: PaymentAttemptStatus.SUCCEEDED,
+      });
+      documentSettlementService.apply.mockResolvedValue({
+        created: false,
+        becameSettled: false,
+        settlement: { id: 'set-1' },
+        document: { id: 'inv-1', userId: 'user-1', status: InvoiceStatus.PAID },
       });
 
       await service.handleWebhook('stripe', Buffer.from('{}'), 'sig');

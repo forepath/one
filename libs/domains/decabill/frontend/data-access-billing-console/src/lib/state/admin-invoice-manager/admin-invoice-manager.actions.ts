@@ -3,9 +3,11 @@ import { createAction, props } from '@ngrx/store';
 import type {
   AdminInvoiceListItem,
   CreateManualInvoiceDto,
+  InvoiceSettlementResponse,
   IssueManualInvoiceDto,
   ManualInvoiceDetailResponse,
   MarkInvoicePaymentStatusDto,
+  RecordInvoiceSettlementDto,
   UpdateManualInvoiceDto,
   VoidInvoiceDto,
 } from '../../types/billing.types';
@@ -111,4 +113,43 @@ export const adminInvoiceManagerMarkUnpaidSuccess = createAction(
 export const adminInvoiceManagerMarkUnpaidFailure = createAction(
   '[AdminInvoiceManager] Mark Unpaid Failure',
   props<{ error: string }>(),
+);
+
+export const adminInvoiceManagerWriteOff = createAction(
+  '[AdminInvoiceManager] Write Off',
+  props<{ invoiceRefId: string; dto?: RecordInvoiceSettlementDto }>(),
+);
+export const adminInvoiceManagerWriteOffSuccess = createAction(
+  '[AdminInvoiceManager] Write Off Success',
+  props<{ invoice: AdminInvoiceListItem }>(),
+);
+export const adminInvoiceManagerWriteOffFailure = createAction(
+  '[AdminInvoiceManager] Write Off Failure',
+  props<{ error: string }>(),
+);
+
+export const adminInvoiceManagerRefund = createAction(
+  '[AdminInvoiceManager] Refund',
+  props<{ invoiceRefId: string; dto?: RecordInvoiceSettlementDto }>(),
+);
+export const adminInvoiceManagerRefundSuccess = createAction(
+  '[AdminInvoiceManager] Refund Success',
+  props<{ invoice: AdminInvoiceListItem }>(),
+);
+export const adminInvoiceManagerRefundFailure = createAction(
+  '[AdminInvoiceManager] Refund Failure',
+  props<{ error: string }>(),
+);
+
+export const loadAdminInvoiceSettlements = createAction(
+  '[AdminInvoiceManager] Load Settlements',
+  props<{ invoiceRefId: string }>(),
+);
+export const loadAdminInvoiceSettlementsSuccess = createAction(
+  '[AdminInvoiceManager] Load Settlements Success',
+  props<{ invoiceRefId: string; settlements: InvoiceSettlementResponse[] }>(),
+);
+export const loadAdminInvoiceSettlementsFailure = createAction(
+  '[AdminInvoiceManager] Load Settlements Failure',
+  props<{ invoiceRefId: string; error: string }>(),
 );

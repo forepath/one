@@ -118,6 +118,14 @@ export class InvoiceEntity {
   @Column({ type: 'text', nullable: true, name: 'note' })
   note?: string | null;
 
+  /** ISO 11649 structured creditor reference (`RF…`) printed on the invoice for deterministic bank matching. */
+  @Column({ type: 'varchar', length: 25, nullable: true, name: 'payment_reference' })
+  paymentReference?: string | null;
+
+  /** E-invoice format used for this document (snapshot of customer override / issuer default). */
+  @Column({ type: 'varchar', length: 32, nullable: true, name: 'einvoice_format' })
+  einvoiceFormat?: string | null;
+
   @Column({ type: 'varchar', length: 512, nullable: true, name: 'pdf_storage_key' })
   pdfStorageKey?: string;
 

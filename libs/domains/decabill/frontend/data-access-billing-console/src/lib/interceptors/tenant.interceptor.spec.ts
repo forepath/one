@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 
 import {
   BILLING_TENANT_HEADER,
+  billingTenantDisplayName,
   billingTenantInterceptor,
   DEFAULT_BILLING_TENANT_ID,
   resolveBillingTenantDisplayName,
@@ -61,6 +62,12 @@ describe('billingTenantInterceptor', () => {
         },
       } as never),
     ).toBe('one');
+  });
+
+  it('billingTenantDisplayName capitalizes any tenant id', () => {
+    expect(billingTenantDisplayName('decabill')).toBe('Decabill');
+    expect(billingTenantDisplayName('acme-corp')).toBe('Acme-corp');
+    expect(billingTenantDisplayName('')).toBe('');
   });
 
   it('resolveBillingTenantDisplayName capitalizes the configured tenant id', () => {

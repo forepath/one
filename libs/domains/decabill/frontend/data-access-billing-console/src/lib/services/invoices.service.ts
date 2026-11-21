@@ -82,6 +82,11 @@ export class InvoicesService {
     return this.http.get(url, { responseType: 'blob' });
   }
 
+  /** Structured e-invoice XML (XRechnung / Peppol / Factur-X CII, per the invoice's format). */
+  downloadEinvoiceXml(invoiceRefId: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/invoices/ref/${invoiceRefId}/einvoice`, { responseType: 'blob' });
+  }
+
   downloadVoidDocumentPdf(subscriptionId: string | undefined, invoiceRefId: string): Observable<Blob> {
     const url = subscriptionId
       ? `${this.apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}/void-document/pdf`

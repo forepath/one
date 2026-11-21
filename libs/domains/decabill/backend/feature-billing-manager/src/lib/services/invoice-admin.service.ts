@@ -1,11 +1,16 @@
+import { randomUUID } from 'crypto';
+
 import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
+import { SettlementDocumentType, SettlementSource, SettlementType } from '../constants/settlement.constants';
 import type {
   AdminInvoiceListItemDto,
+  InvoiceSettlementResponseDto,
   MarkInvoicePaymentStatusDto,
   PaginatedAdminInvoicesResponseDto,
+  RecordInvoiceSettlementDto,
   VoidInvoiceDto,
 } from '../dto/admin-billing.dto';
 import type { InvoiceEntity } from '../entities/invoice.entity';
@@ -17,6 +22,7 @@ import { resolveCustomerNamesByUserId } from '../utils/customer-display-name.uti
 import { resolvePaymentReceivedAt } from '../utils/resolve-payment-received-at.util';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
+import { DocumentSettlementService } from './document-settlement.service';
 import { InvoiceService } from './invoice.service';
 
 const MARK_PAID_ALLOWED: InvoiceStatus[] = [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.OVERDUE];
@@ -29,6 +35,7 @@ export class InvoiceAdminService {
     private readonly auditLog: BillingAuditLogService,
     private readonly usersRepository: UsersRepository,
     private readonly customerTrustScoreService: CustomerTrustScoreService,
+    private readonly documentSettlementService: DocumentSettlementService,
     @Optional() private readonly customerProfilesRepository?: CustomerProfilesRepository,
     @Optional() private readonly billingNotificationPublisher?: BillingNotificationPublisher,
   ) {}
@@ -93,34 +100,54 @@ export class InvoiceAdminService {
 
     const previousStatus = invoice.status;
     const previousBalanceDue = Number(invoice.balanceDue);
+    const amount = dto?.amount ?? previousBalanceDue;
+
+    if (amount <= 0) {
+      throw new BadRequestException('Nothing left to pay on this invoice');
+    }
+
     const paidAt = resolvePaymentReceivedAt(dto?.paidAt);
-    const updated = await this.invoicesRepository.update(invoiceRefId, {
-      status: InvoiceStatus.PAID,
-      balanceDue: 0,
-      paidAt,
+    const result = await this.documentSettlementService.apply({
+      documentType: SettlementDocumentType.INVOICE,
+      documentId: invoiceRefId,
+      type: SettlementType.PAYMENT,
+      amount,
+      currency: invoice.currency,
+      occurredAt: paidAt,
+      source: SettlementSource.MANUAL,
+      sourceRef: `manual:${randomUUID()}`,
+      note: dto?.reason ?? null,
+      createdByUserId: adminUserId,
     });
+    const updated = await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
 
     await this.auditLog.log({
       process: 'invoice.mark_paid_manual',
       level: 'info',
-      message: 'Admin marked invoice as paid',
+      message: result.becameSettled ? 'Admin marked invoice as paid' : 'Admin recorded a partial payment',
       invoiceId: invoiceRefId,
       userId: invoice.userId,
       context: {
         previousStatus,
         previousBalanceDue,
+        amount,
         reason: dto?.reason,
         paidAt: paidAt.toISOString(),
         adminUserId,
+        settlementId: result.settlement.id,
       },
     });
-    this.billingNotificationPublisher?.publishInvoice('invoice.paid', updated);
+
+    if (result.becameSettled) {
+      this.billingNotificationPublisher?.publishInvoice('invoice.paid', updated);
+    }
 
     this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
 
     return this.mapAdminItem(updated);
   }
 
+  /** Reverses all cash received so far (e.g. a returned transfer); credits and write-offs stay applied. */
   async markUnpaidManual(
     invoiceRefId: string,
     adminUserId: string,
@@ -128,26 +155,43 @@ export class InvoiceAdminService {
   ): Promise<AdminInvoiceListItemDto> {
     const invoice = await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
 
-    if (invoice.status !== InvoiceStatus.PAID) {
-      throw new BadRequestException('Can only mark unpaid from paid status');
+    if (invoice.status !== InvoiceStatus.PAID && invoice.status !== InvoiceStatus.PARTIALLY_PAID) {
+      throw new BadRequestException('Can only mark unpaid from paid or partially paid status');
+    }
+
+    const settlements = await this.documentSettlementService.listForDocument(
+      SettlementDocumentType.INVOICE,
+      invoiceRefId,
+    );
+    const cashNet =
+      settlements.filter((s) => s.type === SettlementType.PAYMENT).reduce((sum, s) => sum + Number(s.amount), 0) -
+      settlements
+        .filter((s) => s.type === SettlementType.PAYMENT_REVERSAL || s.type === SettlementType.REFUND)
+        .reduce((sum, s) => sum + Number(s.amount), 0);
+    const amount = Math.round(cashNet * 100) / 100;
+
+    if (amount <= 0) {
+      throw new BadRequestException('No payment recorded on this invoice');
     }
 
     const previousStatus = invoice.status;
-    const today = new Date();
+    const lastPayment = [...settlements].reverse().find((s) => s.type === SettlementType.PAYMENT);
 
-    today.setHours(0, 0, 0, 0);
-    const dueDate = invoice.dueDate ? new Date(invoice.dueDate) : null;
-
-    if (dueDate) {
-      dueDate.setHours(0, 0, 0, 0);
-    }
-
-    const newStatus = dueDate && dueDate < today ? InvoiceStatus.OVERDUE : InvoiceStatus.ISSUED;
-    const updated = await this.invoicesRepository.update(invoiceRefId, {
-      status: newStatus,
-      balanceDue: Number(invoice.totalGross),
-      paidAt: null,
+    await this.documentSettlementService.apply({
+      documentType: SettlementDocumentType.INVOICE,
+      documentId: invoiceRefId,
+      type: SettlementType.PAYMENT_REVERSAL,
+      amount,
+      currency: invoice.currency,
+      occurredAt: dto?.paidAt ? resolvePaymentReceivedAt(dto.paidAt) : new Date(),
+      source: SettlementSource.MANUAL,
+      sourceRef: `manual-reversal:${randomUUID()}`,
+      reversesSettlementId: lastPayment?.id ?? null,
+      note: dto?.reason ?? null,
+      createdByUserId: adminUserId,
     });
+
+    const updated = await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
 
     await this.auditLog.log({
       process: 'invoice.mark_unpaid_manual',
@@ -157,14 +201,133 @@ export class InvoiceAdminService {
       userId: invoice.userId,
       context: {
         previousStatus,
+        reversedAmount: amount,
         reason: dto?.reason,
         adminUserId,
       },
     });
+    this.billingNotificationPublisher?.publishInvoice('invoice.unpaid', updated);
 
     this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
 
     return this.mapAdminItem(updated);
+  }
+
+  /** Writes off the remaining (or given) balance as uncollectible. */
+  async writeOff(
+    invoiceRefId: string,
+    adminUserId: string,
+    dto?: RecordInvoiceSettlementDto,
+  ): Promise<AdminInvoiceListItemDto> {
+    const invoice = await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
+
+    if (!MARK_PAID_ALLOWED.includes(invoice.status)) {
+      throw new BadRequestException(`Cannot write off an invoice in status ${invoice.status}`);
+    }
+
+    const amount = dto?.amount ?? Number(invoice.balanceDue);
+
+    if (amount <= 0 || amount > Number(invoice.balanceDue) + 0.005) {
+      throw new BadRequestException('Write-off amount must be positive and not exceed the balance due');
+    }
+
+    const result = await this.documentSettlementService.apply({
+      documentType: SettlementDocumentType.INVOICE,
+      documentId: invoiceRefId,
+      type: SettlementType.WRITE_OFF,
+      amount,
+      currency: invoice.currency,
+      occurredAt: dto?.occurredAt ? new Date(dto.occurredAt) : new Date(),
+      source: SettlementSource.MANUAL,
+      sourceRef: `write-off:${randomUUID()}`,
+      note: dto?.reason ?? null,
+      createdByUserId: adminUserId,
+    });
+
+    await this.auditLog.log({
+      process: 'invoice.write_off',
+      level: 'info',
+      message: 'Admin wrote off invoice balance',
+      invoiceId: invoiceRefId,
+      userId: invoice.userId,
+      context: { amount, reason: dto?.reason, adminUserId, settlementId: result.settlement.id },
+    });
+    this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
+
+    const updated = await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
+
+    this.billingNotificationPublisher?.publishInvoice('invoice.written_off', updated);
+
+    return this.mapAdminItem(updated);
+  }
+
+  /** Records money paid back to the customer outside the processor (e.g. bank transfer of a credit). */
+  async recordManualRefund(
+    invoiceRefId: string,
+    adminUserId: string,
+    dto?: RecordInvoiceSettlementDto,
+  ): Promise<AdminInvoiceListItemDto> {
+    const invoice = await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
+    const credit = -Number(invoice.balanceDue);
+
+    if (credit <= 0.005) {
+      throw new BadRequestException('Invoice has no customer credit to refund');
+    }
+
+    const amount = dto?.amount ?? credit;
+
+    if (amount <= 0 || amount > credit + 0.005) {
+      throw new BadRequestException('Refund amount must be positive and not exceed the customer credit');
+    }
+
+    const result = await this.documentSettlementService.apply({
+      documentType: SettlementDocumentType.INVOICE,
+      documentId: invoiceRefId,
+      type: SettlementType.REFUND,
+      amount,
+      currency: invoice.currency,
+      occurredAt: dto?.occurredAt ? new Date(dto.occurredAt) : new Date(),
+      source: SettlementSource.MANUAL,
+      sourceRef: `manual-refund:${randomUUID()}`,
+      note: dto?.reason ?? null,
+      createdByUserId: adminUserId,
+    });
+
+    await this.auditLog.log({
+      process: 'invoice.refund_manual',
+      level: 'info',
+      message: 'Admin recorded a manual refund',
+      invoiceId: invoiceRefId,
+      userId: invoice.userId,
+      context: { amount, reason: dto?.reason, adminUserId, settlementId: result.settlement.id },
+    });
+    this.billingNotificationPublisher?.publishInvoice('invoice.refunded', result.document as InvoiceEntity);
+
+    return this.mapAdminItem(await this.invoicesRepository.findByIdOrThrow(invoiceRefId));
+  }
+
+  async listSettlements(invoiceRefId: string): Promise<InvoiceSettlementResponseDto[]> {
+    await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
+
+    const settlements = await this.documentSettlementService.listForDocument(
+      SettlementDocumentType.INVOICE,
+      invoiceRefId,
+    );
+
+    return settlements.map((s) => ({
+      id: s.id,
+      type: s.type,
+      amount: Number(s.amount),
+      currency: s.currency,
+      occurredAt: new Date(s.occurredAt).toISOString(),
+      source: s.source,
+      processor: s.processor ?? null,
+      externalId: s.externalId ?? null,
+      creditDocumentId: s.creditDocumentId ?? null,
+      relatedDocumentId: s.relatedDocumentId ?? null,
+      note: s.note ?? null,
+      createdAt: new Date(s.createdAt).toISOString(),
+    }));
   }
 
   private async mapAdminItem(invoice: InvoiceEntity): Promise<AdminInvoiceListItemDto> {

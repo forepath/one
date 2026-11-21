@@ -144,7 +144,17 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
   }
 
   publishInvoice(
-    type: 'invoice.created' | 'invoice.issued' | 'invoice.voided' | 'invoice.paid',
+    type:
+      | 'invoice.created'
+      | 'invoice.issued'
+      | 'invoice.voided'
+      | 'invoice.paid'
+      | 'invoice.unpaid'
+      | 'invoice.overdue'
+      | 'invoice.credited'
+      | 'invoice.written_off'
+      | 'invoice.refunded'
+      | 'invoice.settlement_recorded',
     invoice: InvoiceEntity,
   ): void {
     this.publish(type, this.toInvoicePayload(invoice), invoice.userId);
@@ -197,7 +207,7 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
   }
 
   publishPayment(
-    type: 'payment.initiated' | 'payment.succeeded' | 'payment.failed',
+    type: 'payment.initiated' | 'payment.succeeded' | 'payment.failed' | 'payment.refunded',
     invoice: InvoiceEntity,
     context: Record<string, unknown> = {},
   ): void {

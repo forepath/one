@@ -1,0 +1,118 @@
+// Shared layout of the accounting pages (statistics lane + list lane, as billing admin / offers).
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.accounting-page {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.accounting-scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.accounting-statistics-scope {
+  min-width: 0;
+}
+
+// Ledger-style number columns.
+.accounting-amount {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  white-space: nowrap;
+}
+
+.accounting-negative {
+  color: var(--bs-danger-text-emphasis);
+}
+
+.accounting-table {
+  width: 100%;
+  font-size: 0.875rem;
+
+  th {
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+  }
+
+  td,
+  th {
+    padding: 0.375rem 0.5rem;
+    vertical-align: top;
+    border-bottom: 1px solid var(--bs-border-color-translucent);
+  }
+
+  tfoot td {
+    font-weight: 600;
+    border-bottom: 0;
+  }
+}
+
+// Nested statement positions.
+.accounting-statement-node {
+  &--level-1 td:first-child {
+    padding-inline-start: 1.25rem;
+  }
+
+  &--level-2 td:first-child {
+    padding-inline-start: 2.25rem;
+  }
+
+  &--level-3 td:first-child {
+    padding-inline-start: 3.25rem;
+  }
+
+  &--group td {
+    font-weight: 600;
+  }
+}
+
+.accounting-statement-account td {
+  color: var(--bs-secondary-color);
+  font-size: 0.8125rem;
+}
+
+// Manual entry lines editor.
+.accounting-lines {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.accounting-line {
+  display: grid;
+  grid-template-columns:
+    minmax(6rem, 1.2fr) minmax(5rem, 1fr) minmax(5rem, 1fr) minmax(6rem, 1fr) minmax(8rem, 2fr)
+    auto;
+  gap: 0.5rem;
+  align-items: start;
+
+  @media (max-width: 767.98px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.accounting-mono {
+  font-family: var(--bs-font-monospace);
+}
+
+.accounting-section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--bs-secondary-color);
+  margin: 1rem 0 0.5rem;
+}
+
+fpc-modal.accounting-wide-modal ::ng-deep .modal-dialog {
+  max-width: 64rem;
+}

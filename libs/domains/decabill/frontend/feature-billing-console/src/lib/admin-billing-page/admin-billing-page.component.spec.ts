@@ -7,6 +7,7 @@ import {
   AdminSupplierInvoiceManagerFacade,
   AdminSupplierInvoicesService,
   AdminSupplierProfilesService,
+  BillingCapabilitiesFacade,
   InvoicesFacade,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { AuthenticationFacade } from '@forepath/identity/frontend';
@@ -91,6 +92,7 @@ describe('AdminBillingPageComponent (bulk actions)', () => {
           }),
         },
         { provide: InvoicesFacade, useValue: stub() },
+        { provide: BillingCapabilitiesFacade, useValue: stub({ accountingEnabled$: of(true) }) },
         { provide: AuthenticationFacade, useValue: stub({ users$: of([]) }) },
       ],
     });
@@ -324,5 +326,166 @@ describe('AdminBillingPageComponent (bulk actions)', () => {
     expect(supplierService['downloadDocument']).toHaveBeenCalledWith('si1');
     expect(click).toHaveBeenCalledTimes(2);
     click.mockRestore();
+  });
+
+  it('mark paid: sends a partial amount only when entered and blocks amounts above the balance', () => {
+    const managerFacade = TestBed.inject(AdminInvoiceManagerFacade) as unknown as Record<string, jest.Mock>;
+    const issued = { ...invoice('i1', 'issued'), balance: 100 } as never;
+
+    component.openActionModal('markPaid', issued);
+    component.confirmAction();
+    const fullPayment = managerFacade['markPaid'].mock.calls[managerFacade['markPaid'].mock.calls.length - 1];
+
+    expect(fullPayment[0]).toBe('i1');
+    expect(fullPayment[1]).not.toHaveProperty('amount');
+
+    component.openActionModal('markPaid', issued);
+    component.actionAmount.set(40);
+    component.confirmAction();
+    expect(managerFacade['markPaid']).toHaveBeenLastCalledWith('i1', expect.objectContaining({ amount: 40 }));
+
+    const calls = managerFacade['markPaid'].mock.calls.length;
+
+    component.openActionModal('markPaid', issued);
+    component.actionAmount.set(150);
+    expect(component.actionAmountValid()).toBe(false);
+    component.confirmAction();
+    expect(managerFacade['markPaid']).toHaveBeenCalledTimes(calls);
+  });
+
+  it('write-off and refund: menu entries follow the balance, confirm dispatches with date / amount', () => {
+    const managerFacade = TestBed.inject(AdminInvoiceManagerFacade) as unknown as Record<string, jest.Mock>;
+    const open = { ...invoice('i1', 'partially_paid'), balance: 60 } as never;
+    const credit = { ...invoice('p1', 'paid'), balance: -15 } as never;
+    const ids = (inv: never) => component.invoiceMenu(inv).map((item) => item.id);
+
+    expect(ids(open)).toContain('writeOff');
+    expect(ids(open)).toContain('markUnpaid');
+    expect(ids(open)).not.toContain('refund');
+    expect(ids(credit)).toContain('refund');
+    expect(ids(credit)).not.toContain('writeOff');
+    expect(component.canVoid(invoice('w1', 'written_off') as never)).toBe(false);
+    expect(component.canVoid(invoice('c1', 'credited') as never)).toBe(false);
+
+    component.onInvoiceAction(open, 'writeOff');
+    component.actionReason.set(' insolvent ');
+    component.confirmAction();
+    expect(managerFacade['writeOff']).toHaveBeenCalledWith(
+      'i1',
+      expect.objectContaining({ reason: 'insolvent', occurredAt: expect.any(String) }),
+    );
+
+    component.onInvoiceAction(credit, 'refund');
+    expect(component.actionMaxAmount()).toBe(15);
+    component.actionAmount.set(10);
+    component.confirmAction();
+    expect(managerFacade['refund']).toHaveBeenCalledWith('p1', expect.objectContaining({ amount: 10 }));
+  });
+
+  it('preview: loads the settlement history, offers the e-invoice XML and links bookings', () => {
+    const managerFacade = TestBed.inject(AdminInvoiceManagerFacade) as unknown as Record<string, jest.Mock>;
+    const click = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+
+    Object.assign(URL, { createObjectURL: jest.fn(() => 'blob:x'), revokeObjectURL: jest.fn() });
+    billingService['getManualInvoiceDetail'] = jest.fn(() => of({ id: 'i1', lineItems: [], taxBreakdown: [] }));
+    billingService['downloadInvoiceEinvoice'] = jest.fn(() => of(new Blob(['<Invoice/>'])));
+
+    const issued = { ...invoice('i1', 'issued'), canDownload: true } as never;
+
+    component.openPreview(issued);
+    expect(managerFacade['loadSettlements']).toHaveBeenCalledWith('i1');
+    expect(component.previewInvoice()?.id).toBe('i1');
+    expect(component.accountingEnabled()).toBe(true);
+    expect(component.bookingsQueryParams(issued)).toEqual({ linkType: 'invoice', targetId: 'i1' });
+
+    component.downloadEinvoice(issued);
+    expect(billingService['downloadInvoiceEinvoice']).toHaveBeenCalledWith('i1');
+    expect(click).toHaveBeenCalledTimes(1);
+
+    supplierService['getById'] = jest.fn(() => of({ id: 'si1', lineItems: [] }));
+    component.openSupplierPreview({ ...invoice('si1', 'issued'), canDownload: false } as never);
+    expect(component.previewInvoice()).toBeNull();
+    click.mockRestore();
+  });
+
+  it('settlement amounts are signed by their effect on the balance', () => {
+    const base = { id: 's', currency: 'EUR', occurredAt: '', source: 'manual', createdAt: '' };
+
+    expect(component.settlementAmount({ ...base, type: 'payment', amount: 10 })).toMatch(/^\u2212/);
+    expect(component.settlementAmount({ ...base, type: 'refund', amount: 10 })).toMatch(/^\+/);
+  });
+
+  it('supplier lines: send account, asset and stock article fields only when set', () => {
+    const supplierFacade = TestBed.inject(AdminSupplierInvoiceManagerFacade) as unknown as Record<string, jest.Mock>;
+
+    component.editSupplierInvoiceId = 'si1';
+    component.editSupplierLineItems = [
+      { description: 'Laptop', quantity: 1, unitPriceNet: 1500, taxCategory: 'standard' },
+      {
+        description: 'Server',
+        quantity: 1,
+        unitPriceNet: 4000,
+        taxCategory: 'standard',
+        ledgerAccountNumber: ' 0420 ',
+        capitalizeAsAsset: true,
+        assetUsefulLifeMonths: 36,
+        inventoryArticleId: 'art-1',
+        accountingOpen: true,
+      },
+    ];
+    component.submitEdit();
+
+    expect(supplierFacade['updateInvoice']).toHaveBeenCalledWith(
+      'si1',
+      expect.objectContaining({
+        lineItems: [
+          { description: 'Laptop', quantity: 1, unitPriceNet: 1500, taxCategory: 'standard', taxRate: undefined },
+          {
+            description: 'Server',
+            quantity: 1,
+            unitPriceNet: 4000,
+            taxCategory: 'standard',
+            taxRate: undefined,
+            ledgerAccountNumber: '0420',
+            capitalizeAsAsset: true,
+            assetUsefulLifeMonths: 36,
+            inventoryArticleId: 'art-1',
+          },
+        ],
+      }),
+    );
+  });
+
+  it('supplier lines: editing restores accounting fields and opens their row', () => {
+    supplierService['getById'] = jest.fn(() =>
+      of({
+        id: 'si1',
+        supplierId: 'sup-1',
+        lineItems: [
+          { description: 'Fee', quantity: 1, unitPriceNet: 5, taxCategory: 'standard', taxRate: 19 },
+          {
+            description: 'Server',
+            quantity: 1,
+            unitPriceNet: 4000,
+            taxCategory: 'standard',
+            taxRate: 19,
+            ledgerAccountNumber: '0420',
+            capitalizeAsAsset: true,
+            assetUsefulLifeMonths: 36,
+          },
+        ],
+      }),
+    );
+    component.openEditSupplierModal({ ...invoice('si1', 'draft'), supplierId: 'sup-1' } as never);
+
+    expect(component.editSupplierLineItems[0].accountingOpen).toBe(false);
+    expect(component.editSupplierLineItems[1]).toEqual(
+      expect.objectContaining({
+        ledgerAccountNumber: '0420',
+        capitalizeAsAsset: true,
+        assetUsefulLifeMonths: 36,
+        accountingOpen: true,
+      }),
+    );
   });
 });

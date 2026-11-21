@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import {
   AdminSupplierProfilesFacade,
   AdminSupplierProfilesService,
+  BillingCapabilitiesFacade,
   type AdminSupplierProfileListItem,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { of, throwError } from 'rxjs';
@@ -13,6 +14,7 @@ jest.mock('../billing-country-options', () => ({
   BILLING_COUNTRY_OPTIONS: [],
   DEFAULT_BILLING_COUNTRY_CODE: 'DE',
   getCountryDisplayName: (code: string) => code,
+  withOptionalCountry: jest.requireActual('../billing-country-default').withOptionalCountry,
 }));
 
 const profile = (id: string, isComplete = true): AdminSupplierProfileListItem =>
@@ -41,12 +43,18 @@ describe('AdminSupplierProfilesPageComponent (data list)', () => {
       error$: of(null),
       total$: of(2),
       loadProfiles: jest.fn(),
+      createProfile: jest.fn(),
+      updateProfile: jest.fn(),
     };
     TestBed.configureTestingModule({
       providers: [
         DatePipe,
         { provide: AdminSupplierProfilesFacade, useValue: facade },
         { provide: AdminSupplierProfilesService, useValue: service },
+        {
+          provide: BillingCapabilitiesFacade,
+          useValue: { accountingEnabled$: of(true), loadCapabilities: jest.fn() },
+        },
       ],
     });
     component = TestBed.runInInjectionContext(() => new AdminSupplierProfilesPageComponent());
@@ -75,5 +83,24 @@ describe('AdminSupplierProfilesPageComponent (data list)', () => {
     expect(component.selected()).toEqual([]);
     // Reloads the current page (replace-page), not page 1 / append.
     expect(facade['loadProfiles']).toHaveBeenLastCalledWith({ search: undefined, page: 2, pageSize: 25 });
+  });
+
+  it('saves the default expense account (trimmed, empty cleared) with accounting enabled', () => {
+    service.getById.mockReturnValue(of({ id: 's1', supplierNumber: 'S-s1', defaultExpenseAccountNumber: '3400' }));
+    component.openEditModal(profile('s1'));
+    expect(component.editForm.defaultExpenseAccountNumber).toBe('3400');
+
+    component.editForm.defaultExpenseAccountNumber = ' 4980 ';
+    component.submitEdit();
+    expect(facade['updateProfile']).toHaveBeenCalledWith(
+      's1',
+      expect.objectContaining({ defaultExpenseAccountNumber: '4980' }),
+    );
+
+    component.createForm.defaultExpenseAccountNumber = '';
+    component.submitCreate();
+    expect(facade['createProfile']).toHaveBeenCalledWith(
+      expect.objectContaining({ defaultExpenseAccountNumber: null }),
+    );
   });
 });

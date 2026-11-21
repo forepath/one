@@ -54,6 +54,11 @@ describe('SupplierInvoicesAdminService', () => {
     publishSupplierInvoiceCreated: jest.fn(),
     publishSupplierInvoiceIssued: jest.fn(),
   };
+  const entityRepository = { update: jest.fn() };
+  const manager = { getRepository: jest.fn(() => entityRepository) };
+  const dataSource = { transaction: jest.fn(async (work: (m: typeof manager) => Promise<unknown>) => work(manager)) };
+  const documentSettlementService = { listForDocument: jest.fn().mockResolvedValue([]), apply: jest.fn() };
+  const postingPort = { onSupplierInvoiceIssued: jest.fn(), onSupplierInvoiceVoided: jest.fn() };
   const service = new SupplierInvoicesAdminService(
     supplierInvoicesRepository as never,
     supplierInvoiceLineItemsRepository as never,
@@ -68,6 +73,9 @@ describe('SupplierInvoicesAdminService', () => {
     auditLog as never,
     billingNotificationPublisher as never,
     { registerFromBuffer: jest.fn().mockResolvedValue({}) } as never,
+    dataSource as never,
+    documentSettlementService as never,
+    postingPort as never,
   );
   const draftInvoice = {
     id: 'inv-1',
@@ -108,6 +116,19 @@ describe('SupplierInvoicesAdminService', () => {
 
     expect(supplierInvoicePdfService.generateAndStore).toHaveBeenCalled();
     expect(billingNotificationPublisher.publishSupplierInvoiceIssued).toHaveBeenCalled();
+  });
+
+  it('issue books the invoice in the same transaction as the status change', async () => {
+    supplierInvoiceNumberSequencesRepository.nextInvoiceNumber.mockResolvedValue('SINV-2026-00002');
+
+    await service.issue('inv-1', 'admin-1');
+
+    expect(dataSource.transaction).toHaveBeenCalledTimes(1);
+    expect(entityRepository.update).toHaveBeenCalledWith(
+      'inv-1',
+      expect.objectContaining({ status: InvoiceStatus.ISSUED, invoiceNumber: 'SINV-2026-00002' }),
+    );
+    expect(postingPort.onSupplierInvoiceIssued).toHaveBeenCalledWith(manager, 'inv-1');
   });
 
   it('issue skips PDF generation when document already uploaded', async () => {
@@ -152,7 +173,7 @@ describe('SupplierInvoicesAdminService', () => {
     await service.issue('inv-1', 'admin-1');
 
     expect(supplierInvoiceNumberSequencesRepository.nextInvoiceNumber).not.toHaveBeenCalled();
-    expect(supplierInvoicesRepository.update).toHaveBeenCalledWith(
+    expect(entityRepository.update).toHaveBeenCalledWith(
       'inv-1',
       expect.objectContaining({ invoiceNumber: 'SUPPLIER-42' }),
     );

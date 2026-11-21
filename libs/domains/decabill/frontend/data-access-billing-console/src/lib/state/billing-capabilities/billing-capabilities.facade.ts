@@ -3,9 +3,13 @@ import { Store } from '@ngrx/store';
 
 import { loadBillingCapabilities } from './billing-capabilities.actions';
 import {
+  selectAccountingEnabled,
+  selectAccountingGlobalAccess,
   selectBillingCapabilities,
   selectBillingCapabilitiesLoading,
   selectDatevExportEnabled,
+  selectEinvoiceDefaultFormat,
+  selectEinvoiceFormats,
   selectFileSigningEnabled,
   selectGlobalViewsAllowed,
   selectUnifiedExportAllowed,
@@ -22,6 +26,10 @@ export class BillingCapabilitiesFacade {
   readonly globalViewsAllowed$ = this.store.select(selectGlobalViewsAllowed);
   readonly viewableTenants$ = this.store.select(selectViewableTenants);
   readonly fileSigningEnabled$ = this.store.select(selectFileSigningEnabled);
+  readonly accountingEnabled$ = this.store.select(selectAccountingEnabled);
+  readonly accountingGlobalAccess$ = this.store.select(selectAccountingGlobalAccess);
+  readonly einvoiceFormats$ = this.store.select(selectEinvoiceFormats);
+  readonly einvoiceDefaultFormat$ = this.store.select(selectEinvoiceDefaultFormat);
   readonly loading$ = this.store.select(selectBillingCapabilitiesLoading);
 
   loadCapabilities(): void {

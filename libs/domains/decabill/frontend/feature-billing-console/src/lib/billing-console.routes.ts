@@ -1,5 +1,11 @@
 import { Route } from '@angular/router';
 import {
+  AccountingFacade,
+  accountingReducer,
+  loadAccountingResource$,
+  runAccountingMutation$,
+  reloadAccountingResources$,
+  reloadAccountingOnTenantChange$,
   AdminBillingFacade,
   AdminCustomerProfilesFacade,
   AdminSupplierProfilesFacade,
@@ -56,7 +62,9 @@ import {
   adminVoidInvoice$,
   adminInvoiceManagerMarkPaid$,
   adminInvoiceManagerMarkUnpaid$,
+  adminInvoiceManagerRefund$,
   adminInvoiceManagerVoid$,
+  adminInvoiceManagerWriteOff$,
   createAdminCustomerProfile$,
   createManualInvoice$,
   deleteAdminCustomerProfile$,
@@ -70,6 +78,7 @@ import {
   adminInstantCancelSubscription$,
   adminResumeSubscription$,
   loadAdminInvoiceManager$,
+  loadAdminInvoiceSettlements$,
   recomputeAdminCustomerProfileTrustScore$,
   saveAdminCustomerProfileCustomData$,
   loadAdminSupplierProfiles$,
@@ -306,6 +315,14 @@ import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 
+import { AccountingAccountsPageComponent } from './accounting/accounting-accounts-page.component';
+import { AccountingAssetsPageComponent } from './accounting/accounting-assets-page.component';
+import { AccountingBankingPageComponent } from './accounting/accounting-banking-page.component';
+import { AccountingJournalPageComponent } from './accounting/accounting-journal-page.component';
+import { AccountingOpenItemsPageComponent } from './accounting/accounting-open-items-page.component';
+import { AccountingOverviewPageComponent } from './accounting/accounting-overview-page.component';
+import { AccountingStatementsPageComponent } from './accounting/accounting-statements-page.component';
+import { AccountingVatReturnsPageComponent } from './accounting/accounting-vat-returns-page.component';
 import { AddonsPageComponent } from './addons-page/addons-page.component';
 import { AdminBillingPageComponent } from './admin-billing-page/admin-billing-page.component';
 import { AdminCustomerProfilesPageComponent } from './admin-customer-profiles-page/admin-customer-profiles-page.component';
@@ -320,6 +337,7 @@ import { CloudInitConfigsPageComponent } from './cloud-init-configs-page/cloud-i
 import { BillingConsoleContainerComponent } from './container/container.component';
 import { collectContributorNgrx, collectContributorRoutes } from './contributors/contributor-ui.registry';
 import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from './contributors/first-party-contributor-ui.modules';
+import { accountingEnabledGuard, accountingGlobalAccessGuard } from './guards/accounting-enabled.guard';
 import { billingAdminGuard } from './guards/billing-admin.guard';
 import { datevExportEnabledGuard } from './guards/datev-export-enabled.guard';
 import { publicWithdrawalAccessGuard } from './guards/public-withdrawal-access.guard';
@@ -629,6 +647,65 @@ export const billingConsoleRoutes: Route[] = [
             ],
           },
           {
+            path: 'accounting',
+            canActivate: [authGuard, billingAdminGuard, accountingEnabledGuard],
+            providers: [
+              AccountingFacade,
+              provideState('accounting', accountingReducer),
+              provideEffects({
+                loadAccountingResource$,
+                runAccountingMutation$,
+                reloadAccountingResources$,
+                reloadAccountingOnTenantChange$,
+              }),
+            ],
+            children: [
+              {
+                path: '',
+                component: AccountingOverviewPageComponent,
+                title: () => buildPageTitle($localize`:@@featureContainer-accountingPage:Accounting`),
+              },
+              {
+                path: 'journal',
+                component: AccountingJournalPageComponent,
+                title: () => buildPageTitle($localize`:@@featureContainer-accountingJournalPage:Journal`),
+              },
+              {
+                path: 'accounts',
+                component: AccountingAccountsPageComponent,
+                title: () => buildPageTitle($localize`:@@featureContainer-accountingAccountsPage:Chart of accounts`),
+              },
+              {
+                path: 'banking',
+                component: AccountingBankingPageComponent,
+                title: () => buildPageTitle($localize`:@@featureContainer-accountingBankingPage:Banking`),
+              },
+              {
+                path: 'open-items',
+                component: AccountingOpenItemsPageComponent,
+                title: () => buildPageTitle($localize`:@@featureContainer-accountingOpenItemsPage:Open items`),
+              },
+              {
+                path: 'statements',
+                component: AccountingStatementsPageComponent,
+                title: () =>
+                  buildPageTitle($localize`:@@featureContainer-accountingStatementsPage:Statements & exports`),
+              },
+              {
+                path: 'vat-returns',
+                canActivate: [accountingGlobalAccessGuard],
+                component: AccountingVatReturnsPageComponent,
+                title: () => buildPageTitle($localize`:@@featureContainer-accountingVatReturnsPage:VAT returns`),
+              },
+              {
+                path: 'assets',
+                canActivate: [accountingGlobalAccessGuard],
+                component: AccountingAssetsPageComponent,
+                title: () => buildPageTitle($localize`:@@featureContainer-accountingAssetsPage:Fixed assets`),
+              },
+            ],
+          },
+          {
             path: 'datev-exports',
             canActivate: [authGuard, billingAdminGuard, datevExportEnabledGuard],
             component: AdminDatevExportsPageComponent,
@@ -827,6 +904,9 @@ export const billingConsoleRoutes: Route[] = [
         adminInvoiceManagerVoid$,
         adminInvoiceManagerMarkPaid$,
         adminInvoiceManagerMarkUnpaid$,
+        adminInvoiceManagerWriteOff$,
+        adminInvoiceManagerRefund$,
+        loadAdminInvoiceSettlements$,
         loadAdminCustomerProfiles$,
         loadAdminCustomerProfileTrustScore$,
         recomputeAdminCustomerProfileTrustScore$,

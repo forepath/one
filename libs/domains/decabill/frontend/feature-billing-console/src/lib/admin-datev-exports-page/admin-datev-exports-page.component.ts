@@ -27,8 +27,6 @@ import {
   FpcPageHeaderComponent,
   fpcRunBulk,
   FpcSpinnerComponent,
-  FpcTabComponent,
-  FpcTabGroupComponent,
   FpcTableCellDirective,
   type FpcMenuItem,
   type FpcTableColumn,
@@ -46,6 +44,7 @@ import {
 import { resolveBillingAdminUserLabel } from '../billing-user-select';
 import { dbBulkSummary, dbCopyIdItem, type DbBulkResult, DB_DL_DOWNLOAD } from '../shared/data-list';
 import { dbServerPaging } from '../shared/server-paging';
+import { BillingTenantSwitchComponent, type BillingTenantSwitchOption } from '../shared/tenant-switch.component';
 
 @Component({
   selector: 'framework-admin-datev-exports-page',
@@ -63,8 +62,7 @@ import { dbServerPaging } from '../shared/server-paging';
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
     FpcSpinnerComponent,
-    FpcTabComponent,
-    FpcTabGroupComponent,
+    BillingTenantSwitchComponent,
     FpcTableCellDirective,
   ],
   providers: [DatePipe],
@@ -84,6 +82,7 @@ export class AdminDatevExportsPageComponent implements OnInit {
   readonly homeTenantTabLabel = resolveBillingTenantDisplayName(this.environment);
   readonly pageTitle = $localize`:@@featureAdminDatevExports-title:DATEV exports`;
   readonly unifiedTabLabel = $localize`:@@featureAdminDatevExports-tabUnified:Unified`;
+  readonly unifiedSwitchNote = $localize`:@@featureAdminDatevExports-unifiedNote:One export across all tenants`;
   readonly searchPlaceholder = $localize`:@@featureAdminDatevExports-searchPlaceholder:Search exports`;
   readonly exportMonthAriaLabel = $localize`:@@featureAdminDatevExports-trigger:Export month`;
 
@@ -134,6 +133,15 @@ export class AdminDatevExportsPageComponent implements OnInit {
   readonly scope = toSignal(this.scope$, { initialValue: 'tenant' as DatevExportScope });
   readonly viewTenantId = toSignal(this.viewTenantId$, { initialValue: null as string | null });
   readonly viewableTenants = toSignal(this.viewableTenants$, { initialValue: [] as string[] });
+  private readonly unifiedExportAllowed = toSignal(this.unifiedExportAllowed$, { initialValue: false });
+  readonly activeTabId = toSignal(this.activeTabId$, { initialValue: this.homeTenantId });
+  /** Options of the header tenant switch: viewable tenants, plus "Unified" when unified exports are allowed. */
+  readonly tenantSwitchOptions = computed<BillingTenantSwitchOption[]>(() => [
+    ...this.viewableTenants().map((tenantId) => ({ id: tenantId, label: this.tenantTabLabel(tenantId) })),
+    ...(this.unifiedExportAllowed()
+      ? [{ id: 'unified', label: this.unifiedTabLabel, icon: 'buildings', description: this.unifiedSwitchNote }]
+      : []),
+  ]);
   readonly users = toSignal(this.authFacade.users$, { initialValue: [] as UserResponseDto[] });
 
   readonly columns: FpcTableColumn<AdminDatevExportListEntry>[] = [

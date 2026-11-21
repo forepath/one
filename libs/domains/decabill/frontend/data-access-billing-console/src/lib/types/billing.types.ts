@@ -1108,6 +1108,12 @@ export interface CustomerProfileResponse {
   country?: string | null;
   email?: string | null;
   phone?: string | null;
+  /** E-invoice format override; null = issuer default. */
+  einvoiceFormat?: string | null;
+  /** BT-10 buyer reference (Leitweg-ID for German public buyers). */
+  buyerReference?: string | null;
+  /** Electronic address `scheme:id` (Peppol EAS code), e.g. `0088:4012345000009`. */
+  einvoiceEndpoint?: string | null;
   stripeCustomerId?: string | null;
   autoBillingEnabled?: boolean;
   hasPaymentMethodOnFile?: boolean;
@@ -1132,10 +1138,26 @@ export interface CustomerProfileDto {
   country?: string;
   email?: string;
   phone?: string;
+  /** E-invoice format override; null / empty = issuer default. */
+  einvoiceFormat?: string | null;
+  /** BT-10 buyer reference (Leitweg-ID), max 64 characters. */
+  buyerReference?: string | null;
+  /** Electronic address `scheme:id`. */
+  einvoiceEndpoint?: string | null;
 }
 
 // Invoices
-export type InvoiceStatus = 'draft' | 'issued' | 'paid' | 'partially_paid' | 'overdue' | 'void';
+export type InvoiceStatus =
+  | 'draft'
+  | 'issued'
+  | 'paid'
+  | 'partially_paid'
+  | 'overdue'
+  | 'void'
+  /** Settled by credit notes / customer credit (no cash). */
+  | 'credited'
+  /** Remaining balance written off as uncollectible. */
+  | 'written_off';
 
 export type TaxCategory = 'standard' | 'reduced' | 'custom';
 
@@ -1430,6 +1452,40 @@ export interface PaginatedAdminSubscriptionsResponse {
 export interface MarkInvoicePaymentStatusDto {
   reason?: string;
   paidAt?: string;
+  /** Partial amount (gross, document currency); defaults to the full balance due. */
+  amount?: number;
+}
+
+/** Admin write-off of an uncollectible balance or manual refund of a customer credit. */
+export interface RecordInvoiceSettlementDto {
+  amount?: number;
+  occurredAt?: string;
+  reason?: string;
+}
+
+export type InvoiceSettlementType =
+  | 'payment'
+  | 'payment_reversal'
+  | 'credit'
+  | 'refund'
+  | 'write_off'
+  | 'discount'
+  | 'credit_transfer_in'
+  | 'credit_transfer_out';
+
+export interface InvoiceSettlementResponse {
+  id: string;
+  type: InvoiceSettlementType | string;
+  amount: number;
+  currency: string;
+  occurredAt: string;
+  source: string;
+  processor?: string | null;
+  externalId?: string | null;
+  creditDocumentId?: string | null;
+  relatedDocumentId?: string | null;
+  note?: string | null;
+  createdAt: string;
 }
 
 export interface BillingAuditLogResponse {
@@ -1641,6 +1697,22 @@ export interface BillingCapabilitiesResponse {
   globalViewsAllowed: boolean;
   viewableTenants: string[];
   fileSigningEnabled: boolean;
+  /** Accounting enabled with its prerequisites. */
+  accountingEnabled: boolean;
+  /** Entity-wide accounting functions (global views tenant). */
+  accountingGlobalAccess: boolean;
+  accountingCountry: string | null;
+  /** Env prerequisites missing for accounting (empty when enabled or not requested). */
+  accountingMissingPrerequisites: string[];
+  /** Selectable e-invoice formats. */
+  einvoiceFormats: BillingEinvoiceFormatOption[];
+  /** Issuer default e-invoice format. */
+  einvoiceDefaultFormat: string;
+}
+
+export interface BillingEinvoiceFormatOption {
+  format: string;
+  label: string;
 }
 
 export interface AdminDatevExportListItem {

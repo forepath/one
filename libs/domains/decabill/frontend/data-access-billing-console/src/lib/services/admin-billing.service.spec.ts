@@ -109,6 +109,67 @@ describe('AdminBillingService', () => {
     req.flush({ id: 'inv-1', subscriptionId: 'sub-1', userId: 'user-1', status: 'issued' });
   });
 
+  it('marks invoice partially paid with an amount', (done) => {
+    service.markPaid('inv-1', { amount: 40 }).subscribe((res) => {
+      expect(res.status).toBe('partially_paid');
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/invoices/inv-1/mark-paid`);
+
+    expect(req.request.body).toEqual({ amount: 40 });
+    req.flush({ id: 'inv-1', userId: 'user-1', status: 'partially_paid' });
+  });
+
+  it('writes off an invoice', (done) => {
+    service.writeOffInvoice('inv-1', { reason: 'insolvent' }).subscribe((res) => {
+      expect(res.status).toBe('written_off');
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/invoices/inv-1/write-off`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ reason: 'insolvent' });
+    req.flush({ id: 'inv-1', userId: 'user-1', status: 'written_off' });
+  });
+
+  it('records a refund', (done) => {
+    service.refundInvoice('inv-1').subscribe((res) => {
+      expect(res.balance).toBe(0);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/invoices/inv-1/refund`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+    req.flush({ id: 'inv-1', userId: 'user-1', status: 'paid', balance: 0 });
+  });
+
+  it('lists invoice settlements', (done) => {
+    service.listInvoiceSettlements('inv-1').subscribe((res) => {
+      expect(res).toHaveLength(1);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/invoices/inv-1/settlements`);
+
+    expect(req.request.method).toBe('GET');
+    req.flush([
+      { id: 's-1', type: 'payment', amount: 10, currency: 'EUR', occurredAt: '', source: 'manual', createdAt: '' },
+    ]);
+  });
+
+  it('downloads the e-invoice xml', (done) => {
+    const blob = new Blob(['<Invoice/>']);
+
+    service.downloadInvoiceEinvoice('inv-1').subscribe((res) => {
+      expect(res).toEqual(blob);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/invoices/inv-1/einvoice`);
+
+    expect(req.request.responseType).toBe('blob');
+    req.flush(blob);
+  });
+
   it('lists audit logs', (done) => {
     service.listAuditLogs('inv-1', 20, 0).subscribe((res) => {
       expect(res.total).toBe(1);

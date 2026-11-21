@@ -10,10 +10,11 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   AdminInventoryService,
+  BillingCapabilitiesFacade,
   INVENTORY_PUTAWAY_REASONS,
   INVENTORY_WITHDRAWAL_REASONS,
   InventoryFacade,
@@ -47,7 +48,10 @@ import {
   inventoryUnitLabel,
 } from './inventory-labels';
 import { InventoryLocationChipComponent } from './inventory-location-chip.component';
-import { InventoryReferenceSelectComponent } from './inventory-reference-select.component';
+import {
+  InventoryReferenceSelectComponent,
+  type InventoryReferenceOption,
+} from './inventory-reference-select.component';
 import { InventorySerialInputComponent, type InventorySerialSelection } from './inventory-serial-input.component';
 import { loadInventorySerialsInStock } from './inventory-serial-units.util';
 
@@ -110,6 +114,12 @@ export class InventoryMoveDialogComponent {
   private readonly facade = inject(InventoryFacade);
   private readonly service = inject(AdminInventoryService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly capabilitiesFacade = inject(BillingCapabilitiesFacade, { optional: true });
+
+  /** Accounting module active: putaways may name a unit cost for the stock valuation. */
+  readonly accountingEnabled = toSignal(this.capabilitiesFacade?.accountingEnabled$ ?? of(false), {
+    initialValue: false,
+  });
 
   readonly mutating = signal(false);
   readonly error = signal<string | null>(null);
@@ -121,6 +131,10 @@ export class InventoryMoveDialogComponent {
   reason: InventoryMovementReason | '' = '';
   reference = '';
   note = '';
+  /** Putaway: supplier invoice the stock was bought with (picked as reference); values at its line price. */
+  readonly supplierInvoice = signal<{ id: string; number: string } | null>(null);
+  /** Putaway: unit cost override (net) for the valuation. */
+  unitCost: number | null = null;
 
   // Serial numbers (serial-tracked articles).
   readonly serialText = signal('');
@@ -229,6 +243,8 @@ export class InventoryMoveDialogComponent {
         this.reason = this.mode() === 'putaway' ? 'receipt' : this.mode() === 'withdrawal' ? 'other' : '';
         this.reference = '';
         this.note = '';
+        this.supplierInvoice.set(null);
+        this.unitCost = null;
         this.serialText.set('');
         this.availableSerials.set(null);
         this.borrowerMode.set('account');
@@ -341,6 +357,28 @@ export class InventoryMoveDialogComponent {
     return formatInventoryQuantity(value ?? 0, this.article()?.unit);
   }
 
+  /** A supplier invoice picked as reference links the putaway to it (valuation source). */
+  onReferencePicked(option: InventoryReferenceOption | null): void {
+    this.supplierInvoice.set(
+      option?.kind === 'supplier-invoice' && option.id ? { id: option.id, number: option.value } : null,
+    );
+  }
+
+  /** Typed / cleared reference text drops a stale supplier invoice link. */
+  onReferenceChange(value: string): void {
+    this.reference = value;
+
+    const linked = this.supplierInvoice();
+
+    if (linked && linked.number !== value) this.supplierInvoice.set(null);
+  }
+
+  unitCostValid(): boolean {
+    const value = this.unitCost as unknown;
+
+    return value == null || value === '' || (Number.isFinite(Number(value)) && Number(value) >= 0);
+  }
+
   canSubmit(): boolean {
     const quantity = this.effectiveQuantity();
     const max = this.maxQuantity();
@@ -354,6 +392,7 @@ export class InventoryMoveDialogComponent {
       serialsOk &&
       borrowerOk &&
       (!this.lending() || !this.dueDate || this.dueDate >= this.today) &&
+      (this.mode() !== 'putaway' || this.unitCostValid()) &&
       Number.isFinite(quantity) &&
       quantity > 0 &&
       (max === null || quantity <= max) &&
@@ -385,6 +424,7 @@ export class InventoryMoveDialogComponent {
             ...common,
             targetCompartmentId: this.target()!.compartmentId,
             reason: (this.reason || 'receipt') as InventoryMovementReason,
+            ...this.putawayValuation(),
           },
         });
         break;
@@ -421,5 +461,20 @@ export class InventoryMoveDialogComponent {
           },
         });
     }
+  }
+
+  /** `{ supplierInvoiceId, unitCost }` of a putaway; only the fields that are set. */
+  private putawayValuation(): { supplierInvoiceId?: string; unitCost?: number } {
+    const valuation: { supplierInvoiceId?: string; unitCost?: number } = {};
+    const linked = this.supplierInvoice();
+    const unitCost = this.unitCost as unknown;
+
+    if (linked) valuation.supplierInvoiceId = linked.id;
+
+    if (this.accountingEnabled() && unitCost != null && unitCost !== '' && Number.isFinite(Number(unitCost))) {
+      valuation.unitCost = Math.round(Number(unitCost) * 10000) / 10000;
+    }
+
+    return valuation;
   }
 }

@@ -7,8 +7,10 @@ import {
   CreateCheckoutSessionParams,
   CheckoutSessionResult,
   CreateSetupSessionParams,
+  ListBalanceTransactionsParams,
   SetupSessionResult,
   PaymentProcessor,
+  ProcessorBalanceTransaction,
   PaymentStatusUpdate,
   RefundPaymentParams,
   RefundPaymentResult,
@@ -38,6 +40,7 @@ interface StripePaymentIntentPayload {
   id: string;
   status?: string | null;
   amount?: number | null;
+  amount_received?: number | null;
   metadata?: Record<string, string | undefined>;
   customer?: string | { id?: string } | null;
   payment_method?: string | { id?: string } | null;
@@ -185,11 +188,21 @@ export class StripePaymentProcessor implements PaymentProcessor {
     }
   }
 
-  parseWebhookEvent(rawBody: Buffer | string): { eventId: string; type: string; data: unknown } {
+  parseWebhookEvent(rawBody: Buffer | string): { eventId: string; type: string; data: unknown; created?: number } {
     const payload = typeof rawBody === 'string' ? rawBody : rawBody.toString('utf8');
-    const parsed = JSON.parse(payload) as { id: string; type: string; data: unknown };
+    const parsed = JSON.parse(payload) as { id: string; type: string; data: unknown; created?: number };
 
-    return { eventId: parsed.id, type: parsed.type, data: parsed.data };
+    return { eventId: parsed.id, type: parsed.type, data: parsed.data, created: parsed.created };
+  }
+
+  private minorToMajor(value: number | null | undefined): number | undefined {
+    return value != null && Number.isFinite(value) ? value / 100 : undefined;
+  }
+
+  private eventTime(event: { created?: number }): Date | undefined {
+    return typeof event.created === 'number' && Number.isFinite(event.created)
+      ? new Date(event.created * 1000)
+      : undefined;
   }
 
   async mapWebhookToPaymentUpdate(event: { type: string; data: unknown }): Promise<PaymentStatusUpdate | null> {
@@ -235,6 +248,13 @@ export class StripePaymentProcessor implements PaymentProcessor {
       externalId: session.id,
       status,
       amountPaid: status === 'succeeded' && session.amount_total != null ? session.amount_total / 100 : undefined,
+      occurredAt: this.eventTime(event as { created?: number }),
+      paymentIntentId:
+        typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : session.payment_intent && typeof session.payment_intent === 'object'
+            ? (session.payment_intent as { id?: string }).id
+            : undefined,
       tenantId: session.metadata?.tenantId,
       userId: session.metadata?.userId,
       mode: 'checkout',
@@ -338,7 +358,10 @@ export class StripePaymentProcessor implements PaymentProcessor {
       invoiceId,
       externalId: paymentIntent.id,
       status,
-      amountPaid: status === 'succeeded' && paymentIntent.amount != null ? paymentIntent.amount / 100 : undefined,
+      amountPaid:
+        status === 'succeeded' ? this.minorToMajor(paymentIntent.amount_received ?? paymentIntent.amount) : undefined,
+      occurredAt: this.eventTime(event as { created?: number }),
+      paymentIntentId: paymentIntent.id,
       tenantId: paymentIntent.metadata?.tenantId,
       userId: paymentIntent.metadata?.userId,
       mode: 'auto',
@@ -450,23 +473,72 @@ export class StripePaymentProcessor implements PaymentProcessor {
   }
 
   async refundPayment(params: RefundPaymentParams): Promise<RefundPaymentResult> {
-    const session = await this.client().checkout.sessions.retrieve(params.externalCheckoutSessionId, {
-      expand: ['payment_intent'],
-    });
-    const paymentIntent = session.payment_intent;
-
-    if (!paymentIntent || typeof paymentIntent === 'string') {
-      throw new Error('Stripe checkout session has no payment intent');
-    }
-
+    const paymentIntentId = await this.resolvePaymentIntentId(params.externalCheckoutSessionId);
     const refund = await this.client().refunds.create(
       {
-        payment_intent: paymentIntent.id,
+        payment_intent: paymentIntentId,
         amount: Math.round(params.amount * 100),
       },
       { idempotencyKey: params.idempotencyKey },
     );
 
     return { externalRefundId: refund.id };
+  }
+
+  /** Auto charges store the PaymentIntent id, checkout payments the session id. */
+  private async resolvePaymentIntentId(externalId: string): Promise<string> {
+    if (externalId.startsWith('pi_')) {
+      return externalId;
+    }
+
+    const session = await this.client().checkout.sessions.retrieve(externalId, { expand: ['payment_intent'] });
+    const paymentIntent = session.payment_intent;
+
+    if (!paymentIntent) {
+      throw new Error('Stripe checkout session has no payment intent');
+    }
+
+    return typeof paymentIntent === 'string' ? paymentIntent : paymentIntent.id;
+  }
+
+  async listBalanceTransactions(
+    params: ListBalanceTransactionsParams,
+  ): Promise<{ items: ProcessorBalanceTransaction[]; hasMore: boolean }> {
+    const page = await this.client().balanceTransactions.list({
+      limit: Math.min(Math.max(params.limit, 1), 100),
+      ...(params.startingAfter ? { starting_after: params.startingAfter } : {}),
+      ...(params.createdAfter ? { created: { gt: Math.floor(params.createdAfter.getTime() / 1000) } } : {}),
+      expand: ['data.source'],
+    });
+    const items = page.data.map((bt) => {
+      const source =
+        bt.source && typeof bt.source === 'object' ? (bt.source as unknown as Record<string, unknown>) : null;
+      const metadata = (source?.['metadata'] ?? {}) as Record<string, string | undefined>;
+      const paymentIntent = source?.['payment_intent'];
+
+      return {
+        id: bt.id,
+        type: bt.type,
+        reportingCategory: bt.reporting_category,
+        amount: bt.amount / 100,
+        fee: bt.fee / 100,
+        net: bt.net / 100,
+        currency: bt.currency.toUpperCase(),
+        created: new Date(bt.created * 1000),
+        availableOn: bt.available_on ? new Date(bt.available_on * 1000) : undefined,
+        sourceId: typeof bt.source === 'string' ? bt.source : (source?.['id'] as string | undefined),
+        paymentIntentId:
+          typeof paymentIntent === 'string'
+            ? paymentIntent
+            : paymentIntent && typeof paymentIntent === 'object'
+              ? ((paymentIntent as { id?: string }).id ?? undefined)
+              : undefined,
+        invoiceId: metadata['invoiceId'],
+        payoutId: bt.type === 'payout' ? (source?.['id'] as string | undefined) : undefined,
+        description: bt.description ?? undefined,
+      } satisfies ProcessorBalanceTransaction;
+    });
+
+    return { items, hasMore: page.has_more };
   }
 }

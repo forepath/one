@@ -104,4 +104,25 @@ describe('InvoicesComponent (bulk Download PDFs)', () => {
     appRef.tick();
     expect(facade['loadHistoryInvoices']).toHaveBeenCalledWith({ search: undefined, page: 1, pageSize: 25 });
   });
+
+  it('downloads the e-invoice XML next to the PDF (row menu and preview)', () => {
+    const click = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+
+    facade['downloadEinvoiceXml'] = jest.fn(() => of(new Blob(['<Invoice/>'])));
+
+    const menu = component.invoiceMenu({ id: 'i1', canDownload: true } as never).map((item) => item.id);
+
+    expect(menu).toContain('download-einvoice');
+    expect(component.invoiceMenu({ id: 'i3', canDownload: false } as never).map((item) => item.id)).not.toContain(
+      'download-einvoice',
+    );
+
+    component.onInvoiceAction({ id: 'i1', invoiceNumber: 'INV-1', canDownload: true } as never, 'download-einvoice');
+    expect(facade['downloadEinvoiceXml']).toHaveBeenCalledWith('i1');
+
+    component.downloadEinvoice({ id: 'i3', canDownload: false } as never);
+    expect(facade['downloadEinvoiceXml']).toHaveBeenCalledTimes(1);
+    expect(click).toHaveBeenCalledTimes(1);
+    click.mockRestore();
+  });
 });

@@ -488,4 +488,13 @@
       </fpc-form-field>
     </div>
   </div>
+  <h6 class="mt-3 mb-2" i18n="@@featureAdminProfiles-einvoiceHeading">E-invoicing</h6>
+  <framework-einvoice-settings-fields
+    [prefix]="prefix"
+    [formats]="einvoiceFormats()"
+    [defaultFormat]="einvoiceDefaultFormat()"
+    [(format)]="form.einvoiceFormat"
+    [(buyerReference)]="form.buyerReference"
+    [(endpoint)]="form.einvoiceEndpoint"
+  />
 </ng-template>

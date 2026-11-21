@@ -2,9 +2,12 @@ import { randomUUID } from 'crypto';
 
 import { getTenantIdOrDefault } from '@forepath/shared/backend';
 import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 
+import { ACCOUNTING_POSTING_PORT, type AccountingPostingPort } from '../accounting/ports/accounting-posting.port';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
+import { SettlementDocumentType, SettlementSource, SettlementType } from '../constants/settlement.constants';
 import { SupplierDocumentSource } from '../constants/supplier-document-source.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 import { EinvoiceTaxCategoryCode, TaxMode } from '../constants/tax-mode.constants';
@@ -18,7 +21,7 @@ import type {
   UpdateSupplierInvoiceDto,
 } from '../dto/supplier-invoice.dto';
 import type { SupplierInvoiceLineItemEntity } from '../entities/supplier-invoice-line-item.entity';
-import type { SupplierInvoiceEntity } from '../entities/supplier-invoice.entity';
+import { SupplierInvoiceEntity } from '../entities/supplier-invoice.entity';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { SupplierInvoiceLineItemsRepository } from '../repositories/supplier-invoice-line-items.repository';
 import { SupplierInvoiceNumberSequencesRepository } from '../repositories/supplier-invoice-number-sequences.repository';
@@ -32,6 +35,7 @@ import { buildSupplierInvoicePdfStorageKey } from '../utils/supplier-invoice-pdf
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
+import { DocumentSettlementService } from './document-settlement.service';
 import { StoredFileRegistryService } from './stored-file-registry.service';
 import { SupplierContractsService } from './supplier-contracts.service';
 import { SupplierInvoicePdfService } from './supplier-invoice-pdf.service';
@@ -71,6 +75,9 @@ export class SupplierInvoicesAdminService {
     private readonly auditLog: BillingAuditLogService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly storedFileRegistry: StoredFileRegistryService,
+    private readonly dataSource: DataSource,
+    private readonly documentSettlementService: DocumentSettlementService,
+    @Optional() @Inject(ACCOUNTING_POSTING_PORT) private readonly postingPort?: AccountingPostingPort,
   ) {}
 
   async list(params: {
@@ -158,7 +165,7 @@ export class SupplierInvoicesAdminService {
       hasUploadedDocument: false,
     });
 
-    await this.persistLineItems(draft.id, totals.lines);
+    await this.persistLineItems(draft.id, totals.lines, dto.lineItems);
 
     if (document) {
       await this.storeUploadedDocument(draft.id, document, adminUserId);
@@ -203,7 +210,7 @@ export class SupplierInvoicesAdminService {
         : await this.resolveManualInvoiceNumber(dto.invoiceNumber, id);
 
     await this.supplierInvoiceLineItemsRepository.deleteByInvoiceId(id);
-    await this.persistLineItems(id, totals.lines);
+    await this.persistLineItems(id, totals.lines, dto.lineItems);
 
     await this.supplierInvoicesRepository.update(id, {
       contractId,
@@ -285,17 +292,22 @@ export class SupplierInvoicesAdminService {
       hasUploadedDocument = false;
     }
 
-    const updated = await this.supplierInvoicesRepository.update(id, {
-      invoiceNumber,
-      status: InvoiceStatus.ISSUED,
-      issueDate,
-      dueDate,
-      issuedAt,
-      balanceDue: Number(invoice.totalGross),
-      documentStorageKey,
-      documentSource,
-      hasUploadedDocument,
+    await this.dataSource.transaction(async (manager) => {
+      await manager.getRepository(SupplierInvoiceEntity).update(id, {
+        invoiceNumber,
+        status: InvoiceStatus.ISSUED,
+        issueDate,
+        dueDate,
+        issuedAt,
+        balanceDue: Number(invoice.totalGross),
+        documentStorageKey,
+        documentSource,
+        hasUploadedDocument,
+      });
+      await this.postingPort?.onSupplierInvoiceIssued(manager, id);
     });
+
+    const updated = await this.supplierInvoicesRepository.findByIdOrThrow(id);
 
     await this.auditLog.log({
       process: 'supplier_invoice.issue',
@@ -324,12 +336,36 @@ export class SupplierInvoicesAdminService {
       throw new BadRequestException('Draft supplier invoices cannot be voided; delete instead');
     }
 
+    const settlements = await this.documentSettlementService.listForDocument(
+      SettlementDocumentType.SUPPLIER_INVOICE,
+      id,
+    );
+    const paidNet = settlements.reduce(
+      (total, s) =>
+        s.type === SettlementType.PAYMENT
+          ? total + Number(s.amount)
+          : s.type === SettlementType.PAYMENT_REVERSAL || s.type === SettlementType.REFUND
+            ? total - Number(s.amount)
+            : total,
+      0,
+    );
+
+    if (invoice.status === InvoiceStatus.PAID || paidNet > 0.005) {
+      throw new BadRequestException('Supplier invoice has payments; mark it unpaid before voiding');
+    }
+
     const voidedAt = new Date();
-    const updated = await this.supplierInvoicesRepository.update(id, {
-      status: InvoiceStatus.VOID,
-      voidedAt,
-      balanceDue: 0,
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.getRepository(SupplierInvoiceEntity).update(id, {
+        status: InvoiceStatus.VOID,
+        voidedAt,
+        balanceDue: 0,
+      });
+      await this.postingPort?.onSupplierInvoiceVoided(manager, id);
     });
+
+    const updated = await this.supplierInvoicesRepository.findByIdOrThrow(id);
 
     await this.auditLog.log({
       process: 'supplier_invoice.void',
@@ -359,17 +395,33 @@ export class SupplierInvoicesAdminService {
     }
 
     const paidAt = resolvePaymentReceivedAt(dto?.paidAt);
-    const updated = await this.supplierInvoicesRepository.update(id, {
-      status: InvoiceStatus.PAID,
-      balanceDue: 0,
-      paidAt,
+    const amount = dto?.amount ?? Number(invoice.balanceDue);
+
+    if (amount <= 0) {
+      throw new BadRequestException('Nothing left to pay on this supplier invoice');
+    }
+
+    const result = await this.documentSettlementService.apply({
+      documentType: SettlementDocumentType.SUPPLIER_INVOICE,
+      documentId: id,
+      type: SettlementType.PAYMENT,
+      amount,
+      currency: invoice.currency,
+      occurredAt: paidAt,
+      source: SettlementSource.MANUAL,
+      sourceRef: `manual:${randomUUID()}`,
+      note: dto?.reason ?? null,
+      createdByUserId: adminUserId,
     });
+    const updated = await this.supplierInvoicesRepository.findByIdOrThrow(id);
 
     await this.auditLog.log({
       process: 'supplier_invoice.mark_paid',
       level: 'info',
-      message: 'Admin marked supplier invoice as paid',
-      context: { supplierInvoiceId: id, reason: dto?.reason, paidAt: paidAt.toISOString(), adminUserId },
+      message: result.becameSettled
+        ? 'Admin marked supplier invoice as paid'
+        : 'Admin recorded a partial supplier payment',
+      context: { supplierInvoiceId: id, reason: dto?.reason, paidAt: paidAt.toISOString(), adminUserId, amount },
     });
 
     this.billingNotificationPublisher.publishSupplierInvoicePaid({
@@ -387,25 +439,45 @@ export class SupplierInvoicesAdminService {
   ): Promise<SupplierInvoiceDetailResponseDto> {
     const invoice = await this.supplierInvoicesRepository.findByIdOrThrow(id);
 
-    if (invoice.status !== InvoiceStatus.PAID) {
-      throw new BadRequestException('Can only mark unpaid from paid status');
+    if (invoice.status !== InvoiceStatus.PAID && invoice.status !== InvoiceStatus.PARTIALLY_PAID) {
+      throw new BadRequestException('Can only mark unpaid from paid or partially paid status');
     }
 
-    const today = new Date();
+    const settlements = await this.documentSettlementService.listForDocument(
+      SettlementDocumentType.SUPPLIER_INVOICE,
+      id,
+    );
+    const paidNet =
+      Math.round(
+        settlements.reduce(
+          (total, s) =>
+            s.type === SettlementType.PAYMENT
+              ? total + Number(s.amount)
+              : s.type === SettlementType.PAYMENT_REVERSAL || s.type === SettlementType.REFUND
+                ? total - Number(s.amount)
+                : total,
+          0,
+        ) * 100,
+      ) / 100;
 
-    today.setHours(0, 0, 0, 0);
-    const dueDate = invoice.dueDate ? new Date(invoice.dueDate) : null;
-
-    if (dueDate) {
-      dueDate.setHours(0, 0, 0, 0);
+    if (paidNet <= 0) {
+      throw new BadRequestException('No payment recorded on this supplier invoice');
     }
 
-    const newStatus = dueDate && dueDate < today ? InvoiceStatus.OVERDUE : InvoiceStatus.ISSUED;
-    const updated = await this.supplierInvoicesRepository.update(id, {
-      status: newStatus,
-      balanceDue: Number(invoice.totalGross),
-      paidAt: null,
+    await this.documentSettlementService.apply({
+      documentType: SettlementDocumentType.SUPPLIER_INVOICE,
+      documentId: id,
+      type: SettlementType.PAYMENT_REVERSAL,
+      amount: paidNet,
+      currency: invoice.currency,
+      occurredAt: new Date(),
+      source: SettlementSource.MANUAL,
+      sourceRef: `manual-reversal:${randomUUID()}`,
+      note: dto?.reason ?? null,
+      createdByUserId: adminUserId,
     });
+
+    const updated = await this.supplierInvoicesRepository.findByIdOrThrow(id);
 
     await this.auditLog.log({
       process: 'supplier_invoice.mark_unpaid',
@@ -617,9 +689,19 @@ export class SupplierInvoicesAdminService {
   private async persistLineItems(
     invoiceId: string,
     lines: ReturnType<TaxCalculationService['computeLines']>['lines'],
+    inputs?: Array<{
+      ledgerAccountNumber?: string | null;
+      capitalizeAsAsset?: boolean;
+      assetUsefulLifeMonths?: number | null;
+      inventoryArticleId?: string | null;
+    }>,
   ): Promise<void> {
     await this.supplierInvoiceLineItemsRepository.createMany(
       lines.map((line, index) => ({
+        ledgerAccountNumber: inputs?.[index]?.ledgerAccountNumber?.trim() || null,
+        capitalizeAsAsset: inputs?.[index]?.capitalizeAsAsset ?? false,
+        assetUsefulLifeMonths: inputs?.[index]?.assetUsefulLifeMonths ?? null,
+        inventoryArticleId: inputs?.[index]?.inventoryArticleId ?? null,
         invoiceId,
         position: index,
         description: line.description,
@@ -700,6 +782,10 @@ export class SupplierInvoicesAdminService {
       lineNet: Number(line.lineNet),
       lineTax: Number(line.lineTax),
       lineGross: Number(line.lineGross),
+      ledgerAccountNumber: line.ledgerAccountNumber ?? null,
+      capitalizeAsAsset: line.capitalizeAsAsset ?? false,
+      assetUsefulLifeMonths: line.assetUsefulLifeMonths ?? null,
+      inventoryArticleId: line.inventoryArticleId ?? null,
     };
   }
 }

@@ -111,6 +111,18 @@ export class CustomerProfileEntity {
   })
   customData!: Record<string, string>;
 
+  /** Preferred e-invoice format (overrides the issuer default; e.g. XRechnung for public-sector buyers). */
+  @Column({ type: 'varchar', length: 32, nullable: true, name: 'einvoice_format' })
+  einvoiceFormat?: string | null;
+
+  /** Buyer reference (BT-10): Leitweg-ID for German public buyers, Peppol/purchase order reference otherwise. */
+  @Column({ type: 'varchar', length: 64, nullable: true, name: 'buyer_reference' })
+  buyerReference?: string | null;
+
+  /** Electronic address for Peppol / XRechnung as `scheme:id` (EAS code, e.g. `0088:4012345000009`). */
+  @Column({ type: 'varchar', length: 140, nullable: true, name: 'einvoice_endpoint' })
+  einvoiceEndpoint?: string | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

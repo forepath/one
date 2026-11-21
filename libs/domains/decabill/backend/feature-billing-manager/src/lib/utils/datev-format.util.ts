@@ -1,8 +1,16 @@
 import * as iconv from 'iconv-lite';
 
 const LINE_ENDING = '\r\n';
-/** DATEV ignores column header row 2; ASCII labels avoid mojibake in UTF-8 editors. */
+/** Fallback transliteration for characters outside Windows-1252 after decomposition. */
 const GERMAN_UMLAUT_TRANSLITERATION: Readonly<Record<string, string>> = {
+  // Letters without a Unicode decomposition that Windows-1252 cannot hold.
+  Ł: 'L',
+  ł: 'l',
+  Đ: 'D',
+  đ: 'd',
+  Ħ: 'H',
+  ħ: 'h',
+  ı: 'i',
   ä: 'ae',
   ö: 'oe',
   ü: 'ue',
@@ -13,18 +21,50 @@ const GERMAN_UMLAUT_TRANSLITERATION: Readonly<Record<string, string>> = {
 };
 
 /**
- * EXTF data must be Windows-1252 for DATEV import, but CP1252 bytes are often opened as UTF-8
- * in editors (broken umlauts). Row-2 headers are ignored by DATEV, so we use ASCII there.
- * Dynamic field values are transliterated to ASCII-safe text before encoding.
+ * EXTF data must be Windows-1252. Characters Windows-1252 can represent (umlauts, accents, €) are kept so names
+ * match DATEV master data exactly; anything else is decomposed (NFKD, diacritics dropped) or removed. Control
+ * characters never pass.
  */
 export function sanitizeDatevText(value: string): string {
-  let result = value.normalize('NFKC');
+  let result = '';
 
-  for (const [umlaut, replacement] of Object.entries(GERMAN_UMLAUT_TRANSLITERATION)) {
-    result = result.split(umlaut).join(replacement);
+  for (const char of value.normalize('NFC')) {
+    // eslint-disable-next-line no-control-regex
+    if (/[\u0000-\u001F\u007F]/.test(char)) {
+      continue;
+    }
+
+    if (isWin1252Representable(char)) {
+      result += char;
+      continue;
+    }
+
+    const decomposed = char.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+
+    for (const part of decomposed) {
+      // eslint-disable-next-line no-control-regex
+      if (isWin1252Representable(part) && !/[\u0000-\u001F\u007F]/.test(part)) {
+        result += part;
+      } else if (GERMAN_UMLAUT_TRANSLITERATION[part]) {
+        result += GERMAN_UMLAUT_TRANSLITERATION[part];
+      }
+    }
   }
 
-  return result.replace(/[^\u0020-\u007E]/g, '').trim();
+  return result.trim();
+}
+
+const win1252Cache = new Map<string, boolean>();
+
+function isWin1252Representable(char: string): boolean {
+  let ok = win1252Cache.get(char);
+
+  if (ok === undefined) {
+    ok = iconv.decode(iconv.encode(char, 'win1252'), 'win1252') === char;
+    win1252Cache.set(char, ok);
+  }
+
+  return ok;
 }
 
 export function parseBooleanEnv(envKey: string, fallback: boolean): boolean {

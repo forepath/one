@@ -21,6 +21,9 @@ export class CustomerProfileResponseDto {
   country?: string;
   email?: string;
   phone?: string;
+  einvoiceFormat?: string | null;
+  buyerReference?: string | null;
+  einvoiceEndpoint?: string | null;
   stripeCustomerId?: string;
   autoBillingEnabled?: boolean;
   hasPaymentMethodOnFile?: boolean;

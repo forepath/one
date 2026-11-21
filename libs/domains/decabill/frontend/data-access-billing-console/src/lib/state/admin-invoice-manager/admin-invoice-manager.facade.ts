@@ -6,6 +6,7 @@ import type {
   CreateManualInvoiceDto,
   IssueManualInvoiceDto,
   MarkInvoicePaymentStatusDto,
+  RecordInvoiceSettlementDto,
   UpdateManualInvoiceDto,
   VoidInvoiceDto,
 } from '../../types/billing.types';
@@ -13,11 +14,14 @@ import type {
 import {
   adminInvoiceManagerMarkPaid,
   adminInvoiceManagerMarkUnpaid,
+  adminInvoiceManagerRefund,
   adminInvoiceManagerVoid,
+  adminInvoiceManagerWriteOff,
   createManualInvoice,
   deleteManualInvoice,
   issueManualInvoice,
   loadAdminInvoiceManager,
+  loadAdminInvoiceSettlements,
   updateManualInvoice,
 } from './admin-invoice-manager.actions';
 import {
@@ -30,6 +34,9 @@ import {
   selectAdminInvoiceManagerLoading,
   selectAdminInvoiceManagerPage,
   selectAdminInvoiceManagerPageSize,
+  selectAdminInvoiceManagerSettlements,
+  selectAdminInvoiceManagerSettlementsInvoiceId,
+  selectAdminInvoiceManagerSettlementsLoading,
   selectAdminInvoiceManagerState,
   selectAdminInvoiceManagerTotal,
   selectAdminInvoiceManagerUpdating,
@@ -50,6 +57,9 @@ export class AdminInvoiceManagerFacade {
   readonly total$ = this.store.select(selectAdminInvoiceManagerTotal);
   readonly page$ = this.store.select(selectAdminInvoiceManagerPage);
   readonly pageSize$ = this.store.select(selectAdminInvoiceManagerPageSize);
+  readonly settlements$ = this.store.select(selectAdminInvoiceManagerSettlements);
+  readonly settlementsInvoiceId$ = this.store.select(selectAdminInvoiceManagerSettlementsInvoiceId);
+  readonly settlementsLoading$ = this.store.select(selectAdminInvoiceManagerSettlementsLoading);
 
   /** Loads page 1 (or the given page) of the filtered list; the page replaces the current rows. */
   loadInvoices(params?: { search?: string; userId?: string; page?: number; pageSize?: number }): void {
@@ -99,5 +109,17 @@ export class AdminInvoiceManagerFacade {
 
   markUnpaid(invoiceRefId: string, dto?: MarkInvoicePaymentStatusDto): void {
     this.store.dispatch(adminInvoiceManagerMarkUnpaid({ invoiceRefId, dto }));
+  }
+
+  writeOff(invoiceRefId: string, dto?: RecordInvoiceSettlementDto): void {
+    this.store.dispatch(adminInvoiceManagerWriteOff({ invoiceRefId, dto }));
+  }
+
+  refund(invoiceRefId: string, dto?: RecordInvoiceSettlementDto): void {
+    this.store.dispatch(adminInvoiceManagerRefund({ invoiceRefId, dto }));
+  }
+
+  loadSettlements(invoiceRefId: string): void {
+    this.store.dispatch(loadAdminInvoiceSettlements({ invoiceRefId }));
   }
 }

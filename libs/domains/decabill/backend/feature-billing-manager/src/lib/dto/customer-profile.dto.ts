@@ -1,6 +1,7 @@
-import { IsEmail, IsEnum, IsOptional, IsString, Length, MaxLength, ValidateIf } from 'class-validator';
+import { IsEmail, IsEnum, IsIn, IsOptional, IsString, Length, Matches, MaxLength, ValidateIf } from 'class-validator';
 
 import { CustomerType } from '../constants/customer-type.constants';
+import { EINVOICE_FORMAT_VALUES } from '../constants/e-invoice-format.constants';
 
 export class CustomerProfileDto {
   @IsOptional()
@@ -58,4 +59,22 @@ export class CustomerProfileDto {
   @IsOptional()
   @IsString({ message: 'Phone must be a string' })
   phone?: string;
+
+  /** E-invoice format override (XRechnung for public buyers, Peppol …); empty = issuer default. */
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== '')
+  @IsIn(EINVOICE_FORMAT_VALUES, { message: 'Unknown e-invoice format' })
+  einvoiceFormat?: string | null;
+
+  /** BT-10 buyer reference (Leitweg-ID for German public buyers). */
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  buyerReference?: string | null;
+
+  /** Electronic address `scheme:id` (Peppol EAS code), e.g. `0088:4012345000009`. */
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== '')
+  @Matches(/^[0-9A-Z]{2,4}:[^\s]{1,128}$/, { message: 'E-invoice endpoint must be scheme:id' })
+  einvoiceEndpoint?: string | null;
 }

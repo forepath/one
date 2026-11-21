@@ -103,6 +103,21 @@ describe('InvoiceService', () => {
     getDecision: jest.fn(),
   };
   const billingSearchIndexService = { scheduleUpsert: jest.fn(), scheduleDelete: jest.fn() };
+  /** Transaction stub: credit-document count and the invoice status write go through the repository mocks. */
+  let creditDocumentCount = 0;
+  let lastWritten: unknown;
+  const manager = {
+    getRepository: () => ({
+      count: async () => creditDocumentCount,
+      update: async (id: string, patch: unknown) => {
+        lastWritten = await invoicesRepository.update(id, patch);
+
+        return lastWritten;
+      },
+    }),
+  };
+  const dataSource = { transaction: async (run: (m: unknown) => unknown) => await run(manager) };
+  const documentSettlementService = { listForDocument: jest.fn(), apply: jest.fn() };
   const service = new InvoiceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -125,6 +140,8 @@ describe('InvoiceService', () => {
     ossThresholdService as never,
     billingSearchIndexService as never,
     { findByIds: jest.fn().mockResolvedValue([]) } as never,
+    dataSource as never,
+    documentSettlementService as never,
   );
   const subscriptionId = 'sub-1';
   const userId = 'user-1';
@@ -190,6 +207,75 @@ describe('InvoiceService', () => {
   });
 
   describe('voidInvoice', () => {
+    beforeEach(() => {
+      creditDocumentCount = 0;
+      lastWritten = undefined;
+      documentSettlementService.listForDocument.mockResolvedValue([]);
+      invoicesRepository.findByIdOrThrow.mockImplementation(async () => lastWritten);
+    });
+
+    it('refuses to void an invoice that already has partial credit notes', async () => {
+      creditDocumentCount = 1;
+      invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue({
+        id: 'inv-1',
+        subscriptionId,
+        userId,
+        invoiceNumber: 'INV-2026-00001',
+        status: InvoiceStatus.PARTIALLY_PAID,
+        balanceDue: 50,
+      });
+
+      await expect(service.voidInvoice('inv-1', subscriptionId)).rejects.toBeInstanceOf(BadRequestException);
+      expect(invoicesRepository.update).not.toHaveBeenCalled();
+      expect(invoicePdfService.generateVoidDocumentAndStore).not.toHaveBeenCalled();
+    });
+
+    it('refuses to void an invoice with received payments', async () => {
+      invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue({
+        id: 'inv-1',
+        subscriptionId,
+        userId,
+        invoiceNumber: 'INV-2026-00001',
+        status: InvoiceStatus.PARTIALLY_PAID,
+        balanceDue: 50,
+      });
+      documentSettlementService.listForDocument.mockResolvedValue([{ type: 'payment', amount: '69' }]);
+
+      await expect(service.voidInvoice('inv-1', subscriptionId)).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('returns customer credit applied to the invoice to its source document', async () => {
+      invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue({
+        id: 'inv-1',
+        subscriptionId,
+        userId,
+        invoiceNumber: 'INV-2026-00001',
+        status: InvoiceStatus.PARTIALLY_PAID,
+        balanceDue: 50,
+      });
+      invoiceVoidDocumentsRepository.findByInvoiceId.mockResolvedValue({ documentNumber: 'x', pdfStorageKey: 'y' });
+      documentSettlementService.listForDocument.mockResolvedValue([
+        { type: 'credit_transfer_in', amount: '20', relatedDocumentId: 'inv-0' },
+      ]);
+      invoicesRepository.update.mockResolvedValue({ id: 'inv-1', status: InvoiceStatus.VOID });
+
+      await service.voidInvoice('inv-1', subscriptionId);
+
+      expect(documentSettlementService.apply).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documentId: 'inv-1',
+          type: 'credit_transfer_out',
+          amount: 20,
+          relatedDocumentId: 'inv-0',
+        }),
+        manager,
+      );
+      expect(documentSettlementService.apply).toHaveBeenCalledWith(
+        expect.objectContaining({ documentId: 'inv-0', type: 'credit_transfer_in', amount: 20 }),
+        manager,
+      );
+    });
+
     it('voids issued invoice and stores credit note PDF', async () => {
       const invoice = {
         id: 'inv-1',

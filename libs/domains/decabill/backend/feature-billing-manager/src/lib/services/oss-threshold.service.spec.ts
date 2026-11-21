@@ -4,6 +4,8 @@ describe('OssThresholdService', () => {
   const ledgersRepository = {
     findOrCreate: jest.fn(),
     save: jest.fn(),
+    adjustTotal: jest.fn(),
+    markThresholdExceeded: jest.fn(),
   };
   const notifications = {
     publish: jest.fn(),
@@ -55,20 +57,21 @@ describe('OssThresholdService', () => {
     );
   });
 
-  it('records net and publishes when crossing the threshold', async () => {
-    ledgersRepository.findOrCreate.mockResolvedValue({
-      tenantId: 'unified',
-      calendarYear: 2026,
-      crossBorderB2cNetTotal: 9500,
+  it('records net atomically and publishes once when crossing the threshold', async () => {
+    ledgersRepository.adjustTotal.mockResolvedValue({
+      previous: 9500,
+      next: 10100,
       thresholdEur: 10_000,
       thresholdExceededAt: null,
     });
+    ledgersRepository.markThresholdExceeded.mockResolvedValue(true);
 
     const decision = await service.recordCrossBorderB2cNet({
       netAmount: 600,
       at: new Date('2026-07-01T00:00:00Z'),
     });
 
+    expect(ledgersRepository.adjustTotal).toHaveBeenCalledWith(expect.any(String), 2026, 600);
     expect(decision).toEqual(
       expect.objectContaining({
         ossDestinationApplies: true,
@@ -86,11 +89,24 @@ describe('OssThresholdService', () => {
     );
   });
 
+  it('does not re-publish when another issuance already marked the threshold', async () => {
+    ledgersRepository.adjustTotal.mockResolvedValue({
+      previous: 9900,
+      next: 10100,
+      thresholdEur: 10_000,
+      thresholdExceededAt: null,
+    });
+    ledgersRepository.markThresholdExceeded.mockResolvedValue(false);
+
+    await service.recordCrossBorderB2cNet({ netAmount: 200, at: new Date('2026-07-01T00:00:00Z') });
+
+    expect(notifications.publish).not.toHaveBeenCalled();
+  });
+
   it('does not re-publish when already exceeded', async () => {
-    ledgersRepository.findOrCreate.mockResolvedValue({
-      tenantId: 'unified',
-      calendarYear: 2026,
-      crossBorderB2cNetTotal: 12_000,
+    ledgersRepository.adjustTotal.mockResolvedValue({
+      previous: 12_000,
+      next: 12_100,
       thresholdEur: 10_000,
       thresholdExceededAt: new Date('2026-03-01T00:00:00Z'),
     });
@@ -98,6 +114,19 @@ describe('OssThresholdService', () => {
     await service.recordCrossBorderB2cNet({ netAmount: 100, at: new Date('2026-07-01T00:00:00Z') });
 
     expect(notifications.publish).not.toHaveBeenCalled();
-    expect(ledgersRepository.save).toHaveBeenCalled();
+    expect(ledgersRepository.markThresholdExceeded).not.toHaveBeenCalled();
+  });
+
+  it('takes voided / credited cross-border sales back out of the year total', async () => {
+    ledgersRepository.adjustTotal.mockResolvedValue({
+      previous: 500,
+      next: 400,
+      thresholdEur: 10_000,
+      thresholdExceededAt: null,
+    });
+
+    await service.reverseCrossBorderB2cNet({ netAmount: 100, at: new Date('2026-07-01T00:00:00Z') });
+
+    expect(ledgersRepository.adjustTotal).toHaveBeenCalledWith(expect.any(String), 2026, -100);
   });
 });

@@ -1,0 +1,704 @@
+<div class="accounting-page border-top d-flex flex-column flex-grow-1 min-h-0" data-testid="accounting-accounts-page">
+  <fpc-page-header [title]="pageTitle">
+    <framework-accounting-tenant-switch fpcPageHeaderContext />
+  </fpc-page-header>
+  <framework-accounting-nav active="accounts" />
+
+  @if (mutationError(); as err) {
+    <fpc-alert [flush]="true" variant="danger" [message]="err" data-testid="accounting-accounts-error" />
+  }
+  @if (importResult(); as result) {
+    <fpc-alert
+      [flush]="true"
+      variant="success"
+      [dismissible]="true"
+      i18n-message="@@featureAccountingAccounts-importResult"
+      message="Import finished: {{ result.created }} created, {{ result.updated }} updated, {{
+        result.skipped
+      }} skipped."
+      data-testid="accounting-import-result"
+    />
+  }
+
+  <fpc-list-toolbar
+    class="flex-shrink-0"
+    [open]="chartFiltersOpen()"
+    (openChange)="onChartFiltersOpenChange($event)"
+    [title]="filtersTitle"
+    [showClear]="false"
+    (applied)="applyChartFilter()"
+    data-testid="accounting-chart-filters"
+  >
+    <span fpcListToolbarLead class="accounting-statistics-scope small text-body-secondary text-truncate">{{
+      selectedChartLabel()
+    }}</span>
+    <fpc-form-field forId="accChartSelect" i18n-label="@@featureAccountingAccounts-chart" label="Chart of accounts">
+      <fpc-form-control
+        controlType="select"
+        controlId="accChartSelect"
+        [(ngModel)]="draftChartId"
+        name="accChartSelect"
+        data-testid="accounting-chart-select"
+      >
+        @for (chart of charts().data ?? []; track chart.id) {
+          <option [value]="chart.id">{{ chart.name }} ({{ chart.code }})</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+  </fpc-list-toolbar>
+
+  <fpc-tab-group
+    class="flex-shrink-0"
+    [activeId]="activeTab()"
+    (activeIdChange)="onTabChange($event)"
+    i18n-ariaLabel="@@featureAccountingAccounts-tabsAria"
+    ariaLabel="Account views"
+  >
+    <fpc-tab id="accounts" icon="list-ol" i18n-label="@@featureAccountingAccounts-tabAccounts" label="Accounts" />
+    <fpc-tab id="tax-codes" icon="percent" i18n-label="@@featureAccountingAccounts-tabTaxCodes" label="Tax codes" />
+    <fpc-tab
+      id="trial-balance"
+      icon="table"
+      i18n-label="@@featureAccountingAccounts-tabTrialBalance"
+      label="Trial balance"
+    />
+  </fpc-tab-group>
+
+  @switch (activeTab()) {
+    @case ('accounts') {
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="pageTitle"
+        [columns]="accountColumns"
+        [rows]="accounts().data ?? []"
+        paging="client"
+        persistKey="decabill-accounting-accounts"
+        i18n-searchPlaceholder="@@featureAccountingAccounts-searchAccounts"
+        searchPlaceholder="Search accounts"
+        [loading]="accounts().loading"
+        refreshable
+        (refresh)="selectChart(selectedChartId())"
+        [error]="accounts().error"
+        [rowMenu]="accountMenu"
+        (rowAction)="onAccountAction($event.row, $event.item.id)"
+        (rowActivate)="openLedger($event)"
+        emptyIcon="list-ol"
+        data-testid="accounting-accounts-table"
+      >
+        @if (globalAccess()) {
+          <fpc-button
+            fpcDataTableToolbar
+            variant="primary"
+            iconOnly
+            [disabled]="!selectedChartId()"
+            i18n-ariaLabel="@@featureAccountingAccounts-createAccount"
+            ariaLabel="Create account"
+            i18n-title="@@featureAccountingAccounts-createAccount"
+            title="Create account"
+            (clicked)="openAccountModal()"
+          >
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+          </fpc-button>
+        }
+        @if (globalAccess()) {
+          <fpc-button
+            fpcDataTableToolbar
+            variant="secondary"
+            iconOnly
+            [disabled]="!selectedChartId()"
+            i18n-ariaLabel="@@featureAccountingAccounts-importAccounts"
+            ariaLabel="Import accounts"
+            i18n-title="@@featureAccountingAccounts-importAccounts"
+            title="Import accounts"
+            (clicked)="openImport()"
+            data-testid="accounting-import-accounts"
+          >
+            <i class="bi bi-upload" aria-hidden="true"></i>
+          </fpc-button>
+        }
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            size="sm"
+            icon="list-ol"
+            i18n-message="@@featureAccountingAccounts-noAccounts"
+            message="This chart has no accounts yet."
+          />
+        </span>
+      </fpc-data-table>
+    }
+
+    @case ('tax-codes') {
+      <fpc-data-table
+        class="flex-grow-1 min-h-0"
+        [ariaLabel]="pageTitle"
+        [columns]="taxCodeColumns"
+        [rows]="taxCodes().data ?? []"
+        paging="client"
+        i18n-searchPlaceholder="@@featureAccountingAccounts-searchTaxCodes"
+        searchPlaceholder="Search tax codes"
+        [loading]="taxCodes().loading"
+        [error]="taxCodes().error"
+        [rowMenu]="taxCodeMenu"
+        (rowAction)="onTaxCodeAction($event.row, $event.item.id)"
+        emptyIcon="percent"
+        data-testid="accounting-tax-codes-table"
+      >
+        @if (globalAccess()) {
+          <fpc-button
+            fpcDataTableToolbar
+            variant="primary"
+            iconOnly
+            [disabled]="!selectedChartId()"
+            i18n-ariaLabel="@@featureAccountingAccounts-createTaxCode"
+            ariaLabel="Create tax code"
+            i18n-title="@@featureAccountingAccounts-createTaxCode"
+            title="Create tax code"
+            (clicked)="openTaxCodeModal()"
+          >
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+          </fpc-button>
+        }
+        <span fpcDataTableEmpty>
+          <fpc-empty-state
+            size="sm"
+            icon="percent"
+            i18n-message="@@featureAccountingAccounts-noTaxCodes"
+            message="This chart has no tax codes yet."
+          />
+        </span>
+      </fpc-data-table>
+    }
+
+    @case ('trial-balance') {
+      <!-- Phone: one column at a time; md and up show statistics and the trial balance side by side. -->
+      <fpc-tab-group class="d-md-none flex-shrink-0" [activeId]="laneTab()" (activeIdChange)="onLaneChange($event)">
+        <fpc-tab id="statistics" [label]="laneLabel('statistics')" />
+        <fpc-tab id="list" [label]="laneLabel('list')" />
+      </fpc-tab-group>
+
+      <fpc-section-row class="flex-grow-1 min-h-0" [nowrap]="true">
+        <fpc-section-column class="d-flex d-md-flex" [class.d-none]="laneTab() !== 'statistics'">
+          <fpc-board-lane class="h-100">
+            <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+              <span fpcLaneHeaderTitle i18n="@@featureAccountingAccounts-statistics">Statistics</span>
+            </fpc-lane-header>
+            <fpc-list-toolbar
+              fpcBoardLaneSearch
+              [open]="filtersOpen()"
+              (openChange)="onFiltersOpenChange($event)"
+              [title]="filtersTitle"
+              (applied)="applyRange()"
+              (cleared)="resetRange()"
+            >
+              <span fpcListToolbarLead class="accounting-statistics-scope small text-body-secondary text-truncate">{{
+                rangeLabel()
+              }}</span>
+              <fpc-form-field forId="accTbFrom" i18n-label="@@featureAccountingAccounts-from" label="From">
+                <fpc-form-control controlId="accTbFrom" inputType="date" [(ngModel)]="draftFrom" name="accTbFrom" />
+              </fpc-form-field>
+              <fpc-form-field forId="accTbTo" i18n-label="@@featureAccountingAccounts-to" label="To">
+                <fpc-form-control controlId="accTbTo" inputType="date" [(ngModel)]="draftTo" name="accTbTo" />
+              </fpc-form-field>
+            </fpc-list-toolbar>
+
+            <fpc-summary-bar [columns]="3" [bordered]="false">
+              <fpc-summary-card
+                icon="arrow-down-left"
+                i18n-label="@@featureAccountingAccounts-kpiDebit"
+                label="Total debit"
+                [value]="money(trialTotals().debit)"
+              />
+              <fpc-summary-card
+                icon="arrow-up-right"
+                i18n-label="@@featureAccountingAccounts-kpiCredit"
+                label="Total credit"
+                [value]="money(trialTotals().credit)"
+              />
+              <fpc-summary-card
+                icon="list-check"
+                i18n-label="@@featureAccountingAccounts-kpiWithBalance"
+                label="Accounts with balance"
+                [value]="'' + trialTotals().withBalance"
+              />
+            </fpc-summary-bar>
+
+            <fpc-panel-grid [columns]="1" [bordered]="false">
+              <fpc-panel [title]="chartTitle">
+                @if (trialBalance().loading) {
+                  <fpc-empty-state size="sm" loading />
+                } @else if (balanceChart(); as chart) {
+                  <apx-chart
+                    [series]="chart.series"
+                    [chart]="chart.chart"
+                    [colors]="chart.colors"
+                    [plotOptions]="chart.plotOptions"
+                    [dataLabels]="chart.dataLabels"
+                    [legend]="chart.legend"
+                    [xaxis]="chart.xaxis"
+                    [yaxis]="chart.yaxis"
+                    [grid]="chart.grid"
+                    [tooltip]="chart.tooltip"
+                    [responsive]="chart.responsive"
+                  ></apx-chart>
+                } @else {
+                  <fpc-empty-state
+                    size="sm"
+                    icon="bar-chart"
+                    i18n-message="@@featureAccountingAccounts-noStatistics"
+                    message="No bookings in the selected period."
+                  />
+                }
+              </fpc-panel>
+            </fpc-panel-grid>
+          </fpc-board-lane>
+        </fpc-section-column>
+
+        <fpc-section-column class="d-md-flex" [class.d-none]="laneTab() !== 'list'">
+          <fpc-board-lane class="h-100">
+            <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up">
+              <span fpcLaneHeaderTitle i18n="@@featureAccountingAccounts-trialBalance">Trial balance</span>
+            </fpc-lane-header>
+            @if (trialBalance().error; as err) {
+              <fpc-alert [flush]="true" variant="danger" [message]="err" />
+            }
+            @if (trialBalance().loading && trialRows().length === 0) {
+              <fpc-empty-state size="sm" loading />
+            } @else if (trialRows().length === 0) {
+              <fpc-empty-state
+                size="sm"
+                icon="table"
+                i18n-message="@@featureAccountingAccounts-noTrialBalance"
+                message="No balances in the selected period."
+              />
+            } @else {
+              <div class="accounting-scroll px-2">
+                <table class="accounting-table" data-testid="accounting-trial-balance">
+                  <thead>
+                    <tr>
+                      <th i18n="@@featureAccountingAccounts-colAccount">Account</th>
+                      <th class="accounting-amount" i18n="@@featureAccountingAccounts-colOpening">Opening</th>
+                      <th class="accounting-amount" i18n="@@featureAccountingAccounts-colDebit">Debit</th>
+                      <th class="accounting-amount" i18n="@@featureAccountingAccounts-colCredit">Credit</th>
+                      <th class="accounting-amount" i18n="@@featureAccountingAccounts-colClosing">Closing</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of trialRows(); track row.accountId) {
+                      <tr>
+                        <td>
+                          <button
+                            type="button"
+                            class="btn btn-link btn-sm p-0 text-start"
+                            (click)="openLedgerById(row.accountId)"
+                          >
+                            <span class="accounting-mono">{{ row.number }}</span> {{ row.name }}
+                          </button>
+                          <div class="small text-body-secondary">{{ typeLabel(row.type) }}</div>
+                        </td>
+                        <td class="accounting-amount">{{ money(row.opening) }}</td>
+                        <td class="accounting-amount">{{ money(row.debit) }}</td>
+                        <td class="accounting-amount">{{ money(row.credit) }}</td>
+                        <td class="accounting-amount" [class.accounting-negative]="row.closing < 0">
+                          {{ money(row.closing) }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td i18n="@@featureAccountingAccounts-total">Total</td>
+                      <td class="accounting-amount">{{ money(trialTotals().opening) }}</td>
+                      <td class="accounting-amount">{{ money(trialTotals().debit) }}</td>
+                      <td class="accounting-amount">{{ money(trialTotals().credit) }}</td>
+                      <td class="accounting-amount">{{ money(trialTotals().closing) }}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            }
+          </fpc-board-lane>
+        </fpc-section-column>
+      </fpc-section-row>
+    }
+  }
+</div>
+
+<fpc-confirm-dialog
+  [open]="deleteTarget() !== null"
+  (openChange)="!$event && deleteTarget.set(null)"
+  i18n-title="@@featureAccountingAccounts-deleteTitle"
+  title="Delete account?"
+  i18n-message="@@featureAccountingAccounts-deleteMessage"
+  message="Only accounts without bookings can be deleted; deactivate used accounts instead."
+  i18n-confirmLabel="@@featureAccountingAccounts-delete"
+  confirmLabel="Delete"
+  [danger]="true"
+  (confirmed)="confirmDelete()"
+/>
+
+<fpc-modal [(open)]="accountModalOpen" size="lg" [title]="accountModalTitle()" data-testid="accounting-account-modal">
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <fpc-form-field forId="accNumber" i18n-label="@@featureAccountingAccounts-number" label="Number" required>
+        <fpc-form-control controlId="accNumber" [(ngModel)]="accountForm.number" name="accNumber" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-8">
+      <fpc-form-field forId="accName" i18n-label="@@featureAccountingAccounts-name" label="Name" required>
+        <fpc-form-control controlId="accName" [(ngModel)]="accountForm.name" name="accName" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-4">
+      <fpc-form-field forId="accType" i18n-label="@@featureAccountingAccounts-type" label="Type">
+        <fpc-form-control controlType="select" controlId="accType" [(ngModel)]="accountForm.type" name="accType">
+          @for (type of accountTypes; track type) {
+            <option [value]="type">{{ typeLabel(type) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-md-4">
+      <fpc-form-field
+        forId="accRole"
+        i18n-label="@@featureAccountingAccounts-role"
+        label="System role"
+        i18n-hint="@@featureAccountingAccounts-roleHint"
+        hint="e.g. receivables, bank, revenue_standard"
+      >
+        <fpc-form-control controlId="accRole" [(ngModel)]="accountForm.role" name="accRole" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-4">
+      <fpc-form-field
+        forId="accPosition"
+        i18n-label="@@featureAccountingAccounts-statementPosition"
+        label="Statement position"
+      >
+        <fpc-form-control controlId="accPosition" [(ngModel)]="accountForm.statementPosition" name="accPosition" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field
+        forId="accTaxCode"
+        i18n-label="@@featureAccountingAccounts-defaultTaxCode"
+        label="Default tax code"
+      >
+        <fpc-form-control
+          controlType="select"
+          controlId="accTaxCode"
+          [(ngModel)]="accountForm.defaultTaxCodeId"
+          name="accTaxCode"
+        >
+          <option value="" i18n="@@featureAccountingAccounts-none">None</option>
+          @for (taxCode of taxCodes().data ?? []; track taxCode.id) {
+            <option [value]="taxCode.id">{{ taxCode.name }} ({{ taxCode.code }})</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6 d-flex flex-column justify-content-end gap-1">
+      <fpc-form-check
+        checkId="accAutomatic"
+        [(ngModel)]="accountForm.isAutomatic"
+        name="accAutomatic"
+        i18n-label="@@featureAccountingAccounts-isAutomatic"
+        label="Automatic VAT account (splits VAT with the default tax code)"
+      />
+      <fpc-form-check
+        checkId="accActive"
+        [(ngModel)]="accountForm.isActive"
+        name="accActive"
+        i18n-label="@@featureAccountingAccounts-isActive"
+        label="Active"
+      />
+    </div>
+    <div class="col-12">
+      <fpc-form-field forId="accDescription" i18n-label="@@featureAccountingAccounts-description" label="Description">
+        <fpc-form-control
+          controlType="textarea"
+          controlId="accDescription"
+          [(ngModel)]="accountForm.description"
+          name="accDescription"
+        />
+      </fpc-form-field>
+    </div>
+  </div>
+  @if (mutationError(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="primary" [disabled]="mutating() || !accountFormValid()" (clicked)="submitAccount()">
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingAccounts-save">Save</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="importModalOpen"
+  i18n-title="@@featureAccountingAccounts-importAccounts"
+  title="Import accounts"
+  data-testid="accounting-import-modal"
+>
+  <p class="small text-body-secondary" i18n="@@featureAccountingAccounts-importHint">
+    CSV with the columns number;name[;type[;position]] or a DATEV account labels file (Kontenbeschriftungen). Existing
+    numbers are updated, new ones created.
+  </p>
+  <label class="form-label" for="accImportFile" i18n="@@featureAccountingAccounts-file">File</label>
+  <input
+    id="accImportFile"
+    class="form-control"
+    type="file"
+    accept=".csv,.txt"
+    (change)="onImportFile($event)"
+    data-testid="accounting-import-file"
+  />
+  @if (mutationError(); as err) {
+    <fpc-alert class="d-block mt-2" variant="danger" [message]="err" />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="primary" [disabled]="mutating() || !importFile()" (clicked)="submitImport()">
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingAccounts-import">Import</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal [(open)]="taxCodeModalOpen" size="lg" [title]="taxCodeModalTitle()" data-testid="accounting-tax-code-modal">
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <fpc-form-field
+        forId="accTcCode"
+        i18n-label="@@featureAccountingAccounts-code"
+        label="Code"
+        required
+        i18n-hint="@@featureAccountingAccounts-codeHint"
+        hint="Uppercase letters, digits, underscores"
+      >
+        <fpc-form-control
+          controlId="accTcCode"
+          [(ngModel)]="taxCodeForm.code"
+          name="accTcCode"
+          [readOnly]="editingTaxCode() !== null"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-8">
+      <fpc-form-field forId="accTcName" i18n-label="@@featureAccountingAccounts-name" label="Name" required>
+        <fpc-form-control controlId="accTcName" [(ngModel)]="taxCodeForm.name" name="accTcName" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-4">
+      <fpc-form-field forId="accTcKind" i18n-label="@@featureAccountingAccounts-kind" label="Kind">
+        <fpc-form-control
+          controlType="select"
+          controlId="accTcKind"
+          [(ngModel)]="taxCodeForm.kind"
+          name="accTcKind"
+          [disabled]="editingTaxCode() !== null"
+        >
+          @for (kind of taxCodeKinds; track kind) {
+            <option [value]="kind">{{ taxKindLabel(kind) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-md-4">
+      <fpc-form-field
+        forId="accTcRate"
+        i18n-label="@@featureAccountingAccounts-rate"
+        label="Rate (%)"
+        i18n-hint="@@featureAccountingAccounts-rateHint"
+        hint="Empty: rate of the document line (OSS)"
+      >
+        <fpc-form-control
+          controlId="accTcRate"
+          inputType="number"
+          min="0"
+          max="100"
+          step="0.01"
+          [(ngModel)]="taxCodeForm.rate"
+          name="accTcRate"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-4">
+      <fpc-form-field forId="accTcBuKey" i18n-label="@@featureAccountingAccounts-datevBuKey" label="DATEV BU key">
+        <fpc-form-control controlId="accTcBuKey" [(ngModel)]="taxCodeForm.datevBuKey" name="accTcBuKey" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field forId="accTcAccount" i18n-label="@@featureAccountingAccounts-taxAccount" label="VAT account">
+        <fpc-form-control
+          controlType="select"
+          controlId="accTcAccount"
+          [(ngModel)]="taxCodeForm.accountId"
+          name="accTcAccount"
+        >
+          <option value="" i18n="@@featureAccountingAccounts-none">None</option>
+          @for (account of accounts().data ?? []; track account.id) {
+            <option [value]="account.id">{{ account.number }} {{ account.name }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field
+        forId="accTcReverseAccount"
+        i18n-label="@@featureAccountingAccounts-reverseAccount"
+        label="Reverse-charge account"
+      >
+        <fpc-form-control
+          controlType="select"
+          controlId="accTcReverseAccount"
+          [(ngModel)]="taxCodeForm.reverseAccountId"
+          name="accTcReverseAccount"
+        >
+          <option value="" i18n="@@featureAccountingAccounts-none">None</option>
+          @for (account of accounts().data ?? []; track account.id) {
+            <option [value]="account.id">{{ account.number }} {{ account.name }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-md-4">
+      <fpc-form-field forId="accTcBaseBox" i18n-label="@@featureAccountingAccounts-baseBox" label="Base box">
+        <fpc-form-control controlId="accTcBaseBox" [(ngModel)]="taxCodeForm.baseBox" name="accTcBaseBox" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-4">
+      <fpc-form-field forId="accTcTaxBox" i18n-label="@@featureAccountingAccounts-taxBox" label="Tax box">
+        <fpc-form-control controlId="accTcTaxBox" [(ngModel)]="taxCodeForm.taxBox" name="accTcTaxBox" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-4">
+      <fpc-form-field
+        forId="accTcReverseBox"
+        i18n-label="@@featureAccountingAccounts-reverseTaxBox"
+        label="Reverse tax box"
+      >
+        <fpc-form-control controlId="accTcReverseBox" [(ngModel)]="taxCodeForm.reverseTaxBox" name="accTcReverseBox" />
+      </fpc-form-field>
+    </div>
+    <div class="col-12 d-flex flex-wrap gap-3">
+      <fpc-form-check
+        checkId="accTcEcSales"
+        [(ngModel)]="taxCodeForm.ecSalesList"
+        name="accTcEcSales"
+        i18n-label="@@featureAccountingAccounts-ecSalesList"
+        label="EC sales list"
+      />
+      <fpc-form-check
+        checkId="accTcOss"
+        [(ngModel)]="taxCodeForm.oss"
+        name="accTcOss"
+        i18n-label="@@featureAccountingAccounts-oss"
+        label="OSS"
+      />
+      <fpc-form-check
+        checkId="accTcActive"
+        [(ngModel)]="taxCodeForm.isActive"
+        name="accTcActive"
+        i18n-label="@@featureAccountingAccounts-isActive"
+        label="Active"
+      />
+    </div>
+  </div>
+  @if (mutationError(); as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="primary" [disabled]="mutating() || !taxCodeFormValid()" (clicked)="submitTaxCode()">
+      @if (mutating()) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAccountingAccounts-save">Save</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="ledgerModalOpen"
+  size="xl"
+  [scrollable]="true"
+  [title]="ledgerTitle()"
+  data-testid="accounting-ledger-modal"
+>
+  <div class="d-flex flex-wrap align-items-end gap-2 mb-3">
+    <fpc-form-field forId="accLedgerFrom" i18n-label="@@featureAccountingAccounts-from" label="From">
+      <fpc-form-control controlId="accLedgerFrom" inputType="date" [(ngModel)]="ledgerFrom" name="accLedgerFrom" />
+    </fpc-form-field>
+    <fpc-form-field forId="accLedgerTo" i18n-label="@@featureAccountingAccounts-to" label="To">
+      <fpc-form-control controlId="accLedgerTo" inputType="date" [(ngModel)]="ledgerTo" name="accLedgerTo" />
+    </fpc-form-field>
+    <fpc-button variant="secondary" class="mb-3" (clicked)="loadLedger()">
+      <span i18n="@@featureAccountingAccounts-show">Show</span>
+    </fpc-button>
+  </div>
+  @if (ledger().loading) {
+    <fpc-empty-state size="sm" loading />
+  } @else if (ledger().error; as err) {
+    <fpc-alert variant="danger" [message]="err" />
+  } @else if (ledger().data; as data) {
+    <table class="accounting-table" data-testid="accounting-ledger">
+      <thead>
+        <tr>
+          <th i18n="@@featureAccountingAccounts-colEntry">Entry</th>
+          <th i18n="@@featureAccountingAccounts-colDate">Date</th>
+          <th i18n="@@featureAccountingAccounts-colDocument">Document</th>
+          <th i18n="@@featureAccountingAccounts-colText">Text</th>
+          <th class="accounting-amount" i18n="@@featureAccountingAccounts-colDebit">Debit</th>
+          <th class="accounting-amount" i18n="@@featureAccountingAccounts-colCredit">Credit</th>
+          <th class="accounting-amount" i18n="@@featureAccountingAccounts-colBalance">Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="6" class="fw-semibold" i18n="@@featureAccountingAccounts-opening">Opening balance</td>
+          <td class="accounting-amount fw-semibold">{{ money(data.opening) }}</td>
+        </tr>
+        @for (item of data.items; track $index) {
+          <tr>
+            <td class="accounting-mono">{{ item.entryNumber }}</td>
+            <td>{{ date(item.postingDate) }}</td>
+            <td>{{ item.documentNumber ?? '-' }}</td>
+            <td>
+              {{ item.lineDescription || item.description }}
+              <div class="small text-body-secondary d-flex flex-wrap align-items-center gap-2 mt-1">
+                <span>{{ sourceLabel(item.sourceType) }}</span>
+                <fpc-badge tone="neutral" size="sm">{{ kindLabel(item.kind) }}</fpc-badge>
+              </div>
+            </td>
+            <td class="accounting-amount">{{ item.debit ? money(item.debit) : '' }}</td>
+            <td class="accounting-amount">{{ item.credit ? money(item.credit) : '' }}</td>
+            <td class="accounting-amount" [class.accounting-negative]="item.running < 0">{{ money(item.running) }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="text-body-secondary" i18n="@@featureAccountingAccounts-noLedgerItems">
+              No bookings in this period.
+            </td>
+          </tr>
+        }
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="6" i18n="@@featureAccountingAccounts-closingBalance">Closing balance</td>
+          <td class="accounting-amount">{{ money(data.closing) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+    @if (data.total > data.items.length) {
+      <p class="small text-body-secondary mt-2" i18n="@@featureAccountingAccounts-ledgerTruncated">
+        Showing the first {{ data.items.length }} of {{ data.total }} bookings; narrow the period to see more.
+      </p>
+    }
+  }
+</fpc-modal>

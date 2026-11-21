@@ -2,10 +2,12 @@ import { plainToInstance, Transform, Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
   IsUUID,
   MaxLength,
@@ -39,6 +41,28 @@ export class SupplierInvoiceLineItemDto {
   @IsNumber({}, { message: 'Tax rate must be a number' })
   @Min(0, { message: 'Tax rate must be zero or greater' })
   taxRate?: number;
+
+  /** Account assignment (account number of the active chart); defaults to the supplier's expense account. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  ledgerAccountNumber?: string | null;
+
+  /** Capitalize as fixed asset (register entry + depreciation) instead of expensing. */
+  @IsOptional()
+  @IsBoolean()
+  capitalizeAsAsset?: boolean;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  assetUsefulLifeMonths?: number | null;
+
+  /** Stock article bought with this line (booked to inventory; valuation of the putaway). */
+  @IsOptional()
+  @IsUUID('4')
+  inventoryArticleId?: string | null;
 }
 
 /** Multipart sends lineItems as JSON text; nested @Type alone does not run after @Transform. */
@@ -142,6 +166,12 @@ export class MarkSupplierInvoicePaymentStatusDto {
   @IsOptional()
   @IsDateString({}, { message: 'Paid at must be an ISO 8601 datetime' })
   paidAt?: string;
+
+  /** Partial amount (gross); defaults to the full balance due. */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'Amount must be a number with at most 2 decimals' })
+  @IsPositive({ message: 'Amount must be positive' })
+  amount?: number;
 }
 
 export class SupplierInvoiceLineItemResponseDto {
@@ -155,6 +185,10 @@ export class SupplierInvoiceLineItemResponseDto {
   lineNet!: number;
   lineTax!: number;
   lineGross!: number;
+  ledgerAccountNumber?: string | null;
+  capitalizeAsAsset?: boolean;
+  assetUsefulLifeMonths?: number | null;
+  inventoryArticleId?: string | null;
 }
 
 export class SupplierInvoiceDetailResponseDto {

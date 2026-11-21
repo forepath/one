@@ -17,8 +17,10 @@ import type {
   CreateManualInvoiceDto,
   IssueManualInvoiceDto,
   ManualInvoiceDetailResponse,
+  InvoiceSettlementResponse,
   MarkInvoicePaymentStatusDto,
   PaginatedAdminInvoicesResponse,
+  RecordInvoiceSettlementDto,
   PaginatedAdminSubscriptionsResponse,
   PaginatedBillingAuditLogsResponse,
   PaginatedUsageMeterEntriesResponse,
@@ -104,6 +106,35 @@ export class AdminBillingService {
       `${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/mark-unpaid`,
       dto ?? {},
     );
+  }
+
+  /** Writes off the (remaining) balance as uncollectible. */
+  writeOffInvoice(invoiceRefId: string, dto?: RecordInvoiceSettlementDto): Observable<AdminInvoiceListItem> {
+    return this.http.post<AdminInvoiceListItem>(
+      `${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/write-off`,
+      dto ?? {},
+    );
+  }
+
+  /** Records a manual refund of a customer credit (negative balance due). */
+  refundInvoice(invoiceRefId: string, dto?: RecordInvoiceSettlementDto): Observable<AdminInvoiceListItem> {
+    return this.http.post<AdminInvoiceListItem>(
+      `${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/refund`,
+      dto ?? {},
+    );
+  }
+
+  listInvoiceSettlements(invoiceRefId: string): Observable<InvoiceSettlementResponse[]> {
+    return this.http.get<InvoiceSettlementResponse[]>(
+      `${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/settlements`,
+    );
+  }
+
+  /** Structured e-invoice XML (format of the invoice snapshot). */
+  downloadInvoiceEinvoice(invoiceRefId: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/einvoice`, {
+      responseType: 'blob',
+    });
   }
 
   listAuditLogs(invoiceRefId: string, limit = 20, offset = 0): Observable<PaginatedBillingAuditLogsResponse> {
