@@ -82,6 +82,7 @@ import {
   inventoryPositionPayload,
   type InvoicePositionType,
 } from '../inventory-line-prefill.util';
+import { requiredNumberInput } from '../optional-number-input.util';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
 import { buildPricingTotalsSummary, type PricingTotalsSummary } from '../pricing-totals-summary/pricing-totals.util';
 import { projectBoardViewState, type ProjectBoardView } from '../project-board/project-board-view';
@@ -600,8 +601,8 @@ export class ProjectDetailPageComponent implements OnInit {
     if (this.billCustomLineItems.length > 0) {
       dto.lineItems = this.billCustomLineItems.map((line) => ({
         description: line.description.trim(),
-        quantity: line.quantity,
-        unitPriceNet: line.unitPriceNet,
+        quantity: requiredNumberInput(line.quantity),
+        unitPriceNet: requiredNumberInput(line.unitPriceNet),
         taxCategory: line.taxCategory,
         ...inventoryPositionPayload(line),
       }));

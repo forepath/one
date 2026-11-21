@@ -10,6 +10,8 @@ import type {
   TaxCategory,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 
+import { numberInputValue, requiredNumberInput } from '../optional-number-input.util';
+
 export interface OfferFormLineItem {
   lineType: OfferLineType;
   description: string;
@@ -67,20 +69,22 @@ export function mapOfferFormLinesToDto(lines: OfferFormLineItem[]): OfferLineInp
         const payload: OfferProjectTemplateLineDto = {
           description: line.description.trim(),
           name: line.name.trim(),
-          hourlyRateNet: line.hourlyRateNet,
+          hourlyRateNet: requiredNumberInput(line.hourlyRateNet),
         };
 
         if (line.projectDescription.trim()) {
           payload.projectDescription = line.projectDescription.trim();
         }
 
-        if (line.targetHours != null && line.targetHours > 0) {
-          payload.targetHours = line.targetHours;
+        const targetHours = numberInputValue(line.targetHours);
+
+        if (targetHours != null && targetHours > 0) {
+          payload.targetHours = targetHours;
         }
 
         if (isPriceLimitedPricingModel(line.pricingModel)) {
           payload.pricingModel = line.pricingModel;
-          payload.priceLimitNet = Number(line.priceLimitNet);
+          payload.priceLimitNet = requiredNumberInput(line.priceLimitNet);
         }
 
         if (line.scheduledAt.trim()) {
@@ -143,8 +147,8 @@ export function mapOfferFormLinesToDto(lines: OfferFormLineItem[]): OfferLineInp
 function buildStandardLinePayload(line: OfferFormLineItem): OfferStandardLineDto {
   const payload: OfferStandardLineDto = {
     description: line.description.trim(),
-    quantity: line.quantity,
-    unitPriceNet: line.unitPriceNet,
+    quantity: requiredNumberInput(line.quantity),
+    unitPriceNet: requiredNumberInput(line.unitPriceNet),
     taxCategory: line.taxCategory === 'reduced' ? 'reduced' : 'standard',
   };
 

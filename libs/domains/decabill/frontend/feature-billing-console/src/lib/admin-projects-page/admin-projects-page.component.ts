@@ -34,6 +34,7 @@ import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/bi
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { formatProjectMinutes, formatProjectOpenBillableAmount, formatProjectPricing } from '../billing-status-labels';
 import { getCustomerLabel, getCustomerSecondaryLabel, type CustomerLabelSource } from '../named-label.util';
+import { numberInputValue, requiredNumberInput } from '../optional-number-input.util';
 import {
   DB_DL_DELETE,
   dbBulkSummary,
@@ -265,7 +266,11 @@ export class AdminProjectsPageComponent implements OnInit {
   submitCreate(): void {
     if (!this.createForm.userId || !this.createForm.name.trim() || !this.isPricingValid(this.createForm)) return;
 
-    const payload: CreateAdminProjectDto = { ...this.createForm, ...this.normalizePricing(this.createForm) };
+    const payload: CreateAdminProjectDto = {
+      ...this.createForm,
+      hourlyRateNet: requiredNumberInput(this.createForm.hourlyRateNet),
+      ...this.normalizePricing(this.createForm),
+    };
     const targetHours = this.normalizeTargetHoursInput(this.createTargetHoursInput);
 
     if (targetHours != null) {
@@ -282,6 +287,7 @@ export class AdminProjectsPageComponent implements OnInit {
 
     this.facade.updateAdminProject(id, {
       ...dto,
+      ...(dto.hourlyRateNet != null ? { hourlyRateNet: requiredNumberInput(dto.hourlyRateNet) } : {}),
       ...this.normalizePricing(this.editForm),
       targetHours: this.normalizeTargetHoursInput(this.editTargetHoursInput),
     });
@@ -324,15 +330,14 @@ export class AdminProjectsPageComponent implements OnInit {
   } {
     const pricingModel = form.pricingModel ?? 'hourly';
 
-    return { pricingModel, priceLimitNet: pricingModel === 'hourly' ? null : Number(form.priceLimitNet) };
+    return { pricingModel, priceLimitNet: pricingModel === 'hourly' ? null : numberInputValue(form.priceLimitNet) };
   }
 
-  private normalizeTargetHoursInput(value: number | null | undefined): number | null | undefined {
-    if (value == null || !Number.isFinite(value) || value <= 0) {
-      return null;
-    }
+  /** Number inputs report strings; a non-positive or empty value clears the target. */
+  private normalizeTargetHoursInput(value: number | string | null | undefined): number | null {
+    const hours = numberInputValue(value);
 
-    return value;
+    return hours != null && hours > 0 ? hours : null;
   }
 
   private registerModalCloseWatchers(): void {
