@@ -85,13 +85,14 @@ export class AgentsVerificationService {
       const inner = `( ${cwdPart}${c.cmd} ); echo __EXIT:$?\n`;
       const b64 = Buffer.from(inner, 'utf8').toString('base64');
       const wrapper = `echo ${b64}|base64 -d > /tmp/agenstra_verify.sh && sh /tmp/agenstra_verify.sh`;
+      let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
 
       try {
         const raw = await Promise.race([
           this.dockerService.sendCommandToContainer(containerId, `sh -c "${wrapper}"`),
-          new Promise<string>((_, reject) =>
-            setTimeout(() => reject(new BadRequestException('Verifier command timed out')), timeoutMs),
-          ),
+          new Promise<string>((_, reject) => {
+            timeoutHandle = setTimeout(() => reject(new BadRequestException('Verifier command timed out')), timeoutMs);
+          }),
         ]);
         const { text, exitCode } = this.parseExitMarker(raw);
 
@@ -111,6 +112,8 @@ export class AgentsVerificationService {
 
         results.push({ cmd: c.cmd, exitCode: -1, output: msg });
         break;
+      } finally {
+        clearTimeout(timeoutHandle);
       }
     }
 

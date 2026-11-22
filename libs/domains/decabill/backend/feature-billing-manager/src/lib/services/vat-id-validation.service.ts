@@ -38,9 +38,10 @@ export class VatIdValidationService implements OnModuleInit {
   }
 
   async probeCapability(): Promise<ViesCapability> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), VIES_PROBE_TIMEOUT_MS);
+
     try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), VIES_PROBE_TIMEOUT_MS);
       const response = await fetch(VIES_CHECK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -48,13 +49,13 @@ export class VatIdValidationService implements OnModuleInit {
         signal: controller.signal,
       });
 
-      clearTimeout(timer);
-
       // Any HTTP response (including 4xx for invalid VAT) means the endpoint is reachable.
       this.capability = response.status > 0 ? 'available' : 'unavailable';
     } catch (error) {
       this.capability = 'unavailable';
       this.logger.warn(`VIES capability probe failed; falling back to format/admin validation: ${String(error)}`);
+    } finally {
+      clearTimeout(timer);
     }
 
     return this.capability;

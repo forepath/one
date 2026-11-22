@@ -53,6 +53,40 @@ describe('AgentsVerificationService', () => {
     expect(res.results[0].exitCode).toBe(0);
   });
 
+  describe('command timeout', () => {
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('clears the timeout once the command finishes', async () => {
+      jest.useFakeTimers();
+      agentsService.findOne.mockResolvedValue({});
+      agentsRepository.findByIdOrThrow.mockResolvedValue(agent);
+      dockerService.sendCommandToContainer.mockResolvedValue('ok\n__EXIT:0\n');
+
+      await service.runVerifierCommands('a1', {
+        commands: [{ cmd: 'echo one' }, { cmd: 'echo two' }],
+        timeoutMs: 5000,
+      });
+
+      expect(jest.getTimerCount()).toBe(0);
+    });
+
+    it('still rejects a command that outlasts the timeout', async () => {
+      jest.useFakeTimers();
+      agentsService.findOne.mockResolvedValue({});
+      agentsRepository.findByIdOrThrow.mockResolvedValue(agent);
+      dockerService.sendCommandToContainer.mockReturnValue(new Promise<string>(() => undefined));
+
+      const pending = service.runVerifierCommands('a1', { commands: [{ cmd: 'sleep 10' }], timeoutMs: 5000 });
+      const assertion = expect(pending).rejects.toThrow('Verifier command timed out');
+
+      await jest.advanceTimersByTimeAsync(5000);
+      await assertion;
+      expect(jest.getTimerCount()).toBe(0);
+    });
+  });
+
   it('rejects commands with shell metacharacters', async () => {
     agentsService.findOne.mockResolvedValue({});
     agentsRepository.findByIdOrThrow.mockResolvedValue(agent);

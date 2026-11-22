@@ -59,6 +59,19 @@ describe('VatIdValidationService', () => {
     );
   });
 
+  it('clears the probe timeout when the VIES probe fails', async () => {
+    jest.useFakeTimers();
+
+    try {
+      fetchMock.mockRejectedValue(new Error('network down'));
+
+      await expect(service.probeCapability()).resolves.toBe('unavailable');
+      expect(jest.getTimerCount()).toBe(0);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('validates synchronously when VIES responds', async () => {
     fetchMock.mockResolvedValueOnce({ status: 200 }).mockResolvedValueOnce({
       ok: true,

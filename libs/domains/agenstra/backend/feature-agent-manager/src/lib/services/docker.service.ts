@@ -2149,12 +2149,14 @@ export class DockerService {
         const resolveOnce = (result: string) => {
           if (!resolved) {
             resolved = true;
+            clearTimeout(fallbackTimeout);
             resolve(result);
           }
         };
         const rejectOnce = (error: unknown) => {
           if (!resolved) {
             resolved = true;
+            clearTimeout(fallbackTimeout);
             reject(error);
           }
         };
@@ -2200,8 +2202,8 @@ export class DockerService {
           }
         });
 
-        // Set a timeout to prevent hanging (fallback safety)
-        setTimeout(() => {
+        // Set a timeout to prevent hanging (fallback safety); cleared once the stream settles
+        const fallbackTimeout = setTimeout(() => {
           if (!resolved) {
             stdoutStream.end();
             stderrStream.end();
@@ -2581,12 +2583,14 @@ export class DockerService {
         const resolveOnce = (v: string) => {
           if (!resolved) {
             resolved = true;
+            clearTimeout(fallbackTimeout);
             resolve(v);
           }
         };
         const rejectOnce = (err: unknown) => {
           if (!resolved) {
             resolved = true;
+            clearTimeout(fallbackTimeout);
             reject(err);
           }
         };
@@ -2608,7 +2612,8 @@ export class DockerService {
           stderrStream.end();
           rejectOnce(err);
         });
-        setTimeout(() => {
+        // Fallback safety; cleared once the stream settles
+        const fallbackTimeout = setTimeout(() => {
           if (!resolved) {
             stdoutStream.end();
             stderrStream.end();
