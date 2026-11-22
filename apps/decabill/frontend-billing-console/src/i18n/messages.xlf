@@ -3489,6 +3489,168 @@
       <trans-unit id="featureAdminOffers-chartDeclined" datatype="html">
         <source>Declined</source>
         </trans-unit>
+      <trans-unit id="featureAdminOverview-fromDate" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-toDate" datatype="html">
+        <source>To</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-groupBy" datatype="html">
+        <source>Group by</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-groupByDay" datatype="html">
+        <source>Day</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-groupByMonth" datatype="html">
+        <source>Month</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-noCashflow" datatype="html">
+        <source>No revenue or expenses in this period.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-resultHint" datatype="html">
+        <source>Revenue minus expenses, gross</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-noData" datatype="html">
+        <source>No data yet</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-title" datatype="html">
+        <source>Overview</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-filtersTitle" datatype="html">
+        <source>Overview filters</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-loading" datatype="html">
+        <source>Loading overview…</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiCustomers" datatype="html">
+        <source>Customers</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiActiveSubscriptions" datatype="html">
+        <source>Active subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiRevenue" datatype="html">
+        <source>Revenue in period</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiExpenses" datatype="html">
+        <source>Expenses in period</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiReceivables" datatype="html">
+        <source>Open receivables</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiPayables" datatype="html">
+        <source>Open payables</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-chartCashflow" datatype="html">
+        <source>Revenue and expenses</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-chartResult" datatype="html">
+        <source>Result in period</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-chartTenantRevenue" datatype="html">
+        <source>Revenue by tenant</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-tenantsTable" datatype="html">
+        <source>Tenants</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-openPage" datatype="html">
+        <source>Open</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-allTenants" datatype="html">
+        <source>All tenants</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-seriesRevenue" datatype="html">
+        <source>Revenue</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-seriesExpenses" datatype="html">
+        <source>Expenses</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-homeTenant" datatype="html">
+        <source>Home tenant</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-allTenantsNote" datatype="html">
+        <source>Combined numbers of all tenants</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-scopeByMonth" datatype="html">
+        <source>by month</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-scopeByDay" datatype="html">
+        <source>by day</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-colTenant" datatype="html">
+        <source>Tenant</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionCustomers" datatype="html">
+        <source>Customers and subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-subscriptions" datatype="html">
+        <source>Subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-backorders" datatype="html">
+        <source>Waiting for capacity</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionReceivables" datatype="html">
+        <source>Receivables</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-openInvoicesHint" datatype="html">
+        <source><x id="count" equiv-text="m.openReceivableCount"/> open invoices</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-overdueInvoices" datatype="html">
+        <source>Overdue invoices</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-unbilled" datatype="html">
+        <source>Not yet billed</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-paidInvoicesHint" datatype="html">
+        <source><x id="count" equiv-text="m.paidInvoiceCountInPeriod"/> paid invoices</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionPayables" datatype="html">
+        <source>Payables</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-suppliers" datatype="html">
+        <source>Suppliers</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-openSupplierInvoicesHint" datatype="html">
+        <source><x id="count" equiv-text="m.openPayableCount"/> open supplier invoices</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionOffers" datatype="html">
+        <source>Offers</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-pendingOffers" datatype="html">
+        <source>Awaiting response</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-draftOffers" datatype="html">
+        <source>Drafts</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-acceptedOffers" datatype="html">
+        <source>Accepted in period</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionProjects" datatype="html">
+        <source>Projects</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-activeProjects" datatype="html">
+        <source>Active projects</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-openTickets" datatype="html">
+        <source>Open tickets</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionInventory" datatype="html">
+        <source>Inventory</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-articles" datatype="html">
+        <source>Articles</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-lowStock" datatype="html">
+        <source>Low stock</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-pendingRequests" datatype="html">
+        <source>Pending withdrawal requests</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-openLendings" datatype="html">
+        <source>Open lendings</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-overdueLendingsHint" datatype="html">
+        <source><x id="count" equiv-text="m.overdueLendingCount"/> overdue</source>
+        </trans-unit>
       <trans-unit id="featureAdminProjects-empty" datatype="html">
         <source>No projects yet</source>
         </trans-unit>
@@ -4127,6 +4289,9 @@
         </trans-unit>
       <trans-unit id="featureContainer-projectDetailPage" datatype="html">
         <source>Project</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminOverviewPage" datatype="html">
+        <source>Overview</source>
         </trans-unit>
       <trans-unit id="featureContainer-serviceTypesPage" datatype="html">
         <source>Service providers</source>
@@ -4820,6 +4985,12 @@
         </trans-unit>
       <trans-unit id="featureContainer-customerNumberAria" datatype="html">
         <source>Customer number <x id="customerNumber" equiv-text="customerNumber"/></source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminOverviewTitle" datatype="html">
+        <source>Overview</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminOverview" datatype="html">
+        <source>Overview</source>
         </trans-unit>
       <trans-unit id="featureContainer-serviceTypesTitle" datatype="html">
         <source>Providers</source>

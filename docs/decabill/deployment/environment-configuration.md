@@ -179,7 +179,7 @@ Monthly DATEV Buchungsstapel exports (category 21) with optional PDF document bu
 | `BILLING_DATEV_FISCAL_YEAR_START_MONTH`        | Wirtschaftsjahresbeginn (1-12)                                                                                                          | `1`                  |
 | `BILLING_DATEV_TENANT_CONFIG`                  | JSON map of per-tenant (and optional `unified`) DATEV overrides                                                                         | -                    |
 | `BILLING_DATEV_UNIFIED_EXPORT_ENABLED`         | Enable cross-tenant consolidated monthly export                                                                                         | `false`              |
-| `TENANTS_ALLOW_GLOBAL_VIEWS`                   | Comma-separated tenant ids allowed to use cross-tenant admin views (DATEV unified export + File Explorer tenant switch / consolidation) | `default` when unset |
+| `TENANTS_ALLOW_GLOBAL_VIEWS`                   | Comma-separated tenant ids allowed to use cross-tenant admin views (DATEV unified export, File Explorer + Admin Overview tenant switch) | `default` when unset |
 
 Per-tenant exports are scoped to the request **`X-Tenant`** (or admin `viewTenantId` when global views are allowed). Unified exports aggregate all configured tenants but are only accessible from allowlisted operator tenants (`TENANTS_ALLOW_GLOBAL_VIEWS`). The same allowlist gates the admin [File Explorer](../features/file-explorer.md). Validate sample exports with **DatevFormatPruefProgramm** before production handoff.
 

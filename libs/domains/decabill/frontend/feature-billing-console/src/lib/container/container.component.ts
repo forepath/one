@@ -386,6 +386,13 @@ export class BillingConsoleContainerComponent implements OnInit {
   adminNavItems(): ContributorNavItem[] {
     const items: ContributorNavItem[] = [
       {
+        routerLink: ['/administration/overview'],
+        activePaths: ['/administration/overview'],
+        icon: 'bi-grid',
+        title: $localize`:@@featureContainer-adminOverviewTitle:Overview`,
+        label: $localize`:@@featureContainer-adminOverview:Overview`,
+      },
+      {
         routerLink: ['/administration/service-types'],
         activePaths: ['/administration/service-types'],
         icon: 'bi-box',

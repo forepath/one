@@ -147,6 +147,10 @@ Monthly DATEV exports include **both** AR customer invoices and AP supplier invo
 
 When the request tenant is listed in `TENANTS_ALLOW_GLOBAL_VIEWS`, the DATEV admin page shows one tab per configured tenant plus Unified (Unified still requires `BILLING_DATEV_UNIFIED_EXPORT_ENABLED`). Cross-tenant listing uses `viewTenantId` while `X-Tenant` stays the operator home tenant.
 
+## Admin Overview
+
+Dashboard of the tenant's key figures (customers, receivables, payables, offers, projects, inventory) with a revenue and expense chart for a selectable period. Frontend route: `/administration/overview`. API: `GET /admin/billing/overview` (`billing:admin`). Tenants in `TENANTS_ALLOW_GLOBAL_VIEWS` switch to another tenant or to all tenants with combined numbers. See [Admin Overview](./admin-overview.md).
+
 ## File Explorer
 
 Read-only admin browser for managed storage files (invoice PDFs, supplier documents, DATEV ZIPs). Frontend route: `/administration/file-explorer`. API under `/admin/billing/files` (`files:admin`). Tenant enclosure and Unified consolidation use the same `TENANTS_ALLOW_GLOBAL_VIEWS` allowlist as DATEV. See [File Explorer](./file-explorer.md).

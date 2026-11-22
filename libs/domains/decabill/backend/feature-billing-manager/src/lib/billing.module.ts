@@ -87,6 +87,7 @@ import { AdminCustomerAutoBillingController } from './controllers/admin-customer
 import { AdminCustomerProfilesController } from './controllers/admin-customer-profiles.controller';
 import { AdminDatevExportsController } from './controllers/admin-datev-exports.controller';
 import { AdminFileManagerController } from './controllers/admin-file-manager.controller';
+import { AdminOverviewController } from './controllers/admin-overview.controller';
 import { AdminPromotionsController } from './controllers/admin-promotions.controller';
 import { AdminSubscriptionItemsController } from './controllers/admin-subscription-items.controller';
 import { AdminSubscriptionMetersController } from './controllers/admin-subscription-meters.controller';
@@ -326,6 +327,7 @@ import { AddonModuleRegistryService } from './services/addon-module-registry.ser
 import { AddonService } from './services/addon.service';
 import { AdminBillNowService } from './services/admin-bill-now.service';
 import { AdminFileManagerService } from './services/admin-file-manager.service';
+import { AdminOverviewService } from './services/admin-overview.service';
 import { AutoBillingService } from './services/auto-billing.service';
 import { AvailabilityService } from './services/availability.service';
 import { BackorderRetryJobHandler } from './services/backorder-retry.job-handler';
@@ -593,6 +595,7 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     AdminDatevExportsController,
     AdminBillingSettingsController,
     AdminFileManagerController,
+    AdminOverviewController,
     PaymentsWebhookController,
     AdminUsageController,
     UsageController,
@@ -674,6 +677,7 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     BillingSettingsOverridesRepository,
     BillingSettingsService,
     AdminFileManagerService,
+    AdminOverviewService,
     StoredFileSigningConfigService,
     StoredFileRegistryService,
     StoredFilesBackfillJobHandler,

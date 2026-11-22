@@ -4,6 +4,7 @@ import type { Environment } from '@forepath/decabill/frontend/util-configuration
 import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 import { map, Observable } from 'rxjs';
 
+import type { AdminOverviewParams, AdminOverviewResponse } from '../types/admin-overview.types';
 import type {
   AdminBillNowDto,
   AdminBillNowResponse,
@@ -65,6 +66,21 @@ export class AdminBillingService {
 
   getSummary(): Observable<AdminBillingSummaryResponse> {
     return this.http.get<AdminBillingSummaryResponse>(`${this.apiUrl}/admin/billing/summary`);
+  }
+
+  /** Admin overview of the request tenant, another tenant or `all` (cross-tenant access only). */
+  getOverview(params: AdminOverviewParams): Observable<AdminOverviewResponse> {
+    let httpParams = new HttpParams();
+
+    if (params.viewTenantId) httpParams = httpParams.set('viewTenantId', params.viewTenantId);
+
+    if (params.from) httpParams = httpParams.set('from', params.from);
+
+    if (params.to) httpParams = httpParams.set('to', params.to);
+
+    if (params.groupBy) httpParams = httpParams.set('groupBy', params.groupBy);
+
+    return this.http.get<AdminOverviewResponse>(`${this.apiUrl}/admin/billing/overview`, { params: httpParams });
   }
 
   billNow(dto: AdminBillNowDto): Observable<AdminBillNowResponse> {

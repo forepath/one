@@ -34,6 +34,9 @@ import {
   AdminInvoiceManagerFacade,
   AdminSubscriptionsFacade,
   BillingCapabilitiesFacade,
+  AdminOverviewFacade,
+  adminOverviewReducer,
+  loadAdminOverview$,
   AddonsFacade,
   addonsReducer,
   MetersFacade,
@@ -339,6 +342,7 @@ import { AdminCustomerProfilesPageComponent } from './admin-customer-profiles-pa
 import { AdminDatevExportsPageComponent } from './admin-datev-exports-page/admin-datev-exports-page.component';
 import { AdminFileManagerPageComponent } from './admin-file-manager-page/admin-file-manager-page.component';
 import { AdminOffersPageComponent } from './admin-offers-page/admin-offers-page.component';
+import { AdminOverviewPageComponent } from './admin-overview-page/admin-overview-page.component';
 import { AdminProjectsPageComponent } from './admin-projects-page/admin-projects-page.component';
 import { AdminPromotionsPageComponent } from './admin-promotions-page/admin-promotions-page.component';
 import { AdminSubscriptionsPageComponent } from './admin-subscriptions-page/admin-subscriptions-page.component';
@@ -481,6 +485,17 @@ export const billingConsoleRoutes: Route[] = [
       {
         path: 'administration',
         children: [
+          {
+            path: 'overview',
+            canActivate: [authGuard, billingAdminGuard],
+            component: AdminOverviewPageComponent,
+            title: () => buildPageTitle($localize`:@@featureContainer-adminOverviewPage:Overview`),
+            providers: [
+              AdminOverviewFacade,
+              provideState('adminOverview', adminOverviewReducer),
+              provideEffects({ loadAdminOverview$ }),
+            ],
+          },
           {
             path: 'service-types',
             canActivate: [authGuard, billingAdminGuard],
