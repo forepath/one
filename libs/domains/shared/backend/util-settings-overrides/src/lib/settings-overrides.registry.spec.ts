@@ -182,5 +182,18 @@ describe('settings overrides registry', () => {
       expect(JSON.stringify(secret)).not.toContain('secret-');
       expect(JSON.stringify(secret)).not.toContain('env-secret');
     });
+
+    it('tells the console the size limit of image settings only', () => {
+      const [image, text] = describeSettings(
+        [
+          { key: 'TEST_IMAGE', category: 'c', type: 'image', scope: 'tenant' },
+          { key: 'TEST_TEXT', category: 'c', type: 'text', scope: 'tenant', maxLength: 10 },
+        ],
+        'global',
+      );
+
+      expect(image.maxLength).toBe(65536);
+      expect(text.maxLength).toBeUndefined();
+    });
   });
 });

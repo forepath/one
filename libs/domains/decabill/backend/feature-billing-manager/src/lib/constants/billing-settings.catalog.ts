@@ -1,5 +1,6 @@
 import { SettingDefinition } from '@forepath/shared/backend/util-settings-overrides';
 
+import { DEFAULT_DOCUMENT_BRAND_COLOR } from './document-branding.constants';
 import { EINVOICE_FORMAT_VALUES } from './e-invoice-format.constants';
 
 /**
@@ -85,6 +86,8 @@ export const BILLING_SETTINGS: readonly SettingDefinition[] = [
   t('documents', 'BILLING_DEFAULT_DELIVERY_TERMS_TEXT', 'text', { maxLength: 2000 }),
   t('documents', 'BILLING_EINVOICE_FORMAT', 'enum', { options: ['', ...EINVOICE_FORMAT_VALUES] }),
   t('documents', 'BILLING_DEFAULT_CURRENCY', 'string', { ...CURRENCY, defaultValue: 'EUR' }),
+  t('documents', 'BILLING_DOCUMENT_LOGO', 'image', { maxLength: 65536 }),
+  t('documents', 'BILLING_DOCUMENT_BRAND_COLOR', 'color', { maxLength: 7, defaultValue: DEFAULT_DOCUMENT_BRAND_COLOR }),
 
   // Tax
   t('tax', 'BILLING_TAX_RATE_STANDARD', 'number', { min: 0, max: 100, defaultValue: '19' }),

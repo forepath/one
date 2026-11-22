@@ -342,7 +342,7 @@ describe('InvoicePdfTemplateService', () => {
     it('prints the invoice note escaped with its line breaks', () => {
       const html = service.buildHtml(notedInvoice, lineItems, issuer, buyer);
 
-      expect(html).toContain('<h2 class="payment-heading">Notes</h2>');
+      expect(html).toContain('<h2 class="box-heading">Notes</h2>');
       expect(html).toContain('<p class="document-note">Line one\n&lt;b&gt;Line two&lt;/b&gt; &amp; more</p>');
       expect(html).not.toContain('<b>Line two</b>');
     });
@@ -402,6 +402,42 @@ describe('InvoicePdfTemplateService', () => {
       );
 
       expect(viewModel.note).toBeUndefined();
+    });
+  });
+
+  describe('document branding', () => {
+    const logo = 'data:image/png;base64,iVBORw0KGgoAAAAA';
+    const branded = new InvoicePdfTemplateService(undefined, {
+      getBranding: () => ({ logoDataUri: logo, accentColor: '#1d4ed8' }),
+    } as never);
+
+    it('prints the Decabill accent and no logo without configuration', () => {
+      const html = service.buildHtml(invoice, lineItems, issuer, buyer);
+
+      expect(service.buildViewModel(invoice, lineItems, issuer, buyer).branding).toEqual({ accentColor: '#32a852' });
+      expect(html).toContain('--accent: #32a852;');
+      expect(html).not.toContain('class="header-logo"');
+    });
+
+    it('prints the configured logo and accent', () => {
+      const html = branded.buildHtml(invoice, lineItems, issuer, buyer);
+
+      expect(html).toContain('--accent: #1d4ed8;');
+      // Only the document type (header title) takes the brand color; other text, borders and rules stay neutral.
+      expect(html.match(/var\(--accent\)/g)).toHaveLength(1);
+      expect(html).toMatch(/\.header-title \{[^}]*color: var\(--accent\);/);
+      // Handlebars escapes "=" in attributes; the browser decodes it again.
+      expect(html).toContain(
+        '<img class="header-logo" src="data:image/png;base64,iVBORw0KGgoAAAAA" alt="Acme GmbH" />',
+      );
+    });
+
+    it('keeps the own branding off supplier invoice copies', () => {
+      const presentation = { ...buildInvoicePdfPresentation(invoice), ownBranding: false };
+      const html = branded.buildHtml(invoice, lineItems, issuer, buyer, presentation);
+
+      expect(html).toContain('--accent: #111111;');
+      expect(html).not.toContain(logo);
     });
   });
 });

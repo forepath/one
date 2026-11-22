@@ -332,6 +332,7 @@ import { BackorderRetryJobHandler } from './services/backorder-retry.job-handler
 import { BackorderService } from './services/backorder.service';
 import { BillingAdminService } from './services/billing-admin.service';
 import { BillingAuditLogService } from './services/billing-audit-log.service';
+import { BillingDocumentBrandingConfigService } from './services/billing-document-branding-config.service';
 import { BillingDocumentTermsConfigService } from './services/billing-document-terms-config.service';
 import { BillingIssuerConfigService } from './services/billing-issuer-config.service';
 import { BillingMetricsCollectorService } from './services/billing-metrics-collector.service';
@@ -648,6 +649,7 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     TaxPreviewService,
     BillingIssuerConfigService,
     BillingDocumentTermsConfigService,
+    BillingDocumentBrandingConfigService,
     AdminBillNowEnqueueAdapter,
     DatevExportEnqueueAdapter,
     PlanPriceMigrateEnqueueAdapter,

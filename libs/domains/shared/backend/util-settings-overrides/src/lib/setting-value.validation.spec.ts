@@ -66,4 +66,46 @@ describe('normalizeSettingValue', () => {
     expect(normalizeSettingValue(country, '')).toBe('');
     expect(() => normalizeSettingValue(country, 'DEU')).toThrow('invalid format');
   });
+
+  it('normalizes hex colors', () => {
+    expect(normalizeSettingValue(def('color'), '#32A852')).toBe('#32a852');
+    expect(normalizeSettingValue(def('color'), ' #abc ')).toBe('#aabbcc');
+    expect(normalizeSettingValue(def('color'), '')).toBe('');
+    expect(() => normalizeSettingValue(def('color'), '32a852')).toThrow('hex color');
+    expect(() => normalizeSettingValue(def('color'), 'red')).toThrow('hex color');
+    expect(() => normalizeSettingValue(def('color'), '#32a852;} body{display:none')).toThrow('hex color');
+  });
+
+  describe('images', () => {
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0x0d]).toString('base64');
+    const svg = (markup: string) => `data:image/svg+xml;base64,${Buffer.from(markup).toString('base64')}`;
+
+    it('accepts data URIs whose bytes match the declared type', () => {
+      expect(normalizeSettingValue(def('image'), `data:image/png;base64,${png}`)).toBe(`data:image/png;base64,${png}`);
+      expect(normalizeSettingValue(def('image'), svg('<svg xmlns="http://www.w3.org/2000/svg"/>'))).toContain('svg');
+      expect(normalizeSettingValue(def('image'), '')).toBe('');
+    });
+
+    it('rejects remote URLs, other schemes and mismatching bytes', () => {
+      expect(() => normalizeSettingValue(def('image'), 'https://example.com/logo.png')).toThrow('data URI');
+      expect(() => normalizeSettingValue(def('image'), 'file:///etc/passwd')).toThrow('data URI');
+      expect(() => normalizeSettingValue(def('image'), `data:text/html;base64,${png}`)).toThrow('data URI');
+      expect(() => normalizeSettingValue(def('image'), 'data:image/png;base64,abc')).toThrow('data URI');
+      expect(() => normalizeSettingValue(def('image'), `data:image/jpeg;base64,${png}`)).toThrow('valid image/jpeg');
+      expect(() => normalizeSettingValue(def('image'), `data:image/png;base64,${png}" onerror="x`)).toThrow();
+    });
+
+    it('rejects SVG with a DOCTYPE or without an svg root', () => {
+      expect(() => normalizeSettingValue(def('image'), svg('<!DOCTYPE svg [<!ENTITY a "x">]><svg>&a;</svg>'))).toThrow(
+        'valid image/svg+xml',
+      );
+      expect(() => normalizeSettingValue(def('image'), svg('<html><body/></html>'))).toThrow('valid image/svg+xml');
+    });
+
+    it('defaults to a 64 KiB limit', () => {
+      const big = `data:image/png;base64,${'A'.repeat(65536)}`;
+
+      expect(() => normalizeSettingValue(def('image'), big)).toThrow('at most 65536');
+    });
+  });
 });

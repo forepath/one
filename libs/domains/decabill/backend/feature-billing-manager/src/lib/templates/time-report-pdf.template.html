@@ -11,7 +11,7 @@
     />
     <style>
       :root {
-        /* Neutral print palette (shared with invoice-pdf.template.html) */
+        /* Neutral print palette (shared by the invoice, offer, time report and inventory movement templates) */
         --body-bg: #ffffff;
         --body-color: #404040;
         --body-emphasis: #111111;
@@ -20,6 +20,10 @@
         --border: #cccccc;
         --border-translucent: rgba(0, 0, 0, 0.08);
         --secondary: #666666;
+        /* Boxes: square 1px frames; the horizontal padding equals the table cell padding so text edges line up */
+        --box-pad-y: 12px;
+        --box-pad-x: 12px;
+        --stack-gap: 16px;
       }
 
       * {
@@ -47,15 +51,19 @@
       .header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 32px;
+        align-items: flex-end;
+        gap: 24px;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
       }
 
       .header-title {
         margin: 0;
         font-size: 28px;
         font-weight: 700;
-        color: var(--body-emphasis);
+        line-height: 1.2;
+        color: var(--accent);
         letter-spacing: -0.02em;
       }
 
@@ -66,11 +74,37 @@
         font-weight: 500;
       }
 
+      .header-aside {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        flex-shrink: 0;
+        text-align: right;
+      }
+
+      .header-logo {
+        display: block;
+        flex-shrink: 0;
+        width: auto;
+        max-width: 200px;
+        height: 56px;
+        object-fit: contain;
+        object-position: right center;
+      }
+
+      .box {
+        margin: 0 0 var(--stack-gap);
+        padding: var(--box-pad-y) var(--box-pad-x);
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        break-inside: avoid;
+      }
+
       .meta-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-bottom: 40px;
+        gap: 10px 16px;
       }
 
       .meta-label {
@@ -80,29 +114,34 @@
         text-transform: uppercase;
         letter-spacing: 0.06em;
         color: var(--secondary);
-        margin-bottom: 4px;
+        margin-bottom: 2px;
       }
 
       .meta-value {
         font-size: 14px;
         font-weight: 600;
         color: var(--body-emphasis);
+        overflow-wrap: anywhere;
       }
 
       .line-items {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 24px;
+        margin: 0 0 var(--stack-gap);
+        border: 1px solid var(--border);
         background: var(--card-bg);
-        overflow: hidden;
       }
 
       .line-items thead {
         background: var(--surface-subtle);
       }
 
+      .line-items tr {
+        break-inside: avoid;
+      }
+
       .line-items th {
-        padding: 12px 14px;
+        padding: 9px var(--box-pad-x);
         text-align: left;
         font-size: 11px;
         font-weight: 700;
@@ -119,7 +158,7 @@
       }
 
       .line-items td {
-        padding: 12px 14px;
+        padding: 9px var(--box-pad-x);
         font-size: 13px;
         border-bottom: 1px solid var(--border-translucent);
         vertical-align: top;
@@ -138,38 +177,59 @@
       .totals-wrap {
         display: flex;
         justify-content: flex-end;
-        margin-bottom: 40px;
+        margin: 0 0 var(--stack-gap);
       }
 
-      .totals {
-        width: 280px;
+      .totals-wrap .totals {
+        width: 300px;
+        margin: 0;
       }
 
       .totals-row {
         display: flex;
         justify-content: space-between;
-        padding: 6px 0;
+        gap: 16px;
+        padding: 3px 0;
         font-size: 13px;
       }
 
+      .totals-row > span:last-child {
+        text-align: right;
+        white-space: nowrap;
+      }
+
       .totals-row.total {
-        margin-top: 8px;
-        padding-top: 12px;
+        margin-top: 6px;
+        padding-top: 8px;
         border-top: 1px solid var(--border);
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 700;
         color: var(--body-emphasis);
       }
 
+      .totals-row.total:first-child {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+      }
+
+      .box-heading {
+        margin: 0 0 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--body-emphasis);
+      }
+
       .empty {
-        padding: 24px 0;
         color: var(--secondary);
         font-style: italic;
         font-size: 13px;
       }
 
       .authenticity-mark {
-        margin-top: 28px;
+        margin: 4px 0 0;
         font-size: 10px;
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         font-weight: 600;
@@ -177,17 +237,26 @@
         color: var(--secondary);
       }
     </style>
+    <style>
+      /* Brand accent for the document type title only (BILLING_DOCUMENT_BRAND_COLOR, validated #rrggbb) */
+      :root {
+        --accent: {{branding.accentColor}};
+      }
+    </style>
   </head>
   <body>
     <div class="page">
       <header class="header">
-        <div>
+        <div class="header-text">
           <h1 class="header-title">{{title}}</h1>
           <p class="header-subtitle">{{companyName}}</p>
         </div>
+        {{#if branding.logoDataUri}}
+        <img class="header-logo" src="{{branding.logoDataUri}}" alt="{{companyName}}" />
+        {{/if}}
       </header>
 
-      <div class="meta-grid">
+      <div class="meta-grid box">
         <div class="meta-card">
           <span class="meta-label">Project</span>
           <span class="meta-value">{{projectName}}</span>
@@ -229,7 +298,7 @@
       </table>
 
       <div class="totals-wrap">
-        <div class="totals">
+        <div class="totals box">
           <div class="totals-row total">
             <span>Total tracked</span>
             <span>{{totalDuration}}</span>
@@ -237,7 +306,7 @@
         </div>
       </div>
       {{else}}
-      <p class="empty">No time entries in this range.</p>
+      <p class="empty box">No time entries in this range.</p>
       {{/if}} {{#if authenticityShortSha}}
       <p class="authenticity-mark">Document ID: {{authenticityShortSha}}</p>
       {{/if}}

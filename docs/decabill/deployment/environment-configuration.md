@@ -8,7 +8,7 @@ Most settings below (everything except infrastructure, cryptography, authenticat
 
 Resolution, most specific first:
 
-1. **Tenant** override: applies to that tenant only. Available for settings read per request or job (issuer, document terms, tax, withdrawal, minimum payable amount, email / SMTP, DATEV accounts and numbers, accounting ledger parameters).
+1. **Tenant** override: applies to that tenant only. Available for settings read per request or job (issuer, document terms and branding, tax, withdrawal, minimum payable amount, email / SMTP, DATEV accounts and numbers, accounting ledger parameters).
 2. **All tenants** override: applies to every tenant without its own value.
 3. The **environment variable** (as documented below), then the built-in default.
 
@@ -217,6 +217,8 @@ Double-entry bookkeeping, bank / processor statement import, VAT returns and sta
 | `BILLING_ISSUER_SIREN`                            | French SIREN (9 digits) — needed for FEC                                                                     | -                                                  |
 | `BILLING_DATEV_EXPORT_INCLUDE_BANK_POSTINGS`      | Include bookings from bank statement lines in DATEV exports (also per tenant: `includeBankPostings`)         | `true`                                             |
 | `BILLING_EINVOICE_FORMAT`                         | Issuer default e-invoice format (see [E-invoice formats](../features/e-invoice-formats.md))                  | by issuer country                                  |
+| `BILLING_DOCUMENT_LOGO`                           | PDF logo: base64 `data:` image URI (see [Document branding](../features/document-branding.md))               | no logo                                            |
+| `BILLING_DOCUMENT_BRAND_COLOR`                    | PDF accent color (`#rrggbb`)                                                                                 | `#32a852`                                          |
 
 ### Stripe and Payment Processors
 

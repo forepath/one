@@ -11,7 +11,7 @@
     />
     <style>
       :root {
-        /* Neutral print palette (shared with time-report-pdf.template.html) */
+        /* Neutral print palette (shared by the invoice, offer, time report and inventory movement templates) */
         --body-bg: #ffffff;
         --body-color: #404040;
         --body-emphasis: #111111;
@@ -20,6 +20,10 @@
         --border: #cccccc;
         --border-translucent: rgba(0, 0, 0, 0.08);
         --secondary: #666666;
+        /* Boxes: square 1px frames; the horizontal padding equals the table cell padding so text edges line up */
+        --box-pad-y: 12px;
+        --box-pad-x: 12px;
+        --stack-gap: 16px;
       }
 
       * {
@@ -47,15 +51,19 @@
       .header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 32px;
+        align-items: flex-end;
+        gap: 24px;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
       }
 
       .header-title {
         margin: 0;
         font-size: 28px;
         font-weight: 700;
-        color: var(--body-emphasis);
+        line-height: 1.2;
+        color: var(--accent);
         letter-spacing: -0.02em;
       }
 
@@ -66,11 +74,37 @@
         font-weight: 500;
       }
 
+      .header-aside {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        flex-shrink: 0;
+        text-align: right;
+      }
+
+      .header-logo {
+        display: block;
+        flex-shrink: 0;
+        width: auto;
+        max-width: 200px;
+        height: 56px;
+        object-fit: contain;
+        object-position: right center;
+      }
+
+      .box {
+        margin: 0 0 var(--stack-gap);
+        padding: var(--box-pad-y) var(--box-pad-x);
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        break-inside: avoid;
+      }
+
       .meta-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-bottom: 40px;
+        gap: 10px 16px;
       }
 
       .meta-label {
@@ -80,57 +114,34 @@
         text-transform: uppercase;
         letter-spacing: 0.06em;
         color: var(--secondary);
-        margin-bottom: 4px;
+        margin-bottom: 2px;
       }
 
       .meta-value {
         font-size: 14px;
-        color: var(--body-emphasis);
-      }
-
-      .addresses {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        margin-bottom: 40px;
-      }
-
-      .address-heading {
-        margin: 0 0 10px;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--body-emphasis);
-      }
-
-      .address-name {
-        margin: 0 0 6px;
-        font-size: 15px;
         font-weight: 600;
         color: var(--body-emphasis);
-      }
-
-      .address-line {
-        margin: 0;
-        font-size: 13px;
-        color: var(--body-color);
+        overflow-wrap: anywhere;
       }
 
       .line-items {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 24px;
+        margin: 0 0 var(--stack-gap);
+        border: 1px solid var(--border);
         background: var(--card-bg);
-        overflow: hidden;
       }
 
       .line-items thead {
         background: var(--surface-subtle);
       }
 
+      .line-items tr {
+        break-inside: avoid;
+      }
+
       .line-items th {
-        padding: 12px 14px;
+        padding: 9px var(--box-pad-x);
         text-align: left;
         font-size: 11px;
         font-weight: 700;
@@ -147,7 +158,7 @@
       }
 
       .line-items td {
-        padding: 12px 14px;
+        padding: 9px var(--box-pad-x);
         font-size: 13px;
         border-bottom: 1px solid var(--border-translucent);
         vertical-align: top;
@@ -160,32 +171,95 @@
       .line-items .description {
         font-weight: 500;
         color: var(--body-emphasis);
+        word-break: break-word;
       }
 
       .totals-wrap {
         display: flex;
         justify-content: flex-end;
-        margin-bottom: 40px;
+        margin: 0 0 var(--stack-gap);
       }
 
-      .totals {
-        width: 280px;
+      .totals-wrap .totals {
+        width: 300px;
+        margin: 0;
       }
 
       .totals-row {
         display: flex;
         justify-content: space-between;
-        padding: 6px 0;
+        gap: 16px;
+        padding: 3px 0;
         font-size: 13px;
       }
 
+      .totals-row > span:last-child {
+        text-align: right;
+        white-space: nowrap;
+      }
+
       .totals-row.total {
-        margin-top: 8px;
-        padding-top: 12px;
+        margin-top: 6px;
+        padding-top: 8px;
         border-top: 1px solid var(--border);
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 700;
         color: var(--body-emphasis);
+      }
+
+      .totals-row.total:first-child {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+      }
+
+      .box-heading {
+        margin: 0 0 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--body-emphasis);
+      }
+
+      .empty {
+        color: var(--secondary);
+        font-style: italic;
+        font-size: 13px;
+      }
+
+      .authenticity-mark {
+        margin: 4px 0 0;
+        font-size: 10px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: var(--secondary);
+      }
+
+      .addresses {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--stack-gap);
+        margin: 0 0 var(--stack-gap);
+      }
+
+      .addresses .box {
+        margin: 0;
+      }
+
+      .address-name {
+        margin: 0 0 4px;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--body-emphasis);
+      }
+
+      .address-line {
+        margin: 0;
+        font-size: 13px;
+        color: var(--body-color);
+        overflow-wrap: anywhere;
       }
 
       .totals-row.balance {
@@ -195,22 +269,10 @@
         color: var(--body-emphasis);
       }
 
-      .payment-details + .payment-details {
-        margin-top: 24px;
-      }
-
-      .payment-heading {
-        font-size: 13px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--body-emphasis);
-      }
-
       .payment-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
+        gap: 10px 16px;
       }
 
       .payment-row {
@@ -219,8 +281,10 @@
         align-items: flex-start;
       }
 
+      /* Next to the QR code: two columns, so an IBAN fits on one line */
       .payment-row .payment-grid {
         flex: 1;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .payment-qr {
@@ -255,13 +319,13 @@
       .payment-item-value {
         font-size: 13px;
         color: var(--body-emphasis);
-        word-break: break-all;
+        overflow-wrap: anywhere;
       }
 
       .terms-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
+        gap: 10px 16px;
       }
 
       .terms-value {
@@ -278,27 +342,27 @@
         white-space: pre-line;
         overflow-wrap: anywhere;
       }
-
-      .authenticity-mark {
-        margin-top: 28px;
-        font-size: 10px;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        color: var(--secondary);
+    </style>
+    <style>
+      /* Brand accent for the document type title only (BILLING_DOCUMENT_BRAND_COLOR, validated #rrggbb) */
+      :root {
+        --accent: {{branding.accentColor}};
       }
     </style>
   </head>
   <body>
     <div class="page">
       <header class="header">
-        <div>
+        <div class="header-text">
           <h1 class="header-title">{{documentTitle}}</h1>
           <p class="header-subtitle">{{issuer.name}}</p>
         </div>
+        {{#if branding.logoDataUri}}
+        <img class="header-logo" src="{{branding.logoDataUri}}" alt="{{issuer.name}}" />
+        {{/if}}
       </header>
 
-      <div class="meta-grid">
+      <div class="meta-grid box">
         <div class="meta-card">
           <span class="meta-label">{{documentNumberLabel}}</span>
           <span class="meta-value">{{invoiceNumber}}</span>
@@ -326,8 +390,8 @@
       </div>
 
       <div class="addresses">
-        <section class="address-card">
-          <h2 class="address-heading">From</h2>
+        <section class="address-card box">
+          <h2 class="box-heading">From</h2>
           <p class="address-name">{{issuer.name}}</p>
           {{#each issuer.lines}}
           <p class="address-line">{{this}}</p>
@@ -337,8 +401,8 @@
           <p class="address-line">{{issuer.email}}</p>
           {{/if}}
         </section>
-        <section class="address-card">
-          <h2 class="address-heading">To</h2>
+        <section class="address-card box">
+          <h2 class="box-heading">To</h2>
           <p class="address-name">{{buyer.name}}</p>
           {{#each buyer.lines}}
           <p class="address-line">{{this}}</p>
@@ -380,7 +444,7 @@
       </table>
 
       <div class="totals-wrap">
-        <div class="totals">
+        <div class="totals box">
           <div class="totals-row">
             <span>Subtotal (net)</span>
             <span>{{subtotalNet}} {{currency}}</span>
@@ -409,18 +473,18 @@
       </div>
 
       {{#if note}}
-      <section class="payment-details">
-        <h2 class="payment-heading">Notes</h2>
+      <section class="payment-details box">
+        <h2 class="box-heading">Notes</h2>
         <p class="document-note">{{note}}</p>
       </section>
       {{/if}} {{#if taxNote}}
-      <section class="payment-details">
-        <h2 class="payment-heading">Tax note</h2>
+      <section class="payment-details box">
+        <h2 class="box-heading">Tax note</h2>
         <p class="address-line">{{taxNote}}</p>
       </section>
       {{/if}} {{#if showDocumentTerms}}
-      <section class="payment-details">
-        <h2 class="payment-heading">Terms</h2>
+      <section class="payment-details box">
+        <h2 class="box-heading">Terms</h2>
         <div class="terms-grid">
           {{#if paymentTerms}}
           <div>
@@ -436,8 +500,8 @@
         </div>
       </section>
       {{/if}} {{#if paymentDetails}}
-      <section class="payment-details">
-        <h2 class="payment-heading">Payment details</h2>
+      <section class="payment-details box">
+        <h2 class="box-heading">Payment details</h2>
         <div class="payment-row">
           <div class="payment-grid">
             {{#if paymentDetails.bank}}

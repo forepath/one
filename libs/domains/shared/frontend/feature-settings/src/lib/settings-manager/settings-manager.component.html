@@ -151,6 +151,59 @@
                         (ngModelChange)="setDraft(setting, $event)"
                       />
                     }
+                    @case ('image') {
+                      <div class="settings-manager__image" [attr.data-testid]="'setting-image-' + setting.key">
+                        <div class="settings-manager__image-preview">
+                          @if (imagePreview(setting); as src) {
+                            <img [src]="src" i18n-alt="@@featureSettings-imagePreviewAlt" alt="Image preview" />
+                          } @else {
+                            <span class="text-body-secondary small" i18n="@@featureSettings-imageNone">No image</span>
+                          }
+                        </div>
+                        <fpc-form-control
+                          size="sm"
+                          inputType="file"
+                          [controlId]="controlId(setting)"
+                          [accept]="imageAccept"
+                          (filesChange)="pickImage(setting, $event)"
+                        />
+                        @if (imagePreview(setting)) {
+                          <fpc-button
+                            variant="outline-secondary"
+                            size="sm"
+                            [attr.data-testid]="'setting-image-remove-' + setting.key"
+                            i18n-title="@@featureSettings-imageRemoveTitle"
+                            title="Save an empty value so no image applies at this level"
+                            (clicked)="setDraft(setting, '')"
+                          >
+                            <i class="bi bi-x-lg me-1" aria-hidden="true"></i
+                            ><span i18n="@@featureSettings-imageRemove">Remove image</span>
+                          </fpc-button>
+                        }
+                      </div>
+                    }
+                    @case ('color') {
+                      <div class="settings-manager__color">
+                        <input
+                          type="color"
+                          class="form-control form-control-sm form-control-color"
+                          i18n-aria-label="@@featureSettings-colorPicker"
+                          aria-label="Pick a color"
+                          [value]="colorPickerValue(setting)"
+                          (input)="pickColor(setting, $event)"
+                        />
+                        <fpc-form-control
+                          size="sm"
+                          autocomplete="off"
+                          class="flex-grow-1"
+                          [controlId]="controlId(setting)"
+                          [placeholder]="setting.defaultValue ?? null"
+                          [ngModel]="draftValue(setting)"
+                          (ngModelChange)="setDraft(setting, $event)"
+                          (keydown.enter)="save(setting)"
+                        />
+                      </div>
+                    }
                     @default {
                       <fpc-form-control
                         size="sm"

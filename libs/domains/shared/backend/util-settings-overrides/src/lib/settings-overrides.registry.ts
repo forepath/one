@@ -8,7 +8,7 @@ import {
   SettingStateView,
   SettingValueSource,
 } from './setting-definition.types';
-import { isSensitiveSetting } from './setting-value.validation';
+import { isSensitiveSetting, resolveSettingMaxLength } from './setting-value.validation';
 
 /**
  * Process-wide registry of settings overrides (stored in the database, loaded by the backend).
@@ -304,6 +304,7 @@ export function describeSettings(
         ...(definition.min !== undefined ? { min: definition.min } : {}),
         ...(definition.max !== undefined ? { max: definition.max } : {}),
         ...(definition.defaultValue !== undefined ? { defaultValue: definition.defaultValue } : {}),
+        ...(definition.type === 'image' ? { maxLength: resolveSettingMaxLength(definition) } : {}),
         value: sensitive || ownValue === undefined ? null : ownValue,
         hasOverride: ownValue !== undefined,
         inheritedValue: sensitive || !revealInherited || inheritedRaw === undefined ? null : inheritedRaw,

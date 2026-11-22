@@ -12,7 +12,9 @@ export type SettingValueType =
   | 'cron'
   | 'timezone'
   | 'duration'
-  | 'list';
+  | 'list'
+  | 'image'
+  | 'color';
 
 export type SettingScope = 'global' | 'tenant';
 export type SettingsLevel = 'global' | 'tenant';
@@ -29,6 +31,8 @@ export interface SettingStateView {
   min?: number;
   max?: number;
   defaultValue?: string;
+  /** Maximum value length (`image` settings). */
+  maxLength?: number;
   value: string | null;
   hasOverride: boolean;
   inheritedValue: string | null;

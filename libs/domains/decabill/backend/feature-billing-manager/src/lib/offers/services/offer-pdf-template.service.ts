@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import * as Handlebars from 'handlebars';
 
 import type { CustomerProfileEntity } from '../../entities/customer-profile.entity';
 import type { InvoiceLineItemEntity } from '../../entities/invoice-line-item.entity';
 import type { InvoiceEntity } from '../../entities/invoice.entity';
+import {
+  type BillingDocumentBranding,
+  BillingDocumentBrandingConfigService,
+  DEFAULT_DOCUMENT_BRANDING,
+} from '../../services/billing-document-branding-config.service';
 import type { BillingIssuerConfig } from '../../services/billing-issuer-config.service';
 import { formatAmount, formatDate, toAmount } from '../../services/invoice-pdf-amount.util';
 import { resolveCountryDisplayName } from '../../utils/country-display-name.util';
@@ -61,11 +66,15 @@ export interface OfferPdfViewModel {
   /** Free-text document note (also embedded as BT-22 document note). */
   note?: string;
   authenticityShortSha?: string;
+  /** Logo and accent color (`BILLING_DOCUMENT_*`). */
+  branding: BillingDocumentBranding;
 }
 
 @Injectable()
 export class OfferPdfTemplateService {
   private readonly compiledTemplate = Handlebars.compile(loadOfferPdfTemplate());
+
+  constructor(@Optional() private readonly brandingConfig?: BillingDocumentBrandingConfigService) {}
 
   buildHtml(
     offer: OfferEntity,
@@ -126,6 +135,7 @@ export class OfferPdfTemplateService {
       showDocumentTerms: Boolean(paymentTerms || deliveryTerms),
       ...(note ? { note } : {}),
       ...(authenticityShortSha ? { authenticityShortSha } : {}),
+      branding: this.brandingConfig?.getBranding() ?? DEFAULT_DOCUMENT_BRANDING,
     };
   }
 

@@ -60,9 +60,11 @@ export class SupplierInvoicePdfService {
     const buyer = this.recipientAsBuyer(recipient, invoice);
     const invoiceView = this.toInvoiceView(invoice);
     const lineItemViews = lineItems.map((line) => this.toLineItemView(line));
-    const presentation = buildInvoicePdfPresentation(invoiceView, {
-      documentIssueDate: invoice.issueDate,
-    });
+    const presentation = {
+      ...buildInvoicePdfPresentation(invoiceView, { documentIssueDate: invoice.issueDate }),
+      // Copy of a document the supplier issued: never print the own logo / brand color on it.
+      ownBranding: false,
+    };
     const html = this.invoicePdfTemplateService.buildHtml(invoiceView, lineItemViews, issuer, buyer, presentation);
 
     return await this.invoicePdfHtmlRendererService.renderHtmlToPdf(html);

@@ -9,6 +9,7 @@ export class SettingValueValidationError extends Error {
 
 const DEFAULT_MAX_LENGTH = 2048;
 const TEXT_MAX_LENGTH = 16384;
+const IMAGE_MAX_LENGTH = 65536;
 // Values become environment-variable strings: control characters are rejected on purpose.
 // eslint-disable-next-line no-control-regex
 const SINGLE_LINE_FORBIDDEN = /[\u0000-\u001f\u007f]/;
@@ -18,9 +19,24 @@ const INTEGER_PATTERN = /^-?\d+$/;
 const DURATION_PATTERN = /^\d+(?:\.\d+)?(?:ms|s|m|h|d)?$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CRON_FIELD_PATTERN = /^[0-9A-Za-z*/,?#LW-]+$/;
+const COLOR_PATTERN = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+const IMAGE_DATA_URI_PATTERN = /^data:(image\/(?:png|jpeg|webp|svg\+xml));base64,([A-Za-z0-9+/]+={0,2})$/;
 
 export function isSensitiveSetting(definition: SettingDefinition): boolean {
   return definition.type === 'secret';
+}
+
+/** Maximum stored length of a setting value (explicit `maxLength`, otherwise the default of its type). */
+export function resolveSettingMaxLength(definition: SettingDefinition): number {
+  if (definition.maxLength !== undefined) {
+    return definition.maxLength;
+  }
+
+  if (definition.type === 'text') {
+    return TEXT_MAX_LENGTH;
+  }
+
+  return definition.type === 'image' ? IMAGE_MAX_LENGTH : DEFAULT_MAX_LENGTH;
 }
 
 /**
@@ -34,7 +50,7 @@ export function normalizeSettingValue(definition: SettingDefinition, raw: unknow
   }
 
   const multiLine = definition.type === 'text';
-  const maxLength = definition.maxLength ?? (multiLine ? TEXT_MAX_LENGTH : DEFAULT_MAX_LENGTH);
+  const maxLength = resolveSettingMaxLength(definition);
   const value = multiLine ? raw.replace(/\r\n/g, '\n') : raw.trim();
 
   if (value.length > maxLength) {
@@ -88,6 +104,10 @@ export function normalizeSettingValue(definition: SettingDefinition, raw: unknow
       }
 
       return value.toLowerCase();
+    case 'color':
+      return normalizeColor(definition, value);
+    case 'image':
+      return normalizeImage(definition, value);
     default:
       throw new SettingValueValidationError(`${definition.key} has an unsupported type`);
   }
@@ -199,4 +219,67 @@ function normalizeTimezone(definition: SettingDefinition, value: string): string
   }
 
   return value;
+}
+
+/** `#rgb` / `#rrggbb` → lowercase `#rrggbb`; empty stays empty (explicitly unset). */
+function normalizeColor(definition: SettingDefinition, value: string): string {
+  if (value === '') {
+    return value;
+  }
+
+  if (!COLOR_PATTERN.test(value)) {
+    throw new SettingValueValidationError(`${definition.key} must be a hex color such as #32a852`);
+  }
+
+  const hex = value.slice(1).toLowerCase();
+
+  return hex.length === 3 ? `#${[...hex].map((digit) => digit + digit).join('')}` : `#${hex}`;
+}
+
+/**
+ * Base64 `data:` URI whose bytes match the declared image type. Remote URLs are rejected on purpose: documents are
+ * rendered server-side, so a URL would make the renderer fetch arbitrary (internal) addresses. SVG is only accepted
+ * without a DOCTYPE (no entity expansion); browsers render SVG images without scripts or external loads.
+ */
+function normalizeImage(definition: SettingDefinition, value: string): string {
+  if (value === '') {
+    return value;
+  }
+
+  const match = IMAGE_DATA_URI_PATTERN.exec(value);
+
+  if (!match || match[2].length % 4 !== 0) {
+    throw new SettingValueValidationError(
+      `${definition.key} must be a base64 data URI of a PNG, JPEG, WebP or SVG image`,
+    );
+  }
+
+  const mimeType = match[1];
+  const bytes = Buffer.from(match[2], 'base64');
+
+  if (!imageBytesMatchType(mimeType, bytes)) {
+    throw new SettingValueValidationError(`${definition.key} does not contain a valid ${mimeType} image`);
+  }
+
+  return value;
+}
+
+function imageBytesMatchType(mimeType: string, bytes: Buffer): boolean {
+  switch (mimeType) {
+    case 'image/png':
+      return bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+    case 'image/jpeg':
+      return bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+    case 'image/webp':
+      return bytes.subarray(0, 4).toString('latin1') === 'RIFF' && bytes.subarray(8, 12).toString('latin1') === 'WEBP';
+
+    case 'image/svg+xml': {
+      const text = bytes.toString('utf8');
+
+      return /<svg[\s>]/i.test(text) && !/<!DOCTYPE|<!ENTITY/i.test(text);
+    }
+
+    default:
+      return false;
+  }
 }
