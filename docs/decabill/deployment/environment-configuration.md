@@ -2,6 +2,27 @@
 
 Complete reference for environment variables used in Decabill.
 
+## Console settings overrides
+
+Most settings below (everything except infrastructure, cryptography, authentication, CORS / rate limits, tenancy, file storage and dynamic plugins) can be overridden in the billing console under **Administration → Settings**. A sidebar groups them by category; each row shows where the current value comes from and offers **Save** and **Reset to default**.
+
+Resolution, most specific first:
+
+1. **Tenant** override: applies to that tenant only. Available for settings read per request or job (issuer, document terms, tax, withdrawal, minimum payable amount, email / SMTP, DATEV accounts and numbers, accounting ledger parameters).
+2. **All tenants** override: applies to every tenant without its own value.
+3. The **environment variable** (as documented below), then the built-in default.
+
+Resetting removes the override, so the next layer applies again; the environment itself is never changed. Settings marked **Restart required** (scheduler intervals, cron schedules, kill switches, Stripe keys) are read at startup and apply after the backend processes restart. Other processes pick up changes within `SETTINGS_OVERRIDES_REFRESH_INTERVAL_MS` (default `30000`).
+
+Access: billing admins manage the tenant settings of their own tenant. Admins of tenants listed in `TENANTS_ALLOW_GLOBAL_VIEWS` also manage the overrides for all tenants and the settings of every configured tenant (tenant switch in the page header). API: `GET/PUT/DELETE /api/admin/billing/settings[/:settingKey]?level=global|tenant&viewTenantId=…` (scope `billing:admin`).
+
+Values are stored in `billing_settings_overrides`, encrypted with `ENCRYPTION_KEY` (AES-256-GCM). Secret settings are write-only: the API never returns their values, and tenant admins without global access do not see the values they inherit (only that one is configured and from which layer).
+
+Tenant safeguards:
+
+- **SMTP** settings of a tenant apply only as a set, when the tenant sets its own `SMTP_HOST`: port, user, password and `EMAIL_FROM` then come from the tenant level only (deployment credentials are never sent to a tenant server). Without a tenant host, tenant SMTP and sender overrides are ignored, so the deployment relay cannot send as arbitrary senders. A tenant SMTP server must resolve to public addresses (no private, loopback or link-local networks) and use port 25, 465, 587 or 2525; the connection is pinned to the checked address.
+- The **consolidated DATEV export** ignores tenant overrides (only the operator's `BILLING_DATEV_TENANT_CONFIG`, the values for all tenants and the environment apply). Debtor and creditor number ranges are deployment-wide.
+
 ## Backend Billing Manager
 
 ### Application Configuration

@@ -28,6 +28,7 @@ export function isMainSidebarUrl(url: string): boolean {
     path.includes('/pipelines') ||
     path.includes('/graphs') ||
     path.includes('/agent-config') ||
+    path.includes('/system-settings') ||
     path.includes('/settings/tokens') ||
     path.includes('/settings/apps') ||
     path === '/apps' ||
@@ -46,6 +47,7 @@ export function isAdminNavUrl(url: string): boolean {
     path === '/apps' ||
     path.startsWith('/apps/') ||
     path.includes('/agent-config') ||
+    path.includes('/system-settings') ||
     path.includes('/connections') ||
     path.includes('/webhooks') ||
     path.includes('/updates')

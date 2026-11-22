@@ -1,4 +1,14 @@
+import { lookup } from 'node:dns/promises';
+import { isIP } from 'node:net';
+
+import { getTenantId } from '@forepath/shared/backend/util-http-context';
 import { recordSharedCounter, recordSharedHistogram } from '@forepath/shared/backend/util-otel';
+import {
+  GLOBAL_SETTINGS_SCOPE,
+  getTenantSettingOverride,
+  resolveSettingValue,
+} from '@forepath/shared/backend/util-settings-overrides';
+import { isPrivateOrLoopbackIp } from '@forepath/shared/shared/util-network-address';
 import { Injectable, Logger } from '@nestjs/common';
 import type { Transporter } from 'nodemailer';
 import * as nodemailer from 'nodemailer';
@@ -23,38 +33,157 @@ export interface EmailOptions {
  *
  * Content (subjects, Handlebars bodies) is owned by the notifications email channel.
  */
+/** Ports a tenant-supplied SMTP server may use. */
+const TENANT_SMTP_PORTS = [25, 465, 587, 2525];
+const MAX_CACHED_TRANSPORTS = 32;
+
+interface SmtpSettings {
+  host: string | undefined;
+  port: number;
+  user: string | undefined;
+  pass: string | undefined;
+  from: string;
+  /** Host comes from a tenant override (untrusted input: must resolve to public addresses in production). */
+  tenantSupplied: boolean;
+}
+
+interface ResolvedTransport {
+  signature: string;
+  transporter: Transporter;
+  from: string;
+}
+
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private readonly transporter: Transporter | null = null;
-  private readonly from: string;
-  private readonly enabled: boolean;
+  private readonly transports = new Map<string, ResolvedTransport>();
 
   constructor() {
-    const host = process.env.SMTP_HOST;
-    const port = parseInt(process.env.SMTP_PORT || '1025', 10);
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASSWORD;
+    const settings = this.readSettings();
 
-    this.from = process.env.EMAIL_FROM || 'noreply@localhost';
-    this.enabled = !!(host && port);
+    if (settings.host && settings.port) {
+      this.logger.log(
+        `Email service configured: ${settings.host}:${settings.port}${settings.user && settings.pass ? ' (authenticated)' : ''}`,
+      );
 
-    if (this.enabled) {
-      const secure = port === 465;
-      const auth = user && pass ? { user, pass } : undefined;
-      const ignoreTLS = !auth; // MailHog has no auth; production SMTP uses TLS when available
+      if (!settings.tenantSupplied) {
+        const transport = this.createTransport(settings, settings.host);
 
-      this.transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure,
-        ignoreTLS,
-        ...(auth && { auth }),
-      });
-      this.logger.log(`Email service configured: ${host}:${port}${auth ? ' (authenticated)' : ''}`);
+        this.transports.set(transport.signature, transport);
+      }
     } else {
       this.logger.warn('Email service disabled: SMTP_HOST and SMTP_PORT not set');
     }
+  }
+
+  /**
+   * SMTP settings are read per send (console overrides apply without restart; in Decabill per tenant).
+   *
+   * Tenant SMTP settings apply only as a set, when the tenant configures its own `SMTP_HOST`: port, credentials and
+   * sender then come from the tenant level only, so deployment credentials are never sent to a tenant-chosen server.
+   * Without a tenant host, tenant SMTP / sender overrides are ignored, so the deployment relay cannot be used to send
+   * as arbitrary senders.
+   */
+  private readSettings(): SmtpSettings {
+    const tenantId = getTenantId();
+    const tenantHost = tenantId ? getTenantSettingOverride('SMTP_HOST', tenantId)?.trim() : undefined;
+
+    if (tenantId && tenantHost) {
+      const own = (key: string): string | undefined => getTenantSettingOverride(key, tenantId) || undefined;
+
+      return {
+        host: tenantHost,
+        port: parseInt(own('SMTP_PORT') || '587', 10),
+        user: own('SMTP_USER'),
+        pass: own('SMTP_PASSWORD'),
+        from: own('EMAIL_FROM') || this.deploymentValue('EMAIL_FROM') || 'noreply@localhost',
+        tenantSupplied: true,
+      };
+    }
+
+    return {
+      host: this.deploymentValue('SMTP_HOST')?.trim() || undefined,
+      port: parseInt(this.deploymentValue('SMTP_PORT') || '1025', 10),
+      user: this.deploymentValue('SMTP_USER') || undefined,
+      pass: this.deploymentValue('SMTP_PASSWORD') || undefined,
+      from: this.deploymentValue('EMAIL_FROM') || 'noreply@localhost',
+      tenantSupplied: false,
+    };
+  }
+
+  /** Override for all tenants, else the environment variable (tenant overrides ignored). */
+  private deploymentValue(key: string): string | undefined {
+    return resolveSettingValue(key, GLOBAL_SETTINGS_SCOPE);
+  }
+
+  private createTransport(settings: SmtpSettings, connectHost: string): ResolvedTransport {
+    const { port, user, pass } = settings;
+    const secure = port === 465;
+    const auth = user && pass ? { user, pass } : undefined;
+    const ignoreTLS = !auth; // MailHog has no auth; production SMTP uses TLS when available
+    const pinned = connectHost !== settings.host;
+    const transporter = nodemailer.createTransport({
+      host: connectHost,
+      port,
+      secure,
+      ignoreTLS,
+      ...(pinned ? { tls: { servername: settings.host } } : {}),
+      ...(auth && { auth }),
+    });
+
+    return { signature: this.signature(settings, connectHost), transporter, from: settings.from };
+  }
+
+  private signature(settings: SmtpSettings, connectHost: string): string {
+    return JSON.stringify([settings.host, connectHost, settings.port, settings.user, settings.pass, settings.from]);
+  }
+
+  private async resolveTransport(): Promise<ResolvedTransport | null> {
+    const settings = this.readSettings();
+
+    if (!settings.host || !settings.port) {
+      return null;
+    }
+
+    const connectHost = settings.tenantSupplied
+      ? await this.resolvePublicHost(settings.host, settings.port)
+      : settings.host;
+    const signature = this.signature(settings, connectHost);
+    const cached = this.transports.get(signature);
+
+    if (cached) {
+      return cached;
+    }
+
+    // Non-pooled transports open one connection per message, so evicted entries need no close() (a send of another
+    // tenant may still use them).
+    if (this.transports.size >= MAX_CACHED_TRANSPORTS) {
+      this.transports.delete(this.transports.keys().next().value as string);
+    }
+
+    const created = this.createTransport(settings, connectHost);
+
+    this.transports.set(signature, created);
+
+    return created;
+  }
+
+  /**
+   * Tenant-supplied SMTP servers must be public (SSRF): only SMTP ports, no private / loopback / link-local
+   * addresses. The connection is pinned to the checked address so DNS rebinding cannot swap it afterwards.
+   */
+  private async resolvePublicHost(host: string, port: number): Promise<string> {
+    if (!TENANT_SMTP_PORTS.includes(port)) {
+      throw new Error(`SMTP port override must be one of ${TENANT_SMTP_PORTS.join(', ')}`);
+    }
+
+    const addresses = isIP(host) ? [{ address: host }] : await lookup(host, { all: true });
+
+    if (addresses.length === 0 || addresses.some((entry) => isPrivateOrLoopbackIp(entry.address))) {
+      throw new Error('SMTP host override resolves to a private or loopback address');
+    }
+
+    return addresses[0].address;
   }
 
   async send(options: EmailOptions): Promise<boolean> {
@@ -63,7 +192,7 @@ export class EmailService {
 
       return true;
     } catch (error) {
-      if (!this.transporter) {
+      if (!this.isEnabled()) {
         return false;
       }
 
@@ -78,7 +207,9 @@ export class EmailService {
    * Throws when SMTP is disabled so callers that require delivery fail closed at the job layer.
    */
   async sendOrThrow(options: EmailOptions): Promise<void> {
-    if (!this.transporter) {
+    const resolved = await this.resolveTransport();
+
+    if (!resolved) {
       this.logger.debug('Email not sent (SMTP not configured):', options.subject, 'to', options.to);
       recordSharedCounter('email.smtp.send_total', { outcome: 'disabled' });
       throw new Error('Email service is disabled: SMTP_HOST and SMTP_PORT not set');
@@ -87,8 +218,8 @@ export class EmailService {
     const startedAt = Date.now();
 
     try {
-      await this.transporter.sendMail({
-        from: this.from,
+      await resolved.transporter.sendMail({
+        from: resolved.from,
         to: options.to,
         subject: options.subject,
         text: options.text,
@@ -110,6 +241,8 @@ export class EmailService {
   }
 
   isEnabled(): boolean {
-    return this.enabled;
+    const settings = this.readSettings();
+
+    return !!(settings.host && settings.port);
   }
 }

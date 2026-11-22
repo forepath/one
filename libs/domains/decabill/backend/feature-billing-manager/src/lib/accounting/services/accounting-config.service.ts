@@ -1,3 +1,4 @@
+import { createSettingsScopedCache } from '@forepath/shared/backend/util-settings-overrides';
 import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 
 import { BillingIssuerConfigService } from '../../services/billing-issuer-config.service';
@@ -74,8 +75,8 @@ function envEnum<T extends string>(name: string, allowed: readonly T[], fallback
 @Injectable()
 export class AccountingConfigService implements OnModuleInit {
   private readonly logger = new Logger(AccountingConfigService.name);
-  private config!: AccountingConfig;
-  private missingCore: string[] = [];
+  /** Parsed per tenant (console overrides) and settings version. */
+  private readonly state = createSettingsScopedCache(() => this.compute());
 
   constructor(private readonly issuerConfig: BillingIssuerConfigService) {}
 
@@ -85,6 +86,19 @@ export class AccountingConfigService implements OnModuleInit {
 
   /** Re-reads the environment (tests and config reloads). */
   reload(): void {
+    this.state.clear();
+    this.state.get();
+  }
+
+  private get config(): AccountingConfig {
+    return this.state.get().config;
+  }
+
+  private get missingCore(): string[] {
+    return this.state.get().missingCore;
+  }
+
+  private compute(): { config: AccountingConfig; missingCore: string[] } {
     const issuer = this.issuerConfig.getConfig() ?? ({} as ReturnType<BillingIssuerConfigService['getConfig']>);
     const country = (process.env.BILLING_ACCOUNTING_COUNTRY ?? issuer.country ?? 'DE').trim().toUpperCase() || 'DE';
     const profile = resolveAccountingProfile(country);
@@ -95,11 +109,10 @@ export class AccountingConfigService implements OnModuleInit {
       12,
     );
     const template = (process.env.BILLING_ACCOUNTING_CHART_TEMPLATE ?? '').trim();
-
-    this.missingCore = [];
+    const missingCore: string[] = [];
 
     if (!parseBooleanEnv('BILLING_ACCOUNTING_ENABLED', false)) {
-      this.missingCore.push('BILLING_ACCOUNTING_ENABLED');
+      missingCore.push('BILLING_ACCOUNTING_ENABLED');
     }
 
     for (const [env, value] of [
@@ -110,12 +123,12 @@ export class AccountingConfigService implements OnModuleInit {
       ['BILLING_ISSUER_COUNTRY', process.env.BILLING_ISSUER_COUNTRY],
     ] as const) {
       if (!value || String(value).trim() === '') {
-        this.missingCore.push(env);
+        missingCore.push(env);
       }
     }
 
-    this.config = {
-      enabled: this.missingCore.length === 0,
+    const config: AccountingConfig = {
+      enabled: missingCore.length === 0,
       country,
       profile,
       defaultChartTemplate: template && profile.templates.includes(template) ? template : profile.defaultTemplate,
@@ -139,13 +152,15 @@ export class AccountingConfigService implements OnModuleInit {
       assetPoolUpper: envNumber('BILLING_ACCOUNTING_ASSET_POOL_UPPER', 1000),
     };
 
-    if (parseBooleanEnv('BILLING_ACCOUNTING_ENABLED', false) && !this.config.enabled) {
-      this.logger.warn(`Accounting is enabled but prerequisites are missing: ${this.missingCore.join(', ')}`);
+    if (parseBooleanEnv('BILLING_ACCOUNTING_ENABLED', false) && !config.enabled) {
+      this.logger.warn(`Accounting is enabled but prerequisites are missing: ${missingCore.join(', ')}`);
     }
 
-    if (this.config.enabled && EINVOICE_MANDATE_COUNTRIES[country]) {
+    if (config.enabled && EINVOICE_MANDATE_COUNTRIES[country]) {
       this.logger.warn(`Accounting country ${country}: ${EINVOICE_MANDATE_COUNTRIES[country]}`);
     }
+
+    return { config, missingCore };
   }
 
   isEnabled(): boolean {

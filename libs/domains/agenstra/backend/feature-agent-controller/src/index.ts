@@ -219,3 +219,8 @@ export * from './lib/repositories/workspace-graph-snapshots.repository';
 export * from './lib/constants/openai-compatible.constants';
 export * from './lib/controllers/openai-compatible.controller';
 export * from './lib/services/openai-compatible.service';
+export * from './lib/constants/controller-settings.catalog';
+export * from './lib/entities/controller-settings-override.entity';
+export * from './lib/repositories/controller-settings-overrides.repository';
+export * from './lib/services/controller-settings.service';
+export * from './lib/modules/controller-settings.module';

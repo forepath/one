@@ -81,6 +81,7 @@ import { DecabillBillingContributorModule } from './contributors/decabill-billin
 import { DigitalOceanContributorModule } from './contributors/digital-ocean/digital-ocean.contributor.module';
 import { HetznerContributorModule } from './contributors/hetzner/hetzner.contributor.module';
 import { AddonsController } from './controllers/addons.controller';
+import { AdminBillingSettingsController } from './controllers/admin-billing-settings.controller';
 import { AdminBillingController } from './controllers/admin-billing.controller';
 import { AdminCustomerAutoBillingController } from './controllers/admin-customer-auto-billing.controller';
 import { AdminCustomerProfilesController } from './controllers/admin-customer-profiles.controller';
@@ -116,6 +117,7 @@ import { AddonEntity } from './entities/addon.entity';
 import { AvailabilitySnapshotEntity } from './entities/availability-snapshot.entity';
 import { BackorderEntity } from './entities/backorder.entity';
 import { BillingAuditLogEntity } from './entities/billing-audit-log.entity';
+import { BillingSettingsOverrideEntity } from './entities/billing-settings-override.entity';
 import { CloudInitConfigEntity } from './entities/cloud-init-config.entity';
 import { ContainerStatsSampleEntity } from './entities/container-stats-sample.entity';
 import { ContainerStatsSummaryEntity } from './entities/container-stats-summary.entity';
@@ -272,6 +274,7 @@ import { AddonsRepository } from './repositories/addons.repository';
 import { AvailabilitySnapshotsRepository } from './repositories/availability-snapshots.repository';
 import { BackordersRepository } from './repositories/backorders.repository';
 import { BillingAuditLogsRepository } from './repositories/billing-audit-logs.repository';
+import { BillingSettingsOverridesRepository } from './repositories/billing-settings-overrides.repository';
 import { CloudInitConfigsRepository } from './repositories/cloud-init-configs.repository';
 import { ContainerStatsSamplesRepository } from './repositories/container-stats-samples.repository';
 import { ContainerStatsSummariesRepository } from './repositories/container-stats-summaries.repository';
@@ -333,6 +336,7 @@ import { BillingDocumentTermsConfigService } from './services/billing-document-t
 import { BillingIssuerConfigService } from './services/billing-issuer-config.service';
 import { BillingMetricsCollectorService } from './services/billing-metrics-collector.service';
 import { BillingScheduleService } from './services/billing-schedule.service';
+import { BillingSettingsService } from './services/billing-settings.service';
 import { BillingStatisticsQueryService } from './services/billing-statistics-query.service';
 import { BillingTenantService } from './services/billing-tenant.service';
 import { CancellationPolicyService } from './services/cancellation-policy.service';
@@ -472,6 +476,7 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
       InvoiceEntity,
       InvoicePromotionApplicationEntity,
       PromotionEntity,
+      BillingSettingsOverrideEntity,
       PromotionRedemptionEntity,
       InvoiceVoidDocumentEntity,
       InvoiceCreditDocumentEntity,
@@ -585,6 +590,7 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     AdminSupplierInvoicesController,
     AdminCustomerAutoBillingController,
     AdminDatevExportsController,
+    AdminBillingSettingsController,
     AdminFileManagerController,
     PaymentsWebhookController,
     AdminUsageController,
@@ -663,6 +669,8 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     BillingAuditLogService,
     BillingTenantService,
     TenantsGlobalViewsConfigService,
+    BillingSettingsOverridesRepository,
+    BillingSettingsService,
     AdminFileManagerService,
     StoredFileSigningConfigService,
     StoredFileRegistryService,
@@ -929,6 +937,7 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     BillingScheduleService,
     BillingTenantService,
     TenantsGlobalViewsConfigService,
+    BillingSettingsService,
     BillingEmailAttachmentResolver,
     EMAIL_ATTACHMENT_RESOLVER,
     EmailDeliveryService,

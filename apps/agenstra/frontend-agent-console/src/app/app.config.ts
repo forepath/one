@@ -8,6 +8,7 @@ import {
 import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/agenstra/frontend/util-configuration';
 import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideOidc } from '@forepath/identity/frontend';
 import { NOTIFICATION_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-notifications';
+import { SETTINGS_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-settings';
 import { UPDATES_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-updates';
 import {
   provideFpcDataTableLabels,
@@ -97,6 +98,14 @@ export const appConfig: ApplicationConfig = {
         webhooksBasePath: 'admin/webhooks',
         applicationId: 'agenstra' as const,
         clientFilterEnabled: true,
+      }),
+      deps: [ENVIRONMENT],
+    },
+    {
+      provide: SETTINGS_ADMIN_ENVIRONMENT,
+      useFactory: (env: Environment) => ({
+        apiUrl: env.console.urls.restApi,
+        settingsBasePath: 'admin/settings',
       }),
       deps: [ENVIRONMENT],
     },

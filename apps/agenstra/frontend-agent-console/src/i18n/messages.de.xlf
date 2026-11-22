@@ -11398,6 +11398,798 @@
         <source>Privacy Policy</source>
         <target>Datenschutzerklärung</target>
       </trans-unit>
+      <trans-unit id="featureContainer-systemSettingsTitle" datatype="html">
+        <source>Settings</source>
+        <target>Einstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-systemSettings" datatype="html">
+        <source>Settings</source>
+        <target>Einstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-section-communication" datatype="html">
+        <source>Communication</source>
+        <target>Kommunikation</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-category-email" datatype="html">
+        <source>Email</source>
+        <target>E-Mail</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-section-agents" datatype="html">
+        <source>Agents</source>
+        <target>Agenten</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-category-chat" datatype="html">
+        <source>Chat and API</source>
+        <target>Chat und API</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-category-agent_tasks" datatype="html">
+        <source>Agent tasks</source>
+        <target>Agentenaufgaben</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-category-agent_handoffs" datatype="html">
+        <source>Agent handoffs</source>
+        <target>Agentenübergaben</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-section-work" datatype="html">
+        <source>Work</source>
+        <target>Arbeit</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-category-tickets" datatype="html">
+        <source>Tickets</source>
+        <target>Tickets</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-category-knowledge" datatype="html">
+        <source>Knowledge</source>
+        <target>Wissen</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-category-context_import" datatype="html">
+        <source>Context import</source>
+        <target>Kontextimport</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-category-deployments" datatype="html">
+        <source>Deployments</source>
+        <target>Deployments</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-section-runtime" datatype="html">
+        <source>Runtime</source>
+        <target>Laufzeit</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-category-opencode" datatype="html">
+        <source>Agent configuration</source>
+        <target>Agentenkonfiguration</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-category-workspaces" datatype="html">
+        <source>Workspaces</source>
+        <target>Workspaces</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-category-provisioning" datatype="html">
+        <source>Provisioning</source>
+        <target>Bereitstellung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-category-background_jobs" datatype="html">
+        <source>Background jobs</source>
+        <target>Hintergrundjobs</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-SMTP_HOST" datatype="html">
+        <source>SMTP host</source>
+        <target>SMTP-Host</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-SMTP_HOST" datatype="html">
+        <source>Mail server for outgoing email. Empty disables sending.</source>
+        <target>Mailserver für ausgehende E-Mails. Leer deaktiviert den Versand.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-SMTP_PORT" datatype="html">
+        <source>SMTP port</source>
+        <target>SMTP-Port</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-SMTP_PORT" datatype="html">
+        <source>Port 465 uses implicit TLS, other ports STARTTLS when available.</source>
+        <target>Port 465 nutzt implizites TLS, andere Ports STARTTLS, sofern verfügbar.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-SMTP_USER" datatype="html">
+        <source>SMTP user</source>
+        <target>SMTP-Benutzer</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-SMTP_USER" datatype="html">
+        <source>User name for SMTP authentication.</source>
+        <target>Benutzername für die SMTP-Anmeldung.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-SMTP_PASSWORD" datatype="html">
+        <source>SMTP password</source>
+        <target>SMTP-Passwort</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-SMTP_PASSWORD" datatype="html">
+        <source>Password for SMTP authentication.</source>
+        <target>Passwort für die SMTP-Anmeldung.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-EMAIL_FROM" datatype="html">
+        <source>Sender address</source>
+        <target>Absenderadresse</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-EMAIL_FROM" datatype="html">
+        <source>Envelope From of outgoing email.</source>
+        <target>Absender (From) ausgehender E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-EMAIL_COMPANY_NAME" datatype="html">
+        <source>Brand name</source>
+        <target>Markenname</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-EMAIL_COMPANY_NAME" datatype="html">
+        <source>Company name in the email header and footer.</source>
+        <target>Firmenname in Kopf- und Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-EMAIL_COMPANY_ADDRESS_LINE1" datatype="html">
+        <source>Footer address</source>
+        <target>Adresse in der Fußzeile</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-EMAIL_COMPANY_ADDRESS_LINE1" datatype="html">
+        <source>Street and number in the email footer.</source>
+        <target>Straße und Hausnummer in der Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-EMAIL_COMPANY_POSTAL_CODE" datatype="html">
+        <source>Footer postal code</source>
+        <target>Postleitzahl in der Fußzeile</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-EMAIL_COMPANY_POSTAL_CODE" datatype="html">
+        <source>Postal code in the email footer.</source>
+        <target>Postleitzahl in der Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-EMAIL_COMPANY_CITY" datatype="html">
+        <source>Footer city</source>
+        <target>Ort in der Fußzeile</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-EMAIL_COMPANY_CITY" datatype="html">
+        <source>City in the email footer.</source>
+        <target>Ort in der Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-EMAIL_COMPANY_COUNTRY" datatype="html">
+        <source>Footer country</source>
+        <target>Land in der Fußzeile</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-EMAIL_COMPANY_COUNTRY" datatype="html">
+        <source>ISO country code (e.g. DE) in the email footer.</source>
+        <target>ISO-Ländercode (z. B. DE) in der Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-EMAIL_COMPANY_VAT_ID" datatype="html">
+        <source>Footer VAT ID</source>
+        <target>USt-IdNr. in der Fußzeile</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-EMAIL_COMPANY_VAT_ID" datatype="html">
+        <source>VAT ID in the email footer.</source>
+        <target>USt-IdNr. in der Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-EMAIL_COMPANY_EMAIL" datatype="html">
+        <source>Footer contact email</source>
+        <target>Kontakt-E-Mail in der Fußzeile</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-EMAIL_COMPANY_EMAIL" datatype="html">
+        <source>Contact address in the email footer.</source>
+        <target>Kontaktadresse in der Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-OPENAI_COMPATIBLE_API_ENABLED" datatype="html">
+        <source>OpenAI-compatible API</source>
+        <target>OpenAI-kompatible API</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-OPENAI_COMPATIBLE_API_ENABLED" datatype="html">
+        <source>Serves the OpenAI-compatible API of environments.</source>
+        <target>Stellt die OpenAI-kompatible API der Umgebungen bereit.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-REMOTE_AGENT_CHAT_TIMEOUT_MS" datatype="html">
+        <source>Chat answer timeout (ms)</source>
+        <target>Zeitlimit für Chat-Antworten (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-REMOTE_AGENT_CHAT_TIMEOUT_MS" datatype="html">
+        <source>Maximum wait for an agent answer on server-side chat turns.</source>
+        <target>Maximale Wartezeit auf eine Agentenantwort bei serverseitigen Chat-Turns.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-OPENAI_CLIENT_TOOL_RESULT_TIMEOUT_MS" datatype="html">
+        <source>Client tool timeout (ms)</source>
+        <target>Zeitlimit für Client-Tools (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-OPENAI_CLIENT_TOOL_RESULT_TIMEOUT_MS" datatype="html">
+        <source>How long the agent waits for the result of a client tool call.</source>
+        <target>Wie lange der Agent auf das Ergebnis eines Client-Tool-Aufrufs wartet.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-REMOTE_AGENT_COMMIT_MESSAGE_TIMEOUT_MS" datatype="html">
+        <source>Commit message timeout (ms)</source>
+        <target>Zeitlimit für Commit-Nachrichten (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-REMOTE_AGENT_COMMIT_MESSAGE_TIMEOUT_MS" datatype="html">
+        <source>Maximum wait for a generated commit message.</source>
+        <target>Maximale Wartezeit auf eine generierte Commit-Nachricht.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENSTRA_ATTACHMENT_MAX_BYTES" datatype="html">
+        <source>Attachment size limit (bytes)</source>
+        <target>Maximale Anhanggröße (Bytes)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENSTRA_ATTACHMENT_MAX_BYTES" datatype="html">
+        <source>Largest file accepted as a ticket or chat attachment.</source>
+        <target>Größte Datei, die als Ticket- oder Chat-Anhang angenommen wird.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENT_TASK_SCHEDULER_INTERVAL_MS" datatype="html">
+        <source>Scheduler interval</source>
+        <target>Intervall des Schedulers</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENT_TASK_SCHEDULER_INTERVAL_MS" datatype="html">
+        <source>How often due task occurrences are claimed.</source>
+        <target>Wie oft fällige Aufgabentermine übernommen werden.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENT_TASK_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Scheduler batch size</source>
+        <target>Stapelgröße des Schedulers</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENT_TASK_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Due tasks claimed per scheduler run.</source>
+        <target>Fällige Aufgaben pro Scheduler-Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENT_TASK_RUN_TIMEOUT_MS" datatype="html">
+        <source>Run timeout (ms)</source>
+        <target>Zeitlimit pro Lauf (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENT_TASK_RUN_TIMEOUT_MS" datatype="html">
+        <source>Maximum wait for the agent answer per run.</source>
+        <target>Maximale Wartezeit auf die Agentenantwort pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENT_TASK_MIN_INTERVAL_MINUTES" datatype="html">
+        <source>Minimum interval (minutes)</source>
+        <target>Mindestabstand (Minuten)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENT_TASK_MIN_INTERVAL_MINUTES" datatype="html">
+        <source>Minimum distance between two occurrences of one task.</source>
+        <target>Mindestabstand zwischen zwei Terminen einer Aufgabe.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENT_TASKS_MAX_PER_AGENT" datatype="html">
+        <source>Tasks per environment</source>
+        <target>Aufgaben pro Umgebung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENT_TASKS_MAX_PER_AGENT" datatype="html">
+        <source>Maximum number of tasks per environment.</source>
+        <target>Höchstzahl an Aufgaben pro Umgebung.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENT_TASK_HANDOFF_WAIT_TIMEOUT_MS" datatype="html">
+        <source>Handoff wait timeout (ms)</source>
+        <target>Wartezeit auf Übergaben (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENT_TASK_HANDOFF_WAIT_TIMEOUT_MS" datatype="html">
+        <source>How long a run waits for a handoff response.</source>
+        <target>Wie lange ein Lauf auf die Antwort einer Übergabe wartet.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENT_TASK_RUN_MAX_HANDOFFS" datatype="html">
+        <source>Handoffs per run</source>
+        <target>Übergaben pro Lauf</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENT_TASK_RUN_MAX_HANDOFFS" datatype="html">
+        <source>Handoffs one run may make in total.</source>
+        <target>Übergaben, die ein Lauf insgesamt starten darf.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENT_HANDOFF_SCHEDULER_INTERVAL_MS" datatype="html">
+        <source>Scheduler interval</source>
+        <target>Intervall des Schedulers</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENT_HANDOFF_SCHEDULER_INTERVAL_MS" datatype="html">
+        <source>How often stalled handoffs are failed and deliveries re-queued.</source>
+        <target>Wie oft hängende Übergaben beendet und Zustellungen erneut eingeplant werden.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENT_HANDOFF_TURN_TIMEOUT_MS" datatype="html">
+        <source>Turn timeout (ms)</source>
+        <target>Zeitlimit pro Turn (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENT_HANDOFF_TURN_TIMEOUT_MS" datatype="html">
+        <source>Maximum wait for one turn of the target agent.</source>
+        <target>Maximale Wartezeit auf einen Turn des Zielagenten.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENT_HANDOFFS_MAX_ACTIVE_PER_WORKSPACE" datatype="html">
+        <source>Open handoffs per workspace</source>
+        <target>Offene Übergaben pro Workspace</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENT_HANDOFFS_MAX_ACTIVE_PER_WORKSPACE" datatype="html">
+        <source>Unanswered handoffs allowed per workspace.</source>
+        <target>Erlaubte unbeantwortete Übergaben pro Workspace.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENT_HANDOFF_MAX_DEPTH" datatype="html">
+        <source>Handoff depth</source>
+        <target>Übergabetiefe</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENT_HANDOFF_MAX_DEPTH" datatype="html">
+        <source>How often a handed-over task may be handed over again.</source>
+        <target>Wie oft eine übergebene Aufgabe erneut übergeben werden darf.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS" datatype="html">
+        <source>Automation interval</source>
+        <target>Intervall der Automatisierung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS" datatype="html">
+        <source>How often autonomous ticket runs are started.</source>
+        <target>Wie oft autonome Ticket-Läufe gestartet werden.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AUTONOMOUS_TICKET_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Automation batch size</source>
+        <target>Stapelgröße der Automatisierung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AUTONOMOUS_TICKET_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Tickets started per automation run.</source>
+        <target>Gestartete Tickets pro Automatisierungslauf.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-TICKET_BODY_SESSION_TTL_MS" datatype="html">
+        <source>Body generation session lifetime (ms)</source>
+        <target>Lebensdauer der Textgenerierung (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-TICKET_BODY_SESSION_TTL_MS" datatype="html">
+        <source>How long a ticket body generation session stays open.</source>
+        <target>Wie lange eine Sitzung zur Generierung des Tickettexts offen bleibt.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AUTO_ENRICH_ENABLED_GLOBAL" datatype="html">
+        <source>Auto-enrichment</source>
+        <target>Automatische Anreicherung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AUTO_ENRICH_ENABLED_GLOBAL" datatype="html">
+        <source>Adds matching knowledge to prompts automatically.</source>
+        <target>Ergänzt Prompts automatisch um passendes Wissen.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AUTO_ENRICH_MAX_SECTIONS" datatype="html">
+        <source>Enrichment sections</source>
+        <target>Abschnitte der Anreicherung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AUTO_ENRICH_MAX_SECTIONS" datatype="html">
+        <source>Maximum knowledge sections added to one prompt.</source>
+        <target>Höchstzahl an Wissensabschnitten pro Prompt.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AUTO_ENRICH_MAX_CHARS" datatype="html">
+        <source>Enrichment size (characters)</source>
+        <target>Umfang der Anreicherung (Zeichen)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AUTO_ENRICH_MAX_CHARS" datatype="html">
+        <source>Maximum characters of added knowledge per prompt.</source>
+        <target>Höchstzahl an Zeichen ergänzten Wissens pro Prompt.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AUTO_ENRICH_VECTOR_ENABLED" datatype="html">
+        <source>Vector search</source>
+        <target>Vektorsuche</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AUTO_ENRICH_VECTOR_ENABLED" datatype="html">
+        <source>Uses semantic search to find matching knowledge.</source>
+        <target>Nutzt semantische Suche, um passendes Wissen zu finden.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AUTO_ENRICH_VECTOR_TOP_K" datatype="html">
+        <source>Vector candidates</source>
+        <target>Kandidaten der Vektorsuche</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AUTO_ENRICH_VECTOR_TOP_K" datatype="html">
+        <source>Candidates read from the vector search.</source>
+        <target>Aus der Vektorsuche gelesene Kandidaten.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE" datatype="html">
+        <source>Maximum cosine distance</source>
+        <target>Maximale Kosinusdistanz</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE" datatype="html">
+        <source>Vector matches further away (0 to 2) are ignored.</source>
+        <target>Weiter entfernte Vektortreffer (0 bis 2) werden ignoriert.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS" datatype="html">
+        <source>Embedding reindex interval</source>
+        <target>Intervall der Embedding-Indizierung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS" datatype="html">
+        <source>How often knowledge embeddings are rebuilt.</source>
+        <target>Wie oft die Embeddings des Wissens neu berechnet werden.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-KNOWLEDGE_EMBEDDINGS_PAGE_BATCH_SIZE" datatype="html">
+        <source>Embedding batch size</source>
+        <target>Stapelgröße der Embeddings</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-KNOWLEDGE_EMBEDDINGS_PAGE_BATCH_SIZE" datatype="html">
+        <source>Pages embedded per batch.</source>
+        <target>Seiten pro Embedding-Stapel.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-CONTEXT_IMPORT_SCHEDULER_INTERVAL_MS" datatype="html">
+        <source>Import interval</source>
+        <target>Importintervall</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-CONTEXT_IMPORT_SCHEDULER_INTERVAL_MS" datatype="html">
+        <source>How often enabled import configurations run (0 disables).</source>
+        <target>Wie oft aktive Importkonfigurationen laufen (0 deaktiviert).</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-CONTEXT_IMPORT_SCHEDULER_CONFIG_BATCH" datatype="html">
+        <source>Configurations per run</source>
+        <target>Konfigurationen pro Lauf</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-CONTEXT_IMPORT_SCHEDULER_CONFIG_BATCH" datatype="html">
+        <source>Import configurations processed per scheduler run.</source>
+        <target>Verarbeitete Importkonfigurationen pro Scheduler-Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-CONTEXT_IMPORT_ITEM_BUDGET" datatype="html">
+        <source>Items per run</source>
+        <target>Elemente pro Lauf</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-CONTEXT_IMPORT_ITEM_BUDGET" datatype="html">
+        <source>Soft limit of imported items per configuration and run.</source>
+        <target>Weiche Grenze importierter Elemente pro Konfiguration und Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-ATLASSIAN_IMPORT_DISABLED" datatype="html">
+        <source>Pause Atlassian import</source>
+        <target>Atlassian-Import pausieren</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-ATLASSIAN_IMPORT_DISABLED" datatype="html">
+        <source>Skips Atlassian import runs; connections stay manageable.</source>
+        <target>Überspringt Atlassian-Importläufe; Verbindungen bleiben verwaltbar.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-DEPLOYMENT_RUN_POLL_INTERVAL_MS" datatype="html">
+        <source>Run refresh interval</source>
+        <target>Aktualisierungsintervall der Läufe</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-DEPLOYMENT_RUN_POLL_INTERVAL_MS" datatype="html">
+        <source>How often active runs are refreshed from the provider (0 disables).</source>
+        <target>Wie oft aktive Läufe beim Anbieter aktualisiert werden (0 deaktiviert).</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-DEPLOYMENT_RUN_POLL_BATCH" datatype="html">
+        <source>Runs per refresh</source>
+        <target>Läufe pro Aktualisierung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-DEPLOYMENT_RUN_POLL_BATCH" datatype="html">
+        <source>Active runs refreshed per poll.</source>
+        <target>Aktualisierte aktive Läufe pro Abfrage.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-DEPLOYMENT_HISTORY_SYNC_INTERVAL_MS" datatype="html">
+        <source>History import interval</source>
+        <target>Intervall des Verlaufsimports</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-DEPLOYMENT_HISTORY_SYNC_INTERVAL_MS" datatype="html">
+        <source>How often runs started on the provider are imported (0 disables).</source>
+        <target>Wie oft beim Anbieter gestartete Läufe importiert werden (0 deaktiviert).</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-DEPLOYMENT_REALTIME_RELAY_INTERVAL_MS" datatype="html">
+        <source>Live update interval (ms)</source>
+        <target>Intervall der Live-Updates (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-DEPLOYMENT_REALTIME_RELAY_INTERVAL_MS" datatype="html">
+        <source>How often run changes are pushed to the console (0 disables).</source>
+        <target>Wie oft Änderungen an Läufen an die Konsole gesendet werden (0 deaktiviert).</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-OPENCODE_PROVIDERS_MODELS_DEV_URL" datatype="html">
+        <source>Model catalog URL</source>
+        <target>URL des Modellkatalogs</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-OPENCODE_PROVIDERS_MODELS_DEV_URL" datatype="html">
+        <source>HTTPS source of the provider and model catalog.</source>
+        <target>HTTPS-Quelle des Anbieter- und Modellkatalogs.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-OPENCODE_MCP_REGISTRY_BASE_URL" datatype="html">
+        <source>MCP registry URL</source>
+        <target>URL der MCP-Registry</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-OPENCODE_MCP_REGISTRY_BASE_URL" datatype="html">
+        <source>HTTPS base URL of the MCP server registry.</source>
+        <target>HTTPS-Basis-URL der MCP-Server-Registry.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-OPENCODE_PROVIDERS_REFRESH_INTERVAL_MS" datatype="html">
+        <source>Model catalog refresh</source>
+        <target>Aktualisierung des Modellkatalogs</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-OPENCODE_PROVIDERS_REFRESH_INTERVAL_MS" datatype="html">
+        <source>How often the model catalog is refreshed.</source>
+        <target>Wie oft der Modellkatalog aktualisiert wird.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-OPENCODE_MCP_SERVERS_REFRESH_INTERVAL_MS" datatype="html">
+        <source>MCP registry refresh</source>
+        <target>Aktualisierung der MCP-Registry</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-OPENCODE_MCP_SERVERS_REFRESH_INTERVAL_MS" datatype="html">
+        <source>How often the MCP server registry is refreshed.</source>
+        <target>Wie oft die MCP-Server-Registry aktualisiert wird.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-OPENCODE_CONFIG_SYNC_INTERVAL_MS" datatype="html">
+        <source>Configuration sync interval</source>
+        <target>Intervall der Konfigurationssynchronisierung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-OPENCODE_CONFIG_SYNC_INTERVAL_MS" datatype="html">
+        <source>How often agent configurations are synced to workspaces.</source>
+        <target>Wie oft Agentenkonfigurationen mit den Workspaces synchronisiert werden.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-OPENCODE_CONFIG_SYNC_BATCH_SIZE" datatype="html">
+        <source>Configuration sync batch size</source>
+        <target>Stapelgröße der Konfigurationssynchronisierung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-OPENCODE_CONFIG_SYNC_BATCH_SIZE" datatype="html">
+        <source>Workspaces synced per run.</source>
+        <target>Synchronisierte Workspaces pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-OPENCODE_LAYER_FILES_SYNC_INTERVAL_MS" datatype="html">
+        <source>Layer file sync interval</source>
+        <target>Intervall der Dateisynchronisierung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-OPENCODE_LAYER_FILES_SYNC_INTERVAL_MS" datatype="html">
+        <source>How often layer files are synced to workspaces.</source>
+        <target>Wie oft Ebenendateien mit den Workspaces synchronisiert werden.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-OPENCODE_LAYER_FILES_SYNC_BATCH_SIZE" datatype="html">
+        <source>Layer file sync batch size</source>
+        <target>Stapelgröße der Dateisynchronisierung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-OPENCODE_LAYER_FILES_SYNC_BATCH_SIZE" datatype="html">
+        <source>Workspaces synced per run.</source>
+        <target>Synchronisierte Workspaces pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-STATUS_POLL_INTERVAL_MS" datatype="html">
+        <source>Status poll interval (ms)</source>
+        <target>Statusabfrage-Intervall (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-STATUS_POLL_INTERVAL_MS" datatype="html">
+        <source>How often workspace status is pushed to the console.</source>
+        <target>Wie oft der Workspace-Status an die Konsole gesendet wird.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-STATUS_PROVISIONING_POLL_INTERVAL_MS" datatype="html">
+        <source>Provisioning poll interval (ms)</source>
+        <target>Abfrageintervall bei Bereitstellung (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-STATUS_PROVISIONING_POLL_INTERVAL_MS" datatype="html">
+        <source>Fast status interval while environments are created or updated.</source>
+        <target>Schnelles Statusintervall, während Umgebungen erstellt oder aktualisiert werden.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-STATUS_VCS_CONCURRENCY" datatype="html">
+        <source>Parallel Git status requests</source>
+        <target>Parallele Git-Statusabfragen</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-STATUS_VCS_CONCURRENCY" datatype="html">
+        <source>Git status requests per status refresh.</source>
+        <target>Git-Statusabfragen pro Statusaktualisierung.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-REQUEST_TIMEOUT" datatype="html">
+        <source>Workspace request timeout (ms)</source>
+        <target>Zeitlimit für Workspace-Anfragen (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-REQUEST_TIMEOUT" datatype="html">
+        <source>Timeout of proxied requests to agent managers.</source>
+        <target>Zeitlimit weitergeleiteter Anfragen an Agent-Manager.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-CLIENT_PING_TIMEOUT_MS" datatype="html">
+        <source>Workspace ping timeout (ms)</source>
+        <target>Zeitlimit für Workspace-Pings (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-CLIENT_PING_TIMEOUT_MS" datatype="html">
+        <source>Timeout of workspace reachability checks.</source>
+        <target>Zeitlimit der Erreichbarkeitsprüfung von Workspaces.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-SOCKET_RECONNECTION_ATTEMPTS" datatype="html">
+        <source>Socket reconnection attempts</source>
+        <target>Wiederverbindungsversuche</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-SOCKET_RECONNECTION_ATTEMPTS" datatype="html">
+        <source>Reconnection attempts of manager sockets.</source>
+        <target>Wiederverbindungsversuche der Manager-Sockets.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-HETZNER_API_TOKEN" datatype="html">
+        <source>Hetzner API token</source>
+        <target>Hetzner-API-Token</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-HETZNER_API_TOKEN" datatype="html">
+        <source>Default Hetzner Cloud token for server provisioning.</source>
+        <target>Standard-Token für Hetzner Cloud bei der Serverbereitstellung.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-DIGITALOCEAN_API_TOKEN" datatype="html">
+        <source>DigitalOcean API token</source>
+        <target>DigitalOcean-API-Token</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-DIGITALOCEAN_API_TOKEN" datatype="html">
+        <source>Default DigitalOcean token for server provisioning.</source>
+        <target>Standard-Token für DigitalOcean bei der Serverbereitstellung.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-EGRESS_EVENTS_INGEST_INTERVAL_MS" datatype="html">
+        <source>Egress event ingest interval</source>
+        <target>Intervall des Egress-Ereignisimports</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-EGRESS_EVENTS_INGEST_INTERVAL_MS" datatype="html">
+        <source>How often egress guard events are pulled (0 disables).</source>
+        <target>Wie oft Ereignisse des Egress-Guards abgerufen werden (0 deaktiviert).</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-EGRESS_EVENTS_INGEST_BATCH_SIZE" datatype="html">
+        <source>Egress event batch size</source>
+        <target>Stapelgröße des Egress-Ereignisimports</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-EGRESS_EVENTS_INGEST_BATCH_SIZE" datatype="html">
+        <source>Workspaces polled per run.</source>
+        <target>Abgefragte Workspaces pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-ISOLATION_CAPABILITIES_INTERVAL_MS" datatype="html">
+        <source>Isolation check interval</source>
+        <target>Intervall der Isolationsprüfung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-ISOLATION_CAPABILITIES_INTERVAL_MS" datatype="html">
+        <source>How often isolation capabilities of hosts are refreshed.</source>
+        <target>Wie oft die Isolationsfähigkeiten der Hosts aktualisiert werden.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-ISOLATION_CAPABILITIES_BATCH_SIZE" datatype="html">
+        <source>Isolation check batch size</source>
+        <target>Stapelgröße der Isolationsprüfung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-ISOLATION_CAPABILITIES_BATCH_SIZE" datatype="html">
+        <source>Workspaces refreshed per run.</source>
+        <target>Aktualisierte Workspaces pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-SEARCH_REINDEX_INTERVAL" datatype="html">
+        <source>Search reindex interval</source>
+        <target>Intervall der Suchindizierung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-SEARCH_REINDEX_INTERVAL" datatype="html">
+        <source>Interval of the periodic search index rebuild (e.g. 15m).</source>
+        <target>Intervall der periodischen Neuindizierung der Suche (z. B. 15m).</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-SEARCH_REINDEX_BATCH_SIZE" datatype="html">
+        <source>Search reindex batch size</source>
+        <target>Stapelgröße der Suchindizierung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-SEARCH_REINDEX_BATCH_SIZE" datatype="html">
+        <source>Documents indexed per batch.</source>
+        <target>Indizierte Dokumente pro Stapel.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-UPDATE_CHECK_CRON" datatype="html">
+        <source>Update check schedule</source>
+        <target>Zeitplan der Update-Prüfung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-UPDATE_CHECK_CRON" datatype="html">
+        <source>Cron expression of the release check.</source>
+        <target>Cron-Ausdruck der Release-Prüfung.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-UPDATE_CHECK_TIMEZONE" datatype="html">
+        <source>Update check time zone</source>
+        <target>Zeitzone der Update-Prüfung</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-UPDATE_CHECK_TIMEZONE" datatype="html">
+        <source>Time zone of the update check schedule.</source>
+        <target>Zeitzone des Zeitplans der Update-Prüfung.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENT_GRAPH_SNAPSHOT_STARTUP_REBUILD" datatype="html">
+        <source>Rebuild graph on startup</source>
+        <target>Graph beim Start neu aufbauen</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENT_GRAPH_SNAPSHOT_STARTUP_REBUILD" datatype="html">
+        <source>Rebuilds the workspace graph snapshot after startup.</source>
+        <target>Baut den Workspace-Graph nach dem Start neu auf.</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-title-AGENT_GRAPH_SNAPSHOT_STARTUP_DELAY_MS" datatype="html">
+        <source>Graph rebuild delay (ms)</source>
+        <target>Verzögerung des Graphaufbaus (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureControllerSettings-description-AGENT_GRAPH_SNAPSHOT_STARTUP_DELAY_MS" datatype="html">
+        <source>Delay before the startup rebuild.</source>
+        <target>Verzögerung vor dem Neuaufbau beim Start.</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-pageTitle" datatype="html">
+        <source>Settings</source>
+        <target>Einstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-levelSwitchTitle" datatype="html">
+        <source>Choose what to configure</source>
+        <target>Auswählen, was konfiguriert wird</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-searchPlaceholder" datatype="html">
+        <source>Search settings</source>
+        <target>Einstellungen durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-reload" datatype="html">
+        <source>Reload</source>
+        <target>Neu laden</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-emptyMessage" datatype="html">
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-categories" datatype="html">
+        <source>Setting categories</source>
+        <target>Kategorien der Einstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-restartRequiredTitle" datatype="html">
+        <source>Applies after the backend restarts</source>
+        <target>Gilt nach dem Neustart des Backends</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-restartRequired" datatype="html">
+        <source>Restart required</source>
+        <target>Neustart erforderlich</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-optionNotSet" datatype="html">
+        <source>(not set)</source>
+        <target>(nicht gesetzt)</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-optionTrue" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-optionFalse" datatype="html">
+        <source>Disabled</source>
+        <target>Deaktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-discard" datatype="html">
+        <source>Discard</source>
+        <target>Verwerfen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-resetTitle" datatype="html">
+        <source>Remove the override so the default applies again</source>
+        <target>Überschreibung entfernen, damit wieder der Standard gilt</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-reset" datatype="html">
+        <source>Reset to default</source>
+        <target>Auf Standard zurücksetzen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-levelSwitchHint" datatype="html">
+        <source> A tenant value applies to that tenant only. The value for all tenants applies to every tenant without its own value. Without either, the environment variable applies. </source>
+        <target> Ein Mandantenwert gilt nur für diesen Mandanten. Der Wert für alle Mandanten gilt für jeden Mandanten ohne eigenen Wert. Ist keiner gesetzt, gilt die Umgebungsvariable. </target>
+      </trans-unit>
+      <trans-unit id="featureSettings-title" datatype="html">
+        <source>Settings</source>
+        <target>Einstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-levelAllTenants" datatype="html">
+        <source>All tenants</source>
+        <target>Alle Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-levelAllTenantsDescription" datatype="html">
+        <source>Applies to every tenant without its own value</source>
+        <target>Gilt für jeden Mandanten ohne eigenen Wert</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-levelOwnTenant" datatype="html">
+        <source>Your tenant</source>
+        <target>Ihr Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-levelTenant" datatype="html">
+        <source>Tenant</source>
+        <target>Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-sourceTenant" datatype="html">
+        <source>Tenant</source>
+        <target>Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-sourceGlobal" datatype="html">
+        <source>All tenants</source>
+        <target>Alle Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-sourceEnvironment" datatype="html">
+        <source>Environment</source>
+        <target>Umgebung</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-sourceDefault" datatype="html">
+        <source>Default</source>
+        <target>Standard</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-sourceOverride" datatype="html">
+        <source>Override</source>
+        <target>Überschrieben</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-inheritedSecretConfigured" datatype="html">
+        <source>Default (<x id="source" equiv-text="source"/>): configured</source>
+        <target>Standard (<x id="source" equiv-text="source"/>): konfiguriert</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-inheritedSecretUnset" datatype="html">
+        <source>Default (<x id="source" equiv-text="source"/>): not set</source>
+        <target>Standard (<x id="source" equiv-text="source"/>): nicht gesetzt</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-inheritedValue" datatype="html">
+        <source>Default (<x id="source" equiv-text="source"/>): <x id="value" equiv-text="setting.inheritedValue"/></source>
+        <target>Standard (<x id="source" equiv-text="source"/>): <x id="value" equiv-text="setting.inheritedValue"/></target>
+      </trans-unit>
+      <trans-unit id="featureSettings-inheritedBuiltIn" datatype="html">
+        <source>Default: <x id="value" equiv-text="setting.defaultValue"/></source>
+        <target>Standard: <x id="value" equiv-text="setting.defaultValue"/></target>
+      </trans-unit>
+      <trans-unit id="featureSettings-inheritedUnset" datatype="html">
+        <source>Default: not set</source>
+        <target>Standard: nicht gesetzt</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-optionNone" datatype="html">
+        <source>(none)</source>
+        <target>(keine)</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-secretReplace" datatype="html">
+        <source>Configured. Enter a new value to replace it</source>
+        <target>Konfiguriert. Neuen Wert eingeben, um ihn zu ersetzen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-secretEnter" datatype="html">
+        <source>Enter a value to override</source>
+        <target>Wert eingeben, um zu überschreiben</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

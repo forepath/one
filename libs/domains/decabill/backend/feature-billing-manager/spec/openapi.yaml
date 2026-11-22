@@ -6945,6 +6945,109 @@ paths:
           description: Unauthorized
         '403':
           description: Admin access required
+  /admin/billing/settings:
+    get:
+      tags: [Admin Billing]
+      summary: Overridable settings with their effective sources (admin only)
+      description: 'Resolution: tenant override, then the override for all tenants, then the environment variable.'
+      operationId: listBillingSettings
+      security:
+        - bearerAuth: [billing:admin]
+      parameters:
+        - name: level
+          in: query
+          required: false
+          schema: { type: string, enum: [global, tenant] }
+          description: '`global` (all tenants) is allowed for tenants in `TENANTS_ALLOW_GLOBAL_VIEWS` only; default `global` for them, else `tenant`'
+        - name: viewTenantId
+          in: query
+          required: false
+          schema: { type: string, maxLength: 64 }
+          description: Tenant to configure; other tenants only for tenants in `TENANTS_ALLOW_GLOBAL_VIEWS`
+      responses:
+        '200':
+          description: Settings of the requested level
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsOverviewResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required or level / tenant not allowed
+  /admin/billing/settings/{settingKey}:
+    put:
+      tags: [Admin Billing]
+      summary: Override one setting (value encrypted at rest)
+      operationId: upsertBillingSetting
+      security:
+        - bearerAuth: [billing:admin]
+      parameters:
+        - name: settingKey
+          in: path
+          required: true
+          schema: { type: string }
+        - name: level
+          in: query
+          required: false
+          schema: { type: string, enum: [global, tenant] }
+          description: '`global` (all tenants) is allowed for tenants in `TENANTS_ALLOW_GLOBAL_VIEWS` only; default `global` for them, else `tenant`'
+        - name: viewTenantId
+          in: query
+          required: false
+          schema: { type: string, maxLength: 64 }
+          description: Tenant to configure; other tenants only for tenants in `TENANTS_ALLOW_GLOBAL_VIEWS`
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertSettingRequest'
+      responses:
+        '200':
+          description: Updated setting
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingStateView'
+        '400':
+          description: Invalid value or setting not overridable per tenant
+        '403':
+          description: Admin access required or level / tenant not allowed
+        '404':
+          description: Unknown setting or tenant
+    delete:
+      tags: [Admin Billing]
+      summary: Reset one setting to its default (removes the override)
+      operationId: resetBillingSetting
+      security:
+        - bearerAuth: [billing:admin]
+      parameters:
+        - name: settingKey
+          in: path
+          required: true
+          schema: { type: string }
+        - name: level
+          in: query
+          required: false
+          schema: { type: string, enum: [global, tenant] }
+          description: '`global` (all tenants) is allowed for tenants in `TENANTS_ALLOW_GLOBAL_VIEWS` only; default `global` for them, else `tenant`'
+        - name: viewTenantId
+          in: query
+          required: false
+          schema: { type: string, maxLength: 64 }
+          description: Tenant to configure; other tenants only for tenants in `TENANTS_ALLOW_GLOBAL_VIEWS`
+      responses:
+        '200':
+          description: Setting after the reset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingStateView'
+        '403':
+          description: Admin access required or level / tenant not allowed
+        '404':
+          description: Unknown setting or tenant
   /admin/billing/tax/preview:
     post:
       tags: [Admin Billing]
@@ -11668,6 +11771,111 @@ components:
         format: uuid
       description: Accounting resource ID
   schemas:
+    SettingStateView:
+      type: object
+      description: One overridable setting (environment variable) as seen from a level. Values of `secret` settings are never returned.
+      required:
+        [
+          key,
+          category,
+          type,
+          scope,
+          sensitive,
+          restartRequired,
+          value,
+          hasOverride,
+          inheritedValue,
+          hasInheritedValue,
+          inheritedSource,
+          effectiveSource,
+        ]
+      properties:
+        key:
+          {
+            type: string,
+            description: Environment variable name,
+            example: SMTP_HOST,
+          }
+        category: { type: string, example: email }
+        type:
+          type: string
+          enum:
+            [
+              string,
+              text,
+              secret,
+              boolean,
+              integer,
+              number,
+              enum,
+              url,
+              email,
+              cron,
+              timezone,
+              duration,
+              list,
+            ]
+        scope:
+          type: string
+          enum: [global, tenant]
+          description: '`tenant` settings can also be overridden per tenant'
+        sensitive: { type: boolean }
+        restartRequired:
+          {
+            type: boolean,
+            description: Read at startup; overrides apply after a restart,
+          }
+        options: { type: array, items: { type: string } }
+        min: { type: number }
+        max: { type: number }
+        defaultValue:
+          { type: string, description: Built-in fallback when nothing is set }
+        value:
+          {
+            type: string,
+            nullable: true,
+            description: Override stored at the viewed level (null for secrets),
+          }
+        hasOverride: { type: boolean }
+        inheritedValue:
+          {
+            type: string,
+            nullable: true,
+            description: Value applying after a reset (null for secrets),
+          }
+        hasInheritedValue: { type: boolean }
+        inheritedSource: { type: string, enum: [global, environment, default] }
+        effectiveSource:
+          { type: string, enum: [tenant, global, environment, default] }
+    SettingsOverviewResponse:
+      type: object
+      required:
+        [
+          level,
+          tenantId,
+          homeTenantId,
+          canManageGlobal,
+          viewableTenants,
+          categories,
+          settings,
+        ]
+      properties:
+        level: { type: string, enum: [global, tenant] }
+        tenantId: { type: string, nullable: true }
+        homeTenantId: { type: string, nullable: true }
+        canManageGlobal: { type: boolean }
+        viewableTenants: { type: array, items: { type: string } }
+        categories: { type: array, items: { type: string } }
+        settings:
+          {
+            type: array,
+            items: { $ref: '#/components/schemas/SettingStateView' },
+          }
+    UpsertSettingRequest:
+      type: object
+      required: [value]
+      properties:
+        value: { type: string, maxLength: 65536 }
     AppTokenRequestDto:
       type: object
       required: [grant_type, app_id, app_secret]

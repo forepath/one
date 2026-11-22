@@ -1,3 +1,4 @@
+import { createSettingsScopedCache } from '@forepath/shared/backend/util-settings-overrides';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
 import { PAYMENT_DUE_DAYS_FALLBACK, PAYMENT_DUE_DAYS_MAX } from '../constants/document-terms.constants';
@@ -7,27 +8,29 @@ import { normalizeDeliveryTermsInput, resolveDocumentTerms } from '../utils/docu
 /**
  * Global default payment / delivery terms (`BILLING_DEFAULT_PAYMENT_DUE_DAYS`, `BILLING_DEFAULT_DELIVERY_TERMS_*`).
  * Service plans and individual documents (offers, manual invoices) override them; the resolved terms are frozen onto
- * each document when it is issued / archived.
+ * each document when it is issued / archived. Console overrides apply per tenant (tenant context).
  */
 @Injectable()
 export class BillingDocumentTermsConfigService implements OnModuleInit {
   private readonly logger = new Logger(BillingDocumentTermsConfigService.name);
-  private defaults: ResolvedDocumentTerms = { paymentDueDays: PAYMENT_DUE_DAYS_FALLBACK, deliveryTerms: null };
+  private readonly defaults = createSettingsScopedCache<ResolvedDocumentTerms>(() => ({
+    paymentDueDays: this.readPaymentDueDays(),
+    deliveryTerms: this.readDeliveryTerms(),
+  }));
 
+  /** Re-reads the configuration (also used by tests after changing the environment). */
   onModuleInit(): void {
-    this.defaults = {
-      paymentDueDays: this.readPaymentDueDays(),
-      deliveryTerms: this.readDeliveryTerms(),
-    };
+    this.defaults.clear();
+    this.defaults.get();
   }
 
   getDefaults(): ResolvedDocumentTerms {
-    return this.defaults;
+    return this.defaults.get();
   }
 
   /** First layer that sets a value wins (per facet); the global default fills the rest. */
   resolve(...layers: Array<DocumentTermsLayer | null | undefined>): ResolvedDocumentTerms {
-    return resolveDocumentTerms(layers, this.defaults);
+    return resolveDocumentTerms(layers, this.defaults.get());
   }
 
   private readPaymentDueDays(): number {

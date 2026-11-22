@@ -1,4 +1,9 @@
 import { DEFAULT_TENANT, areTenantsNumbersShared, envCronOrDefault } from '@forepath/shared/backend';
+import {
+  GLOBAL_SETTINGS_SCOPE,
+  getTenantSettingOverride,
+  resolveSettingValue,
+} from '@forepath/shared/backend/util-settings-overrides';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
 import { parseBooleanEnv } from '../utils/datev-format.util';
@@ -74,6 +79,8 @@ interface DatevTenantConfigOverrides {
 export class DatevExportConfigService implements OnModuleInit {
   private readonly logger = new Logger(DatevExportConfigService.name);
   private tenantOverrides: Record<string, DatevTenantConfigOverrides> = {};
+  /** Set while resolving synchronously for the consolidated export (see `resolveForTenant`). */
+  private consolidatedResolution = false;
 
   constructor(private readonly tenantsGlobalViewsConfig: TenantsGlobalViewsConfigService) {}
 
@@ -106,7 +113,23 @@ export class DatevExportConfigService implements OnModuleInit {
     return envCronOrDefault('BILLING_DATEV_EXPORT_CRON', '0 0 1 * *');
   }
 
-  resolveForTenant(tenantId: string): DatevTenantExportConfig | null {
+  /**
+   * `consolidated`: resolution for the operator's consolidated (unified) export. Tenant console overrides are ignored
+   * there, so a tenant cannot steer accounts / keys in the operator's books; `BILLING_DATEV_TENANT_CONFIG` still applies.
+   */
+  resolveForTenant(tenantId: string, options?: { consolidated?: boolean }): DatevTenantExportConfig | null {
+    const previous = this.consolidatedResolution;
+
+    this.consolidatedResolution = options?.consolidated === true;
+
+    try {
+      return this.resolveForTenantInternal(tenantId);
+    } finally {
+      this.consolidatedResolution = previous;
+    }
+  }
+
+  private resolveForTenantInternal(tenantId: string): DatevTenantExportConfig | null {
     if (!this.isEnabled()) {
       return null;
     }
@@ -247,9 +270,28 @@ export class DatevExportConfigService implements OnModuleInit {
     return this.resolveForTenant('unified');
   }
 
+  /**
+   * Tenant whose console overrides apply. The consolidated export uses the values for all tenants only, so neither a
+   * tenant's overrides nor a tenant that happens to be called `unified` can steer it.
+   */
+  private settingsTenant(tenantId: string): string {
+    return this.consolidatedResolution || tenantId === 'unified' ? GLOBAL_SETTINGS_SCOPE : tenantId;
+  }
+
   private resolveChartOfAccounts(tenantId: string): 'SKR03' | 'SKR04' {
+    const stored = getTenantSettingOverride(
+      'BILLING_DATEV_CHART_OF_ACCOUNTS',
+      this.settingsTenant(tenantId),
+    )?.toUpperCase();
+
+    if (stored === 'SKR03' || stored === 'SKR04') {
+      return stored;
+    }
+
     const override = this.tenantOverrides[tenantId]?.chartOfAccounts;
-    const global = (process.env.BILLING_DATEV_CHART_OF_ACCOUNTS ?? 'SKR03').toUpperCase();
+    const global = (
+      resolveSettingValue('BILLING_DATEV_CHART_OF_ACCOUNTS', this.settingsTenant(tenantId)) ?? 'SKR03'
+    ).toUpperCase();
 
     if (override) {
       return override;
@@ -264,13 +306,19 @@ export class DatevExportConfigService implements OnModuleInit {
     envKey: string,
     fallback = '',
   ): string {
+    const stored = getTenantSettingOverride(envKey, this.settingsTenant(tenantId));
+
+    if (stored !== undefined) {
+      return stored;
+    }
+
     const override = this.tenantOverrides[tenantId]?.[key];
 
     if (typeof override === 'string') {
       return override;
     }
 
-    return process.env[envKey] ?? fallback;
+    return resolveSettingValue(envKey, this.settingsTenant(tenantId)) ?? fallback;
   }
 
   private resolveNumber(
@@ -279,13 +327,19 @@ export class DatevExportConfigService implements OnModuleInit {
     envKey: string,
     fallback: number,
   ): number {
+    const stored = getTenantSettingOverride(envKey, this.settingsTenant(tenantId));
+
+    if (stored !== undefined && Number.isFinite(Number.parseInt(stored, 10))) {
+      return Number.parseInt(stored, 10);
+    }
+
     const override = this.tenantOverrides[tenantId]?.[key];
 
     if (typeof override === 'number') {
       return override;
     }
 
-    const parsed = parseInt(process.env[envKey] ?? String(fallback), 10);
+    const parsed = parseInt(resolveSettingValue(envKey, this.settingsTenant(tenantId)) ?? String(fallback), 10);
 
     return Number.isFinite(parsed) ? parsed : fallback;
   }
@@ -296,13 +350,29 @@ export class DatevExportConfigService implements OnModuleInit {
     envKey: string,
     fallback: boolean,
   ): boolean {
+    const stored = getTenantSettingOverride(envKey, this.settingsTenant(tenantId));
+
+    if (stored === 'true' || stored === 'false') {
+      return stored === 'true';
+    }
+
     const override = this.tenantOverrides[tenantId]?.[key];
 
     if (typeof override === 'boolean') {
       return override;
     }
 
-    return parseBooleanEnv(envKey, fallback);
+    const raw = resolveSettingValue(envKey, this.settingsTenant(tenantId))?.trim().toLowerCase();
+
+    if (raw === 'true' || raw === '1') {
+      return true;
+    }
+
+    if (raw === 'false' || raw === '0') {
+      return false;
+    }
+
+    return fallback;
   }
 
   private parseTenantConfigJson(raw: string | undefined): Record<string, DatevTenantConfigOverrides> {
