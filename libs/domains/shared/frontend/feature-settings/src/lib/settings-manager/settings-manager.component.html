@@ -1,0 +1,235 @@
+<div class="settings-manager d-flex flex-column">
+  <fpc-page-header [title]="pageTitle">
+    @if (levelOptions().length > 0) {
+      <span fpcPageHeaderContext>
+        <fpc-button
+          variant="outline-secondary"
+          size="sm"
+          ariaHaspopup="dialog"
+          data-testid="settings-level-switch"
+          i18n-title="@@featureSettings-levelSwitchTitle"
+          title="Choose what to configure"
+          (clicked)="levelSwitchOpen.set(true)"
+        >
+          <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>{{ activeLevelLabel() }}
+        </fpc-button>
+      </span>
+    }
+    <fpc-search-field
+      fpcPageHeaderActions
+      class="settings-manager__search"
+      i18n-placeholder="@@featureSettings-searchPlaceholder"
+      placeholder="Search settings"
+      i18n-ariaLabel="@@featureSettings-searchPlaceholder"
+      ariaLabel="Search settings"
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event ?? '')"
+    />
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      iconOnly
+      [loading]="loading()"
+      i18n-title="@@featureSettings-reload"
+      title="Reload"
+      i18n-ariaLabel="@@featureSettings-reload"
+      ariaLabel="Reload"
+      (clicked)="reload()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
+
+  <div class="settings-manager__body">
+    @if (error(); as message) {
+      <fpc-alert variant="danger" [flush]="true">{{ message }}</fpc-alert>
+    }
+
+    @if (loading() && !overview()) {
+      <div class="settings-manager__loading"><fpc-spinner /></div>
+    } @else if (categories().length === 0) {
+      <fpc-empty-state icon="search" i18n-message="@@featureSettings-emptyMessage" message="No search results" />
+    } @else {
+      <fpc-tab-group
+        class="settings-manager__categories"
+        orientation="vertical"
+        i18n-ariaLabel="@@featureSettings-categories"
+        ariaLabel="Setting categories"
+        [activeId]="selectedCategoryId()"
+        (activeIdChange)="activeCategory.set($event)"
+      >
+        @for (category of categories(); track category.id) {
+          <fpc-tab
+            [id]="category.id"
+            [label]="category.label"
+            [icon]="category.icon ?? null"
+            [section]="category.section ?? null"
+            [badge]="search() ? category.settings.length : null"
+          >
+            <h3 class="settings-manager__section-heading">{{ category.label }}</h3>
+            @for (setting of category.settings; track setting.key) {
+              <div
+                class="settings-manager__row"
+                [class.settings-manager__row--dirty]="isDirty(setting)"
+                [attr.data-testid]="'setting-row-' + setting.key"
+              >
+                <div class="settings-manager__copy">
+                  <label class="settings-manager__title" [attr.for]="controlId(setting)">{{ title(setting) }}</label>
+                  <div class="settings-manager__meta">
+                    <code class="settings-manager__key">{{ setting.key }}</code>
+                    <fpc-badge
+                      size="sm"
+                      [pill]="true"
+                      [tone]="sourceTone(setting)"
+                      [attr.data-testid]="'setting-source-' + setting.key"
+                      >{{ effectiveLabel(setting) }}</fpc-badge
+                    >
+                    @if (setting.restartRequired) {
+                      <fpc-badge
+                        size="sm"
+                        [pill]="true"
+                        tone="warning"
+                        icon="arrow-repeat"
+                        i18n-title="@@featureSettings-restartRequiredTitle"
+                        title="Applies after the backend restarts"
+                        i18n="@@featureSettings-restartRequired"
+                        >Restart required</fpc-badge
+                      >
+                    }
+                  </div>
+                  @if (description(setting); as text) {
+                    <div class="settings-manager__description form-text">{{ text }}</div>
+                  }
+                  <div
+                    class="settings-manager__inherited form-text"
+                    [attr.data-testid]="'setting-inherited-' + setting.key"
+                  >
+                    {{ inheritedHint(setting) }}
+                  </div>
+                  @if (settingError(setting); as message) {
+                    <div class="settings-manager__error text-danger small" role="alert">{{ message }}</div>
+                  }
+                </div>
+                <div class="settings-manager__control">
+                  @switch (setting.type) {
+                    @case ('boolean') {
+                      <fpc-form-control
+                        controlType="select"
+                        size="sm"
+                        [controlId]="controlId(setting)"
+                        [ngModel]="draftValue(setting)"
+                        (ngModelChange)="setDraft(setting, $event)"
+                      >
+                        <option value="" i18n="@@featureSettings-optionNotSet">(not set)</option>
+                        <option value="true" i18n="@@featureSettings-optionTrue">Enabled</option>
+                        <option value="false" i18n="@@featureSettings-optionFalse">Disabled</option>
+                      </fpc-form-control>
+                    }
+                    @case ('enum') {
+                      <fpc-form-control
+                        controlType="select"
+                        size="sm"
+                        [controlId]="controlId(setting)"
+                        [ngModel]="draftValue(setting)"
+                        (ngModelChange)="setDraft(setting, $event)"
+                      >
+                        @if (!(setting.options ?? []).includes(draftValue(setting))) {
+                          <option [value]="draftValue(setting)">{{ enumOptionLabel(draftValue(setting)) }}</option>
+                        }
+                        @for (option of setting.options ?? []; track option) {
+                          <option [value]="option">{{ enumOptionLabel(option) }}</option>
+                        }
+                      </fpc-form-control>
+                    }
+                    @case ('text') {
+                      <fpc-form-control
+                        controlType="textarea"
+                        size="sm"
+                        [rows]="4"
+                        [controlId]="controlId(setting)"
+                        [ngModel]="draftValue(setting)"
+                        (ngModelChange)="setDraft(setting, $event)"
+                      />
+                    }
+                    @default {
+                      <fpc-form-control
+                        size="sm"
+                        autocomplete="off"
+                        [controlId]="controlId(setting)"
+                        [inputType]="inputType(setting)"
+                        [min]="isNumeric(setting) ? (setting.min ?? null) : null"
+                        [max]="isNumeric(setting) ? (setting.max ?? null) : null"
+                        [step]="step(setting)"
+                        [placeholder]="setting.sensitive ? secretPlaceholder(setting) : (setting.defaultValue ?? null)"
+                        [ngModel]="draftValue(setting)"
+                        (ngModelChange)="setDraft(setting, $event)"
+                        (keydown.enter)="save(setting)"
+                      />
+                    }
+                  }
+                  <div class="settings-manager__actions">
+                    <fpc-button
+                      variant="primary"
+                      size="sm"
+                      [loading]="isPending(setting)"
+                      [disabled]="!isDirty(setting) || isPending(setting)"
+                      [attr.data-testid]="'setting-save-' + setting.key"
+                      (clicked)="save(setting)"
+                    >
+                      <i class="bi bi-check-lg me-1" aria-hidden="true"></i
+                      ><span i18n="@@featureSettings-save">Save</span>
+                    </fpc-button>
+                    @if (isDirty(setting)) {
+                      <fpc-button variant="outline-secondary" size="sm" (clicked)="discard(setting)">
+                        <span i18n="@@featureSettings-discard">Discard</span>
+                      </fpc-button>
+                    }
+                    <fpc-button
+                      variant="outline-danger"
+                      size="sm"
+                      [disabled]="!setting.hasOverride || isPending(setting)"
+                      i18n-title="@@featureSettings-resetTitle"
+                      title="Remove the override so the default applies again"
+                      [attr.data-testid]="'setting-reset-' + setting.key"
+                      (clicked)="reset(setting)"
+                    >
+                      <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i
+                      ><span i18n="@@featureSettings-reset">Reset to default</span>
+                    </fpc-button>
+                  </div>
+                </div>
+              </div>
+            }
+          </fpc-tab>
+        }
+      </fpc-tab-group>
+    }
+  </div>
+</div>
+
+<fpc-modal
+  [(open)]="levelSwitchOpen"
+  size="md"
+  i18n-title="@@featureSettings-levelSwitchTitle"
+  title="Choose what to configure"
+>
+  <p class="text-body-secondary small" i18n="@@featureSettings-levelSwitchHint">
+    A tenant value applies to that tenant only. The value for all tenants applies to every tenant without its own value.
+    Without either, the environment variable applies.
+  </p>
+  <div class="list-group" data-testid="settings-level-options">
+    @for (option of levelOptions(); track option.id) {
+      <button
+        type="button"
+        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+        [class.active]="option.id === activeLevelId()"
+        [attr.aria-current]="option.id === activeLevelId() ? 'true' : null"
+        [attr.data-testid]="'settings-level-option-' + option.id"
+        (click)="selectLevel(option)"
+      >
+        <span>{{ option.label }}</span>
+        <small [class.text-body-secondary]="option.id !== activeLevelId()">{{ option.description }}</small>
+      </button>
+    }
+  </div>
+</fpc-modal>

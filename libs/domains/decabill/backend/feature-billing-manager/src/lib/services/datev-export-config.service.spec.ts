@@ -1,3 +1,12 @@
+import {
+  GLOBAL_SETTINGS_SCOPE,
+  registerSettingDefinitions,
+  resetSettingsOverridesRegistryForTests,
+  setSettingsOverride,
+} from '@forepath/shared/backend/util-settings-overrides';
+
+import { BILLING_SETTINGS } from '../constants/billing-settings.catalog';
+
 import { DatevExportConfigService } from './datev-export-config.service';
 import { TenantsGlobalViewsConfigService } from './tenants-global-views-config.service';
 
@@ -143,5 +152,70 @@ describe('DatevExportConfigService', () => {
 
     service.onModuleInit();
     expect(service.resolveUnified()?.consultantNumber).toBe('7654321');
+  });
+
+  describe('console overrides', () => {
+    beforeEach(() => {
+      resetSettingsOverridesRegistryForTests();
+      registerSettingDefinitions(BILLING_SETTINGS);
+      process.env.BILLING_DATEV_CONSULTANT_NUMBER = 'env-consultant';
+      process.env.BILLING_DATEV_CLIENT_NUMBER = 'env-client';
+      process.env.BILLING_DATEV_TENANT_CONFIG = JSON.stringify({ acme: { clientNumber: 'json-client' } });
+    });
+
+    afterAll(() => resetSettingsOverridesRegistryForTests());
+
+    it('resolves tenant override, then tenant JSON, then all-tenants override, then environment', () => {
+      const service = createService();
+
+      service.onModuleInit();
+      expect(service.resolveForTenant('acme')).toMatchObject({
+        consultantNumber: 'env-consultant',
+        clientNumber: 'json-client',
+      });
+
+      setSettingsOverride(GLOBAL_SETTINGS_SCOPE, 'BILLING_DATEV_CONSULTANT_NUMBER', 'global-consultant');
+      setSettingsOverride('acme', 'BILLING_DATEV_CLIENT_NUMBER', 'acme-client');
+      setSettingsOverride('acme', 'BILLING_DATEV_CHART_OF_ACCOUNTS', 'SKR04');
+      setSettingsOverride('acme', 'BILLING_DATEV_ACCOUNT_LENGTH', '5');
+      setSettingsOverride('acme', 'BILLING_DATEV_EXPORT_INCLUDE_DOCUMENTS', 'false');
+
+      expect(service.resolveForTenant('acme')).toMatchObject({
+        consultantNumber: 'global-consultant',
+        clientNumber: 'acme-client',
+        chartOfAccounts: 'SKR04',
+        accountLength: 5,
+        includeDocuments: false,
+      });
+      expect(service.resolveForTenant('beta')).toMatchObject({
+        consultantNumber: 'global-consultant',
+        clientNumber: 'env-client',
+        chartOfAccounts: 'SKR03',
+      });
+    });
+
+    it('ignores tenant overrides in the consolidated export but keeps the operator tenant JSON', () => {
+      const service = createService();
+
+      service.onModuleInit();
+      setSettingsOverride('acme', 'BILLING_DATEV_REVENUE_ACCOUNT_STANDARD', '1234');
+      setSettingsOverride('acme', 'BILLING_DATEV_CLIENT_NUMBER', 'acme-client');
+
+      expect(service.resolveForTenant('acme')?.revenueAccountStandard).toBe('1234');
+      expect(service.resolveForTenant('acme', { consolidated: true })).toMatchObject({
+        clientNumber: 'json-client',
+        revenueAccountStandard: '8400',
+      });
+      expect(service.resolveForTenant('acme')?.clientNumber).toBe('acme-client');
+    });
+
+    it('ignores tenant overrides of a tenant called unified for the consolidated export', () => {
+      const service = createService();
+
+      service.onModuleInit();
+      setSettingsOverride('unified', 'BILLING_DATEV_CLIENT_NUMBER', 'hijacked');
+
+      expect(service.resolveForTenant('unified')?.clientNumber).toBe('env-client');
+    });
   });
 });

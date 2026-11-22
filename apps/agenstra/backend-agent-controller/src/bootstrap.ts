@@ -38,6 +38,7 @@ import axios from 'axios';
 import * as express from 'express';
 
 import { AppModule } from './app/app.module';
+import { preloadControllerSettingsOverrides } from './settings-overrides.preload';
 import { typeormConfig } from './typeorm.config';
 
 /**
@@ -74,6 +75,8 @@ export async function bootstrap(): Promise<void> {
   assertProductionEncryptionKeyOrExit(new Logger('EncryptionKey'));
   assertProductionClientEndpointAllowlistConfigured(new Logger('ClientEndpointAllowlist'));
   assertProductionWebhookEscapeHatchesDisabled(new Logger('WebhookSafety'));
+
+  await preloadControllerSettingsOverrides();
 
   const role = getQueueRole();
 

@@ -86,6 +86,9 @@
       "@forepath/shared/frontend/util-meta": [
         "libs/domains/shared/frontend/util-meta/src/index.ts"
       ],
+      "@forepath/shared/backend/util-settings-overrides": [
+        "libs/domains/shared/backend/util-settings-overrides/src/index.ts"
+      ],
       "@forepath/shared/backend/util-http-context": [
         "libs/domains/shared/backend/util-http-context/src/index.ts"
       ],
@@ -207,6 +210,12 @@
       ],
       "@forepath/shared/backend/feature-updates": [
         "libs/domains/shared/backend/feature-updates/src/index.ts"
+      ],
+      "@forepath/shared/frontend/data-access-settings": [
+        "libs/domains/shared/frontend/data-access-settings/src/index.ts"
+      ],
+      "@forepath/shared/frontend/feature-settings": [
+        "libs/domains/shared/frontend/feature-settings/src/index.ts"
       ],
       "@forepath/shared/frontend/data-access-updates": [
         "libs/domains/shared/frontend/data-access-updates/src/index.ts"

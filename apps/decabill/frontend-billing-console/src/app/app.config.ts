@@ -6,6 +6,7 @@ import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/
 import { getAuthInterceptor, getUsersSessionInvalidationInterceptor } from '@forepath/identity/frontend';
 import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideOidc } from '@forepath/identity/frontend';
 import { NOTIFICATION_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-notifications';
+import { SETTINGS_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-settings';
 import { UPDATES_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-updates';
 import {
   provideFpcDataTableLabels,
@@ -102,6 +103,14 @@ export const appConfig: ApplicationConfig = {
         webhooksBasePath: 'admin/billing/webhooks',
         applicationId: 'decabill' as const,
         clientFilterEnabled: false,
+      }),
+      deps: [ENVIRONMENT],
+    },
+    {
+      provide: SETTINGS_ADMIN_ENVIRONMENT,
+      useFactory: (env: Environment) => ({
+        apiUrl: env.billing.urls.restApi,
+        settingsBasePath: 'admin/billing/settings',
       }),
       deps: [ENVIRONMENT],
     },

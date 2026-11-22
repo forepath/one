@@ -369,3 +369,7 @@ export * from './lib/accounting/services/accounting-catch-up.service';
 export * from './lib/accounting/services/accounting-fx.service';
 export * from './lib/accounting/services/accounting-processor-sync.service';
 export * from './lib/constants/e-invoice-format.constants';
+export * from './lib/constants/billing-settings.catalog';
+export * from './lib/entities/billing-settings-override.entity';
+export * from './lib/repositories/billing-settings-overrides.repository';
+export * from './lib/services/billing-settings.service';

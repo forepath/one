@@ -273,6 +273,13 @@ export class AgentConsoleContainerComponent implements OnInit {
       label: $localize`:@@featureContainer-agentConfig:Agent config`,
     },
     {
+      routerLink: ['/system-settings'],
+      activePaths: ['/system-settings'],
+      icon: 'bi-sliders',
+      title: $localize`:@@featureContainer-systemSettingsTitle:Settings`,
+      label: $localize`:@@featureContainer-systemSettings:Settings`,
+    },
+    {
       routerLink: ['/connections'],
       activePaths: ['/connections'],
       icon: 'bi-plug',

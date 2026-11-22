@@ -265,6 +265,11 @@ import {
   createNotificationAdminRoutes,
   notificationAdminProviders,
 } from '@forepath/shared/frontend/feature-notifications';
+import {
+  SETTINGS_ADMIN_LABELS,
+  createSettingsAdminRoutes,
+  settingsAdminProviders,
+} from '@forepath/shared/frontend/feature-settings';
 import { createUpdatesAdminRoutes, updatesAdminProviders } from '@forepath/shared/frontend/feature-updates';
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
@@ -284,6 +289,7 @@ import { ticketsRequireActiveClientGuard } from './guards/tickets-require-active
 import { KnowledgeBoardComponent } from './knowledge/knowledge-board.component';
 import { AgentConfigAdminComponent } from './opencode-config/opencode-config-admin.component';
 import { provideAgenstraNotificationAdminClientProvider } from './providers/notification-admin.providers';
+import { CONTROLLER_SETTINGS_LABELS } from './settings/controller-settings-labels';
 import { TicketsBoardComponent } from './tickets/tickets-board.component';
 
 export const agentConsoleRoutes: Route[] = [
@@ -300,6 +306,7 @@ export const agentConsoleRoutes: Route[] = [
       ...identityAuthRoutes,
       ...createNotificationAdminRoutes([authGuard, adminGuard]),
       ...createUpdatesAdminRoutes([authGuard, adminGuard]),
+      ...createSettingsAdminRoutes([authGuard, adminGuard], 'system-settings'),
       {
         path: 'audit',
         canActivate: [authGuard],
@@ -449,6 +456,8 @@ export const agentConsoleRoutes: Route[] = [
       ...identityAuthProviders,
       ...notificationAdminProviders,
       ...updatesAdminProviders,
+      ...settingsAdminProviders,
+      { provide: SETTINGS_ADMIN_LABELS, useValue: CONTROLLER_SETTINGS_LABELS },
       provideAgenstraNotificationAdminClientProvider(),
       // Facades
       AgentsFacade,

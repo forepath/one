@@ -13822,6 +13822,1462 @@
         <source><x id="status" equiv-text="getOfferStatusLabel(status)"/> (not sent)</source>
         <target><x id="status" equiv-text="getOfferStatusLabel(status)"/> (nicht gesendet)</target>
       </trans-unit>
+      <trans-unit id="featureContainer-adminSettingsTitle" datatype="html">
+        <source>Settings</source>
+        <target>Einstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminSettings" datatype="html">
+        <source>Settings</source>
+        <target>Einstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-section-company" datatype="html">
+        <source>Company</source>
+        <target>Unternehmen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-issuer" datatype="html">
+        <source>Issuer</source>
+        <target>Aussteller</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-documents" datatype="html">
+        <source>Documents</source>
+        <target>Dokumente</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-tax" datatype="html">
+        <source>Tax</source>
+        <target>Steuern</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-withdrawal" datatype="html">
+        <source>Withdrawal</source>
+        <target>Widerruf</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-section-payments" datatype="html">
+        <source>Payments</source>
+        <target>Zahlungen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-payments" datatype="html">
+        <source>Payments</source>
+        <target>Zahlungen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-section-communication" datatype="html">
+        <source>Communication</source>
+        <target>Kommunikation</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-email" datatype="html">
+        <source>Email</source>
+        <target>E-Mail</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-links" datatype="html">
+        <source>Console links</source>
+        <target>Konsolen-Links</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-section-bookkeeping" datatype="html">
+        <source>Bookkeeping</source>
+        <target>Buchhaltung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-datev" datatype="html">
+        <source>DATEV export</source>
+        <target>DATEV-Export</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-accounting" datatype="html">
+        <source>Accounting</source>
+        <target>Buchhaltung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-section-operations" datatype="html">
+        <source>Operations</source>
+        <target>Betrieb</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-price_recalc" datatype="html">
+        <source>Price recalculation</source>
+        <target>Preisneuberechnung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-provisioning" datatype="html">
+        <source>Provisioning</source>
+        <target>Bereitstellung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-files" datatype="html">
+        <source>Files</source>
+        <target>Dateien</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-background_jobs" datatype="html">
+        <source>Background jobs</source>
+        <target>Hintergrundjobs</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ISSUER_NAME" datatype="html">
+        <source>Company name</source>
+        <target>Firmenname</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ISSUER_NAME" datatype="html">
+        <source>Legal name on invoices, offers and the withdrawal address.</source>
+        <target>Rechtlicher Name auf Rechnungen, Angeboten und der Widerrufsadresse.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ISSUER_VAT_ID" datatype="html">
+        <source>VAT ID</source>
+        <target>USt-IdNr.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ISSUER_VAT_ID" datatype="html">
+        <source>VAT identification number of the issuer.</source>
+        <target>Umsatzsteuer-Identifikationsnummer des Ausstellers.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ISSUER_TAX_NUMBER" datatype="html">
+        <source>Tax number</source>
+        <target>Steuernummer</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ISSUER_TAX_NUMBER" datatype="html">
+        <source>National tax number, needed for VAT returns.</source>
+        <target>Nationale Steuernummer, benötigt für Umsatzsteuer-Voranmeldungen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ISSUER_SIREN" datatype="html">
+        <source>SIREN</source>
+        <target>SIREN</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ISSUER_SIREN" datatype="html">
+        <source>French company number (9 digits), needed for FEC.</source>
+        <target>Französische Unternehmensnummer (9 Ziffern), benötigt für FEC.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ISSUER_ADDRESS_LINE1" datatype="html">
+        <source>Address</source>
+        <target>Adresse</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ISSUER_ADDRESS_LINE1" datatype="html">
+        <source>Street and number of the issuer.</source>
+        <target>Straße und Hausnummer des Ausstellers.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ISSUER_POSTAL_CODE" datatype="html">
+        <source>Postal code</source>
+        <target>Postleitzahl</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ISSUER_POSTAL_CODE" datatype="html">
+        <source>Postal code of the issuer.</source>
+        <target>Postleitzahl des Ausstellers.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ISSUER_CITY" datatype="html">
+        <source>City</source>
+        <target>Ort</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ISSUER_CITY" datatype="html">
+        <source>City of the issuer.</source>
+        <target>Ort des Ausstellers.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ISSUER_COUNTRY" datatype="html">
+        <source>Country</source>
+        <target>Land</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ISSUER_COUNTRY" datatype="html">
+        <source>ISO country code (e.g. DE); selects tax rules and the accounting profile.</source>
+        <target>ISO-Ländercode (z. B. DE); bestimmt Steuerregeln und Buchhaltungsprofil.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ISSUER_EMAIL" datatype="html">
+        <source>Email</source>
+        <target>E-Mail</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ISSUER_EMAIL" datatype="html">
+        <source>Contact address on documents.</source>
+        <target>Kontaktadresse auf Dokumenten.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ISSUER_BANK" datatype="html">
+        <source>Bank</source>
+        <target>Bank</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ISSUER_BANK" datatype="html">
+        <source>Bank name for transfers.</source>
+        <target>Name der Bank für Überweisungen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ISSUER_IBAN" datatype="html">
+        <source>IBAN</source>
+        <target>IBAN</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ISSUER_IBAN" datatype="html">
+        <source>Account for transfers.</source>
+        <target>Konto für Überweisungen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ISSUER_BIC" datatype="html">
+        <source>BIC</source>
+        <target>BIC</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ISSUER_BIC" datatype="html">
+        <source>Bank code for transfers.</source>
+        <target>Bankleitcode für Überweisungen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DEFAULT_PAYMENT_DUE_DAYS" datatype="html">
+        <source>Payment terms (days)</source>
+        <target>Zahlungsziel (Tage)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DEFAULT_PAYMENT_DUE_DAYS" datatype="html">
+        <source>Invoices are payable within this many days unless plans or documents set terms.</source>
+        <target>Rechnungen sind innerhalb dieser Tage fällig, sofern Pläne oder Dokumente nichts anderes festlegen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DEFAULT_DELIVERY_TERMS_CODE" datatype="html">
+        <source>Delivery terms</source>
+        <target>Lieferbedingungen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DEFAULT_DELIVERY_TERMS_CODE" datatype="html">
+        <source>Default Incoterms rule or CUSTOM.</source>
+        <target>Standard-Incoterms-Regel oder CUSTOM.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DEFAULT_DELIVERY_TERMS_PLACE" datatype="html">
+        <source>Delivery place</source>
+        <target>Lieferort</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DEFAULT_DELIVERY_TERMS_PLACE" datatype="html">
+        <source>Named place of the Incoterms rule.</source>
+        <target>Benannter Ort der Incoterms-Regel.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DEFAULT_DELIVERY_TERMS_TEXT" datatype="html">
+        <source>Delivery terms text</source>
+        <target>Text der Lieferbedingungen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DEFAULT_DELIVERY_TERMS_TEXT" datatype="html">
+        <source>Free text; required for CUSTOM.</source>
+        <target>Freitext; erforderlich bei CUSTOM.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_EINVOICE_FORMAT" datatype="html">
+        <source>E-invoice format</source>
+        <target>E-Rechnungsformat</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_EINVOICE_FORMAT" datatype="html">
+        <source>Default format; empty derives it from the issuer country.</source>
+        <target>Standardformat; leer leitet es aus dem Land des Ausstellers ab.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DEFAULT_CURRENCY" datatype="html">
+        <source>Currency</source>
+        <target>Währung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DEFAULT_CURRENCY" datatype="html">
+        <source>Currency of new invoices (ISO code).</source>
+        <target>Währung neuer Rechnungen (ISO-Code).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_TAX_RATE_STANDARD" datatype="html">
+        <source>Standard VAT rate (%)</source>
+        <target>Regelsteuersatz (%)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_TAX_RATE_STANDARD" datatype="html">
+        <source>Used when the EU tax table has no entry for the issuer country.</source>
+        <target>Gilt, wenn die EU-Steuertabelle für das Land des Ausstellers keinen Eintrag hat.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_TAX_RATE_REDUCED" datatype="html">
+        <source>Reduced VAT rate (%)</source>
+        <target>Ermäßigter Steuersatz (%)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_TAX_RATE_REDUCED" datatype="html">
+        <source>Used when the EU tax table has no entry for the issuer country.</source>
+        <target>Gilt, wenn die EU-Steuertabelle für das Land des Ausstellers keinen Eintrag hat.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_OSS_REGISTERED" datatype="html">
+        <source>OSS registered</source>
+        <target>OSS-registriert</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_OSS_REGISTERED" datatype="html">
+        <source>Always charges destination-country VAT for EU consumers.</source>
+        <target>Berechnet für EU-Verbraucher stets die Umsatzsteuer des Bestimmungslands.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_OSS_THRESHOLD_EUR" datatype="html">
+        <source>OSS threshold (EUR)</source>
+        <target>OSS-Schwelle (EUR)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_OSS_THRESHOLD_EUR" datatype="html">
+        <source>Cross-border EU B2C net threshold.</source>
+        <target>Nettoschwelle für grenzüberschreitende EU-B2C-Umsätze.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_NON_EU_ISSUER_EU_B2B_CHARGE_VAT" datatype="html">
+        <source>Charge VAT to EU businesses</source>
+        <target>USt an EU-Unternehmen berechnen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_NON_EU_ISSUER_EU_B2B_CHARGE_VAT" datatype="html">
+        <source>Non-EU issuers charge customer-country VAT to EU businesses.</source>
+        <target>Aussteller außerhalb der EU berechnen EU-Unternehmen die Umsatzsteuer des Kundenlands.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS" datatype="html">
+        <source>Withdrawal period (days)</source>
+        <target>Widerrufsfrist (Tage)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS" datatype="html">
+        <source>Days after provisioning during which statutory withdrawal is allowed.</source>
+        <target>Tage nach der Bereitstellung, in denen der gesetzliche Widerruf möglich ist.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-PUBLIC_WITHDRAWAL_CONFIRMATION_TTL_HOURS" datatype="html">
+        <source>Withdrawal code lifetime (hours)</source>
+        <target>Gültigkeit des Widerrufscodes (Stunden)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-PUBLIC_WITHDRAWAL_CONFIRMATION_TTL_HOURS" datatype="html">
+        <source>Hours until a public withdrawal confirmation code expires.</source>
+        <target>Stunden, bis ein öffentlicher Bestätigungscode für den Widerruf abläuft.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DEFAULT_PAYMENT_PROCESSOR" datatype="html">
+        <source>Default payment processor</source>
+        <target>Standard-Zahlungsanbieter</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DEFAULT_PAYMENT_PROCESSOR" datatype="html">
+        <source>Processor used when an invoice names none.</source>
+        <target>Anbieter, wenn eine Rechnung keinen nennt.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT" datatype="html">
+        <source>Minimum payable amount</source>
+        <target>Mindestzahlbetrag</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT" datatype="html">
+        <source>Smaller balances are held until the next billing day.</source>
+        <target>Kleinere Beträge werden bis zum nächsten Abrechnungstag zurückgehalten.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-STRIPE_SECRET_KEY" datatype="html">
+        <source>Stripe secret key</source>
+        <target>Stripe Secret Key</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-STRIPE_SECRET_KEY" datatype="html">
+        <source>Secret API key of the Stripe account.</source>
+        <target>Geheimer API-Schlüssel des Stripe-Kontos.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-STRIPE_WEBHOOK_SECRET" datatype="html">
+        <source>Stripe webhook secret</source>
+        <target>Stripe-Webhook-Secret</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-STRIPE_WEBHOOK_SECRET" datatype="html">
+        <source>Signing secret of the Stripe webhook endpoint.</source>
+        <target>Signaturgeheimnis des Stripe-Webhook-Endpunkts.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-STRIPE_CHECKOUT_SUCCESS_URL" datatype="html">
+        <source>Checkout success URL</source>
+        <target>URL nach erfolgreichem Checkout</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-STRIPE_CHECKOUT_SUCCESS_URL" datatype="html">
+        <source>Redirect after a successful checkout.</source>
+        <target>Weiterleitung nach erfolgreichem Checkout.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-STRIPE_CHECKOUT_CANCEL_URL" datatype="html">
+        <source>Checkout cancel URL</source>
+        <target>URL nach abgebrochenem Checkout</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-STRIPE_CHECKOUT_CANCEL_URL" datatype="html">
+        <source>Redirect after a cancelled checkout.</source>
+        <target>Weiterleitung nach abgebrochenem Checkout.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-STRIPE_CHECKOUT_FRAUD_PROTECTION_ENABLED" datatype="html">
+        <source>Checkout fraud protection</source>
+        <target>Betrugsschutz im Checkout</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-STRIPE_CHECKOUT_FRAUD_PROTECTION_ENABLED" datatype="html">
+        <source>Asks Stripe for fraud checks in checkout.</source>
+        <target>Fordert Betrugsprüfungen von Stripe im Checkout an.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_AUTO_PAYMENT_RETRY_DELAY_1_MS" datatype="html">
+        <source>First retry delay (ms)</source>
+        <target>Verzögerung erster Wiederholung (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_AUTO_PAYMENT_RETRY_DELAY_1_MS" datatype="html">
+        <source>Delay after the first failed automatic payment.</source>
+        <target>Verzögerung nach der ersten fehlgeschlagenen automatischen Zahlung.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_AUTO_PAYMENT_RETRY_DELAY_2_MS" datatype="html">
+        <source>Second retry delay (ms)</source>
+        <target>Verzögerung zweiter Wiederholung (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_AUTO_PAYMENT_RETRY_DELAY_2_MS" datatype="html">
+        <source>Delay after the second failed automatic payment.</source>
+        <target>Verzögerung nach der zweiten fehlgeschlagenen automatischen Zahlung.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_AUTO_PAYMENT_PENDING_SAFETY_DELAY_MS" datatype="html">
+        <source>Pending payment delay (ms)</source>
+        <target>Verzögerung ausstehender Zahlungen (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_AUTO_PAYMENT_PENDING_SAFETY_DELAY_MS" datatype="html">
+        <source>Safety delay for pending or SCA payments.</source>
+        <target>Sicherheitsverzögerung für ausstehende oder SCA-Zahlungen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-SMTP_HOST" datatype="html">
+        <source>SMTP host</source>
+        <target>SMTP-Host</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-SMTP_HOST" datatype="html">
+        <source>Mail server for outgoing email. Empty disables sending.</source>
+        <target>Mailserver für ausgehende E-Mails. Leer deaktiviert den Versand.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-SMTP_PORT" datatype="html">
+        <source>SMTP port</source>
+        <target>SMTP-Port</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-SMTP_PORT" datatype="html">
+        <source>Port 465 uses implicit TLS, other ports STARTTLS when available.</source>
+        <target>Port 465 nutzt implizites TLS, andere Ports STARTTLS, sofern verfügbar.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-SMTP_USER" datatype="html">
+        <source>SMTP user</source>
+        <target>SMTP-Benutzer</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-SMTP_USER" datatype="html">
+        <source>User name for SMTP authentication.</source>
+        <target>Benutzername für die SMTP-Anmeldung.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-SMTP_PASSWORD" datatype="html">
+        <source>SMTP password</source>
+        <target>SMTP-Passwort</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-SMTP_PASSWORD" datatype="html">
+        <source>Password for SMTP authentication.</source>
+        <target>Passwort für die SMTP-Anmeldung.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-EMAIL_FROM" datatype="html">
+        <source>Sender address</source>
+        <target>Absenderadresse</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-EMAIL_FROM" datatype="html">
+        <source>Envelope From of outgoing email.</source>
+        <target>Absender (From) ausgehender E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-EMAIL_COMPANY_NAME" datatype="html">
+        <source>Brand name</source>
+        <target>Markenname</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-EMAIL_COMPANY_NAME" datatype="html">
+        <source>Company name in the email header and footer.</source>
+        <target>Firmenname in Kopf- und Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-EMAIL_COMPANY_ADDRESS_LINE1" datatype="html">
+        <source>Footer address</source>
+        <target>Adresse in der Fußzeile</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-EMAIL_COMPANY_ADDRESS_LINE1" datatype="html">
+        <source>Street and number in the email footer.</source>
+        <target>Straße und Hausnummer in der Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-EMAIL_COMPANY_POSTAL_CODE" datatype="html">
+        <source>Footer postal code</source>
+        <target>Postleitzahl in der Fußzeile</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-EMAIL_COMPANY_POSTAL_CODE" datatype="html">
+        <source>Postal code in the email footer.</source>
+        <target>Postleitzahl in der Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-EMAIL_COMPANY_CITY" datatype="html">
+        <source>Footer city</source>
+        <target>Ort in der Fußzeile</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-EMAIL_COMPANY_CITY" datatype="html">
+        <source>City in the email footer.</source>
+        <target>Ort in der Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-EMAIL_COMPANY_COUNTRY" datatype="html">
+        <source>Footer country</source>
+        <target>Land in der Fußzeile</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-EMAIL_COMPANY_COUNTRY" datatype="html">
+        <source>ISO country code (e.g. DE) in the email footer.</source>
+        <target>ISO-Ländercode (z. B. DE) in der Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-EMAIL_COMPANY_VAT_ID" datatype="html">
+        <source>Footer VAT ID</source>
+        <target>USt-IdNr. in der Fußzeile</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-EMAIL_COMPANY_VAT_ID" datatype="html">
+        <source>VAT ID in the email footer.</source>
+        <target>USt-IdNr. in der Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-EMAIL_COMPANY_EMAIL" datatype="html">
+        <source>Footer contact email</source>
+        <target>Kontakt-E-Mail in der Fußzeile</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-EMAIL_COMPANY_EMAIL" datatype="html">
+        <source>Contact address in the email footer.</source>
+        <target>Kontaktadresse in der Fußzeile der E-Mails.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_FRONTEND_URL" datatype="html">
+        <source>Console URL</source>
+        <target>Konsolen-URL</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_FRONTEND_URL" datatype="html">
+        <source>Billing console URL of the default tenant (redirects and links).</source>
+        <target>URL der Abrechnungskonsole des Standardmandanten (Weiterleitungen und Links).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-TENANT_FRONTEND_URLS" datatype="html">
+        <source>Tenant console URLs</source>
+        <target>Konsolen-URLs der Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-TENANT_FRONTEND_URLS" datatype="html">
+        <source>Comma-separated tenant=https://… pairs.</source>
+        <target>Kommagetrennte Paare der Form mandant=https://….</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_EXPORT_ENABLED" datatype="html">
+        <source>DATEV export</source>
+        <target>DATEV-Export</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_EXPORT_ENABLED" datatype="html">
+        <source>Enables monthly DATEV exports.</source>
+        <target>Aktiviert monatliche DATEV-Exporte.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_EXPORT_CRON" datatype="html">
+        <source>Export schedule</source>
+        <target>Exportzeitplan</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_EXPORT_CRON" datatype="html">
+        <source>Cron expression of the monthly export.</source>
+        <target>Cron-Ausdruck des monatlichen Exports.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_EXPORT_TIMEZONE" datatype="html">
+        <source>Export time zone</source>
+        <target>Zeitzone des Exports</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_EXPORT_TIMEZONE" datatype="html">
+        <source>Time zone for the schedule and the export period.</source>
+        <target>Zeitzone für Zeitplan und Exportzeitraum.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_UNIFIED_EXPORT_ENABLED" datatype="html">
+        <source>Consolidated export</source>
+        <target>Konsolidierter Export</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_UNIFIED_EXPORT_ENABLED" datatype="html">
+        <source>Monthly export across all tenants.</source>
+        <target>Monatlicher Export über alle Mandanten.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_TENANT_CONFIG" datatype="html">
+        <source>Per-tenant JSON configuration</source>
+        <target>JSON-Konfiguration pro Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_TENANT_CONFIG" datatype="html">
+        <source>Legacy JSON map of per-tenant DATEV values; tenant settings here take precedence.</source>
+        <target>Bisherige JSON-Zuordnung von DATEV-Werten pro Mandant; Mandanteneinstellungen hier haben Vorrang.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_CONSULTANT_NUMBER" datatype="html">
+        <source>Consultant number</source>
+        <target>Beraternummer</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_CONSULTANT_NUMBER" datatype="html">
+        <source>DATEV Beraternummer (required for exports).</source>
+        <target>DATEV-Beraternummer (für Exporte erforderlich).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_CLIENT_NUMBER" datatype="html">
+        <source>Client number</source>
+        <target>Mandantennummer</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_CLIENT_NUMBER" datatype="html">
+        <source>DATEV Mandantennummer (required for exports).</source>
+        <target>DATEV-Mandantennummer (für Exporte erforderlich).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_CHART_OF_ACCOUNTS" datatype="html">
+        <source>Chart of accounts</source>
+        <target>Kontenrahmen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_CHART_OF_ACCOUNTS" datatype="html">
+        <source>SKR03 or SKR04.</source>
+        <target>SKR03 oder SKR04.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_ACCOUNT_LENGTH" datatype="html">
+        <source>Account length</source>
+        <target>Sachkontenlänge</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_ACCOUNT_LENGTH" datatype="html">
+        <source>Sachkontenlänge in the export header.</source>
+        <target>Sachkontenlänge im Exportkopf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_FISCAL_YEAR_START_MONTH" datatype="html">
+        <source>Fiscal year start month</source>
+        <target>Beginn des Wirtschaftsjahres</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_FISCAL_YEAR_START_MONTH" datatype="html">
+        <source>First month of the fiscal year (1 to 12).</source>
+        <target>Erster Monat des Wirtschaftsjahres (1 bis 12).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_EXPORT_DICTATION_ABBR" datatype="html">
+        <source>Dictation abbreviation</source>
+        <target>Diktatkürzel</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_EXPORT_DICTATION_ABBR" datatype="html">
+        <source>Diktatkürzel in the export header.</source>
+        <target>Diktatkürzel im Exportkopf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_EXPORT_INCLUDE_DOCUMENTS" datatype="html">
+        <source>Include documents</source>
+        <target>Belege einschließen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_EXPORT_INCLUDE_DOCUMENTS" datatype="html">
+        <source>Adds the PDF bundle and document links.</source>
+        <target>Fügt das PDF-Paket und Beleglinks hinzu.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_EXPORT_INCLUDE_BANK_POSTINGS" datatype="html">
+        <source>Include bank postings</source>
+        <target>Bankbuchungen einschließen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_EXPORT_INCLUDE_BANK_POSTINGS" datatype="html">
+        <source>Adds bookings from bank statement lines.</source>
+        <target>Fügt Buchungen aus Kontoauszugszeilen hinzu.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_REVENUE_ACCOUNT_STANDARD" datatype="html">
+        <source>Revenue account (standard rate)</source>
+        <target>Erlöskonto (Regelsteuersatz)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_REVENUE_ACCOUNT_STANDARD" datatype="html">
+        <source>Empty uses the chart default.</source>
+        <target>Leer nutzt den Standard des Kontenrahmens.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_REVENUE_ACCOUNT_REDUCED" datatype="html">
+        <source>Revenue account (reduced rate)</source>
+        <target>Erlöskonto (ermäßigter Satz)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_REVENUE_ACCOUNT_REDUCED" datatype="html">
+        <source>Empty uses the chart default.</source>
+        <target>Leer nutzt den Standard des Kontenrahmens.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_REVENUE_ACCOUNT_REVERSE_CHARGE" datatype="html">
+        <source>Revenue account (reverse charge)</source>
+        <target>Erlöskonto (Reverse Charge)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_REVENUE_ACCOUNT_REVERSE_CHARGE" datatype="html">
+        <source>Empty uses the chart default.</source>
+        <target>Leer nutzt den Standard des Kontenrahmens.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_REVENUE_ACCOUNT_OSS" datatype="html">
+        <source>Revenue account (OSS)</source>
+        <target>Erlöskonto (OSS)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_REVENUE_ACCOUNT_OSS" datatype="html">
+        <source>Empty uses the chart default.</source>
+        <target>Leer nutzt den Standard des Kontenrahmens.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_REVENUE_ACCOUNT_THIRD_COUNTRY" datatype="html">
+        <source>Revenue account (third country)</source>
+        <target>Erlöskonto (Drittland)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_REVENUE_ACCOUNT_THIRD_COUNTRY" datatype="html">
+        <source>Empty uses the chart default.</source>
+        <target>Leer nutzt den Standard des Kontenrahmens.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_DEBTOR_ACCOUNT_START" datatype="html">
+        <source>First debtor account</source>
+        <target>Erstes Debitorenkonto</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_DEBTOR_ACCOUNT_START" datatype="html">
+        <source>Start of the debtor number range.</source>
+        <target>Beginn des Debitorennummernkreises.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_DEBTOR_ACCOUNT_END" datatype="html">
+        <source>Last debtor account</source>
+        <target>Letztes Debitorenkonto</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_DEBTOR_ACCOUNT_END" datatype="html">
+        <source>End of the debtor number range.</source>
+        <target>Ende des Debitorennummernkreises.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_CREDITOR_ACCOUNT_START" datatype="html">
+        <source>First creditor account</source>
+        <target>Erstes Kreditorenkonto</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_CREDITOR_ACCOUNT_START" datatype="html">
+        <source>Start of the creditor number range.</source>
+        <target>Beginn des Kreditorennummernkreises.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_CREDITOR_ACCOUNT_END" datatype="html">
+        <source>Last creditor account</source>
+        <target>Letztes Kreditorenkonto</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_CREDITOR_ACCOUNT_END" datatype="html">
+        <source>End of the creditor number range.</source>
+        <target>Ende des Kreditorennummernkreises.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_EXPENSE_ACCOUNT_STANDARD" datatype="html">
+        <source>Expense account (standard rate)</source>
+        <target>Aufwandskonto (Regelsteuersatz)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_EXPENSE_ACCOUNT_STANDARD" datatype="html">
+        <source>Empty uses the chart default.</source>
+        <target>Leer nutzt den Standard des Kontenrahmens.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_EXPENSE_ACCOUNT_REDUCED" datatype="html">
+        <source>Expense account (reduced rate)</source>
+        <target>Aufwandskonto (ermäßigter Satz)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_EXPENSE_ACCOUNT_REDUCED" datatype="html">
+        <source>Empty uses the chart default.</source>
+        <target>Leer nutzt den Standard des Kontenrahmens.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_EXPENSE_ACCOUNT_REVERSE_CHARGE" datatype="html">
+        <source>Expense account (reverse charge)</source>
+        <target>Aufwandskonto (Reverse Charge)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_EXPENSE_ACCOUNT_REVERSE_CHARGE" datatype="html">
+        <source>Empty uses the chart default.</source>
+        <target>Leer nutzt den Standard des Kontenrahmens.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_EXPENSE_ACCOUNT_OSS" datatype="html">
+        <source>Expense account (OSS)</source>
+        <target>Aufwandskonto (OSS)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_EXPENSE_ACCOUNT_OSS" datatype="html">
+        <source>Empty uses the chart default.</source>
+        <target>Leer nutzt den Standard des Kontenrahmens.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_EXPENSE_ACCOUNT_THIRD_COUNTRY" datatype="html">
+        <source>Expense account (third country)</source>
+        <target>Aufwandskonto (Drittland)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_EXPENSE_ACCOUNT_THIRD_COUNTRY" datatype="html">
+        <source>Empty uses the chart default.</source>
+        <target>Leer nutzt den Standard des Kontenrahmens.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_BU_KEY_STANDARD" datatype="html">
+        <source>Tax key (standard rate)</source>
+        <target>BU-Schlüssel (Regelsteuersatz)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_BU_KEY_STANDARD" datatype="html">
+        <source>BU-Schlüssel; empty for automatic accounts.</source>
+        <target>BU-Schlüssel; leer bei Automatikkonten.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_BU_KEY_REDUCED" datatype="html">
+        <source>Tax key (reduced rate)</source>
+        <target>BU-Schlüssel (ermäßigter Satz)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_BU_KEY_REDUCED" datatype="html">
+        <source>BU-Schlüssel; empty for automatic accounts.</source>
+        <target>BU-Schlüssel; leer bei Automatikkonten.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_BU_KEY_REVERSE_CHARGE" datatype="html">
+        <source>Tax key (reverse charge)</source>
+        <target>BU-Schlüssel (Reverse Charge)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_BU_KEY_REVERSE_CHARGE" datatype="html">
+        <source>BU-Schlüssel for reverse charge revenue.</source>
+        <target>BU-Schlüssel für Reverse-Charge-Erlöse.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_BU_KEY_OSS" datatype="html">
+        <source>Tax key (OSS)</source>
+        <target>BU-Schlüssel (OSS)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_BU_KEY_OSS" datatype="html">
+        <source>BU-Schlüssel for OSS revenue.</source>
+        <target>BU-Schlüssel für OSS-Erlöse.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_BU_KEY_THIRD_COUNTRY" datatype="html">
+        <source>Tax key (third country)</source>
+        <target>BU-Schlüssel (Drittland)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_BU_KEY_THIRD_COUNTRY" datatype="html">
+        <source>BU-Schlüssel for third-country revenue.</source>
+        <target>BU-Schlüssel für Drittlandserlöse.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_EXPENSE_BU_KEY_STANDARD" datatype="html">
+        <source>Expense tax key (standard rate)</source>
+        <target>BU-Schlüssel Aufwand (Regelsteuersatz)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_EXPENSE_BU_KEY_STANDARD" datatype="html">
+        <source>BU-Schlüssel for expenses.</source>
+        <target>BU-Schlüssel für Aufwendungen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DATEV_EXPENSE_BU_KEY_REDUCED" datatype="html">
+        <source>Expense tax key (reduced rate)</source>
+        <target>BU-Schlüssel Aufwand (ermäßigter Satz)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DATEV_EXPENSE_BU_KEY_REDUCED" datatype="html">
+        <source>BU-Schlüssel for expenses.</source>
+        <target>BU-Schlüssel für Aufwendungen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_ENABLED" datatype="html">
+        <source>Accounting</source>
+        <target>Buchhaltung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_ENABLED" datatype="html">
+        <source>Enables double-entry bookkeeping (needs a complete issuer).</source>
+        <target>Aktiviert die doppelte Buchführung (benötigt einen vollständigen Aussteller).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_COUNTRY" datatype="html">
+        <source>Accounting country</source>
+        <target>Buchhaltungsland</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_COUNTRY" datatype="html">
+        <source>Country profile; empty uses the issuer country.</source>
+        <target>Länderprofil; leer nutzt das Land des Ausstellers.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_CHART_TEMPLATE" datatype="html">
+        <source>Chart template</source>
+        <target>Kontenrahmenvorlage</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_CHART_TEMPLATE" datatype="html">
+        <source>Template of the first chart (e.g. DE-SKR04).</source>
+        <target>Vorlage des ersten Kontenrahmens (z. B. DE-SKR04).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_METHOD" datatype="html">
+        <source>Accounting method</source>
+        <target>Buchhaltungsmethode</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_METHOD" datatype="html">
+        <source>Accrual or cash basis.</source>
+        <target>Soll- oder Ist-Prinzip der Gewinnermittlung.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_VAT_BASIS" datatype="html">
+        <source>VAT basis</source>
+        <target>Umsatzsteuerbasis</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_VAT_BASIS" datatype="html">
+        <source>Invoice (Soll) or payment (Ist).</source>
+        <target>Rechnung (Soll) oder Zahlung (Ist).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_FISCAL_YEAR_START_MONTH" datatype="html">
+        <source>Fiscal year start month</source>
+        <target>Beginn des Geschäftsjahres</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_FISCAL_YEAR_START_MONTH" datatype="html">
+        <source>First month of the fiscal year (1 to 12).</source>
+        <target>Erster Monat des Geschäftsjahres (1 bis 12).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_START_DATE" datatype="html">
+        <source>Bookkeeping start</source>
+        <target>Beginn der Buchführung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_START_DATE" datatype="html">
+        <source>Date (YYYY-MM-DD); earlier open items become opening balances.</source>
+        <target>Datum (JJJJ-MM-TT); frühere offene Posten werden Eröffnungsbilanzwerte.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_FUNCTIONAL_CURRENCY" datatype="html">
+        <source>Ledger currency</source>
+        <target>Buchungswährung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_FUNCTIONAL_CURRENCY" datatype="html">
+        <source>Currency of the ledger (ISO code).</source>
+        <target>Währung des Hauptbuchs (ISO-Code).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_TIMEZONE" datatype="html">
+        <source>Booking time zone</source>
+        <target>Zeitzone der Buchungen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_TIMEZONE" datatype="html">
+        <source>Turns timestamps into booking dates.</source>
+        <target>Wandelt Zeitstempel in Buchungsdaten um.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_VAT_RETURN_PERIOD" datatype="html">
+        <source>VAT return period</source>
+        <target>Voranmeldungszeitraum</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_VAT_RETURN_PERIOD" datatype="html">
+        <source>Default period of VAT returns in the console.</source>
+        <target>Standardzeitraum der Umsatzsteuer-Voranmeldungen in der Konsole.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_AUTO_MATCH_THRESHOLD" datatype="html">
+        <source>Auto-match threshold</source>
+        <target>Schwelle des automatischen Abgleichs</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_AUTO_MATCH_THRESHOLD" datatype="html">
+        <source>Minimum score (0 to 1) for automatic reconciliation.</source>
+        <target>Mindestwert (0 bis 1) für den automatischen Abgleich.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_ASSET_GWG_LIMIT" datatype="html">
+        <source>Low-value asset limit</source>
+        <target>GWG-Grenze</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_ASSET_GWG_LIMIT" datatype="html">
+        <source>Assets up to this value are written off immediately.</source>
+        <target>Wirtschaftsgüter bis zu diesem Wert werden sofort abgeschrieben.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_ASSET_POOL_ENABLED" datatype="html">
+        <source>Asset pool</source>
+        <target>Sammelposten</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_ASSET_POOL_ENABLED" datatype="html">
+        <source>German pool depreciation (Sammelposten).</source>
+        <target>Poolabschreibung nach deutschem Recht (Sammelposten).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_ASSET_POOL_LOWER" datatype="html">
+        <source>Asset pool lower limit</source>
+        <target>Untergrenze des Sammelpostens</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_ASSET_POOL_LOWER" datatype="html">
+        <source>Lower value limit of the pool.</source>
+        <target>Untere Wertgrenze des Sammelpostens.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_ASSET_POOL_UPPER" datatype="html">
+        <source>Asset pool upper limit</source>
+        <target>Obergrenze des Sammelpostens</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_ASSET_POOL_UPPER" datatype="html">
+        <source>Upper value limit of the pool.</source>
+        <target>Obere Wertgrenze des Sammelpostens.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_BANK_IMPORT_MAX_BYTES" datatype="html">
+        <source>Statement upload limit (bytes)</source>
+        <target>Maximale Kontoauszugsgröße (Bytes)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_BANK_IMPORT_MAX_BYTES" datatype="html">
+        <source>Largest bank statement file accepted.</source>
+        <target>Größte angenommene Kontoauszugsdatei.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_FX_SOURCE" datatype="html">
+        <source>Exchange rate source</source>
+        <target>Quelle der Wechselkurse</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_FX_SOURCE" datatype="html">
+        <source>ECB reference rates or manual rates.</source>
+        <target>EZB-Referenzkurse oder manuelle Kurse.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_ECB_RATES_URL" datatype="html">
+        <source>ECB rates URL</source>
+        <target>URL der EZB-Kurse</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_ECB_RATES_URL" datatype="html">
+        <source>HTTPS URL of the ECB daily feed.</source>
+        <target>HTTPS-URL des täglichen EZB-Feeds.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_FX_CRON" datatype="html">
+        <source>Rate fetch schedule</source>
+        <target>Zeitplan des Kursabrufs</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_FX_CRON" datatype="html">
+        <source>Cron expression of the rate fetch.</source>
+        <target>Cron-Ausdruck des Kursabrufs.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_PROCESSOR_SYNC_CRON" datatype="html">
+        <source>Processor sync schedule</source>
+        <target>Zeitplan des Anbieterabgleichs</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_PROCESSOR_SYNC_CRON" datatype="html">
+        <source>Cron expression of the payment processor balance sync.</source>
+        <target>Cron-Ausdruck des Saldoabgleichs mit dem Zahlungsanbieter.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ACCOUNTING_CATCH_UP_INTERVAL_MS" datatype="html">
+        <source>Posting catch-up interval</source>
+        <target>Intervall der Nachbuchung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ACCOUNTING_CATCH_UP_INTERVAL_MS" datatype="html">
+        <source>Backfill and retry of failed postings.</source>
+        <target>Nachholen und Wiederholen fehlgeschlagener Buchungen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_PRICE_RECALC_ENABLED" datatype="html">
+        <source>Daily price recalculation</source>
+        <target>Tägliche Preisneuberechnung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_PRICE_RECALC_ENABLED" datatype="html">
+        <source>Refreshes opted-in catalog prices from the provider nightly.</source>
+        <target>Aktualisiert die Preise freigegebener Katalogeinträge nachts beim Anbieter.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_PRICE_RECALC_CRON" datatype="html">
+        <source>Recalculation schedule</source>
+        <target>Zeitplan der Neuberechnung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_PRICE_RECALC_CRON" datatype="html">
+        <source>Cron expression of the recalculation.</source>
+        <target>Cron-Ausdruck der Neuberechnung.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_PRICE_RECALC_TIMEZONE" datatype="html">
+        <source>Recalculation time zone</source>
+        <target>Zeitzone der Neuberechnung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_PRICE_RECALC_TIMEZONE" datatype="html">
+        <source>Time zone of the schedule and run date.</source>
+        <target>Zeitzone von Zeitplan und Laufdatum.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-HETZNER_API_TOKEN" datatype="html">
+        <source>Hetzner API token</source>
+        <target>Hetzner-API-Token</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-HETZNER_API_TOKEN" datatype="html">
+        <source>Default Hetzner Cloud token for server provisioning.</source>
+        <target>Standard-Token für Hetzner Cloud bei der Serverbereitstellung.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-DIGITALOCEAN_API_TOKEN" datatype="html">
+        <source>DigitalOcean API token</source>
+        <target>DigitalOcean-API-Token</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-DIGITALOCEAN_API_TOKEN" datatype="html">
+        <source>Default DigitalOcean token for server provisioning.</source>
+        <target>Standard-Token für DigitalOcean bei der Serverbereitstellung.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-CLOUDFLARE_API_TOKEN" datatype="html">
+        <source>Cloudflare API token</source>
+        <target>Cloudflare-API-Token</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-CLOUDFLARE_API_TOKEN" datatype="html">
+        <source>Token for DNS records of provisioned servers.</source>
+        <target>Token für DNS-Einträge bereitgestellter Server.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-CLOUDFLARE_ZONE_ID" datatype="html">
+        <source>Cloudflare zone</source>
+        <target>Cloudflare-Zone</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-CLOUDFLARE_ZONE_ID" datatype="html">
+        <source>Zone ID for DNS records.</source>
+        <target>Zonen-ID für DNS-Einträge.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-DNS_BASE_DOMAIN" datatype="html">
+        <source>Base domain</source>
+        <target>Basisdomain</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-DNS_BASE_DOMAIN" datatype="html">
+        <source>Base domain of provisioned host names.</source>
+        <target>Basisdomain bereitgestellter Hostnamen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-LETS_ENCRYPT_EMAIL" datatype="html">
+        <source>Let’s Encrypt email</source>
+        <target>Let’s-Encrypt-E-Mail</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-LETS_ENCRYPT_EMAIL" datatype="html">
+        <source>Contact address for certificates of provisioned servers.</source>
+        <target>Kontaktadresse für Zertifikate bereitgestellter Server.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_ADDON_SSH_COMMAND_TIMEOUT_MS" datatype="html">
+        <source>Add-on script timeout (ms)</source>
+        <target>Zeitlimit für Add-on-Skripte (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_ADDON_SSH_COMMAND_TIMEOUT_MS" datatype="html">
+        <source>Timeout of add-on SSH scripts on servers.</source>
+        <target>Zeitlimit von Add-on-SSH-Skripten auf Servern.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_SKIP_FILE_CACHE" datatype="html">
+        <source>Skip file cache</source>
+        <target>Dateicache überspringen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_SKIP_FILE_CACHE" datatype="html">
+        <source>Regenerates PDFs instead of using stored files.</source>
+        <target>Erzeugt PDFs neu, statt gespeicherte Dateien zu verwenden.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-DECABILL_TICKET_ATTACHMENT_MAX_BYTES" datatype="html">
+        <source>Ticket attachment limit (bytes)</source>
+        <target>Maximale Ticketanhanggröße (Bytes)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-DECABILL_TICKET_ATTACHMENT_MAX_BYTES" datatype="html">
+        <source>Largest file accepted as a ticket attachment.</source>
+        <target>Größte Datei, die als Ticketanhang angenommen wird.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-CONFIG_CHANGE_PROCESSING_TIMEOUT_MS" datatype="html">
+        <source>Configuration change timeout (ms)</source>
+        <target>Zeitlimit für Konfigurationsänderungen (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-CONFIG_CHANGE_PROCESSING_TIMEOUT_MS" datatype="html">
+        <source>Stuck configuration changes are reclaimed after this time.</source>
+        <target>Hängende Konfigurationsänderungen werden nach dieser Zeit erneut übernommen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-REMINDER_DAYS" datatype="html">
+        <source>Renewal reminder (days)</source>
+        <target>Verlängerungserinnerung (Tage)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-REMINDER_DAYS" datatype="html">
+        <source>Days before renewal to send a reminder.</source>
+        <target>Tage vor der Verlängerung, an denen erinnert wird.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_METER_COLLECT_ENABLED" datatype="html">
+        <source>Meter collection</source>
+        <target>Zählererfassung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_METER_COLLECT_ENABLED" datatype="html">
+        <source>Collects usage meters of subscriptions.</source>
+        <target>Erfasst Verbrauchszähler der Abonnements.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_CONTRIBUTOR_COLLECT_ENABLED" datatype="html">
+        <source>Contributor collection</source>
+        <target>Erfassung integrierter Produkte</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_CONTRIBUTOR_COLLECT_ENABLED" datatype="html">
+        <source>Collects usage from integrated products.</source>
+        <target>Erfasst den Verbrauch integrierter Produkte.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_CONTAINER_MANAGER_COLLECT_INTERVAL" datatype="html">
+        <source>Container usage interval (ms)</source>
+        <target>Intervall der Containererfassung (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_CONTAINER_MANAGER_COLLECT_INTERVAL" datatype="html">
+        <source>How often container usage is collected.</source>
+        <target>Wie oft der Containerverbrauch erfasst wird.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_CONTAINER_MANAGER_COLLECT_CONCURRENCY" datatype="html">
+        <source>Container usage concurrency</source>
+        <target>Parallelität der Containererfassung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_CONTAINER_MANAGER_COLLECT_CONCURRENCY" datatype="html">
+        <source>Parallel container usage requests.</source>
+        <target>Parallele Anfragen der Containererfassung.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-STATUS_POLL_INTERVAL" datatype="html">
+        <source>Dashboard status interval (ms)</source>
+        <target>Intervall des Dashboard-Status (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-STATUS_POLL_INTERVAL" datatype="html">
+        <source>How often the dashboard status is pushed.</source>
+        <target>Wie oft der Dashboard-Status gesendet wird.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-INVENTORY_REQUESTS_POLL_INTERVAL" datatype="html">
+        <source>Inventory request interval (ms)</source>
+        <target>Intervall der Inventaranfragen (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-INVENTORY_REQUESTS_POLL_INTERVAL" datatype="html">
+        <source>How often new inventory requests are announced.</source>
+        <target>Wie oft neue Inventaranfragen gemeldet werden.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-UPDATE_CHECK_CRON" datatype="html">
+        <source>Update check schedule</source>
+        <target>Zeitplan der Update-Prüfung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-UPDATE_CHECK_CRON" datatype="html">
+        <source>Cron expression of the release check.</source>
+        <target>Cron-Ausdruck der Release-Prüfung.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-UPDATE_CHECK_TIMEZONE" datatype="html">
+        <source>Update check time zone</source>
+        <target>Zeitzone der Update-Prüfung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-UPDATE_CHECK_TIMEZONE" datatype="html">
+        <source>Time zone of the update check schedule.</source>
+        <target>Zeitzone des Zeitplans der Update-Prüfung.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_SCHEDULER_INTERVAL" datatype="html">
+        <source>Subscription billing: interval</source>
+        <target>Abonnementabrechnung: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_SCHEDULER_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Subscription billing: batch size</source>
+        <target>Abonnementabrechnung: Stapelgröße</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Items processed per run.</source>
+        <target>Verarbeitete Einträge pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-EXPIRATION_SCHEDULER_INTERVAL" datatype="html">
+        <source>Subscription expiration: interval</source>
+        <target>Ablauf von Abonnements: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-EXPIRATION_SCHEDULER_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-EXPIRATION_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Subscription expiration: batch size</source>
+        <target>Ablauf von Abonnements: Stapelgröße</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-EXPIRATION_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Items processed per run.</source>
+        <target>Verarbeitete Einträge pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-WITHDRAWAL_SCHEDULER_INTERVAL" datatype="html">
+        <source>Withdrawal teardown: interval</source>
+        <target>Abbau nach Widerruf: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-WITHDRAWAL_SCHEDULER_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-WITHDRAWAL_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Withdrawal teardown: batch size</source>
+        <target>Abbau nach Widerruf: Stapelgröße</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-WITHDRAWAL_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Items processed per run.</source>
+        <target>Verarbeitete Einträge pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-INSTANT_CANCEL_SCHEDULER_INTERVAL" datatype="html">
+        <source>Instant cancellation: interval</source>
+        <target>Sofortkündigung: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-INSTANT_CANCEL_SCHEDULER_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-INSTANT_CANCEL_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Instant cancellation: batch size</source>
+        <target>Sofortkündigung: Stapelgröße</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-INSTANT_CANCEL_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Items processed per run.</source>
+        <target>Verarbeitete Einträge pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-PROVISIONING_SCHEDULER_INTERVAL" datatype="html">
+        <source>Server provisioning: interval</source>
+        <target>Serverbereitstellung: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-PROVISIONING_SCHEDULER_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-PROVISIONING_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Server provisioning: batch size</source>
+        <target>Serverbereitstellung: Stapelgröße</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-PROVISIONING_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Items processed per run.</source>
+        <target>Verarbeitete Einträge pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-CONFIG_CHANGE_SCHEDULER_INTERVAL" datatype="html">
+        <source>Configuration changes: interval</source>
+        <target>Konfigurationsänderungen: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-CONFIG_CHANGE_SCHEDULER_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-CONFIG_CHANGE_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Configuration changes: batch size</source>
+        <target>Konfigurationsänderungen: Stapelgröße</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-CONFIG_CHANGE_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Items processed per run.</source>
+        <target>Verarbeitete Einträge pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-REMINDER_SCHEDULER_INTERVAL" datatype="html">
+        <source>Renewal reminders: interval</source>
+        <target>Verlängerungserinnerungen: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-REMINDER_SCHEDULER_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-REMINDER_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Renewal reminders: batch size</source>
+        <target>Verlängerungserinnerungen: Stapelgröße</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-REMINDER_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Items processed per run.</source>
+        <target>Verarbeitete Einträge pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BACKORDER_RETRY_INTERVAL_MS" datatype="html">
+        <source>Backorder retries: interval</source>
+        <target>Wiederholung von Rückständen: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BACKORDER_RETRY_INTERVAL_MS" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BACKORDER_RETRY_BATCH_SIZE" datatype="html">
+        <source>Backorder retries: batch size</source>
+        <target>Wiederholung von Rückständen: Stapelgröße</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BACKORDER_RETRY_BATCH_SIZE" datatype="html">
+        <source>Items processed per run.</source>
+        <target>Verarbeitete Einträge pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-INVOICE_OVERDUE_SCHEDULER_INTERVAL" datatype="html">
+        <source>Overdue invoices: interval</source>
+        <target>Überfällige Rechnungen: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-INVOICE_OVERDUE_SCHEDULER_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-INVOICE_OVERDUE_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Overdue invoices: batch size</source>
+        <target>Überfällige Rechnungen: Stapelgröße</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-INVOICE_OVERDUE_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Items processed per run.</source>
+        <target>Verarbeitete Einträge pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-INVOICE_AUTO_PAYMENT_SCHEDULER_INTERVAL" datatype="html">
+        <source>Automatic payments: interval</source>
+        <target>Automatische Zahlungen: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-INVOICE_AUTO_PAYMENT_SCHEDULER_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-INVOICE_AUTO_PAYMENT_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Automatic payments: batch size</source>
+        <target>Automatische Zahlungen: Stapelgröße</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-INVOICE_AUTO_PAYMENT_SCHEDULER_BATCH_SIZE" datatype="html">
+        <source>Items processed per run.</source>
+        <target>Verarbeitete Einträge pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL" datatype="html">
+        <source>Open position invoicing: interval</source>
+        <target>Abrechnung offener Positionen: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL" datatype="html">
+        <source>Subscription updates: interval</source>
+        <target>Abonnementaktualisierungen: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-OFFER_EXPIRATION_SCHEDULER_INTERVAL" datatype="html">
+        <source>Offer expiration: interval</source>
+        <target>Ablauf von Angeboten: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-OFFER_EXPIRATION_SCHEDULER_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-OFFER_FULFILLMENT_SCHEDULER_INTERVAL" datatype="html">
+        <source>Offer fulfillment: interval</source>
+        <target>Erfüllung von Angeboten: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-OFFER_FULFILLMENT_SCHEDULER_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_METER_COLLECT_INTERVAL" datatype="html">
+        <source>Meter collection: interval</source>
+        <target>Zählererfassung: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_METER_COLLECT_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_METER_COLLECT_BATCH_SIZE" datatype="html">
+        <source>Meter collection: batch size</source>
+        <target>Zählererfassung: Stapelgröße</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_METER_COLLECT_BATCH_SIZE" datatype="html">
+        <source>Items processed per run.</source>
+        <target>Verarbeitete Einträge pro Lauf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_CONTRIBUTOR_COLLECT_INTERVAL" datatype="html">
+        <source>Contributor collection: interval</source>
+        <target>Erfassung integrierter Produkte: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_CONTRIBUTOR_COLLECT_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-STORED_FILES_BACKFILL_INTERVAL" datatype="html">
+        <source>Stored file backfill: interval</source>
+        <target>Nachträgliche Dateiablage: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-STORED_FILES_BACKFILL_INTERVAL" datatype="html">
+        <source>How often the coordinator runs (e.g. 60000 or 1m).</source>
+        <target>Wie oft der Koordinator läuft (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-SEARCH_REINDEX_INTERVAL" datatype="html">
+        <source>Search reindex interval</source>
+        <target>Intervall der Suchindizierung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-SEARCH_REINDEX_INTERVAL" datatype="html">
+        <source>Interval of the periodic search index rebuild (e.g. 15m).</source>
+        <target>Intervall der periodischen Neuindizierung der Suche (z. B. 15m).</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-pageTitle" datatype="html">
+        <source>Settings</source>
+        <target>Einstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-levelSwitchTitle" datatype="html">
+        <source>Choose what to configure</source>
+        <target>Auswählen, was konfiguriert wird</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-searchPlaceholder" datatype="html">
+        <source>Search settings</source>
+        <target>Einstellungen durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-reload" datatype="html">
+        <source>Reload</source>
+        <target>Neu laden</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-emptyMessage" datatype="html">
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-categories" datatype="html">
+        <source>Setting categories</source>
+        <target>Kategorien der Einstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-restartRequiredTitle" datatype="html">
+        <source>Applies after the backend restarts</source>
+        <target>Gilt nach dem Neustart des Backends</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-restartRequired" datatype="html">
+        <source>Restart required</source>
+        <target>Neustart erforderlich</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-optionNotSet" datatype="html">
+        <source>(not set)</source>
+        <target>(nicht gesetzt)</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-optionTrue" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-optionFalse" datatype="html">
+        <source>Disabled</source>
+        <target>Deaktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-discard" datatype="html">
+        <source>Discard</source>
+        <target>Verwerfen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-resetTitle" datatype="html">
+        <source>Remove the override so the default applies again</source>
+        <target>Überschreibung entfernen, damit wieder der Standard gilt</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-reset" datatype="html">
+        <source>Reset to default</source>
+        <target>Auf Standard zurücksetzen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-levelSwitchHint" datatype="html">
+        <source> A tenant value applies to that tenant only. The value for all tenants applies to every tenant without its own value. Without either, the environment variable applies. </source>
+        <target> Ein Mandantenwert gilt nur für diesen Mandanten. Der Wert für alle Mandanten gilt für jeden Mandanten ohne eigenen Wert. Ist keiner gesetzt, gilt die Umgebungsvariable. </target>
+      </trans-unit>
+      <trans-unit id="featureSettings-title" datatype="html">
+        <source>Settings</source>
+        <target>Einstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-levelAllTenants" datatype="html">
+        <source>All tenants</source>
+        <target>Alle Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-levelAllTenantsDescription" datatype="html">
+        <source>Applies to every tenant without its own value</source>
+        <target>Gilt für jeden Mandanten ohne eigenen Wert</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-levelOwnTenant" datatype="html">
+        <source>Your tenant</source>
+        <target>Ihr Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-levelTenant" datatype="html">
+        <source>Tenant</source>
+        <target>Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-sourceTenant" datatype="html">
+        <source>Tenant</source>
+        <target>Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-sourceGlobal" datatype="html">
+        <source>All tenants</source>
+        <target>Alle Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-sourceEnvironment" datatype="html">
+        <source>Environment</source>
+        <target>Umgebung</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-sourceDefault" datatype="html">
+        <source>Default</source>
+        <target>Standard</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-sourceOverride" datatype="html">
+        <source>Override</source>
+        <target>Überschrieben</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-inheritedSecretConfigured" datatype="html">
+        <source>Default (<x id="source" equiv-text="source"/>): configured</source>
+        <target>Standard (<x id="source" equiv-text="source"/>): konfiguriert</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-inheritedSecretUnset" datatype="html">
+        <source>Default (<x id="source" equiv-text="source"/>): not set</source>
+        <target>Standard (<x id="source" equiv-text="source"/>): nicht gesetzt</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-inheritedValue" datatype="html">
+        <source>Default (<x id="source" equiv-text="source"/>): <x id="value" equiv-text="setting.inheritedValue"/></source>
+        <target>Standard (<x id="source" equiv-text="source"/>): <x id="value" equiv-text="setting.inheritedValue"/></target>
+      </trans-unit>
+      <trans-unit id="featureSettings-inheritedBuiltIn" datatype="html">
+        <source>Default: <x id="value" equiv-text="setting.defaultValue"/></source>
+        <target>Standard: <x id="value" equiv-text="setting.defaultValue"/></target>
+      </trans-unit>
+      <trans-unit id="featureSettings-inheritedUnset" datatype="html">
+        <source>Default: not set</source>
+        <target>Standard: nicht gesetzt</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-optionNone" datatype="html">
+        <source>(none)</source>
+        <target>(keine)</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-secretReplace" datatype="html">
+        <source>Configured. Enter a new value to replace it</source>
+        <target>Konfiguriert. Neuen Wert eingeben, um ihn zu ersetzen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-secretEnter" datatype="html">
+        <source>Enter a value to override</source>
+        <target>Wert eingeben, um zu überschreiben</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

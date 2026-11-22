@@ -1,4 +1,5 @@
 import {
+  ControllerSettingsOverrideEntity,
   EgressEventIngestCursorEntity,
   ClientIsolationSnapshotEntity,
   WorkspaceGraphSnapshotEntity,
@@ -154,6 +155,7 @@ export const typeormConfig: DataSourceOptions = {
     WebhookEndpointEntity,
     WebhookDeliveryEntity,
     EmailDeliveryEntity,
+    ControllerSettingsOverrideEntity,
   ],
   migrations: [
     'src/migrations/*.js',

@@ -314,6 +314,11 @@ import {
   createNotificationAdminRoutes,
   notificationAdminProviders,
 } from '@forepath/shared/frontend/feature-notifications';
+import {
+  SETTINGS_ADMIN_LABELS,
+  createSettingsAdminRoutes,
+  settingsAdminProviders,
+} from '@forepath/shared/frontend/feature-settings';
 import { createUpdatesAdminRoutes, updatesAdminProviders } from '@forepath/shared/frontend/feature-updates';
 import { provideFpcControlSize } from '@forepath/shared/frontend/ui-components';
 import { provideEffects } from '@ngrx/effects';
@@ -363,6 +368,7 @@ import { PublicWithdrawalComponent } from './public-withdrawal/public-withdrawal
 import { ServiceDetailPageComponent } from './service-detail-page/service-detail-page.component';
 import { ServicePlansPageComponent } from './service-plans-page/service-plans-page.component';
 import { ServiceTypesPageComponent } from './service-types-page/service-types-page.component';
+import { BILLING_SETTINGS_LABELS } from './settings/billing-settings-labels';
 import { SubscriptionsComponent } from './subscriptions/subscriptions.component';
 
 const contributorNgrx = collectContributorNgrx(FIRST_PARTY_CONTRIBUTOR_UI_MODULES);
@@ -722,6 +728,7 @@ export const billingConsoleRoutes: Route[] = [
             component: AdminFileManagerPageComponent,
             title: () => buildPageTitle($localize`:@@featureContainer-adminFileExplorerPage:File explorer`),
           },
+          ...createSettingsAdminRoutes([authGuard, billingAdminGuard], 'settings'),
           ...contributorRoutes.admin,
         ],
       },
@@ -734,6 +741,8 @@ export const billingConsoleRoutes: Route[] = [
       ...identityAuthProviders,
       ...notificationAdminProviders,
       ...updatesAdminProviders,
+      ...settingsAdminProviders,
+      { provide: SETTINGS_ADMIN_LABELS, useValue: BILLING_SETTINGS_LABELS },
       CloudInitConfigsFacade,
       AddonsFacade,
       MetersFacade,

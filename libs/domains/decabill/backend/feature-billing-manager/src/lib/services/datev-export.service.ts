@@ -369,7 +369,7 @@ export class DatevExportService {
 
         const tenantConfig =
           input.scope === DatevExportScope.UNIFIED
-            ? (this.configService.resolveForTenant(invoiceTenantId) ?? input.config)
+            ? (this.configService.resolveForTenant(invoiceTenantId, { consolidated: true }) ?? input.config)
             : input.config;
         const debtorKey = `${invoiceTenantId}:${invoice.userId}`;
         let debtorNumber = debtorNumbers.get(debtorKey);
@@ -452,7 +452,7 @@ export class DatevExportService {
         const profile = invoice.supplier ?? (await this.supplierProfilesRepository.findByIdOrThrow(invoice.supplierId));
         const tenantConfig =
           input.scope === DatevExportScope.UNIFIED
-            ? (this.configService.resolveForTenant(invoiceTenantId) ?? input.config)
+            ? (this.configService.resolveForTenant(invoiceTenantId, { consolidated: true }) ?? input.config)
             : input.config;
         const creditorKey = `${invoiceTenantId}:${invoice.supplierId}`;
         let creditorNumber = creditorNumbers.get(creditorKey);
@@ -551,7 +551,7 @@ export class DatevExportService {
 
         const tenantConfig =
           input.scope === DatevExportScope.UNIFIED
-            ? (this.configService.resolveForTenant(creditTenantId) ?? input.config)
+            ? (this.configService.resolveForTenant(creditTenantId, { consolidated: true }) ?? input.config)
             : input.config;
         const debtorKey = `${creditTenantId}:${invoice.userId}`;
         let debtorNumber = debtorNumbers.get(debtorKey);
@@ -641,7 +641,10 @@ export class DatevExportService {
           }
 
           return await runWithTenantId(tenantId, async () => {
-            const tenantConfig = this.configService.resolveForTenant(tenantId) ?? input.config;
+            const tenantConfig =
+              this.configService.resolveForTenant(tenantId, {
+                consolidated: input.scope === DatevExportScope.UNIFIED,
+              }) ?? input.config;
             const number = await this.debtorAccountService.resolveDebtorNumber(tenantId, userId, tenantConfig);
             const profile = await this.customerProfilesRepository.findByUserId(userId);
 
@@ -663,7 +666,10 @@ export class DatevExportService {
           }
 
           return await runWithTenantId(tenantId, async () => {
-            const tenantConfig = this.configService.resolveForTenant(tenantId) ?? input.config;
+            const tenantConfig =
+              this.configService.resolveForTenant(tenantId, {
+                consolidated: input.scope === DatevExportScope.UNIFIED,
+              }) ?? input.config;
             const number = await this.creditorAccountService.resolveCreditorNumber(tenantId, supplierId, tenantConfig);
             const profile = await this.supplierProfilesRepository.findByIdOrThrow(supplierId);
 

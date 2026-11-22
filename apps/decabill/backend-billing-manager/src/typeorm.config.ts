@@ -1,5 +1,6 @@
 import {
   AvailabilitySnapshotEntity,
+  BillingSettingsOverrideEntity,
   BackorderEntity,
   BillingAuditLogEntity,
   AddonEntity,
@@ -129,6 +130,7 @@ export const typeormConfig: DataSourceOptions = {
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_DATABASE || 'billing',
   entities: [
+    BillingSettingsOverrideEntity,
     ServiceTypeEntity,
     ServicePlanEntity,
     ServicePlanMeterEntity,

@@ -1,6 +1,7 @@
 import {
   AgenstraOtelModule,
   ClientsModule,
+  ControllerSettingsModule,
   IdentityEmailBridgeModule,
   IdentityNotificationBridgeModule,
   IdentityStatisticsBridgeModule,
@@ -39,6 +40,7 @@ const patAuthOptions = { patScopeCatalog: AGENSTRA_PAT_SCOPES, rawPatBearerPaths
     ...(authMethod === 'saml' ? [SamlAuthModule.register(patAuthOptions)] : []),
     ...(authMethod === 'users' ? [UsersAuthModule.register(patAuthOptions)] : []),
     ClientsModule,
+    ControllerSettingsModule,
     IdentityStatisticsBridgeModule,
     IdentityNotificationBridgeModule,
     IdentityEmailBridgeModule,
