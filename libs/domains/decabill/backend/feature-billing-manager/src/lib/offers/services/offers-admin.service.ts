@@ -23,6 +23,8 @@ import { OfferFulfillmentStatus } from '../constants/offer-fulfillment-status.co
 import { OfferLineType } from '../constants/offer-line-type.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
 import type {
+  AcceptAdminOfferDto,
+  DeclineAdminOfferDto,
   OfferArticleLineDto,
   AdminOfferDetailResponseDto,
   AdminOfferListItemDto,
@@ -48,12 +50,13 @@ import {
   mapOfferStandardLineToTaxInput,
   resolveOfferProjectTemplateLinePricing,
 } from '../utils/map-offer-line-items.util';
-import { offerCapabilityFlags, offerDeliveryFields } from '../utils/offer-capabilities.util';
+import { offerCapabilityFlags, offerDeliveryFields, offerResponseFlags } from '../utils/offer-capabilities.util';
 import { buildOfferDraftDocumentTerms, mapAdminOfferDocumentTerms } from '../utils/offer-document-terms.util';
 import { assertOfferRevocable } from '../utils/offer-mutability.util';
 import { assertOfferDeletable, assertOfferDraftEditable } from '../utils/offer-mutability.util';
 
 import { OfferArchiveService } from './offer-archive.service';
+import { OfferResponseService } from './offer-response.service';
 import {
   SubscriptionOrderPreparationService,
   type PreparedPlanOrderContext,
@@ -82,6 +85,7 @@ export class OffersAdminService {
     private readonly inventoryArticlesRepository: InventoryArticlesRepository,
     @Optional() private readonly customerProfilesRepository?: CustomerProfilesRepository,
     @Optional() private readonly billingEmailPublisher?: BillingEmailPublisher,
+    @Optional() private readonly offerResponseService?: OfferResponseService,
   ) {}
 
   async list(
@@ -194,6 +198,32 @@ export class OffersAdminService {
 
     this.billingNotificationPublisher.publishOffer('offer.revoked', revoked);
     this.billingSearchIndexService.scheduleUpsert('offers', mapOfferToSearchDocument(revoked, getRequiredTenantId()));
+
+    return await this.get(id);
+  }
+
+  /** Records the customer's acceptance given outside the system (same checks and fulfillment as the customer path). */
+  async accept(id: string, adminUserId?: string, dto?: AcceptAdminOfferDto): Promise<AdminOfferDetailResponseDto> {
+    const offer = await this.offersRepository.findByIdOrThrow(id);
+
+    await this.requireOfferResponseService().accept(
+      offer,
+      { kind: 'admin', adminUserId },
+      { notifyCustomer: dto?.notifyCustomer, notifyInvoices: dto?.notifyInvoices },
+    );
+
+    return await this.get(id);
+  }
+
+  /** Records the customer's decline given outside the system. */
+  async decline(id: string, adminUserId?: string, dto?: DeclineAdminOfferDto): Promise<AdminOfferDetailResponseDto> {
+    const offer = await this.offersRepository.findByIdOrThrow(id);
+
+    await this.requireOfferResponseService().decline(
+      offer,
+      { kind: 'admin', adminUserId },
+      { notifyCustomer: dto?.notifyCustomer },
+    );
 
     return await this.get(id);
   }
@@ -510,6 +540,7 @@ export class OffersAdminService {
       updatedAt: offer.updatedAt.toISOString(),
       ...offerCapabilityFlags(offer),
       ...offerDeliveryFields(offer),
+      ...offerResponseFlags(offer),
     };
   }
 
@@ -527,6 +558,14 @@ export class OffersAdminService {
       ...mapAdminOfferDocumentTerms(offer, this.documentTermsConfig),
       note: offer.note ?? null,
     };
+  }
+
+  private requireOfferResponseService(): OfferResponseService {
+    if (!this.offerResponseService) {
+      throw new Error('OfferResponseService is not available');
+    }
+
+    return this.offerResponseService;
   }
 
   private async assertUserExists(userId: string): Promise<void> {

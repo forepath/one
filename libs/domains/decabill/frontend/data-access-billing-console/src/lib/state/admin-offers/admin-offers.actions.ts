@@ -2,11 +2,13 @@ import { createAction, props } from '@ngrx/store';
 
 import type { BillingAuditLogResponse } from '../../types/billing.types';
 import type {
+  AcceptAdminOfferDto,
   AdminOfferDetailResponse,
   AdminOfferListItem,
   AdminOfferStatisticsParams,
   ArchiveAdminOfferDto,
   CreateAdminOfferDto,
+  DeclineAdminOfferDto,
   OfferStatisticsResponse,
   RevokeAdminOfferDto,
   UpdateAdminOfferDto,
@@ -82,6 +84,26 @@ export const revokeAdminOfferSuccess = createAction(
   props<{ offer: AdminOfferDetailResponse }>(),
 );
 export const revokeAdminOfferFailure = createAction('[AdminOffers] Revoke Offer Failure', props<{ error: string }>());
+
+export const acceptAdminOffer = createAction(
+  '[AdminOffers] Accept Offer',
+  props<{ id: string; dto?: AcceptAdminOfferDto }>(),
+);
+export const acceptAdminOfferSuccess = createAction(
+  '[AdminOffers] Accept Offer Success',
+  props<{ offer: AdminOfferDetailResponse }>(),
+);
+export const acceptAdminOfferFailure = createAction('[AdminOffers] Accept Offer Failure', props<{ error: string }>());
+
+export const declineAdminOffer = createAction(
+  '[AdminOffers] Decline Offer',
+  props<{ id: string; dto?: DeclineAdminOfferDto }>(),
+);
+export const declineAdminOfferSuccess = createAction(
+  '[AdminOffers] Decline Offer Success',
+  props<{ offer: AdminOfferDetailResponse }>(),
+);
+export const declineAdminOfferFailure = createAction('[AdminOffers] Decline Offer Failure', props<{ error: string }>());
 
 export const loadAdminOfferAuditLogs = createAction(
   '[AdminOffers] Load Audit Logs',

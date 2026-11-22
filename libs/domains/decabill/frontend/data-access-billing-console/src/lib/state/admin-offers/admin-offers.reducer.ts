@@ -5,6 +5,12 @@ import type { BillingAuditLogResponse } from '../../types/billing.types';
 import type { AdminOfferListItem, OfferStatisticsResponse } from '../../types/offers.types';
 
 import {
+  acceptAdminOffer,
+  acceptAdminOfferFailure,
+  acceptAdminOfferSuccess,
+  declineAdminOffer,
+  declineAdminOfferFailure,
+  declineAdminOfferSuccess,
   archiveAdminOffer,
   archiveAdminOfferFailure,
   archiveAdminOfferSuccess,
@@ -47,6 +53,8 @@ export interface AdminOffersState {
   archiving: boolean;
   sending: boolean;
   revoking: boolean;
+  /** Recording the customer's answer (accept / decline). */
+  responding: boolean;
   error: string | null;
   search: string | null;
   userId: string | null;
@@ -72,6 +80,7 @@ export const initialAdminOffersState: AdminOffersState = {
   archiving: false,
   sending: false,
   revoking: false,
+  responding: false,
   error: null,
   search: null,
   userId: null,
@@ -184,6 +193,13 @@ export const adminOffersReducer = createReducer(
     offers: upsertOffer(state.offers, offer),
   })),
   on(revokeAdminOfferFailure, (state, { error }) => ({ ...state, revoking: false, error })),
+  on(acceptAdminOffer, declineAdminOffer, (state) => ({ ...state, responding: true, error: null })),
+  on(acceptAdminOfferSuccess, declineAdminOfferSuccess, (state, { offer }) => ({
+    ...state,
+    responding: false,
+    offers: upsertOffer(state.offers, offer),
+  })),
+  on(acceptAdminOfferFailure, declineAdminOfferFailure, (state, { error }) => ({ ...state, responding: false, error })),
   on(loadAdminOfferAuditLogs, (state) => ({
     ...state,
     auditLogsLoading: true,

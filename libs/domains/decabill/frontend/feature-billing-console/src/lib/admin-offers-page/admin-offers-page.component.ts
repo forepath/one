@@ -448,6 +448,33 @@ export class AdminOffersPageComponent implements OnInit {
   revokeNotifyCustomer = true;
   readonly revokeConfirmTitle = $localize`:@@featureAdminOffers-revokeTitle:Revoke offer?`;
   readonly revokeConfirmMessage = $localize`:@@featureAdminOffers-revokeMessage:The customer can no longer accept the offer. This cannot be undone.`;
+  /**
+   * Accept / decline dialogs: record the customer's answer given outside the system (e.g. for an offer sent by other
+   * means). Same checks and fulfillment as the customer answering in their account.
+   */
+  readonly acceptLabel = $localize`:@@featureAdminOffers-accept:Accept`;
+  readonly declineLabel = $localize`:@@featureAdminOffers-decline:Decline`;
+  readonly pendingAccept = signal<AdminOfferListItem | null>(null);
+  acceptNotifyCustomer = true;
+  acceptNotifyInvoices = true;
+  readonly acceptConfirmTitle = $localize`:@@featureAdminOffers-acceptTitle:Accept offer for the customer?`;
+  readonly acceptConfirmMessage = computed(() => {
+    const offer = this.pendingAccept();
+
+    return offer
+      ? $localize`:@@featureAdminOffers-acceptMessage:Records that ${this.customerLabel(offer)}:customer: accepted offer ${this.offerDisplayTitle(offer)}:number:. Its services are fulfilled and billed as if the customer had accepted it. This cannot be undone.`
+      : '';
+  });
+  readonly pendingDecline = signal<AdminOfferListItem | null>(null);
+  declineNotifyCustomer = true;
+  readonly declineConfirmTitle = $localize`:@@featureAdminOffers-declineTitle:Decline offer for the customer?`;
+  readonly declineConfirmMessage = computed(() => {
+    const offer = this.pendingDecline();
+
+    return offer
+      ? $localize`:@@featureAdminOffers-declineMessage:Records that ${this.customerLabel(offer)}:customer: declined offer ${this.offerDisplayTitle(offer)}:number:. It can no longer be accepted. This cannot be undone.`
+      : '';
+  });
   readonly bulkConfirmMessage = computed(() =>
     this.pendingBulk() === 'revoke'
       ? $localize`:@@featureAdminOffers-bulkRevokeMessage:${this.selectedPendingResponse().length}:count: offers awaiting a response will be revoked. Customers can no longer accept them.`
@@ -460,6 +487,8 @@ export class AdminOffersPageComponent implements OnInit {
     { id: 'audit', label: this.auditLabel, icon: 'clock-history' },
     ...(this.canArchiveOffer(offer) ? [{ id: 'archive', label: DB_DL_ARCHIVE, icon: 'archive' }] : []),
     ...(this.canSendOffer(offer) ? [{ id: 'send', label: DB_DL_SEND, icon: 'send' }] : []),
+    ...(this.canAcceptOffer(offer) ? [{ id: 'accept', label: this.acceptLabel, icon: 'check-circle' }] : []),
+    ...(this.canDeclineOffer(offer) ? [{ id: 'decline', label: this.declineLabel, icon: 'x-circle' }] : []),
     ...(this.canRevokeOffer(offer) ? [{ id: 'revoke', label: this.revokeLabel, icon: 'slash-circle' }] : []),
     ...(this.canDeleteOffer(offer)
       ? [{ id: 'delete', label: this.deleteLabel, icon: 'trash', danger: true, dividerBefore: true }]
@@ -575,6 +604,8 @@ export class AdminOffersPageComponent implements OnInit {
     else if (action === 'audit') this.openAuditHistory(offer);
     else if (action === 'archive') this.openArchiveDialog([offer]);
     else if (action === 'send') this.openSendDialog(offer);
+    else if (action === 'accept') this.openAcceptDialog(offer);
+    else if (action === 'decline') this.openDeclineDialog(offer);
     else if (action === 'revoke') this.openRevokeDialog(offer);
     else if (action === 'delete') this.openDeleteModal(offer);
     else if (action === 'copy-id') fpcCopyText(offer.id);
@@ -648,6 +679,45 @@ export class AdminOffersPageComponent implements OnInit {
     this.pendingRevoke.set(null);
 
     if (offer) this.facade.revokeOffer(offer.id, { notifyCustomer: this.revokeNotifyCustomer });
+  }
+
+  /** The customer accepted outside the system: both emails default to on (they gave their answer, so they expect it). */
+  openAcceptDialog(offer: AdminOfferListItem): void {
+    if (!this.canAcceptOffer(offer)) return;
+
+    this.previewOfferModalOpen.set(false);
+    this.acceptNotifyCustomer = true;
+    this.acceptNotifyInvoices = true;
+    this.pendingAccept.set(offer);
+  }
+
+  confirmAccept(): void {
+    const offer = this.pendingAccept();
+
+    this.pendingAccept.set(null);
+
+    if (offer) {
+      this.facade.acceptOffer(offer.id, {
+        notifyCustomer: this.acceptNotifyCustomer,
+        notifyInvoices: this.acceptNotifyInvoices,
+      });
+    }
+  }
+
+  openDeclineDialog(offer: AdminOfferListItem): void {
+    if (!this.canDeclineOffer(offer)) return;
+
+    this.previewOfferModalOpen.set(false);
+    this.declineNotifyCustomer = true;
+    this.pendingDecline.set(offer);
+  }
+
+  confirmDecline(): void {
+    const offer = this.pendingDecline();
+
+    this.pendingDecline.set(null);
+
+    if (offer) this.facade.declineOffer(offer.id, { notifyCustomer: this.declineNotifyCustomer });
   }
 
   /** Opens the bulk confirm dialog; the revoke notification defaults to on. */
@@ -891,6 +961,16 @@ export class AdminOffersPageComponent implements OnInit {
   /** Server flag: archived without notification and not expired yet. */
   canSendOffer(offer: Pick<AdminOfferListItem, 'canSend'>): boolean {
     return offer.canSend === true;
+  }
+
+  /** Server flag: exactly the offers the customer could accept themselves (archived, not expired). */
+  canAcceptOffer(offer: Pick<AdminOfferListItem, 'canAccept'>): boolean {
+    return offer.canAccept === true;
+  }
+
+  /** Server flag: exactly the offers the customer could decline themselves (archived). */
+  canDeclineOffer(offer: Pick<AdminOfferListItem, 'canDecline'>): boolean {
+    return offer.canDecline === true;
   }
 
   canRevokeOffer(offer: AdminOfferListItem): boolean {

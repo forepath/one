@@ -4,6 +4,7 @@ import { DeliveryTermsCode } from '../../constants/document-terms.constants';
 import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
 import { OfferStatus } from '../constants/offer-status.constants';
 
+import { OfferResponseService } from './offer-response.service';
 import { OffersCustomerService } from './offers-customer.service';
 
 describe('OffersCustomerService status guards', () => {
@@ -12,6 +13,7 @@ describe('OffersCustomerService status guards', () => {
     countPendingForUser: jest.fn(),
     countByUserAndStatus: jest.fn(),
     update: jest.fn(),
+    claimResponse: jest.fn(),
     findPendingByUserId: jest.fn(),
     findHistoryByUserId: jest.fn(),
   };
@@ -22,25 +24,34 @@ describe('OffersCustomerService status guards', () => {
   };
   const offerArchiveService = { getPdfBuffer: jest.fn() };
   const offerFulfillmentService = { fulfillAcceptedOffer: jest.fn() };
-  const billingEmailPublisher = { publishOfferAcceptedConfirmation: jest.fn() };
+  const billingEmailPublisher = {
+    publishOfferAcceptedConfirmation: jest.fn(),
+    publishOfferDeclinedConfirmation: jest.fn(),
+  };
   const billingNotificationPublisher = { publishOffer: jest.fn() };
   const billingSearchIndexService = { scheduleUpsert: jest.fn() };
   const auditLog = { log: jest.fn() };
-  const service = new OffersCustomerService(
+  // The real shared accept / decline service: the customer path is tested end to end through it.
+  const offerResponseService = new OfferResponseService(
     offersRepository as never,
-    offerLineItemsRepository as never,
     customerProfilesService as never,
     offerFulfillmentService as never,
     billingEmailPublisher as never,
     billingNotificationPublisher as never,
     billingSearchIndexService as never,
     auditLog as never,
+  );
+  const service = new OffersCustomerService(
+    offersRepository as never,
+    offerLineItemsRepository as never,
     offerArchiveService as never,
     new BillingDocumentTermsConfigService(),
+    offerResponseService,
   );
 
   beforeEach(() => {
     jest.clearAllMocks();
+    offersRepository.claimResponse.mockResolvedValue(true);
   });
 
   it('pages the pending offers of the caller (limit / offset / search passed, total returned)', async () => {
@@ -92,7 +103,7 @@ describe('OffersCustomerService status guards', () => {
     });
 
     await expect(service.accept('user-1', 'offer-1')).rejects.toBeInstanceOf(BadRequestException);
-    expect(offersRepository.update).not.toHaveBeenCalled();
+    expect(offersRepository.claimResponse).not.toHaveBeenCalled();
   });
 
   it('rejects accept when offer belongs to another user', async () => {
@@ -187,14 +198,127 @@ describe('OffersCustomerService status guards', () => {
       acceptedAt: new Date('2026-01-02T00:00:00.000Z'),
     };
 
-    offersRepository.findByIdOrThrow.mockResolvedValueOnce(archivedOffer).mockResolvedValueOnce(acceptedOffer);
+    offersRepository.findByIdOrThrow.mockResolvedValueOnce(archivedOffer).mockResolvedValue(acceptedOffer);
     customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile-1' });
     customerProfilesService.isProfileComplete.mockReturnValue(true);
-    offersRepository.update.mockResolvedValue(acceptedOffer);
 
     const result = await service.accept('user-1', 'offer-1');
 
     expect(result.status).toBe(OfferStatus.ACCEPTED);
-    expect(offerFulfillmentService.fulfillAcceptedOffer).toHaveBeenCalledWith('offer-1');
+    expect(offersRepository.claimResponse).toHaveBeenCalledWith(
+      'offer-1',
+      expect.objectContaining({ status: OfferStatus.ACCEPTED, acceptedAt: expect.any(Date) }),
+    );
+    expect(offerFulfillmentService.fulfillAcceptedOffer).toHaveBeenCalledWith('offer-1', {
+      skipInvoiceNotification: false,
+    });
+    expect(billingEmailPublisher.publishOfferAcceptedConfirmation).toHaveBeenCalledWith(acceptedOffer);
+    expect(auditLog.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        process: 'offer.accept',
+        message: 'Customer accepted offer',
+        userId: 'user-1',
+        context: { offerNumber: 'OFF-2026-00001' },
+      }),
+    );
+  });
+
+  it('accepts an archived offer that was never sent through the system', async () => {
+    const unsent = {
+      id: 'offer-1',
+      userId: 'user-1',
+      status: OfferStatus.ARCHIVED,
+      expiresAt: null,
+      offerNumber: 'OFF-1',
+      currency: 'EUR',
+      totalGross: 119,
+      sentAt: null,
+    };
+
+    offersRepository.findByIdOrThrow
+      .mockResolvedValueOnce(unsent)
+      .mockResolvedValue({ ...unsent, status: OfferStatus.ACCEPTED });
+    customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile-1' });
+    customerProfilesService.isProfileComplete.mockReturnValue(true);
+
+    await expect(service.accept('user-1', 'offer-1')).resolves.toEqual(
+      expect.objectContaining({ status: OfferStatus.ACCEPTED }),
+    );
+  });
+
+  it('rejects accept when a concurrent answer changed the offer first (fulfills nothing)', async () => {
+    offersRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'offer-1',
+      userId: 'user-1',
+      status: OfferStatus.ARCHIVED,
+      expiresAt: null,
+    });
+    customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile-1' });
+    customerProfilesService.isProfileComplete.mockReturnValue(true);
+    offersRepository.claimResponse.mockResolvedValue(false);
+
+    await expect(service.accept('user-1', 'offer-1')).rejects.toBeInstanceOf(BadRequestException);
+    expect(offerFulfillmentService.fulfillAcceptedOffer).not.toHaveBeenCalled();
+    expect(billingEmailPublisher.publishOfferAcceptedConfirmation).not.toHaveBeenCalled();
+  });
+
+  it('rejects accept of an expired offer and with an incomplete profile', async () => {
+    offersRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'offer-1',
+      userId: 'user-1',
+      status: OfferStatus.ARCHIVED,
+      expiresAt: new Date('2000-01-01T00:00:00.000Z'),
+    });
+
+    await expect(service.accept('user-1', 'offer-1')).rejects.toThrow('Offer has expired');
+
+    offersRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'offer-1',
+      userId: 'user-1',
+      status: OfferStatus.ARCHIVED,
+      expiresAt: null,
+    });
+    customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile-1' });
+    customerProfilesService.isProfileComplete.mockReturnValue(false);
+
+    await expect(service.accept('user-1', 'offer-1')).rejects.toThrow(
+      'Customer profile must be complete before accepting offer',
+    );
+    expect(offersRepository.claimResponse).not.toHaveBeenCalled();
+  });
+
+  it('declines an archived offer without emailing the customer', async () => {
+    const archived = { id: 'offer-1', userId: 'user-1', status: OfferStatus.ARCHIVED, offerNumber: 'OFF-1' };
+
+    offersRepository.findByIdOrThrow
+      .mockResolvedValueOnce(archived)
+      .mockResolvedValue({ ...archived, status: OfferStatus.DECLINED, totalGross: 1, currency: 'EUR' });
+
+    const result = await service.decline('user-1', 'offer-1');
+
+    expect(result.status).toBe(OfferStatus.DECLINED);
+    expect(offersRepository.claimResponse).toHaveBeenCalledWith(
+      'offer-1',
+      expect.objectContaining({ status: OfferStatus.DECLINED, declinedAt: expect.any(Date) }),
+    );
+    expect(billingEmailPublisher.publishOfferDeclinedConfirmation).not.toHaveBeenCalled();
+    expect(auditLog.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        process: 'offer.decline',
+        message: 'Customer declined offer',
+        context: { offerNumber: 'OFF-1' },
+      }),
+    );
+  });
+
+  it("rejects decline of another customer's offer", async () => {
+    offersRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'offer-1',
+      userId: 'other',
+      status: OfferStatus.ARCHIVED,
+    });
+
+    await expect(service.decline('user-1', 'offer-1')).rejects.toBeInstanceOf(ForbiddenException);
+    expect(offersRepository.claimResponse).not.toHaveBeenCalled();
   });
 });

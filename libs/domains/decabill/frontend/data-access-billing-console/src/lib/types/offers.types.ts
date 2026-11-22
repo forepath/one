@@ -98,6 +98,10 @@ export interface AdminOfferListItem {
   canSend?: boolean;
   /** Whether the customer is emailed when the offer expires. */
   notifyOnExpiry?: boolean;
+  /** The customer could accept it (archived, not expired): an admin may record the acceptance. */
+  canAccept?: boolean;
+  /** The customer could decline it (archived): an admin may record the decline. */
+  canDecline?: boolean;
 }
 
 /** Archive options; omitted flags default to `true` on the server. */
@@ -110,6 +114,20 @@ export interface ArchiveAdminOfferDto {
 
 /** Revoke options; the customer is only notified about offers that were sent to them. */
 export interface RevokeAdminOfferDto {
+  notifyCustomer?: boolean;
+}
+
+/** Records the customer's acceptance; omitted flags default to `true` on the server. */
+export interface AcceptAdminOfferDto {
+  /** Email the acceptance confirmation. */
+  notifyCustomer?: boolean;
+  /** Email the invoices issued right away by the acceptance. */
+  notifyInvoices?: boolean;
+}
+
+/** Records the customer's decline; omitted flag defaults to `true` on the server. */
+export interface DeclineAdminOfferDto {
+  /** Email the decline confirmation. */
   notifyCustomer?: boolean;
 }
 

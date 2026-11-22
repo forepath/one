@@ -1,15 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { mapEffectiveDocumentTermsToResponse } from '../../dto/document-terms.dto';
-import { BillingEmailPublisher } from '../../email/billing-email.publisher';
-import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
-import { mapOfferToSearchDocument } from '../../search/billing-search-document.mapper';
-import { BillingSearchIndexService } from '../../search/billing-search-index.service';
-import { BillingAuditLogService } from '../../services/billing-audit-log.service';
 import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
-import { CustomerProfilesService } from '../../services/customer-profiles.service';
 import { documentTermsLayerFromFields } from '../../utils/document-terms.utils';
-import { getRequiredTenantId } from '../../utils/tenant-query.utils';
 import { OfferStatus } from '../constants/offer-status.constants';
 import type {
   CustomerOfferDetailResponseDto,
@@ -22,21 +15,16 @@ import { OffersRepository } from '../repositories/offers.repository';
 import { mapOfferLineItemToResponse } from '../utils/map-offer-line-items.util';
 
 import { OfferArchiveService } from './offer-archive.service';
-import { OfferFulfillmentService } from './offer-fulfillment.service';
+import { OfferResponseService } from './offer-response.service';
 
 @Injectable()
 export class OffersCustomerService {
   constructor(
     private readonly offersRepository: OffersRepository,
     private readonly offerLineItemsRepository: OfferLineItemsRepository,
-    private readonly customerProfilesService: CustomerProfilesService,
-    private readonly offerFulfillmentService: OfferFulfillmentService,
-    private readonly billingEmailPublisher: BillingEmailPublisher,
-    private readonly billingNotificationPublisher: BillingNotificationPublisher,
-    private readonly billingSearchIndexService: BillingSearchIndexService,
-    private readonly auditLog: BillingAuditLogService,
     private readonly offerArchiveService: OfferArchiveService,
     private readonly documentTermsConfig: BillingDocumentTermsConfigService,
+    private readonly offerResponseService: OfferResponseService,
   ) {}
 
   async getSummary(userId: string): Promise<OffersSummaryResponseDto> {
@@ -110,57 +98,15 @@ export class OffersCustomerService {
   async accept(userId: string, offerId: string): Promise<CustomerOfferDetailResponseDto> {
     const offer = await this.assertCustomerOffer(userId, offerId, [OfferStatus.ARCHIVED]);
 
-    if (offer.expiresAt && offer.expiresAt.getTime() <= Date.now()) {
-      throw new BadRequestException('Offer has expired');
-    }
-
-    const profile = await this.customerProfilesService.getByUserId(userId);
-
-    if (!this.customerProfilesService.isProfileComplete(profile)) {
-      throw new BadRequestException('Customer profile must be complete before accepting offer');
-    }
-
-    const acceptedAt = new Date();
-    const accepted = await this.offersRepository.update(offerId, {
-      status: OfferStatus.ACCEPTED,
-      acceptedAt,
-    });
-
-    await this.auditLog.log({
-      process: 'offer.accept',
-      level: 'info',
-      message: 'Customer accepted offer',
-      offerId,
-      userId,
-      context: { offerNumber: accepted.offerNumber },
-    });
-
-    await this.offerFulfillmentService.fulfillAcceptedOffer(accepted.id);
-    await this.billingEmailPublisher.publishOfferAcceptedConfirmation(accepted);
-    this.billingNotificationPublisher.publishOffer('offer.accepted', accepted);
-    this.billingSearchIndexService.scheduleUpsert('offers', mapOfferToSearchDocument(accepted, getRequiredTenantId()));
+    await this.offerResponseService.accept(offer, { kind: 'customer' });
 
     return await this.getDetail(userId, offerId);
   }
 
   async decline(userId: string, offerId: string): Promise<CustomerOfferDetailResponseDto> {
-    await this.assertCustomerOffer(userId, offerId, [OfferStatus.ARCHIVED]);
-    const declined = await this.offersRepository.update(offerId, {
-      status: OfferStatus.DECLINED,
-      declinedAt: new Date(),
-    });
+    const offer = await this.assertCustomerOffer(userId, offerId, [OfferStatus.ARCHIVED]);
 
-    await this.auditLog.log({
-      process: 'offer.decline',
-      level: 'info',
-      message: 'Customer declined offer',
-      offerId,
-      userId,
-      context: { offerNumber: declined.offerNumber },
-    });
-
-    this.billingNotificationPublisher.publishOffer('offer.declined', declined);
-    this.billingSearchIndexService.scheduleUpsert('offers', mapOfferToSearchDocument(declined, getRequiredTenantId()));
+    await this.offerResponseService.decline(offer, { kind: 'customer' });
 
     return await this.getDetail(userId, offerId);
   }

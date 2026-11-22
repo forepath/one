@@ -100,6 +100,20 @@ export class OffersRepository {
     return (result.affected ?? 0) === 1;
   }
 
+  /**
+   * Atomically moves an archived offer into the customer's answer (accepted / declined), only while it is still
+   * archived: a customer and an admin answering at the same time (or a double click) cannot both win, so the offer is
+   * fulfilled once. Resolves `false` when the offer changed in between. Call after a tenant-scoped lookup.
+   */
+  async claimResponse(
+    id: string,
+    data: Pick<OfferEntity, 'status'> & Partial<Pick<OfferEntity, 'acceptedAt' | 'declinedAt'>>,
+  ): Promise<boolean> {
+    const result = await this.repository.update({ id, status: OfferStatus.ARCHIVED }, data);
+
+    return (result.affected ?? 0) === 1;
+  }
+
   /** Undoes `claimSent` when the email could not be queued, so the offer can be sent again. */
   async releaseSent(id: string, at: Date): Promise<void> {
     await this.repository.update({ id, sentAt: at }, { sentAt: null });

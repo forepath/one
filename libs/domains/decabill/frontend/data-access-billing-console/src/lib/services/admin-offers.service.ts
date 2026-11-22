@@ -14,6 +14,8 @@ import type {
   OfferStatisticsResponse,
   PaginatedOffersResponse,
   RevokeAdminOfferDto,
+  AcceptAdminOfferDto,
+  DeclineAdminOfferDto,
   UpdateAdminOfferDto,
 } from '../types/offers.types';
 import type { AdminOfferListItem } from '../types/offers.types';
@@ -62,6 +64,16 @@ export class AdminOffersService {
 
   revoke(id: string, dto?: RevokeAdminOfferDto): Observable<AdminOfferDetailResponse> {
     return this.http.post<AdminOfferDetailResponse>(`${this.apiUrl}/admin/billing/offers/${id}/revoke`, dto ?? {});
+  }
+
+  /** Records the customer's acceptance given outside the system. */
+  accept(id: string, dto?: AcceptAdminOfferDto): Observable<AdminOfferDetailResponse> {
+    return this.http.post<AdminOfferDetailResponse>(`${this.apiUrl}/admin/billing/offers/${id}/accept`, dto ?? {});
+  }
+
+  /** Records the customer's decline given outside the system. */
+  decline(id: string, dto?: DeclineAdminOfferDto): Observable<AdminOfferDetailResponse> {
+    return this.http.post<AdminOfferDetailResponse>(`${this.apiUrl}/admin/billing/offers/${id}/decline`, dto ?? {});
   }
 
   /** Stored PDF of a sent offer (`404` while the offer is a draft). */

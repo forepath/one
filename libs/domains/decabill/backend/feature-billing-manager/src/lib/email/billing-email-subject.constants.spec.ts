@@ -88,6 +88,13 @@ describe('BILLING_EMAIL_SUBJECTS', () => {
     );
   });
 
+  it('builds the offer declined subject and allowlists its event', () => {
+    expect(resolveEmailSubject(BILLING_EMAIL_SUBJECTS, 'offer-declined-confirmation', { offerNumber: 'OFF-1' })).toBe(
+      'Offer OFF-1 declined',
+    );
+    expect(BILLING_EMAIL_EVENTS).toEqual(expect.arrayContaining(['offer.accepted', 'offer.declined']));
+  });
+
   it('builds offer revoked / expired subjects and allowlists their events', () => {
     expect(resolveEmailSubject(BILLING_EMAIL_SUBJECTS, 'offer-revoked', { offerNumber: 'OFF-1' })).toBe(
       'Offer OFF-1 withdrawn',

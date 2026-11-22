@@ -102,6 +102,36 @@ describe('BillingEmailPublisher', () => {
     expect(emailDispatcher.publish.mock.calls[0]?.[0]).not.toHaveProperty('attachments');
   });
 
+  it('publishes offer accepted / declined confirmations and reports whether they were queued', async () => {
+    const offer = { id: 'offer-1', userId: 'user-1', offerNumber: 'OFF-1', totalGross: 119, currency: 'EUR' };
+
+    await expect(publisher.publishOfferAcceptedConfirmation(offer as never)).resolves.toBe(true);
+    await expect(publisher.publishOfferDeclinedConfirmation(offer as never)).resolves.toBe(true);
+    expect(emailDispatcher.publish).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ eventType: 'offer.accepted', templateKey: 'offer-accepted-confirmation' }),
+    );
+    expect(emailDispatcher.publish).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        eventType: 'offer.declined',
+        templateKey: 'offer-declined-confirmation',
+        to: 'billing@example.com',
+        templateContext: expect.objectContaining({ offerNumber: 'OFF-1', amountLabel: '119.00 EUR' }),
+      }),
+    );
+    expect(emailDispatcher.publish.mock.calls[1]?.[0]).not.toHaveProperty('attachments');
+
+    await expect(
+      publisher.publishOfferDeclinedConfirmation({ userId: 'user-1', offerNumber: null } as never),
+    ).resolves.toBe(false);
+    customerProfilesRepository.findByUserId.mockResolvedValue(null);
+    await expect(publisher.publishOfferAcceptedConfirmation({ ...offer, userId: 'user-x' } as never)).resolves.toBe(
+      false,
+    );
+    expect(emailDispatcher.publish).toHaveBeenCalledTimes(2);
+  });
+
   it('skips offer revoked / expired emails without number or recipient', async () => {
     await expect(publisher.publishOfferRevoked({ userId: 'user-1', offerNumber: null } as never)).resolves.toBe(false);
 

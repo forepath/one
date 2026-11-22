@@ -6,6 +6,12 @@ import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-
 import { AdminOffersService } from '../../services/admin-offers.service';
 
 import {
+  acceptAdminOffer,
+  acceptAdminOfferFailure,
+  acceptAdminOfferSuccess,
+  declineAdminOffer,
+  declineAdminOfferFailure,
+  declineAdminOfferSuccess,
   archiveAdminOffer,
   archiveAdminOfferFailure,
   archiveAdminOfferSuccess,
@@ -159,6 +165,34 @@ export const revokeAdminOffer$ = createEffect(
   { functional: true },
 );
 
+export const acceptAdminOffer$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminOffersService)) =>
+    actions$.pipe(
+      ofType(acceptAdminOffer),
+      switchMap(({ id, dto }) =>
+        service.accept(id, dto).pipe(
+          map((offer) => acceptAdminOfferSuccess({ offer })),
+          catchError((error) => of(acceptAdminOfferFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const declineAdminOffer$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminOffersService)) =>
+    actions$.pipe(
+      ofType(declineAdminOffer),
+      switchMap(({ id, dto }) =>
+        service.decline(id, dto).pipe(
+          map((offer) => declineAdminOfferSuccess({ offer })),
+          catchError((error) => of(declineAdminOfferFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
 export const reloadAdminOfferStatisticsAfterMutation$ = createEffect(
   (actions$ = inject(Actions)) =>
     actions$.pipe(
@@ -169,6 +203,8 @@ export const reloadAdminOfferStatisticsAfterMutation$ = createEffect(
         archiveAdminOfferSuccess,
         sendAdminOfferSuccess,
         revokeAdminOfferSuccess,
+        acceptAdminOfferSuccess,
+        declineAdminOfferSuccess,
       ),
       map(() => loadAdminOfferStatistics({ params: {} })),
     ),

@@ -1,4 +1,8 @@
 import {
+  acceptAdminOffer,
+  acceptAdminOfferFailure,
+  declineAdminOffer,
+  declineAdminOfferSuccess,
   archiveAdminOfferSuccess,
   createAdminOfferSuccess,
   loadAdminOffersSuccess,
@@ -82,5 +86,33 @@ describe('adminOffersReducer', () => {
     const failed = adminOffersReducer(sending, sendAdminOfferFailure({ error: 'no billing email' }));
 
     expect(failed).toEqual(expect.objectContaining({ sending: false, error: 'no billing email' }));
+  });
+
+  it('tracks recording the customer answer (responding flag, upsert, error)', () => {
+    const loaded = adminOffersReducer(
+      initialAdminOffersState,
+      loadAdminOffersSuccess({
+        offers: [{ ...offer, status: 'archived', canAccept: true, canDecline: true }],
+        total: 1,
+      }),
+    );
+    const responding = adminOffersReducer(loaded, acceptAdminOffer({ id: 'offer-1' }));
+
+    expect(responding.responding).toBe(true);
+    expect(adminOffersReducer(loaded, declineAdminOffer({ id: 'offer-1' })).responding).toBe(true);
+
+    const declined = adminOffersReducer(
+      responding,
+      declineAdminOfferSuccess({
+        offer: { ...offer, status: 'declined', canAccept: false, canDecline: false } as never,
+      }),
+    );
+
+    expect(declined.responding).toBe(false);
+    expect(declined.offers[0]).toEqual(expect.objectContaining({ status: 'declined', canAccept: false }));
+
+    const failed = adminOffersReducer(responding, acceptAdminOfferFailure({ error: 'Offer has expired' }));
+
+    expect(failed).toEqual(expect.objectContaining({ responding: false, error: 'Offer has expired' }));
   });
 });

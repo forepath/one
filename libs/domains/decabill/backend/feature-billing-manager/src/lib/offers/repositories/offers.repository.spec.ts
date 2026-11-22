@@ -42,6 +42,21 @@ describe('OffersRepository customer pages', () => {
     expect(qb['andWhere'].mock.calls.some(([sql]) => String(sql).includes('sent_at'))).toBe(false);
   });
 
+  it('claims an answer (accept / decline) only while the offer is still archived', async () => {
+    const update = jest.fn().mockResolvedValueOnce({ affected: 1 }).mockResolvedValueOnce({ affected: 0 });
+    const repository = new OffersRepository({ update } as never);
+    const acceptedAt = new Date('2026-11-21T10:00:00Z');
+
+    await expect(repository.claimResponse('offer-1', { status: OfferStatus.ACCEPTED, acceptedAt })).resolves.toBe(true);
+    await expect(repository.claimResponse('offer-1', { status: OfferStatus.ACCEPTED, acceptedAt })).resolves.toBe(
+      false,
+    );
+    expect(update).toHaveBeenCalledWith(
+      { id: 'offer-1', status: OfferStatus.ARCHIVED },
+      { status: OfferStatus.ACCEPTED, acceptedAt },
+    );
+  });
+
   it('claims a send only for an archived, unsent offer', async () => {
     const update = jest.fn().mockResolvedValueOnce({ affected: 1 }).mockResolvedValueOnce({ affected: 0 });
     const repository = new OffersRepository({ update } as never);

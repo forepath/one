@@ -1,6 +1,11 @@
 import { BadRequestException, ValidationPipe, type ArgumentMetadata } from '@nestjs/common';
 
-import { ArchiveAdminOfferDto, RevokeAdminOfferDto } from '../offers/dto/offer.dto';
+import {
+  AcceptAdminOfferDto,
+  ArchiveAdminOfferDto,
+  DeclineAdminOfferDto,
+  RevokeAdminOfferDto,
+} from '../offers/dto/offer.dto';
 import { BillProjectTimeDto } from '../projects/dto/project.dto';
 
 import { VoidInvoiceDto } from './admin-billing.dto';
@@ -17,6 +22,9 @@ describe('notification flags on finalizing actions (global ValidationPipe option
     ['archive offer', ArchiveAdminOfferDto, {}, 'notifyCustomer'],
     ['archive offer (expiry)', ArchiveAdminOfferDto, {}, 'notifyOnExpiry'],
     ['revoke offer', RevokeAdminOfferDto, {}, 'notifyCustomer'],
+    ['accept offer', AcceptAdminOfferDto, {}, 'notifyCustomer'],
+    ['accept offer (invoices)', AcceptAdminOfferDto, {}, 'notifyInvoices'],
+    ['decline offer', DeclineAdminOfferDto, {}, 'notifyCustomer'],
     ['void invoice', VoidInvoiceDto, {}, 'notifyCustomer'],
     ['issue invoice', IssueManualInvoiceDto, {}, 'notifyCustomer'],
     ['bill project time', BillProjectTimeDto, billTime, 'notifyCustomer'],
@@ -47,6 +55,16 @@ describe('notification flags on finalizing actions (global ValidationPipe option
     await expect(
       pipe.transform({ notifyCustomer: false, voidDocumentSentAt: '2020-01-01' }, meta(VoidInvoiceDto)),
     ).rejects.toBeInstanceOf(BadRequestException);
+
+    // An admin answer cannot smuggle in the answer timestamp, status or owner.
+    for (const extra of [{ acceptedAt: '2020-01-01' }, { status: 'accepted' }, { userId: 'x' }]) {
+      await expect(
+        pipe.transform({ notifyCustomer: false, ...extra }, meta(AcceptAdminOfferDto)),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(pipe.transform({ ...extra }, meta(DeclineAdminOfferDto))).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    }
   });
 
   it('notifies unless the caller explicitly passed false', () => {

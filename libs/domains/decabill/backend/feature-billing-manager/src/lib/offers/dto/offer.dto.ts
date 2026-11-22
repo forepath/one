@@ -214,6 +214,10 @@ export class AdminOfferListItemDto {
   canSend!: boolean;
   /** Whether the customer is emailed when the offer expires. */
   notifyOnExpiry!: boolean;
+  /** `true` while the customer could accept it (archived, not past its expiry): an admin may record the acceptance. */
+  canAccept!: boolean;
+  /** `true` while the customer could decline it (archived): an admin may record the decline. */
+  canDecline!: boolean;
 }
 
 /** `POST /admin/billing/offers/:id/archive`: finalize the draft, optionally without sending it yet. */
@@ -230,6 +234,27 @@ export class ArchiveAdminOfferDto {
 /** `POST /admin/billing/offers/:id/revoke`: like a void, the customer is emailed unless suppressed. */
 export class RevokeAdminOfferDto {
   /** Email the customer that the offer was withdrawn. Default `true`. */
+  @IsOptionalNotifyFlag()
+  notifyCustomer?: boolean;
+}
+
+/**
+ * `POST /admin/billing/offers/:id/accept`: records the customer's acceptance (e.g. given by phone or in writing) with
+ * the same checks and fulfillment as the customer accepting it themselves.
+ */
+export class AcceptAdminOfferDto {
+  /** Email the customer the acceptance confirmation. Default `true`. */
+  @IsOptionalNotifyFlag()
+  notifyCustomer?: boolean;
+
+  /** Email the invoices the acceptance issues right away (they can be sent later otherwise). Default `true`. */
+  @IsOptionalNotifyFlag('notifyInvoices')
+  notifyInvoices?: boolean;
+}
+
+/** `POST /admin/billing/offers/:id/decline`: records the customer's decline. */
+export class DeclineAdminOfferDto {
+  /** Email the customer the decline confirmation. Default `true`. */
   @IsOptionalNotifyFlag()
   notifyCustomer?: boolean;
 }
