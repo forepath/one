@@ -157,6 +157,38 @@ describe('InvoicePdfTemplateService', () => {
     expect(html).toContain('<td class="num">119.00 EUR</td>');
   });
 
+  it('prints the second address line of issuer and buyer between street and city', () => {
+    const viewModel = service.buildViewModel(invoice, lineItems, { ...issuer, addressLine2: 'Building B' }, {
+      ...buyer,
+      addressLine2: 'Floor 3',
+    } as CustomerProfileEntity);
+
+    expect(viewModel.issuer.lines).toEqual(['Street 1', 'Building B', '10115 Berlin', 'Germany']);
+    expect(viewModel.buyer.lines).toEqual(['42 Computing Lane', 'Floor 3', 'SW1A London', 'United Kingdom']);
+  });
+
+  it('skips empty second address lines', () => {
+    const viewModel = service.buildViewModel(invoice, lineItems, { ...issuer, addressLine2: '  ' }, {
+      ...buyer,
+      addressLine2: null,
+    } as unknown as CustomerProfileEntity);
+
+    expect(viewModel.issuer.lines).toEqual(['Street 1', '10115 Berlin', 'Germany']);
+    expect(viewModel.buyer.lines).toEqual(['42 Computing Lane', 'SW1A London', 'United Kingdom']);
+  });
+
+  it('escapes the second address lines', () => {
+    const html = service.buildHtml(invoice, lineItems, { ...issuer, addressLine2: '<img src=x onerror=alert(1)>' }, {
+      ...buyer,
+      addressLine2: '<script>alert(2)</script>',
+    } as CustomerProfileEntity);
+
+    expect(html).not.toContain('<img src=x onerror=alert(1)>');
+    expect(html).not.toContain('<script>alert(2)</script>');
+    expect(html).toContain('&lt;img src&#x3D;x onerror&#x3D;alert(1)&gt;');
+    expect(html).toContain('&lt;script&gt;alert(2)&lt;/script&gt;');
+  });
+
   it('buildHtml escapes user-controlled content', () => {
     const maliciousBuyer = {
       ...buyer,
@@ -432,12 +464,16 @@ describe('InvoicePdfTemplateService', () => {
       );
     });
 
-    it('keeps the own branding off supplier invoice copies', () => {
-      const presentation = { ...buildInvoicePdfPresentation(invoice), ownBranding: false };
+    it('prints the brand color but not the own logo on supplier invoice copies', () => {
+      const presentation = { ...buildInvoicePdfPresentation(invoice), ownLogo: false };
       const html = branded.buildHtml(invoice, lineItems, issuer, buyer, presentation);
 
-      expect(html).toContain('--accent: #111111;');
+      expect(branded.buildViewModel(invoice, lineItems, issuer, buyer, presentation).branding).toEqual({
+        accentColor: '#1d4ed8',
+      });
+      expect(html).toContain('--accent: #1d4ed8;');
       expect(html).not.toContain(logo);
+      expect(html).not.toContain('class="header-logo"');
     });
   });
 });

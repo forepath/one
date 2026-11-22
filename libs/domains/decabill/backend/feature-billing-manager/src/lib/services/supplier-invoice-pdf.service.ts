@@ -62,8 +62,8 @@ export class SupplierInvoicePdfService {
     const lineItemViews = lineItems.map((line) => this.toLineItemView(line));
     const presentation = {
       ...buildInvoicePdfPresentation(invoiceView, { documentIssueDate: invoice.issueDate }),
-      // Copy of a document the supplier issued: never print the own logo / brand color on it.
-      ownBranding: false,
+      // Copy of a document the supplier issued: same brand color as all documents, but never the own logo.
+      ownLogo: false,
     };
     const html = this.invoicePdfTemplateService.buildHtml(invoiceView, lineItemViews, issuer, buyer, presentation);
 
@@ -80,6 +80,7 @@ export class SupplierInvoicePdfService {
       name,
       vatId: supplier.vatId ?? '',
       addressLine1: supplier.addressLine1 ?? '',
+      addressLine2: supplier.addressLine2 ?? undefined,
       postalCode: supplier.postalCode ?? '',
       city: supplier.city ?? '',
       country: supplier.country ?? '',
@@ -92,6 +93,7 @@ export class SupplierInvoicePdfService {
       company: recipient.name,
       vatId: recipient.vatId,
       addressLine1: recipient.addressLine1,
+      addressLine2: recipient.addressLine2,
       postalCode: recipient.postalCode,
       city: recipient.city,
       country: recipient.country,

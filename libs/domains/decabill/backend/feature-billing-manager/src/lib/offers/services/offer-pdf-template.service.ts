@@ -141,9 +141,12 @@ export class OfferPdfTemplateService {
 
   private buildIssuerAddress(issuer: BillingIssuerConfig): OfferPdfViewModel['issuer'] {
     const countryLine = resolveCountryDisplayName(issuer.country);
-    const lines = [`${issuer.addressLine1}`, `${issuer.postalCode} ${issuer.city}`, countryLine ?? ''].filter(
-      (line) => line.trim().length > 0,
-    );
+    const lines = [
+      `${issuer.addressLine1}`,
+      issuer.addressLine2 ?? '',
+      `${issuer.postalCode} ${issuer.city}`,
+      countryLine ?? '',
+    ].filter((line) => line.trim().length > 0);
 
     return {
       name: issuer.name,
@@ -157,9 +160,12 @@ export class OfferPdfTemplateService {
     const name =
       buyer.company?.trim() || [buyer.firstName, buyer.lastName].filter(Boolean).join(' ').trim() || 'Customer';
     const countryLine = resolveCountryDisplayName(buyer.country);
-    const lines = [`${buyer.addressLine1}`, `${buyer.postalCode} ${buyer.city}`, countryLine ?? ''].filter(
-      (line) => line.trim().length > 0,
-    );
+    const lines = [
+      `${buyer.addressLine1}`,
+      buyer.addressLine2 ?? '',
+      `${buyer.postalCode} ${buyer.city}`,
+      countryLine ?? '',
+    ].filter((line) => line.trim().length > 0);
 
     return {
       name,

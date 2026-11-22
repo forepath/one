@@ -45,7 +45,8 @@
       .page {
         max-width: 794px;
         margin: 0 auto;
-        padding: 0;
+        /* A4 minus the 12 mm print margins is 702.99px wide: a 1px inset keeps right-hand box borders off the clip edge */
+        padding: 0 1px;
       }
 
       .header {

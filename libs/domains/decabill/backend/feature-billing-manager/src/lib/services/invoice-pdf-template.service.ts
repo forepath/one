@@ -14,9 +14,9 @@ import { buildEpcQrDataUri } from '../utils/epc-qr.util';
 import { formatPaymentReference } from '../utils/payment-reference.util';
 
 import {
+  type BillingDocumentBranding,
   BillingDocumentBrandingConfigService,
   DEFAULT_DOCUMENT_BRANDING,
-  NEUTRAL_DOCUMENT_BRANDING,
 } from './billing-document-branding-config.service';
 import type { BillingIssuerConfig } from './billing-issuer-config.service';
 import { formatAmount, formatDate, formatServicePeriod, toAmount } from './invoice-pdf-amount.util';
@@ -123,18 +123,24 @@ export class InvoicePdfTemplateService {
       ...(note ? { note } : {}),
       ...(epcQrDataUri ? { epcQrDataUri } : {}),
       ...(authenticityShortSha ? { authenticityShortSha } : {}),
-      branding:
-        presentation.ownBranding === false
-          ? NEUTRAL_DOCUMENT_BRANDING
-          : (this.brandingConfig?.getBranding() ?? DEFAULT_DOCUMENT_BRANDING),
+      branding: this.resolveBranding(presentation.ownLogo !== false),
     };
+  }
+
+  private resolveBranding(withLogo: boolean): BillingDocumentBranding {
+    const branding = this.brandingConfig?.getBranding() ?? DEFAULT_DOCUMENT_BRANDING;
+
+    return withLogo ? branding : { accentColor: branding.accentColor };
   }
 
   private buildIssuerAddress(issuer: BillingIssuerConfig): InvoicePdfAddressView {
     const countryLine = resolveCountryDisplayName(issuer.country);
-    const lines = [`${issuer.addressLine1}`, `${issuer.postalCode} ${issuer.city}`, countryLine ?? ''].filter(
-      (line) => line.trim().length > 0,
-    );
+    const lines = [
+      `${issuer.addressLine1}`,
+      issuer.addressLine2 ?? '',
+      `${issuer.postalCode} ${issuer.city}`,
+      countryLine ?? '',
+    ].filter((line) => line.trim().length > 0);
 
     return {
       name: issuer.name,
