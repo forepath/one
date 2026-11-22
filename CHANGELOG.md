@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.5.0](https://github.com/forepath/one/compare/v5.4.0...v5.5.0) (2026-11-22)
+
+
+### Features
+
+* **decabill:** admin offer accept and reject option ([#763](https://github.com/forepath/one/issues/763)) ([a2fd6a2](https://github.com/forepath/one/commit/a2fd6a264316e80082a21060ec7f66b939117396))
+* **decabill:** pdf template with color and logo ([#765](https://github.com/forepath/one/issues/765)) ([88f7c94](https://github.com/forepath/one/commit/88f7c94abf982e339a2af671733fb314d5ad4e16))
+* **shared:** global application settings ([#764](https://github.com/forepath/one/issues/764)) ([508892b](https://github.com/forepath/one/commit/508892b97aff42b7df2177a353d8570b17cf1195))
+
+
+### Bug Fixes
+
+* **decabill:** second address line on documents ([#767](https://github.com/forepath/one/issues/767)) ([01ff553](https://github.com/forepath/one/commit/01ff5531965f7144caac471966802b767939c574))
+* **shared:** failing test ([#768](https://github.com/forepath/one/issues/768)) ([71a798c](https://github.com/forepath/one/commit/71a798c93cb9bc3182a6ae718b4ce45708d63b9d))
+
 ## [5.4.0](https://github.com/forepath/one/compare/v5.3.0...v5.4.0) (2026-11-21)
 
 
