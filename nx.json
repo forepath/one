@@ -49,7 +49,8 @@
         "ci": {
           "ci": true,
           "codeCoverage": true,
-          "coverageReporters": ["json-summary", "json"]
+          "coverageReporters": ["json-summary", "json"],
+          "maxWorkers": 2
         }
       }
     },

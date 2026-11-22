@@ -174,7 +174,9 @@ jobs:
           git checkout "${{ github.event.pull_request.base.sha }}"
           rm -rf coverage coverage-base
           # Base tests run with the PR's node_modules and may fail (e.g. removed dependencies); keep partial coverage.
-          npx nx affected --target=test --parallel=3 --configuration=ci --skip-nx-cache \
+          # Resource limits are set here, not only in nx.json / jest.preset.cjs: this step runs the base commit's
+          # config, and an uncapped run (3 projects x default jest workers) can exhaust the runner and get it shut down.
+          npx nx affected --target=test --parallel=2 --maxWorkers=2 --configuration=ci --skip-nx-cache \
             || echo "::warning::Base-branch tests failed; coverage baseline may be incomplete."
           if [ -d coverage ]; then
             mv coverage coverage-base

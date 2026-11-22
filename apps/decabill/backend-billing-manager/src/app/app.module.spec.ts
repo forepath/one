@@ -25,6 +25,22 @@ function findBillingDynamicModule(
 }
 
 describe('AppModule.register', () => {
+  const originalCacheClient = process.env.CACHE_CLIENT;
+
+  beforeAll(() => {
+    // Registering the queue module creates its connection; the default GLIDE driver loads a native client that
+    // keeps Jest from exiting. ioredis only yields connection options and opens nothing until a queue starts.
+    process.env.CACHE_CLIENT = 'ioredis';
+  });
+
+  afterAll(() => {
+    if (originalCacheClient === undefined) {
+      delete process.env.CACHE_CLIENT;
+    } else {
+      process.env.CACHE_CLIENT = originalCacheClient;
+    }
+  });
+
   afterEach(() => {
     BillingModule.withContributors([]);
   });
