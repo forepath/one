@@ -4,6 +4,8 @@ export interface BillingIssuerConfig {
   name: string;
   vatId: string;
   addressLine1: string;
+  /** Not configurable via `BILLING_ISSUER_*`; set when a supplier profile is printed as the issuer. */
+  addressLine2?: string;
   postalCode: string;
   city: string;
   country: string;

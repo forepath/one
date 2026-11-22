@@ -1,6 +1,6 @@
 # Document branding
 
-Generated PDFs carry an optional **logo** and a **brand color**. Applies to invoices, credit notes (void and partial), offers, project time reports and inventory movement documents. Supplier invoice copies are documents of the supplier and never show the own logo; they use a neutral accent. Inventory labels are unchanged.
+Generated PDFs carry an optional **logo** and a **brand color**. Applies to invoices, credit notes (void and partial), offers, project time reports and inventory movement documents. Supplier invoice copies use the same brand color but never show the own logo: they are documents of the supplier, and the own logo would misattribute them. Inventory labels are unchanged.
 
 ## Settings
 

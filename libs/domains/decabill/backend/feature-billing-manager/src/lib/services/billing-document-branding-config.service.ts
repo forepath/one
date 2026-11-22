@@ -6,7 +6,7 @@ import {
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
 import { BILLING_SETTINGS } from '../constants/billing-settings.catalog';
-import { DEFAULT_DOCUMENT_BRAND_COLOR, NEUTRAL_DOCUMENT_ACCENT_COLOR } from '../constants/document-branding.constants';
+import { DEFAULT_DOCUMENT_BRAND_COLOR } from '../constants/document-branding.constants';
 
 /** Logo and accent color printed on generated documents (invoices, credit notes, offers, reports). */
 export interface BillingDocumentBranding {
@@ -19,11 +19,6 @@ export interface BillingDocumentBranding {
 /** Branding without configuration (also used where no config service is wired, e.g. unit tests). */
 export const DEFAULT_DOCUMENT_BRANDING: BillingDocumentBranding = Object.freeze({
   accentColor: DEFAULT_DOCUMENT_BRAND_COLOR,
-});
-
-/** Documents issued by a third party (supplier invoice copies): no own logo, neutral accent. */
-export const NEUTRAL_DOCUMENT_BRANDING: BillingDocumentBranding = Object.freeze({
-  accentColor: NEUTRAL_DOCUMENT_ACCENT_COLOR,
 });
 
 const LOGO_KEY = 'BILLING_DOCUMENT_LOGO';

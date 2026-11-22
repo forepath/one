@@ -24,10 +24,10 @@ export interface InvoicePdfPresentationOptions {
   /** Free-text document note (same text as the embedded BT-22 invoice note). */
   note?: string | null;
   /**
-   * Print the own document branding (logo, brand color). `false` for supplier invoice copies: their issuer is the
-   * supplier, so they get no logo and a neutral accent. Default `true`.
+   * Print the own logo. `false` for supplier invoice copies: their issuer is the supplier, so the own logo would
+   * misattribute the document. The brand color applies to every document. Default `true`.
    */
-  ownBranding?: boolean;
+  ownLogo?: boolean;
 }
 
 export interface BuildInvoicePdfPresentationOptions {
