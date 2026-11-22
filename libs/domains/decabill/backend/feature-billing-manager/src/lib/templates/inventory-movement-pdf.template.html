@@ -11,7 +11,7 @@
     />
     <style>
       :root {
-        /* Neutral print palette (shared with invoice-pdf.template.html) */
+        /* Neutral print palette (shared by the invoice, offer, time report and inventory movement templates) */
         --body-bg: #ffffff;
         --body-color: #404040;
         --body-emphasis: #111111;
@@ -20,6 +20,10 @@
         --border: #cccccc;
         --border-translucent: rgba(0, 0, 0, 0.08);
         --secondary: #666666;
+        /* Boxes: square 1px frames; the horizontal padding equals the table cell padding so text edges line up */
+        --box-pad-y: 12px;
+        --box-pad-x: 12px;
+        --stack-gap: 16px;
       }
 
       * {
@@ -47,15 +51,19 @@
       .header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 32px;
+        align-items: flex-end;
+        gap: 24px;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
       }
 
       .header-title {
         margin: 0;
         font-size: 28px;
         font-weight: 700;
-        color: var(--body-emphasis);
+        line-height: 1.2;
+        color: var(--accent);
         letter-spacing: -0.02em;
       }
 
@@ -66,11 +74,37 @@
         font-weight: 500;
       }
 
+      .header-aside {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        flex-shrink: 0;
+        text-align: right;
+      }
+
+      .header-logo {
+        display: block;
+        flex-shrink: 0;
+        width: auto;
+        max-width: 200px;
+        height: 56px;
+        object-fit: contain;
+        object-position: right center;
+      }
+
+      .box {
+        margin: 0 0 var(--stack-gap);
+        padding: var(--box-pad-y) var(--box-pad-x);
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        break-inside: avoid;
+      }
+
       .meta-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-bottom: 40px;
+        gap: 10px 16px;
       }
 
       .meta-label {
@@ -80,39 +114,34 @@
         text-transform: uppercase;
         letter-spacing: 0.06em;
         color: var(--secondary);
-        margin-bottom: 4px;
+        margin-bottom: 2px;
       }
 
       .meta-value {
         font-size: 14px;
         font-weight: 600;
         color: var(--body-emphasis);
-      }
-
-      .serial-numbers {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px 14px;
-        margin: 0 0 24px;
-        font-family: ui-monospace, Menlo, Consolas, monospace;
-        font-size: 12px;
-        color: var(--body-emphasis);
+        overflow-wrap: anywhere;
       }
 
       .line-items {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 24px;
+        margin: 0 0 var(--stack-gap);
+        border: 1px solid var(--border);
         background: var(--card-bg);
-        overflow: hidden;
       }
 
       .line-items thead {
         background: var(--surface-subtle);
       }
 
+      .line-items tr {
+        break-inside: avoid;
+      }
+
       .line-items th {
-        padding: 12px 14px;
+        padding: 9px var(--box-pad-x);
         text-align: left;
         font-size: 11px;
         font-weight: 700;
@@ -129,7 +158,7 @@
       }
 
       .line-items td {
-        padding: 12px 14px;
+        padding: 9px var(--box-pad-x);
         font-size: 13px;
         border-bottom: 1px solid var(--border-translucent);
         vertical-align: top;
@@ -148,38 +177,59 @@
       .totals-wrap {
         display: flex;
         justify-content: flex-end;
-        margin-bottom: 40px;
+        margin: 0 0 var(--stack-gap);
       }
 
-      .totals {
-        width: 280px;
+      .totals-wrap .totals {
+        width: 300px;
+        margin: 0;
       }
 
       .totals-row {
         display: flex;
         justify-content: space-between;
-        padding: 6px 0;
+        gap: 16px;
+        padding: 3px 0;
         font-size: 13px;
       }
 
+      .totals-row > span:last-child {
+        text-align: right;
+        white-space: nowrap;
+      }
+
       .totals-row.total {
-        margin-top: 8px;
-        padding-top: 12px;
+        margin-top: 6px;
+        padding-top: 8px;
         border-top: 1px solid var(--border);
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 700;
         color: var(--body-emphasis);
       }
 
+      .totals-row.total:first-child {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+      }
+
+      .box-heading {
+        margin: 0 0 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--body-emphasis);
+      }
+
       .empty {
-        padding: 24px 0;
         color: var(--secondary);
         font-style: italic;
         font-size: 13px;
       }
 
       .authenticity-mark {
-        margin-top: 28px;
+        margin: 4px 0 0;
         font-size: 10px;
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         font-weight: 600;
@@ -187,28 +237,35 @@
         color: var(--secondary);
       }
 
-      .header-number {
-        text-align: right;
+      .meta-sub {
+        display: block;
+        margin-top: 2px;
+        font-size: 12px;
+        color: var(--secondary);
       }
 
       .doc-number {
         font-size: 18px;
         font-weight: 700;
+        line-height: 1.2;
         color: var(--body-emphasis);
         letter-spacing: 0.02em;
+      }
+
+      .header-number .meta-label {
+        margin-bottom: 0;
       }
 
       .locations {
         display: grid;
         grid-template-columns: 1fr auto 1fr;
-        gap: 16px;
+        gap: var(--stack-gap);
         align-items: stretch;
-        margin-bottom: 32px;
+        margin: 0 0 var(--stack-gap);
       }
 
-      .location {
-        border: 1px solid var(--border);
-        padding: 14px 16px;
+      .locations .box {
+        margin: 0;
         min-height: 92px;
       }
 
@@ -234,24 +291,26 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       }
 
-      .meta-sub {
-        display: block;
-        margin-top: 2px;
-        font-size: 12px;
-        color: var(--secondary);
-      }
-
       .arrow {
         align-self: center;
         font-size: 22px;
         color: var(--secondary);
       }
 
+      .serial-numbers {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        margin: 0;
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 12px;
+        color: var(--body-emphasis);
+      }
+
       .barcodes {
         display: flex;
         gap: 32px;
         flex-wrap: wrap;
-        margin: 8px 0 32px;
       }
 
       .barcode-label {
@@ -265,7 +324,7 @@
       }
 
       .notes {
-        margin-bottom: 32px;
+        margin: 0;
         font-size: 13px;
         white-space: pre-wrap;
         word-break: break-word;
@@ -276,6 +335,7 @@
         grid-template-columns: 1fr 1fr;
         gap: 48px;
         margin-top: 56px;
+        break-inside: avoid;
       }
 
       .signature {
@@ -285,21 +345,32 @@
         color: var(--secondary);
       }
     </style>
+    <style>
+      /* Brand accent for the document type title only (BILLING_DOCUMENT_BRAND_COLOR, validated #rrggbb) */
+      :root {
+        --accent: {{branding.accentColor}};
+      }
+    </style>
   </head>
   <body>
     <div class="page">
       <header class="header">
-        <div>
+        <div class="header-text">
           <h1 class="header-title">{{title}}</h1>
           <p class="header-subtitle">{{companyName}}</p>
         </div>
-        <div class="header-number">
-          <span class="meta-label">Document</span>
-          <span class="doc-number">{{documentNumber}}</span>
+        <div class="header-aside">
+          {{#if branding.logoDataUri}}
+          <img class="header-logo" src="{{branding.logoDataUri}}" alt="{{companyName}}" />
+          {{/if}}
+          <div class="header-number">
+            <span class="meta-label">Document</span>
+            <span class="doc-number">{{documentNumber}}</span>
+          </div>
         </div>
       </header>
 
-      <div class="meta-grid">
+      <div class="meta-grid box">
         <div class="meta-card">
           <span class="meta-label">Date</span>
           <span class="meta-value">{{dateLabel}}</span>
@@ -356,7 +427,7 @@
 
       <div class="locations">
         {{#if source}}
-        <div class="location">
+        <div class="location box">
           <span class="meta-label">From</span>
           <div class="location-code">{{source.compartmentCode}}</div>
           <div class="location-sub">{{source.warehouseName}}</div>
@@ -366,7 +437,7 @@
           {{/if}}
         </div>
         {{else}}
-        <div class="location muted">
+        <div class="location box muted">
           <span class="meta-label">From</span>
           <div class="location-sub">{{sourcePlaceholder}}</div>
           {{#if sourcePlaceholderSub}}
@@ -376,7 +447,7 @@
         {{/if}}
         <div class="arrow">&rarr;</div>
         {{#if target}}
-        <div class="location">
+        <div class="location box">
           <span class="meta-label">To</span>
           <div class="location-code">{{target.compartmentCode}}</div>
           <div class="location-sub">{{target.warehouseName}}</div>
@@ -386,7 +457,7 @@
           {{/if}}
         </div>
         {{else}}
-        <div class="location muted">
+        <div class="location box muted">
           <span class="meta-label">To</span>
           <div class="location-sub">{{targetPlaceholder}}</div>
           {{#if targetPlaceholderSub}}
@@ -416,11 +487,13 @@
       </table>
 
       {{#if serialNumbers.length}}
-      <span class="meta-label">Serial numbers ({{serialCount}})</span>
-      <p class="serial-numbers">{{#each serialNumbers}}<span class="serial">{{this}}</span>{{/each}}</p>
+      <div class="box">
+        <span class="meta-label">Serial numbers ({{serialCount}})</span>
+        <p class="serial-numbers">{{#each serialNumbers}}<span class="serial">{{this}}</span>{{/each}}</p>
+      </div>
       {{/if}} {{#if stockLines.length}}
       <div class="totals-wrap">
-        <div class="totals">
+        <div class="totals box">
           {{#each stockLines}}
           <div class="totals-row">
             <span>{{label}}</span>
@@ -431,7 +504,7 @@
       </div>
       {{/if}}
 
-      <div class="barcodes">
+      <div class="barcodes box">
         <div>
           <span class="barcode-label">Article number</span>
           {{{articleBarcodeSvg}}}
@@ -445,8 +518,10 @@
       </div>
 
       {{#if note}}
-      <span class="meta-label">Note</span>
-      <p class="notes">{{note}}</p>
+      <div class="box">
+        <span class="meta-label">Note</span>
+        <p class="notes">{{note}}</p>
+      </div>
       {{/if}}
 
       <div class="signatures">

@@ -8,9 +8,14 @@ import {
   isValidGtin,
   renderBarcodeSvg,
 } from '@forepath/shared/shared/util-barcode';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import * as Handlebars from 'handlebars';
 
+import {
+  type BillingDocumentBranding,
+  BillingDocumentBrandingConfigService,
+  DEFAULT_DOCUMENT_BRANDING,
+} from '../../services/billing-document-branding-config.service';
 import { BillingIssuerConfigService } from '../../services/billing-issuer-config.service';
 import { InvoicePdfHtmlRendererService } from '../../services/invoice-pdf-html-renderer.service';
 import { StoredFileRegistryService } from '../../services/stored-file-registry.service';
@@ -95,6 +100,8 @@ export interface InventoryMovementPdfViewModel {
   signatureLeft: string;
   signatureRight: string;
   authenticityShortSha?: string;
+  /** Logo and accent color (`BILLING_DOCUMENT_*`). */
+  branding: BillingDocumentBranding;
 }
 
 /**
@@ -130,6 +137,7 @@ export class InventoryMovementPdfService {
     private readonly fileStorage: FileStorageService,
     private readonly storedFileRegistry: StoredFileRegistryService,
     private readonly billingIssuerConfig: BillingIssuerConfigService,
+    @Optional() private readonly brandingConfig?: BillingDocumentBrandingConfigService,
   ) {}
 
   buildViewModel(movement: InventoryMovementEntity, authenticityShortSha?: string): InventoryMovementPdfViewModel {
@@ -202,6 +210,7 @@ export class InventoryMovementPdfService {
       signatureLeft: SIGNATURES[movement.type][0],
       signatureRight: SIGNATURES[movement.type][1],
       authenticityShortSha,
+      branding: this.brandingConfig?.getBranding() ?? DEFAULT_DOCUMENT_BRANDING,
     };
   }
 

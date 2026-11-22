@@ -13,6 +13,11 @@ import { deliveryTermsFromColumns, formatDeliveryTerms, formatPaymentTerms } fro
 import { buildEpcQrDataUri } from '../utils/epc-qr.util';
 import { formatPaymentReference } from '../utils/payment-reference.util';
 
+import {
+  BillingDocumentBrandingConfigService,
+  DEFAULT_DOCUMENT_BRANDING,
+  NEUTRAL_DOCUMENT_BRANDING,
+} from './billing-document-branding-config.service';
 import type { BillingIssuerConfig } from './billing-issuer-config.service';
 import { formatAmount, formatDate, formatServicePeriod, toAmount } from './invoice-pdf-amount.util';
 import type { InvoicePdfPresentationOptions } from './invoice-pdf-presentation.util';
@@ -27,7 +32,10 @@ import type {
 export class InvoicePdfTemplateService {
   private readonly compiledTemplate = Handlebars.compile(loadInvoicePdfTemplate());
 
-  constructor(@Optional() private readonly accountingConfig?: AccountingConfigService) {}
+  constructor(
+    @Optional() private readonly accountingConfig?: AccountingConfigService,
+    @Optional() private readonly brandingConfig?: BillingDocumentBrandingConfigService,
+  ) {}
 
   buildHtml(
     invoice: InvoiceEntity,
@@ -115,6 +123,10 @@ export class InvoicePdfTemplateService {
       ...(note ? { note } : {}),
       ...(epcQrDataUri ? { epcQrDataUri } : {}),
       ...(authenticityShortSha ? { authenticityShortSha } : {}),
+      branding:
+        presentation.ownBranding === false
+          ? NEUTRAL_DOCUMENT_BRANDING
+          : (this.brandingConfig?.getBranding() ?? DEFAULT_DOCUMENT_BRANDING),
     };
   }
 

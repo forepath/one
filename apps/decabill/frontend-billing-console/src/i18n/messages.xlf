@@ -8122,6 +8122,18 @@
       <trans-unit id="featureBillingSettings-description-BILLING_DEFAULT_CURRENCY" datatype="html">
         <source>Currency of new invoices (ISO code).</source>
         </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DOCUMENT_LOGO" datatype="html">
+        <source>Document logo</source>
+        </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DOCUMENT_LOGO" datatype="html">
+        <source>Printed at the top of invoices, credit notes, offers, time reports and inventory documents (PNG, JPEG, WebP or SVG, up to about 48 KB). Remove it to print no logo at this level.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DOCUMENT_BRAND_COLOR" datatype="html">
+        <source>Document brand color</source>
+        </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DOCUMENT_BRAND_COLOR" datatype="html">
+        <source>Color of the document type (such as Invoice) on generated documents (hex, e.g. #32a852). Everything else stays neutral.</source>
+        </trans-unit>
       <trans-unit id="featureBillingSettings-title-BILLING_TAX_RATE_STANDARD" datatype="html">
         <source>Standard VAT rate (%)</source>
         </trans-unit>
@@ -11189,6 +11201,21 @@
       <trans-unit id="featureSettings-optionFalse" datatype="html">
         <source>Disabled</source>
         </trans-unit>
+      <trans-unit id="featureSettings-imagePreviewAlt" datatype="html">
+        <source>Image preview</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-imageNone" datatype="html">
+        <source>No image</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-imageRemoveTitle" datatype="html">
+        <source>Save an empty value so no image applies at this level</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-imageRemove" datatype="html">
+        <source>Remove image</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-colorPicker" datatype="html">
+        <source>Pick a color</source>
+        </trans-unit>
       <trans-unit id="featureSettings-save" datatype="html">
         <source>Save</source>
         </trans-unit>
@@ -11219,6 +11246,15 @@
       <trans-unit id="featureSettings-levelTenant" datatype="html">
         <source>Tenant</source>
         </trans-unit>
+      <trans-unit id="featureSettings-imageUnsupported" datatype="html">
+        <source>Choose a PNG, JPEG, WebP or SVG image.</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-imageTooLarge" datatype="html">
+        <source>The image is too large (at most about <x id="maxKilobytes" equiv-text="maxKilobytes"/> KB).</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-imageUnreadable" datatype="html">
+        <source>The image could not be read.</source>
+        </trans-unit>
       <trans-unit id="featureSettings-sourceTenant" datatype="html">
         <source>Tenant</source>
         </trans-unit>
@@ -11239,6 +11275,12 @@
         </trans-unit>
       <trans-unit id="featureSettings-inheritedSecretUnset" datatype="html">
         <source>Default (<x id="source" equiv-text="source"/>): not set</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-inheritedImageConfigured" datatype="html">
+        <source>Default (<x id="source" equiv-text="source"/>): image set</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-inheritedImageUnset" datatype="html">
+        <source>Default: no image</source>
         </trans-unit>
       <trans-unit id="featureSettings-inheritedValue" datatype="html">
         <source>Default (<x id="source" equiv-text="source"/>): <x id="value" equiv-text="setting.inheritedValue"/></source>

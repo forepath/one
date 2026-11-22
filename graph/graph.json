@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-21T21:26:14.841Z",
+  "generatedAt": "2026-11-22T09:27:48.946Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -459,6 +459,27 @@
       }
     },
     {
+      "id": "project:shared-backend-util-settings-overrides",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-backend-util-settings-overrides",
+        "root": "libs/domains/shared/backend/util-settings-overrides",
+        "tags": [
+          "domain:shared",
+          "scope:backend",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "shared",
+        "context": "backend",
+        "featureGroup": "util"
+      }
+    },
+    {
       "id": "project:shared-frontend-util-loading-indicator",
       "type": "lib",
       "attrs": {
@@ -778,6 +799,27 @@
       }
     },
     {
+      "id": "project:shared-frontend-data-access-settings",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-frontend-data-access-settings",
+        "root": "libs/domains/shared/frontend/data-access-settings",
+        "tags": [
+          "domain:shared",
+          "scope:frontend",
+          "type:data-access"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "shared",
+        "context": "frontend",
+        "featureGroup": "data-access"
+      }
+    },
+    {
       "id": "project:shared-backend-util-network-address",
       "type": "lib",
       "attrs": {
@@ -1031,6 +1073,27 @@
         "domain": "shared",
         "context": "backend",
         "featureGroup": "util"
+      }
+    },
+    {
+      "id": "project:shared-frontend-feature-settings",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-frontend-feature-settings",
+        "root": "libs/domains/shared/frontend/feature-settings",
+        "tags": [
+          "domain:shared",
+          "scope:frontend",
+          "type:feature"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "shared",
+        "context": "frontend",
+        "featureGroup": "feature"
       }
     },
     {
@@ -5146,6 +5209,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-controller-settings.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-controller-settings.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
       "type": "controller",
       "attrs": {
@@ -5582,6 +5654,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/context-import/update-external-import-config.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/controller-settings.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/controller-settings.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -6037,6 +6118,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/controller-settings-override.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/controller-settings-override.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/deployment-connection.entity.ts",
       "type": "entity",
       "attrs": {
@@ -6469,6 +6559,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/controller-settings.module.ts",
+      "type": "module",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/controller-settings.module.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/identity-email-bridge.module.ts",
       "type": "module",
       "attrs": {
@@ -6563,6 +6662,15 @@
       "type": "repository",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/controller-settings-overrides.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/controller-settings-overrides.repository.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -7022,6 +7130,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/context-import-orchestrator.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-settings.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-settings.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -8408,6 +8525,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing-settings.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing-settings.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "type": "controller",
       "attrs": {
@@ -8754,6 +8880,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/backorder-retry.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/billing-settings.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/billing-settings.dto.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -9312,6 +9447,15 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/billing-audit-log.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/billing-settings-override.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/billing-settings-override.entity.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -10730,6 +10874,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/billing-settings-overrides.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/billing-settings-overrides.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/cloud-init-configs.repository.ts",
       "type": "repository",
       "attrs": {
@@ -11243,6 +11396,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-document-branding-config.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-document-branding-config.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-document-terms-config.service.ts",
       "type": "service",
       "attrs": {
@@ -11274,6 +11436,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-schedule.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-settings.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-settings.service.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -13736,6 +13907,15 @@
       }
     },
     {
+      "id": "file:libs/domains/shared/backend/util-settings-overrides/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/shared/backend/util-settings-overrides/README.md",
+        "languageOrKind": "md",
+        "projectName": "shared-backend-util-settings-overrides"
+      }
+    },
+    {
       "id": "file:libs/domains/shared/frontend/util-loading-indicator/README.md",
       "type": "readme",
       "attrs": {
@@ -14094,6 +14274,41 @@
       }
     },
     {
+      "id": "file:libs/domains/shared/frontend/data-access-settings/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/data-access-settings/README.md",
+        "languageOrKind": "md",
+        "projectName": "shared-frontend-data-access-settings"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/frontend/data-access-settings/src/lib/services/settings.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/data-access-settings/src/lib/services/settings.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-frontend-data-access-settings"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/frontend/data-access-settings/src/lib/state/admin-settings",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/data-access-settings/src/lib/state/admin-settings",
+        "languageOrKind": "ts",
+        "projectName": "shared-frontend-data-access-settings",
+        "sliceName": "admin-settings",
+        "memberFiles": [
+          "admin-settings.actions.ts",
+          "admin-settings.effects.ts",
+          "admin-settings.facade.ts",
+          "admin-settings.reducer.ts",
+          "admin-settings.selectors.ts"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/shared/backend/util-network-address/README.md",
       "type": "readme",
       "attrs": {
@@ -14376,6 +14591,15 @@
         "path": "libs/domains/shared/backend/util-http-context/README.md",
         "languageOrKind": "md",
         "projectName": "shared-backend-util-http-context"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/frontend/feature-settings/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/feature-settings/README.md",
+        "languageOrKind": "md",
+        "projectName": "shared-frontend-feature-settings"
       }
     },
     {
@@ -17000,6 +17224,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/decabill/features/dashboard-and-server-control.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/features/document-branding.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/document-branding.md",
         "languageOrKind": "md"
       }
     },
@@ -20642,6 +20874,39 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/admin/settings",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/settings",
+        "operationId": "listControllerSettings",
+        "summary": "Overridable settings with their effective sources (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/admin/settings/{settingKey}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/admin/settings/{settingKey}",
+        "operationId": "upsertControllerSetting",
+        "summary": "Override one setting (value encrypted at rest)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/admin/settings/{settingKey}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/admin/settings/{settingKey}",
+        "operationId": "resetControllerSetting",
+        "summary": "Reset one setting to its default (removes the override)",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/admin/opencode/config",
       "type": "endpoint",
       "attrs": {
@@ -24051,6 +24316,39 @@
         "pathOrChannel": "/admin/billing/capabilities",
         "operationId": "getAdminBillingCapabilities",
         "summary": "Billing feature capabilities for admin UI (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/settings",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/settings",
+        "operationId": "listBillingSettings",
+        "summary": "Overridable settings with their effective sources (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/admin/billing/settings/{settingKey}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/admin/billing/settings/{settingKey}",
+        "operationId": "upsertBillingSetting",
+        "summary": "Override one setting (value encrypted at rest)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/admin/billing/settings/{settingKey}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/admin/billing/settings/{settingKey}",
+        "operationId": "resetBillingSetting",
+        "summary": "Reset one setting to its default (removes the override)",
         "specKind": "openapi"
       }
     },
@@ -30732,6 +31030,16 @@
       }
     },
     {
+      "id": "concept:agenstra-console-settings-overrides",
+      "type": "concept",
+      "attrs": {
+        "title": "Console settings overrides",
+        "docPath": "docs/agenstra/deployment/environment-configuration.md",
+        "sectionAnchor": "console-settings-overrides",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-frontend-applications-express-ssr",
       "type": "concept",
       "attrs": {
@@ -35682,6 +35990,16 @@
       }
     },
     {
+      "id": "concept:decabill-console-settings-overrides",
+      "type": "concept",
+      "attrs": {
+        "title": "Console settings overrides",
+        "docPath": "docs/decabill/deployment/environment-configuration.md",
+        "sectionAnchor": "console-settings-overrides",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-frontend-applications-express-ssr",
       "type": "concept",
       "attrs": {
@@ -37558,6 +37876,56 @@
         "title": "Error Handling",
         "docPath": "docs/decabill/features/dashboard-and-server-control.md",
         "sectionAnchor": "error-handling",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-document-branding",
+      "type": "concept",
+      "attrs": {
+        "title": "Document branding",
+        "docPath": "docs/decabill/features/document-branding.md",
+        "sectionAnchor": "document-branding",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-settings",
+      "type": "concept",
+      "attrs": {
+        "title": "Settings",
+        "docPath": "docs/decabill/features/document-branding.md",
+        "sectionAnchor": "settings",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-layout",
+      "type": "concept",
+      "attrs": {
+        "title": "Layout",
+        "docPath": "docs/decabill/features/document-branding.md",
+        "sectionAnchor": "layout",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-validation-and-security",
+      "type": "concept",
+      "attrs": {
+        "title": "Validation and security",
+        "docPath": "docs/decabill/features/document-branding.md",
+        "sectionAnchor": "validation-and-security",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-existing-documents",
+      "type": "concept",
+      "attrs": {
+        "title": "Existing documents",
+        "docPath": "docs/decabill/features/document-branding.md",
+        "sectionAnchor": "existing-documents",
         "domain": "decabill"
       }
     },
@@ -41070,6 +41438,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "project:shared-backend-util-settings-overrides",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "project:shared-backend-util-http-context",
       "type": "depends_on"
     },
@@ -41126,6 +41499,11 @@
     {
       "from": "project:decabill-frontend-feature-billing-console",
       "to": "project:shared-frontend-feature-notifications",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-feature-billing-console",
+      "to": "project:shared-frontend-feature-settings",
       "type": "depends_on"
     },
     {
@@ -41210,6 +41588,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "project:shared-backend-util-settings-overrides",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "project:shared-shared-util-network-address",
       "type": "depends_on"
     },
@@ -41246,6 +41629,11 @@
     {
       "from": "project:agenstra-frontend-feature-agent-console",
       "to": "project:shared-frontend-feature-notifications",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-console",
+      "to": "project:shared-frontend-feature-settings",
       "type": "depends_on"
     },
     {
@@ -41361,6 +41749,11 @@
     {
       "from": "project:agenstra-frontend-feature-agent-config",
       "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-backend-util-settings-overrides",
+      "to": "project:shared-backend-util-http-context",
       "type": "depends_on"
     },
     {
@@ -41574,6 +41967,21 @@
       "type": "depends_on"
     },
     {
+      "from": "project:shared-frontend-feature-settings",
+      "to": "project:shared-frontend-data-access-settings",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-feature-settings",
+      "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-feature-settings",
+      "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
       "from": "project:shared-backend-util-redis-cache",
       "to": "project:shared-backend-util-otel",
       "type": "depends_on"
@@ -41734,6 +42142,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:agenstra-backend-agent-controller",
+      "to": "project:shared-backend-util-settings-overrides",
+      "type": "depends_on"
+    },
+    {
       "from": "project:agenstra-frontend-billing-console",
       "to": "project:shared-platform-authentication",
       "type": "depends_on"
@@ -41785,6 +42198,11 @@
     },
     {
       "from": "project:decabill-frontend-billing-console",
+      "to": "project:shared-frontend-data-access-settings",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-billing-console",
       "to": "project:shared-frontend-data-access-updates",
       "type": "depends_on"
     },
@@ -41825,7 +42243,22 @@
     },
     {
       "from": "project:shared-backend-util-email",
+      "to": "project:shared-backend-util-http-context",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-backend-util-email",
+      "to": "project:shared-backend-util-settings-overrides",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-backend-util-email",
       "to": "project:shared-backend-util-otel",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-backend-util-email",
+      "to": "project:shared-shared-util-network-address",
       "type": "depends_on"
     },
     {
@@ -41864,6 +42297,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:decabill-backend-billing-manager",
+      "to": "project:shared-backend-util-settings-overrides",
+      "type": "depends_on"
+    },
+    {
       "from": "project:agenstra-frontend-agent-console",
       "to": "project:shared-platform-authentication",
       "type": "depends_on"
@@ -41886,6 +42324,11 @@
     {
       "from": "project:agenstra-frontend-agent-console",
       "to": "project:shared-frontend-data-access-notifications",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-agent-console",
+      "to": "project:shared-frontend-data-access-settings",
       "type": "depends_on"
     },
     {
@@ -45155,6 +45598,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-controller-settings.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
       "type": "contains"
     },
@@ -45396,6 +45844,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/context-import/update-external-import-config.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/controller-settings.dto.ts",
       "type": "contains"
     },
     {
@@ -45650,6 +46103,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/controller-settings-override.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/deployment-connection.entity.ts",
       "type": "contains"
     },
@@ -45890,6 +46348,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/controller-settings.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/identity-email-bridge.module.ts",
       "type": "contains"
     },
@@ -45941,6 +46404,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/controller-settings-overrides.repository.ts",
       "type": "contains"
     },
     {
@@ -46196,6 +46664,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/context-import-orchestrator.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-settings.service.ts",
       "type": "contains"
     },
     {
@@ -46945,6 +47418,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing-settings.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "type": "contains"
     },
@@ -47136,6 +47614,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/backorder-retry.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/billing-settings.dto.ts",
       "type": "contains"
     },
     {
@@ -47446,6 +47929,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/billing-audit-log.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/billing-settings-override.entity.ts",
       "type": "contains"
     },
     {
@@ -48235,6 +48723,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/billing-settings-overrides.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/cloud-init-configs.repository.ts",
       "type": "contains"
     },
@@ -48520,6 +49013,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-document-branding-config.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-document-terms-config.service.ts",
       "type": "contains"
     },
@@ -48536,6 +49034,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-schedule.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-settings.service.ts",
       "type": "contains"
     },
     {
@@ -49904,6 +50407,11 @@
       "type": "contains"
     },
     {
+      "from": "project:shared-backend-util-settings-overrides",
+      "to": "file:libs/domains/shared/backend/util-settings-overrides/README.md",
+      "type": "contains"
+    },
+    {
       "from": "project:shared-frontend-util-loading-indicator",
       "to": "file:libs/domains/shared/frontend/util-loading-indicator/README.md",
       "type": "contains"
@@ -50094,6 +50602,21 @@
       "type": "contains"
     },
     {
+      "from": "project:shared-frontend-data-access-settings",
+      "to": "file:libs/domains/shared/frontend/data-access-settings/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-data-access-settings",
+      "to": "file:libs/domains/shared/frontend/data-access-settings/src/lib/services/settings.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-data-access-settings",
+      "to": "file:libs/domains/shared/frontend/data-access-settings/src/lib/state/admin-settings",
+      "type": "contains"
+    },
+    {
       "from": "project:shared-backend-util-network-address",
       "to": "file:libs/domains/shared/backend/util-network-address/README.md",
       "type": "contains"
@@ -50231,6 +50754,11 @@
     {
       "from": "project:shared-backend-util-http-context",
       "to": "file:libs/domains/shared/backend/util-http-context/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-feature-settings",
+      "to": "file:libs/domains/shared/frontend/feature-settings/README.md",
       "type": "contains"
     },
     {
@@ -52645,6 +53173,21 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/settings",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/admin/settings/{settingKey}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/admin/settings/{settingKey}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:GET:/admin/opencode/config",
       "type": "contains"
     },
@@ -54531,6 +55074,21 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/admin/billing/capabilities",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/settings",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/admin/billing/settings/{settingKey}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/admin/billing/settings/{settingKey}",
       "type": "contains"
     },
     {
@@ -58175,6 +58733,11 @@
     },
     {
       "from": "file:docs/agenstra/deployment/environment-configuration.md",
+      "to": "concept:agenstra-console-settings-overrides",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/deployment/environment-configuration.md",
       "to": "concept:agenstra-backend-agent-controller",
       "type": "contains"
     },
@@ -61545,6 +62108,11 @@
     },
     {
       "from": "file:docs/decabill/deployment/environment-configuration.md",
+      "to": "concept:decabill-console-settings-overrides",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/deployment/environment-configuration.md",
       "to": "concept:decabill-backend-billing-manager",
       "type": "contains"
     },
@@ -62736,6 +63304,31 @@
     {
       "from": "file:docs/decabill/features/dashboard-and-server-control.md",
       "to": "concept:decabill-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/document-branding.md",
+      "to": "concept:decabill-document-branding",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/document-branding.md",
+      "to": "concept:decabill-settings",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/document-branding.md",
+      "to": "concept:decabill-layout",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/document-branding.md",
+      "to": "concept:decabill-validation-and-security",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/document-branding.md",
+      "to": "concept:decabill-existing-documents",
       "type": "contains"
     },
     {
@@ -64949,6 +65542,36 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-controller-settings.controller.ts",
+      "to": "api:HTTP:GET:/admin/settings",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/admin/settings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-controller-settings.controller.ts",
+      "to": "api:HTTP:PUT:/admin/settings/{settingKey}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:PUT:/admin/settings/{settingKey}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-controller-settings.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/settings/{settingKey}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:DELETE:/admin/settings/{settingKey}",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
       "to": "api:HTTP:GET:/admin/opencode/config",
       "type": "implements"
@@ -68704,6 +69327,36 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing-settings.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/settings",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/settings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing-settings.controller.ts",
+      "to": "api:HTTP:PUT:/admin/billing/settings/{settingKey}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:PUT:/admin/billing/settings/{settingKey}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing-settings.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/settings/{settingKey}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:DELETE:/admin/billing/settings/{settingKey}",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/subscriptions/{subscriptionId}/meters/history",
       "type": "implements"
@@ -69541,6 +70194,21 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:GET:/admin/billing/capabilities",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/settings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:PUT:/admin/billing/settings/{settingKey}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/settings/{settingKey}",
       "type": "implements"
     },
     {
@@ -71531,6 +72199,21 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/capabilities",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/settings",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:PUT:/admin/billing/settings/{settingKey}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/settings/{settingKey}",
       "type": "implements"
     },
     {
@@ -76789,6 +77472,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-controller-settings.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-settings.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config.service.ts",
       "type": "injects"
@@ -78004,6 +78692,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-settings.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/controller-settings-overrides.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-vnc-ticket.service.ts",
       "to": "file:libs/domains/shared/backend/util-redis-cache/src/lib/redis-cache.service.ts",
       "type": "injects"
@@ -79034,6 +79727,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing-settings.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-settings.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-admin.service.ts",
       "type": "injects"
@@ -79789,6 +80487,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movement-pdf.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-document-branding-config.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-movements.repository.ts",
       "type": "injects"
@@ -80056,6 +80759,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf-template.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-document-branding-config.service.ts",
       "type": "injects"
     },
     {
@@ -80514,6 +81222,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-time-report-pdf-template.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-document-branding-config.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-time-report-pdf.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-time-report-pdf-template.service.ts",
       "type": "injects"
@@ -80941,6 +81654,21 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-metrics-collector.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/repositories/project-time-entries.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-settings.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/billing-settings-overrides.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-settings.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tenants-global-views-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-settings.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-tenant.service.ts",
       "type": "injects"
     },
     {
@@ -81506,6 +82234,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-pdf-template.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/accounting/services/accounting-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-pdf-template.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-document-branding-config.service.ts",
       "type": "injects"
     },
     {
@@ -85159,6 +85892,21 @@
       "type": "provides"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/controller-settings.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-controller-settings.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/controller-settings.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/controller-settings-overrides.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/controller-settings.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-settings.service.ts",
+      "type": "provides"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/identity-email-bridge.module.ts",
       "to": "file:libs/domains/shared/backend/feature-notifications/src/lib/services/email-notification-dispatcher.service.ts",
       "type": "provides"
@@ -85401,6 +86149,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-datev-exports.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing-settings.controller.ts",
       "type": "provides"
     },
     {
@@ -85655,6 +86408,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-document-branding-config.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-bill-now.service.ts",
       "type": "provides"
     },
@@ -85681,6 +86439,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tenants-global-views-config.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/billing-settings-overrides.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-settings.service.ts",
       "type": "provides"
     },
     {
@@ -90674,6 +91442,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-console-settings-overrides",
+      "to": "api:HTTP:GET:/admin/settings",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-frontend-applications-express-ssr",
       "to": "project:agenstra-frontend-agent-console",
       "type": "documents"
@@ -93311,6 +94084,11 @@
     {
       "from": "concept:decabill-health-checks",
       "to": "api:HTTP:GET:/health",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-console-settings-overrides",
+      "to": "api:HTTP:GET:/admin/billing/settings",
       "type": "documents"
     },
     {
@@ -97629,6 +98407,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:shared-backend-util-settings-overrides",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-backend-util-settings-overrides",
+      "to": "context:backend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-backend-util-settings-overrides",
+      "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:shared-frontend-util-loading-indicator",
       "to": "domain:shared",
       "type": "belongs_to"
@@ -97851,6 +98644,21 @@
     {
       "from": "project:shared-backend-feature-notifications",
       "to": "feature-group:feature",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-data-access-settings",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-data-access-settings",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-data-access-settings",
+      "to": "feature-group:data-access",
       "type": "belongs_to"
     },
     {
@@ -98031,6 +98839,21 @@
     {
       "from": "project:shared-backend-util-http-context",
       "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-feature-settings",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-feature-settings",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-feature-settings",
+      "to": "feature-group:feature",
       "type": "belongs_to"
     },
     {
@@ -99169,6 +99992,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/decabill/features/document-branding.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/decabill/features/document-notes.md",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -100200,6 +101028,11 @@
     },
     {
       "from": "concept:agenstra-last-100-lines",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-console-settings-overrides",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -102679,6 +103512,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:decabill-console-settings-overrides",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:decabill-frontend-applications-express-ssr",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -103615,6 +104453,31 @@
     },
     {
       "from": "concept:decabill-error-handling",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-document-branding",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-settings",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-layout",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-validation-and-security",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-existing-documents",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

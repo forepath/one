@@ -98,6 +98,46 @@
   max-width: 50%;
 }
 
+.settings-manager__image {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.settings-manager__image .fpc-form-control {
+  align-self: stretch;
+}
+
+.settings-manager__image-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 4.5rem;
+  padding: 0.5rem;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  // Document logos are printed on white paper.
+  background-color: #ffffff;
+}
+
+.settings-manager__image-preview img {
+  display: block;
+  max-width: 100%;
+  max-height: 4rem;
+  object-fit: contain;
+}
+
+.settings-manager__color {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.settings-manager__color .form-control-color {
+  flex: 0 0 auto;
+}
+
 .settings-manager__actions {
   display: flex;
   flex-wrap: wrap;

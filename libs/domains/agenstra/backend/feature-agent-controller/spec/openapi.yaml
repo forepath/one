@@ -9394,6 +9394,8 @@ components:
               timezone,
               duration,
               list,
+              image,
+              color,
             ]
         scope:
           type: string
@@ -9410,6 +9412,11 @@ components:
         max: { type: number }
         defaultValue:
           { type: string, description: Built-in fallback when nothing is set }
+        maxLength:
+          {
+            type: integer,
+            description: Maximum value length (`image` settings; base64 data URI),
+          }
         value:
           {
             type: string,

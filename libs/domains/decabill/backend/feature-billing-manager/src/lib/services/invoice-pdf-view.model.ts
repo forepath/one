@@ -1,3 +1,5 @@
+import type { BillingDocumentBranding } from './billing-document-branding-config.service';
+
 export interface InvoicePdfAddressView {
   name: string;
   lines: string[];
@@ -59,4 +61,6 @@ export interface InvoicePdfViewModel {
   epcQrDataUri?: string;
   /** Identity short SHA stamped when file signing is enabled. */
   authenticityShortSha?: string;
+  /** Logo and accent color (`BILLING_DOCUMENT_*`). */
+  branding: BillingDocumentBranding;
 }

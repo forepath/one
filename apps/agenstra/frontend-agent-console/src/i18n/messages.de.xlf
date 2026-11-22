@@ -12190,6 +12190,46 @@
         <source>Enter a value to override</source>
         <target>Wert eingeben, um zu überschreiben</target>
       </trans-unit>
+      <trans-unit id="featureSettings-imagePreviewAlt" datatype="html">
+        <source>Image preview</source>
+        <target>Bildvorschau</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-imageNone" datatype="html">
+        <source>No image</source>
+        <target>Kein Bild</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-imageRemoveTitle" datatype="html">
+        <source>Save an empty value so no image applies at this level</source>
+        <target>Einen leeren Wert speichern, damit auf dieser Ebene kein Bild gilt</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-imageRemove" datatype="html">
+        <source>Remove image</source>
+        <target>Bild entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-colorPicker" datatype="html">
+        <source>Pick a color</source>
+        <target>Farbe wählen</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-imageUnsupported" datatype="html">
+        <source>Choose a PNG, JPEG, WebP or SVG image.</source>
+        <target>Wählen Sie ein PNG-, JPEG-, WebP- oder SVG-Bild.</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-imageTooLarge" datatype="html">
+        <source>The image is too large (at most about <x id="maxKilobytes" equiv-text="maxKilobytes"/> KB).</source>
+        <target>Das Bild ist zu groß (höchstens etwa <x id="maxKilobytes" equiv-text="maxKilobytes"/> KB).</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-imageUnreadable" datatype="html">
+        <source>The image could not be read.</source>
+        <target>Das Bild konnte nicht gelesen werden.</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-inheritedImageConfigured" datatype="html">
+        <source>Default (<x id="source" equiv-text="source"/>): image set</source>
+        <target>Standard (<x id="source" equiv-text="source"/>): Bild gesetzt</target>
+      </trans-unit>
+      <trans-unit id="featureSettings-inheritedImageUnset" datatype="html">
+        <source>Default: no image</source>
+        <target>Standard: kein Bild</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

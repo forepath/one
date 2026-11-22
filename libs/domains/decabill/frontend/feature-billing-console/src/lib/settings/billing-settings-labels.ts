@@ -142,6 +142,14 @@ export const BILLING_SETTINGS_LABELS: SettingsAdminLabels = {
       title: $localize`:@@featureBillingSettings-title-BILLING_DEFAULT_CURRENCY:Currency`,
       description: $localize`:@@featureBillingSettings-description-BILLING_DEFAULT_CURRENCY:Currency of new invoices (ISO code).`,
     },
+    BILLING_DOCUMENT_LOGO: {
+      title: $localize`:@@featureBillingSettings-title-BILLING_DOCUMENT_LOGO:Document logo`,
+      description: $localize`:@@featureBillingSettings-description-BILLING_DOCUMENT_LOGO:Printed at the top of invoices, credit notes, offers, time reports and inventory documents (PNG, JPEG, WebP or SVG, up to about 48 KB). Remove it to print no logo at this level.`,
+    },
+    BILLING_DOCUMENT_BRAND_COLOR: {
+      title: $localize`:@@featureBillingSettings-title-BILLING_DOCUMENT_BRAND_COLOR:Document brand color`,
+      description: $localize`:@@featureBillingSettings-description-BILLING_DOCUMENT_BRAND_COLOR:Color of the document type (such as Invoice) on generated documents (hex, e.g. #32a852). Everything else stays neutral.`,
+    },
     BILLING_TAX_RATE_STANDARD: {
       title: $localize`:@@featureBillingSettings-title-BILLING_TAX_RATE_STANDARD:Standard VAT rate (%)`,
       description: $localize`:@@featureBillingSettings-description-BILLING_TAX_RATE_STANDARD:Used when the EU tax table has no entry for the issuer country.`,

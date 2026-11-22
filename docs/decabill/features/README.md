@@ -130,6 +130,10 @@ Payment terms (payable within N days) and delivery terms (Incoterms® 2020 or cu
 
 Optional free-text notes on manual and project invoices, credit notes, and offers. Printed on PDFs and embedded as EN 16931 invoice note (BT-22).
 
+### [Document branding](./document-branding.md)
+
+Logo and brand color on generated PDFs (invoices, credit notes, offers, time reports, inventory movement documents), set per tenant, for all tenants, or via environment.
+
 ### [Invoices](./invoices.md)
 
 Issue, preview, download, void, and pay invoices. Open positions accumulate until each user's billing day.

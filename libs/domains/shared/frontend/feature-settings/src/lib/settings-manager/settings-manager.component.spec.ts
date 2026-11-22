@@ -156,4 +156,86 @@ describe('SettingsManagerComponent', () => {
       component.inheritedHint(setting({ inheritedValue: null, hasInheritedValue: true, inheritedSource: 'global' })),
     ).toBe('Default (All tenants): configured');
   });
+
+  describe('image settings', () => {
+    const logo = 'data:image/png;base64,iVBORw0KGgo=';
+    const image = (overrides: Partial<SettingStateView> = {}) =>
+      setting({ key: 'BILLING_DOCUMENT_LOGO', type: 'image', maxLength: 64, inheritedValue: null, ...overrides });
+    const readAs = (dataUri: string) => {
+      const original = (globalThis as { FileReader: unknown }).FileReader;
+
+      class FakeReader {
+        result: string | null = null;
+        onload: (() => void) | null = null;
+        onerror: (() => void) | null = null;
+        readAsDataURL(): void {
+          this.result = dataUri;
+          this.onload?.();
+        }
+      }
+
+      (globalThis as { FileReader: unknown }).FileReader = FakeReader;
+
+      return () => ((globalThis as { FileReader: unknown }).FileReader = original);
+    };
+    const files = (type: string) => ({ item: () => new File(['x'], 'logo', { type }) }) as unknown as FileList;
+
+    it('describes inherited images without printing the data URI', () => {
+      expect(component.inheritedHint(image({ inheritedValue: logo }))).toBe('Default (Environment): image set');
+      expect(component.inheritedHint(image({ hasInheritedValue: false }))).toBe('Default: no image');
+    });
+
+    it('previews the override, then the inherited image', () => {
+      expect(component.imagePreview(image({ value: logo, hasOverride: true }))).toBe(logo);
+      expect(component.imagePreview(image({ inheritedValue: logo }))).toBe(logo);
+      expect(component.imagePreview(image({ value: '', hasOverride: true, inheritedValue: logo }))).toBeNull();
+    });
+
+    it('reads a picked image into the draft and saves it', () => {
+      const restore = readAs(logo);
+      const target = image();
+
+      component.pickImage(target, files('image/png'));
+      restore();
+
+      expect(component.draftValue(target)).toBe(logo);
+      component.save(target);
+      expect(facade.save).toHaveBeenCalledWith('BILLING_DOCUMENT_LOGO', logo);
+    });
+
+    it('rejects unsupported and oversized files before uploading', () => {
+      const target = image();
+
+      component.pickImage(target, files('image/gif'));
+      expect(component.settingError(target)).toContain('PNG, JPEG, WebP or SVG');
+
+      const restore = readAs(`data:image/png;base64,${'A'.repeat(100)}`);
+
+      component.pickImage(target, files('image/png'));
+      restore();
+
+      expect(component.settingError(target)).toContain('too large');
+      expect(component.isDirty(target)).toBe(false);
+    });
+
+    it('saves an empty value to remove an inherited image at this level', () => {
+      const target = image({ inheritedValue: logo });
+
+      component.setDraft(target, '');
+
+      expect(component.settingError(target)).toBeNull();
+      expect(component.isDirty(target)).toBe(true);
+      component.save(target);
+      expect(facade.save).toHaveBeenCalledWith('BILLING_DOCUMENT_LOGO', '');
+    });
+  });
+
+  it('keeps the color picker on a valid color', () => {
+    const color = setting({ key: 'BILLING_DOCUMENT_BRAND_COLOR', type: 'color', defaultValue: '#32a852' });
+
+    expect(component.colorPickerValue({ ...color, inheritedValue: null })).toBe('#32a852');
+    expect(component.colorPickerValue({ ...color, inheritedValue: '#1D4ED8' })).toBe('#1d4ed8');
+    component.pickColor(color, { target: { value: '#ff0000' } } as unknown as Event);
+    expect(component.draftValue(color)).toBe('#ff0000');
+  });
 });

@@ -9134,6 +9134,36 @@
       <trans-unit id="featureSettings-secretEnter" datatype="html">
         <source>Enter a value to override</source>
         </trans-unit>
+      <trans-unit id="featureSettings-imagePreviewAlt" datatype="html">
+        <source>Image preview</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-imageNone" datatype="html">
+        <source>No image</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-imageRemoveTitle" datatype="html">
+        <source>Save an empty value so no image applies at this level</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-imageRemove" datatype="html">
+        <source>Remove image</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-colorPicker" datatype="html">
+        <source>Pick a color</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-imageUnsupported" datatype="html">
+        <source>Choose a PNG, JPEG, WebP or SVG image.</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-imageTooLarge" datatype="html">
+        <source>The image is too large (at most about <x id="maxKilobytes" equiv-text="maxKilobytes"/> KB).</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-imageUnreadable" datatype="html">
+        <source>The image could not be read.</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-inheritedImageConfigured" datatype="html">
+        <source>Default (<x id="source" equiv-text="source"/>): image set</source>
+        </trans-unit>
+      <trans-unit id="featureSettings-inheritedImageUnset" datatype="html">
+        <source>Default: no image</source>
+        </trans-unit>
     </body>
   </file>
 </xliff>

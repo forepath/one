@@ -41,6 +41,10 @@ interface LevelOption {
 
 /** Option id of the override for all tenants in the level switch. */
 const GLOBAL_OPTION_ID = '__global__';
+/** Image types the backend accepts for `image` settings (base64 data URIs). */
+const IMAGE_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+const DEFAULT_IMAGE_MAX_LENGTH = 65536;
+const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
 
 @Component({
   selector: 'shared-settings-manager',
@@ -83,6 +87,10 @@ export class SettingsManagerComponent implements OnInit {
   readonly levelSwitchOpen = signal(false);
   /** Edited values per setting key (absent = untouched). */
   readonly drafts = signal<Record<string, string>>({});
+  /** Client-side errors of picked image files per setting key. */
+  readonly fileErrors = signal<Record<string, string>>({});
+
+  readonly imageAccept = IMAGE_MIME_TYPES.join(',');
 
   /** Level switch: only when the caller may configure more than the own tenant. */
   readonly levelOptions = computed<LevelOption[]>(() => {
@@ -198,7 +206,83 @@ export class SettingsManagerComponent implements OnInit {
 
   setDraft(setting: SettingStateView, value: string | null | undefined): void {
     this.drafts.update((drafts) => ({ ...drafts, [setting.key]: value ?? '' }));
+    this.setFileError(setting, null);
     this.facade.clearError(setting.key);
+  }
+
+  /** Reads a picked image into a base64 data URI draft (the backend validates the bytes again). */
+  pickImage(setting: SettingStateView, files: FileList | null): void {
+    const file = files?.item(0);
+
+    if (!file) {
+      return;
+    }
+
+    if (!IMAGE_MIME_TYPES.includes(file.type)) {
+      this.setFileError(setting, $localize`:@@featureSettings-imageUnsupported:Choose a PNG, JPEG, WebP or SVG image.`);
+
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const dataUri = typeof reader.result === 'string' ? reader.result : '';
+      const maxLength = setting.maxLength ?? DEFAULT_IMAGE_MAX_LENGTH;
+
+      if (dataUri.length > maxLength) {
+        const maxKilobytes = Math.floor((maxLength * 3) / 4 / 1024);
+
+        this.setFileError(
+          setting,
+          $localize`:@@featureSettings-imageTooLarge:The image is too large (at most about ${maxKilobytes}:maxKilobytes: KB).`,
+        );
+
+        return;
+      }
+
+      this.setDraft(setting, dataUri);
+    };
+
+    reader.onerror = () =>
+      this.setFileError(setting, $localize`:@@featureSettings-imageUnreadable:The image could not be read.`);
+    reader.readAsDataURL(file);
+  }
+
+  pickColor(setting: SettingStateView, event: Event): void {
+    this.setDraft(setting, (event.target as HTMLInputElement).value);
+  }
+
+  /** Image shown for an `image` setting: the edited / overridden / inherited value, if any. */
+  imagePreview(setting: SettingStateView): string | null {
+    const value = this.draftValue(setting);
+
+    return value.startsWith('data:image/') ? value : null;
+  }
+
+  /** Value of the native color picker (it cannot be empty): the draft, else the default, else black. */
+  colorPickerValue(setting: SettingStateView): string {
+    const value = this.draftValue(setting);
+
+    if (HEX_COLOR_PATTERN.test(value)) {
+      return value.toLowerCase();
+    }
+
+    return setting.defaultValue && HEX_COLOR_PATTERN.test(setting.defaultValue) ? setting.defaultValue : '#000000';
+  }
+
+  private setFileError(setting: SettingStateView, message: string | null): void {
+    this.fileErrors.update((errors) => {
+      const next = { ...errors };
+
+      if (message) {
+        next[setting.key] = message;
+      } else {
+        delete next[setting.key];
+      }
+
+      return next;
+    });
   }
 
   isDirty(setting: SettingStateView): boolean {
@@ -216,7 +300,7 @@ export class SettingsManagerComponent implements OnInit {
   }
 
   settingError(setting: SettingStateView): string | null {
-    return this.settingErrors()[setting.key] ?? null;
+    return this.fileErrors()[setting.key] ?? this.settingErrors()[setting.key] ?? null;
   }
 
   save(setting: SettingStateView): void {
@@ -238,6 +322,7 @@ export class SettingsManagerComponent implements OnInit {
   }
 
   discard(setting: SettingStateView): void {
+    this.setFileError(setting, null);
     this.drafts.update((drafts) => {
       const next = { ...drafts };
 
@@ -255,6 +340,7 @@ export class SettingsManagerComponent implements OnInit {
     }
 
     this.drafts.set({});
+    this.fileErrors.set({});
     this.facade.load(option.target);
   }
 
@@ -262,6 +348,7 @@ export class SettingsManagerComponent implements OnInit {
     const overview = this.overview();
 
     this.drafts.set({});
+    this.fileErrors.set({});
     this.facade.load(overview ? { level: overview.level, tenantId: overview.tenantId } : null);
   }
 
@@ -338,6 +425,13 @@ export class SettingsManagerComponent implements OnInit {
       return setting.hasInheritedValue
         ? $localize`:@@featureSettings-inheritedSecretConfigured:Default (${source}:source:): configured`
         : $localize`:@@featureSettings-inheritedSecretUnset:Default (${source}:source:): not set`;
+    }
+
+    // Images are shown as a preview, never as their (long) data URI.
+    if (setting.type === 'image') {
+      return setting.hasInheritedValue
+        ? $localize`:@@featureSettings-inheritedImageConfigured:Default (${source}:source:): image set`
+        : $localize`:@@featureSettings-inheritedImageUnset:Default: no image`;
     }
 
     if (setting.inheritedValue !== null && setting.inheritedValue !== '') {

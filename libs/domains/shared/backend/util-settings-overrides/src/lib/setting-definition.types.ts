@@ -4,6 +4,8 @@
  * - `text`: multi-line string (newlines allowed).
  * - `duration`: interval such as `60000`, `30s`, `15m`, `1h`, `1d` (job registries accept these suffixes).
  * - `list`: comma-separated values.
+ * - `image`: base64 `data:` URI of a PNG, JPEG, WebP or SVG image (never a remote URL).
+ * - `color`: hex color `#rrggbb`.
  */
 export type SettingValueType =
   | 'string'
@@ -18,7 +20,9 @@ export type SettingValueType =
   | 'cron'
   | 'timezone'
   | 'duration'
-  | 'list';
+  | 'list'
+  | 'image'
+  | 'color';
 
 /**
  * `global`: overridable deployment-wide only.
@@ -43,7 +47,7 @@ export interface SettingDefinition {
   max?: number;
   /** Documented fallback used by the code when neither override nor environment variable is set (display only). */
   defaultValue?: string;
-  /** Maximum stored length (defaults: 2048, `text` 16384). */
+  /** Maximum stored length (defaults: 2048, `text` 16384, `image` 65536). */
   maxLength?: number;
   /** `url`: require `https:` (default `false`, then `http:` is accepted as well). */
   httpsOnly?: boolean;
@@ -82,6 +86,8 @@ export interface SettingStateView {
   min?: number;
   max?: number;
   defaultValue?: string;
+  /** Maximum value length (`image` only: lets the console reject oversized files before uploading). */
+  maxLength?: number;
   /** Override stored at the viewed level. */
   value: string | null;
   hasOverride: boolean;
