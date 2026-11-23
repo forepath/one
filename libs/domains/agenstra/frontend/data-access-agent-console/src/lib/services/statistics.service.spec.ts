@@ -73,6 +73,38 @@ describe('StatisticsService', () => {
     expect(service).toBeTruthy();
   });
 
+  describe('getAdminOverview', () => {
+    it('requests the admin overview with workspace and range params', (done) => {
+      service
+        .getAdminOverview({ clientId: 'c1', from: '2026-11-01', to: '2026-11-02', groupBy: 'hour' })
+        .subscribe((result) => {
+          expect(result.scope).toBe('workspace');
+          done();
+        });
+
+      const req = httpMock.expectOne(
+        (r) =>
+          r.url === `${apiUrl}/admin/overview` &&
+          r.params.get('clientId') === 'c1' &&
+          r.params.get('from') === '2026-11-01' &&
+          r.params.get('to') === '2026-11-02' &&
+          r.params.get('groupBy') === 'hour',
+      );
+
+      expect(req.request.method).toBe('GET');
+      req.flush({ scope: 'workspace' });
+    });
+
+    it('omits an empty workspace', (done) => {
+      service.getAdminOverview({ clientId: null }).subscribe(() => done());
+
+      const req = httpMock.expectOne((r) => r.url === `${apiUrl}/admin/overview`);
+
+      expect(req.request.params.keys()).toEqual([]);
+      req.flush({ scope: 'all' });
+    });
+  });
+
   describe('getClientSummary', () => {
     it('should return summary for client', (done) => {
       const clientId = 'client-1';

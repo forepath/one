@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-23T06:51:06.939Z",
+  "generatedAt": "2026-11-23T07:42:28.665Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -4451,6 +4451,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/admin-overview",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/admin-overview",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console",
+        "sliceName": "admin-overview",
+        "memberFiles": [
+          "admin-overview.actions.ts",
+          "admin-overview.effects.ts",
+          "admin-overview.facade.ts",
+          "admin-overview.reducer.ts",
+          "admin-overview.selectors.ts",
+          "admin-overview.types.ts"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agent-graphs",
       "type": "state",
       "attrs": {
@@ -5253,6 +5271,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-overview.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-overview.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/agent-tasks.controller.ts",
       "type": "controller",
       "attrs": {
@@ -5851,6 +5878,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/provisioned-server-response.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/statistics/admin-overview.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/statistics/admin-overview.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -6675,6 +6711,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/admin-overview.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/admin-overview.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
       "type": "repository",
       "attrs": {
@@ -6778,6 +6823,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/admin-overview.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/admin-overview.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -16674,6 +16728,14 @@
       }
     },
     {
+      "id": "file:docs/agenstra/features/admin-overview.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/admin-overview.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/agenstra/features/agent-configuration.md",
       "type": "doc",
       "attrs": {
@@ -20720,6 +20782,17 @@
         "pathOrChannel": "/clients/{id}/statistics/entity-events",
         "operationId": "getClientStatisticsEntityEvents",
         "summary": "Get entity lifecycle events for a client",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/overview",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/overview",
+        "operationId": "getAdminOverview",
+        "summary": "Admin overview of the instance (admins and managers)",
         "specKind": "openapi"
       }
     },
@@ -31782,6 +31855,46 @@
       }
     },
     {
+      "id": "concept:agenstra-admin-overview",
+      "type": "concept",
+      "attrs": {
+        "title": "Admin Overview",
+        "docPath": "docs/agenstra/features/admin-overview.md",
+        "sectionAnchor": "admin-overview",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-workspaces-and-combined-numbers",
+      "type": "concept",
+      "attrs": {
+        "title": "Workspaces and combined numbers",
+        "docPath": "docs/agenstra/features/admin-overview.md",
+        "sectionAnchor": "workspaces-and-combined-numbers",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-access",
+      "type": "concept",
+      "attrs": {
+        "title": "Access",
+        "docPath": "docs/agenstra/features/admin-overview.md",
+        "sectionAnchor": "access",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-related",
+      "type": "concept",
+      "attrs": {
+        "title": "Related",
+        "docPath": "docs/agenstra/features/admin-overview.md",
+        "sectionAnchor": "related",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-agent-configuration",
       "type": "concept",
       "attrs": {
@@ -33728,16 +33841,6 @@
         "title": "Webhooks (Agenstra)",
         "docPath": "docs/agenstra/features/webhooks.md",
         "sectionAnchor": "webhooks-agenstra",
-        "domain": "agenstra"
-      }
-    },
-    {
-      "id": "concept:agenstra-access",
-      "type": "concept",
-      "attrs": {
-        "title": "Access",
-        "docPath": "docs/agenstra/features/webhooks.md",
-        "sectionAnchor": "access",
         "domain": "agenstra"
       }
     },
@@ -41740,6 +41843,11 @@
     },
     {
       "from": "project:agenstra-frontend-feature-agent-console",
+      "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-console",
       "to": "project:shared-frontend-feature-notifications",
       "type": "depends_on"
     },
@@ -41751,11 +41859,6 @@
     {
       "from": "project:agenstra-frontend-feature-agent-console",
       "to": "project:shared-frontend-feature-updates",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-feature-agent-console",
-      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
@@ -45425,6 +45528,11 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/admin-overview",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agent-graphs",
       "type": "contains"
     },
@@ -45726,6 +45834,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-overview.controller.ts",
       "type": "contains"
     },
     {
@@ -46061,6 +46174,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/provisioned-server-response.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/statistics/admin-overview.dto.ts",
       "type": "contains"
     },
     {
@@ -46520,6 +46638,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/admin-overview.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
       "type": "contains"
     },
@@ -46576,6 +46699,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/admin-overview.service.ts",
       "type": "contains"
     },
     {
@@ -53215,6 +53343,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:GET:/statistics/summary",
       "type": "contains"
     },
@@ -59306,6 +59439,31 @@
     {
       "from": "file:docs/agenstra/features/README.md",
       "to": "concept:agenstra-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/admin-overview.md",
+      "to": "concept:agenstra-admin-overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/admin-overview.md",
+      "to": "concept:agenstra-overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/admin-overview.md",
+      "to": "concept:agenstra-workspaces-and-combined-numbers",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/admin-overview.md",
+      "to": "concept:agenstra-access",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/admin-overview.md",
+      "to": "concept:agenstra-related",
       "type": "contains"
     },
     {
@@ -65866,6 +66024,16 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
       "to": "api:HTTP:DELETE:/admin/opencode/config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-overview.controller.ts",
+      "to": "api:HTTP:GET:/admin/overview",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/admin/overview",
       "type": "implements"
     },
     {
@@ -77864,6 +78032,16 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-overview.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-overview.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/admin-overview.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/agent-tasks.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-tasks.service.ts",
       "type": "injects"
@@ -78541,6 +78719,26 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-file-system-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/statistics-query.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/statistics.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/admin-overview.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
       "type": "injects"
     },
     {
@@ -85730,6 +85928,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-overview.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/tickets.controller.ts",
       "type": "provides"
     },
@@ -85836,6 +86039,16 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-metrics-collector.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/admin-overview.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/admin-overview.service.ts",
       "type": "provides"
     },
     {
@@ -90160,6 +90373,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/statistics.service.ts",
+      "to": "api:HTTP:GET:/admin/overview",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/statistics.service.ts",
       "to": "api:HTTP:GET:/statistics/chat-io",
       "type": "calls"
     },
@@ -91255,6 +91473,11 @@
     },
     {
       "from": "concept:agenstra-agent-controller-api",
+      "to": "api:HTTP:GET:/admin/overview",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-agent-controller-api",
       "to": "api:HTTP:GET:/statistics/egress-events",
       "type": "documents"
     },
@@ -92056,6 +92279,26 @@
     {
       "from": "concept:agenstra-agent-manager-host",
       "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-access",
+      "to": "api:HTTP:GET:/admin/webhooks",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-access",
+      "to": "api:HTTP:POST:/admin/webhooks",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-related",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-related",
+      "to": "api:HTTP:POST:/tickets",
       "type": "documents"
     },
     {
@@ -93516,16 +93759,6 @@
     {
       "from": "concept:agenstra-webhooks-agenstra",
       "to": "api:HTTP:POST:/auth/register",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-access",
-      "to": "api:HTTP:GET:/admin/webhooks",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-access",
-      "to": "api:HTTP:POST:/admin/webhooks",
       "type": "documents"
     },
     {
@@ -100084,6 +100317,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/agenstra/features/admin-overview.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/agenstra/features/agent-configuration.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -101844,6 +102082,26 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-admin-overview",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-workspaces-and-combined-numbers",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-access",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-related",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-agent-configuration",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -102815,11 +103073,6 @@
     },
     {
       "from": "concept:agenstra-webhooks-agenstra",
-      "to": "domain:agenstra",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:agenstra-access",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

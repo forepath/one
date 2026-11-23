@@ -13,7 +13,8 @@ export interface AlignedSecuritySeries {
   egressObserved: number[];
 }
 
-function utcBucketKey(period: string, groupBy: 'day' | 'hour'): string {
+/** UTC start (ISO) of the day / hour bucket a period key falls into. */
+export function utcBucketKey(period: string, groupBy: 'day' | 'hour'): string {
   const date = new Date(period);
 
   if (Number.isNaN(date.getTime())) {
@@ -31,6 +32,25 @@ function utcBucketKey(period: string, groupBy: 'day' | 'hour'): string {
  * Align security series points with every bucket of the selected range (gaps become zero).
  * When no bucket keys are available, the API points are used as categories.
  */
+/** Every UTC day / hour bucket key (ISO) from `fromYmd` through the end of `toYmd`; `[]` for invalid input. */
+export function utcBucketKeysInclusive(fromYmd: string, toYmd: string, groupBy: 'day' | 'hour'): string[] {
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/;
+
+  if (!dateOnly.test(fromYmd) || !dateOnly.test(toYmd)) return [];
+
+  const fromMs = Date.parse(`${fromYmd}T00:00:00.000Z`);
+  const endMs = Date.parse(`${toYmd}T${groupBy === 'day' ? '00:00:00.000' : '23:59:59.999'}Z`);
+
+  if (Number.isNaN(fromMs) || Number.isNaN(endMs) || fromMs > endMs) return [];
+
+  const step = groupBy === 'day' ? 86_400_000 : 3_600_000;
+  const keys: string[] = [];
+
+  for (let t = fromMs; t <= endMs; t += step) keys.push(new Date(t).toISOString());
+
+  return keys;
+}
+
 export function alignSecuritySeries(
   points: readonly StatisticsSecuritySeriesPoint[],
   bucketKeys: readonly string[],

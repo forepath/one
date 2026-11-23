@@ -9167,6 +9167,144 @@
       <trans-unit id="featureSettings-inheritedImageUnset" datatype="html">
         <source>Default: no image</source>
         </trans-unit>
+      <trans-unit id="featureAdminOverview-fromDate" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-toDate" datatype="html">
+        <source>To</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-groupBy" datatype="html">
+        <source>Group by</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-groupByDay" datatype="html">
+        <source>Day</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-groupByHour" datatype="html">
+        <source>Hour</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-noWorkspaces" datatype="html">
+        <source>No workspaces yet</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-noData" datatype="html">
+        <source>No data yet</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-title" datatype="html">
+        <source>Overview</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-filtersTitle" datatype="html">
+        <source>Overview filters</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-loading" datatype="html">
+        <source>Loading overview…</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-allWorkspaces" datatype="html">
+        <source>All workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiWorkspaces" datatype="html">
+        <source>Workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiActiveAgents" datatype="html">
+        <source>Active agents</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiMessages" datatype="html">
+        <source>Messages</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiTokens" datatype="html">
+        <source>Tokens</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiCost" datatype="html">
+        <source>Cost (USD)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiOpenTickets" datatype="html">
+        <source>Open tickets</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-chartMessages" datatype="html">
+        <source>Messages over time</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-chartSecurity" datatype="html">
+        <source>Security events over time</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-workspacesTable" datatype="html">
+        <source>Workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-openPage" datatype="html">
+        <source>Open</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-scopeByHour" datatype="html">
+        <source>by hour</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-scopeByDay" datatype="html">
+        <source>by day</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-colWorkspace" datatype="html">
+        <source>Workspace</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-colFailedRuns" datatype="html">
+        <source>Failed runs</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionActivity" datatype="html">
+        <source>Activity in period</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-activeUsers" datatype="html">
+        <source>Active users</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionTickets" datatype="html">
+        <source>Tickets and automation</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-inProgressTickets" datatype="html">
+        <source>In progress</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-automationRuns" datatype="html">
+        <source>Autonomous runs in period</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-activeAutomationRuns" datatype="html">
+        <source>Running now</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionDeployments" datatype="html">
+        <source>Pipelines and tasks</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-deploymentRuns" datatype="html">
+        <source>Pipeline runs in period</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-taskRuns" datatype="html">
+        <source>Scheduled task runs in period</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-knowledgePages" datatype="html">
+        <source>Knowledge pages</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionSecurity" datatype="html">
+        <source>Security in period</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-filterDrops" datatype="html">
+        <source>Message drops</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-filterFlags" datatype="html">
+        <source>Message flags</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-egressBlocked" datatype="html">
+        <source>Blocked destinations</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-egressObserved" datatype="html">
+        <source>Observed (would block)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-failedHint" datatype="html">
+        <source><x id="count" equiv-text="failed"/> failed</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConsole-adminOverviewTitle" datatype="html">
+        <source>Overview :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminOverviewTitle" datatype="html">
+        <source>Overview</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminOverview" datatype="html">
+        <source>Overview</source>
+        </trans-unit>
+      <trans-unit id="featureAdminOverview-switchWorkspace" datatype="html">
+        <source>Switch workspace</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-allWorkspacesNote" datatype="html">
+        <source>Combined numbers of all workspaces</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

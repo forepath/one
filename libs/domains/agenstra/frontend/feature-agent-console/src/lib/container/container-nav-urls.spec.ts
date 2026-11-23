@@ -21,6 +21,14 @@ describe('container nav urls', () => {
     expect(isAdminNavUrl('/pipelines/c1')).toBe(false);
   });
 
+  it('keeps the sidebar and marks the admin popover active on the admin overview', () => {
+    expect(isMainSidebarUrl('/overview')).toBe(true);
+    expect(isMainSidebarUrl('/overview?f=groupBy%3Dhour')).toBe(true);
+    expect(isMainSidebarUrl('/overview/c1')).toBe(true);
+    expect(isAdminNavUrl('/overview/c1?f=groupBy%3Dhour')).toBe(true);
+    expect(isAdminNavUrl('/audit')).toBe(false);
+  });
+
   it('detects tool windows', () => {
     expect(isToolWindowUrl('/clients/c1/agents/a1/vnc?x=1')).toBe(true);
     expect(isToolWindowUrl('/pipelines/c1')).toBe(false);

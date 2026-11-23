@@ -239,6 +239,13 @@ export class AgentConsoleContainerComponent implements OnInit {
 
   readonly adminNavItems: AdminNavItem[] = [
     {
+      routerLink: ['/overview'],
+      activePaths: ['/overview'],
+      icon: 'bi-grid',
+      title: $localize`:@@featureContainer-adminOverviewTitle:Overview`,
+      label: $localize`:@@featureContainer-adminOverview:Overview`,
+    },
+    {
       routerLink: ['/updates'],
       activePaths: ['/updates'],
       icon: 'bi-arrow-repeat',

@@ -21,6 +21,15 @@ import {
 import { resolveNamedDisplayLabel } from '../display-name.util';
 
 const CURRENT_LABEL = $localize`:@@featureAgentConsoleWorkspaceSwitch-current:Current workspace`;
+
+/** Row id of the optional "All workspaces" entry (see `allOption`). */
+export const WORKSPACE_SWITCH_ALL_ID = '__all-workspaces__';
+
+/** Optional leading entry for pages that also show every workspace combined (e.g. the admin overview). */
+export interface WorkspaceSwitchAllOption {
+  label: string;
+  description?: string;
+}
 const OTHER_LABEL = $localize`:@@featureAgentConsoleWorkspaceSwitch-other:Available`;
 
 /**
@@ -44,7 +53,7 @@ const OTHER_LABEL = $localize`:@@featureAgentConsoleWorkspaceSwitch-other:Availa
       [ariaLabel]="title"
       [columns]="columns"
       [rows]="pageRows()"
-      [activeRowId]="currentId()"
+      [activeRowId]="activeRowId()"
       paging="server"
       [(page)]="page"
       [(pageSize)]="pageSize"
@@ -56,7 +65,7 @@ const OTHER_LABEL = $localize`:@@featureAgentConsoleWorkspaceSwitch-other:Availa
       [error]="appendError()"
       persistKey="agenstra-workspace-switch"
       emptyIcon="building"
-      (rowActivate)="selectWorkspace.emit($event)"
+      (rowActivate)="onRowActivate($event)"
       data-testid="workspace-switch-table"
     >
       <span fpcDataTableEmpty>
@@ -77,20 +86,39 @@ export class WorkspaceSwitchTableComponent {
   readonly appendError = input<string | null>(null);
   readonly query = model('');
 
+  /** Leading "All workspaces" row (hidden while searching); `currentId` `null` marks it current. */
+  readonly allOption = input<WorkspaceSwitchAllOption | null>(null);
+
   readonly selectWorkspace = output<ClientResponseDto>();
+  /** The "All workspaces" row was chosen (only with `allOption`). */
+  readonly selectAll = output<void>();
   /** Load the next batch of workspaces (clients facade `loadMoreClients()`). */
   readonly loadMore = output<void>();
 
   protected readonly page = signal(1);
   protected readonly pageSize = signal(FPC_DEFAULT_PAGE_SIZE);
 
+  /** The clients, led by the "All workspaces" row when `allOption` is set and no search is active. */
+  protected readonly rows = computed<readonly ClientResponseDto[]>(() => {
+    const all = this.allOption();
+
+    if (!all || this.query().trim()) return this.clients();
+
+    return [
+      { id: WORKSPACE_SWITCH_ALL_ID, name: all.label, description: all.description ?? '' } as ClientResponseDto,
+      ...this.clients(),
+    ];
+  });
+  protected readonly activeRowId = computed(() =>
+    this.allOption() && this.currentId() === null ? WORKSPACE_SWITCH_ALL_ID : this.currentId(),
+  );
   protected readonly pageRows = computed(() => {
     const size = this.pageSize();
     const start = (this.page() - 1) * size;
 
-    return this.clients().slice(start, start + size);
+    return this.rows().slice(start, start + size);
   });
-  protected readonly hasNext = computed(() => this.clients().length > this.page() * this.pageSize() || this.hasMore());
+  protected readonly hasNext = computed(() => this.rows().length > this.page() * this.pageSize() || this.hasMore());
   protected readonly tableLoading = computed(
     () => this.loading() || (this.appendLoading() && this.pageRows().length === 0),
   );
@@ -101,7 +129,7 @@ export class WorkspaceSwitchTableComponent {
       const needed = this.page() * this.pageSize() + 1;
 
       if (
-        this.clients().length < needed &&
+        this.rows().length < needed &&
         this.hasMore() &&
         !this.loading() &&
         !this.appendLoading() &&
@@ -110,6 +138,16 @@ export class WorkspaceSwitchTableComponent {
         untracked(() => this.loadMore.emit());
       }
     });
+  }
+
+  protected onRowActivate(row: ClientResponseDto): void {
+    if (row.id === WORKSPACE_SWITCH_ALL_ID) {
+      this.selectAll.emit();
+
+      return;
+    }
+
+    this.selectWorkspace.emit(row);
   }
 
   protected readonly title = $localize`:@@featureAgentConsoleWorkspaceSwitch-title:Workspaces`;
@@ -122,9 +160,14 @@ export class WorkspaceSwitchTableComponent {
       label: $localize`:@@featureAgentConsoleWorkspaceSwitch-colState:State`,
       type: 'state',
       state: (client) =>
-        client.id === this.currentId()
+        client.id === this.activeRowId()
           ? { label: CURRENT_LABEL, tone: 'primary', icon: 'check2-circle', severity: 0 }
-          : { label: OTHER_LABEL, tone: 'neutral', icon: 'building', severity: 1 },
+          : {
+              label: OTHER_LABEL,
+              tone: 'neutral',
+              icon: client.id === WORKSPACE_SWITCH_ALL_ID ? 'buildings' : 'building',
+              severity: 1,
+            },
     },
     {
       id: 'name',

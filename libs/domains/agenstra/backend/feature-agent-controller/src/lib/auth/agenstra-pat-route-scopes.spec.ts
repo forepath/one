@@ -6,6 +6,7 @@ import { auditPatRouteScopes, collectControllerClasses } from '@forepath/identit
 import { AdminControllerSettingsController } from '../controllers/admin-controller-settings.controller';
 import { AdminOpencodeConfigController } from '../controllers/admin-opencode-config.controller';
 import { AdminOpencodeLayerFilesController } from '../controllers/admin-opencode-layer-files.controller';
+import { AdminOverviewController } from '../controllers/admin-overview.controller';
 import { ContextImportController } from '../controllers/context-import.controller';
 import { DeploymentConnectionsController } from '../controllers/deployment-connections.controller';
 
@@ -30,6 +31,7 @@ describe('Agenstra PAT route scopes', () => {
         catalog: AGENSTRA_PAT_SCOPES,
         // Admin enforced in code via assertAdmin (no @UsersRoles on these controllers).
         inCodeAdminControllers: [
+          AdminOverviewController,
           AdminControllerSettingsController,
           AdminOpencodeConfigController,
           AdminOpencodeLayerFilesController,

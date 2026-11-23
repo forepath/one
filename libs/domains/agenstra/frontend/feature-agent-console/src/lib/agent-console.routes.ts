@@ -200,6 +200,9 @@ import {
   startClientAgent$,
   StatisticsFacade,
   statisticsReducer,
+  AdminOverviewFacade,
+  adminOverviewReducer,
+  loadAdminOverview$,
   StatsFacade,
   statsReducer,
   TerminalsFacade,
@@ -281,6 +284,7 @@ import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 
+import { AdminOverviewComponent } from './admin-overview/admin-overview.component';
 import { AgentTasksBoardComponent } from './agent-tasks/agent-tasks-board.component';
 import { AtlassianImportAdminComponent } from './atlassian-import-admin/atlassian-import-admin.component';
 import { AuditComponent } from './audit/audit.component';
@@ -313,6 +317,18 @@ export const agentConsoleRoutes: Route[] = [
       ...createNotificationAdminRoutes([authGuard, adminGuard]),
       ...createUpdatesAdminRoutes([authGuard, adminGuard]),
       ...createSettingsAdminRoutes([authGuard, adminOnlyGuard], 'system-settings'),
+      {
+        path: 'overview/:clientId',
+        canActivate: [authGuard, adminGuard],
+        component: AdminOverviewComponent,
+        title: $localize`:@@featureAgentConsole-adminOverviewTitle:Overview :: Agenstra`,
+      },
+      {
+        path: 'overview',
+        canActivate: [authGuard, adminGuard],
+        component: AdminOverviewComponent,
+        title: $localize`:@@featureAgentConsole-adminOverviewTitle:Overview :: Agenstra`,
+      },
       {
         path: 'audit',
         canActivate: [authGuard],
@@ -478,6 +494,7 @@ export const agentConsoleRoutes: Route[] = [
       VcsFacade,
       StatsFacade,
       StatisticsFacade,
+      AdminOverviewFacade,
       TerminalsFacade,
       TicketsFacade,
       TicketAutomationFacade,
@@ -507,6 +524,7 @@ export const agentConsoleRoutes: Route[] = [
       provideState('stats', statsReducer),
       provideState('terminals', terminalsReducer),
       provideState('statistics', statisticsReducer),
+      provideState('adminOverview', adminOverviewReducer),
       provideState('tickets', ticketsReducer),
       provideState('ticketAutomation', ticketAutomationReducer),
       provideState('knowledge', knowledgeReducer),
@@ -522,6 +540,7 @@ export const agentConsoleRoutes: Route[] = [
       provideState('environmentProgress', environmentProgressReducer),
       // Effects - only active when this feature route is loaded
       provideEffects({
+        loadAdminOverview$,
         loadClients$,
         loadMoreClients$,
         loadClientsRailPage$,

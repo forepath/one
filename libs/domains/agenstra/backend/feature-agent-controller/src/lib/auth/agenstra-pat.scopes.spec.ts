@@ -39,6 +39,7 @@ describe('AGENSTRA_PAT_SCOPES', () => {
       'deployments:read',
       'deployments:write',
       'statistics:read',
+      'statistics:admin',
       'websocket:clients:read',
       'websocket:clients:write',
       'websocket:status:read',

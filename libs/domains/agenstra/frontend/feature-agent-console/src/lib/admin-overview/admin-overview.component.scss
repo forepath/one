@@ -1,0 +1,22 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.admin-overview {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+// Header, summary and filter strip keep their natural height; only the panel grid scrolls.
+.admin-overview > :is(fpc-page-header, fpc-summary-bar, fpc-list-toolbar) {
+  flex: 0 0 auto !important;
+}
+
+.admin-overview__result {
+  min-height: 8rem;
+}

@@ -45,6 +45,8 @@ export const AGENSTRA_PAT_SCOPES = [
   'deployments:read',
   'deployments:write',
   'statistics:read',
+  // Instance-wide admin overview (admin console)
+  'statistics:admin',
   // WebSockets (connect + subscribe: read; state-changing events: write). Events stay capped by the domain scopes
   // above (see agenstra-websocket.scopes.ts).
   'websocket:clients:read',
