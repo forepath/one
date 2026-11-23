@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { afterNextRender, Component, DestroyRef, inject, OnInit, ViewChild } from '@angular/core';
+import { afterNextRender, Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
@@ -30,7 +30,13 @@ import { combineLatest, distinctUntilChanged, filter, map, pairwise, startWith }
 
 import { ThemeService } from '../theme.service';
 
-import { isAdminNavUrl, isMainSidebarUrl, isToolWindowUrl } from './container-nav-urls';
+import {
+  CONSOLE_MODE_HOME,
+  isMainSidebarUrl,
+  isToolWindowUrl,
+  nextConsoleMode,
+  type ConsoleMode,
+} from './container-nav-urls';
 
 interface AdminNavItem {
   activePaths: string[];
@@ -92,7 +98,23 @@ export class AgentConsoleContainerComponent implements OnInit {
   readonly toggleDarkModeTitle = $localize`:@@featureContainer-toggleDarkMode:Toggle dark mode`;
   readonly loadingFileLabel = $localize`:@@featureContainer-loadingFile:Loading file...`;
   readonly sidebarAriaLabel = $localize`:@@featureContainer-sidebarAriaLabel:Main navigation`;
-  readonly adminPopoverAriaLabel = $localize`:@@featureContainer-adminTitle:Admin`;
+  readonly modeLabel = $localize`:@@featureContainer-mode:Mode`;
+  readonly modeTitle = $localize`:@@featureContainer-modeTitle:Switch between user and admin mode`;
+  /** Entries of the Mode popover: the workspace pages (user) and the administration (admin). */
+  readonly modeOptions: { mode: ConsoleMode; icon: string; label: string; title: string }[] = [
+    {
+      mode: 'user',
+      icon: 'bi-person',
+      label: $localize`:@@featureContainer-modeUser:User`,
+      title: $localize`:@@featureContainer-modeUserTitle:User mode: workspaces, tickets and agents`,
+    },
+    {
+      mode: 'admin',
+      icon: 'bi-person-gear',
+      label: $localize`:@@featureContainer-modeAdmin:Admin`,
+      title: $localize`:@@featureContainer-modeAdminTitle:Admin mode: instance overview and administration`,
+    },
+  ];
 
   /** True when console uses users (email/password) authentication. */
   readonly isUsersAuth = this.authEnvironment.authentication.type === 'users';
@@ -169,19 +191,16 @@ export class AgentConsoleContainerComponent implements OnInit {
    */
   readonly canAccessUserManager$ = this.authenticationFacade.canAccessUserManager$;
 
-  readonly isAdminRouteActive = toSignal(
-    this.router.events.pipe(
-      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
-      map(() => this.router.url),
-      startWith(this.router.url),
-      map((url) => this.isAdminNavUrl(url)),
-    ),
-    {
-      initialValue: this.isAdminNavUrl(this.router.url),
-    },
-  );
+  /**
+   * Sidebar mode: `user` (workspace pages) or `admin` (administration, admins and managers only). Follows the page
+   * (admin pages switch to admin, user pages to user, shared pages such as Audit keep the mode) and starts in the
+   * highest available mode at login.
+   */
+  readonly consoleMode = signal<ConsoleMode>('user');
+  /** Home of the current mode: the logo and the Mode switch lead there. */
+  readonly modeHome = computed(() => CONSOLE_MODE_HOME[this.consoleMode()]);
 
-  adminPopoverOpen = false;
+  modePopoverOpen = false;
 
   readonly accountPopoverAriaLabel = $localize`:@@featureContainer-accountTitle:Account`;
 
@@ -237,6 +256,7 @@ export class AgentConsoleContainerComponent implements OnInit {
 
   accountPopoverOpen = false;
 
+  /** Admin sidebar items (admin mode): overview, agent setup, then the platform pages. */
   readonly adminNavItems: AdminNavItem[] = [
     {
       routerLink: ['/overview'],
@@ -246,19 +266,18 @@ export class AgentConsoleContainerComponent implements OnInit {
       label: $localize`:@@featureContainer-adminOverview:Overview`,
     },
     {
-      routerLink: ['/updates'],
-      activePaths: ['/updates'],
-      icon: 'bi-arrow-repeat',
-      navKey: 'updates',
-      title: $localize`:@@featureContainer-updatesTitle:Updates`,
-      label: $localize`:@@featureContainer-updates:Updates`,
+      routerLink: ['/agent-config'],
+      activePaths: ['/agent-config', '/opencode-config'],
+      icon: 'bi-cpu',
+      title: $localize`:@@featureContainer-agentConfigTitle:Agent configuration`,
+      label: $localize`:@@featureContainer-agentConfig:Agent config`,
     },
     {
-      routerLink: ['/webhooks'],
-      activePaths: ['/webhooks'],
-      icon: 'bi-broadcast',
-      title: $localize`:@@featureContainer-webhooksTitle:Webhooks`,
-      label: $localize`:@@featureContainer-webhooks:Webhooks`,
+      routerLink: ['/connections'],
+      activePaths: ['/connections'],
+      icon: 'bi-plug',
+      title: $localize`:@@featureContainer-connectionsTitle:Connections (CI/CD, Atlassian)`,
+      label: $localize`:@@featureContainer-connections:Connections`,
     },
     {
       routerLink: ['/users'],
@@ -276,11 +295,19 @@ export class AgentConsoleContainerComponent implements OnInit {
       label: $localize`:@@featureContainer-apps:Apps`,
     },
     {
-      routerLink: ['/agent-config'],
-      activePaths: ['/agent-config', '/opencode-config'],
-      icon: 'bi-cpu',
-      title: $localize`:@@featureContainer-agentConfigTitle:Agent configuration`,
-      label: $localize`:@@featureContainer-agentConfig:Agent config`,
+      routerLink: ['/webhooks'],
+      activePaths: ['/webhooks'],
+      icon: 'bi-broadcast',
+      title: $localize`:@@featureContainer-webhooksTitle:Webhooks`,
+      label: $localize`:@@featureContainer-webhooks:Webhooks`,
+    },
+    {
+      routerLink: ['/updates'],
+      activePaths: ['/updates'],
+      icon: 'bi-arrow-repeat',
+      navKey: 'updates',
+      title: $localize`:@@featureContainer-updatesTitle:Updates`,
+      label: $localize`:@@featureContainer-updates:Updates`,
     },
     {
       routerLink: ['/system-settings'],
@@ -289,13 +316,6 @@ export class AgentConsoleContainerComponent implements OnInit {
       icon: 'bi-sliders',
       title: $localize`:@@featureContainer-systemSettingsTitle:Settings`,
       label: $localize`:@@featureContainer-systemSettings:Settings`,
-    },
-    {
-      routerLink: ['/connections'],
-      activePaths: ['/connections'],
-      icon: 'bi-plug',
-      title: $localize`:@@featureContainer-connectionsTitle:Connections (CI/CD, Atlassian)`,
-      label: $localize`:@@featureContainer-connections:Connections`,
     },
   ];
 
@@ -358,8 +378,13 @@ export class AgentConsoleContainerComponent implements OnInit {
     return isToolWindowUrl(url);
   }
 
-  private isAdminNavUrl(url: string): boolean {
-    return isAdminNavUrl(url);
+  /** Switch the sidebar mode by opening that mode's home page (the mode follows the page). */
+  selectMode(mode: ConsoleMode): void {
+    this.modePopoverOpen = false;
+
+    if (mode === this.consoleMode()) return;
+
+    void this.router.navigate(CONSOLE_MODE_HOME[mode]);
   }
 
   /**
@@ -398,6 +423,25 @@ export class AgentConsoleContainerComponent implements OnInit {
         this.adminUpdatesFacade.loadStatus();
       }
     });
+
+    // Console mode follows the page and the role (see `nextConsoleMode`).
+    let hadAdminAccess = false;
+
+    combineLatest([
+      this.authenticationFacade.canAccessUserManager$.pipe(distinctUntilChanged()),
+      this.router.events.pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        map(() => this.router.url),
+        // The shell is created during the first navigation, when `router.url` is still `/`: start from the current
+        // URL only once a navigation has completed (otherwise `/` would count as a user page).
+        startWith(...(this.router.navigated ? [this.router.url] : [])),
+      ),
+    ])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(([canAccessAdmin, url]) => {
+        this.consoleMode.set(nextConsoleMode({ url, canAccessAdmin, hadAdminAccess, current: this.consoleMode() }));
+        hadAdminAccess = canAccessAdmin;
+      });
 
     // Mask tool-window boot so Workspaces/Environments never flash before the panel opens.
     // Content panels clear the overlay when ready; only toggle on enter/leave here.

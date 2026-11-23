@@ -120,7 +120,7 @@ export const appConfig: ApplicationConfig = {
     },
     {
       provide: LOGIN_SUCCESS_REDIRECT_TARGET,
-      useValue: ['/clients'],
+      useValue: ['/'],
     },
     // OIDC sign-in: completes the provider redirect before the first navigation. Registered unconditionally
     // because the runtime config (`/config`) decides the auth method; it is a no-op unless the type is 'oidc'.

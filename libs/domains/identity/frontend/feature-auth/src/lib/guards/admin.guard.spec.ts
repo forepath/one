@@ -61,7 +61,7 @@ describe('adminGuard', () => {
     });
   });
 
-  it('should redirect to /clients when canAccessUserManager is false', (done) => {
+  it('should redirect to the role home (/) when canAccessUserManager is false', (done) => {
     const mockUrlTree = {} as UrlTree;
 
     mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
@@ -73,7 +73,7 @@ describe('adminGuard', () => {
       if (typeof result === 'object' && 'subscribe' in result) {
         result.subscribe((res) => {
           expect(res).toBe(mockUrlTree);
-          expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
+          expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/']);
           done();
         });
       } else {

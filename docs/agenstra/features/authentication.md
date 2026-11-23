@@ -351,6 +351,15 @@ curl -X POST https://<host>/api/auth/apps/token \
 #     "scope": "tickets:read", "scopes": ["tickets:read"], "reauthorization_required": false, "user": { … } }
 ```
 
+## Console modes (user and admin)
+
+The console sidebar has two modes. **User** mode lists the workspace pages (Workspaces, Tickets, Knowledge, Plans, Tasks, Pipelines, Graphs, Audit); **Admin** mode lists the administration (Overview, Agent config, Connections, Users, Apps, Webhooks, Updates, Settings; managers do not see Apps and Settings). Admins and managers switch with the **Mode** item at the bottom of the sidebar (a popover with _User_ and _Admin_, the active one marked); regular users only have user mode and see no Mode item. The Mode item has a slight primary tint that looks the same in both modes.
+
+- Switching opens the home page of the chosen mode: Workspaces (`/clients`) in user mode, the admin overview (`/overview`) in admin mode. The logo leads to the home page of the current mode.
+- The mode follows the page: administration pages switch to admin mode, the other pages to user mode; Audit and the account pages (Security, Tokens, Apps) keep the current mode.
+- After login (and for `/` or unknown URLs) the console opens the home page of the highest available mode: the admin overview for admins and managers, otherwise Workspaces (`/clients`).
+- Deep links win: a page requested while signed out opens after the login (password, API key and mTLS logins resume same-app paths only; OIDC and SAML return through the identity provider), and the mode follows that page.
+
 ## Users Authentication Flow
 
 ### Registration

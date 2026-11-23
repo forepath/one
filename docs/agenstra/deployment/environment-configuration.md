@@ -4,7 +4,7 @@ Complete reference for all environment variables used in Agenstra.
 
 ## Console settings overrides
 
-Most agent controller settings below (everything except infrastructure, cryptography, authentication, CORS / rate limits, client endpoint SSRF guardrails, embedding model / dimensions and dynamic plugins) can be overridden in the agent console under **Admin → Settings** (`/system-settings`). A sidebar groups them by category; each row shows whether the value comes from an override, the environment or the built-in default, and offers **Save** and **Reset to default**.
+Most agent controller settings below (everything except infrastructure, cryptography, authentication, CORS / rate limits, client endpoint SSRF guardrails, embedding model / dimensions and dynamic plugins) can be overridden in the agent console's admin mode under **Settings** (`/system-settings`). A sidebar groups them by category; each row shows whether the value comes from an override, the environment or the built-in default, and offers **Save** and **Reset to default**.
 
 An override takes precedence over the environment variable. Resetting removes the override, so the environment variable applies again; the environment itself is never changed. Settings marked **Restart required** (scheduler intervals, values read at startup) apply after the controller processes restart. Other processes (API, scheduler, worker) pick up changes within `SETTINGS_OVERRIDES_REFRESH_INTERVAL_MS` (default `30000`). API: `GET/PUT/DELETE /api/admin/settings[/:settingKey]` (admins, scope `clients:admin`). Values are stored in `controller_settings_overrides`, encrypted with `ENCRYPTION_KEY` (AES-256-GCM); secret settings are write-only.
 

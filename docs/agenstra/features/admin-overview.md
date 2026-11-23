@@ -4,10 +4,10 @@ A dashboard of the instance's key figures for administrators and managers, combi
 
 ## Overview
 
-Administrators and managers open **Admin → Overview** (`/overview`, one workspace at `/overview/:clientId`) in the agent console. The page is laid out like the [audit page](./usage-statistics.md):
+Administrators and managers open the admin mode (**Mode → Admin**); its home page is the **Overview** (`/overview`, one workspace at `/overview/:clientId`) in the agent console. The page is laid out like the [audit page](./usage-statistics.md):
 
 - **Summary bar**: workspaces, active agents, messages, tokens, cost (USD) and open tickets. The open tickets card turns to a warning when autonomous ticket runs failed in the period.
-- **Workspace chip** in the page header (as on the tickets, pages and tasks boards): shows the viewed workspace or **All workspaces** and opens the workspace switch, whose first row is **All workspaces**.
+- **Workspace chip** in the page header (as on the tickets, pages and tasks boards): shows the viewed workspace or **All workspaces** (the start view) and opens the workspace switch, whose first row is **All workspaces**.
 - **Filter strip**: period (`From`, `To`, default the last 30 days) and grouping (`Day` or `Hour`). The applied filters are kept in the URL (`?f=`) and survive a workspace switch, so a view can be shared or reloaded.
 - **Panels**:
   - **Messages over time**: chat messages per day or hour, as on the audit page.
@@ -27,7 +27,7 @@ Agenstra has no tenants; the workspace is its scope. With **All workspaces** the
 
 ## Access
 
-- Route guard: `adminGuard` (admins and managers); the nav tile sits first in the **Admin** menu.
+- Route guard: `adminGuard` (admins and managers); first item of the admin sidebar and the page admins and managers land on after login.
 - API: `GET /api/admin/overview?clientId=&from=&to=&groupBy=` (admin or manager role checked in the controller, API key mode allowed). PATs need the `statistics:admin` scope, which only admins and managers can grant, and see their member workspaces only (no console-admin bypass for PATs).
   - `clientId` must be an accessible workspace (`403` otherwise).
   - `from` / `to` are `YYYY-MM-DD` (default the last 30 days); `groupBy` is `day` (at most 366 days) or `hour` (at most 31 days). Other values return `400`.

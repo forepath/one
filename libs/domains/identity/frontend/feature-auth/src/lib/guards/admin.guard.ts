@@ -5,7 +5,7 @@ import { map, switchMap, take, timer } from 'rxjs';
 
 /**
  * Guard that protects administration routes (admin or manager role) with users, oidc or saml authentication.
- * Must be used after authGuard. Redirects to /clients if the user is neither admin nor manager
+ * Must be used after authGuard. Redirects to the role home (/) if the user is neither admin nor manager
  * or if authentication type is not users/oidc/saml.
  *
  * Dispatches checkAuthentication and waits for it to complete before evaluating access,
@@ -20,6 +20,6 @@ export const adminGuard: CanActivateFn = () => {
   // Yield to next tick so checkAuthentication effect completes (sync or async), then evaluate access
   return timer(0).pipe(
     switchMap(() => authFacade.canAccessUserManager$.pipe(take(1))),
-    map((canAccess) => (canAccess ? true : router.createUrlTree(['/clients']))),
+    map((canAccess) => (canAccess ? true : router.createUrlTree(['/']))),
   );
 };

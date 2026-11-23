@@ -1,6 +1,7 @@
 import { isPlatformServer } from '@angular/common';
 import { inject, PLATFORM_ID } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
+import { storeConsoleReturnUrl } from '@forepath/identity/frontend';
 
 // Import from util-auth barrel directly to avoid circular dependency
 // (feature-auth is re-exported from the @forepath/identity/frontend barrel)
@@ -18,6 +19,13 @@ import {
   usesAppSessionJwt,
   type IdentityAuthEnvironment,
 } from '../../../../util-auth/src';
+
+/** Send a signed-out user to the login page and remember the requested console page for after login. */
+function toLogin(router: Router, requestedUrl: string) {
+  storeConsoleReturnUrl(requestedUrl);
+
+  return router.createUrlTree(['/login']);
+}
 
 /** True when localStorage holds a valid, non-PAT console session JWT (users / saml); clears PAT JWTs. */
 export function hasValidConsoleSessionJwt(): boolean {
@@ -74,7 +82,7 @@ export const authGuard: CanActivateFn = (_route, state) => {
       return true;
     }
 
-    return router.createUrlTree(['/login']);
+    return toLogin(router, state.url);
   }
 
   if (type === 'mtls') {
@@ -83,7 +91,7 @@ export const authGuard: CanActivateFn = (_route, state) => {
       return true;
     }
 
-    return hasMtlsCredential().then((hasCredential) => hasCredential || router.createUrlTree(['/login']));
+    return hasMtlsCredential().then((hasCredential) => hasCredential || toLogin(router, state.url));
   }
 
   if (usesAppSessionJwt(type)) {
@@ -97,9 +105,9 @@ export const authGuard: CanActivateFn = (_route, state) => {
       return false;
     }
 
-    return router.createUrlTree(['/login']);
+    return toLogin(router, state.url);
   }
 
   // For other authentication types, redirect to login
-  return router.createUrlTree(['/login']);
+  return toLogin(router, state.url);
 };

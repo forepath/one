@@ -269,6 +269,7 @@ import {
   authGuard,
   identityAuthProviders,
   identityAuthRoutes,
+  roleHomeGuard,
 } from '@forepath/identity/frontend';
 import {
   createNotificationAdminRoutes,
@@ -292,6 +293,7 @@ import { AgentConsoleChatComponent } from './chat/chat.component';
 import { ChatPlansBoardComponent } from './chat-plans/chat-plans-board.component';
 import { ConnectionsShellComponent } from './connections/connections-shell.component';
 import { DeploymentConnectionsAdminComponent } from './connections/deployment-connections/deployment-connections-admin.component';
+import { CONSOLE_MODE_HOME } from './container/container-nav-urls';
 import { AgentConsoleContainerComponent } from './container/container.component';
 import { DeploymentsBoardComponent } from './deployments/deployments-board.component';
 import { AgentGraphsPageComponent } from './graphs/agent-graphs-page.component';
@@ -308,9 +310,11 @@ export const agentConsoleRoutes: Route[] = [
     component: AgentConsoleContainerComponent,
     children: [
       {
+        // Home of the highest console mode: admin overview (admins, managers) or workspaces.
         path: '',
         pathMatch: 'full',
-        redirectTo: 'clients',
+        canActivate: [roleHomeGuard(CONSOLE_MODE_HOME)],
+        children: [],
       },
       // Identity auth routes (login, register, password reset, email confirmation, user management)
       ...identityAuthRoutes,
@@ -470,7 +474,7 @@ export const agentConsoleRoutes: Route[] = [
       },
       {
         path: '**',
-        redirectTo: 'clients',
+        redirectTo: '',
       },
     ],
     providers: [

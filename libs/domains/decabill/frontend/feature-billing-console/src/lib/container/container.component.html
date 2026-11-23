@@ -3,6 +3,7 @@
 @if (!fileOnlyMode()) {
   <fpc-top-bar
     brandSrc="assets/images/icon_light.svg"
+    [brandLink]="(isAuthenticated$ | async) ? modeHome() : null"
     [appearance]="(isAuthenticated$ | async) ? 'console' : 'landing'"
     [brandAlt]="productName"
   >
@@ -75,80 +76,101 @@
 <div class="d-flex justify-content-end flex-grow-1 overflow-hidden" [class.border-top]="!isMainMask()">
   @if (isMainMask()) {
     <fpc-sidebar [ariaLabel]="sidebarAriaLabel">
-      <a
-        routerLink="/dashboard"
-        routerLinkActive="active"
-        class="sidebar__item"
-        i18n-title="@@featureContainer-overviewTitle"
-        title="Overview"
-      >
-        <i class="bi bi-grid"></i>
-        <span class="small" i18n="@@featureContainer-overview">Overview</span>
-      </a>
-      <a
-        routerLink="/subscriptions"
-        routerLinkActive="active"
-        class="sidebar__item"
-        i18n-title="@@featureContainer-subscriptionsTitle"
-        title="Subscriptions"
-      >
-        <i class="bi bi-list-check"></i>
-        <span class="small" i18n="@@featureContainer-subscriptions">Plans</span>
-      </a>
-      <a
-        routerLink="/promotions"
-        routerLinkActive="active"
-        class="sidebar__item"
-        i18n-title="@@featureContainer-promotionsTitle"
-        title="Promotions"
-      >
-        <i class="bi bi-tag"></i>
-        <span class="small" i18n="@@featureContainer-promotions">Promotions</span>
-      </a>
-      <a
-        routerLink="/offers"
-        routerLinkActive="active"
-        class="sidebar__item position-relative"
-        i18n-title="@@featureContainer-offersTitle"
-        title="Offers"
-      >
-        <i class="bi bi-file-earmark-text"></i>
-        <span class="small" i18n="@@featureContainer-offers">Offers</span>
-        @if (offersPendingBadge() > 0) {
-          <fpc-notification-indicator placement="absolute" />
-        }
-      </a>
-      <a
-        routerLink="/invoices"
-        routerLinkActive="active"
-        class="sidebar__item"
-        i18n-title="@@featureContainer-invoicesTitle"
-        title="Invoices"
-      >
-        <i class="bi bi-receipt"></i>
-        <span class="small" i18n="@@featureContainer-invoices">Billing</span>
-      </a>
-      <a
-        routerLink="/projects"
-        routerLinkActive="active"
-        class="sidebar__item"
-        i18n-title="@@featureContainer-projectsTitle"
-        title="Projects"
-      >
-        <i class="bi bi-kanban"></i>
-        <span class="small" i18n="@@featureContainer-projects">Projects</span>
-      </a>
-      @for (item of contributorCustomerNavItems; track item.routerLink.join('/')) {
+      <!-- Sidebar items follow the console mode (Mode switch in the footer): customer pages or administration. -->
+      @if (consoleMode() === 'user') {
         <a
-          [routerLink]="item.routerLink"
+          routerLink="/dashboard"
           routerLinkActive="active"
           class="sidebar__item"
-          [title]="item.title"
-          [attr.aria-label]="item.title"
+          i18n-title="@@featureContainer-overviewTitle"
+          title="Overview"
         >
-          <i class="bi {{ item.icon }}" aria-hidden="true"></i>
-          <span class="small">{{ item.label }}</span>
+          <i class="bi bi-grid"></i>
+          <span class="small" i18n="@@featureContainer-overview">Overview</span>
         </a>
+        <a
+          routerLink="/subscriptions"
+          routerLinkActive="active"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-subscriptionsTitle"
+          title="Subscriptions"
+        >
+          <i class="bi bi-list-check"></i>
+          <span class="small" i18n="@@featureContainer-subscriptions">Plans</span>
+        </a>
+        <a
+          routerLink="/promotions"
+          routerLinkActive="active"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-promotionsTitle"
+          title="Promotions"
+        >
+          <i class="bi bi-tag"></i>
+          <span class="small" i18n="@@featureContainer-promotions">Promotions</span>
+        </a>
+        <a
+          routerLink="/offers"
+          routerLinkActive="active"
+          class="sidebar__item position-relative"
+          i18n-title="@@featureContainer-offersTitle"
+          title="Offers"
+        >
+          <i class="bi bi-file-earmark-text"></i>
+          <span class="small" i18n="@@featureContainer-offers">Offers</span>
+          @if (offersPendingBadge() > 0) {
+            <fpc-notification-indicator placement="absolute" />
+          }
+        </a>
+        <a
+          routerLink="/invoices"
+          routerLinkActive="active"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-invoicesTitle"
+          title="Invoices"
+        >
+          <i class="bi bi-receipt"></i>
+          <span class="small" i18n="@@featureContainer-invoices">Billing</span>
+        </a>
+        <a
+          routerLink="/projects"
+          routerLinkActive="active"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-projectsTitle"
+          title="Projects"
+        >
+          <i class="bi bi-kanban"></i>
+          <span class="small" i18n="@@featureContainer-projects">Projects</span>
+        </a>
+        @for (item of contributorCustomerNavItems; track item.routerLink.join('/')) {
+          <a
+            [routerLink]="item.routerLink"
+            routerLinkActive="active"
+            class="sidebar__item"
+            [title]="item.title"
+            [attr.aria-label]="item.title"
+          >
+            <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+            <span class="small">{{ item.label }}</span>
+          </a>
+        }
+      } @else {
+        @for (item of adminNavItems(); track item.routerLink.join('/')) {
+          <a
+            [routerLink]="item.routerLink"
+            routerLinkActive="active"
+            class="sidebar__item position-relative"
+            [title]="item.title"
+            [attr.aria-label]="item.title"
+            [attr.data-testid]="'sidebar-admin-' + item.routerLink.join('/').slice(1)"
+          >
+            <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+            <span class="small">{{ item.label }}</span>
+            @if (item.navKey === 'updates' && (updatesAttentionBadge$ | async)) {
+              <fpc-notification-indicator placement="absolute" />
+              <span class="visually-hidden" i18n="@@featureContainer-updatesAttention">Updates need attention</span>
+            }
+          </a>
+        }
       }
       <div fpcSidebarFooter>
         @if (showAccountNav$ | async) {
@@ -197,42 +219,42 @@
           </fpc-sidebar-popover>
         }
         @if (canAccessAdministration$ | async) {
-          <fpc-sidebar-popover [(open)]="adminPopoverOpen" [ariaLabel]="adminPopoverAriaLabel">
+          <fpc-sidebar-popover [(open)]="modePopoverOpen" [ariaLabel]="modeTitle" [columns]="modeOptions.length">
             <span
               fpcSidebarPopoverTrigger
-              class="sidebar__item sidebar__item--danger border-top position-relative"
-              [class.active]="isAdminRouteActive()"
-              data-testid="sidebar-admin"
+              class="sidebar__item sidebar__item--mode border-top position-relative"
+              data-testid="sidebar-mode"
               tabindex="0"
               role="button"
-              i18n-title="@@featureContainer-adminTitle"
-              title="Admin"
-              i18n-aria-label="@@featureContainer-adminTitle"
-              aria-label="Admin"
+              [title]="modeTitle"
+              [attr.aria-label]="modeTitle"
             >
-              <i class="bi bi-command"></i>
-              <span class="small" i18n="@@featureContainer-admin">Admin</span>
-              @if (updatesAttentionBadge$ | async) {
+              <i
+                class="bi bi-toggles sidebar__mode-icon"
+                [class.sidebar__mode-icon--admin]="consoleMode() === 'admin'"
+                data-testid="sidebar-mode-icon"
+                aria-hidden="true"
+              ></i>
+              <span class="small">{{ modeLabel }}</span>
+              @if (consoleMode() === 'user' && (updatesAttentionBadge$ | async)) {
                 <fpc-notification-indicator placement="absolute" />
                 <span class="visually-hidden" i18n="@@featureContainer-updatesAttention">Updates need attention</span>
               }
             </span>
-            @for (item of adminNavItems(); track item.routerLink.join('/')) {
-              <a
-                [routerLink]="item.routerLink"
-                routerLinkActive="active"
+            @for (option of modeOptions; track option.mode) {
+              <button
+                type="button"
                 class="sidebar__item position-relative"
-                [title]="item.title"
-                [attr.aria-label]="item.title"
-                (click)="adminPopoverOpen = false"
+                [class.active]="consoleMode() === option.mode"
+                [attr.aria-current]="consoleMode() === option.mode ? 'true' : null"
+                [title]="option.title"
+                [attr.aria-label]="option.title"
+                [attr.data-testid]="'sidebar-mode-' + option.mode"
+                (click)="selectMode(option.mode)"
               >
-                <i class="bi {{ item.icon }}" aria-hidden="true"></i>
-                <span class="small">{{ item.label }}</span>
-                @if (item.navKey === 'updates' && (updatesAttentionBadge$ | async)) {
-                  <fpc-notification-indicator placement="absolute" />
-                  <span class="visually-hidden" i18n="@@featureContainer-updatesAttention">Updates need attention</span>
-                }
-              </a>
+                <i class="bi {{ option.icon }}" aria-hidden="true"></i>
+                <span class="small">{{ option.label }}</span>
+              </button>
             }
           </fpc-sidebar-popover>
         }

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-23T07:42:28.665Z",
+  "generatedAt": "2026-11-23T11:46:41.891Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -14858,6 +14858,15 @@
       "type": "guard",
       "attrs": {
         "path": "libs/domains/identity/frontend/feature-auth/src/lib/guards/pat-ui.guard.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-frontend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/frontend/feature-auth/src/lib/guards/role-home.guard.ts",
+      "type": "guard",
+      "attrs": {
+        "path": "libs/domains/identity/frontend/feature-auth/src/lib/guards/role-home.guard.ts",
         "languageOrKind": "ts",
         "projectName": "identity-frontend-feature-auth"
       }
@@ -32505,6 +32514,16 @@
       }
     },
     {
+      "id": "concept:agenstra-console-modes-user-and-admin",
+      "type": "concept",
+      "attrs": {
+        "title": "Console modes (user and admin)",
+        "docPath": "docs/agenstra/features/authentication.md",
+        "sectionAnchor": "console-modes-user-and-admin",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-users-authentication-flow",
       "type": "concept",
       "attrs": {
@@ -37251,6 +37270,16 @@
         "title": "\"scope\": \"tickets:read\", \"scopes\": [\"tickets:read\"], \"reauthorization_required\": false, \"user\": { … } }",
         "docPath": "docs/decabill/features/authentication.md",
         "sectionAnchor": "scope-tickets-read-scopes-tickets-read-reauthorization-required-false-user",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-console-modes-user-and-admin",
+      "type": "concept",
+      "attrs": {
+        "title": "Console modes (user and admin)",
+        "docPath": "docs/decabill/features/authentication.md",
+        "sectionAnchor": "console-modes-user-and-admin",
         "domain": "decabill"
       }
     },
@@ -51113,6 +51142,11 @@
     },
     {
       "from": "project:identity-frontend-feature-auth",
+      "to": "file:libs/domains/identity/frontend/feature-auth/src/lib/guards/role-home.guard.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-frontend-feature-auth",
       "to": "file:libs/domains/identity/frontend/feature-auth/src/lib/guards/signup-disabled.guard.ts",
       "type": "contains"
     },
@@ -59883,6 +59917,11 @@
     },
     {
       "from": "file:docs/agenstra/features/authentication.md",
+      "to": "concept:agenstra-console-modes-user-and-admin",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/authentication.md",
       "to": "concept:agenstra-users-authentication-flow",
       "type": "contains"
     },
@@ -63099,6 +63138,11 @@
     {
       "from": "file:docs/decabill/features/authentication.md",
       "to": "concept:decabill-scope-tickets-read-scopes-tickets-read-reauthorization-required-false-user",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/authentication.md",
+      "to": "concept:decabill-console-modes-user-and-admin",
       "type": "contains"
     },
     {
@@ -92897,6 +92941,21 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-console-modes-user-and-admin",
+      "to": "api:HTTP:POST:/auth/login",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-console-modes-user-and-admin",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-console-modes-user-and-admin",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-users-authentication-flow",
       "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
@@ -95214,6 +95273,11 @@
     {
       "from": "concept:decabill-optional-native-tls-listener-that-requests-client-certificates-see-presenting-the-certificate",
       "to": "api:HTTP:GET:/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-console-modes-user-and-admin",
+      "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
     },
     {
@@ -102407,6 +102471,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-console-modes-user-and-admin",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-users-authentication-flow",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -104778,6 +104847,11 @@
     },
     {
       "from": "concept:decabill-scope-tickets-read-scopes-tickets-read-reauthorization-required-false-user",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-console-modes-user-and-admin",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

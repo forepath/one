@@ -318,6 +318,7 @@ import {
   authGuard,
   identityAuthProviders,
   identityAuthRoutes,
+  roleHomeGuard,
 } from '@forepath/identity/frontend';
 import {
   createNotificationAdminRoutes,
@@ -354,6 +355,7 @@ import { AdminPromotionsPageComponent } from './admin-promotions-page/admin-prom
 import { AdminSubscriptionsPageComponent } from './admin-subscriptions-page/admin-subscriptions-page.component';
 import { AdminSupplierProfilesPageComponent } from './admin-supplier-profiles-page/admin-supplier-profiles-page.component';
 import { CloudInitConfigsPageComponent } from './cloud-init-configs-page/cloud-init-configs-page.component';
+import { CONSOLE_MODE_HOME } from './container/console-mode';
 import { BillingConsoleContainerComponent } from './container/container.component';
 import { collectContributorNgrx, collectContributorRoutes } from './contributors/contributor-ui.registry';
 import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from './contributors/first-party-contributor-ui.modules';
@@ -390,9 +392,11 @@ export const billingConsoleRoutes: Route[] = [
     component: BillingConsoleContainerComponent,
     children: [
       {
+        // Home of the highest console mode: admin overview (admins, managers) or the customer overview.
         path: '',
-        redirectTo: 'dashboard',
         pathMatch: 'full',
+        canActivate: [roleHomeGuard(CONSOLE_MODE_HOME)],
+        children: [],
       },
       // Identity auth routes (login, register, password reset, email confirmation, user management)
       ...identityAuthRoutes,

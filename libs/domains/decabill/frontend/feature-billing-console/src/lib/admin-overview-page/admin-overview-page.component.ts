@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
@@ -59,6 +59,7 @@ import type {
   ApexYAxis,
 } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { filter, map, take, withLatestFrom } from 'rxjs';
 
 import { BILLING_CHART_RESPONSIVE, billingChartTimeAxis } from '../billing-chart';
 import { formatBillingDateRange, formatBillingMoney } from '../billing-format';
@@ -87,7 +88,8 @@ const DEFAULT_RANGE_DAYS = 30;
  * Admin overview (dashboard): the key figures of the tenant across customers, receivables, payables, offers,
  * projects and inventory, plus revenue and expenses of a period. Laid out like Agenstra's audit overview (summary bar,
  * filter strip, panel grid of charts). Tenants with cross-tenant access (TENANTS_ALLOW_GLOBAL_VIEWS) switch to another
- * tenant or to "All tenants" (combined numbers plus a per-tenant comparison) with the header tenant chip.
+ * tenant or to "All tenants" (combined numbers plus a per-tenant comparison) with the header tenant chip; they start on
+ * "All tenants".
  */
 @Component({
   selector: 'framework-admin-overview-page',
@@ -124,6 +126,7 @@ export class AdminOverviewPageComponent implements OnInit {
   private readonly environment = inject<Environment>(ENVIRONMENT);
   private readonly themeService = inject(ThemeService);
   private readonly datePipe = inject(DatePipe);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly pageTitle = $localize`:@@featureAdminOverview-title:Overview`;
   readonly filtersPanelTitle = $localize`:@@featureAdminOverview-filtersTitle:Overview filters`;
@@ -154,7 +157,10 @@ export class AdminOverviewPageComponent implements OnInit {
   private readonly globalViewsAllowed = toSignal(this.capabilities.globalViewsAllowed$, { initialValue: false });
   private readonly viewableTenants = toSignal(this.capabilities.viewableTenants$, { initialValue: [] as string[] });
 
-  /** Viewed tenant: `null` = the home tenant, a tenant id, or {@link ADMIN_OVERVIEW_ALL_TENANTS}. */
+  /**
+   * Viewed tenant: `null` = the home tenant, a tenant id, or {@link ADMIN_OVERVIEW_ALL_TENANTS} (the start view when
+   * global views are allowed).
+   */
   readonly viewTenantId = signal<string | null>(null);
   readonly fromDate = signal('');
   readonly toDate = signal('');
@@ -272,7 +278,22 @@ export class AdminOverviewPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.setDefaultDates();
-    this.load();
+    // The start view depends on the capabilities (global views): refresh them and load once they are settled. A failed
+    // request settles too and falls back to the home tenant.
+    this.capabilities.loadCapabilities();
+    this.capabilities.loading$
+      .pipe(
+        filter((loading) => !loading),
+        take(1),
+        withLatestFrom(this.capabilities.globalViewsAllowed$),
+        map(([, globalViewsAllowed]) => globalViewsAllowed === true),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((globalViewsAllowed) => {
+        if (globalViewsAllowed) this.viewTenantId.set(ADMIN_OVERVIEW_ALL_TENANTS);
+
+        this.load();
+      });
   }
 
   tenantLabel(tenantId: string): string {

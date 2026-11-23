@@ -4938,12 +4938,6 @@
       <trans-unit id="featureContainer-securityAuthenticatorSuggested" datatype="html">
         <source>Authenticator app is not enabled</source>
         </trans-unit>
-      <trans-unit id="featureContainer-adminTitle" datatype="html">
-        <source>Admin</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-admin" datatype="html">
-        <source>Admin</source>
-        </trans-unit>
       <trans-unit id="featureContainer-updatesAttention" datatype="html">
         <source>Updates need attention</source>
         </trans-unit>
@@ -11674,6 +11668,24 @@
         </trans-unit>
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-mode" datatype="html">
+        <source>Mode</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-modeTitle" datatype="html">
+        <source>Switch between user and admin mode</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-modeUser" datatype="html">
+        <source>User</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-modeUserTitle" datatype="html">
+        <source>User mode: plans, invoices and offers</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-modeAdmin" datatype="html">
+        <source>Admin</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-modeAdminTitle" datatype="html">
+        <source>Admin mode: tenant overview and administration</source>
         </trans-unit>
     </body>
   </file>
