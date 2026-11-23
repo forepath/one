@@ -57,3 +57,53 @@ export function isAdminNavUrl(url: string): boolean {
     path.includes('/updates')
   );
 }
+
+/** Console mode of the sidebar: the user's workspace pages or the administration. */
+export type ConsoleMode = 'user' | 'admin';
+
+/** Home page of each console mode (logo, mode switch, `/` for the highest mode). */
+export const CONSOLE_MODE_HOME: Record<ConsoleMode, string[]> = {
+  user: ['/clients'],
+  admin: ['/overview'],
+};
+
+/**
+ * Mode a page belongs to: admin pages (`isAdminNavUrl`), pages available in both modes (`shared`: audit and the
+ * account pages, they keep the current mode) and everything else (`user`).
+ */
+export function consoleModeOfUrl(url: string): ConsoleMode | 'shared' {
+  if (isAdminNavUrl(url)) return 'admin';
+
+  const path = pathOf(url);
+
+  if (
+    path.includes('/audit') ||
+    path.includes('/settings/security') ||
+    path.includes('/settings/tokens') ||
+    path.includes('/settings/apps')
+  ) {
+    return 'shared';
+  }
+
+  return 'user';
+}
+
+/**
+ * Next console mode after a navigation or role change: users without admin access are always in user mode; admin and
+ * user pages set their mode; shared pages keep the current mode, except right after admin access appeared (login or
+ * reload), when they start in the highest mode.
+ */
+export function nextConsoleMode(params: {
+  url: string;
+  canAccessAdmin: boolean;
+  hadAdminAccess: boolean;
+  current: ConsoleMode;
+}): ConsoleMode {
+  if (!params.canAccessAdmin) return 'user';
+
+  const kind = consoleModeOfUrl(params.url);
+
+  if (kind !== 'shared') return kind;
+
+  return params.hadAdminAccess ? params.current : 'admin';
+}

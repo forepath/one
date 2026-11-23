@@ -103,7 +103,7 @@ describe('loginGuard', () => {
       mockRouter.createUrlTree = jest.fn().mockReturnValue(tree);
 
       expect(runInInjectionContext(injector, () => loginGuard(mockRoute, mockState))).toBe(tree);
-      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/']);
     });
 
     it('should start provider sign-in and allow the login page otherwise', () => {
@@ -178,7 +178,7 @@ describe('loginGuard', () => {
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(mockUrlTree);
-      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/']);
     });
 
     it('should redirect to dashboard if API key exists in localStorage', () => {
@@ -196,7 +196,7 @@ describe('loginGuard', () => {
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(mockUrlTree);
-      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/']);
       expect(window.localStorage.getItem).toHaveBeenCalledWith('agent-controller-api-key');
     });
 
@@ -216,7 +216,7 @@ describe('loginGuard', () => {
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(mockUrlTree);
-      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/']);
       // Should check environment first, so localStorage might not be checked
     });
 
@@ -283,7 +283,7 @@ describe('loginGuard', () => {
       const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(mockUrlTree);
-      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/']);
     });
 
     it('should allow access if no JWT exists in localStorage', () => {
@@ -371,7 +371,7 @@ describe('loginGuard', () => {
         notAfter,
       });
 
-    it('redirects signed-in users (valid client certificate) to /clients', async () => {
+    it('redirects signed-in users (valid client certificate) to the role home (/)', async () => {
       const tree = {} as UrlTree;
 
       mockRouter.createUrlTree.mockReturnValue(tree);
@@ -381,7 +381,7 @@ describe('loginGuard', () => {
       const result = await runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
 
       expect(result).toBe(tree);
-      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/clients']);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/']);
       expect(window.localStorage.getItem).not.toHaveBeenCalled();
     });
 

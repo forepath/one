@@ -1,4 +1,6 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 /**
  * Dark top bar (brand + trailing actions). Used by console shells and suitable for docs chrome.
@@ -29,6 +31,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 @Component({
   selector: 'fpc-top-bar',
   standalone: true,
+  imports: [NgTemplateOutlet, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'fpc-top-bar',
@@ -39,6 +42,15 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
     <div class="fpc-top-bar__brand">
       <ng-content select="[fpcTopBarBrand]" />
       @if (showDefaultBrand()) {
+        @if (brandLink(); as link) {
+          <a class="fpc-top-bar__brand-link" [routerLink]="link" data-testid="top-bar-brand-link">
+            <ng-container [ngTemplateOutlet]="brandMark" />
+          </a>
+        } @else {
+          <ng-container [ngTemplateOutlet]="brandMark" />
+        }
+      }
+      <ng-template #brandMark>
         <div class="fpc-top-bar__brand-mark bg-primary">
           <img
             class="fpc-top-bar__brand-icon"
@@ -47,7 +59,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
             [attr.aria-label]="brandAlt() || null"
           />
         </div>
-      }
+      </ng-template>
     </div>
 
     <div class="fpc-top-bar__actions">
@@ -62,6 +74,8 @@ export class FpcTopBarComponent {
   readonly brandSrc = input<string | null>(null);
   /** Accessible name for the brand mark. */
   readonly brandAlt = input('');
+  /** Optional router link of the brand mark (e.g. the console's home for the current mode); `null` = not a link. */
+  readonly brandLink = input<string | readonly string[] | null>(null);
   /**
    * Compact strip for standalone / file-only mode: no brand column, actions end-aligned with
    * padding. When false, brand sits on the left and actions on the right.

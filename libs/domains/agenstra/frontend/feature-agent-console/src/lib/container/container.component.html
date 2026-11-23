@@ -9,6 +9,7 @@
 @if (!isToolWindowRoute()) {
   <fpc-top-bar
     brandSrc="assets/images/icon_light.svg"
+    [brandLink]="(isAuthenticated$ | async) ? modeHome() : null"
     [appearance]="(isAuthenticated$ | async) ? 'console' : 'landing'"
     brandAlt="Agenstra"
     i18n-brandAlt="@@featureContainer-brandAlt"
@@ -60,96 +61,117 @@
 >
   @if (isMainMask()) {
     <fpc-sidebar [ariaLabel]="sidebarAriaLabel">
-      <a
-        routerLink="/clients"
-        routerLinkActive="active"
-        class="sidebar__item position-relative"
-        i18n-title="@@featureContainer-spacesTitle"
-        title="Workspaces"
-      >
-        <i class="bi bi-grid"></i>
-        <span class="small" i18n="@@featureContainer-spaces">Workspaces</span>
-        @if (spacesAttentionBadge$ | async; as attentionBadge) {
-          <fpc-notification-indicator [kind]="attentionBadge" placement="absolute" />
-          <span class="visually-hidden" i18n="@@featureContainer-spacesAttention">Workspaces need attention</span>
+      <!-- Sidebar items follow the console mode (Mode switch in the footer): workspace pages or administration. -->
+      @if (consoleMode() === 'user') {
+        <a
+          routerLink="/clients"
+          routerLinkActive="active"
+          class="sidebar__item position-relative"
+          i18n-title="@@featureContainer-spacesTitle"
+          title="Workspaces"
+        >
+          <i class="bi bi-grid"></i>
+          <span class="small" i18n="@@featureContainer-spaces">Workspaces</span>
+          @if (spacesAttentionBadge$ | async; as attentionBadge) {
+            <fpc-notification-indicator [kind]="attentionBadge" placement="absolute" />
+            <span class="visually-hidden" i18n="@@featureContainer-spacesAttention">Workspaces need attention</span>
+          }
+        </a>
+        <a
+          [routerLink]="ticketsSidebarLink()"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-ticketsTitle"
+          title="Tickets"
+        >
+          <i class="bi bi-kanban"></i>
+          <span class="small" i18n="@@featureContainer-tickets">Tickets</span>
+        </a>
+        <a
+          [routerLink]="knowledgeSidebarLink()"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-pagesTitle"
+          title="Knowledge"
+        >
+          <i class="bi bi-journal-richtext"></i>
+          <span class="small" i18n="@@featureContainer-pages">Knowledge</span>
+        </a>
+        <a
+          [routerLink]="plansSidebarLink()"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-plansTitle"
+          title="Plans"
+        >
+          <i class="bi bi-list-check"></i>
+          <span class="small" i18n="@@featureContainer-plans">Plans</span>
+        </a>
+        <a
+          [routerLink]="tasksSidebarLink()"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-tasksTitle"
+          title="Tasks"
+        >
+          <i class="bi bi-alarm"></i>
+          <span class="small" i18n="@@featureContainer-tasks">Tasks</span>
+        </a>
+        <a
+          [routerLink]="deploymentsSidebarLink()"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-deploymentsTitle"
+          title="CI/CD pipelines"
+        >
+          <i class="bi bi-play-circle"></i>
+          <span class="small" i18n="@@featureContainer-deployments">Pipelines</span>
+        </a>
+        <a
+          [routerLink]="graphsSidebarLink()"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-graphsTitle"
+          title="Graphs"
+        >
+          <i class="bi bi-diagram-3"></i>
+          <span class="small" i18n="@@featureContainer-graphs">Graphs</span>
+        </a>
+        <a
+          routerLink="/audit"
+          routerLinkActive="active"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-auditTitle"
+          title="Audit"
+        >
+          <i class="bi bi-graph-up"></i>
+          <span class="small" i18n="@@featureContainer-audit">Audit</span>
+        </a>
+      } @else {
+        @for (item of visibleAdminNavItems$ | async; track item.routerLink.join('/')) {
+          <a
+            [routerLink]="item.routerLink"
+            routerLinkActive="active"
+            class="sidebar__item position-relative"
+            [title]="item.title"
+            [attr.aria-label]="item.title"
+            [attr.data-testid]="'sidebar-admin-' + item.routerLink.join('/').slice(1)"
+          >
+            <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+            <span class="small">{{ item.label }}</span>
+            @if (item.navKey === 'updates' && (updatesAttentionBadge$ | async)) {
+              <fpc-notification-indicator placement="absolute" />
+              <span class="visually-hidden" i18n="@@featureContainer-updatesAttention">Updates need attention</span>
+            }
+          </a>
         }
-      </a>
-      <a
-        [routerLink]="ticketsSidebarLink()"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: false }"
-        class="sidebar__item"
-        i18n-title="@@featureContainer-ticketsTitle"
-        title="Tickets"
-      >
-        <i class="bi bi-kanban"></i>
-        <span class="small" i18n="@@featureContainer-tickets">Tickets</span>
-      </a>
-      <a
-        [routerLink]="knowledgeSidebarLink()"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: false }"
-        class="sidebar__item"
-        i18n-title="@@featureContainer-pagesTitle"
-        title="Knowledge"
-      >
-        <i class="bi bi-journal-richtext"></i>
-        <span class="small" i18n="@@featureContainer-pages">Knowledge</span>
-      </a>
-      <a
-        [routerLink]="plansSidebarLink()"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: false }"
-        class="sidebar__item"
-        i18n-title="@@featureContainer-plansTitle"
-        title="Plans"
-      >
-        <i class="bi bi-list-check"></i>
-        <span class="small" i18n="@@featureContainer-plans">Plans</span>
-      </a>
-      <a
-        [routerLink]="tasksSidebarLink()"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: false }"
-        class="sidebar__item"
-        i18n-title="@@featureContainer-tasksTitle"
-        title="Tasks"
-      >
-        <i class="bi bi-alarm"></i>
-        <span class="small" i18n="@@featureContainer-tasks">Tasks</span>
-      </a>
-      <a
-        [routerLink]="deploymentsSidebarLink()"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: false }"
-        class="sidebar__item"
-        i18n-title="@@featureContainer-deploymentsTitle"
-        title="CI/CD pipelines"
-      >
-        <i class="bi bi-play-circle"></i>
-        <span class="small" i18n="@@featureContainer-deployments">Pipelines</span>
-      </a>
-      <a
-        [routerLink]="graphsSidebarLink()"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: false }"
-        class="sidebar__item"
-        i18n-title="@@featureContainer-graphsTitle"
-        title="Graphs"
-      >
-        <i class="bi bi-diagram-3"></i>
-        <span class="small" i18n="@@featureContainer-graphs">Graphs</span>
-      </a>
-      <a
-        routerLink="/audit"
-        routerLinkActive="active"
-        class="sidebar__item"
-        i18n-title="@@featureContainer-auditTitle"
-        title="Audit"
-      >
-        <i class="bi bi-graph-up"></i>
-        <span class="small" i18n="@@featureContainer-audit">Audit</span>
-      </a>
+      }
       <div fpcSidebarFooter>
         @if (showAccountNav$ | async) {
           <fpc-sidebar-popover [(open)]="accountPopoverOpen" [ariaLabel]="accountPopoverAriaLabel">
@@ -197,42 +219,42 @@
           </fpc-sidebar-popover>
         }
         @if (canAccessUserManager$ | async) {
-          <fpc-sidebar-popover [(open)]="adminPopoverOpen" [ariaLabel]="adminPopoverAriaLabel">
+          <fpc-sidebar-popover [(open)]="modePopoverOpen" [ariaLabel]="modeTitle" [columns]="modeOptions.length">
             <span
               fpcSidebarPopoverTrigger
-              class="sidebar__item sidebar__item--danger border-top position-relative"
-              [class.active]="isAdminRouteActive()"
-              data-testid="sidebar-admin"
+              class="sidebar__item sidebar__item--mode border-top position-relative"
+              data-testid="sidebar-mode"
               tabindex="0"
               role="button"
-              i18n-title="@@featureContainer-adminTitle"
-              title="Admin"
-              i18n-aria-label="@@featureContainer-adminTitle"
-              aria-label="Admin"
+              [title]="modeTitle"
+              [attr.aria-label]="modeTitle"
             >
-              <i class="bi bi-command"></i>
-              <span class="small" i18n="@@featureContainer-admin">Admin</span>
-              @if (updatesAttentionBadge$ | async) {
+              <i
+                class="bi bi-toggles sidebar__mode-icon"
+                [class.sidebar__mode-icon--admin]="consoleMode() === 'admin'"
+                data-testid="sidebar-mode-icon"
+                aria-hidden="true"
+              ></i>
+              <span class="small">{{ modeLabel }}</span>
+              @if (consoleMode() === 'user' && (updatesAttentionBadge$ | async)) {
                 <fpc-notification-indicator placement="absolute" />
                 <span class="visually-hidden" i18n="@@featureContainer-updatesAttention">Updates need attention</span>
               }
             </span>
-            @for (item of visibleAdminNavItems$ | async; track item.routerLink.join('/')) {
-              <a
-                [routerLink]="item.routerLink"
-                routerLinkActive="active"
+            @for (option of modeOptions; track option.mode) {
+              <button
+                type="button"
                 class="sidebar__item position-relative"
-                [title]="item.title"
-                [attr.aria-label]="item.title"
-                (click)="adminPopoverOpen = false"
+                [class.active]="consoleMode() === option.mode"
+                [attr.aria-current]="consoleMode() === option.mode ? 'true' : null"
+                [title]="option.title"
+                [attr.aria-label]="option.title"
+                [attr.data-testid]="'sidebar-mode-' + option.mode"
+                (click)="selectMode(option.mode)"
               >
-                <i class="bi {{ item.icon }}" aria-hidden="true"></i>
-                <span class="small">{{ item.label }}</span>
-                @if (item.navKey === 'updates' && (updatesAttentionBadge$ | async)) {
-                  <fpc-notification-indicator placement="absolute" />
-                  <span class="visually-hidden" i18n="@@featureContainer-updatesAttention">Updates need attention</span>
-                }
-              </a>
+                <i class="bi {{ option.icon }}" aria-hidden="true"></i>
+                <span class="small">{{ option.label }}</span>
+              </button>
             }
           </fpc-sidebar-popover>
         }

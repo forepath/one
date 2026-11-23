@@ -104,6 +104,8 @@ describe('AdminOverviewPageComponent', () => {
   let error$: BehaviorSubject<string | null>;
   let loading$: BehaviorSubject<boolean>;
   let globalViewsAllowed$: BehaviorSubject<boolean>;
+  let capabilitiesLoading$: BehaviorSubject<boolean>;
+  let loadCapabilities: jest.Mock;
   let facade: { load: jest.Mock };
 
   function render() {
@@ -117,7 +119,12 @@ describe('AdminOverviewPageComponent', () => {
         },
         {
           provide: BillingCapabilitiesFacade,
-          useValue: { globalViewsAllowed$, viewableTenants$: new BehaviorSubject(['decabill', 'acme']) },
+          useValue: {
+            globalViewsAllowed$,
+            viewableTenants$: new BehaviorSubject(['decabill', 'acme']),
+            loading$: capabilitiesLoading$,
+            loadCapabilities,
+          },
         },
         { provide: ENVIRONMENT, useValue: { billing: { tenantId: 'decabill', urls: { restApi: 'http://api' } } } },
       ],
@@ -150,6 +157,8 @@ describe('AdminOverviewPageComponent', () => {
     error$ = new BehaviorSubject<string | null>(null);
     loading$ = new BehaviorSubject(false);
     globalViewsAllowed$ = new BehaviorSubject(false);
+    capabilitiesLoading$ = new BehaviorSubject(false);
+    loadCapabilities = jest.fn();
     facade = { load: jest.fn() };
   });
 
@@ -189,20 +198,48 @@ describe('AdminOverviewPageComponent', () => {
     expect(page.tenantSwitchOptions().map((o) => o.id)).toEqual(['decabill', 'acme', 'all']);
   });
 
-  it('reloads for the selected tenant and back to the home tenant', () => {
+  it('starts on all tenants when global views are allowed', () => {
     globalViewsAllowed$.next(true);
 
     const { page } = render();
 
-    page.onSelectTenant('all');
+    expect(loadCapabilities).toHaveBeenCalled();
+    expect(facade.load).toHaveBeenCalledTimes(1);
     expect(facade.load).toHaveBeenLastCalledWith(expect.objectContaining({ viewTenantId: 'all' }));
+    expect(page.activeTenantSwitchId()).toBe('all');
+  });
+
+  it('waits for the capabilities before the first load', () => {
+    capabilitiesLoading$.next(true);
+
+    render();
+    expect(facade.load).not.toHaveBeenCalled();
+
+    globalViewsAllowed$.next(true);
+    capabilitiesLoading$.next(false);
+    expect(facade.load).toHaveBeenCalledTimes(1);
+    expect(facade.load).toHaveBeenLastCalledWith(expect.objectContaining({ viewTenantId: 'all' }));
+
+    // Later capability refreshes do not reset the view.
+    capabilitiesLoading$.next(true);
+    capabilitiesLoading$.next(false);
+    expect(facade.load).toHaveBeenCalledTimes(1);
+  });
+
+  it('reloads for the selected tenant and back to all tenants', () => {
+    globalViewsAllowed$.next(true);
+
+    const { page } = render();
 
     page.onSelectTenant('decabill');
     expect(facade.load).toHaveBeenLastCalledWith(expect.objectContaining({ viewTenantId: null }));
+
+    page.onSelectTenant('all');
+    expect(facade.load).toHaveBeenLastCalledWith(expect.objectContaining({ viewTenantId: 'all' }));
     expect(facade.load).toHaveBeenCalledTimes(3);
 
     // Selecting the active tenant again is a no-op.
-    page.onSelectTenant('decabill');
+    page.onSelectTenant('all');
     expect(facade.load).toHaveBeenCalledTimes(3);
   });
 

@@ -1,7 +1,9 @@
 import {
   consumePostLoginReturnUrl,
+  isAllowedConsoleReturnUrl,
   isAllowedPostLoginReturnUrl,
   POST_LOGIN_RETURN_URL_STORAGE_KEY,
+  storeConsoleReturnUrl,
   storePostLoginReturnUrl,
 } from './auth-error.constants';
 
@@ -41,7 +43,59 @@ describe('post-login return URL', () => {
     );
     expect(consumePostLoginReturnUrl()).toBeNull();
 
-    sessionStorage.setItem(POST_LOGIN_RETURN_URL_STORAGE_KEY, JSON.stringify({ url: '/clients', at: Date.now() }));
+    // Tampered storage: only the grant page or a safe console path is ever resumed.
+    sessionStorage.setItem(
+      POST_LOGIN_RETURN_URL_STORAGE_KEY,
+      JSON.stringify({ url: '//evil.example.com/x', at: Date.now() }),
+    );
     expect(consumePostLoginReturnUrl()).toBeNull();
+  });
+
+  describe('console deep links', () => {
+    it.each(['/clients', '/tickets/c1?ticket=t1', '/administration/overview?f=groupBy%3Dmonth', '/overview/c1'])(
+      'allows %s',
+      (url) => {
+        expect(isAllowedConsoleReturnUrl(url)).toBe(true);
+      },
+    );
+
+    it.each([
+      '/',
+      '',
+      'https://evil.example.com/clients',
+      '//evil.example.com/clients',
+      '/\\evil.example.com',
+      '/clients\\x',
+      '/clients#frag',
+      '/clients\u0000x',
+      'javascript:alert(1)',
+      '/login',
+      '/login?returnUrl=/x',
+      '/login-2fa',
+      '/register',
+      '/reset-password?code=1',
+      '/authorize?app_id=1',
+      `/${'a'.repeat(2100)}`,
+      null,
+    ])('rejects %s', (url) => {
+      expect(isAllowedConsoleReturnUrl(url)).toBe(false);
+    });
+
+    it('stores and consumes a console deep link once', () => {
+      storeConsoleReturnUrl('/tickets/c1');
+
+      expect(consumePostLoginReturnUrl()).toBe('/tickets/c1');
+      expect(consumePostLoginReturnUrl()).toBeNull();
+    });
+
+    it('ignores unsafe console URLs', () => {
+      storeConsoleReturnUrl('//evil.example.com');
+
+      expect(sessionStorage.getItem(POST_LOGIN_RETURN_URL_STORAGE_KEY)).toBeNull();
+    });
+
+    it('keeps the grant page allowlist strict', () => {
+      expect(isAllowedPostLoginReturnUrl('/clients')).toBe(false);
+    });
   });
 });

@@ -75,6 +75,19 @@
   display: none;
 }
 
+// Brand as a home link: same tile, a focus ring for keyboard users, no underline / colour change.
+.fpc-top-bar__brand-link {
+  display: flex;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-focus-ring-color, currentColor);
+    outline-offset: -2px;
+  }
+}
+
 .fpc-top-bar__brand-mark {
   display: flex;
   align-items: center;

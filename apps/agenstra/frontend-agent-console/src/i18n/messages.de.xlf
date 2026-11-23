@@ -2106,10 +2106,6 @@
         <source>Tokens</source>
         <target>Token</target>
       </trans-unit>
-      <trans-unit id="featureContainer-admin" datatype="html">
-        <source>Admin</source>
-        <target>Admin</target>
-      </trans-unit>
       <trans-unit id="featureContainer-accountTitle" datatype="html">
         <source>Account</source>
         <target>Konto</target>
@@ -2117,10 +2113,6 @@
       <trans-unit id="featureContainer-account" datatype="html">
         <source>Account</source>
         <target>Konto</target>
-      </trans-unit>
-      <trans-unit id="featureContainer-adminTitle" datatype="html">
-        <source>Admin</source>
-        <target>Admin</target>
       </trans-unit>
       <trans-unit id="featureContainer-updatesAttention" datatype="html">
         <source>Updates need attention</source>
@@ -12417,6 +12409,30 @@
       <trans-unit id="featureAdminOverview-allWorkspacesNote" datatype="html">
         <source>Combined numbers of all workspaces</source>
         <target>Zusammengefasste Zahlen aller Workspaces</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-mode" datatype="html">
+        <source>Mode</source>
+        <target>Modus</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-modeTitle" datatype="html">
+        <source>Switch between user and admin mode</source>
+        <target>Zwischen Benutzer- und Adminmodus wechseln</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-modeUser" datatype="html">
+        <source>User</source>
+        <target>Benutzer</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-modeUserTitle" datatype="html">
+        <source>User mode: workspaces, tickets and agents</source>
+        <target>Benutzermodus: Workspaces, Tickets und Agenten</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-modeAdmin" datatype="html">
+        <source>Admin</source>
+        <target>Admin</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-modeAdminTitle" datatype="html">
+        <source>Admin mode: instance overview and administration</source>
+        <target>Adminmodus: Instanzübersicht und Administration</target>
       </trans-unit>
     </body>
   </file>

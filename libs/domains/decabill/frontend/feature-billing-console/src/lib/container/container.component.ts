@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
@@ -35,12 +35,33 @@ import type { ContributorNavItem } from '../contributors/contributor-ui.types';
 import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from '../contributors/first-party-contributor-ui.modules';
 import { ThemeService } from '../theme.service';
 
-/** Admin app management (`/apps`), not `/settings/apps` or the `/authorize` grant page. */
-function isAppsAdminUrl(url: string): boolean {
-  const path = url.split(/[?#]/)[0] ?? url;
+import { CONSOLE_MODE_HOME, isAppsAdminUrl, nextConsoleMode, type ConsoleMode } from './console-mode';
 
-  return path === '/apps' || path.startsWith('/apps/');
-}
+/** Order of the admin sidebar items by route (unlisted ones keep their relative order at the front of their group). */
+const ADMIN_NAV_ORDER = [
+  '/administration/overview',
+  '/administration/customer-profiles',
+  '/administration/subscriptions',
+  '/administration/billing',
+  '/administration/offers',
+  '/administration/promotions',
+  '/administration/projects',
+  '/administration/supplier-profiles',
+  '/administration/inventory',
+  '/administration/accounting',
+  '/administration/datev-exports',
+  '/administration/file-explorer',
+  '/administration/service-plans',
+  '/administration/service-types',
+  '/administration/cloud-init-configs',
+  '/administration/addons',
+  '/administration/meters',
+  '/users',
+  '/apps',
+  '/webhooks',
+  '/updates',
+  '/administration/settings',
+];
 
 @Component({
   selector: 'framework-billing-console-container',
@@ -83,7 +104,23 @@ export class BillingConsoleContainerComponent implements OnInit {
   readonly toggleDarkModeTitle = $localize`:@@featureContainer-toggleDarkMode:Toggle dark mode`;
   readonly loadingFileLabel = $localize`:@@featureContainer-loadingFile:Loading file...`;
   readonly sidebarAriaLabel = $localize`:@@featureContainer-sidebarAriaLabel:Main navigation`;
-  readonly adminPopoverAriaLabel = $localize`:@@featureContainer-adminTitle:Admin`;
+  readonly modeLabel = $localize`:@@featureContainer-mode:Mode`;
+  readonly modeTitle = $localize`:@@featureContainer-modeTitle:Switch between user and admin mode`;
+  /** Entries of the Mode popover: the customer pages (user) and the administration (admin). */
+  readonly modeOptions: { mode: ConsoleMode; icon: string; label: string; title: string }[] = [
+    {
+      mode: 'user',
+      icon: 'bi-person',
+      label: $localize`:@@featureContainer-modeUser:User`,
+      title: $localize`:@@featureContainer-modeUserTitle:User mode: plans, invoices and offers`,
+    },
+    {
+      mode: 'admin',
+      icon: 'bi-person-gear',
+      label: $localize`:@@featureContainer-modeAdmin:Admin`,
+      title: $localize`:@@featureContainer-modeAdminTitle:Admin mode: tenant overview and administration`,
+    },
+  ];
 
   /** True when console uses users (email/password) authentication. */
   readonly isUsersAuth = this.authEnvironment.authentication.type === 'users';
@@ -187,31 +224,16 @@ export class BillingConsoleContainerComponent implements OnInit {
     initialValue: false,
   });
 
-  readonly isAdminRouteActive = toSignal(
-    this.router.events.pipe(
-      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
-      map(() => this.router.url),
-      startWith(this.router.url),
-      map(
-        (url) =>
-          url.includes('/administration') ||
-          url.includes('/users') ||
-          isAppsAdminUrl(url) ||
-          url.includes('/webhooks') ||
-          url.includes('/updates'),
-      ),
-    ),
-    {
-      initialValue:
-        this.router.url.includes('/administration') ||
-        this.router.url.includes('/users') ||
-        isAppsAdminUrl(this.router.url) ||
-        this.router.url.includes('/webhooks') ||
-        this.router.url.includes('/updates'),
-    },
-  );
+  /**
+   * Sidebar mode: `user` (customer pages) or `admin` (administration, admins and managers only). Follows the page
+   * (administration pages switch to admin, customer pages to user, account pages keep the mode) and starts in the
+   * highest available mode at login.
+   */
+  readonly consoleMode = signal<ConsoleMode>('user');
+  /** Home of the current mode: the logo and the Mode switch lead there. */
+  readonly modeHome = computed(() => CONSOLE_MODE_HOME[this.consoleMode()]);
 
-  adminPopoverOpen = false;
+  modePopoverOpen = false;
 
   readonly accountPopoverAriaLabel = $localize`:@@featureContainer-accountTitle:Account`;
 
@@ -341,6 +363,25 @@ export class BillingConsoleContainerComponent implements OnInit {
           this.customerProfileFacade.clearCustomerProfile();
           this.offersFacade.clearOffers();
         }
+      });
+
+    // Console mode follows the page and the role (see `nextConsoleMode`).
+    let hadAdminAccess = false;
+
+    combineLatest([
+      this.authenticationFacade.canAccessBillingAdministration$.pipe(distinctUntilChanged()),
+      this.router.events.pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        map(() => this.router.url),
+        // The shell is created during the first navigation, when `router.url` is still `/`: start from the current
+        // URL only once a navigation has completed (otherwise `/` would count as a user page).
+        startWith(...(this.router.navigated ? [this.router.url] : [])),
+      ),
+    ])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(([canAccessAdmin, url]) => {
+        this.consoleMode.set(nextConsoleMode({ url, canAccessAdmin, hadAdminAccess, current: this.consoleMode() }));
+        hadAdminAccess = canAccessAdmin;
       });
 
     this.authenticationFacade.canAccessBillingAdministration$
@@ -561,9 +602,28 @@ export class BillingConsoleContainerComponent implements OnInit {
       });
     }
 
-    items.push(...collectContributorNavItems(FIRST_PARTY_CONTRIBUTOR_UI_MODULES).admin);
+    const platform = new Set(['/users', '/apps', '/webhooks', '/updates', '/administration/settings']);
+    const contributors = collectContributorNavItems(FIRST_PARTY_CONTRIBUTOR_UI_MODULES).admin;
+    const byRank = (item: ContributorNavItem) => ADMIN_NAV_ORDER.indexOf(item.routerLink.join('/'));
+    const ranked = items.filter((item) => !platform.has(item.routerLink.join('/')));
 
-    return items;
+    // Sidebar order (admin mode): overview, business, catalog, contributor pages, then the platform pages.
+    ranked.sort((a, b) => byRank(a) - byRank(b));
+
+    return [
+      ...ranked,
+      ...contributors,
+      ...items.filter((item) => platform.has(item.routerLink.join('/'))).sort((a, b) => byRank(a) - byRank(b)),
+    ];
+  }
+
+  /** Switch the sidebar mode by opening that mode's home page (the mode follows the page). */
+  selectMode(mode: ConsoleMode): void {
+    this.modePopoverOpen = false;
+
+    if (mode === this.consoleMode()) return;
+
+    void this.router.navigate(CONSOLE_MODE_HOME[mode]);
   }
 
   private isAccountNavUrl(url: string): boolean {

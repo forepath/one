@@ -17,11 +17,11 @@ import { hasValidConsoleSessionJwt } from './auth.guard';
 
 /**
  * Guard that prevents authenticated users from accessing the login route.
- * - 'oidc' / 'saml': signed-in users go to /clients; otherwise sign-in starts at the identity provider right away
+ * - 'oidc' / 'saml': signed-in users go to the role home (/); otherwise sign-in starts at the identity provider right away
  *   (unless the previous attempt failed: `?sso_error=…` keeps the login page with a retry button)
- * - 'api-key': redirects to /clients when an API key exists in environment or localStorage
- * - 'mtls': redirects to /clients when a valid client certificate is stored
- * - 'users': redirects to /clients when a valid password-session JWT exists in localStorage
+ * - 'api-key': redirects to the role home (/) when an API key exists in environment or localStorage
+ * - 'mtls': redirects to the role home (/) when a valid client certificate is stored
+ * - 'users': redirects to the role home (/) when a valid password-session JWT exists in localStorage
  * - Personal access token JWTs are cleared so the login form remains reachable
  * - Otherwise, allows access to login route
  */
@@ -39,7 +39,7 @@ export const loginGuard: CanActivateFn = (route) => {
     const signedIn = type === 'oidc' ? inject(OidcAuthService).isLoggedIn() : hasValidConsoleSessionJwt();
 
     if (signedIn) {
-      return router.createUrlTree(['/clients']);
+      return router.createUrlTree(['/']);
     }
 
     if (!route.queryParamMap.get(SSO_ERROR_QUERY_PARAM)) {
@@ -55,7 +55,7 @@ export const loginGuard: CanActivateFn = (route) => {
 
   if (type === 'api-key') {
     if (environment.authentication.apiKey || localStorage.getItem(API_KEY_STORAGE_KEY)) {
-      return router.createUrlTree(['/clients']);
+      return router.createUrlTree(['/']);
     }
 
     return true;
@@ -66,11 +66,11 @@ export const loginGuard: CanActivateFn = (route) => {
       return true;
     }
 
-    return hasMtlsCredential().then((hasCredential) => (hasCredential ? router.createUrlTree(['/clients']) : true));
+    return hasMtlsCredential().then((hasCredential) => (hasCredential ? router.createUrlTree(['/']) : true));
   }
 
   if (usesAppSessionJwt(type)) {
-    return hasValidConsoleSessionJwt() ? router.createUrlTree(['/clients']) : true;
+    return hasValidConsoleSessionJwt() ? router.createUrlTree(['/']) : true;
   }
 
   // For other authentication types, allow access to login

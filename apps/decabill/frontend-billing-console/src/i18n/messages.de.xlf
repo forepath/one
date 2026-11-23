@@ -1610,10 +1610,6 @@
         <source>DATEV</source>
         <target>DATEV</target>
       </trans-unit>
-      <trans-unit id="featureContainer-admin" datatype="html">
-        <source>Admin</source>
-        <target>Admin</target>
-      </trans-unit>
       <trans-unit id="featureContainer-accountTitle" datatype="html">
         <source>Account</source>
         <target>Konto</target>
@@ -1621,10 +1617,6 @@
       <trans-unit id="featureContainer-account" datatype="html">
         <source>Account</source>
         <target>Konto</target>
-      </trans-unit>
-      <trans-unit id="featureContainer-adminTitle" datatype="html">
-        <source>Admin</source>
-        <target>Admin</target>
       </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
@@ -15565,6 +15557,30 @@
       <trans-unit id="featureContainer-adminOverview" datatype="html">
         <source>Overview</source>
         <target>Übersicht</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-mode" datatype="html">
+        <source>Mode</source>
+        <target>Modus</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-modeTitle" datatype="html">
+        <source>Switch between user and admin mode</source>
+        <target>Zwischen Benutzer- und Adminmodus wechseln</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-modeUser" datatype="html">
+        <source>User</source>
+        <target>Benutzer</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-modeUserTitle" datatype="html">
+        <source>User mode: plans, invoices and offers</source>
+        <target>Benutzermodus: Tarife, Rechnungen und Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-modeAdmin" datatype="html">
+        <source>Admin</source>
+        <target>Admin</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-modeAdminTitle" datatype="html">
+        <source>Admin mode: tenant overview and administration</source>
+        <target>Adminmodus: Mandantenübersicht und Administration</target>
       </trans-unit>
     </body>
   </file>

@@ -1,6 +1,7 @@
 import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
+import { POST_LOGIN_RETURN_URL_STORAGE_KEY } from '@forepath/identity/frontend';
 
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import type { IdentityAuthEnvironment } from '../../../../util-auth/src';
@@ -288,6 +289,35 @@ describe('authGuard', () => {
 
       expect(result).toBe(mockUrlTree);
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/login']);
+    });
+
+    it('remembers the requested console page for after login', () => {
+      const injector = setupTestBed({ authentication: { type: 'users' } });
+
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
+      mockRouter.createUrlTree = jest.fn().mockReturnValue({} as UrlTree);
+      mockState = { url: '/tickets/c1?ticket=t1' } as RouterStateSnapshot;
+      sessionStorage.clear();
+
+      runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
+
+      expect(JSON.parse(sessionStorage.getItem(POST_LOGIN_RETURN_URL_STORAGE_KEY) ?? '{}').url).toBe(
+        '/tickets/c1?ticket=t1',
+      );
+    });
+
+    it('does not remember unsafe or sign-in URLs', () => {
+      const injector = setupTestBed({ authentication: { type: 'users' } });
+
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
+      mockRouter.createUrlTree = jest.fn().mockReturnValue({} as UrlTree);
+
+      for (const url of ['//evil.example.com/x', '/login?x=1']) {
+        sessionStorage.clear();
+        mockState = { url } as RouterStateSnapshot;
+        runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
+        expect(sessionStorage.getItem(POST_LOGIN_RETURN_URL_STORAGE_KEY)).toBeNull();
+      }
     });
 
     it('should redirect to login if JWT is expired', () => {

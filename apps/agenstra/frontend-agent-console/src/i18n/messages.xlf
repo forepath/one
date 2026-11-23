@@ -3421,12 +3421,6 @@
       <trans-unit id="featureContainer-securityAuthenticatorSuggested" datatype="html">
         <source>Authenticator app is not enabled</source>
         </trans-unit>
-      <trans-unit id="featureContainer-adminTitle" datatype="html">
-        <source>Admin</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-admin" datatype="html">
-        <source>Admin</source>
-        </trans-unit>
       <trans-unit id="featureContainer-updatesAttention" datatype="html">
         <source>Updates need attention</source>
         </trans-unit>
@@ -9305,6 +9299,24 @@
       <trans-unit id="featureAdminOverview-allWorkspacesNote" datatype="html">
         <source>Combined numbers of all workspaces</source>
       </trans-unit>
+      <trans-unit id="featureContainer-mode" datatype="html">
+        <source>Mode</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-modeTitle" datatype="html">
+        <source>Switch between user and admin mode</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-modeUser" datatype="html">
+        <source>User</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-modeUserTitle" datatype="html">
+        <source>User mode: workspaces, tickets and agents</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-modeAdmin" datatype="html">
+        <source>Admin</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-modeAdminTitle" datatype="html">
+        <source>Admin mode: instance overview and administration</source>
+        </trans-unit>
     </body>
   </file>
 </xliff>

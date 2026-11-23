@@ -4,7 +4,7 @@ A dashboard of the key figures of a tenant for billing administrators, with opti
 
 ## Overview
 
-Administrators open **Admin → Overview** (`/administration/overview`) in the billing console. The page is laid out like the Agenstra audit overview:
+Administrators and managers open the admin mode (**Mode → Admin**); its home page is the **Overview** (`/administration/overview`) in the billing console. The page is laid out like the Agenstra audit overview:
 
 - **Summary bar**: customers, active subscriptions, revenue in period, expenses in period, open receivables, open payables. The receivables card turns to a warning when invoices are overdue.
 - **Filter strip**: period (`From`, `To`, default the last 30 days) and grouping (`Day` or `Month`). The applied filters are kept in the URL (`?f=`), so a view can be shared or reloaded.
@@ -26,7 +26,7 @@ All figures are the current state except those marked "in period" (revenue, expe
 
 ## Tenants and combined numbers
 
-By default the page shows the request tenant (`X-Tenant`). Admins of tenants listed in `TENANTS_ALLOW_GLOBAL_VIEWS` get a tenant chip in the page header, the same switch as on the accounting, DATEV and File Explorer pages:
+Without cross-tenant access the page shows the request tenant (`X-Tenant`). Admins of tenants listed in `TENANTS_ALLOW_GLOBAL_VIEWS` get a tenant chip in the page header, the same switch as on the accounting, DATEV and File Explorer pages, and the page starts on **All tenants**:
 
 - Any configured tenant: that tenant's figures.
 - **All tenants**: the combined numbers (sums over every configured tenant) in the summary bar and panels, plus a **Revenue by tenant** chart and a **Tenants** table that compares the tenants side by side. Selecting a row switches to that tenant.
@@ -37,7 +37,7 @@ Each tenant's figures come from the regular tenant-scoped queries, run once per 
 
 ## Access
 
-- Route guard: `billingAdminGuard` (admins only); the nav tile sits first in the **Admin** menu.
+- Route guard: `billingAdminGuard` (admins and managers); first item of the admin sidebar and the page admins and managers land on after login.
 - API: `GET /api/admin/billing/overview?viewTenantId=&from=&to=&groupBy=` (admin role, PAT scope `billing:admin`).
   - `viewTenantId` omitted or equal to the request tenant: the request tenant.
   - Another configured tenant or `all`: only for tenants in `TENANTS_ALLOW_GLOBAL_VIEWS` (`403` otherwise); unknown tenants return `400`.
