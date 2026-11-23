@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.6.0](https://github.com/forepath/one/compare/v5.5.0...v5.6.0) (2026-11-23)
+
+
+### Features
+
+* **agenstra:** admin overview ([#772](https://github.com/forepath/one/issues/772)) ([a8bff4f](https://github.com/forepath/one/commit/a8bff4f58066747baaaae8b9fec798a88950630b))
+* **decabill:** admin overview ([#769](https://github.com/forepath/one/issues/769)) ([6fdcce2](https://github.com/forepath/one/commit/6fdcce2d57ea74b78405c1289516e59abf92fe95))
+* **shared:** manager user account role ([#770](https://github.com/forepath/one/issues/770)) ([8b32a2b](https://github.com/forepath/one/commit/8b32a2b0debd396e116180d8714c20b4e13de343))
+* **shared:** role-specific sidebar ([#773](https://github.com/forepath/one/issues/773)) ([4a6b6f9](https://github.com/forepath/one/commit/4a6b6f92608a41d90bfecdfa44a550cc3a436f16))
+
 ## [5.5.0](https://github.com/forepath/one/compare/v5.4.0...v5.5.0) (2026-11-22)
 
 
