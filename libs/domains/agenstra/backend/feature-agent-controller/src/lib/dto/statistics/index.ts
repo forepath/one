@@ -4,3 +4,10 @@ export { StatisticsFilterDropDto, StatisticsFilterDropListDto } from './statisti
 export { StatisticsFilterFlagDto, StatisticsFilterFlagListDto } from './statistics-filter-flag.dto';
 export { StatisticsEntityEventDto, StatisticsEntityEventListDto } from './statistics-entity-event.dto';
 export { StatisticsEgressEventDto, StatisticsEgressEventListDto } from './statistics-egress-event.dto';
+export type {
+  AdminOverviewGroupBy,
+  AdminOverviewMetricsDto,
+  AdminOverviewResponseDto,
+  AdminOverviewWorkspaceDto,
+  AdminOverviewWorkspaceMetricsDto,
+} from './admin-overview.dto';

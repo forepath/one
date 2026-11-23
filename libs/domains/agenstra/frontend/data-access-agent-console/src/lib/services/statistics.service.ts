@@ -4,6 +4,7 @@ import type { Environment } from '@forepath/agenstra/frontend/util-configuration
 import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 import { Observable } from 'rxjs';
 
+import type { AdminOverviewParams, AdminOverviewResponse } from '../state/admin-overview/admin-overview.types';
 import type {
   StatisticsAggregateParams,
   StatisticsChatIoListDto,
@@ -141,6 +142,18 @@ export class StatisticsService {
     return this.http.get<StatisticsSummaryDto>(`${this.apiUrl}/statistics/summary`, {
       params: httpParams,
     });
+  }
+
+  /** Admin overview of every workspace or one (`clientId`); admins and managers only. */
+  getAdminOverview(params: AdminOverviewParams): Observable<AdminOverviewResponse> {
+    const httpParams = this.buildParams({
+      clientId: params.clientId ?? undefined,
+      from: params.from,
+      to: params.to,
+      groupBy: params.groupBy,
+    });
+
+    return this.http.get<AdminOverviewResponse>(`${this.apiUrl}/admin/overview`, { params: httpParams });
   }
 
   /** Aggregate: get chat I/O */

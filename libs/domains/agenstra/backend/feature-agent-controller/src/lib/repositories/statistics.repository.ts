@@ -330,6 +330,85 @@ export class StatisticsRepository {
     return rows.map((r) => r.id);
   }
 
+  /**
+   * Chat I/O totals per workspace (keyed by original client id) in a period: messages, tokens, cost and the number of
+   * distinct agents / users with activity. Same filters as {@link queryChatIoAggregate}.
+   */
+  async queryChatIoByClient(params: {
+    originalClientIds: string[];
+    from?: string;
+    to?: string;
+  }): Promise<
+    Map<
+      string,
+      { totalMessages: number; totalTokens: number; totalCostUsd: number; activeAgents: number; activeUsers: number }
+    >
+  > {
+    const result = new Map<
+      string,
+      { totalMessages: number; totalTokens: number; totalCostUsd: number; activeAgents: number; activeUsers: number }
+    >();
+
+    if (params.originalClientIds.length === 0) return result;
+
+    let qb = this.statisticsChatIo
+      .createQueryBuilder('cio')
+      .innerJoin('cio.statisticsClient', 'sc')
+      .where('sc.original_client_id IN (:...ids)', { ids: params.originalClientIds });
+
+    if (params.from) qb = qb.andWhere('cio.occurred_at >= :from', { from: params.from });
+
+    if (params.to) qb = qb.andWhere('cio.occurred_at <= :to', { to: params.to });
+
+    const rows = await qb
+      .select('sc.original_client_id', 'client_id')
+      .addSelect('COUNT(cio.id)', 'count')
+      .addSelect('COALESCE(SUM(cio.input_tokens), 0) + COALESCE(SUM(cio.output_tokens), 0)', 'tokens')
+      .addSelect('COALESCE(SUM(cio.cost_usd), 0)', 'cost_usd')
+      .addSelect('COUNT(DISTINCT cio.statistics_agent_id)', 'agents')
+      .addSelect('COUNT(DISTINCT cio.statistics_user_id)', 'users')
+      .groupBy('sc.original_client_id')
+      .getRawMany<{
+        client_id: string;
+        count: string;
+        tokens: string;
+        cost_usd: string;
+        agents: string;
+        users: string;
+      }>();
+
+    for (const row of rows) {
+      result.set(row.client_id, {
+        totalMessages: parseInt(row.count ?? '0', 10),
+        totalTokens: parseInt(row.tokens ?? '0', 10),
+        totalCostUsd: parseFloat(row.cost_usd ?? '0') || 0,
+        activeAgents: parseInt(row.agents ?? '0', 10),
+        activeUsers: parseInt(row.users ?? '0', 10),
+      });
+    }
+
+    return result;
+  }
+
+  /** Distinct users with chat activity across the given workspaces in a period (a user can work in several). */
+  async countActiveChatUsers(params: { originalClientIds: string[]; from?: string; to?: string }): Promise<number> {
+    if (params.originalClientIds.length === 0) return 0;
+
+    let qb = this.statisticsChatIo
+      .createQueryBuilder('cio')
+      .innerJoin('cio.statisticsClient', 'sc')
+      .where('sc.original_client_id IN (:...ids)', { ids: params.originalClientIds })
+      .andWhere('cio.statistics_user_id IS NOT NULL');
+
+    if (params.from) qb = qb.andWhere('cio.occurred_at >= :from', { from: params.from });
+
+    if (params.to) qb = qb.andWhere('cio.occurred_at <= :to', { to: params.to });
+
+    const raw = await qb.select('COUNT(DISTINCT cio.statistics_user_id)', 'users').getRawOne<{ users: string }>();
+
+    return parseInt(raw?.users ?? '0', 10);
+  }
+
   /** Query params for chat I/O */
   async queryChatIo(params: {
     statisticsClientIds: string[];

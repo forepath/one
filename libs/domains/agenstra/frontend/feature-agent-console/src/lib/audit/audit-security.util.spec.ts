@@ -1,13 +1,15 @@
 import {
   alignSecuritySeries,
-  egressDecisionColor,
   countAxisScale,
+  egressDecisionColor,
   filterBreakdownLabel,
   formatBytes,
   formatEgressDecision,
   formatEgressKind,
   formatEgressRule,
   hasEgressData,
+  utcBucketKey,
+  utcBucketKeysInclusive,
 } from './audit-security.util';
 
 describe('audit-security.util', () => {
@@ -146,5 +148,19 @@ describe('countAxisScale', () => {
 
   it('lets larger counts use a nice integer scale', () => {
     expect(countAxisScale([[3, 40]])).toEqual({ min: 0, forceNiceScale: true, decimalsInFloat: 0 });
+  });
+});
+
+describe('utcBucketKeysInclusive', () => {
+  it('lists every UTC day / hour bucket of a range', () => {
+    expect(utcBucketKeysInclusive('2026-11-01', '2026-11-03', 'day')).toEqual([
+      '2026-11-01T00:00:00.000Z',
+      '2026-11-02T00:00:00.000Z',
+      '2026-11-03T00:00:00.000Z',
+    ]);
+    expect(utcBucketKeysInclusive('2026-11-01', '2026-11-01', 'hour')).toHaveLength(24);
+    expect(utcBucketKeysInclusive('2026-11-03', '2026-11-01', 'day')).toEqual([]);
+    expect(utcBucketKeysInclusive('bad', '2026-11-01', 'day')).toEqual([]);
+    expect(utcBucketKey('2026-11-02T13:45:00.000Z', 'hour')).toBe('2026-11-02T13:00:00.000Z');
   });
 });

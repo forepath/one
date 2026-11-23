@@ -1,0 +1,213 @@
+<div class="admin-overview border-top d-flex flex-column flex-grow-1 min-h-0" data-testid="admin-overview-page">
+  <fpc-page-header [title]="pageTitle">
+    <framework-workspace-chip
+      fpcPageHeaderContext
+      [name]="workspaceChipLabel()"
+      [icon]="selectedClientId() ? 'building' : 'buildings'"
+      [title]="switchWorkspaceTitle"
+      (switch)="openWorkspaceSwitch()"
+      data-testid="admin-overview-workspace-chip"
+    />
+  </fpc-page-header>
+
+  <fpc-summary-bar [columns]="6">
+    <fpc-summary-card icon="building" [label]="workspacesLabel">
+      <span fpcSummaryCardValue data-testid="admin-overview-kpi-workspaces">
+        @if (loading()) {
+          <fpc-spinner size="sm" />
+        } @else if (metrics(); as m) {
+          {{ formatCount(m.workspaceCount) }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card icon="robot" [label]="activeAgentsLabel">
+      <span fpcSummaryCardValue data-testid="admin-overview-kpi-agents">
+        @if (loading()) {
+          <fpc-spinner size="sm" />
+        } @else if (metrics(); as m) {
+          {{ formatCount(m.activeAgentCount) }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card icon="chat-dots" [label]="messagesLabel">
+      <span fpcSummaryCardValue data-testid="admin-overview-kpi-messages">
+        @if (loading()) {
+          <fpc-spinner size="sm" />
+        } @else if (metrics(); as m) {
+          {{ formatCount(m.totalMessages) }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card icon="coin" [label]="tokensLabel">
+      <span fpcSummaryCardValue data-testid="admin-overview-kpi-tokens">
+        @if (loading()) {
+          <fpc-spinner size="sm" />
+        } @else if (metrics(); as m) {
+          {{ formatCount(m.totalTokens) }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card icon="cash-coin" [label]="costLabel">
+      <span fpcSummaryCardValue data-testid="admin-overview-kpi-cost">
+        @if (loading()) {
+          <fpc-spinner size="sm" />
+        } @else if (metrics(); as m) {
+          {{ formatUsd(m.totalCostUsd) }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card
+      icon="card-checklist"
+      [label]="openTicketsLabel"
+      [tone]="(metrics()?.failedAutomationRunCount ?? 0) > 0 ? 'warning' : 'default'"
+    >
+      <span fpcSummaryCardValue data-testid="admin-overview-kpi-tickets">
+        @if (loading()) {
+          <fpc-spinner size="sm" />
+        } @else if (metrics(); as m) {
+          {{ formatCount(m.openTicketCount) }}
+        }
+      </span>
+    </fpc-summary-card>
+  </fpc-summary-bar>
+
+  @if (error(); as err) {
+    <fpc-alert flush variant="danger" [message]="err" data-testid="admin-overview-error" />
+  }
+
+  <fpc-list-toolbar
+    class="flex-shrink-0"
+    [open]="filtersOpen()"
+    (openChange)="onFiltersOpenChange($event)"
+    [title]="filtersPanelTitle"
+    [activeCount]="activeFilterCount()"
+    (applied)="filterState.apply()"
+    (cleared)="onResetFilters()"
+    data-testid="admin-overview-filters"
+  >
+    <span fpcListToolbarLead class="admin-overview__scope small text-body-secondary text-truncate">{{
+      scopeLabel()
+    }}</span>
+    <fpc-form-field forId="adminOverviewFrom" i18n-label="@@featureAdminOverview-fromDate" label="From">
+      <fpc-form-control
+        controlId="adminOverviewFrom"
+        inputType="date"
+        [ngModel]="filterState.draft().from"
+        (ngModelChange)="filterState.patch({ from: $event })"
+      />
+    </fpc-form-field>
+    <fpc-form-field forId="adminOverviewTo" i18n-label="@@featureAdminOverview-toDate" label="To">
+      <fpc-form-control
+        controlId="adminOverviewTo"
+        inputType="date"
+        [ngModel]="filterState.draft().to"
+        (ngModelChange)="filterState.patch({ to: $event })"
+      />
+    </fpc-form-field>
+    <fpc-form-field forId="adminOverviewGroupBy" i18n-label="@@featureAdminOverview-groupBy" label="Group by">
+      <fpc-form-control
+        controlType="select"
+        controlId="adminOverviewGroupBy"
+        [ngModel]="filterState.draft().groupBy"
+        (ngModelChange)="filterState.patch({ groupBy: $event })"
+      >
+        <option value="day" i18n="@@featureAdminOverview-groupByDay">Day</option>
+        <option value="hour" i18n="@@featureAdminOverview-groupByHour">Hour</option>
+      </fpc-form-control>
+    </fpc-form-field>
+  </fpc-list-toolbar>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @let m = metrics();
+    @if (loading() && !m) {
+      <fpc-empty-state loading [title]="loadingLabel" />
+    } @else if (m) {
+      <fpc-panel-grid [columns]="3" data-testid="admin-overview-panels">
+        @if (messagesChartOptions(); as chart) {
+          <fpc-panel [title]="messagesChartTitle" [span]="2">
+            <apx-chart
+              [series]="chart.series"
+              [chart]="chart.chart"
+              [colors]="chart.colors"
+              [stroke]="chart.stroke"
+              [fill]="chart.fill"
+              [dataLabels]="chart.dataLabels"
+              [xaxis]="chart.xaxis"
+              [yaxis]="chart.yaxis"
+              [grid]="chart.grid"
+              [legend]="chart.legend"
+            ></apx-chart>
+          </fpc-panel>
+        }
+
+        @for (section of sections(); track section.id) {
+          <fpc-panel [title]="section.title" [attr.data-testid]="'admin-overview-section-' + section.id">
+            <a fpcPanelActions class="small text-decoration-none" [routerLink]="section.link">{{ openLabel }}</a>
+            <fpc-key-value-list [items]="section.items" />
+          </fpc-panel>
+        }
+
+        @if (securityChartOptions(); as chart) {
+          <fpc-panel [title]="securityChartTitle" [span]="3">
+            <apx-chart
+              [series]="chart.series"
+              [chart]="chart.chart"
+              [colors]="chart.colors"
+              [stroke]="chart.stroke"
+              [fill]="chart.fill"
+              [dataLabels]="chart.dataLabels"
+              [xaxis]="chart.xaxis"
+              [yaxis]="chart.yaxis"
+              [grid]="chart.grid"
+              [legend]="chart.legend"
+            ></apx-chart>
+          </fpc-panel>
+        }
+
+        @if (isAllWorkspaces()) {
+          <fpc-panel [title]="workspacesTableTitle" [span]="3" flush>
+            <fpc-data-table
+              [ariaLabel]="workspacesTableTitle"
+              [columns]="workspaceColumns"
+              [rows]="overview()?.workspaces ?? []"
+              [rowId]="workspaceRowId"
+              [searchable]="false"
+              [showColumnChooser]="false"
+              nested
+              (rowActivate)="onWorkspaceRowActivate($event)"
+              emptyIcon="building"
+              data-testid="admin-overview-workspaces-table"
+            >
+              <span fpcDataTableEmpty>
+                <fpc-empty-state
+                  size="sm"
+                  icon="building"
+                  message="No workspaces yet"
+                  i18n-message="@@featureAdminOverview-noWorkspaces"
+                />
+              </span>
+            </fpc-data-table>
+          </fpc-panel>
+        }
+      </fpc-panel-grid>
+    } @else if (!error()) {
+      <fpc-empty-state message="No data yet" i18n-message="@@featureAdminOverview-noData" />
+    }
+  </div>
+</div>
+
+<fpc-modal [(open)]="workspaceSwitchOpen" [title]="switchWorkspaceTitle" [scrollable]="true" [bodyScroll]="false">
+  <framework-workspace-switch-table
+    [clients]="clients()"
+    [currentId]="selectedClientId()"
+    [allOption]="allWorkspacesOption"
+    [loading]="clientsLoading()"
+    [(query)]="workspaceSwitchSearch"
+    [hasMore]="workspaceSwitchHasMore()"
+    [appendLoading]="workspaceSwitchAppendLoading()"
+    [appendError]="workspaceSwitchAppendError()"
+    (loadMore)="onLoadMoreWorkspaces()"
+    (selectWorkspace)="selectWorkspace($event.id)"
+    (selectAll)="selectWorkspace(null)"
+  />
+</fpc-modal>

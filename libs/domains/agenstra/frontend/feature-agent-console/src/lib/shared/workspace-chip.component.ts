@@ -22,7 +22,7 @@ import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend
       data-testid="workspace-chip"
     >
       <fpc-badge variant="info" color="secondary" class="framework-workspace-chip__badge">
-        <i class="bi bi-building" aria-hidden="true"></i>
+        <i class="bi bi-{{ icon() }}" aria-hidden="true"></i>
         <span class="text-truncate framework-workspace-chip__label">{{ name() }}</span>
       </fpc-badge>
     </fpc-button>
@@ -61,6 +61,8 @@ import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend
 export class WorkspaceChipComponent {
   /** Display name of the current workspace. */
   readonly name = input.required<string>();
+  /** Bootstrap icon of the badge; `buildings` for a combined view such as "All workspaces". */
+  readonly icon = input('building');
   /** Tooltip of the chip (e.g. "Switch workspace"). */
   readonly title = input<string>('');
   /** The chip was clicked: open the workspace switch. */

@@ -22,6 +22,7 @@ The Agent Controller HTTP API provides:
 - Tickets, comments, activity, migration, automation, and assisted body-generation flows (`/tickets/*`)
 - Knowledge tree and relations (`/knowledge/*`) for workspace pages/folders
 - Usage statistics (`/clients/:id/statistics/*`, `/statistics/*`)
+- Admin overview of the instance for admins and managers (`/admin/overview`, scope `statistics:admin`)
 - Agent web traffic (egress) status, policy evaluation, and event statistics (`/clients/:id/agents/:agentId/egress`, `/clients/:id/statistics/egress-events`)
 - Container isolation summary and re-probe of workspace hosts (`/clients/:id/isolation`, `/clients/:id/isolation/probe`)
 - Atlassian connections and import configurations for administrators (`/connections/atlassian/*`, scope `connections:admin`)

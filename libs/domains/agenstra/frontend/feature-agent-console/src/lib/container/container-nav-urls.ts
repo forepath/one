@@ -20,6 +20,8 @@ export function isMainSidebarUrl(url: string): boolean {
     path.includes('/webhooks') ||
     path.includes('/updates') ||
     path.includes('/audit') ||
+    path === '/overview' ||
+    path.startsWith('/overview/') ||
     path.includes('/tickets') ||
     path.includes('/connections') ||
     path.includes('/knowledge') ||
@@ -43,6 +45,8 @@ export function isAdminNavUrl(url: string): boolean {
   const path = pathOf(url);
 
   return (
+    path === '/overview' ||
+    path.startsWith('/overview/') ||
     path.includes('/users') ||
     path === '/apps' ||
     path.startsWith('/apps/') ||

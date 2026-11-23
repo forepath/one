@@ -24,6 +24,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Authentication** Multiple authentication methods with configurable user registration
 - **Tickets and Workspaces** Ticket boards, migration, and automation on the controller
 - **Usage Statistics** Controller-backed usage and filter metrics (distinct from container stats)
+- **[Admin Overview](./admin-overview.md)** Admin and manager dashboard of the instance: activity, tickets, runs and security, combined or per workspace
 - **Message Filters** Layered regex policies for chat traffic
 - **Egress Filtering** Per-environment web traffic filtering via an egress guard sidecar
 - **Container Isolation Levels** Per-environment choice between standard Docker (`runc`), a gVisor sandbox, gVisor on KVM and a KVM microVM, validated by runtime probes
@@ -225,6 +226,16 @@ Aggregated usage and filter metrics on the agent controller for reporting and op
 - Per-workspace and global summaries
 - Chat I/O, filter drops, filter flags, and entity events
 - Complements live **container** statistics from the agent-manager
+
+### [Admin Overview](./admin-overview.md)
+
+Dashboard of the instance's key figures for admins and managers, laid out like the audit page.
+
+**Key Capabilities**:
+
+- Summary bar, messages and security charts and per-area figures for a selectable period
+- Combined numbers over all workspaces with a per-workspace comparison, or one workspace
+- Same chat and security totals as the audit page; PAT scope `statistics:admin`
 
 ### [Message Filters](./message-filters.md)
 

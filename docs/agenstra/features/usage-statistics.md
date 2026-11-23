@@ -27,6 +27,7 @@ Egress events live in `statistics_egress_events` and are served by `GET /api/cli
 
 - **Client-scoped routes** Same client access rules as other controller APIs (plus admin visibility where documented).
 - **Global routes** Intended for administrators or roles that may see aggregates across accessible clients; exact behavior is defined in the OpenAPI descriptions for each operation.
+- **Admin overview** Admins and managers get an instance dashboard built on these statistics (plus tickets, runs and knowledge): see [Admin Overview](./admin-overview.md).
 
 ## Relationship to container stats
 
@@ -37,6 +38,7 @@ Egress events live in `statistics_egress_events` and are served by `GET /api/cli
 
 ## Related documentation
 
+- **[Admin Overview](./admin-overview.md)** Admin and manager dashboard over all workspaces or one
 - **[Egress Filtering](./egress-filtering.md)** Web traffic audit events
 - **[Message Filters](./message-filters.md)** Filter drops and flags
 - **[Backend Agent Controller](../applications/backend-agent-controller.md)** Endpoint group listing

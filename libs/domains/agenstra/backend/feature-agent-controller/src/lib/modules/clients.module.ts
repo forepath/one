@@ -27,6 +27,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AdminOpencodeConfigController } from '../controllers/admin-opencode-config.controller';
 import { AdminOpencodeLayerFilesController } from '../controllers/admin-opencode-layer-files.controller';
+import { AdminOverviewController } from '../controllers/admin-overview.controller';
 import { AgentTasksController } from '../controllers/agent-tasks.controller';
 import { AttachmentsController } from '../controllers/attachments.controller';
 import { ChatPlanController } from '../controllers/chat-plan.controller';
@@ -102,6 +103,7 @@ import { DigitalOceanProvider } from '../providers/provisioning/digital-ocean.pr
 import { HetznerProvider } from '../providers/provisioning/hetzner.provider';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ProvisioningProvider } from '../providers/provisioning-provider.interface';
+import { AdminOverviewRepository } from '../repositories/admin-overview.repository';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 import { TicketAutomationRunsStatusRepository } from '../repositories/ticket-automation-runs-status.repository';
@@ -110,6 +112,7 @@ import { UserEnvironmentReadStateRepository } from '../repositories/user-environ
 import { WorkspaceGraphSnapshotsRepository } from '../repositories/workspace-graph-snapshots.repository';
 import { AgenstraSearchModule } from '../search/agenstra-search.module';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
+import { AdminOverviewService } from '../services/admin-overview.service';
 import { AgenstraAttachmentsService } from '../services/agenstra-attachments.service';
 import { AgenstraMetricsCollectorService } from '../services/agenstra-metrics-collector.service';
 import { AgentConsoleStatusRealtimeService } from '../services/agent-console-status-realtime.service';
@@ -252,6 +255,7 @@ import { StatisticsModule } from './statistics.module';
     ClientsVcsController,
     ClientStatisticsController,
     StatisticsController,
+    AdminOverviewController,
     TicketsController,
     AttachmentsController,
     KnowledgeTreeController,
@@ -276,6 +280,8 @@ import { StatisticsModule } from './statistics.module';
   ],
   providers: [
     AgenstraMetricsCollectorService,
+    AdminOverviewRepository,
+    AdminOverviewService,
     GitHubDeploymentProvider,
     GitLabDeploymentProvider,
     JenkinsDeploymentProvider,
