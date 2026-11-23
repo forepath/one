@@ -149,7 +149,7 @@ export class ServicePlansController {
 
   @RequireScopes('catalog:admin')
   @Post(':id/meters')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async attachPlanMeter(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: AttachMeterDto,
@@ -161,7 +161,7 @@ export class ServicePlansController {
 
   @RequireScopes('catalog:admin')
   @Post(':id/meters/:meterId')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async updatePlanMeter(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('meterId', new ParseUUIDPipe({ version: '4' })) meterId: string,
@@ -174,7 +174,7 @@ export class ServicePlansController {
 
   @RequireScopes('catalog:admin')
   @Delete(':id/meters/:meterId')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @HttpCode(HttpStatus.NO_CONTENT)
   async detachPlanMeter(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -265,7 +265,7 @@ export class ServicePlansController {
 
   @RequireScopes('catalog:admin')
   @Post()
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async create(@Body() dto: CreateServicePlanDto): Promise<ServicePlanResponseDto> {
     const dbServiceTypeId = fromApiServiceTypeId(dto.serviceTypeId);
     const isNone = dbServiceTypeId == null;
@@ -353,7 +353,7 @@ export class ServicePlansController {
 
   @RequireScopes('catalog:admin')
   @Post(':id')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: UpdateServicePlanDto,
@@ -538,7 +538,7 @@ export class ServicePlansController {
 
   @RequireScopes('catalog:admin')
   @Delete(':id')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     await this.servicePlansRepository.findByIdOrThrow(id);

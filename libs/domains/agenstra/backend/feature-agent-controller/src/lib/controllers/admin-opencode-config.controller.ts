@@ -1,4 +1,9 @@
-import { RequireScopes, UserRole, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
+import {
+  getUserFromRequest,
+  isAdministrativeRole,
+  type RequestWithUser,
+  RequireScopes,
+} from '@forepath/identity/backend';
 import { Body, Controller, ForbiddenException, Get, Logger, Optional, Put, Req } from '@nestjs/common';
 
 import { OpencodeConfigResponseDto, UpsertOpencodeConfigDto } from '../dto/opencode-config.dto';
@@ -25,7 +30,7 @@ export class AdminOpencodeConfigController {
       return;
     }
 
-    if (u.userRole !== UserRole.ADMIN) {
+    if (!isAdministrativeRole(u.userRole)) {
       throw new ForbiddenException('Admin only');
     }
   }

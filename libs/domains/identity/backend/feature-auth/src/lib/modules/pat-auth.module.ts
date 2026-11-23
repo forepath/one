@@ -25,6 +25,7 @@ import { IdentityAppTokenController } from '../controllers/identity-app-token.co
 import { IdentityAppsController } from '../controllers/identity-apps.controller';
 import { PatTokenExchangeController } from '../controllers/pat-token-exchange.controller';
 import { PersonalAccessTokensController } from '../controllers/personal-access-tokens.controller';
+import { SessionRoleController } from '../controllers/session-role.controller';
 import { PatBearerAuthGuard } from '../guards/pat-bearer-auth.guard';
 import { PatScopesGuard } from '../guards/pat-scopes.guard';
 import { UsersAuthGuard } from '../guards/users-auth.guard';
@@ -112,6 +113,7 @@ export class PatAuthModule implements NestModule {
         IdentityAppsController,
         IdentityAppAuthorizationController,
         IdentityAppTokenController,
+        SessionRoleController,
       ],
       providers,
       exports: [

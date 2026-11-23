@@ -6,7 +6,7 @@ import { AdminOverviewService } from '../services/admin-overview.service';
 
 /** Admin dashboard: key figures of the request tenant, another tenant or all tenants (TENANTS_ALLOW_GLOBAL_VIEWS). */
 @Controller('admin/billing/overview')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 @RequireScopes('billing:admin')
 export class AdminOverviewController {
   constructor(private readonly adminOverviewService: AdminOverviewService) {}

@@ -8,7 +8,7 @@ import { InventorySerialUnitsService } from '../services/inventory-serial-units.
 const OPTIONAL_UUID = new ParseUUIDPipe({ version: '4', optional: true });
 
 @Controller('admin/billing/inventory/serial-units')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminInventorySerialUnitsController {
   constructor(private readonly serialUnits: InventorySerialUnitsService) {}
 

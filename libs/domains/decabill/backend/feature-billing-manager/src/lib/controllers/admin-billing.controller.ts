@@ -68,7 +68,7 @@ import { TenantsGlobalViewsConfigService } from '../services/tenants-global-view
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
 @Controller('admin/billing')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminBillingController {
   constructor(
     private readonly billingAdminService: BillingAdminService,

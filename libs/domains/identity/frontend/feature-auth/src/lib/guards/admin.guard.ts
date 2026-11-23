@@ -4,8 +4,8 @@ import { AuthenticationFacade } from '@forepath/identity/frontend';
 import { map, switchMap, take, timer } from 'rxjs';
 
 /**
- * Guard that protects routes requiring admin role with users, oidc or saml authentication.
- * Must be used after authGuard. Redirects to /clients if the user is not admin
+ * Guard that protects administration routes (admin or manager role) with users, oidc or saml authentication.
+ * Must be used after authGuard. Redirects to /clients if the user is neither admin nor manager
  * or if authentication type is not users/oidc/saml.
  *
  * Dispatches checkAuthentication and waits for it to complete before evaluating access,

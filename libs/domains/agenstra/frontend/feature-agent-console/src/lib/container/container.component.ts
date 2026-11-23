@@ -34,6 +34,8 @@ import { isAdminNavUrl, isMainSidebarUrl, isToolWindowUrl } from './container-na
 
 interface AdminNavItem {
   activePaths: string[];
+  /** Admins only (hidden for managers; the route and API are admin-only as well). */
+  adminOnly?: boolean;
   icon: string;
   label: string;
   navKey?: string;
@@ -261,6 +263,7 @@ export class AgentConsoleContainerComponent implements OnInit {
     {
       routerLink: ['/apps'],
       activePaths: ['/apps'],
+      adminOnly: true,
       icon: 'bi-app-indicator',
       title: $localize`:@@featureContainer-appsTitle:App management`,
       label: $localize`:@@featureContainer-apps:Apps`,
@@ -275,6 +278,7 @@ export class AgentConsoleContainerComponent implements OnInit {
     {
       routerLink: ['/system-settings'],
       activePaths: ['/system-settings'],
+      adminOnly: true,
       icon: 'bi-sliders',
       title: $localize`:@@featureContainer-systemSettingsTitle:Settings`,
       label: $localize`:@@featureContainer-systemSettings:Settings`,
@@ -287,6 +291,11 @@ export class AgentConsoleContainerComponent implements OnInit {
       label: $localize`:@@featureContainer-connections:Connections`,
     },
   ];
+
+  /** Admin popover entries for the current role (managers do not see admin-only entries). */
+  readonly visibleAdminNavItems$ = this.authenticationFacade.canAccessAdminOnlyAdministration$.pipe(
+    map((isFullAdmin) => this.adminNavItems.filter((item) => isFullAdmin || !item.adminOnly)),
+  );
 
   readonly logoutLabel = $localize`:@@featureContainer-logout:Logout`;
 

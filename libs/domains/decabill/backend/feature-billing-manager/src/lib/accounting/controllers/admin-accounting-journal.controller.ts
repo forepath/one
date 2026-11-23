@@ -53,7 +53,7 @@ interface UploadedReceipt {
  * and ledger exports. Tenant-scoped by default; `viewTenantId` (another tenant or `all`) needs global views.
  */
 @Controller('admin/billing/accounting')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 @UseGuards(AccountingEnabledGuard)
 export class AdminAccountingJournalController {
   constructor(

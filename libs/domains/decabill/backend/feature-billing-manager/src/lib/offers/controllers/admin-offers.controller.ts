@@ -35,7 +35,7 @@ import { OffersAdminService } from '../services/offers-admin.service';
 type AdminRequest = RequestWithUser;
 
 @Controller('admin/billing/offers')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminOffersController {
   constructor(
     private readonly offersAdminService: OffersAdminService,

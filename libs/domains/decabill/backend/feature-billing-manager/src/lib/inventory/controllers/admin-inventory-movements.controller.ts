@@ -31,7 +31,7 @@ const UUID = new ParseUUIDPipe({ version: '4' });
 const OPTIONAL_UUID = new ParseUUIDPipe({ version: '4', optional: true });
 
 @Controller('admin/billing/inventory/movements')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminInventoryMovementsController {
   constructor(private readonly movements: InventoryMovementsService) {}
 

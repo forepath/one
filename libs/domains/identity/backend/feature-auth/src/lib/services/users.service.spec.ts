@@ -1,5 +1,5 @@
 import { UserRole } from '@forepath/identity/backend';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 
 import { UsersService } from './users.service';
 
@@ -413,5 +413,144 @@ describe('UsersService', () => {
     });
     expect(mockUsersRepository.incrementTokenVersion).toHaveBeenCalledWith('user-1');
     expect(result.message).toContain('removed');
+  });
+
+  describe('manager restrictions', () => {
+    const userEntity = (role: UserRole, id = `${role}-target`) => ({
+      id,
+      email: `${id}@example.com`,
+      role,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      lockedAt: null,
+      emailConfirmedAt: null,
+      totpSecret: 'SECRET',
+      totpEnabledAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+    const mockCreate = () =>
+      mockUsersRepository.createWithTenantBootstrap.mockImplementation(async (build: (first: boolean) => object) => ({
+        user: {
+          id: 'created',
+          createdAt: new Date('2026-01-01T00:00:00.000Z'),
+          updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+          ...build(false),
+        },
+        isFirstUser: false,
+      }));
+
+    beforeEach(() => {
+      mockUsersRepository.findByEmail.mockResolvedValue(null);
+      mockUsersRepository.update.mockImplementation(async (id: string, data: object) => ({
+        ...userEntity(UserRole.USER, id),
+        ...data,
+      }));
+    });
+
+    it('lets a manager create a regular user (explicit or default role)', async () => {
+      mockCreate();
+
+      await expect(
+        service.create({ email: 'a@example.com', password: 'secret-pass', role: UserRole.USER }, UserRole.MANAGER),
+      ).resolves.toEqual(expect.objectContaining({ role: UserRole.USER }));
+      await expect(
+        service.create({ email: 'b@example.com', password: 'secret-pass' }, UserRole.MANAGER),
+      ).resolves.toEqual(expect.objectContaining({ role: UserRole.USER }));
+    });
+
+    it('never lets a manager-created account become the bootstrap admin', async () => {
+      mockCreate();
+      await service.create({ email: 'a@example.com', password: 'secret-pass' }, UserRole.MANAGER);
+
+      const build = mockUsersRepository.createWithTenantBootstrap.mock.calls[0][0] as (first: boolean) => {
+        role: UserRole;
+      };
+
+      expect(build(true).role).toBe(UserRole.USER);
+    });
+
+    it.each([UserRole.MANAGER, UserRole.ADMIN, UserRole.CONTROLLER])(
+      'rejects a manager creating a %s account',
+      async (role) => {
+        await expect(
+          service.create({ email: 'x@example.com', password: 'secret-pass', role }, UserRole.MANAGER),
+        ).rejects.toThrow(ForbiddenException);
+        expect(mockUsersRepository.createWithTenantBootstrap).not.toHaveBeenCalled();
+      },
+    );
+
+    it('lets admins create managers', async () => {
+      mockCreate();
+
+      await expect(
+        service.create({ email: 'm@example.com', password: 'secret-pass', role: UserRole.MANAGER }, UserRole.ADMIN),
+      ).resolves.toEqual(expect.objectContaining({ role: UserRole.MANAGER }));
+    });
+
+    it('lets a manager update a regular user but not promote them', async () => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue(userEntity(UserRole.USER));
+
+      await expect(
+        service.update('user-target', { email: 'new@example.com' }, UserRole.MANAGER),
+      ).resolves.toBeDefined();
+      await expect(service.update('user-target', { role: UserRole.USER }, UserRole.MANAGER)).resolves.toBeDefined();
+
+      mockUsersRepository.update.mockClear();
+
+      for (const role of [UserRole.MANAGER, UserRole.ADMIN]) {
+        await expect(service.update('user-target', { role }, UserRole.MANAGER)).rejects.toThrow(ForbiddenException);
+      }
+
+      expect(mockUsersRepository.update).not.toHaveBeenCalled();
+    });
+
+    it.each([UserRole.MANAGER, UserRole.ADMIN])('denies every manager action on %s accounts', async (role) => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue(userEntity(role));
+
+      await expect(service.update('t', { password: 'another-pass' }, UserRole.MANAGER)).rejects.toThrow(
+        ForbiddenException,
+      );
+      await expect(service.update('t', { role: UserRole.USER }, UserRole.MANAGER)).rejects.toThrow(ForbiddenException);
+      await expect(service.lockUser('t', 'manager-1', UserRole.MANAGER)).rejects.toThrow(ForbiddenException);
+      await expect(service.unlockUser('t', 'manager-1', UserRole.MANAGER)).rejects.toThrow(ForbiddenException);
+      await expect(service.confirmEmail('t', UserRole.MANAGER)).rejects.toThrow(ForbiddenException);
+      await expect(service.clearTotp('t', UserRole.MANAGER)).rejects.toThrow(ForbiddenException);
+      await expect(service.remove('t', 'manager-1', UserRole.MANAGER)).rejects.toThrow(ForbiddenException);
+
+      expect(mockUsersRepository.update).not.toHaveBeenCalled();
+      expect(mockUsersRepository.remove).not.toHaveBeenCalled();
+      expect(mockUsersRepository.incrementTokenVersion).not.toHaveBeenCalled();
+    });
+
+    it('allows every manager action on regular user accounts', async () => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue(userEntity(UserRole.USER));
+
+      await expect(service.lockUser('t', 'manager-1', UserRole.MANAGER)).resolves.toBeDefined();
+      await expect(service.unlockUser('t', 'manager-1', UserRole.MANAGER)).resolves.toBeDefined();
+      await expect(service.confirmEmail('t', UserRole.MANAGER)).resolves.toBeDefined();
+      await expect(service.clearTotp('t', UserRole.MANAGER)).resolves.toBeDefined();
+      await expect(service.remove('t', 'manager-1', UserRole.MANAGER)).resolves.toBeUndefined();
+      expect(mockUsersRepository.remove).toHaveBeenCalledWith('t');
+    });
+
+    it('lets admins act on manager and admin accounts', async () => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue(userEntity(UserRole.MANAGER));
+
+      await expect(service.update('t', { role: UserRole.ADMIN }, UserRole.ADMIN)).resolves.toBeDefined();
+      await expect(service.lockUser('t', 'admin-1', UserRole.ADMIN)).resolves.toBeDefined();
+      await expect(service.remove('t', 'admin-1', UserRole.ADMIN)).resolves.toBeUndefined();
+    });
+
+    it('denies regular users (defense in depth behind the role guard)', async () => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue(userEntity(UserRole.USER));
+
+      await expect(service.lockUser('t', 'user-1', UserRole.USER)).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.create({ email: 'x@example.com', password: 'secret-pass', role: UserRole.USER }, UserRole.USER),
+      ).rejects.toThrow(ForbiddenException);
+      await expect(service.create({ email: 'y@example.com', password: 'secret-pass' }, UserRole.USER)).rejects.toThrow(
+        ForbiddenException,
+      );
+      await expect(service.update('t', { email: 'z@example.com' }, UserRole.USER)).rejects.toThrow(ForbiddenException);
+    });
   });
 });

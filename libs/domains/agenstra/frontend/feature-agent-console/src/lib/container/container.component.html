@@ -217,7 +217,7 @@
                 <span class="visually-hidden" i18n="@@featureContainer-updatesAttention">Updates need attention</span>
               }
             </span>
-            @for (item of adminNavItems; track item.routerLink.join('/')) {
+            @for (item of visibleAdminNavItems$ | async; track item.routerLink.join('/')) {
               <a
                 [routerLink]="item.routerLink"
                 routerLinkActive="active"

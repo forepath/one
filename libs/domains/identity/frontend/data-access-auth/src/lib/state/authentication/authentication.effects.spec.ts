@@ -669,10 +669,10 @@ describe('AuthenticationEffects', () => {
         });
       });
 
-      it('should report admin from the API probe, not from token claims', (done) => {
+      it('should report admin from the API role, not from token claims', (done) => {
         mockOidcAuthService.isLoggedIn.mockReturnValue(true);
         mockOidcAuthService.getProfile.mockReturnValue({ sub: 'sub-1', email: 'admin@example.com' });
-        const authService = { probeAdminAccess: jest.fn().mockReturnValue(of(true)) };
+        const authService = { getSessionRole: jest.fn().mockReturnValue(of('admin')) };
 
         actions$ = of(checkAuthentication());
 
@@ -690,10 +690,31 @@ describe('AuthenticationEffects', () => {
         );
       });
 
-      it('should report a regular user when the probe is denied', (done) => {
+      it('should report a manager from the API role', (done) => {
+        mockOidcAuthService.isLoggedIn.mockReturnValue(true);
+        mockOidcAuthService.getProfile.mockReturnValue({ sub: 'sub-3', email: 'manager@example.com' });
+        const authService = { getSessionRole: jest.fn().mockReturnValue(of('manager')) };
+
+        actions$ = of(checkAuthentication());
+
+        checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, authService as any).subscribe(
+          (result) => {
+            expect(result).toEqual(
+              checkAuthenticationSuccess({
+                isAuthenticated: true,
+                authenticationType: 'oidc',
+                user: { id: 'sub-3', email: 'manager@example.com', role: 'manager' },
+              }),
+            );
+            done();
+          },
+        );
+      });
+
+      it('should report a regular user when the API reports user', (done) => {
         mockOidcAuthService.isLoggedIn.mockReturnValue(true);
         mockOidcAuthService.getProfile.mockReturnValue({ sub: 'sub-2' });
-        const authService = { probeAdminAccess: jest.fn().mockReturnValue(of(false)) };
+        const authService = { getSessionRole: jest.fn().mockReturnValue(of('user')) };
 
         actions$ = of(checkAuthentication());
 
@@ -713,14 +734,14 @@ describe('AuthenticationEffects', () => {
 
       it('should return not authenticated without a session', (done) => {
         mockOidcAuthService.isLoggedIn.mockReturnValue(false);
-        const authService = { probeAdminAccess: jest.fn() };
+        const authService = { getSessionRole: jest.fn() };
 
         actions$ = of(checkAuthentication());
 
         checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, authService as any).subscribe(
           (result) => {
             expect(result).toEqual(checkAuthenticationSuccess({ isAuthenticated: false }));
-            expect(authService.probeAdminAccess).not.toHaveBeenCalled();
+            expect(authService.getSessionRole).not.toHaveBeenCalled();
             done();
           },
         );
@@ -801,6 +822,28 @@ describe('AuthenticationEffects', () => {
               isAuthenticated: true,
               authenticationType: 'users',
               user: { id: 'user-1', email: 'a@b.c', role: 'admin' },
+            }),
+          );
+          done();
+        });
+      });
+
+      it('maps the manager role claim of a password JWT', (done) => {
+        const exp = Math.floor((Date.now() + 3600000) / 1000);
+        const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'a@b.c', exp, roles: ['manager'], amr: ['pwd'] }));
+        const jwt = `header.${payload}.signature`;
+
+        actions$ = of(checkAuthentication());
+        (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+          key === USERS_JWT_STORAGE_KEY ? jwt : null,
+        );
+
+        checkAuthentication$(actions$, mockAuthEnvironment, mockOidcAuthService as any, null).subscribe((result) => {
+          expect(result).toEqual(
+            checkAuthenticationSuccess({
+              isAuthenticated: true,
+              authenticationType: 'users',
+              user: { id: 'user-1', email: 'a@b.c', role: 'manager' },
             }),
           );
           done();

@@ -167,7 +167,10 @@
         [disabled]="(creatingUser$ | async) === true"
       >
         <option value="user" i18n="@@featureUserManager-roleUser">User</option>
-        <option value="admin" i18n="@@featureUserManager-roleAdmin">Admin</option>
+        @if (canAssignPrivilegedRoles()) {
+          <option value="manager" i18n="@@featureUserManager-roleManager">Manager</option>
+          <option value="admin" i18n="@@featureUserManager-roleAdmin">Admin</option>
+        }
       </fpc-form-control>
     </fpc-form-field>
     <fpc-form-check
@@ -257,7 +260,10 @@
         [disabled]="(updatingUser$ | async) === true"
       >
         <option value="user" i18n="@@featureUserManager-roleUser">User</option>
-        <option value="admin" i18n="@@featureUserManager-roleAdmin">Admin</option>
+        @if (canAssignPrivilegedRoles()) {
+          <option value="manager" i18n="@@featureUserManager-roleManager">Manager</option>
+          <option value="admin" i18n="@@featureUserManager-roleAdmin">Admin</option>
+        }
       </fpc-form-control>
     </fpc-form-field>
     @if (editEmailChanged()) {

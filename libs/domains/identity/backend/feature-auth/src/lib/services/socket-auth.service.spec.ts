@@ -54,6 +54,21 @@ describe('SocketAuthService', () => {
     expect(result).toBeNull();
   });
 
+  it('keeps the manager role of users JWT sessions (not collapsed to user)', async () => {
+    jwtService.verifyAsync.mockResolvedValue({ sub: 'user-1', email: 'a@b.com', roles: [UserRole.MANAGER], tv: 0 });
+    usersRepository.findById.mockResolvedValue({
+      id: 'user-1',
+      tenantId: 'default',
+      lockedAt: null,
+      tokenVersion: 0,
+    } as never);
+    revokedUserTokensRepository.isRevoked.mockResolvedValue(false);
+
+    await expect(service.validateAndGetUser('Bearer valid.jwt.token')).resolves.toEqual(
+      expect.objectContaining({ userId: 'user-1', userRole: UserRole.MANAGER }),
+    );
+  });
+
   it('rejects users JWT when token jti is revoked', async () => {
     jwtService.verifyAsync.mockResolvedValue({
       sub: 'user-1',
@@ -269,6 +284,14 @@ describe('SocketAuthService', () => {
         expect.objectContaining({ userId: 'local-1' }),
       );
       expect(tenantDuringResolve).toBe('acme');
+    });
+
+    it('maps a local manager to the manager role', async () => {
+      externalIdentity.resolveUser.mockResolvedValue({ ...syncedUser, role: UserRole.MANAGER });
+
+      await expect(oidcService.validateAndGetUser('Bearer idp.access.token', 'default')).resolves.toEqual(
+        expect.objectContaining({ userRole: UserRole.MANAGER }),
+      );
     });
 
     it('never grants admin from IdP role claims', async () => {

@@ -18,6 +18,7 @@ describe('PersonalAccessTokenService', () => {
   const mockUsersRepository = {
     findByIdOrThrow: jest.fn(),
     findById: jest.fn(),
+    findByIdForTenant: jest.fn(),
   };
   let service: PersonalAccessTokenService;
 
@@ -29,6 +30,52 @@ describe('PersonalAccessTokenService', () => {
   it('filters admin-only scopes for non-admin catalog', () => {
     expect(service.getCatalogForRole(UserRole.USER)).toEqual(['invoices:read']);
     expect(service.getCatalogForRole(UserRole.ADMIN)).toEqual([...catalog]);
+    expect(service.getCatalogForRole(UserRole.MANAGER)).toEqual([...catalog]);
+    expect(service.getCatalogForRole(UserRole.CONTROLLER)).toEqual(['invoices:read']);
+  });
+
+  describe('administrative token management', () => {
+    const token = { id: 't1', userId: 'target', revokedAt: null, scopes: [], name: 'CI', tokenPrefix: 'fp_pat_x' };
+
+    it.each([UserRole.MANAGER, UserRole.ADMIN])(
+      'denies managers listing or revoking tokens of %s accounts',
+      async (role) => {
+        mockUsersRepository.findByIdForTenant.mockResolvedValue({ id: 'target', role });
+        mockTokensRepository.findById.mockResolvedValue({ ...token });
+
+        await expect(service.listForUserAdmin('target', UserRole.MANAGER)).rejects.toThrow(ForbiddenException);
+        await expect(service.revokeAsAdmin('target', 't1', UserRole.MANAGER)).rejects.toThrow(ForbiddenException);
+        expect(mockTokensRepository.findAllByUserId).not.toHaveBeenCalled();
+        expect(mockTokensRepository.save).not.toHaveBeenCalled();
+      },
+    );
+
+    it('lets managers list and revoke tokens of regular users', async () => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue({ id: 'target', role: UserRole.USER });
+      mockTokensRepository.findAllByUserId.mockResolvedValue([]);
+      mockTokensRepository.findById.mockResolvedValue({ ...token });
+
+      await expect(service.listForUserAdmin('target', UserRole.MANAGER)).resolves.toEqual([]);
+      await service.revokeAsAdmin('target', 't1', UserRole.MANAGER);
+      expect(mockTokensRepository.save).toHaveBeenCalledWith(expect.objectContaining({ revokedAt: expect.any(Date) }));
+    });
+
+    it('does not reach accounts outside the request tenant', async () => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue(null);
+      mockTokensRepository.findById.mockResolvedValue({ ...token });
+
+      await expect(service.listForUserAdmin('target', UserRole.ADMIN)).rejects.toThrow('User not found');
+      await expect(service.revokeAsAdmin('target', 't1', UserRole.ADMIN)).rejects.toThrow('Token not found');
+      expect(mockTokensRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('lets admins revoke tokens of managers', async () => {
+      mockUsersRepository.findByIdForTenant.mockResolvedValue({ id: 'target', role: UserRole.MANAGER });
+      mockTokensRepository.findById.mockResolvedValue({ ...token });
+
+      await service.revokeAsAdmin('target', 't1', UserRole.ADMIN);
+      expect(mockTokensRepository.save).toHaveBeenCalled();
+    });
   });
 
   it('getCatalogForUser uses DB role', async () => {

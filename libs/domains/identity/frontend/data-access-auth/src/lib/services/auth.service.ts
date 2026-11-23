@@ -3,14 +3,16 @@ import { inject, Injectable, InjectionToken } from '@angular/core';
 import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { catchError, map, Observable, of } from 'rxjs';
 
-import type {
-  CreateUserDto,
-  LoginResponse,
-  RegisterResponse,
-  TotpSetup,
-  TwoFactorStatus,
-  UpdateUserDto,
-  UserResponseDto,
+import {
+  resolveUserRole,
+  type CreateUserDto,
+  type LoginResponse,
+  type RegisterResponse,
+  type TotpSetup,
+  type TwoFactorStatus,
+  type UpdateUserDto,
+  type UserResponseDto,
+  type UserRole,
 } from '../state/authentication/authentication.types';
 import type {
   AppAuthorizationDecisionDto,
@@ -134,13 +136,13 @@ export class AuthService {
   }
 
   /**
-   * Whether the signed-in user is an admin of this API (OIDC sessions carry no local role claim).
-   * Probes the admin-only user list; the API enforces roles regardless of what the UI shows.
+   * Console role of the signed-in user from this API's users table (OIDC sessions carry no local role claim).
+   * Falls back to `user` when the API cannot tell; the API enforces roles regardless of what the UI shows.
    */
-  probeAdminAccess(): Observable<boolean> {
-    return this.http.get<unknown>(`${this.apiUrl}/users`, { params: new HttpParams().set('limit', '1') }).pipe(
-      map(() => true),
-      catchError(() => of(false)),
+  getSessionRole(): Observable<UserRole> {
+    return this.http.get<{ role?: unknown }>(`${this.apiUrl}/auth/role`).pipe(
+      map((response) => resolveUserRole([response?.role])),
+      catchError(() => of<UserRole>('user')),
     );
   }
 

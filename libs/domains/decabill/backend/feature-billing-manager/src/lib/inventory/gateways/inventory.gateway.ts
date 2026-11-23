@@ -1,9 +1,9 @@
 import {
   attachMachineSocketSession,
+  isAdministrativeRole,
   SocketAuthService,
   socketRoomsForUser,
   type SocketUserInfo,
-  UserRole,
 } from '@forepath/identity/backend';
 import { readIncomingTenantIdFromHandshake, runWithTenantId } from '@forepath/shared/backend';
 import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
@@ -114,14 +114,14 @@ export class InventoryGateway implements OnGatewayInit, OnGatewayDisconnect, OnM
   async handleSubscribe(@ConnectedSocket() socket: Socket): Promise<void> {
     const { userInfo, tenantId } = (socket as InventorySocket).data ?? {};
 
-    // Inventory is admin-only, like its REST API (`@UsersRoles(ADMIN)`); API key sockets are not supported.
+    // Inventory is admin/manager-only, like its REST API (`@UsersRoles(ADMIN, MANAGER)`); API key sockets are not supported.
     if (!userInfo || userInfo.isApiKeyAuth || !tenantId) {
       socket.emit('error', { message: 'User not authenticated' });
 
       return;
     }
 
-    if (userInfo.userRole !== UserRole.ADMIN) {
+    if (!isAdministrativeRole(userInfo.userRole)) {
       socket.emit('error', { message: 'Access denied' });
 
       return;

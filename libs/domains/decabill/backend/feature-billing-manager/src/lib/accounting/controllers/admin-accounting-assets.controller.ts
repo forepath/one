@@ -16,7 +16,7 @@ import { assertGlobalAccounting } from '../utils/accounting-scope.util';
 
 /** Fixed asset register, depreciation runs, disposals and the asset schedule (entity-wide: global views). */
 @Controller('admin/billing/accounting/assets')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 @UseGuards(AccountingEnabledGuard)
 export class AdminAccountingAssetsController {
   constructor(

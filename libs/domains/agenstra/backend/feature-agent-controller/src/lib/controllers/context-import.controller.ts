@@ -6,7 +6,12 @@
  * from list/get connection APIs. The scheduler runs only
  * configs loaded from the database and does not accept arbitrary client IDs from HTTP.
  */
-import { RequireScopes, UserRole, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
+import {
+  getUserFromRequest,
+  isAdministrativeRole,
+  type RequestWithUser,
+  RequireScopes,
+} from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -57,7 +62,7 @@ export class ContextImportController {
       return;
     }
 
-    if (u.userRole !== UserRole.ADMIN) {
+    if (!isAdministrativeRole(u.userRole)) {
       throw new ForbiddenException('Admin only');
     }
   }

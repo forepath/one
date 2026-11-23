@@ -33,6 +33,20 @@ describe('DeploymentConnectionsController', () => {
     expect(service.findAll).toHaveBeenLastCalledWith(5, 10, 'x', 'github');
   });
 
+  it('lets managers use every route like admins', async () => {
+    const manager = { user: { id: 'manager-1', roles: [UserRole.MANAGER] } } as unknown as RequestWithUser;
+
+    await controller.list(manager);
+    await controller.get(ID, manager);
+    await controller.create({ label: 'x', provider: 'gitlab' }, manager);
+    await controller.update(ID, {}, manager);
+    await controller.delete(ID, manager);
+    await controller.test(ID, manager);
+
+    expect(service.create).toHaveBeenCalledWith({ label: 'x', provider: 'gitlab' }, 'manager-1');
+    expect(service.test).toHaveBeenCalledWith(ID);
+  });
+
   it('rejects non-admin users on every route', async () => {
     await expect(controller.list(user)).rejects.toBeInstanceOf(ForbiddenException);
     await expect(controller.get(ID, user)).rejects.toBeInstanceOf(ForbiddenException);

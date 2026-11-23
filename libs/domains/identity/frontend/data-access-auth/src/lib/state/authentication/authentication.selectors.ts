@@ -69,15 +69,42 @@ export const selectTwoFactorSuccessMessage = createSelector(
 
 export const selectTotpSetup = createSelector(selectAuthenticationState, (state) => state.totpSetup);
 
+/** Full admin (all administration features, including settings and identity apps). */
 export const selectIsAdmin = createSelector(selectUser, (user) => user?.role === 'admin');
 
-/**
- * True when the user can access the user manager (admins in users, OIDC or SAML auth).
- */
-export const selectCanAccessUserManager = createSelector(
+/** Manager: administration access without settings, identity apps and managing admin / manager accounts. */
+export const selectIsManager = createSelector(selectUser, (user) => user?.role === 'manager');
+
+/** Admin or manager. */
+export const selectHasAdministrativeRole = createSelector(
+  selectIsAdmin,
+  selectIsManager,
+  (isAdmin, isManager) => isAdmin || isManager,
+);
+
+const selectUsesUserAccounts = createSelector(
   selectIsAuthenticated,
   selectAuthenticationType,
+  (isAuthenticated, authType) =>
+    isAuthenticated && (authType === 'users' || authType === 'oidc' || authType === 'saml'),
+);
+
+/**
+ * True when the user can access the administration UI and the user manager (admins and managers in users, OIDC or
+ * SAML auth).
+ */
+export const selectCanAccessUserManager = createSelector(
+  selectUsesUserAccounts,
+  selectHasAdministrativeRole,
+  (usesUserAccounts, hasAdministrativeRole) => usesUserAccounts && hasAdministrativeRole,
+);
+
+/**
+ * True when the user can access admin-only administration features: tenant / system settings and identity apps
+ * (admins in users, OIDC or SAML auth; never managers).
+ */
+export const selectCanAccessAdminOnlyAdministration = createSelector(
+  selectUsesUserAccounts,
   selectIsAdmin,
-  (isAuthenticated, authType, isAdmin) =>
-    isAuthenticated && (authType === 'users' || authType === 'oidc' || authType === 'saml') && isAdmin,
+  (usesUserAccounts, isAdmin) => usesUserAccounts && isAdmin,
 );

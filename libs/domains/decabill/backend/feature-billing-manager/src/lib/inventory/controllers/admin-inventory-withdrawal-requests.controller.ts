@@ -26,7 +26,7 @@ import { InventoryWithdrawalRequestsService } from '../services/inventory-withdr
 const UUID = new ParseUUIDPipe({ version: '4' });
 
 @Controller('admin/billing/inventory/withdrawal-requests')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminInventoryWithdrawalRequestsController {
   constructor(private readonly requests: InventoryWithdrawalRequestsService) {}
 

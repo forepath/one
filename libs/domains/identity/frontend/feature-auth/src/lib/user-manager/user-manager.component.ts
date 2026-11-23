@@ -7,12 +7,14 @@ import {
   AuthService,
   AuthenticationFacade,
   adminClearTotpSuccess,
+  canManageUserAccount,
   getUserRoleLabel,
   createUserSuccess,
   updateUserSuccess,
   type CreateUserDto,
   type UpdateUserDto,
   type UserResponseDto,
+  type UserRole,
 } from '@forepath/identity/frontend';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import {
@@ -130,6 +132,14 @@ export class IdentityUserManagerComponent implements OnInit {
   });
   readonly usersError = toSignal(this.usersError$, { initialValue: null as string | null });
 
+  /** Admins may grant every role; managers only `user` (the API enforces the same rule). */
+  readonly canAssignPrivilegedRoles = computed(() => this.currentUser()?.role === 'admin');
+
+  /** Managers may only manage regular users; admin / manager rows are read-only for them. */
+  canManage(user: UserResponseDto): boolean {
+    return canManageUserAccount(this.currentUser()?.role, user.role);
+  }
+
   // Table (3.38: State column, ⋮ row actions, bulk Lock / Unlock / Delete via the single-user endpoints)
   readonly lockLabel = $localize`:@@featureUserManager-lockUserButtonTitle:Lock user`;
   readonly unlockLabel = $localize`:@@featureUserManager-unlockUserButtonTitle:Unlock user`;
@@ -145,7 +155,7 @@ export class IdentityUserManagerComponent implements OnInit {
   readonly selectedUsers = computed(() => {
     const ids = new Set(this.selectedUserIds());
 
-    return this.usersExcludingSelf().filter((user) => ids.has(user.id));
+    return this.usersExcludingSelf().filter((user) => ids.has(user.id) && this.canManage(user));
   });
 
   readonly columns: FpcTableColumn<UserResponseDto>[] = [
@@ -194,6 +204,10 @@ export class IdentityUserManagerComponent implements OnInit {
   ];
 
   readonly userRowMenu = (user: UserResponseDto): FpcMenuItem[] => {
+    if (!this.canManage(user)) {
+      return [sharedCopyIdItem()];
+    }
+
     const items: FpcMenuItem[] = [
       { id: 'edit', label: SHARED_DL_EDIT, icon: 'pencil' },
       user.lockedAt
@@ -223,7 +237,7 @@ export class IdentityUserManagerComponent implements OnInit {
   createForm = {
     email: '',
     password: '',
-    role: 'user' as 'user' | 'admin',
+    role: 'user' as UserRole,
     emailConfirmed: false,
     sendConfirmationEmail: true,
   };
@@ -231,7 +245,7 @@ export class IdentityUserManagerComponent implements OnInit {
   editForm = {
     email: '',
     password: '',
-    role: 'user' as 'user' | 'admin',
+    role: 'user' as UserRole,
     emailConfirmed: false,
     sendConfirmationEmail: true,
   };
@@ -294,6 +308,10 @@ export class IdentityUserManagerComponent implements OnInit {
   }
 
   onEditUser(user: UserResponseDto): void {
+    if (!this.canManage(user)) {
+      return;
+    }
+
     this.userToEdit = user;
     this.editForm = {
       email: user.email,

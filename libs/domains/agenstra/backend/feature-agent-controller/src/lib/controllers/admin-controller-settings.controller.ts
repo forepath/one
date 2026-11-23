@@ -5,7 +5,10 @@ import { Body, Controller, Delete, ForbiddenException, Get, Param, Put, Req } fr
 import { UpsertControllerSettingDto } from '../dto/controller-settings.dto';
 import { ControllerSettingsService } from '../services/controller-settings.service';
 
-/** Administration → Settings: overrides of controller environment variables. */
+/**
+ * Administration → Settings: overrides of controller environment variables.
+ * Admin-only: system settings are excluded from the manager role on purpose.
+ */
 @Controller('admin/settings')
 @RequireScopes('clients:admin')
 export class AdminControllerSettingsController {

@@ -36,7 +36,7 @@ export class AddonsController {
   ) {}
 
   @Get()
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
@@ -48,7 +48,7 @@ export class AddonsController {
   }
 
   @Get('modules')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @RequireScopes('catalog:admin')
   async listModules(): Promise<
     Array<{
@@ -69,7 +69,7 @@ export class AddonsController {
   }
 
   @Get(':id/meters')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @RequireScopes('catalog:admin')
   async listMeters(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AttachedMeterResponseDto[]> {
     await this.addonsRepository.findByIdOrThrow(id);
@@ -78,7 +78,7 @@ export class AddonsController {
   }
 
   @Post(':id/meters')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async attachMeter(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: AttachMeterDto,
@@ -89,7 +89,7 @@ export class AddonsController {
   }
 
   @Post(':id/meters/:meterId')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async updateMeterAttachment(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('meterId', new ParseUUIDPipe({ version: '4' })) meterId: string,
@@ -101,7 +101,7 @@ export class AddonsController {
   }
 
   @Delete(':id/meters/:meterId')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @HttpCode(HttpStatus.NO_CONTENT)
   async detachMeter(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -112,7 +112,7 @@ export class AddonsController {
   }
 
   @Get(':id')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AddonResponseDto> {
     const row = await this.addonsRepository.findByIdOrThrow(id);
 
@@ -120,7 +120,7 @@ export class AddonsController {
   }
 
   @Post()
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async create(@Body() dto: CreateAddonDto): Promise<AddonResponseDto> {
     this.addonService.validateCreatePayload(dto);
 
@@ -160,7 +160,7 @@ export class AddonsController {
   }
 
   @Post(':id')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: UpdateAddonDto,
@@ -252,7 +252,7 @@ export class AddonsController {
   }
 
   @Delete(':id')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<void> {
     await this.addonService.assertCanDelete(id);

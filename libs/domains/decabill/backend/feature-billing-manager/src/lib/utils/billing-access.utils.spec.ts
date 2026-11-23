@@ -44,6 +44,25 @@ describe('billing-access.utils', () => {
     expect(getUserFromRequest(req).userRole).toBe(UserRole.ADMIN);
   });
 
+  it('getUserFromRequest maps the manager role (admin wins when both are present)', () => {
+    expect(getUserFromRequest({ user: { id: 'm-1', roles: ['manager'] } } as RequestWithUser).userRole).toBe(
+      UserRole.MANAGER,
+    );
+    expect(getUserFromRequest({ user: { id: 'a-1', roles: ['manager', 'admin'] } } as RequestWithUser).userRole).toBe(
+      UserRole.ADMIN,
+    );
+    expect(getUserFromRequest({ user: { id: 'c-1', roles: ['controller'] } } as RequestWithUser).userRole).toBe(
+      UserRole.USER,
+    );
+  });
+
+  it('ensureAdmin allows manager sessions (administration access)', () => {
+    expect(() => ensureAdmin({ userId: 'm1', userRole: UserRole.MANAGER, isApiKeyAuth: false })).not.toThrow();
+    expect(() =>
+      ensureAdminForForeignRecord({ userId: 'm1', userRole: UserRole.MANAGER, isApiKeyAuth: false }, 'invoices:admin'),
+    ).not.toThrow();
+  });
+
   it('getAuthenticatedUserFromRequest throws when user id missing', () => {
     expect(() => getAuthenticatedUserFromRequest({} as RequestWithUser)).toThrow(BadRequestException);
   });

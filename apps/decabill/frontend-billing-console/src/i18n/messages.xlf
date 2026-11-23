@@ -9766,6 +9766,9 @@
       <trans-unit id="featureUserManager-roleAdmin" datatype="html">
         <source>Admin</source>
         </trans-unit>
+      <trans-unit id="featureUserManager-roleManager" datatype="html">
+        <source>Manager</source>
+        </trans-unit>
       <trans-unit id="featureUserManager-roleUser" datatype="html">
         <source>User</source>
         </trans-unit>

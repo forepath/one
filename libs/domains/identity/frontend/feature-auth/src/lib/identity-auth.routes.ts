@@ -63,6 +63,7 @@ import { IdentityAppAuthorizeComponent } from './app-authorize/app-authorize.com
 import { IdentityAppManagerComponent } from './app-manager/app-manager.component';
 import { IdentityAuthorizedAppsComponent } from './authorized-apps/authorized-apps.component';
 import { IdentityConfirmEmailComponent } from './confirm-email/confirm-email.component';
+import { adminOnlyGuard } from './guards/admin-only.guard';
 import { adminGuard } from './guards/admin.guard';
 import { appAuthorizeGuard } from './guards/app-authorize.guard';
 import { authGuard } from './guards/auth.guard';
@@ -179,7 +180,7 @@ export const identityAuthRoutes: Route[] = [
   },
   {
     path: 'apps',
-    canActivate: [authGuard, adminGuard, patUiGuard],
+    canActivate: [authGuard, adminOnlyGuard, patUiGuard],
     component: IdentityAppManagerComponent,
     title: () => buildPageTitle($localize`:@@featureAuth-appsPage:Apps`),
   },

@@ -26,7 +26,8 @@ interface RequestWithUser extends Request {
 
 /**
  * Admin app management. Interactive admin sessions only: neither PATs nor app tokens can create apps,
- * rotate secrets or revoke authorizations (no scope can unlock these routes).
+ * rotate secrets or revoke authorizations (no scope can unlock these routes). Admin-only: managers are excluded,
+ * since an app a manager registers could otherwise collect admin-level grants.
  */
 @Controller('apps')
 @UseGuards(UsersAuthGuard)

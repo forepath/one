@@ -1,10 +1,10 @@
 import {
   attachMachineSocketSession,
   getMissingPatScopes,
+  isAdministrativeRole,
   isMachineSocketUser,
   SocketAuthService,
   socketRoomsForUser,
-  UserRole,
   type SocketUserInfo,
 } from '@forepath/identity/backend';
 import { UsersRepository } from '@forepath/identity/backend';
@@ -317,7 +317,7 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
    * (same as the admin meters REST API). Everyone else is limited to owned subscriptions.
    */
   private mayWatchAnySubscription(userInfo: SocketUserInfo | undefined): boolean {
-    if (userInfo?.userRole !== UserRole.ADMIN) {
+    if (!isAdministrativeRole(userInfo?.userRole)) {
       return false;
     }
 

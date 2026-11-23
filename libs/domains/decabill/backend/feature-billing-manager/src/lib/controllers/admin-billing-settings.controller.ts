@@ -6,7 +6,10 @@ import { BillingSettingsScopeQueryDto, UpsertBillingSettingDto } from '../dto/bi
 import { BillingSettingsService } from '../services/billing-settings.service';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
-/** Administration → Settings: overrides of billing manager environment variables. */
+/**
+ * Administration → Settings: overrides of billing manager environment variables.
+ * Tenant / global settings are admin-only (managers are excluded on purpose).
+ */
 @Controller('admin/billing/settings')
 @UsersRoles(UserRole.ADMIN)
 @RequireScopes('billing:admin')

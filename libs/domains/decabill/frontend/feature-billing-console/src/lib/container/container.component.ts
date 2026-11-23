@@ -172,6 +172,10 @@ export class BillingConsoleContainerComponent implements OnInit {
    * This also implies that the user can access the administration console.
    */
   readonly canAccessAdministration$ = this.authenticationFacade.canAccessBillingAdministration$;
+  /** Admins only: settings and identity apps (managers share the rest of the administration). */
+  readonly canAccessAdminOnlyAdministration = toSignal(this.authenticationFacade.canAccessAdminOnlyAdministration$, {
+    initialValue: false,
+  });
   readonly updatesAttentionBadge$ = this.adminUpdatesFacade.hasAttention$;
   readonly offersPendingBadge = toSignal(this.offersFacade.getPendingBadgeCount$(), { initialValue: 0 });
 
@@ -382,8 +386,9 @@ export class BillingConsoleContainerComponent implements OnInit {
     this.authenticationFacade.logout(result.invalidateAllSessions);
   }
 
-  /** Admin tile grid; recomputed when the DATEV / accounting capabilities flip. */
+  /** Admin tile grid; recomputed when the DATEV / accounting capabilities or the role flip. */
   adminNavItems(): ContributorNavItem[] {
+    const isFullAdmin = this.canAccessAdminOnlyAdministration();
     const items: ContributorNavItem[] = [
       {
         routerLink: ['/administration/overview'],
@@ -470,13 +475,17 @@ export class BillingConsoleContainerComponent implements OnInit {
         title: $localize`:@@featureContainer-userManagementTitle:User Management`,
         label: $localize`:@@featureContainer-users:Users`,
       },
-      {
-        routerLink: ['/apps'],
-        activePaths: ['/apps'],
-        icon: 'bi-app-indicator',
-        title: $localize`:@@featureContainer-appsTitle:App management`,
-        label: $localize`:@@featureContainer-apps:Apps`,
-      },
+      ...(isFullAdmin
+        ? [
+            {
+              routerLink: ['/apps'],
+              activePaths: ['/apps'],
+              icon: 'bi-app-indicator',
+              title: $localize`:@@featureContainer-appsTitle:App management`,
+              label: $localize`:@@featureContainer-apps:Apps`,
+            },
+          ]
+        : []),
       {
         routerLink: ['/administration/customer-profiles'],
         activePaths: ['/administration/customer-profiles'],
@@ -519,13 +528,17 @@ export class BillingConsoleContainerComponent implements OnInit {
         title: $localize`:@@featureContainer-adminFileExplorerTitle:File Explorer`,
         label: $localize`:@@featureContainer-adminFileExplorer:Files`,
       },
-      {
-        routerLink: ['/administration/settings'],
-        activePaths: ['/administration/settings'],
-        icon: 'bi-sliders',
-        title: $localize`:@@featureContainer-adminSettingsTitle:Settings`,
-        label: $localize`:@@featureContainer-adminSettings:Settings`,
-      },
+      ...(isFullAdmin
+        ? [
+            {
+              routerLink: ['/administration/settings'],
+              activePaths: ['/administration/settings'],
+              icon: 'bi-sliders',
+              title: $localize`:@@featureContainer-adminSettingsTitle:Settings`,
+              label: $localize`:@@featureContainer-adminSettings:Settings`,
+            },
+          ]
+        : []),
     ];
 
     if (this.datevExportEnabled()) {

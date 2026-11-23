@@ -7,7 +7,7 @@ import { UsageService } from '../services/usage.service';
 import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
 @Controller('admin/usage')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminUsageController {
   constructor(
     private readonly usageService: UsageService,

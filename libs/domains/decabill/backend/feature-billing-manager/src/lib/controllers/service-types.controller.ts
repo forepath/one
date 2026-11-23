@@ -166,7 +166,7 @@ export class ServiceTypesController {
 
   @RequireScopes('catalog:admin')
   @Post()
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async create(@Body() dto: CreateServiceTypeDto): Promise<ServiceTypeResponseDto> {
     const { provider, allowedProviders, configSchema } = this.resolveProvidersForPersist(dto);
     const providerDefaults = this.resolveProviderDefaultsForPersist(allowedProviders, dto.providerDefaults, undefined);
@@ -208,7 +208,7 @@ export class ServiceTypesController {
 
   @RequireScopes('catalog:admin')
   @Post(':id/meters')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async attachMeter(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: AttachMeterDto,
@@ -220,7 +220,7 @@ export class ServiceTypesController {
 
   @RequireScopes('catalog:admin')
   @Post(':id/meters/:meterId')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async updateMeterAttachment(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('meterId', new ParseUUIDPipe({ version: '4' })) meterId: string,
@@ -233,7 +233,7 @@ export class ServiceTypesController {
 
   @RequireScopes('catalog:admin')
   @Delete(':id/meters/:meterId')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @HttpCode(HttpStatus.NO_CONTENT)
   async detachMeter(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -245,7 +245,7 @@ export class ServiceTypesController {
 
   @RequireScopes('catalog:admin')
   @Post(':id')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: UpdateServiceTypeDto,
@@ -309,7 +309,7 @@ export class ServiceTypesController {
 
   @RequireScopes('catalog:admin')
   @Delete(':id')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     await this.serviceTypesRepository.delete(id);

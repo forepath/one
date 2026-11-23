@@ -28,7 +28,7 @@ const UUID = new ParseUUIDPipe({ version: '4' });
 const OPTIONAL_UUID = new ParseUUIDPipe({ version: '4', optional: true });
 
 @Controller('admin/billing/inventory/lendings')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminInventoryLendingsController {
   constructor(private readonly lendings: InventoryLendingsService) {}
 

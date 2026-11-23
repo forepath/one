@@ -2970,6 +2970,10 @@
         <source>Admin</source>
         <target>Admin</target>
       </trans-unit>
+      <trans-unit id="featureUserManager-roleManager" datatype="html">
+        <source>Manager</source>
+        <target>Manager</target>
+      </trans-unit>
       <trans-unit id="featureUserManager-roleUser" datatype="html">
         <source>User</source>
         <target>Benutzer</target>

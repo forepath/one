@@ -8,6 +8,7 @@ import {
   ClientEntity,
   ClientUsersRepository,
   describeMtlsClientCertificate,
+  isAdministrativeRole,
   MtlsClientCredentialError,
   OidcClientCredentialsService,
   UserRole,
@@ -257,8 +258,8 @@ export class ClientsService {
       return [];
     }
 
-    // Global console admin: return all clients (PAT must not inherit this via role alone).
-    if (userRole === UserRole.ADMIN && !(options?.amr ?? []).includes('pat')) {
+    // Global console admin / manager: return all clients (PAT must not inherit this via role alone).
+    if (isAdministrativeRole(userRole) && !(options?.amr ?? []).includes('pat')) {
       if (!sanitized) {
         return await mapClients(await this.clientsRepository.findAll(limit, offset));
       }
@@ -551,7 +552,7 @@ export class ClientsService {
       return await this.clientsRepository.findAllIds();
     }
 
-    if (userRole === UserRole.ADMIN && !(options?.amr ?? []).includes('pat')) {
+    if (isAdministrativeRole(userRole) && !(options?.amr ?? []).includes('pat')) {
       return await this.clientsRepository.findAllIds();
     }
 

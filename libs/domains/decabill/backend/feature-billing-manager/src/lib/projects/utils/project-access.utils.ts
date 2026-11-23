@@ -1,4 +1,4 @@
-import { assertPatScopes, UserRole } from '@forepath/identity/backend';
+import { assertPatScopes, isAdministrativeRole } from '@forepath/identity/backend';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
 import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
@@ -32,7 +32,7 @@ export function ensureProjectReadable(
     return;
   }
 
-  if (userInfo.userRole === UserRole.ADMIN) {
+  if (isAdministrativeRole(userInfo.userRole)) {
     if (!(userInfo.amr ?? []).includes('pat')) {
       return;
     }

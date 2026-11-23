@@ -1,4 +1,4 @@
-import { assertPatScopes, UserRole } from '@forepath/identity/backend';
+import { assertPatScopes, isAdministrativeRole, resolveUserRoleFromRoles, UserRole } from '@forepath/identity/backend';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Request } from 'express';
 
@@ -35,11 +35,7 @@ export function getUserFromRequest(req: RequestWithUser): UserInfoFromRequest {
     return { isApiKeyAuth: false };
   }
 
-  let userRole: UserRole = UserRole.USER;
-
-  if (user.roles?.includes('admin') || user.roles?.includes(UserRole.ADMIN)) {
-    userRole = UserRole.ADMIN;
-  }
+  const userRole: UserRole = resolveUserRoleFromRoles(user.roles);
 
   return {
     userId: user.id,
@@ -60,19 +56,20 @@ export function getAuthenticatedUserFromRequest(req: RequestWithUser): UserInfoF
   return userInfo;
 }
 
+/** Administration access: admins and managers (or the static credential). */
 export function ensureAdmin(userInfo: UserInfoFromRequest): void {
   if (userInfo.isApiKeyAuth) {
     return;
   }
 
-  if (userInfo.userRole !== UserRole.ADMIN) {
+  if (!isAdministrativeRole(userInfo.userRole)) {
     throw new ForbiddenException('Admin access required');
   }
 }
 
 /**
  * Gate the "acting on someone else's record" branch of owner-or-admin routes.
- * Requires the admin role and, for personal access tokens, the resource's `:admin` scope
+ * Requires the admin or manager role and, for personal access tokens, the resource's `:admin` scope
  * (the route-level scope only covers the caller's own records).
  */
 export function ensureAdminForForeignRecord(userInfo: UserInfoFromRequest, adminScope: string): void {

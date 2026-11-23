@@ -39,6 +39,8 @@ import {
   selectCreatingUser,
   selectDeletingUser,
   selectIsAdmin,
+  selectIsManager,
+  selectCanAccessAdminOnlyAdministration,
   selectIsAuthenticated,
   selectIsNotAuthenticated,
   selectLockingUser,
@@ -79,8 +81,14 @@ export class AuthenticationFacade {
   readonly authenticationType$: Observable<AuthenticationType | null> = this.store.select(selectAuthenticationType);
   readonly user$: Observable<{ id: string; email: string; role: string } | null> = this.store.select(selectUser);
   readonly isAdmin$: Observable<boolean> = this.store.select(selectIsAdmin);
+  readonly isManager$: Observable<boolean> = this.store.select(selectIsManager);
+  /** Admin or manager (administration UI and user manager). */
   readonly canAccessUserManager$: Observable<boolean> = this.store.select(selectCanAccessUserManager);
   readonly canAccessBillingAdministration$: Observable<boolean> = this.canAccessUserManager$;
+  /** Admins only: tenant / system settings and identity apps. */
+  readonly canAccessAdminOnlyAdministration$: Observable<boolean> = this.store.select(
+    selectCanAccessAdminOnlyAdministration,
+  );
   readonly loading$: Observable<boolean> = this.store.select(selectAuthenticationLoading);
   readonly error$: Observable<string | null> = this.store.select(selectAuthenticationError);
   readonly successMessage$: Observable<string | null> = this.store.select(selectSuccessMessage);

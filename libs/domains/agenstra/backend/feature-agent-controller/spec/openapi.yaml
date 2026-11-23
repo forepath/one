@@ -2,7 +2,12 @@ openapi: 3.1.0
 info:
   title: Agent Controller API
   version: 1.0.0
-  description: HTTP API for managing clients and proxied agent operations
+  description: |
+    HTTP API for managing clients and proxied agent operations.
+
+    **Roles:** operations documented as admin-only are also available to the `manager` role, except tenant / system
+    settings, identity app management (`/apps`) and managing the accounts (and tokens) of managers and admins, which
+    stay reserved to admins.
   contact:
     name: ForePath
     email: hi@forepath.io
@@ -383,6 +388,25 @@ paths:
             application/samlmetadata+xml:
               schema:
                 type: string
+  /auth/role:
+    get:
+      summary: Console role of the current user
+      description: >
+        Role from the local users table (OIDC sessions carry no local role claim). Interactive sessions only.
+      operationId: getSessionRole
+      responses:
+        '200':
+          description: Current role
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [role]
+                properties:
+                  role:
+                    $ref: '#/components/schemas/UserRole'
+        '401':
+          description: Unauthorized
   /auth/token-scopes:
     get:
       summary: List grantable PAT scopes for the current user
@@ -641,6 +665,7 @@ paths:
         '404':
           description: Authorization not found
   /apps:
+    description: Admins only (not available to managers).
     get:
       summary: List apps (admin, interactive session)
       operationId: listIdentityApps
@@ -830,7 +855,7 @@ paths:
           description: Authorization not found
   /users/{userId}/tokens:
     get:
-      summary: List personal access tokens for a user (admin)
+      summary: List personal access tokens for a user (admin or manager)
       operationId: listUserPersonalAccessTokens
       parameters:
         - in: path
@@ -854,7 +879,7 @@ paths:
           description: Admin + password session required
   /users/{userId}/tokens/{tokenId}:
     delete:
-      summary: Revoke a user's personal access token (admin)
+      summary: Revoke a user's personal access token (admin or manager)
       operationId: revokeUserPersonalAccessToken
       parameters:
         - in: path
@@ -879,8 +904,11 @@ paths:
         '404':
           description: Token not found
   /users:
+    description: >
+      Admins manage every account. Managers may list all accounts but only create regular users and only
+      update, lock, unlock, confirm, reset 2FA of, delete, or manage tokens of regular users (403 otherwise).
     get:
-      summary: List users (admin only)
+      summary: List users (admin or manager)
       operationId: listUsers
       security:
         - bearerAuth: [users:admin]
@@ -905,7 +933,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/UserResponseDto'
     post:
-      summary: Create user (admin only)
+      summary: Create user (admin or manager)
       operationId: createUser
       security:
         - bearerAuth: [users:admin]
@@ -929,7 +957,7 @@ paths:
           description: Email already exists
   /users/{id}:
     get:
-      summary: Get user by id (admin only)
+      summary: Get user by id (admin or manager)
       operationId: getUser
       security:
         - bearerAuth: [users:admin]
@@ -950,7 +978,7 @@ paths:
         '404':
           description: User not found
     post:
-      summary: Update user (admin only)
+      summary: Update user (admin or manager)
       operationId: updateUser
       security:
         - bearerAuth: [users:admin]
@@ -980,7 +1008,7 @@ paths:
         '404':
           description: User not found
     delete:
-      summary: Delete user (admin only)
+      summary: Delete user (admin or manager)
       operationId: deleteUser
       security:
         - bearerAuth: [users:admin]
@@ -998,7 +1026,7 @@ paths:
           description: User not found
   /users/{id}/lock:
     post:
-      summary: Lock user account (admin only)
+      summary: Lock user account (admin or manager)
       operationId: lockUser
       security:
         - bearerAuth: [users:admin]
@@ -1025,7 +1053,7 @@ paths:
           description: User not found
   /users/{id}/unlock:
     post:
-      summary: Unlock user account (admin only)
+      summary: Unlock user account (admin or manager)
       operationId: unlockUser
       security:
         - bearerAuth: [users:admin]
@@ -1052,7 +1080,7 @@ paths:
           description: User not found
   /users/{id}/confirm-email:
     post:
-      summary: Confirm a user's email (admin only)
+      summary: Confirm a user's email (admin or manager)
       operationId: confirmUserEmail
       security:
         - bearerAuth: [users:admin]
@@ -1075,7 +1103,7 @@ paths:
           description: User not found
   /users/{id}/2fa/totp:
     delete:
-      summary: Admin remove authenticator 2FA from a user
+      summary: Admin / manager remove authenticator 2FA from a user
       operationId: adminClearUserTotp
       security:
         - bearerAuth: [users:admin]
@@ -7887,6 +7915,7 @@ paths:
         '404':
           description: MCP server not found
   /admin/settings:
+    description: Admins only (not available to managers).
     get:
       tags: [Admin]
       summary: Overridable settings with their effective sources (admin only)
@@ -9991,8 +10020,12 @@ components:
           type: string
     UserRole:
       type: string
+      description: >
+        Console role. `manager` has administrative access like `admin`, except tenant / system settings,
+        identity apps and managing the accounts of managers and admins.
       enum:
         - user
+        - manager
         - admin
     UserResponseDto:
       type: object

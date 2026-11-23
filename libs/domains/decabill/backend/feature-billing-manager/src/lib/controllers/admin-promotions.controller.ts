@@ -11,7 +11,7 @@ import {
 import { PromotionAdminService } from '../services/promotion-admin.service';
 
 @Controller('admin/billing/promotions')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 @RequireScopes('promotions:admin')
 export class AdminPromotionsController {
   constructor(private readonly promotionAdminService: PromotionAdminService) {}

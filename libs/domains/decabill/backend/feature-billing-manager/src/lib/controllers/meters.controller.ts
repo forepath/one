@@ -27,7 +27,7 @@ export class MetersController {
   ) {}
 
   @Get()
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @RequireScopes('catalog:admin')
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -40,7 +40,7 @@ export class MetersController {
   }
 
   @Get(':id')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @RequireScopes('catalog:admin')
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<MeterResponseDto> {
     const row = await this.metersRepository.findByIdOrThrow(id);
@@ -49,7 +49,7 @@ export class MetersController {
   }
 
   @Post()
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async create(@Body() dto: CreateMeterDto): Promise<MeterResponseDto> {
     const row = await this.meterService.createMeter(dto);
 
@@ -57,7 +57,7 @@ export class MetersController {
   }
 
   @Post(':id')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: UpdateMeterDto,
@@ -68,7 +68,7 @@ export class MetersController {
   }
 
   @Delete(':id')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<void> {
     await this.meterService.deleteMeter(id);

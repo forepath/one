@@ -35,7 +35,7 @@ const UUID = new ParseUUIDPipe({ version: '4' });
 const OPTIONAL_UUID = new ParseUUIDPipe({ version: '4', optional: true });
 
 @Controller('admin/billing/inventory')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminInventoryLocationsController {
   constructor(private readonly locations: InventoryLocationsService) {}
 

@@ -37,7 +37,7 @@ import {
 import { ProjectsAdminService } from '../services/projects-admin.service';
 
 @Controller('admin/billing/projects')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminProjectsController {
   constructor(private readonly projectsAdminService: ProjectsAdminService) {}
 

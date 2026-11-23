@@ -55,7 +55,7 @@ interface UploadedImportFile {
  * closing, exchange rates and posting issues. Entity-wide changes need a TENANTS_ALLOW_GLOBAL_VIEWS tenant.
  */
 @Controller('admin/billing/accounting')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 @UseGuards(AccountingEnabledGuard)
 export class AdminAccountingSetupController {
   constructor(

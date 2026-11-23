@@ -5,6 +5,7 @@ import {
   IDENTITY_STATISTICS_SERVICE,
   IIdentityNotificationPublisher,
   IIdentityStatisticsService,
+  isAdministrativeRole,
   UserRole,
 } from '@forepath/identity/backend';
 import { BadRequestException, Inject, Injectable, Optional } from '@nestjs/common';
@@ -66,11 +67,11 @@ export class ClientUsersService {
     }
 
     // Permission checks:
-    // - Console global admins can add any role (PAT must not inherit this via role alone)
+    // - Console global admins / managers can add any role (PAT must not inherit this via role alone)
     // - Client creators can add any role
     // - Client admins can only add 'user' role
     // - Client users cannot add anyone
-    const isConsoleAdmin = requestingUserRole === UserRole.ADMIN && !(options?.amr ?? []).includes('pat');
+    const isConsoleAdmin = isAdministrativeRole(requestingUserRole) && !(options?.amr ?? []).includes('pat');
 
     if (isConsoleAdmin || isClientCreator) {
       // Global admin or creator: can add any role
@@ -147,11 +148,11 @@ export class ClientUsersService {
     }
 
     // Permission checks:
-    // - Console global admins can remove anyone (PAT must not inherit this via role alone)
+    // - Console global admins / managers can remove anyone (PAT must not inherit this via role alone)
     // - Client creators can remove anyone
     // - Client admins can remove users (but not other admins)
     // - Client users cannot remove anyone
-    const isConsoleAdmin = requestingUserRole === UserRole.ADMIN && !(options?.amr ?? []).includes('pat');
+    const isConsoleAdmin = isAdministrativeRole(requestingUserRole) && !(options?.amr ?? []).includes('pat');
 
     if (isConsoleAdmin || isClientCreator) {
       // Global admin or creator: can remove anyone

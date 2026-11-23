@@ -25,7 +25,7 @@ import type { CustomerTrustScoreResponseDto } from '../dto/customer-trust-score.
 import { CustomerProfilesAdminService } from '../services/customer-profiles-admin.service';
 
 @Controller('admin/billing/customer-profiles')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 @RequireScopes('customer_profile:admin')
 export class AdminCustomerProfilesController {
   constructor(private readonly customerProfilesAdminService: CustomerProfilesAdminService) {}

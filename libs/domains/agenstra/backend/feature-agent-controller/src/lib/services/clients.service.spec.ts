@@ -1169,6 +1169,23 @@ describe('ClientsService', () => {
       expect(mockRepository.findAllIds).toHaveBeenCalled();
     });
 
+    it('should return all client IDs when user is manager', async () => {
+      mockRepository.findAllIds.mockResolvedValue(['c1', 'c2']);
+
+      await expect(service.getAccessibleClientIds('user-1', UserRole.MANAGER, false)).resolves.toEqual(['c1', 'c2']);
+    });
+
+    it('should not give manager PAT sessions the all-clients bypass', async () => {
+      mockRepository.findAllIds.mockClear();
+      mockClientUsersRepository.findByUserId.mockResolvedValue([]);
+      mockRepository.findIdsByCreatorId.mockResolvedValue([]);
+
+      await expect(
+        service.getAccessibleClientIds('user-1', UserRole.MANAGER, false, { amr: ['pat'] }),
+      ).resolves.toEqual([]);
+      expect(mockRepository.findAllIds).not.toHaveBeenCalled();
+    });
+
     it('should return union of client_users and creator clients for regular user', async () => {
       mockClientUsersRepository.findByUserId.mockResolvedValue([
         { clientId: 'c1' } as never,

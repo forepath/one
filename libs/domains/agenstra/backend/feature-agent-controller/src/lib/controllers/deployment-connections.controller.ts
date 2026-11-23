@@ -3,7 +3,12 @@
  * `connections:admin` PAT scope. Connection secrets (`token`, `privateKey`) are write-only and never returned.
  */
 import type { ConnectionTestResult, DeploymentConnectionSummary } from '@forepath/agenstra/shared/util-opencode-config';
-import { RequireScopes, UserRole, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
+import {
+  getUserFromRequest,
+  isAdministrativeRole,
+  type RequestWithUser,
+  RequireScopes,
+} from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -39,7 +44,7 @@ export class DeploymentConnectionsController {
       return;
     }
 
-    if (u.userRole !== UserRole.ADMIN) {
+    if (!isAdministrativeRole(u.userRole)) {
       throw new ForbiddenException('Admin only');
     }
   }

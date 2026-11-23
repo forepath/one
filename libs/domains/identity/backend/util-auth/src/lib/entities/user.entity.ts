@@ -4,11 +4,14 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateCol
 /**
  * Canonical UserRole enum for all applications.
  * - USER: Regular user
+ * - MANAGER: Administrative access like ADMIN, except tenant / system settings, identity apps and the
+ *   accounts of other managers and admins (see `user-role.utils`)
  * - ADMIN: Administrator
  * - CONTROLLER: Controller-level access (used by agent-manager)
  */
 export enum UserRole {
   USER = 'user',
+  MANAGER = 'manager',
   ADMIN = 'admin',
   CONTROLLER = 'controller',
 }

@@ -255,13 +255,13 @@ Updating a token changes **name** and **scopes** only; the secret is never rotat
 
 Scopes follow `<resource>:<level>` with three hierarchical levels per resource (similar to GitHub token permissions):
 
-| Level   | Grants                                                                           | Implies            |
-| ------- | -------------------------------------------------------------------------------- | ------------------ |
-| `read`  | Read operations in non-admin scope                                               | —                  |
-| `write` | All other non-admin operations on the resource                                   | `read`             |
-| `admin` | Operations reserved to admins and their console / API (admin role also required) | `write` and `read` |
+| Level   | Grants                                                                                      | Implies            |
+| ------- | ------------------------------------------------------------------------------------------- | ------------------ |
+| `read`  | Read operations in non-admin scope                                                          | —                  |
+| `write` | All other non-admin operations on the resource                                              | `read`             |
+| `admin` | Operations reserved to admins and their console / API (admin or manager role also required) | `write` and `read` |
 
-`:admin` scopes are only grantable to admins and are stripped from the effective grant set when the user is not an admin. Routes without `@RequireScopes` reject PATs (fail-closed). Each operation's required scope is listed in the OpenAPI spec as the role name on its `bearerAuth` security requirement.
+`:admin` scopes are only grantable to admins and managers and are stripped from the effective grant set when the user is neither. Routes without `@RequireScopes` reject PATs (fail-closed). Each operation's required scope is listed in the OpenAPI spec as the role name on its `bearerAuth` security requirement.
 
 **Other users' records:** customer routes that also let admins act on records they do not own (backorder retry/cancel, invoice PDFs/create/void by subscription, project tickets, comments, attachments, milestones, time entries, project detail/summary) require the resource's `:admin` scope for PATs on the cross-owner path (e.g. `invoices:admin`, `subscriptions:admin`, `tickets:admin`, `projects:admin`). The route-level scope only covers the caller's own records; interactive admin sessions are unaffected.
 
@@ -317,7 +317,7 @@ Admins can register **apps**: external applications that act on behalf of users 
 | Management     | Console **Apps** page (`/apps`, admin, interactive session only): name, description, return URL, scopes. The app id is the row UUID; the app secret (`fp_aps_…`) is shown once and stored as a bcrypt hash only                                            |
 | Return URL     | Absolute `https` URL (`http` only for `localhost` / `127.0.0.1`), no credentials, no fragment. Redirects only ever go to the registered URL (no caller-supplied redirect URI)                                                                              |
 | Grant page     | `/authorize?app_id=<uuid>&state=<opaque>[&code_challenge=<S256>&code_challenge_method=S256]`; shows the login mask first when needed, then app name, description and scopes                                                                                |
-| Scope cap      | A user only grants the requested scopes their own role may grant (`:admin` scopes only for admins); the rest is shown as "not granted". The cap is re-applied on every request                                                                             |
+| Scope cap      | A user only grants the requested scopes their own role may grant (`:admin` scopes only for admins and managers); the rest is shown as "not granted". The cap is re-applied on every request                                                                |
 | Second factor  | Approving a new (or changed) authorization requires the user's 2FA: authenticator code, or an emailed code when email 2FA is enabled or forced. OIDC / SAML accounts rely on the IdP's MFA                                                                 |
 | Skip consent   | An existing, up-to-date authorization redirects back immediately with a new code (no consent, no 2FA)                                                                                                                                                      |
 | Redirect       | Approved: `status=approved&app_id&code&state`. Denied: `status=denied&error=access_denied&error_description&state`. No grantable scope: `status=error&error=invalid_scope`                                                                                 |
@@ -408,6 +408,16 @@ Frontend runtime config should set `authentication.disableSignup` to match the b
 - User management (create, read, update, delete, lock, unlock)
 - Service type and service plan administration
 - Manual invoice and customer profile administration
+
+### Manager Role
+
+Managers use the administration console and API like admins, with three exceptions that stay admin-only:
+
+- tenant and global settings (`/administration/settings`, `/api/admin/billing/settings`)
+- identity app management (`/apps`)
+- the accounts of managers and admins: managers see every account in the user manager but can only create regular users and only edit, lock, unlock, confirm, reset 2FA of, delete or revoke tokens of regular users. They cannot grant the manager or admin role (the API answers `403`)
+
+Managers can be granted `:admin` PAT scopes; admin-only routes stay closed to them regardless of scopes. Only admins can assign the manager role.
 
 ### User Role
 

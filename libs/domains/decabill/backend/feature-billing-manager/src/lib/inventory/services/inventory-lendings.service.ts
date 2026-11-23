@@ -1,4 +1,4 @@
-import { UserRole, UsersRepository } from '@forepath/identity/backend';
+import { isAdministrativeRole, UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
@@ -262,7 +262,7 @@ export class InventoryLendingsService {
       name: profileName ?? user.email,
       email: user.email ?? null,
       customerNumber: profile?.customerNumber ?? null,
-      kind: user.role === UserRole.ADMIN ? 'staff' : 'customer',
+      kind: isAdministrativeRole(user.role) ? 'staff' : 'customer',
     };
   }
 

@@ -2,12 +2,15 @@ import {
   selectAuthenticationError,
   selectAuthenticationLoading,
   selectAuthenticationType,
+  selectCanAccessAdminOnlyAdministration,
   selectCanAccessUserManager,
+  selectHasAdministrativeRole,
   selectChangingPassword,
   selectConfirmingEmail,
   selectCreatingUser,
   selectDeletingUser,
   selectIsAdmin,
+  selectIsManager,
   selectIsAuthenticated,
   selectIsNotAuthenticated,
   selectLockingUser,
@@ -84,11 +87,40 @@ describe('authentication selectors', () => {
     expect(selectIsAdmin.projector({ id: '2', email: 'user@example.com', role: 'user' })).toBe(false);
   });
 
-  it('selectCanAccessUserManager requires authenticated admin users, oidc or saml admin', () => {
+  const withUser = (
+    role: 'user' | 'manager' | 'admin',
+    authenticationType: AuthenticationState['authenticationType'] = 'users',
+  ) =>
+    ({
+      authentication: { ...baseState, authenticationType, user: { id: '9', email: `${role}@example.com`, role } },
+    }) as { authentication: AuthenticationState };
+
+  it('selectIsManager / selectHasAdministrativeRole distinguish managers from admins and users', () => {
+    expect(selectIsManager(withUser('manager'))).toBe(true);
+    expect(selectIsManager(withUser('admin'))).toBe(false);
+    expect(selectIsAdmin(withUser('manager'))).toBe(false);
+    expect(selectHasAdministrativeRole(withUser('manager'))).toBe(true);
+    expect(selectHasAdministrativeRole(withUser('admin'))).toBe(true);
+    expect(selectHasAdministrativeRole(withUser('user'))).toBe(false);
+  });
+
+  it('selectCanAccessUserManager requires an authenticated admin or manager (users, oidc or saml)', () => {
     expect(project(selectCanAccessUserManager)).toBe(true);
-    expect(selectCanAccessUserManager.projector(true, 'oidc', true)).toBe(true);
-    expect(selectCanAccessUserManager.projector(true, 'saml', true)).toBe(true);
-    expect(selectCanAccessUserManager.projector(true, 'users', false)).toBe(false);
-    expect(selectCanAccessUserManager.projector(false, 'users', true)).toBe(false);
+    expect(selectCanAccessUserManager(withUser('manager'))).toBe(true);
+    expect(selectCanAccessUserManager(withUser('manager', 'oidc'))).toBe(true);
+    expect(selectCanAccessUserManager(withUser('admin', 'saml'))).toBe(true);
+    expect(selectCanAccessUserManager(withUser('user'))).toBe(false);
+    expect(selectCanAccessUserManager(withUser('admin', 'api-key'))).toBe(false);
+    expect(
+      selectCanAccessUserManager({ authentication: { ...withUser('admin').authentication, isAuthenticated: false } }),
+    ).toBe(false);
+  });
+
+  it('selectCanAccessAdminOnlyAdministration is limited to admins (never managers)', () => {
+    expect(selectCanAccessAdminOnlyAdministration(withUser('admin'))).toBe(true);
+    expect(selectCanAccessAdminOnlyAdministration(withUser('admin', 'oidc'))).toBe(true);
+    expect(selectCanAccessAdminOnlyAdministration(withUser('manager'))).toBe(false);
+    expect(selectCanAccessAdminOnlyAdministration(withUser('user'))).toBe(false);
+    expect(selectCanAccessAdminOnlyAdministration(withUser('admin', 'mtls'))).toBe(false);
   });
 });

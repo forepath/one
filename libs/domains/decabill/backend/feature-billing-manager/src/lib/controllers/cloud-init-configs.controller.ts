@@ -29,7 +29,7 @@ export class CloudInitConfigsController {
   ) {}
 
   @Get()
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
@@ -41,7 +41,7 @@ export class CloudInitConfigsController {
   }
 
   @Get(':id')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<CloudInitConfigResponseDto> {
     const row = await this.cloudInitConfigsRepository.findByIdOrThrow(id);
 
@@ -49,7 +49,7 @@ export class CloudInitConfigsController {
   }
 
   @Post()
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async create(@Body() dto: CreateCloudInitConfigDto): Promise<CloudInitConfigResponseDto> {
     const { environmentVariables, envDefaultValues } = this.cloudInitConfigService.sanitizeEnvironmentVariables(
       dto.environmentVariables?.map((v) => ({
@@ -98,7 +98,7 @@ export class CloudInitConfigsController {
   }
 
   @Post(':id')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: UpdateCloudInitConfigDto,
@@ -197,7 +197,7 @@ export class CloudInitConfigsController {
   }
 
   @Delete(':id')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<void> {
     await this.cloudInitConfigService.assertNotReferencedByActivePlans(id);

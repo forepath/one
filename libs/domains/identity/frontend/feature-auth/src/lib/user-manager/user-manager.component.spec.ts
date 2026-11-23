@@ -189,4 +189,88 @@ describe('IdentityUserManagerComponent', () => {
       );
     });
   });
+
+  describe('as a manager', () => {
+    const peerManager = user('m-2', 'max@example.com', { role: 'manager', emailConfirmedAt: null, totpEnabled: true });
+    const admin = user('a-1', 'ada@example.com', { role: 'admin' });
+
+    beforeEach(() => {
+      (facade['user$'] as BehaviorSubject<unknown>).next({ id: 'self', email: 'mgr@example.com', role: 'manager' });
+      (facade['users$'] as BehaviorSubject<UserResponseDto[]>).next([
+        user('self', 'mgr@example.com', { role: 'manager' }),
+        user('u-1', 'ann@example.com'),
+        peerManager,
+        admin,
+      ]);
+      fixture.detectChanges();
+    });
+
+    it('still lists admins and managers', () => {
+      const text = el().querySelector('[data-testid="user-manager-table"]')?.textContent ?? '';
+
+      expect(text).toContain('max@example.com');
+      expect(text).toContain('ada@example.com');
+    });
+
+    it('offers only "copy id" on admin and manager rows and keeps regular users manageable', () => {
+      const component = fixture.componentInstance;
+
+      expect(component.userRowMenu(peerManager).map((i) => i.id)).toEqual(['copy-id']);
+      expect(component.userRowMenu(admin).map((i) => i.id)).toEqual(['copy-id']);
+      expect(component.userRowMenu(user('u-1', 'ann@example.com')).map((i) => i.id)).toEqual(
+        expect.arrayContaining(['edit', 'lock', 'delete']),
+      );
+    });
+
+    it('does not open the editor for admin or manager rows', () => {
+      const component = fixture.componentInstance;
+
+      component.onEditUser(admin);
+
+      expect(component.userToEdit).toBeNull();
+      expect(component.editUserModalOpen()).toBe(false);
+    });
+
+    it('leaves admin and manager rows out of bulk actions', async () => {
+      const component = fixture.componentInstance;
+
+      component.selectedUserIds.set(['u-1', 'm-2', 'a-1']);
+      component.onBulkConfirmEmail();
+      component.onConfirmBulkDelete();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve));
+
+      expect(authService.confirmUserEmail).not.toHaveBeenCalled();
+      expect(authService.deleteUser).toHaveBeenCalledTimes(1);
+      expect(authService.deleteUser).toHaveBeenCalledWith('u-1');
+    });
+
+    it('only offers the user role when creating accounts', async () => {
+      const component = fixture.componentInstance;
+
+      expect(component.canAssignPrivilegedRoles()).toBe(false);
+      component.onAddUser();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const options = Array.from(document.querySelectorAll('#createUserRole option')).map((o) =>
+        o.getAttribute('value'),
+      );
+
+      expect(options).toEqual(['user']);
+    });
+  });
+
+  it('offers admins every role when creating accounts', async () => {
+    const component = fixture.componentInstance;
+
+    expect(component.canAssignPrivilegedRoles()).toBe(true);
+    component.onAddUser();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const options = Array.from(document.querySelectorAll('#createUserRole option')).map((o) => o.getAttribute('value'));
+
+    expect(options).toEqual(['user', 'manager', 'admin']);
+  });
 });

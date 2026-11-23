@@ -6,7 +6,7 @@ import type { AdminFileManagerListResponseDto, AdminFileVerifyResponseDto } from
 import { AdminFileManagerService, type UploadedVerifyDocument } from '../services/admin-file-manager.service';
 
 @Controller('admin/billing/files')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 @RequireScopes('files:admin')
 export class AdminFileManagerController {
   constructor(private readonly adminFileManagerService: AdminFileManagerService) {}
