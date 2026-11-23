@@ -9,6 +9,7 @@ export * from './lib/types/projects.types';
 export * from './lib/types/config-change.types';
 export * from './lib/types/offers.types';
 export * from './lib/types/document-terms.types';
+export * from './lib/types/admin-overview.types';
 
 // Utils
 export * from './lib/constants/list-paging.constants';
@@ -234,6 +235,13 @@ export * from './lib/state/admin-offers/admin-offers.effects';
 export * from './lib/state/admin-offers/admin-offers.facade';
 export * from './lib/state/admin-offers/admin-offers.reducer';
 export * from './lib/state/admin-offers/admin-offers.selectors';
+
+// Admin Overview State
+export * from './lib/state/admin-overview/admin-overview.actions';
+export * from './lib/state/admin-overview/admin-overview.effects';
+export * from './lib/state/admin-overview/admin-overview.facade';
+export * from './lib/state/admin-overview/admin-overview.reducer';
+export * from './lib/state/admin-overview/admin-overview.selectors';
 
 // Billing Capabilities State
 export * from './lib/state/billing-capabilities/billing-capabilities.actions';

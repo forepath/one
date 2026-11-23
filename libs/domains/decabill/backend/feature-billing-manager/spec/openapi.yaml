@@ -6945,6 +6945,47 @@ paths:
           description: Unauthorized
         '403':
           description: Admin access required
+  /admin/billing/overview:
+    get:
+      tags: [Admin Billing]
+      summary: Key figures of a tenant or all tenants for the admin overview (admin only)
+      description: >-
+        Current state (customers, subscriptions, receivables, payables, offers, projects, inventory) plus revenue and
+        expenses of the requested period. Another tenant or `all` (every configured tenant plus combined sums) only for
+        tenants in `TENANTS_ALLOW_GLOBAL_VIEWS`. At most 366 days grouped by day, 3660 days grouped by month.
+      operationId: getAdminBillingOverview
+      security:
+        - bearerAuth: [billing:admin]
+      parameters:
+        - name: viewTenantId
+          in: query
+          required: false
+          schema: { type: string, maxLength: 64 }
+          description: Tenant to show, or `all`; default the request tenant
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+          description: Period start (default 30 days ago)
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+          description: Period end (default today)
+        - name: groupBy
+          in: query
+          schema: { type: string, enum: [day, month], default: day }
+      responses:
+        '200':
+          description: Overview of the tenants in scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOverviewResponse'
+        '400':
+          description: Invalid date range, grouping or unknown tenant
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required, or cross-tenant view not allowed for this tenant
   /admin/billing/settings:
     get:
       tags: [Admin Billing]
@@ -15269,6 +15310,104 @@ components:
       properties:
         period: { type: string }
         totalGross: { type: number }
+    AdminOverviewMetrics:
+      type: object
+      description: Counts and gross amounts; `*InPeriod` fields cover the requested range, the rest is the current state.
+      required:
+        [
+          customerCount,
+          subscriptionCount,
+          activeSubscriptionCount,
+          pendingBackorderSubscriptionCount,
+          openReceivableCount,
+          openReceivableTotal,
+          overdueInvoiceCount,
+          unbilledTotal,
+          revenueInPeriod,
+          paidInvoiceCountInPeriod,
+          supplierCount,
+          openPayableCount,
+          openPayableTotal,
+          expenseInPeriod,
+          draftOfferCount,
+          pendingOfferCount,
+          pendingOfferTotal,
+          acceptedOfferCountInPeriod,
+          activeProjectCount,
+          openTicketCount,
+          articleCount,
+          lowStockArticleCount,
+          pendingWithdrawalRequestCount,
+          openLendingCount,
+          overdueLendingCount,
+        ]
+      properties:
+        customerCount: { type: integer }
+        subscriptionCount: { type: integer }
+        activeSubscriptionCount: { type: integer }
+        pendingBackorderSubscriptionCount: { type: integer }
+        openReceivableCount: { type: integer }
+        openReceivableTotal: { type: number }
+        overdueInvoiceCount: { type: integer }
+        unbilledTotal: { type: number }
+        revenueInPeriod: { type: number }
+        paidInvoiceCountInPeriod: { type: integer }
+        supplierCount: { type: integer }
+        openPayableCount: { type: integer }
+        openPayableTotal: { type: number }
+        expenseInPeriod: { type: number }
+        draftOfferCount: { type: integer }
+        pendingOfferCount: { type: integer }
+        pendingOfferTotal: { type: number }
+        acceptedOfferCountInPeriod: { type: integer }
+        activeProjectCount: { type: integer }
+        openTicketCount: { type: integer }
+        articleCount: { type: integer }
+        lowStockArticleCount: { type: integer }
+        pendingWithdrawalRequestCount: { type: integer }
+        openLendingCount: { type: integer }
+        overdueLendingCount: { type: integer }
+    AdminOverviewSeriesPoint:
+      type: object
+      required: [period, revenueGross, expenseGross]
+      properties:
+        period: { type: string, format: date }
+        revenueGross: { type: number }
+        expenseGross: { type: number }
+    AdminOverviewTenant:
+      type: object
+      required: [tenantId, metrics, series]
+      properties:
+        tenantId: { type: string }
+        metrics:
+          $ref: '#/components/schemas/AdminOverviewMetrics'
+        series:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminOverviewSeriesPoint'
+    AdminOverviewResponse:
+      type: object
+      required: [scope, from, to, groupBy, tenants, combined]
+      properties:
+        scope: { type: string, enum: [tenant, all] }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        groupBy: { type: string, enum: [day, month] }
+        tenants:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminOverviewTenant'
+        combined:
+          type: object
+          description: Sum over `tenants`
+          required: [metrics, series]
+          properties:
+            metrics:
+              $ref: '#/components/schemas/AdminOverviewMetrics'
+            series:
+              type: array
+              items:
+                $ref: '#/components/schemas/AdminOverviewSeriesPoint'
     BillingStatisticsSummary:
       type: object
       properties:

@@ -338,6 +338,34 @@ describe('AdminBillingService', () => {
     req.flush(blob);
   });
 
+  it('gets the admin overview with tenant and range params', (done) => {
+    service
+      .getOverview({ viewTenantId: 'all', from: '2026-11-01', to: '2026-11-30', groupBy: 'month' })
+      .subscribe((res) => {
+        expect(res.scope).toBe('all');
+        done();
+      });
+    const req = httpMock.expectOne(
+      (r) =>
+        r.url === `${apiUrl}/admin/billing/overview` &&
+        r.params.get('viewTenantId') === 'all' &&
+        r.params.get('from') === '2026-11-01' &&
+        r.params.get('to') === '2026-11-30' &&
+        r.params.get('groupBy') === 'month',
+    );
+
+    expect(req.request.method).toBe('GET');
+    req.flush({ scope: 'all', tenants: [], combined: { metrics: {}, series: [] } });
+  });
+
+  it('omits an empty viewTenantId from the overview request', (done) => {
+    service.getOverview({ viewTenantId: null }).subscribe(() => done());
+    const req = httpMock.expectOne((r) => r.url === `${apiUrl}/admin/billing/overview`);
+
+    expect(req.request.params.keys()).toEqual([]);
+    req.flush({ scope: 'tenant', tenants: [], combined: { metrics: {}, series: [] } });
+  });
+
   it('gets billing capabilities', (done) => {
     service.getCapabilities().subscribe((res) => {
       expect(res.datevExportEnabled).toBe(true);

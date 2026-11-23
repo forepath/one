@@ -16,6 +16,7 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 - **Offers** Admin draft quotations, customer accept/decline, fulfillment into subscriptions/projects/invoices
 - **Service Types and Plans** Admin-managed catalog with provider schemas and pricing
 - **Billing Administration** Manual invoices, customer profiles, KPIs, bill-now, and admin File Explorer
+- **[Admin Overview](./admin-overview.md)** Dashboard of the key tenant figures, with other tenants and combined numbers for global-view tenants
 - **Customer Profiles** Self-service and admin billing metadata required for ordering
 - **VAT and tax treatment** EU place-of-supply modes, VIES VAT ID validation, OSS threshold, reverse charge
 - **Customer Trust Score** Admin-only traffic-light trust ranking on billing profiles
@@ -167,6 +168,16 @@ Admin-only features for manual invoices, customer billing profiles, operational 
 - Billing summary, statistics, and open or overdue invoice lists
 - Bill-now to force invoice generation outside the scheduler
 - Read-only [File Explorer](./file-explorer.md) for managed storage downloads
+
+### [Admin Overview](./admin-overview.md)
+
+Admin dashboard of a tenant's key figures across customers, receivables, payables, offers, projects and inventory, laid out like the Agenstra audit overview.
+
+**Key Capabilities**:
+
+- Summary bar, revenue and expense chart and per-area figures for a selectable period
+- Tenant switch and an "All tenants" view with combined numbers and a per-tenant comparison (`TENANTS_ALLOW_GLOBAL_VIEWS`)
+- Tenant-scoped queries per tenant; admin role and `billing:admin` scope required
 
 ### [File Explorer](./file-explorer.md)
 

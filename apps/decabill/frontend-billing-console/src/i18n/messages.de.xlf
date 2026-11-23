@@ -15334,6 +15334,234 @@
         <source>Default: no image</source>
         <target>Standard: kein Bild</target>
       </trans-unit>
+      <trans-unit id="featureAdminOverview-fromDate" datatype="html">
+        <source>From</source>
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-toDate" datatype="html">
+        <source>To</source>
+        <target>Bis</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-groupBy" datatype="html">
+        <source>Group by</source>
+        <target>Gruppieren nach</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-groupByDay" datatype="html">
+        <source>Day</source>
+        <target>Tag</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-groupByMonth" datatype="html">
+        <source>Month</source>
+        <target>Monat</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-noCashflow" datatype="html">
+        <source>No revenue or expenses in this period.</source>
+        <target>Keine Umsätze oder Ausgaben in diesem Zeitraum.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-resultHint" datatype="html">
+        <source>Revenue minus expenses, gross</source>
+        <target>Umsatz abzüglich Ausgaben, brutto</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-noData" datatype="html">
+        <source>No data yet</source>
+        <target>Noch keine Daten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-title" datatype="html">
+        <source>Overview</source>
+        <target>Übersicht</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-filtersTitle" datatype="html">
+        <source>Overview filters</source>
+        <target>Filter der Übersicht</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-loading" datatype="html">
+        <source>Loading overview…</source>
+        <target>Übersicht wird geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiCustomers" datatype="html">
+        <source>Customers</source>
+        <target>Kunden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiActiveSubscriptions" datatype="html">
+        <source>Active subscriptions</source>
+        <target>Aktive Abonnements</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiRevenue" datatype="html">
+        <source>Revenue in period</source>
+        <target>Umsatz im Zeitraum</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiExpenses" datatype="html">
+        <source>Expenses in period</source>
+        <target>Ausgaben im Zeitraum</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiReceivables" datatype="html">
+        <source>Open receivables</source>
+        <target>Offene Forderungen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-kpiPayables" datatype="html">
+        <source>Open payables</source>
+        <target>Offene Verbindlichkeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-chartCashflow" datatype="html">
+        <source>Revenue and expenses</source>
+        <target>Umsatz und Ausgaben</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-chartResult" datatype="html">
+        <source>Result in period</source>
+        <target>Ergebnis im Zeitraum</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-chartTenantRevenue" datatype="html">
+        <source>Revenue by tenant</source>
+        <target>Umsatz nach Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-tenantsTable" datatype="html">
+        <source>Tenants</source>
+        <target>Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-openPage" datatype="html">
+        <source>Open</source>
+        <target>Öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-allTenants" datatype="html">
+        <source>All tenants</source>
+        <target>Alle Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-seriesRevenue" datatype="html">
+        <source>Revenue</source>
+        <target>Umsatz</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-seriesExpenses" datatype="html">
+        <source>Expenses</source>
+        <target>Ausgaben</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-homeTenant" datatype="html">
+        <source>Home tenant</source>
+        <target>Stammmandant</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-allTenantsNote" datatype="html">
+        <source>Combined numbers of all tenants</source>
+        <target>Zusammengefasste Zahlen aller Mandanten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-scopeByMonth" datatype="html">
+        <source>by month</source>
+        <target>nach Monat</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-scopeByDay" datatype="html">
+        <source>by day</source>
+        <target>nach Tag</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-colTenant" datatype="html">
+        <source>Tenant</source>
+        <target>Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionCustomers" datatype="html">
+        <source>Customers and subscriptions</source>
+        <target>Kunden und Abonnements</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-subscriptions" datatype="html">
+        <source>Subscriptions</source>
+        <target>Abonnements</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-backorders" datatype="html">
+        <source>Waiting for capacity</source>
+        <target>Warten auf Kapazität</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionReceivables" datatype="html">
+        <source>Receivables</source>
+        <target>Forderungen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-openInvoicesHint" datatype="html">
+        <source><x id="count" equiv-text="m.openReceivableCount"/> open invoices</source>
+        <target><x id="count" equiv-text="m.openReceivableCount"/> offene Rechnungen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-overdueInvoices" datatype="html">
+        <source>Overdue invoices</source>
+        <target>Überfällige Rechnungen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-unbilled" datatype="html">
+        <source>Not yet billed</source>
+        <target>Noch nicht abgerechnet</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-paidInvoicesHint" datatype="html">
+        <source><x id="count" equiv-text="m.paidInvoiceCountInPeriod"/> paid invoices</source>
+        <target><x id="count" equiv-text="m.paidInvoiceCountInPeriod"/> bezahlte Rechnungen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionPayables" datatype="html">
+        <source>Payables</source>
+        <target>Verbindlichkeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-suppliers" datatype="html">
+        <source>Suppliers</source>
+        <target>Lieferanten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-openSupplierInvoicesHint" datatype="html">
+        <source><x id="count" equiv-text="m.openPayableCount"/> open supplier invoices</source>
+        <target><x id="count" equiv-text="m.openPayableCount"/> offene Lieferantenrechnungen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionOffers" datatype="html">
+        <source>Offers</source>
+        <target>Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-pendingOffers" datatype="html">
+        <source>Awaiting response</source>
+        <target>Warten auf Antwort</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-draftOffers" datatype="html">
+        <source>Drafts</source>
+        <target>Entwürfe</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-acceptedOffers" datatype="html">
+        <source>Accepted in period</source>
+        <target>Angenommen im Zeitraum</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionProjects" datatype="html">
+        <source>Projects</source>
+        <target>Projekte</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-activeProjects" datatype="html">
+        <source>Active projects</source>
+        <target>Aktive Projekte</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-openTickets" datatype="html">
+        <source>Open tickets</source>
+        <target>Offene Tickets</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-sectionInventory" datatype="html">
+        <source>Inventory</source>
+        <target>Lager</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-articles" datatype="html">
+        <source>Articles</source>
+        <target>Artikel</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-lowStock" datatype="html">
+        <source>Low stock</source>
+        <target>Niedriger Bestand</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-pendingRequests" datatype="html">
+        <source>Pending withdrawal requests</source>
+        <target>Offene Entnahmeanforderungen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-openLendings" datatype="html">
+        <source>Open lendings</source>
+        <target>Offene Ausleihen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOverview-overdueLendingsHint" datatype="html">
+        <source><x id="count" equiv-text="m.overdueLendingCount"/> overdue</source>
+        <target><x id="count" equiv-text="m.overdueLendingCount"/> überfällig</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminOverviewPage" datatype="html">
+        <source>Overview</source>
+        <target>Übersicht</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminOverviewTitle" datatype="html">
+        <source>Overview</source>
+        <target>Übersicht</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminOverview" datatype="html">
+        <source>Overview</source>
+        <target>Übersicht</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

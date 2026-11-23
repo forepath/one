@@ -1,0 +1,214 @@
+<div class="admin-overview border-top d-flex flex-column flex-grow-1 min-h-0" data-testid="admin-overview-page">
+  <fpc-page-header [title]="pageTitle">
+    @if (tenantSwitchVisible()) {
+      <framework-billing-tenant-switch
+        fpcPageHeaderContext
+        [options]="tenantSwitchOptions()"
+        [activeId]="activeTenantSwitchId()"
+        (selectTenant)="onSelectTenant($event)"
+        data-testid="admin-overview-tenant-switch"
+      />
+    }
+  </fpc-page-header>
+
+  <fpc-summary-bar [columns]="6">
+    <fpc-summary-card icon="people" [label]="customersLabel">
+      <span fpcSummaryCardValue data-testid="admin-overview-kpi-customers">
+        @if (loading()) {
+          <fpc-spinner size="sm" />
+        } @else if (metrics(); as m) {
+          {{ m.customerCount }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card icon="stack" [label]="activeSubscriptionsLabel">
+      <span fpcSummaryCardValue data-testid="admin-overview-kpi-active-subscriptions">
+        @if (loading()) {
+          <fpc-spinner size="sm" />
+        } @else if (metrics(); as m) {
+          {{ m.activeSubscriptionCount }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card icon="graph-up-arrow" [label]="revenueLabel">
+      <span fpcSummaryCardValue data-testid="admin-overview-kpi-revenue">
+        @if (loading()) {
+          <fpc-spinner size="sm" />
+        } @else if (metrics(); as m) {
+          {{ money(m.revenueInPeriod) }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card icon="graph-down-arrow" [label]="expensesLabel">
+      <span fpcSummaryCardValue data-testid="admin-overview-kpi-expenses">
+        @if (loading()) {
+          <fpc-spinner size="sm" />
+        } @else if (metrics(); as m) {
+          {{ money(m.expenseInPeriod) }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card
+      icon="exclamation-circle"
+      [label]="receivablesLabel"
+      [tone]="(metrics()?.overdueInvoiceCount ?? 0) > 0 ? 'warning' : 'default'"
+    >
+      <span fpcSummaryCardValue data-testid="admin-overview-kpi-receivables">
+        @if (loading()) {
+          <fpc-spinner size="sm" />
+        } @else if (metrics(); as m) {
+          {{ money(m.openReceivableTotal) }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card icon="wallet2" [label]="payablesLabel">
+      <span fpcSummaryCardValue data-testid="admin-overview-kpi-payables">
+        @if (loading()) {
+          <fpc-spinner size="sm" />
+        } @else if (metrics(); as m) {
+          {{ money(m.openPayableTotal) }}
+        }
+      </span>
+    </fpc-summary-card>
+  </fpc-summary-bar>
+
+  @if (error(); as err) {
+    <fpc-alert flush variant="danger" [message]="err" data-testid="admin-overview-error" />
+  }
+
+  <fpc-list-toolbar
+    class="flex-shrink-0"
+    [open]="filtersOpen()"
+    (openChange)="onFiltersOpenChange($event)"
+    [title]="filtersPanelTitle"
+    [activeCount]="activeFilterCount()"
+    (applied)="filterState.apply()"
+    (cleared)="onResetFilters()"
+    data-testid="admin-overview-filters"
+  >
+    <span fpcListToolbarLead class="admin-overview__scope small text-body-secondary text-truncate">{{
+      scopeLabel()
+    }}</span>
+    <fpc-form-field forId="adminOverviewFrom" i18n-label="@@featureAdminOverview-fromDate" label="From">
+      <fpc-form-control
+        controlId="adminOverviewFrom"
+        inputType="date"
+        name="adminOverviewFrom"
+        [ngModel]="filterState.draft().from"
+        (ngModelChange)="filterState.patch({ from: $event })"
+      />
+    </fpc-form-field>
+    <fpc-form-field forId="adminOverviewTo" i18n-label="@@featureAdminOverview-toDate" label="To">
+      <fpc-form-control
+        controlId="adminOverviewTo"
+        inputType="date"
+        name="adminOverviewTo"
+        [ngModel]="filterState.draft().to"
+        (ngModelChange)="filterState.patch({ to: $event })"
+      />
+    </fpc-form-field>
+    <fpc-form-field forId="adminOverviewGroupBy" i18n-label="@@featureAdminOverview-groupBy" label="Group by">
+      <fpc-form-control
+        controlType="select"
+        controlId="adminOverviewGroupBy"
+        name="adminOverviewGroupBy"
+        [ngModel]="filterState.draft().groupBy"
+        (ngModelChange)="filterState.patch({ groupBy: $event })"
+      >
+        <option value="day" i18n="@@featureAdminOverview-groupByDay">Day</option>
+        <option value="month" i18n="@@featureAdminOverview-groupByMonth">Month</option>
+      </fpc-form-control>
+    </fpc-form-field>
+  </fpc-list-toolbar>
+
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+    @let m = metrics();
+    @if (loading() && !m) {
+      <fpc-empty-state loading [title]="loadingLabel" />
+    } @else if (m) {
+      <fpc-panel-grid [columns]="3" data-testid="admin-overview-panels">
+        <fpc-panel [title]="cashflowChartTitle" [span]="2">
+          @if (cashflowChartOptions(); as chart) {
+            <apx-chart
+              [series]="chart.series"
+              [chart]="chart.chart"
+              [colors]="chart.colors"
+              [stroke]="chart.stroke"
+              [fill]="chart.fill"
+              [dataLabels]="chart.dataLabels"
+              [xaxis]="chart.xaxis"
+              [yaxis]="chart.yaxis"
+              [grid]="chart.grid"
+              [legend]="chart.legend"
+              [tooltip]="chart.tooltip"
+              [responsive]="chart.responsive"
+            ></apx-chart>
+          } @else {
+            <fpc-empty-state
+              size="sm"
+              message="No revenue or expenses in this period."
+              i18n-message="@@featureAdminOverview-noCashflow"
+            />
+          }
+        </fpc-panel>
+        @if (tenantRevenueChartOptions(); as chart) {
+          <fpc-panel [title]="tenantRevenueChartTitle">
+            <apx-chart
+              [series]="chart.series"
+              [chart]="chart.chart"
+              [labels]="chart.labels"
+              [colors]="chart.colors"
+              [dataLabels]="chart.dataLabels"
+              [legend]="chart.legend"
+              [tooltip]="chart.tooltip"
+              [responsive]="chart.responsive"
+            ></apx-chart>
+          </fpc-panel>
+        } @else {
+          <fpc-panel [title]="resultChartTitle">
+            <div class="admin-overview__result d-flex flex-column justify-content-center h-100 gap-1">
+              <span
+                class="admin-overview__result-value fs-3 fw-semibold"
+                [class.text-success]="resultTone(m) === 'success'"
+                [class.text-danger]="resultTone(m) === 'danger'"
+                data-testid="admin-overview-result"
+                >{{ money(m.revenueInPeriod - m.expenseInPeriod) }}</span
+              >
+              <span class="small text-body-secondary" i18n="@@featureAdminOverview-resultHint"
+                >Revenue minus expenses, gross</span
+              >
+            </div>
+          </fpc-panel>
+        }
+
+        @for (section of sections(); track section.id) {
+          <fpc-panel [title]="section.title" [attr.data-testid]="'admin-overview-section-' + section.id">
+            @if (showPageLinks()) {
+              <a fpcPanelActions class="small text-decoration-none" [routerLink]="section.link">{{ openLabel }}</a>
+            }
+            <fpc-key-value-list [items]="section.items" />
+          </fpc-panel>
+        }
+
+        @if (isAllTenants()) {
+          <fpc-panel [title]="tenantsTableTitle" [span]="3" flush>
+            <fpc-data-table
+              [ariaLabel]="tenantsTableTitle"
+              [columns]="tenantColumns"
+              [rows]="tenantRows()"
+              [rowId]="tenantRowId"
+              [searchable]="false"
+              [showColumnChooser]="false"
+              nested
+              (rowActivate)="onTenantRowActivate($event)"
+              emptyIcon="buildings"
+              data-testid="admin-overview-tenants-table"
+            />
+          </fpc-panel>
+        }
+      </fpc-panel-grid>
+    } @else if (!error()) {
+      <fpc-empty-state message="No data yet" i18n-message="@@featureAdminOverview-noData" />
+    }
+  </div>
+</div>

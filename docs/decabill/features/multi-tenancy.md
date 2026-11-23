@@ -89,6 +89,7 @@ Comma-separated tenant ids allowed to use **cross-tenant admin views**:
 
 - DATEV unified export access (also requires `BILLING_DATEV_UNIFIED_EXPORT_ENABLED`)
 - DATEV and File Explorer tenant switch (chip in the page header) plus Unified consolidation
+- [Admin Overview](./admin-overview.md): another tenant's figures, or all tenants with combined numbers and a per-tenant comparison
 - Settings: the overrides for all tenants and the settings of every configured tenant (tenant switch in the page header; see [Environment configuration](../deployment/environment-configuration.md#console-settings-overrides)). Other admins manage the tenant settings of their own tenant only.
 
 Default when unset: `default`. Operators keep their console `X-Tenant` as the home tenant; selected tabs send `viewTenantId` (or DATEV body field) which the API accepts only when the home tenant is allowlisted.
