@@ -60,6 +60,24 @@ describe('client-access.utils', () => {
       expect(result.userRole).toBe(UserRole.ADMIN);
     });
 
+    it('should return MANAGER role when user has manager (and not admin) in roles', () => {
+      const req = {
+        apiKeyAuthenticated: false,
+        user: { id: 'user-1', roles: ['manager'] },
+      } as RequestWithUser;
+
+      expect(getUserFromRequest(req).userRole).toBe(UserRole.MANAGER);
+    });
+
+    it('should not treat unknown roles (e.g. controller) as administrative', () => {
+      const req = {
+        apiKeyAuthenticated: false,
+        user: { id: 'user-1', roles: ['controller'] },
+      } as RequestWithUser;
+
+      expect(getUserFromRequest(req).userRole).toBe(UserRole.USER);
+    });
+
     it('should include amr and scopes from the request user', () => {
       const req = {
         apiKeyAuthenticated: false,
@@ -209,6 +227,36 @@ describe('client-access.utils', () => {
       expect(mockClientsRepository.findById).not.toHaveBeenCalled();
     });
 
+    it('should grant access for global manager', async () => {
+      const result = await checkClientAccess(
+        mockClientsRepository as any,
+        mockClientUsersRepository as any,
+        'client-1',
+        'user-1',
+        UserRole.MANAGER,
+        false,
+      );
+
+      expect(result).toEqual({ hasAccess: true, isClientCreator: false });
+      expect(mockClientsRepository.findById).not.toHaveBeenCalled();
+    });
+
+    it('should not grant global-manager bypass for PAT sessions', async () => {
+      mockClientsRepository.findById.mockResolvedValue(null);
+
+      const result = await checkClientAccess(
+        mockClientsRepository as any,
+        mockClientUsersRepository as any,
+        'client-1',
+        'user-1',
+        UserRole.MANAGER,
+        false,
+        { amr: ['pat'] },
+      );
+
+      expect(result).toEqual({ hasAccess: false, isClientCreator: false });
+    });
+
     it('should not grant global-admin bypass for PAT sessions', async () => {
       mockClientsRepository.findById.mockResolvedValue(null);
 
@@ -341,6 +389,27 @@ describe('client-access.utils', () => {
       };
 
       expect(canManageWorkspaceConfiguration(userInfo, { hasAccess: true, isClientCreator: false })).toBe(true);
+    });
+
+    it('returns true for global manager', () => {
+      const userInfo: UserInfoFromRequest = {
+        userId: 'u1',
+        userRole: UserRole.MANAGER,
+        isApiKeyAuth: false,
+      };
+
+      expect(canManageWorkspaceConfiguration(userInfo, { hasAccess: true, isClientCreator: false })).toBe(true);
+    });
+
+    it('returns false for PAT global manager without workspace membership', () => {
+      const userInfo: UserInfoFromRequest = {
+        userId: 'u1',
+        userRole: UserRole.MANAGER,
+        isApiKeyAuth: false,
+        amr: ['pat'],
+      };
+
+      expect(canManageWorkspaceConfiguration(userInfo, { hasAccess: false, isClientCreator: false })).toBe(false);
     });
 
     it('returns false for PAT global admin without workspace membership', () => {

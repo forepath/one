@@ -1,4 +1,9 @@
-import { RequireScopes, UserRole, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
+import {
+  getUserFromRequest,
+  isAdministrativeRole,
+  type RequestWithUser,
+  RequireScopes,
+} from '@forepath/identity/backend';
 import { Body, Controller, Delete, ForbiddenException, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
 
 import {
@@ -21,7 +26,7 @@ export class AdminOpencodeLayerFilesController {
       return;
     }
 
-    if (u.userRole !== UserRole.ADMIN) {
+    if (!isAdministrativeRole(u.userRole)) {
       throw new ForbiddenException('Admin only');
     }
   }

@@ -3,10 +3,11 @@ import {
   authenticateMtls,
   getAuthenticationMethod,
   MTLS_PRINCIPAL_ID,
+  normalizeConsoleUserRole,
   OidcTokenVerifier,
   patScopeSatisfied,
+  resolveUserRoleFromRoles,
   secretsEqual,
-  UserRole,
   websocketScope,
 } from '@forepath/identity/backend';
 import type { SocketUserInfo } from '@forepath/identity/backend';
@@ -208,7 +209,7 @@ export class SocketAuthService {
       // Role from the local users table (as on HTTP), never from IdP role claims.
       return {
         userId: user.id,
-        userRole: user.role === UserRole.ADMIN ? UserRole.ADMIN : UserRole.USER,
+        userRole: normalizeConsoleUserRole(user.role),
         isApiKeyAuth: false,
         amr,
         user: {
@@ -257,12 +258,11 @@ export class SocketAuthService {
       }
 
       const roles = payload.roles ?? ['user'];
-      const isAdmin = roles.includes('admin');
       const amr = payload.amr ?? ['pwd'];
 
       return {
         userId: payload.sub,
-        userRole: isAdmin ? UserRole.ADMIN : UserRole.USER,
+        userRole: resolveUserRoleFromRoles(roles),
         isApiKeyAuth: false,
         amr,
         user: {
@@ -320,7 +320,7 @@ export class SocketAuthService {
 
       return {
         userId: user.id,
-        userRole: user.role === UserRole.ADMIN ? UserRole.ADMIN : UserRole.USER,
+        userRole: normalizeConsoleUserRole(user.role),
         isApiKeyAuth: false,
         amr,
         scopes: session.scopes,

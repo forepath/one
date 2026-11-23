@@ -1,4 +1,5 @@
 import {
+  canManageUserAccount,
   createConfirmationCode,
   IDENTITY_EMAIL_DISPATCHER,
   IDENTITY_NOTIFICATION_PUBLISHER,
@@ -6,12 +7,15 @@ import {
   IIdentityEmailDispatcher,
   IIdentityNotificationPublisher,
   IIdentityStatisticsService,
+  USER_ACCOUNT_MANAGEMENT_FORBIDDEN_MESSAGE,
+  USER_ROLE_ASSIGNMENT_FORBIDDEN_MESSAGE,
   UserEntity,
   UserRole,
 } from '@forepath/identity/backend';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
@@ -25,6 +29,12 @@ import { UserResponseDto } from '../dto/auth/user-response.dto';
 import { UsersRepository } from '../repositories/users.repository';
 
 const BCRYPT_ROUNDS = 12;
+
+/**
+ * Role of the caller of an administrative user operation. `undefined` means a trusted internal caller
+ * (e.g. public registration through {@link AuthService}); the users controller always passes the caller's role.
+ */
+export type UserManagementActorRole = UserRole | undefined;
 
 @Injectable()
 export class UsersService {
@@ -82,7 +92,9 @@ export class UsersService {
    * `emailConfirmed` / `sendConfirmationEmail` are admin-only options (public registration never passes them):
    * by default a non-first user is unconfirmed and receives a confirmation code.
    */
-  async create(dto: CreateUserDto): Promise<UserResponseDto> {
+  async create(dto: CreateUserDto, actorRole?: UserManagementActorRole): Promise<UserResponseDto> {
+    this.assertCanAssignRole(actorRole, dto.role);
+
     const existing = await this.usersRepository.findByEmail(dto.email);
 
     if (existing) {
@@ -93,7 +105,8 @@ export class UsersService {
     const { user } = await this.usersRepository.createWithTenantBootstrap((first) => ({
       email: dto.email,
       passwordHash,
-      role: dto.role ?? (first ? UserRole.ADMIN : UserRole.USER),
+      // Managers only ever create regular users (never the tenant bootstrap admin).
+      role: actorRole === UserRole.MANAGER ? UserRole.USER : (dto.role ?? (first ? UserRole.ADMIN : UserRole.USER)),
       emailConfirmedAt: first || dto.emailConfirmed === true ? new Date() : undefined,
       emailConfirmationToken: undefined,
     }));
@@ -125,12 +138,15 @@ export class UsersService {
     return this.mapToResponseDto(user);
   }
 
-  async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
+  async update(id: string, dto: UpdateUserDto, actorRole?: UserManagementActorRole): Promise<UserResponseDto> {
     const user = await this.usersRepository.findByIdForTenant(id);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
+    this.assertCanManageAccount(actorRole, user);
+    this.assertCanAssignRole(actorRole, dto.role);
 
     const emailChanged = dto.email && dto.email.toLowerCase() !== user.email;
 
@@ -201,12 +217,14 @@ export class UsersService {
     return this.mapToResponseDto(updated);
   }
 
-  async remove(id: string, requestingUserId?: string): Promise<void> {
+  async remove(id: string, requestingUserId?: string, actorRole?: UserManagementActorRole): Promise<void> {
     const user = await this.usersRepository.findByIdForTenant(id);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
+    this.assertCanManageAccount(actorRole, user);
 
     this.statisticsService?.recordEntityDeleted('user', id, requestingUserId).catch(() => {
       /* fire and forget */
@@ -219,7 +237,11 @@ export class UsersService {
     await this.usersRepository.remove(id);
   }
 
-  async lockUser(targetUserId: string, actingUserId?: string): Promise<UserResponseDto> {
+  async lockUser(
+    targetUserId: string,
+    actingUserId?: string,
+    actorRole?: UserManagementActorRole,
+  ): Promise<UserResponseDto> {
     if (actingUserId && actingUserId === targetUserId) {
       throw new BadRequestException('You cannot lock your own account');
     }
@@ -230,12 +252,18 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
+    this.assertCanManageAccount(actorRole, user);
+
     const updated = await this.usersRepository.update(targetUserId, { lockedAt: new Date() });
 
     return this.mapToResponseDto(updated);
   }
 
-  async unlockUser(targetUserId: string, actingUserId?: string): Promise<UserResponseDto> {
+  async unlockUser(
+    targetUserId: string,
+    actingUserId?: string,
+    actorRole?: UserManagementActorRole,
+  ): Promise<UserResponseDto> {
     if (actingUserId && actingUserId === targetUserId) {
       throw new BadRequestException('You cannot unlock your own account');
     }
@@ -246,6 +274,8 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
+    this.assertCanManageAccount(actorRole, user);
+
     const updated = await this.usersRepository.update(targetUserId, { lockedAt: null });
 
     return this.mapToResponseDto(updated);
@@ -255,12 +285,14 @@ export class UsersService {
    * Admin: mark the user's email as confirmed without a code (e.g. accounts managed on the user's behalf).
    * Clears any outstanding confirmation code. Idempotent for already confirmed users.
    */
-  async confirmEmail(targetUserId: string): Promise<UserResponseDto> {
+  async confirmEmail(targetUserId: string, actorRole?: UserManagementActorRole): Promise<UserResponseDto> {
     const user = await this.usersRepository.findByIdForTenant(targetUserId);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
+    this.assertCanManageAccount(actorRole, user);
 
     if (user.emailConfirmedAt) {
       return this.mapToResponseDto(user);
@@ -284,12 +316,14 @@ export class UsersService {
     return this.mapToResponseDto(updated);
   }
 
-  async clearTotp(targetUserId: string): Promise<{ message: string }> {
+  async clearTotp(targetUserId: string, actorRole?: UserManagementActorRole): Promise<{ message: string }> {
     const user = await this.usersRepository.findByIdForTenant(targetUserId);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
+    this.assertCanManageAccount(actorRole, user);
 
     await this.usersRepository.update(user.id, {
       totpSecret: null,
@@ -298,6 +332,26 @@ export class UsersService {
     await this.usersRepository.incrementTokenVersion(user.id);
 
     return { message: 'Authenticator two-factor authentication removed for user.' };
+  }
+
+  /** Managers may only manage regular user accounts; admins (and trusted internal callers) any account. */
+  private assertCanManageAccount(actorRole: UserManagementActorRole, target: UserEntity): void {
+    if (actorRole !== undefined && !canManageUserAccount(actorRole, target.role)) {
+      throw new ForbiddenException(USER_ACCOUNT_MANAGEMENT_FORBIDDEN_MESSAGE);
+    }
+  }
+
+  /** Only admins (and trusted internal callers) may grant roles other than `user`; managers only `user`. */
+  private assertCanAssignRole(actorRole: UserManagementActorRole, role: UserRole | undefined): void {
+    if (actorRole === undefined || actorRole === UserRole.ADMIN) {
+      return;
+    }
+
+    if (actorRole === UserRole.MANAGER && (role === undefined || role === UserRole.USER)) {
+      return;
+    }
+
+    throw new ForbiddenException(USER_ROLE_ASSIGNMENT_FORBIDDEN_MESSAGE);
   }
 
   async validatePassword(plainPassword: string, hash: string): Promise<boolean> {

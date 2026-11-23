@@ -1,7 +1,13 @@
 import type { Server as HttpServer } from 'http';
 import { parse as parseUrl } from 'url';
 
-import { ClientUsersRepository, ensureClientAccess, type RequestWithUser, UserRole } from '@forepath/identity/backend';
+import {
+  ClientUsersRepository,
+  ensureClientAccess,
+  normalizeConsoleUserRole,
+  type RequestWithUser,
+  UserRole,
+} from '@forepath/identity/backend';
 import { resolveWebsocketCorsOriginEnv } from '@forepath/shared/shared/util-network-address';
 import { Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
 import type { Server as SocketIoServer } from 'socket.io';
@@ -176,7 +182,7 @@ export class VncGateway implements OnApplicationBootstrap, OnModuleDestroy {
     return {
       user: {
         id: record.subject,
-        roles: record.userRole === UserRole.ADMIN ? [UserRole.ADMIN] : [UserRole.USER],
+        roles: [normalizeConsoleUserRole(record.userRole)],
         // Keeps PAT / app token tickets on membership checks (no console-admin bypass).
         ...(record.amr ? { amr: record.amr } : {}),
       },

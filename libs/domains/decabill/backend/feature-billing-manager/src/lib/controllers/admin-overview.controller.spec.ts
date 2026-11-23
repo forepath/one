@@ -8,8 +8,8 @@ describe('AdminOverviewController', () => {
 
   beforeEach(() => jest.clearAllMocks());
 
-  it('is restricted to admins with the billing:admin scope', () => {
-    expect(Reflect.getMetadata(USERS_ROLES_KEY, AdminOverviewController)).toEqual([UserRole.ADMIN]);
+  it('is restricted to admins and managers with the billing:admin scope', () => {
+    expect(Reflect.getMetadata(USERS_ROLES_KEY, AdminOverviewController)).toEqual([UserRole.ADMIN, UserRole.MANAGER]);
     expect(Reflect.getMetadata(REQUIRE_SCOPES_KEY, AdminOverviewController)).toEqual(['billing:admin']);
   });
 

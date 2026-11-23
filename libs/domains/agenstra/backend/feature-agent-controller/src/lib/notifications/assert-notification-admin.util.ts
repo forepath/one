@@ -1,11 +1,16 @@
-import { UserRole, assertPatScopes, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
+import {
+  assertPatScopes,
+  getUserFromRequest,
+  isAdministrativeRole,
+  type RequestWithUser,
+} from '@forepath/identity/backend';
 import { ForbiddenException } from '@nestjs/common';
 import type { Request } from 'express';
 
 export function assertNotificationAdmin(req: Request): void {
   const u = getUserFromRequest(req as RequestWithUser);
 
-  if (!u.isApiKeyAuth && u.userRole !== UserRole.ADMIN) {
+  if (!u.isApiKeyAuth && !isAdministrativeRole(u.userRole)) {
     throw new ForbiddenException('Admin only');
   }
 

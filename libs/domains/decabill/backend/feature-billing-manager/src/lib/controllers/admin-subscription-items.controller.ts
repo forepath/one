@@ -13,7 +13,7 @@ import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../utils/
 import { toServerInfoResponse } from '../utils/subscription-item-response.utils';
 
 @Controller('admin/billing/subscriptions/:subscriptionId/items')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminSubscriptionItemsController {
   constructor(private readonly subscriptionItemServerService: SubscriptionItemServerService) {}
 

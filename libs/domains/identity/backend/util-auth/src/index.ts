@@ -28,6 +28,7 @@ export * from './lib/entities/identity-app-session.entity';
 export * from './lib/entities/identity-app-authorization-code.entity';
 export * from './lib/entities/external-auth-state.entity';
 export * from './lib/entities/user.entity';
+export * from './lib/user-role.utils';
 export * from './lib/password.service';
 export * from './lib/statistics.interface';
 export * from './lib/notification.interface';

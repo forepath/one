@@ -66,7 +66,8 @@ export function auditPatRouteScopes(
       }
 
       const scopes = read<string[]>(REQUIRE_SCOPES_KEY) ?? [];
-      const roleGatedAdmin = (read<UserRole[]>(USERS_ROLES_KEY) ?? []).includes(UserRole.ADMIN);
+      const gatedRoles = read<UserRole[]>(USERS_ROLES_KEY) ?? [];
+      const roleGatedAdmin = gatedRoles.includes(UserRole.ADMIN) || gatedRoles.includes(UserRole.MANAGER);
       const isAdminRoute = roleGatedAdmin || inCodeAdmin.has(controller) || inCodeAdminRoutes.has(route);
 
       if (inCodeAdminRoutes.has(route)) {

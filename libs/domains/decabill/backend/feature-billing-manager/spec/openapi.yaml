@@ -5,6 +5,10 @@ info:
   description: |
     HTTP API for billing, subscriptions, and provisioning.
 
+    **Roles:** operations documented as admin-only are also available to the `manager` role, except tenant / system
+    settings, identity app management (`/apps`) and managing the accounts (and tokens) of managers and admins, which
+    stay reserved to admins.
+
     Operator plugin `nestModule` routes are **not** merged into this first-party OpenAPI document.
     Container Manager paths and operationIds stay first-party and unchanged.
 
@@ -1944,6 +1948,29 @@ paths:
             application/samlmetadata+xml:
               schema:
                 type: string
+  /auth/role:
+    get:
+      summary: Console role of the current user
+      description: >
+        Role from the local users table (OIDC sessions carry no local role claim). Interactive sessions only.
+      operationId: getSessionRole
+      responses:
+        '200':
+          description: Current role
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [role]
+                properties:
+                  role:
+                    $ref: '#/components/schemas/UserRole'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/token-scopes:
     get:
       summary: List grantable PAT scopes for the current user
@@ -2073,7 +2100,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /users/{id}/2fa/totp:
     delete:
-      summary: Admin remove authenticator 2FA from a user
+      summary: Admin / manager remove authenticator 2FA from a user
       operationId: adminClearUserTotp
       security:
         - bearerAuth: [users:admin]
@@ -2240,6 +2267,7 @@ paths:
         '404':
           description: Authorization not found
   /apps:
+    description: Admins only (not available to managers).
     get:
       summary: List apps (admin, interactive session)
       operationId: listIdentityApps
@@ -2429,7 +2457,7 @@ paths:
           description: Authorization not found
   /users/{userId}/tokens:
     get:
-      summary: List personal access tokens for a user (admin)
+      summary: List personal access tokens for a user (admin or manager)
       operationId: listUserPersonalAccessTokens
       parameters:
         - in: path
@@ -2449,7 +2477,7 @@ paths:
                   $ref: '#/components/schemas/PersonalAccessTokenResponseDto'
   /users/{userId}/tokens/{tokenId}:
     delete:
-      summary: Revoke a user's personal access token (admin)
+      summary: Revoke a user's personal access token (admin or manager)
       operationId: revokeUserPersonalAccessToken
       parameters:
         - in: path
@@ -2468,8 +2496,11 @@ paths:
         '204':
           description: Revoked
   /users:
+    description: >
+      Admins manage every account. Managers may list all accounts but only create regular users and only
+      update, lock, unlock, confirm, reset 2FA of, delete, or manage tokens of regular users (403 otherwise).
     get:
-      summary: List users (admin only)
+      summary: List users (admin or manager)
       operationId: listUsers
       security:
         - bearerAuth: [users:admin]
@@ -2498,7 +2529,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     post:
-      summary: Create user (admin only)
+      summary: Create user (admin or manager)
       operationId: createUser
       security:
         - bearerAuth: [users:admin]
@@ -2535,7 +2566,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /users/{id}:
     get:
-      summary: Get user (admin only)
+      summary: Get user (admin or manager)
       operationId: getUser
       security:
         - bearerAuth: [users:admin]
@@ -2567,7 +2598,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     post:
-      summary: Update user (admin only)
+      summary: Update user (admin or manager)
       operationId: updateUser
       security:
         - bearerAuth: [users:admin]
@@ -2611,7 +2642,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     delete:
-      summary: Delete user (admin only)
+      summary: Delete user (admin or manager)
       operationId: deleteUser
       security:
         - bearerAuth: [users:admin]
@@ -2640,7 +2671,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /users/{id}/lock:
     post:
-      summary: Lock user account (admin only)
+      summary: Lock user account (admin or manager)
       operationId: lockUser
       security:
         - bearerAuth: [users:admin]
@@ -2666,7 +2697,7 @@ paths:
           description: User not found
   /users/{id}/unlock:
     post:
-      summary: Unlock user account (admin only)
+      summary: Unlock user account (admin or manager)
       operationId: unlockUser
       security:
         - bearerAuth: [users:admin]
@@ -2692,7 +2723,7 @@ paths:
           description: User not found
   /users/{id}/confirm-email:
     post:
-      summary: Confirm a user's email (admin only)
+      summary: Confirm a user's email (admin or manager)
       operationId: confirmUserEmail
       security:
         - bearerAuth: [users:admin]
@@ -6987,6 +7018,7 @@ paths:
         '403':
           description: Admin access required, or cross-tenant view not allowed for this tenant
   /admin/billing/settings:
+    description: Admins only (not available to managers).
     get:
       tags: [Admin Billing]
       summary: Overridable settings with their effective sources (admin only)
@@ -12489,7 +12521,10 @@ components:
           format: date-time
     UserRole:
       type: string
-      enum: [user, admin]
+      description: >
+        Console role. `manager` has administrative access like `admin`, except tenant / system settings,
+        identity apps and managing the accounts of managers and admins.
+      enum: [user, manager, admin]
     ProviderDetail:
       type: object
       required: [id, displayName]

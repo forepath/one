@@ -312,7 +312,13 @@ import {
   redeemPromotion$,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { buildPageTitle } from '@forepath/decabill/frontend/util-configuration';
-import { authGuard, adminGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/identity/frontend';
+import {
+  adminGuard,
+  adminOnlyGuard,
+  authGuard,
+  identityAuthProviders,
+  identityAuthRoutes,
+} from '@forepath/identity/frontend';
 import {
   createNotificationAdminRoutes,
   notificationAdminProviders,
@@ -743,7 +749,7 @@ export const billingConsoleRoutes: Route[] = [
             component: AdminFileManagerPageComponent,
             title: () => buildPageTitle($localize`:@@featureContainer-adminFileExplorerPage:File explorer`),
           },
-          ...createSettingsAdminRoutes([authGuard, billingAdminGuard], 'settings'),
+          ...createSettingsAdminRoutes([authGuard, adminOnlyGuard], 'settings'),
           ...contributorRoutes.admin,
         ],
       },

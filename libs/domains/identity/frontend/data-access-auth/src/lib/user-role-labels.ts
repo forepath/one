@@ -5,6 +5,8 @@ export function getUserRoleLabel(role: UserRole | string | null | undefined): st
   switch (role) {
     case 'admin':
       return $localize`:@@featureUserManager-roleAdmin:Admin`;
+    case 'manager':
+      return $localize`:@@featureUserManager-roleManager:Manager`;
     case 'user':
       return $localize`:@@featureUserManager-roleUser:User`;
     default:

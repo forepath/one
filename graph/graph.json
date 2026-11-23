@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-22T09:27:48.946Z",
+  "generatedAt": "2026-11-23T06:51:06.939Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -3658,6 +3658,23 @@
           "admin-offers.facade.ts",
           "admin-offers.reducer.ts",
           "admin-offers.selectors.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-overview",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-overview",
+        "languageOrKind": "ts",
+        "projectName": "decabill-frontend-data-access-billing-console",
+        "sliceName": "admin-overview",
+        "memberFiles": [
+          "admin-overview.actions.ts",
+          "admin-overview.effects.ts",
+          "admin-overview.facade.ts",
+          "admin-overview.reducer.ts",
+          "admin-overview.selectors.ts"
         ]
       }
     },
@@ -8579,6 +8596,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-overview.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-overview.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-promotions.controller.ts",
       "type": "controller",
       "attrs": {
@@ -8826,6 +8852,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/admin-file-manager.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/admin-overview.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/admin-overview.dto.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -11337,6 +11372,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -14711,6 +14755,15 @@
       }
     },
     {
+      "id": "file:libs/domains/identity/frontend/feature-auth/src/lib/guards/admin-only.guard.ts",
+      "type": "guard",
+      "attrs": {
+        "path": "libs/domains/identity/frontend/feature-auth/src/lib/guards/admin-only.guard.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-frontend-feature-auth"
+      }
+    },
+    {
       "id": "file:libs/domains/identity/frontend/feature-auth/src/lib/guards/admin.guard.ts",
       "type": "guard",
       "attrs": {
@@ -14940,6 +14993,15 @@
       "type": "controller",
       "attrs": {
         "path": "libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-feature-auth"
       }
@@ -17124,6 +17186,14 @@
       }
     },
     {
+      "id": "file:docs/decabill/features/admin-overview.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/admin-overview.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/decabill/features/advance-billing-and-yearly-interval.md",
       "type": "doc",
       "attrs": {
@@ -18311,6 +18381,17 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/auth/role",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/auth/role",
+        "operationId": "getSessionRole",
+        "summary": "Console role of the current user",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/auth/token-scopes",
       "type": "endpoint",
       "attrs": {
@@ -18526,7 +18607,7 @@
         "method": "GET",
         "pathOrChannel": "/users/{userId}/tokens",
         "operationId": "listUserPersonalAccessTokens",
-        "summary": "List personal access tokens for a user (admin)",
+        "summary": "List personal access tokens for a user (admin or manager)",
         "specKind": "openapi"
       }
     },
@@ -18537,7 +18618,7 @@
         "method": "DELETE",
         "pathOrChannel": "/users/{userId}/tokens/{tokenId}",
         "operationId": "revokeUserPersonalAccessToken",
-        "summary": "Revoke a user's personal access token (admin)",
+        "summary": "Revoke a user's personal access token (admin or manager)",
         "specKind": "openapi"
       }
     },
@@ -18548,7 +18629,7 @@
         "method": "GET",
         "pathOrChannel": "/users",
         "operationId": "listUsers",
-        "summary": "List users (admin only)",
+        "summary": "List users (admin or manager)",
         "specKind": "openapi"
       }
     },
@@ -18559,7 +18640,7 @@
         "method": "POST",
         "pathOrChannel": "/users",
         "operationId": "createUser",
-        "summary": "Create user (admin only)",
+        "summary": "Create user (admin or manager)",
         "specKind": "openapi"
       }
     },
@@ -18570,7 +18651,7 @@
         "method": "GET",
         "pathOrChannel": "/users/{id}",
         "operationId": "getUser",
-        "summary": "Get user by id (admin only)",
+        "summary": "Get user by id (admin or manager)",
         "specKind": "openapi"
       }
     },
@@ -18581,7 +18662,7 @@
         "method": "POST",
         "pathOrChannel": "/users/{id}",
         "operationId": "updateUser",
-        "summary": "Update user (admin only)",
+        "summary": "Update user (admin or manager)",
         "specKind": "openapi"
       }
     },
@@ -18592,7 +18673,7 @@
         "method": "DELETE",
         "pathOrChannel": "/users/{id}",
         "operationId": "deleteUser",
-        "summary": "Delete user (admin only)",
+        "summary": "Delete user (admin or manager)",
         "specKind": "openapi"
       }
     },
@@ -18603,7 +18684,7 @@
         "method": "POST",
         "pathOrChannel": "/users/{id}/lock",
         "operationId": "lockUser",
-        "summary": "Lock user account (admin only)",
+        "summary": "Lock user account (admin or manager)",
         "specKind": "openapi"
       }
     },
@@ -18614,7 +18695,7 @@
         "method": "POST",
         "pathOrChannel": "/users/{id}/unlock",
         "operationId": "unlockUser",
-        "summary": "Unlock user account (admin only)",
+        "summary": "Unlock user account (admin or manager)",
         "specKind": "openapi"
       }
     },
@@ -18625,7 +18706,7 @@
         "method": "POST",
         "pathOrChannel": "/users/{id}/confirm-email",
         "operationId": "confirmUserEmail",
-        "summary": "Confirm a user's email (admin only)",
+        "summary": "Confirm a user's email (admin or manager)",
         "specKind": "openapi"
       }
     },
@@ -18636,7 +18717,7 @@
         "method": "DELETE",
         "pathOrChannel": "/users/{id}/2fa/totp",
         "operationId": "adminClearUserTotp",
-        "summary": "Admin remove authenticator 2FA from a user",
+        "summary": "Admin / manager remove authenticator 2FA from a user",
         "specKind": "openapi"
       }
     },
@@ -24316,6 +24397,17 @@
         "pathOrChannel": "/admin/billing/capabilities",
         "operationId": "getAdminBillingCapabilities",
         "summary": "Billing feature capabilities for admin UI (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/overview",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/overview",
+        "operationId": "getAdminBillingOverview",
+        "summary": "Key figures of a tenant or all tenants for the admin overview (admin only)",
         "specKind": "openapi"
       }
     },
@@ -36830,6 +36922,46 @@
       }
     },
     {
+      "id": "concept:decabill-admin-overview",
+      "type": "concept",
+      "attrs": {
+        "title": "Admin Overview",
+        "docPath": "docs/decabill/features/admin-overview.md",
+        "sectionAnchor": "admin-overview",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-tenants-and-combined-numbers",
+      "type": "concept",
+      "attrs": {
+        "title": "Tenants and combined numbers",
+        "docPath": "docs/decabill/features/admin-overview.md",
+        "sectionAnchor": "tenants-and-combined-numbers",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-access",
+      "type": "concept",
+      "attrs": {
+        "title": "Access",
+        "docPath": "docs/decabill/features/admin-overview.md",
+        "sectionAnchor": "access",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-related",
+      "type": "concept",
+      "attrs": {
+        "title": "Related",
+        "docPath": "docs/decabill/features/admin-overview.md",
+        "sectionAnchor": "related",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-advance-billing-and-yearly-interval",
       "type": "concept",
       "attrs": {
@@ -37566,16 +37698,6 @@
         "title": "Realtime",
         "docPath": "docs/decabill/features/container-manager.md",
         "sectionAnchor": "realtime",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-related",
-      "type": "concept",
-      "attrs": {
-        "title": "Related",
-        "docPath": "docs/decabill/features/container-manager.md",
-        "sectionAnchor": "related",
         "domain": "decabill"
       }
     },
@@ -39866,16 +39988,6 @@
         "title": "Webhooks (Decabill)",
         "docPath": "docs/decabill/features/webhooks.md",
         "sectionAnchor": "webhooks-decabill",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-access",
-      "type": "concept",
-      "attrs": {
-        "title": "Access",
-        "docPath": "docs/decabill/features/webhooks.md",
-        "sectionAnchor": "access",
         "domain": "decabill"
       }
     },
@@ -45013,6 +45125,11 @@
     },
     {
       "from": "project:decabill-frontend-data-access-billing-console",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-overview",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-frontend-data-access-billing-console",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-promotions",
       "type": "contains"
     },
@@ -47448,6 +47565,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-overview.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-promotions.controller.ts",
       "type": "contains"
     },
@@ -47584,6 +47706,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/admin-file-manager.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/admin-overview.dto.ts",
       "type": "contains"
     },
     {
@@ -48979,6 +49106,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
       "type": "contains"
     },
     {
@@ -50823,6 +50955,11 @@
     },
     {
       "from": "project:identity-frontend-feature-auth",
+      "to": "file:libs/domains/identity/frontend/feature-auth/src/lib/guards/admin-only.guard.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-frontend-feature-auth",
       "to": "file:libs/domains/identity/frontend/feature-auth/src/lib/guards/admin.guard.ts",
       "type": "contains"
     },
@@ -50949,6 +51086,11 @@
     {
       "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
       "type": "contains"
     },
     {
@@ -52004,6 +52146,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:GET:/auth/saml/metadata",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/auth/role",
       "type": "contains"
     },
     {
@@ -54178,6 +54325,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/auth/role",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/auth/token-scopes",
       "type": "contains"
     },
@@ -55074,6 +55226,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/admin/billing/capabilities",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/overview",
       "type": "contains"
     },
     {
@@ -62617,6 +62774,31 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/decabill/features/admin-overview.md",
+      "to": "concept:decabill-admin-overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/admin-overview.md",
+      "to": "concept:decabill-overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/admin-overview.md",
+      "to": "concept:decabill-tenants-and-combined-numbers",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/admin-overview.md",
+      "to": "concept:decabill-access",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/admin-overview.md",
+      "to": "concept:decabill-related",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/decabill/features/advance-billing-and-yearly-interval.md",
       "to": "concept:decabill-advance-billing-and-yearly-interval",
       "type": "contains"
@@ -62994,6 +63176,11 @@
     {
       "from": "file:docs/decabill/features/billing-administration.md",
       "to": "concept:decabill-datev-accounts-payable",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/billing-administration.md",
+      "to": "concept:decabill-admin-overview",
       "type": "contains"
     },
     {
@@ -70198,6 +70385,16 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/overview",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/overview",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/settings",
       "type": "implements"
     },
@@ -71642,6 +71839,11 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-overview.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/overview",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-promotions.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/promotions",
       "type": "implements"
@@ -72199,6 +72401,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/capabilities",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/overview",
       "type": "implements"
     },
     {
@@ -76813,6 +77020,16 @@
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/role",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:GET:/auth/role",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
       "to": "api:HTTP:GET:/auth/token-scopes",
       "type": "implements"
     },
@@ -77143,6 +77360,11 @@
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:GET:/auth/role",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
       "to": "api:HTTP:GET:/auth/token-scopes",
       "type": "implements"
     },
@@ -77283,6 +77505,11 @@
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/role",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
       "to": "api:HTTP:GET:/auth/token-scopes",
       "type": "implements"
     },
@@ -77328,6 +77555,151 @@
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/saml-auth.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/apps/grants/{grantId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/login",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:GET:/auth/2fa",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/2fa/email/enable",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/2fa/email",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/2fa/totp/setup",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/2fa/totp/confirm",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/2fa/totp",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/token",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/confirm-email",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/request-password-reset",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/reset-password",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/change-password",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/logout",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:GET:/auth/saml/login",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/saml/acs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/saml/token",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:GET:/auth/saml/metadata",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:GET:/auth/role",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:GET:/auth/token-scopes",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:GET:/auth/tokens",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/tokens",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:PATCH:/auth/tokens/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/tokens/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/apps/token",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:GET:/auth/apps/authorize",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:POST:/auth/apps/authorize",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "api:HTTP:GET:/auth/apps/grants",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
       "to": "api:HTTP:DELETE:/auth/apps/grants/{grantId}",
       "type": "implements"
     },
@@ -79837,6 +80209,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-overview.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-promotions.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/promotion-admin.service.ts",
       "type": "injects"
@@ -81424,6 +81801,66 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-signing-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tenants-global-views-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-tenant.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-admin.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/invoices.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/subscriptions.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/customer-profiles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/supplier-profiles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/supplier-invoices.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/repositories/projects.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/repositories/project-tickets.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-articles.service.ts",
       "type": "injects"
     },
     {
@@ -84827,6 +85264,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/session-role.controller.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/users.controller.ts",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/users.service.ts",
       "type": "injects"
@@ -86163,6 +86605,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-overview.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/payments-webhook.controller.ts",
       "type": "provides"
     },
@@ -86454,6 +86901,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-overview.service.ts",
       "type": "provides"
     },
     {
@@ -88179,6 +88631,11 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
       "to": "api:HTTP:GET:/admin/billing/summary",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:GET:/admin/billing/overview",
       "type": "calls"
     },
     {
@@ -90028,12 +90485,17 @@
     },
     {
       "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
-      "to": "api:HTTP:GET:/users",
+      "to": "api:HTTP:GET:/auth/role",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
       "to": "api:HTTP:POST:/auth/logout",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
+      "to": "api:HTTP:GET:/users",
       "type": "calls"
     },
     {
@@ -92262,6 +92724,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-user-roles",
+      "to": "api:HTTP:GET:/admin/settings",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-admin-user-management",
       "to": "api:HTTP:GET:/users",
       "type": "documents"
@@ -94382,6 +94849,21 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-admin-overview",
+      "to": "api:HTTP:GET:/admin/billing/overview",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-access",
+      "to": "api:HTTP:GET:/admin/billing/webhooks",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-access",
+      "to": "api:HTTP:POST:/admin/billing/webhooks",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-usage-based-billing",
       "to": "api:HTTP:POST:/admin/usage/record",
       "type": "documents"
@@ -94559,6 +95041,11 @@
     {
       "from": "concept:decabill-disabling-signup",
       "to": "api:HTTP:POST:/users",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-user-roles",
+      "to": "api:HTTP:GET:/admin/billing/settings",
       "type": "documents"
     },
     {
@@ -97827,16 +98314,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-access",
-      "to": "api:HTTP:GET:/admin/billing/webhooks",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-access",
-      "to": "api:HTTP:POST:/admin/billing/webhooks",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-event-catalog",
       "to": "api:HTTP:GET:/service-types",
       "type": "documents"
@@ -99923,6 +100400,11 @@
     },
     {
       "from": "file:docs/decabill/features/addons.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/features/admin-overview.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -103932,6 +104414,26 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:decabill-admin-overview",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-tenants-and-combined-numbers",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-access",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:decabill-advance-billing-and-yearly-interval",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -104298,11 +104800,6 @@
     },
     {
       "from": "concept:decabill-realtime",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-related",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -105448,11 +105945,6 @@
     },
     {
       "from": "concept:decabill-webhooks-decabill",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-access",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

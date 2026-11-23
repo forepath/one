@@ -1,4 +1,4 @@
-import { UserRole } from '@forepath/identity/backend';
+import { isAdministrativeRole } from '@forepath/identity/backend';
 
 import type { RequestWithUser } from './billing-access.utils';
 import { getUserFromRequest } from './billing-access.utils';
@@ -9,7 +9,7 @@ import { getUserFromRequest } from './billing-access.utils';
  */
 export const INTERNAL_PRICING_KEYS = ['basePrice', 'marginPercent', 'marginFixed'] as const;
 
-/** Admins and the static API key (full access) see internal pricing; customers and anonymous callers do not. */
+/** Admins, managers and the static API key (full access) see internal pricing; customers and anonymous callers do not. */
 export function canViewInternalPricing(req: RequestWithUser | undefined): boolean {
   if (!req) {
     return false;
@@ -17,7 +17,7 @@ export function canViewInternalPricing(req: RequestWithUser | undefined): boolea
 
   const user = getUserFromRequest(req);
 
-  return user.isApiKeyAuth || user.userRole === UserRole.ADMIN;
+  return user.isApiKeyAuth || isAdministrativeRole(user.userRole);
 }
 
 /** Shallow copy without the internal pricing keys (pricing snapshots, pricing previews). */

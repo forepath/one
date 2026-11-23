@@ -6,7 +6,7 @@ import { type InventoryLabelOwnerResponseDto, PrintInventoryLabelsDto } from '..
 import { InventoryLabelsService } from '../services/inventory-labels.service';
 
 @Controller('admin/billing/inventory/labels')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminInventoryLabelsController {
   constructor(private readonly labels: InventoryLabelsService) {}
 

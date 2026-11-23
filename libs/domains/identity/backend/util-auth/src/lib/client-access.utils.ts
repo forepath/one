@@ -7,6 +7,7 @@ import type { ClientEntityLike } from './entities/client.entity.types';
 import { UserRole } from './entities/user.entity';
 import { getMissingPatScopes } from './identity-pat.scopes';
 import type { MtlsClientPrincipal } from './mtls/mtls-certificate';
+import { isAdministrativeRole, resolveUserRoleFromRoles } from './user-role.utils';
 
 /** Minimal interface for client access check - findById */
 export interface ClientAccessClientsRepository {
@@ -94,7 +95,7 @@ export const WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE = 'Workspace admin or owner 
 
 /**
  * Whether the caller may mutate workspace configuration (autonomy, env vars, agents, client settings).
- * API key and global admins may always manage; otherwise workspace creator or client_users admin may manage.
+ * API key and global admins / managers may always manage; otherwise workspace creator or client_users admin may manage.
  */
 export function canManageWorkspaceConfiguration(userInfo: UserInfoFromRequest, access: ClientAccessResult): boolean {
   if (userInfo.isApiKeyAuth) {
@@ -102,7 +103,7 @@ export function canManageWorkspaceConfiguration(userInfo: UserInfoFromRequest, a
   }
 
   // PAT sessions must not inherit console admin powers from the JWT role claim alone.
-  if (userInfo.userRole === UserRole.ADMIN && !(userInfo.amr ?? []).includes('pat')) {
+  if (isAdministrativeRole(userInfo.userRole) && !(userInfo.amr ?? []).includes('pat')) {
     return true;
   }
 
@@ -203,11 +204,7 @@ export function getUserFromRequest(req: RequestWithUser): UserInfoFromRequest {
     return { isApiKeyAuth: false };
   }
 
-  let userRole: UserRole = UserRole.USER;
-
-  if (user.roles?.includes('admin') || user.roles?.includes(UserRole.ADMIN)) {
-    userRole = UserRole.ADMIN;
-  }
+  const userRole: UserRole = resolveUserRoleFromRoles(user.roles);
 
   return {
     userId: user.id,
@@ -261,8 +258,8 @@ export async function checkClientAccess(
     return { hasAccess: false, isClientCreator: false };
   }
 
-  // Console admins bypass membership; PAT JWTs must not inherit that via role alone.
-  if (userRole === UserRole.ADMIN && !(options?.amr ?? []).includes('pat')) {
+  // Console admins / managers bypass membership; PAT JWTs must not inherit that via role alone.
+  if (isAdministrativeRole(userRole) && !(options?.amr ?? []).includes('pat')) {
     return { hasAccess: true, isClientCreator: false };
   }
 

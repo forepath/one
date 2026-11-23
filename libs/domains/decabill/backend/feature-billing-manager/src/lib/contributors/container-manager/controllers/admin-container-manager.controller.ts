@@ -11,7 +11,7 @@ import type {
 import { ContainerManagerService } from '../services/container-manager.service';
 
 @Controller('admin/billing/subscriptions/:subscriptionId/items/:itemId/container-manager')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminContainerManagerController {
   constructor(private readonly containerManagerService: ContainerManagerService) {}
 

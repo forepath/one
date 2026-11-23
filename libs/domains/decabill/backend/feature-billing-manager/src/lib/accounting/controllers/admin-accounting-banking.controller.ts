@@ -57,7 +57,7 @@ const MAX_UPLOAD_BYTES = 200 * 1024 * 1024;
  * shared accounts and other tenants need global views.
  */
 @Controller('admin/billing/accounting/banking')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 @UseGuards(AccountingEnabledGuard)
 export class AdminAccountingBankingController {
   constructor(

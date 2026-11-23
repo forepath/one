@@ -260,7 +260,13 @@ import {
   loadDeploymentConnectionOptions$,
   writeFile$,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
-import { adminGuard, authGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/identity/frontend';
+import {
+  adminGuard,
+  adminOnlyGuard,
+  authGuard,
+  identityAuthProviders,
+  identityAuthRoutes,
+} from '@forepath/identity/frontend';
 import {
   createNotificationAdminRoutes,
   notificationAdminProviders,
@@ -306,7 +312,7 @@ export const agentConsoleRoutes: Route[] = [
       ...identityAuthRoutes,
       ...createNotificationAdminRoutes([authGuard, adminGuard]),
       ...createUpdatesAdminRoutes([authGuard, adminGuard]),
-      ...createSettingsAdminRoutes([authGuard, adminGuard], 'system-settings'),
+      ...createSettingsAdminRoutes([authGuard, adminOnlyGuard], 'system-settings'),
       {
         path: 'audit',
         canActivate: [authGuard],

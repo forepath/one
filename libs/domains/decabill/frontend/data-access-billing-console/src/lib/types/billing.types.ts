@@ -22,7 +22,7 @@ export type SubscriptionStatus =
 
 export type BackorderStatus = 'pending' | 'retrying' | 'fulfilled' | 'cancelled' | 'failed';
 
-export type UserRole = 'user' | 'admin';
+export type UserRole = 'user' | 'manager' | 'admin';
 
 // Provider details (GET /service-types/providers)
 export interface ProviderEnvDefaultField {

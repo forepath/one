@@ -407,7 +407,7 @@ export class InvoicesController {
 
   @RequireScopes('invoices:admin')
   @Post(':subscriptionId')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async create(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
     @Body() dto: CreateInvoiceDto,
@@ -432,7 +432,7 @@ export class InvoicesController {
 
   @RequireScopes('invoices:admin')
   @Post(':subscriptionId/ref/:invoiceRefId/void')
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   async voidInvoice(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,

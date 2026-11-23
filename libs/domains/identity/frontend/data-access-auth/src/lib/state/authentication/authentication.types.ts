@@ -4,7 +4,40 @@
 
 export type AuthenticationType = 'api-key' | 'mtls' | 'users' | 'oidc' | 'saml';
 
-export type UserRole = 'user' | 'admin';
+/**
+ * Console roles. Managers use the administration UI like admins, except tenant / system settings, identity apps
+ * and the accounts of other managers and admins (the API enforces this; the UI only hides what is not allowed).
+ */
+export type UserRole = 'user' | 'manager' | 'admin';
+
+/** Highest console role among JWT / API role values (admin > manager > user). */
+export function resolveUserRole(roles: readonly unknown[] | null | undefined): UserRole {
+  if (!Array.isArray(roles)) {
+    return 'user';
+  }
+
+  if (roles.includes('admin')) {
+    return 'admin';
+  }
+
+  if (roles.includes('manager')) {
+    return 'manager';
+  }
+
+  return 'user';
+}
+
+/** Whether `actorRole` may manage (edit, lock, delete, …) an account with `targetRole`. */
+export function canManageUserAccount(
+  actorRole: string | null | undefined,
+  targetRole: string | null | undefined,
+): boolean {
+  if (actorRole === 'admin') {
+    return true;
+  }
+
+  return actorRole === 'manager' && targetRole === 'user';
+}
 
 export interface UserInfo {
   id: string;

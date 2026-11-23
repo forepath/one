@@ -23,7 +23,7 @@ import { AddSupplierProfileCustomDataDto, UpdateSupplierProfileCustomDataDto } f
 import { SupplierProfilesAdminService } from '../services/supplier-profiles-admin.service';
 
 @Controller('admin/billing/supplier-profiles')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 @RequireScopes('supplier_profile:admin')
 export class AdminSupplierProfilesController {
   constructor(private readonly supplierProfilesAdminService: SupplierProfilesAdminService) {}

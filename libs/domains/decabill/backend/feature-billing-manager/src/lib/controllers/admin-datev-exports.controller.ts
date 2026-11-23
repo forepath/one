@@ -25,7 +25,7 @@ import { DatevExportAdminService } from '../services/datev-export-admin.service'
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
 @Controller('admin/billing/datev-exports')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 @RequireScopes('datev:admin')
 @UseGuards(DatevExportEnabledGuard)
 export class AdminDatevExportsController {

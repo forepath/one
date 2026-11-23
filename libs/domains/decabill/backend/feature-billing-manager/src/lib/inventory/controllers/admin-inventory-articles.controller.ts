@@ -31,7 +31,7 @@ import { InventoryLocationsService } from '../services/inventory-locations.servi
 const UUID = new ParseUUIDPipe({ version: '4' });
 
 @Controller('admin/billing/inventory')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminInventoryArticlesController {
   constructor(
     private readonly articles: InventoryArticlesService,

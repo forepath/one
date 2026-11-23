@@ -33,7 +33,7 @@ import { parseMeterHistoryDateRange } from '../utils/meter-history-date.util';
 const METER_ENTRIES_MAX_LIMIT = 100;
 
 @Controller('admin/billing/subscriptions')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminSubscriptionMetersController {
   constructor(
     private readonly subscriptionsRepository: SubscriptionsRepository,

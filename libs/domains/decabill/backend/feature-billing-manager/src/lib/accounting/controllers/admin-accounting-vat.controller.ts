@@ -24,7 +24,7 @@ import { assertGlobalAccounting } from '../utils/accounting-scope.util';
 
 /** VAT returns of the active country profile (computed for manual filing). Entity-wide: global views only. */
 @Controller('admin/billing/accounting/vat-returns')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 @UseGuards(AccountingEnabledGuard)
 export class AdminAccountingVatController {
   constructor(

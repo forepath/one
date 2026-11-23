@@ -45,7 +45,7 @@ import {
 type AdminRequest = { user?: { id?: string } };
 
 @Controller('admin/billing')
-@UsersRoles(UserRole.ADMIN)
+@UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminSupplierInvoicesController {
   constructor(
     private readonly supplierInvoicesAdminService: SupplierInvoicesAdminService,

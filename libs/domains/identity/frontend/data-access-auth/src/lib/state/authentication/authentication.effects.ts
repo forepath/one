@@ -16,7 +16,7 @@ import {
   usesAppSessionJwt,
 } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, EMPTY, filter, from, map, of, switchMap, tap } from 'rxjs';
+import { catchError, EMPTY, filter, from, map, type Observable, of, switchMap, tap } from 'rxjs';
 
 import {
   consumePostLoginReturnUrl,
@@ -95,7 +95,7 @@ import {
   updateUserFailure,
   updateUserSuccess,
 } from './authentication.actions';
-import type { Login2faMethod } from './authentication.types';
+import { resolveUserRole, type Login2faMethod, type UserRole } from './authentication.types';
 
 const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
 const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
@@ -455,16 +455,14 @@ export const checkAuthentication$ = createEffect(
 
           const profile = oidcAuthService.getProfile();
           // Roles live in the API's users table (never in IdP claims): ask the API instead of reading the token.
-          const isAdmin$ = authService ? authService.probeAdminAccess() : of(false);
+          const role$: Observable<UserRole> = authService ? authService.getSessionRole() : of<UserRole>('user');
 
-          return isAdmin$.pipe(
-            map((isAdmin) =>
+          return role$.pipe(
+            map((role) =>
               checkAuthenticationSuccess({
                 isAuthenticated: true,
                 authenticationType: 'oidc',
-                user: profile
-                  ? { id: profile.sub, email: profile.email ?? '', role: isAdmin ? 'admin' : 'user' }
-                  : undefined,
+                user: profile ? { id: profile.sub, email: profile.email ?? '', role } : undefined,
               }),
             ),
             catchError((error) => of(checkAuthenticationFailure({ error: normalizeError(error) }))),
@@ -490,7 +488,7 @@ export const checkAuthentication$ = createEffect(
               const roles = Array.isArray(payload['roles'])
                 ? payload['roles'].filter((role): role is string => typeof role === 'string')
                 : [];
-              const role = roles.includes('admin') ? 'admin' : 'user';
+              const role = resolveUserRole(roles);
               const user =
                 typeof payload['sub'] === 'string' && typeof payload['email'] === 'string'
                   ? { id: payload['sub'], email: payload['email'], role }

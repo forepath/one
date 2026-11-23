@@ -1,4 +1,4 @@
-import { UserRole, UsersRoles } from '@forepath/identity/backend';
+import { getUserFromRequest, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -84,21 +84,29 @@ export class PersonalAccessTokensController {
   }
 
   @RequireInteractiveSession()
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @Get('users/:userId/tokens')
-  async listForUser(@Param('userId', ParseUUIDPipe) userId: string) {
-    return (await this.patService.listForUserAdmin(userId)).map((item) => this.toResponse(item));
+  async listForUser(@Param('userId', ParseUUIDPipe) userId: string, @Req() req: RequestWithUser) {
+    return (await this.patService.listForUserAdmin(userId, this.actorRole(req))).map((item) => this.toResponse(item));
   }
 
   @RequireInteractiveSession()
-  @UsersRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
   @Delete('users/:userId/tokens/:tokenId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async revokeForUser(
     @Param('userId', ParseUUIDPipe) userId: string,
     @Param('tokenId', ParseUUIDPipe) tokenId: string,
+    @Req() req: RequestWithUser,
   ) {
-    await this.patService.revokeAsAdmin(userId, tokenId);
+    await this.patService.revokeAsAdmin(userId, tokenId, this.actorRole(req));
+  }
+
+  /** Caller role for account-level checks (managers may only manage tokens of regular users). */
+  private actorRole(req: RequestWithUser): UserRole {
+    const userInfo = getUserFromRequest(req);
+
+    return userInfo.isApiKeyAuth ? UserRole.ADMIN : (userInfo.userRole ?? UserRole.USER);
   }
 
   private toResponse(

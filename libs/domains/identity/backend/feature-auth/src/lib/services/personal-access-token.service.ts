@@ -1,6 +1,14 @@
 import { randomBytes } from 'node:crypto';
 
-import { isAdminPatScope, UserEntity, UserPersonalAccessTokenEntity, UserRole } from '@forepath/identity/backend';
+import {
+  canManageUserAccount,
+  isAdministrativeRole,
+  isAdminPatScope,
+  USER_ACCOUNT_MANAGEMENT_FORBIDDEN_MESSAGE,
+  UserEntity,
+  UserPersonalAccessTokenEntity,
+  UserRole,
+} from '@forepath/identity/backend';
 import {
   BadRequestException,
   ForbiddenException,
@@ -67,11 +75,12 @@ export class PersonalAccessTokenService {
   getCatalogForRole(role: UserRole): string[] {
     const catalog = [...this.scopeCatalog];
 
-    if (role === UserRole.ADMIN) {
+    // Managers use the administration API like admins (admin-only routes are role-gated, not scope-gated).
+    if (isAdministrativeRole(role)) {
       return catalog;
     }
 
-    // `<resource>:admin` scopes are admin-only by convention (derived, so catalogs cannot drift).
+    // `<resource>:admin` scopes are admin/manager-only by convention (derived, so catalogs cannot drift).
     return catalog.filter((scope) => !isAdminPatScope(scope));
   }
 
@@ -88,12 +97,19 @@ export class PersonalAccessTokenService {
     return tokens.map((token) => this.toListItem(token));
   }
 
-  async listForUserAdmin(userId: string): Promise<PatListItem[]> {
-    const user = await this.usersRepository.findById(userId);
+  /**
+   * Administrative token listing for one user. `actorRole` (when given) must be allowed to manage the account:
+   * managers only see and revoke tokens of regular users.
+   */
+  async listForUserAdmin(userId: string, actorRole?: UserRole): Promise<PatListItem[]> {
+    // Tenant-scoped: administrators only see accounts of their own tenant.
+    const user = await this.usersRepository.findByIdForTenant(userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
+    this.assertCanManageTokensOf(user, actorRole);
 
     const tokens = await this.tokensRepository.findAllByUserId(userId);
 
@@ -176,7 +192,16 @@ export class PersonalAccessTokenService {
     await this.tokensRepository.save(entity);
   }
 
-  async revokeAsAdmin(userId: string, tokenId: string): Promise<void> {
+  async revokeAsAdmin(userId: string, tokenId: string, actorRole?: UserRole): Promise<void> {
+    // Tenant-scoped: administrators only manage accounts of their own tenant.
+    const user = await this.usersRepository.findByIdForTenant(userId);
+
+    if (!user) {
+      throw new NotFoundException('Token not found');
+    }
+
+    this.assertCanManageTokensOf(user, actorRole);
+
     const entity = await this.tokensRepository.findById(tokenId);
 
     if (!entity || entity.userId !== userId) {
@@ -291,6 +316,12 @@ export class PersonalAccessTokenService {
 
   private isPatEligibleAccount(user: UserEntity): boolean {
     return Boolean(user.passwordHash || user.externalSubject);
+  }
+
+  private assertCanManageTokensOf(user: UserEntity, actorRole: UserRole | undefined): void {
+    if (actorRole !== undefined && !canManageUserAccount(actorRole, user.role)) {
+      throw new ForbiddenException(USER_ACCOUNT_MANAGEMENT_FORBIDDEN_MESSAGE);
+    }
   }
 
   private filterScopesForRole(scopes: string[], role: UserRole): string[] {
