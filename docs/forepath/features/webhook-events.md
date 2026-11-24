@@ -29,11 +29,12 @@ The convention is enforced in code:
 
 Concepts that exist in every product are defined once and spread into each product catalog:
 
-| Group               | Constant                                                     | Events                                                                                                                                      |
-| ------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Identity            | `IDENTITY_NOTIFICATION_EVENTS` (identity `util-auth`)        | `user.created`, `user.updated`, `user.deleted`                                                                                              |
-| Application updates | `APPLICATION_NOTIFICATION_EVENTS` (shared `feature-updates`) | `application.update_available`, `application.update_check_failed`, `application.instance_outdated`, `application.dependency_health_changed` |
-| Search index        | `SEARCH_NOTIFICATION_EVENTS` (shared `util-opensearch`)      | `search.reindex.started`, `search.reindex.completed`, `search.reindex.failed`, `search.document.sync_failed`                                |
+| Group               | Constant                                                             | Events                                                                                                                                      |
+| ------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity            | `IDENTITY_NOTIFICATION_EVENTS` (identity `util-auth`)                | `user.created`, `user.updated`, `user.deleted`                                                                                              |
+| Application updates | `APPLICATION_NOTIFICATION_EVENTS` (shared `feature-updates`)         | `application.update_available`, `application.update_check_failed`, `application.instance_outdated`, `application.dependency_health_changed` |
+| Search index        | `SEARCH_NOTIFICATION_EVENTS` (shared `util-opensearch`)              | `search.reindex.started`, `search.reindex.completed`, `search.reindex.failed`, `search.document.sync_failed`                                |
+| Action center       | `ACTION_CENTER_NOTIFICATION_EVENTS` (shared `feature-action-center`) | `action_center.silence.created`, `action_center.silence.removed`                                                                            |
 
 ## Cross-application events
 

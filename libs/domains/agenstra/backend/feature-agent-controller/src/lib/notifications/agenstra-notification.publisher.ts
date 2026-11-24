@@ -181,9 +181,24 @@ export type TicketCommentNotificationPayload = {
   createdAt: string;
 };
 
+/** Observer of published Agenstra events (event type, workspace id when the event belongs to one). */
+export type AgenstraNotificationListener = (type: AgenstraNotificationEventType, clientId: string | undefined) => void;
+
 @Injectable()
 export class AgenstraNotificationPublisher implements IIdentityNotificationPublisher {
+  private readonly listeners = new Set<AgenstraNotificationListener>();
+
   constructor(private readonly dispatcher: NotificationDispatcherService) {}
+
+  /**
+   * In-process observers of every published event (e.g. the action center's change signal). Listener errors never
+   * affect the publisher.
+   */
+  addListener(listener: AgenstraNotificationListener): () => void {
+    this.listeners.add(listener);
+
+    return () => this.listeners.delete(listener);
+  }
 
   publish(type: AgenstraNotificationEventType, data: Record<string, unknown>, clientId?: string): void {
     this.dispatcher.publishFireAndForget({
@@ -192,6 +207,14 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
       clientId,
       data,
     });
+
+    for (const listener of this.listeners) {
+      try {
+        listener(type, clientId);
+      } catch {
+        // Observers are best effort.
+      }
+    }
   }
 
   publishClient(

@@ -11,6 +11,7 @@ export * from './util-webhook/src';
 export * from './util-otel/src';
 export * from './feature-notifications/src';
 export * from './feature-updates/src';
+export * from './feature-action-center/src';
 export * from './util-opensearch/src';
 export * from './util-file-storage/src';
 export * from './feature-agent-harness/src';

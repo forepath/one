@@ -28,6 +28,9 @@
       max-width: 100%;
       padding: 0 0.125rem 0.125rem;
       line-height: 1.2;
+      // The tight line height drops the leading above the first line: add it back so the icon-to-label gap matches
+      // the body line height of the other consoles (Decabill).
+      margin-top: calc(0.65rem * (var(--bs-body-line-height, 1.5) - 1.2) / 2);
       text-align: center;
       hyphens: auto;
       overflow-wrap: break-word;

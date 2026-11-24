@@ -12434,6 +12434,366 @@
         <source>Admin mode: instance overview and administration</source>
         <target>Adminmodus: Instanzübersicht und Administration</target>
       </trans-unit>
+      <trans-unit id="featureAgentActionCenter-categoryWorkspaces" datatype="html">
+        <source>Workspaces</source>
+        <target>Workspaces</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-categoryTickets" datatype="html">
+        <source>Tickets</source>
+        <target>Tickets</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-categoryAutomation" datatype="html">
+        <source>Agent automation</source>
+        <target>Agenten-Automatisierung</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-categoryDeployments" datatype="html">
+        <source>Deployments</source>
+        <target>Deployments</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-categoryIntegrations" datatype="html">
+        <source>Integrations</source>
+        <target>Integrationen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-setupWorkspaceTitle" datatype="html">
+        <source>Connect your first workspace</source>
+        <target>Ersten Workspace verbinden</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-setupWorkspaceDescription" datatype="html">
+        <source>Register an agent manager as a workspace to create agents, tickets and automation.</source>
+        <target>Registriere einen Agent Manager als Workspace, um Agenten, Tickets und Automatisierung anzulegen.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-setupWorkspaceAction" datatype="html">
+        <source>Add workspace</source>
+        <target>Workspace hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-isolationFailedTitle" datatype="html">
+        <source>Workspace isolation unavailable</source>
+        <target>Workspace-Isolation nicht verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-isolationFailedDescription" datatype="html">
+        <source>The standard container isolation is not ready on these hosts; new environments cannot start safely.</source>
+        <target>Die Standard-Container-Isolation ist auf diesen Hosts nicht bereit; neue Umgebungen können nicht sicher starten.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-configSyncFailedTitle" datatype="html">
+        <source>Configuration not applied</source>
+        <target>Konfiguration nicht übernommen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-configSyncFailedDescription" datatype="html">
+        <source>Agent configuration or layer files could not be synced to environments.</source>
+        <target>Agenten-Konfiguration oder Layer-Dateien konnten nicht in die Umgebungen synchronisiert werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-graphFailedTitle" datatype="html">
+        <source>Workspace graph build failed</source>
+        <target>Workspace-Graph konnte nicht erstellt werden</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-graphFailedDescription" datatype="html">
+        <source>Rebuild the graph after fixing the cause.</source>
+        <target>Erstelle den Graphen neu, nachdem die Ursache behoben ist.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-automationApprovalTitle" datatype="html">
+        <source>Automation waiting for approval</source>
+        <target>Automatisierung wartet auf Freigabe</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-automationApprovalDescription" datatype="html">
+        <source>Tickets prepared for autonomous work need your approval before agents start.</source>
+        <target>Für autonome Arbeit vorbereitete Tickets brauchen deine Freigabe, bevor Agenten starten.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-automationAttentionTitle" datatype="html">
+        <source>Automation needs attention</source>
+        <target>Automatisierung braucht Aufmerksamkeit</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-automationAttentionDescription" datatype="html">
+        <source>The latest autonomous run failed, timed out or escalated to a human.</source>
+        <target>Der letzte autonome Lauf ist fehlgeschlagen, hat das Zeitlimit überschritten oder wurde an einen Menschen eskaliert.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-tasksApprovalTitle" datatype="html">
+        <source>Scheduled tasks to approve</source>
+        <target>Geplante Aufgaben freigeben</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-tasksApprovalDescription" datatype="html">
+        <source>Agents created or changed these tasks; they only run after approval.</source>
+        <target>Agenten haben diese Aufgaben angelegt oder geändert; sie laufen erst nach der Freigabe.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-tasksFailedTitle" datatype="html">
+        <source>Scheduled tasks failing</source>
+        <target>Geplante Aufgaben schlagen fehl</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-tasksFailedDescription" datatype="html">
+        <source>The last run of these tasks failed.</source>
+        <target>Der letzte Lauf dieser Aufgaben ist fehlgeschlagen.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-handoffsFailedTitle" datatype="html">
+        <source>Agent handoffs failed</source>
+        <target>Agenten-Übergaben fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-handoffsFailedDescription" datatype="html">
+        <source>Work passed between agents failed or the answer could not be delivered.</source>
+        <target>Zwischen Agenten übergebene Arbeit ist fehlgeschlagen oder die Antwort konnte nicht zugestellt werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-deploymentsApprovalTitle" datatype="html">
+        <source>Pipelines to approve</source>
+        <target>Pipelines freigeben</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-deploymentsApprovalDescription" datatype="html">
+        <source>Deployment workflows proposed or changed by agents wait for approval.</source>
+        <target>Von Agenten vorgeschlagene oder geänderte Deployment-Workflows warten auf Freigabe.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-deploymentsFailedTitle" datatype="html">
+        <source>Deployments failing</source>
+        <target>Deployments schlagen fehl</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-deploymentsFailedDescription" datatype="html">
+        <source>The last run of these pipelines failed or timed out.</source>
+        <target>Der letzte Lauf dieser Pipelines ist fehlgeschlagen oder hat das Zeitlimit überschritten.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-connectionsFailedTitle" datatype="html">
+        <source>Connections failing</source>
+        <target>Verbindungen fehlerhaft</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-connectionsFailedDescription" datatype="html">
+        <source>The last connection test failed. Check the credentials.</source>
+        <target>Der letzte Verbindungstest ist fehlgeschlagen. Prüfe die Zugangsdaten.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-importsFailedTitle" datatype="html">
+        <source>Imports failing</source>
+        <target>Importe schlagen fehl</target>
+      </trans-unit>
+      <trans-unit id="featureAgentActionCenter-importsFailedDescription" datatype="html">
+        <source>Scheduled imports from Jira or Confluence report errors.</source>
+        <target>Geplante Importe aus Jira oder Confluence melden Fehler.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-title" datatype="html">
+        <source>To-dos</source>
+        <target>To-dos</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-tabOpen" datatype="html">
+        <source>Open</source>
+        <target>Offen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-tabSilenced" datatype="html">
+        <source>Silenced</source>
+        <target>Stummgeschaltet</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-tabsLabel" datatype="html">
+        <source>To-do views</source>
+        <target>To-do-Ansichten</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-emptyTitle" datatype="html">
+        <source>All done</source>
+        <target>Alles erledigt</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-emptyMessage" datatype="html">
+        <source>Nothing needs your attention right now. New to-dos appear here as soon as they come up.</source>
+        <target>Gerade braucht nichts deine Aufmerksamkeit. Neue To-dos erscheinen hier, sobald sie anfallen.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-noSilencesTitle" datatype="html">
+        <source>Nothing silenced</source>
+        <target>Nichts stummgeschaltet</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-noSilencesMessage" datatype="html">
+        <source>Silence a to-do with the bell icon to hide it for you or (admins) for everyone.</source>
+        <target>Schalte ein To-do über das Glockensymbol stumm, um es für dich oder (als Admin) für alle auszublenden.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-loading" datatype="html">
+        <source>Loading to-dos</source>
+        <target>To-dos werden geladen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceScopeItem" datatype="html">
+        <source>One entry</source>
+        <target>Ein Eintrag</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceScopeType" datatype="html">
+        <source>All entries</source>
+        <target>Alle Einträge</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceAudienceEveryone" datatype="html">
+        <source>For everyone</source>
+        <target>Für alle</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceAudienceSelf" datatype="html">
+        <source>For me</source>
+        <target>Für mich</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceUntil" datatype="html">
+        <source>Until <x id="date" equiv-text="this.presenters.format.date(silence.until)"/></source>
+        <target>Bis <x id="date" equiv-text="this.presenters.format.date(silence.until)"/></target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceIndefinite" datatype="html">
+        <source>Until lifted</source>
+        <target>Bis zur Aufhebung</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-liftSilence" datatype="html">
+        <source>Lift silence &quot;<x id="title" equiv-text="this.silenceTitle(silence)"/>&quot;</source>
+        <target>Stummschaltung von &quot;<x id="title" equiv-text="this.silenceTitle(silence)"/>&quot; aufheben</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceForMe" datatype="html">
+        <source>Silence for me</source>
+        <target>Für mich stummschalten</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-snoozeDay" datatype="html">
+        <source>Snooze for 1 day</source>
+        <target>1 Tag schlummern</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-snoozeWeek" datatype="html">
+        <source>Snooze for 1 week</source>
+        <target>1 Woche schlummern</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceForEveryone" datatype="html">
+        <source>Silence for everyone</source>
+        <target>Für alle stummschalten</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-moreOnPage" datatype="html">
+        <source> <x id="INTERPOLATION" equiv-text="{{ hiddenCount() }}"/> more on the linked page </source>
+        <target> <x id="INTERPOLATION" equiv-text="{{ hiddenCount() }}"/> weitere auf der verlinkten Seite </target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-collapse" datatype="html">
+        <source>Collapse</source>
+        <target>Einklappen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-showList" datatype="html">
+        <source>Show list</source>
+        <target>Liste anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-setUp" datatype="html">
+        <source>Set up</source>
+        <target>Einrichten</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-open" datatype="html">
+        <source>Open</source>
+        <target>Öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceGroupLabel" datatype="html">
+        <source>Silence &quot;<x id="title" equiv-text="this.title()"/>&quot;</source>
+        <target>&quot;<x id="title" equiv-text="this.title()"/>&quot; stummschalten</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceItemLabel" datatype="html">
+        <source>Silence &quot;<x id="title" equiv-text="this.itemTitle(item)"/>&quot;</source>
+        <target>&quot;<x id="title" equiv-text="this.itemTitle(item)"/>&quot; stummschalten</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-toggleTitleOne" datatype="html">
+        <source>To-dos: {count} open</source>
+        <target>To-dos: {count} offen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-toggleTitleOther" datatype="html">
+        <source>To-dos: {count} open</source>
+        <target>To-dos: {count} offen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-toggleTitleNone" datatype="html">
+        <source>To-dos: nothing open</source>
+        <target>To-dos: nichts offen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-categorySetup" datatype="html">
+        <source>Suggested next steps</source>
+        <target>Empfohlene nächste Schritte</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-categoryPlatform" datatype="html">
+        <source>Platform</source>
+        <target>Plattform</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-updatesTitle" datatype="html">
+        <source>Update available</source>
+        <target>Update verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-updatesDescription" datatype="html">
+        <source>Version <x id="version" equiv-text="paramText(group.params, &apos;latestVersion&apos;)"/> is available (installed: <x id="installed" equiv-text="paramText(group.params, &apos;installedVersion&apos;)"/>).</source>
+        <target>Version <x id="version" equiv-text="paramText(group.params, &apos;latestVersion&apos;)"/> ist verfügbar (installiert: <x id="installed" equiv-text="paramText(group.params, &apos;installedVersion&apos;)"/>).</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-updatesDescriptionInstances" datatype="html">
+        <source>Some instances run an outdated version.</source>
+        <target>Einige Instanzen laufen mit einer veralteten Version.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-updatesAction" datatype="html">
+        <source>Review update</source>
+        <target>Update prüfen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksTitle" datatype="html">
+        <source>Webhooks failing</source>
+        <target>Webhooks schlagen fehl</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksDescription" datatype="html">
+        <source>Deliveries fail repeatedly; endpoints are disabled after too many failures.</source>
+        <target>Zustellungen scheitern wiederholt; Endpunkte werden nach zu vielen Fehlern deaktiviert.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksDisabled" datatype="html">
+        <source>Disabled after repeated failures</source>
+        <target>Nach wiederholten Fehlern deaktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksFailures" datatype="html">
+        <source><x id="count" equiv-text="paramText(item.params, &apos;failures&apos;)"/> failed deliveries in a row</source>
+        <target><x id="count" equiv-text="paramText(item.params, &apos;failures&apos;)"/> fehlgeschlagene Zustellungen in Folge</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-emailFailedTitle" datatype="html">
+        <source>Emails not delivered</source>
+        <target>E-Mails nicht zugestellt</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-emailFailedDescription" datatype="html">
+        <source>Emails of the last 7 days could not be sent; check the mail server settings.</source>
+        <target>E-Mails der letzten 7 Tage konnten nicht versendet werden; prüfe die Mailserver-Einstellungen.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-emailSetupTitle" datatype="html">
+        <source>Set up email delivery</source>
+        <target>E-Mail-Versand einrichten</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-emailSetupDescription" datatype="html">
+        <source>No mail server is configured, so no emails (invoices, sign-in codes, notifications) are sent.</source>
+        <target>Es ist kein Mailserver eingerichtet, daher werden keine E-Mails (Rechnungen, Anmeldecodes, Benachrichtigungen) versendet.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-searchPlaceholder" datatype="html">
+        <source>Search to-dos</source>
+        <target>To-dos durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-filtersTitle" datatype="html">
+        <source>Filter to-dos</source>
+        <target>To-dos filtern</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-filterArea" datatype="html">
+        <source>Area</source>
+        <target>Bereich</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-filterPriority" datatype="html">
+        <source>Priority</source>
+        <target>Priorität</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-filterAny" datatype="html">
+        <source>All</source>
+        <target>Alle</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-noMatchTitle" datatype="html">
+        <source>No matching to-dos</source>
+        <target>Keine passenden To-dos</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-noMatchMessage" datatype="html">
+        <source>Change the search or the filters.</source>
+        <target>Ändere die Suche oder die Filter.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-severityDanger" datatype="html">
+        <source>Critical</source>
+        <target>Kritisch</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-severityWarning" datatype="html">
+        <source>Attention</source>
+        <target>Achtung</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-severityInfo" datatype="html">
+        <source>Info</source>
+        <target>Info</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupAgentsTitle" datatype="html">
+        <source>Agents: agent configuration and connections</source>
+        <target>Agenten: Agentenkonfiguration und Verbindungen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupAgents" datatype="html">
+        <source>Agents</source>
+        <target>Agenten</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupSystemTitle" datatype="html">
+        <source>System: users, apps, webhooks, updates and settings</source>
+        <target>System: Benutzer, Apps, Webhooks, Updates und Einstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupSystem" datatype="html">
+        <source>System</source>
+        <target>System</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

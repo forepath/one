@@ -339,7 +339,10 @@ export class AdminOffersPageComponent implements OnInit {
   readonly offersUserId = signal('');
   offersUserIdDraft = '';
 
-  /** Search + page + size + customer → `GET /admin/billing/offers?limit&offset&search&userId` (replace-page). */
+  /**
+   * Search + page + size + customer → `GET /admin/billing/offers?limit&offset&search&userId` (replace-page).
+   * Synced to `?off-q=&off-p=&off-n=` (deep links, e.g. from the action center).
+   */
   readonly paging = dbServerPaging(
     (query) =>
       this.facade.loadOffers({
@@ -348,7 +351,7 @@ export class AdminOffersPageComponent implements OnInit {
         page: query.page,
         pageSize: query.pageSize,
       }),
-    { filters: () => this.offersUserId() },
+    { url: 'off-', filters: () => this.offersUserId() },
   );
 
   readonly columns: FpcTableColumn<AdminOfferListItem>[] = [

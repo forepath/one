@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 import { auditPatRouteScopes, collectControllerClasses } from '@forepath/identity/backend';
 
+import { AdminActionCenterController } from '../controllers/admin-action-center.controller';
 import { AdminControllerSettingsController } from '../controllers/admin-controller-settings.controller';
 import { AdminOpencodeConfigController } from '../controllers/admin-opencode-config.controller';
 import { AdminOpencodeLayerFilesController } from '../controllers/admin-opencode-layer-files.controller';
@@ -31,6 +32,7 @@ describe('Agenstra PAT route scopes', () => {
         catalog: AGENSTRA_PAT_SCOPES,
         // Admin enforced in code via assertAdmin (no @UsersRoles on these controllers).
         inCodeAdminControllers: [
+          AdminActionCenterController,
           AdminOverviewController,
           AdminControllerSettingsController,
           AdminOpencodeConfigController,

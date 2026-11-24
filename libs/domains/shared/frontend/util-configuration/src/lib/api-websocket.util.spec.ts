@@ -29,6 +29,15 @@ describe('resolveApiWebsocketUrl', () => {
     );
   });
 
+  it('derives the action center namespace from clients and billing primaries', () => {
+    expect(resolveApiWebsocketUrl('http://localhost:3100/socket/clients', 'action-center')).toBe(
+      'http://localhost:3100/socket/action-center',
+    );
+    expect(resolveApiWebsocketUrl('http://localhost:3200/socket/billing', 'action-center')).toBe(
+      'http://localhost:3200/socket/action-center',
+    );
+  });
+
   it('prefers explicit object endpoints', () => {
     expect(
       resolveApiWebsocketUrl(

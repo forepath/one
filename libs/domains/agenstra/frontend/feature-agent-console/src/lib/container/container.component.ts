@@ -14,7 +14,12 @@ import {
   usesStaticCredential,
 } from '@forepath/identity/frontend';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
+import { ActionCenterFacade } from '@forepath/shared/frontend/data-access-action-center';
 import { AdminUpdatesFacade } from '@forepath/shared/frontend/data-access-updates';
+import {
+  ActionCenterPanelComponent,
+  ActionCenterToggleComponent,
+} from '@forepath/shared/frontend/feature-action-center';
 import {
   FpcButtonComponent,
   FpcTopBarComponent,
@@ -25,6 +30,10 @@ import {
   FpcSidebarComponent,
   FpcSidebarPopoverComponent,
   FpcThemeSwitcherComponent,
+  fpcSidebarNavEntries,
+  fpcSidebarNavGroupActive,
+  type FpcSidebarNavEntry,
+  type FpcSidebarNavGroup,
 } from '@forepath/shared/frontend/ui-components';
 import { combineLatest, distinctUntilChanged, filter, map, pairwise, startWith } from 'rxjs';
 
@@ -64,6 +73,8 @@ interface AdminNavItem {
     FpcSidebarComponent,
     FpcSidebarPopoverComponent,
     FpcThemeSwitcherComponent,
+    ActionCenterPanelComponent,
+    ActionCenterToggleComponent,
   ],
   styleUrls: ['./container.component.scss'],
   templateUrl: './container.component.html',
@@ -74,6 +85,7 @@ export class AgentConsoleContainerComponent implements OnInit {
   private readonly clientsFacade = inject(ClientsFacade);
   protected readonly notificationsFacade = inject(NotificationsFacade);
   private readonly adminUpdatesFacade = inject(AdminUpdatesFacade);
+  private readonly actionCenterFacade = inject(ActionCenterFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly loadingOverlayService = inject(StandaloneLoadingService);
@@ -190,6 +202,12 @@ export class AgentConsoleContainerComponent implements OnInit {
    * True when the user can access the user manager (admin with users, oidc or saml auth).
    */
   readonly canAccessUserManager$ = this.authenticationFacade.canAccessUserManager$;
+  /**
+   * The action center (to-dos, top-bar bulb + right sidebar) for admins and managers, in both console modes:
+   * choosing a to-do switches into the mode of its page.
+   */
+  readonly actionCenterAvailable = toSignal(this.authenticationFacade.canAccessUserManager$, { initialValue: false });
+  readonly actionCenterOpen = toSignal(this.actionCenterFacade.panelOpen$, { initialValue: false });
 
   /**
    * Sidebar mode: `user` (workspace pages) or `admin` (administration, admins and managers only). Follows the page
@@ -319,10 +337,60 @@ export class AgentConsoleContainerComponent implements OnInit {
     },
   ];
 
-  /** Admin popover entries for the current role (managers do not see admin-only entries). */
-  readonly visibleAdminNavItems$ = this.authenticationFacade.canAccessAdminOnlyAdministration$.pipe(
-    map((isFullAdmin) => this.adminNavItems.filter((item) => isFullAdmin || !item.adminOnly)),
+  /**
+   * Admin sidebar (admin mode) for the current role: Overview, then one tile per area that opens a popover with its
+   * pages (managers do not see admin-only pages; an area with a single visible page shows that page directly).
+   */
+  readonly adminNavEntries$ = this.authenticationFacade.canAccessAdminOnlyAdministration$.pipe(
+    map((isFullAdmin): FpcSidebarNavEntry<AdminNavItem>[] => {
+      const visible = this.adminNavItems.filter((item) => isFullAdmin || !item.adminOnly);
+      const byPath = new Map(visible.map((item) => [item.routerLink.join('/'), item]));
+      const pick = (...paths: string[]) =>
+        paths.map((path) => byPath.get(path)).filter((item): item is AdminNavItem => item !== undefined);
+
+      return fpcSidebarNavEntries<AdminNavItem>([
+        { key: 'overview', icon: 'bi-grid', label: '', title: '', items: pick('/overview') },
+        {
+          key: 'agents',
+          icon: 'bi-robot',
+          title: $localize`:@@featureContainer-navGroupAgentsTitle:Agents: agent configuration and connections`,
+          label: $localize`:@@featureContainer-navGroupAgents:Agents`,
+          items: pick('/agent-config', '/connections'),
+        },
+        {
+          key: 'system',
+          icon: 'bi-gear',
+          title: $localize`:@@featureContainer-navGroupSystemTitle:System: users, apps, webhooks, updates and settings`,
+          label: $localize`:@@featureContainer-navGroupSystem:System`,
+          items: pick('/users', '/apps', '/webhooks', '/updates', '/system-settings'),
+        },
+      ]);
+    }),
   );
+
+  /** Key of the admin area whose popover is open (one at a time). */
+  readonly openNavGroup = signal<string | null>(null);
+
+  private readonly currentUrl = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map(() => this.router.url),
+    ),
+    { initialValue: this.router.url },
+  );
+
+  setNavGroupOpen(key: string, open: boolean): void {
+    this.openNavGroup.update((current) => (open ? key : current === key ? null : current));
+  }
+
+  /** The area tile is active while one of its pages is open. */
+  isNavGroupActive(group: FpcSidebarNavGroup<AdminNavItem>): boolean {
+    return fpcSidebarNavGroupActive(group, this.currentUrl());
+  }
+
+  navGroupHasKey(group: FpcSidebarNavGroup<AdminNavItem>, navKey: string): boolean {
+    return group.items.some((item) => item.navKey === navKey);
+  }
 
   readonly logoutLabel = $localize`:@@featureContainer-logout:Logout`;
 
@@ -423,6 +491,18 @@ export class AgentConsoleContainerComponent implements OnInit {
         this.adminUpdatesFacade.loadStatus();
       }
     });
+
+    // Live to-dos while the signed-in user may administrate; disconnect on sign-out or role loss.
+    this.authenticationFacade.canAccessUserManager$
+      .pipe(distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe((canAccess) => {
+        if (canAccess) {
+          this.actionCenterFacade.connect();
+        } else {
+          this.actionCenterFacade.disconnect();
+        }
+      });
+    this.destroyRef.onDestroy(() => this.actionCenterFacade.disconnect());
 
     // Console mode follows the page and the role (see `nextConsoleMode`).
     let hadAdminAccess = false;

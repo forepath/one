@@ -110,17 +110,42 @@ export type TicketCommentNotificationPayload = {
   createdAt: string;
 };
 
+/** Observer of published billing events (event type, tenant scope). */
+export type BillingNotificationListener = (type: BillingNotificationEventType, scopeKey: string) => void;
+
 @Injectable()
 export class BillingNotificationPublisher implements IIdentityNotificationPublisher {
+  private readonly listeners = new Set<BillingNotificationListener>();
+
   constructor(private readonly dispatcher: NotificationDispatcherService) {}
 
+  /**
+   * In-process observers of every published event (e.g. the action center's change signal). Listener errors never
+   * affect the publisher.
+   */
+  addListener(listener: BillingNotificationListener): () => void {
+    this.listeners.add(listener);
+
+    return () => this.listeners.delete(listener);
+  }
+
   publish(type: BillingNotificationEventType, data: Record<string, unknown>, clientId?: string): void {
+    const scopeKey = getTenantIdOrDefault();
+
     this.dispatcher.publishFireAndForget({
       type,
-      scopeKey: getTenantIdOrDefault(),
+      scopeKey,
       clientId,
       data,
     });
+
+    for (const listener of this.listeners) {
+      try {
+        listener(type, scopeKey);
+      } catch {
+        // Observers are best effort.
+      }
+    }
   }
 
   publishUserCreated(data: Record<string, unknown>): void {

@@ -280,6 +280,14 @@ export type { FpcPagerEntry, FpcPagerSize } from './lib/pager/pager.component';
 export { FpcSidebarComponent } from './lib/sidebar/sidebar.component';
 export { FpcSidebarNavItemComponent } from './lib/sidebar-nav-item/sidebar-nav-item.component';
 export { FpcSidebarPopoverComponent } from './lib/sidebar-popover/sidebar-popover.component';
+export {
+  fpcSidebarNavEntries,
+  fpcSidebarNavGroupActive,
+  fpcSidebarNavLinkActive,
+  type FpcSidebarNavEntry,
+  type FpcSidebarNavGroup,
+  type FpcSidebarNavLink,
+} from './lib/sidebar-popover/sidebar-nav-groups';
 export { FpcTabComponent } from './lib/tab/tab.component';
 export {
   FPC_TAB_GROUP_LABELS,

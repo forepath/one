@@ -1,5 +1,9 @@
 import { IDENTITY_NOTIFICATION_EVENTS } from '@forepath/identity/backend';
-import { APPLICATION_NOTIFICATION_EVENTS, SEARCH_NOTIFICATION_EVENTS } from '@forepath/shared/backend';
+import {
+  ACTION_CENTER_NOTIFICATION_EVENTS,
+  APPLICATION_NOTIFICATION_EVENTS,
+  SEARCH_NOTIFICATION_EVENTS,
+} from '@forepath/shared/backend';
 
 /**
  * Agenstra webhook event catalog. Names follow the shared convention (`WEBHOOK_EVENT_TYPE_PATTERN`,
@@ -56,6 +60,7 @@ export const AGENSTRA_NOTIFICATION_EVENTS = [
   'client_user.created',
   'client_user.deleted',
   ...APPLICATION_NOTIFICATION_EVENTS,
+  ...ACTION_CENTER_NOTIFICATION_EVENTS,
   ...SEARCH_NOTIFICATION_EVENTS,
 ] as const;
 

@@ -6976,6 +6976,79 @@ paths:
           description: Unauthorized
         '403':
           description: Admin access required
+  /admin/billing/action-center:
+    get:
+      tags: [Admin Billing]
+      summary: Action center view of the caller (admins and managers)
+      description: |
+        Open to-dos ("next steps") of the request tenant, grouped by item type, after the caller's role (admin-only
+        groups) and silences. `counts.open` is the console badge. Texts are not included: clients present each `type`
+        and its `params`. Live updates are pushed over the `socket/action-center` Socket.IO namespace (console sessions
+        only). Personal access tokens only see groups of domains they also hold a scope for (see the action center
+        docs).
+      operationId: getAdminBillingActionCenterView
+      security:
+        - bearerAuth: [action_center:admin]
+      responses:
+        '200':
+          description: The caller's view
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionCenterView'
+        '401':
+          description: Not authenticated
+        '403':
+          description: Not an admin / manager, the static credential, or a PAT without `action_center:admin`
+  /admin/billing/action-center/silences:
+    post:
+      tags: [Admin Billing]
+      summary: Silence an item type or one record (for the caller or, admins only, everyone)
+      operationId: createAdminBillingActionCenterSilence
+      security:
+        - bearerAuth: [action_center:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateActionCenterSilence'
+      responses:
+        '201':
+          description: Silenced (re-silencing the same target updates its end); the caller's updated view
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionCenterView'
+        '400':
+          description: Unknown item type, an end in the past, or too many silences
+        '403':
+          description: Managers may only silence for themselves
+  /admin/billing/action-center/silences/{silenceId}:
+    delete:
+      tags: [Admin Billing]
+      summary: Lift a silence (own silences; silences for everyone admins only)
+      operationId: removeAdminBillingActionCenterSilence
+      security:
+        - bearerAuth: [action_center:admin]
+      parameters:
+        - in: path
+          name: silenceId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The caller's updated view
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionCenterView'
+        '403':
+          description: Managers may not lift silences for everyone
+        '404':
+          description: Unknown silence (or another user's personal silence)
   /admin/billing/overview:
     get:
       tags: [Admin Billing]
@@ -11844,6 +11917,158 @@ components:
         format: uuid
       description: Accounting resource ID
   schemas:
+    ActionCenterView:
+      type: object
+      required:
+        [generatedAt, role, canSilenceForEveryone, counts, groups, silences]
+      properties:
+        generatedAt:
+          type: string
+          format: date-time
+        role:
+          type: string
+          enum: [admin, manager]
+        canSilenceForEveryone:
+          type: boolean
+        counts:
+          type: object
+          required: [open, setup, silenced]
+          properties:
+            open:
+              type: integer
+              description: Open (not silenced) to-dos, the console badge
+            setup:
+              type: integer
+              description: Open setup suggestions (subset of open)
+            silenced:
+              type: integer
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionCenterGroup'
+        silences:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionCenterSilence'
+    ActionCenterGroup:
+      type: object
+      required:
+        [
+          type,
+          category,
+          severity,
+          kind,
+          audience,
+          total,
+          openCount,
+          params,
+          items,
+          silencedBy,
+        ]
+      properties:
+        type:
+          type: string
+          example: decabill.invoices.unsent
+        category:
+          type: string
+        severity:
+          type: string
+          enum: [info, warning, danger]
+        kind:
+          type: string
+          enum: [task, setup]
+        audience:
+          type: string
+          enum: [administrative, admin]
+        total:
+          type: integer
+        openCount:
+          type: integer
+        params:
+          type: object
+          additionalProperties: true
+        items:
+          type: array
+          maxItems: 25
+          items:
+            type: object
+            required: [id, params, occurredAt, silencedBy]
+            properties:
+              id:
+                type: string
+              params:
+                type: object
+                additionalProperties: true
+              occurredAt:
+                type: string
+                format: date-time
+                nullable: true
+              silencedBy:
+                type: string
+                format: uuid
+                nullable: true
+        silencedBy:
+          type: string
+          format: uuid
+          nullable: true
+    ActionCenterSilence:
+      type: object
+      required:
+        [
+          id,
+          itemType,
+          itemId,
+          audience,
+          until,
+          createdAt,
+          createdByUserId,
+          removable,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        itemType:
+          type: string
+        itemId:
+          type: string
+          nullable: true
+        audience:
+          type: string
+          enum: [self, everyone]
+        until:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        createdByUserId:
+          type: string
+          format: uuid
+          nullable: true
+        removable:
+          type: boolean
+    CreateActionCenterSilence:
+      type: object
+      required: [itemType, audience]
+      properties:
+        itemType:
+          type: string
+          pattern: '^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*){1,4}$'
+        itemId:
+          type: string
+          nullable: true
+          maxLength: 128
+          description: Omitted / null silences the whole type
+        audience:
+          type: string
+          enum: [self, everyone]
+        until:
+          type: string
+          format: date-time
+          nullable: true
+          description: End of the silence (future); omitted / null until lifted
     SettingStateView:
       type: object
       description: One overridable setting (environment variable) as seen from a level. Values of `secret` settings are never returned.

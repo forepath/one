@@ -37,6 +37,7 @@ describe('BILLING_PAT_SCOPES', () => {
     'attachments:read',
     'attachments:admin',
     'billing:admin',
+    'action_center:admin',
     'files:admin',
     'datev:admin',
     'inventory:admin',

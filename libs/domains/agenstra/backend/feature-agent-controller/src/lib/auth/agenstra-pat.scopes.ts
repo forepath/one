@@ -47,6 +47,8 @@ export const AGENSTRA_PAT_SCOPES = [
   'statistics:read',
   // Instance-wide admin overview (admin console)
   'statistics:admin',
+  // Instance-wide action center (to-dos): read the view, silence / lift silences (admin console)
+  'action_center:admin',
   // WebSockets (connect + subscribe: read; state-changing events: write). Events stay capped by the domain scopes
   // above (see agenstra-websocket.scopes.ts).
   'websocket:clients:read',

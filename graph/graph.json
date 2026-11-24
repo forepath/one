@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-23T11:46:41.891Z",
+  "generatedAt": "2026-11-24T09:35:35.928Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -262,6 +262,27 @@
         "domain": "decabill",
         "context": "frontend",
         "featureGroup": "feature"
+      }
+    },
+    {
+      "id": "project:shared-frontend-data-access-action-center",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-frontend-data-access-action-center",
+        "root": "libs/domains/shared/frontend/data-access-action-center",
+        "tags": [
+          "domain:shared",
+          "scope:frontend",
+          "type:data-access"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "shared",
+        "context": "frontend",
+        "featureGroup": "data-access"
       }
     },
     {
@@ -586,6 +607,27 @@
       }
     },
     {
+      "id": "project:shared-frontend-feature-action-center",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-frontend-feature-action-center",
+        "root": "libs/domains/shared/frontend/feature-action-center",
+        "tags": [
+          "domain:shared",
+          "scope:frontend",
+          "type:feature"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "shared",
+        "context": "frontend",
+        "featureGroup": "feature"
+      }
+    },
+    {
       "id": "project:shared-frontend-feature-notifications",
       "type": "lib",
       "attrs": {
@@ -754,6 +796,27 @@
         "domain": "forepath",
         "context": "frontend",
         "featureGroup": "util"
+      }
+    },
+    {
+      "id": "project:shared-backend-feature-action-center",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-backend-feature-action-center",
+        "root": "libs/domains/shared/backend/feature-action-center",
+        "tags": [
+          "domain:shared",
+          "scope:backend",
+          "type:feature"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "shared",
+        "context": "backend",
+        "featureGroup": "feature"
       }
     },
     {
@@ -5235,10 +5298,28 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/action-center/agenstra-action-center.gateway.ts",
+      "type": "gateway",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/action-center/agenstra-action-center.gateway.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/context-import/atlassian-auth.service.ts",
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/context-import/atlassian-auth.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-action-center.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-action-center.controller.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -6567,6 +6648,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/agenstra-action-center.module.ts",
+      "type": "module",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/agenstra-action-center.module.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/agenstra-notifications.module.ts",
       "type": "module",
       "attrs": {
@@ -7620,6 +7710,32 @@
       }
     },
     {
+      "id": "file:libs/domains/shared/frontend/data-access-action-center/src/lib/services/action-center.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/data-access-action-center/src/lib/services/action-center.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-frontend-data-access-action-center"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/frontend/data-access-action-center/src/lib/state/action-center",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/data-access-action-center/src/lib/state/action-center",
+        "languageOrKind": "ts",
+        "projectName": "shared-frontend-data-access-action-center",
+        "sliceName": "action-center",
+        "memberFiles": [
+          "action-center.actions.ts",
+          "action-center.effects.ts",
+          "action-center.facade.ts",
+          "action-center.reducer.ts",
+          "action-center.selectors.ts"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/shared/frontend/data-access-agent-harness/README.md",
       "type": "readme",
       "attrs": {
@@ -8407,6 +8523,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/action-center/billing-action-center.gateway.ts",
+      "type": "gateway",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/action-center/billing-action-center.gateway.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "type": "module",
       "attrs": {
@@ -8591,6 +8716,15 @@
       "type": "controller",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/addons.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-action-center.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-action-center.controller.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -10310,6 +10444,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-action-center.module.ts",
+      "type": "module",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-action-center.module.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -14077,6 +14220,15 @@
       }
     },
     {
+      "id": "file:libs/domains/shared/frontend/feature-action-center/src/lib/presenters/action-center-presenters.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/feature-action-center/src/lib/presenters/action-center-presenters.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-frontend-feature-action-center"
+      }
+    },
+    {
       "id": "file:libs/domains/shared/frontend/feature-notifications/README.md",
       "type": "readme",
       "attrs": {
@@ -14198,6 +14350,69 @@
         "path": "libs/domains/forepath/frontend/util-configuration/README.md",
         "languageOrKind": "md",
         "projectName": "forepath-frontend-util-configuration"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/backend/feature-action-center/src/lib/action-center.module.ts",
+      "type": "module",
+      "attrs": {
+        "path": "libs/domains/shared/backend/feature-action-center/src/lib/action-center.module.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-backend-feature-action-center"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/backend/feature-action-center/src/lib/dto/action-center.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/shared/backend/feature-action-center/src/lib/dto/action-center.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-backend-feature-action-center"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/backend/feature-action-center/src/lib/entities/action-center-silence.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/shared/backend/feature-action-center/src/lib/entities/action-center-silence.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-backend-feature-action-center"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-realtime.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-realtime.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-backend-feature-action-center"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-registry.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-registry.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-backend-feature-action-center"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-silences.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-silences.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-backend-feature-action-center"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/backend/feature-action-center/src/lib/services/action-center.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-backend-feature-action-center"
       }
     },
     {
@@ -16737,6 +16952,14 @@
       }
     },
     {
+      "id": "file:docs/agenstra/features/action-center.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/action-center.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/agenstra/features/admin-overview.md",
       "type": "doc",
       "attrs": {
@@ -17245,6 +17468,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/decabill/features/accounting.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/features/action-center.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/action-center.md",
         "languageOrKind": "md"
       }
     },
@@ -20791,6 +21022,39 @@
         "pathOrChannel": "/clients/{id}/statistics/entity-events",
         "operationId": "getClientStatisticsEntityEvents",
         "summary": "Get entity lifecycle events for a client",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/action-center",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/action-center",
+        "operationId": "getAdminActionCenterView",
+        "summary": "Action center view of the caller (admins and managers)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/action-center/silences",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/action-center/silences",
+        "operationId": "createAdminActionCenterSilence",
+        "summary": "Silence an item type or one record (for the caller or, admins only, everyone)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/admin/action-center/silences/{silenceId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/admin/action-center/silences/{silenceId}",
+        "operationId": "removeAdminActionCenterSilence",
+        "summary": "Lift a silence (own silences; silences for everyone admins only)",
         "specKind": "openapi"
       }
     },
@@ -24479,6 +24743,39 @@
         "pathOrChannel": "/admin/billing/capabilities",
         "operationId": "getAdminBillingCapabilities",
         "summary": "Billing feature capabilities for admin UI (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/action-center",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/action-center",
+        "operationId": "getAdminBillingActionCenterView",
+        "summary": "Action center view of the caller (admins and managers)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/action-center/silences",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/action-center/silences",
+        "operationId": "createAdminBillingActionCenterSilence",
+        "summary": "Silence an item type or one record (for the caller or, admins only, everyone)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/admin/billing/action-center/silences/{silenceId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/admin/billing/action-center/silences/{silenceId}",
+        "operationId": "removeAdminBillingActionCenterSilence",
+        "summary": "Lift a silence (own silences; silences for everyone admins only)",
         "specKind": "openapi"
       }
     },
@@ -31864,6 +32161,76 @@
       }
     },
     {
+      "id": "concept:agenstra-action-center",
+      "type": "concept",
+      "attrs": {
+        "title": "Action Center",
+        "docPath": "docs/agenstra/features/action-center.md",
+        "sectionAnchor": "action-center",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-to-dos",
+      "type": "concept",
+      "attrs": {
+        "title": "To-dos",
+        "docPath": "docs/agenstra/features/action-center.md",
+        "sectionAnchor": "to-dos",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-silencing",
+      "type": "concept",
+      "attrs": {
+        "title": "Silencing",
+        "docPath": "docs/agenstra/features/action-center.md",
+        "sectionAnchor": "silencing",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-live-updates",
+      "type": "concept",
+      "attrs": {
+        "title": "Live updates",
+        "docPath": "docs/agenstra/features/action-center.md",
+        "sectionAnchor": "live-updates",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-access",
+      "type": "concept",
+      "attrs": {
+        "title": "Access",
+        "docPath": "docs/agenstra/features/action-center.md",
+        "sectionAnchor": "access",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-load",
+      "type": "concept",
+      "attrs": {
+        "title": "Load",
+        "docPath": "docs/agenstra/features/action-center.md",
+        "sectionAnchor": "load",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-related",
+      "type": "concept",
+      "attrs": {
+        "title": "Related",
+        "docPath": "docs/agenstra/features/action-center.md",
+        "sectionAnchor": "related",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-admin-overview",
       "type": "concept",
       "attrs": {
@@ -31880,26 +32247,6 @@
         "title": "Workspaces and combined numbers",
         "docPath": "docs/agenstra/features/admin-overview.md",
         "sectionAnchor": "workspaces-and-combined-numbers",
-        "domain": "agenstra"
-      }
-    },
-    {
-      "id": "concept:agenstra-access",
-      "type": "concept",
-      "attrs": {
-        "title": "Access",
-        "docPath": "docs/agenstra/features/admin-overview.md",
-        "sectionAnchor": "access",
-        "domain": "agenstra"
-      }
-    },
-    {
-      "id": "concept:agenstra-related",
-      "type": "concept",
-      "attrs": {
-        "title": "Related",
-        "docPath": "docs/agenstra/features/admin-overview.md",
-        "sectionAnchor": "related",
         "domain": "agenstra"
       }
     },
@@ -36944,6 +37291,76 @@
       }
     },
     {
+      "id": "concept:decabill-action-center",
+      "type": "concept",
+      "attrs": {
+        "title": "Action Center",
+        "docPath": "docs/decabill/features/action-center.md",
+        "sectionAnchor": "action-center",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-to-dos",
+      "type": "concept",
+      "attrs": {
+        "title": "To-dos",
+        "docPath": "docs/decabill/features/action-center.md",
+        "sectionAnchor": "to-dos",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-silencing",
+      "type": "concept",
+      "attrs": {
+        "title": "Silencing",
+        "docPath": "docs/decabill/features/action-center.md",
+        "sectionAnchor": "silencing",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-live-updates",
+      "type": "concept",
+      "attrs": {
+        "title": "Live updates",
+        "docPath": "docs/decabill/features/action-center.md",
+        "sectionAnchor": "live-updates",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-access",
+      "type": "concept",
+      "attrs": {
+        "title": "Access",
+        "docPath": "docs/decabill/features/action-center.md",
+        "sectionAnchor": "access",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-load",
+      "type": "concept",
+      "attrs": {
+        "title": "Load",
+        "docPath": "docs/decabill/features/action-center.md",
+        "sectionAnchor": "load",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-related",
+      "type": "concept",
+      "attrs": {
+        "title": "Related",
+        "docPath": "docs/decabill/features/action-center.md",
+        "sectionAnchor": "related",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-addons",
       "type": "concept",
       "attrs": {
@@ -37060,26 +37477,6 @@
         "title": "Tenants and combined numbers",
         "docPath": "docs/decabill/features/admin-overview.md",
         "sectionAnchor": "tenants-and-combined-numbers",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-access",
-      "type": "concept",
-      "attrs": {
-        "title": "Access",
-        "docPath": "docs/decabill/features/admin-overview.md",
-        "sectionAnchor": "access",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-related",
-      "type": "concept",
-      "attrs": {
-        "title": "Related",
-        "docPath": "docs/decabill/features/admin-overview.md",
-        "sectionAnchor": "related",
         "domain": "decabill"
       }
     },
@@ -38650,16 +39047,6 @@
         "title": "Console",
         "docPath": "docs/decabill/features/inventory.md",
         "sectionAnchor": "console",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-live-updates",
-      "type": "concept",
-      "attrs": {
-        "title": "Live updates",
-        "docPath": "docs/decabill/features/inventory.md",
-        "sectionAnchor": "live-updates",
         "domain": "decabill"
       }
     },
@@ -41677,6 +42064,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "project:shared-shared-util-network-address",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "project:agenstra-shared-util-opencode-config",
       "type": "depends_on"
     },
@@ -41688,11 +42080,6 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "project:shared-backend-util-http-context",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "project:shared-shared-util-network-address",
       "type": "depends_on"
     },
     {
@@ -41738,6 +42125,16 @@
     {
       "from": "project:decabill-frontend-feature-billing-console",
       "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-feature-billing-console",
+      "to": "project:shared-frontend-data-access-action-center",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-feature-billing-console",
+      "to": "project:shared-frontend-feature-action-center",
       "type": "depends_on"
     },
     {
@@ -41863,6 +42260,16 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "project:shared-backend-util-http-context",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-console",
+      "to": "project:shared-frontend-data-access-action-center",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-console",
+      "to": "project:shared-frontend-feature-action-center",
       "type": "depends_on"
     },
     {
@@ -42086,6 +42493,16 @@
       "type": "depends_on"
     },
     {
+      "from": "project:shared-frontend-feature-action-center",
+      "to": "project:shared-frontend-data-access-action-center",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-feature-action-center",
+      "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
       "from": "project:shared-frontend-feature-notifications",
       "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
@@ -42133,6 +42550,16 @@
     {
       "from": "project:forepath-frontend-util-configuration",
       "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-backend-feature-action-center",
+      "to": "project:shared-backend-util-redis-cache",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-backend-feature-action-center",
+      "to": "project:shared-backend-feature-updates",
       "type": "depends_on"
     },
     {
@@ -42437,6 +42864,11 @@
     },
     {
       "from": "project:decabill-frontend-billing-console",
+      "to": "project:shared-frontend-data-access-action-center",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-billing-console",
       "to": "project:shared-frontend-data-access-notifications",
       "type": "depends_on"
     },
@@ -42563,6 +42995,11 @@
     {
       "from": "project:agenstra-frontend-agent-console",
       "to": "project:agenstra-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-agent-console",
+      "to": "project:shared-frontend-data-access-action-center",
       "type": "depends_on"
     },
     {
@@ -45847,7 +46284,17 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/action-center/agenstra-action-center.gateway.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/context-import/atlassian-auth.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-action-center.controller.ts",
       "type": "contains"
     },
     {
@@ -46587,6 +47034,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/agenstra-action-center.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/agenstra-notifications.module.ts",
       "type": "contains"
     },
@@ -47171,6 +47623,16 @@
       "type": "contains"
     },
     {
+      "from": "project:shared-frontend-data-access-action-center",
+      "to": "file:libs/domains/shared/frontend/data-access-action-center/src/lib/services/action-center.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-data-access-action-center",
+      "to": "file:libs/domains/shared/frontend/data-access-action-center/src/lib/state/action-center",
+      "type": "contains"
+    },
+    {
       "from": "project:shared-frontend-data-access-agent-harness",
       "to": "file:libs/domains/shared/frontend/data-access-agent-harness/README.md",
       "type": "contains"
@@ -47587,6 +48049,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/action-center/billing-action-center.gateway.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "type": "contains"
     },
@@ -47688,6 +48155,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/addons.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-action-center.controller.ts",
       "type": "contains"
     },
     {
@@ -48643,6 +49115,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-withdrawal-requests.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-action-center.module.ts",
       "type": "contains"
     },
     {
@@ -50736,6 +51213,11 @@
       "type": "contains"
     },
     {
+      "from": "project:shared-frontend-feature-action-center",
+      "to": "file:libs/domains/shared/frontend/feature-action-center/src/lib/presenters/action-center-presenters.service.ts",
+      "type": "contains"
+    },
+    {
       "from": "project:shared-frontend-feature-notifications",
       "to": "file:libs/domains/shared/frontend/feature-notifications/README.md",
       "type": "contains"
@@ -50793,6 +51275,41 @@
     {
       "from": "project:forepath-frontend-util-configuration",
       "to": "file:libs/domains/forepath/frontend/util-configuration/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-feature-action-center",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/action-center.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-feature-action-center",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/dto/action-center.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-feature-action-center",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/entities/action-center-silence.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-feature-action-center",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-realtime.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-feature-action-center",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-registry.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-feature-action-center",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-silences.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-feature-action-center",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center.service.ts",
       "type": "contains"
     },
     {
@@ -53377,6 +53894,21 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/action-center",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/action-center/silences",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/admin/action-center/silences/{silenceId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:GET:/admin/overview",
       "type": "contains"
     },
@@ -55393,6 +55925,21 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/admin/billing/capabilities",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/action-center",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/action-center/silences",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/admin/billing/action-center/silences/{silenceId}",
       "type": "contains"
     },
     {
@@ -59476,6 +60023,46 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/agenstra/features/action-center.md",
+      "to": "concept:agenstra-action-center",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/action-center.md",
+      "to": "concept:agenstra-overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/action-center.md",
+      "to": "concept:agenstra-to-dos",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/action-center.md",
+      "to": "concept:agenstra-silencing",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/action-center.md",
+      "to": "concept:agenstra-live-updates",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/action-center.md",
+      "to": "concept:agenstra-access",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/action-center.md",
+      "to": "concept:agenstra-load",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/action-center.md",
+      "to": "concept:agenstra-related",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/agenstra/features/admin-overview.md",
       "to": "concept:agenstra-admin-overview",
       "type": "contains"
@@ -62906,6 +63493,46 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/decabill/features/action-center.md",
+      "to": "concept:decabill-action-center",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/action-center.md",
+      "to": "concept:decabill-overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/action-center.md",
+      "to": "concept:decabill-to-dos",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/action-center.md",
+      "to": "concept:decabill-silencing",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/action-center.md",
+      "to": "concept:decabill-live-updates",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/action-center.md",
+      "to": "concept:decabill-access",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/action-center.md",
+      "to": "concept:decabill-load",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/action-center.md",
+      "to": "concept:decabill-related",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/decabill/features/addons.md",
       "to": "concept:decabill-addons",
       "type": "contains"
@@ -65928,6 +66555,36 @@
     {
       "from": "project:forepath-backend-feature-communication-manager",
       "to": "api:HTTP:POST:/public/vulnerability-reports",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-action-center.controller.ts",
+      "to": "api:HTTP:GET:/admin/action-center",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/admin/action-center",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-action-center.controller.ts",
+      "to": "api:HTTP:POST:/admin/action-center/silences",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/admin/action-center/silences",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-action-center.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/action-center/silences/{silenceId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:DELETE:/admin/action-center/silences/{silenceId}",
       "type": "implements"
     },
     {
@@ -69726,6 +70383,36 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-action-center.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/action-center",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/action-center",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-action-center.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/action-center/silences",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/action-center/silences",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-action-center.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/action-center/silences/{silenceId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:DELETE:/admin/billing/action-center/silences/{silenceId}",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing-settings.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/settings",
       "type": "implements"
@@ -70593,6 +71280,21 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:GET:/admin/billing/capabilities",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/action-center",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/action-center/silences",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/action-center/silences/{silenceId}",
       "type": "implements"
     },
     {
@@ -72613,6 +73315,21 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/capabilities",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/action-center",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/action-center/silences",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/action-center/silences/{silenceId}",
       "type": "implements"
     },
     {
@@ -78056,6 +78773,26 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/action-center/agenstra-action-center.gateway.ts",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/action-center/agenstra-action-center.gateway.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/socket-auth.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/action-center/agenstra-action-center.gateway.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-action-center.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-controller-settings.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-settings.service.ts",
       "type": "injects"
@@ -80223,6 +80960,21 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/accounting/services/accounting-vat-return.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/accounting/services/accounting-chart.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/action-center/billing-action-center.gateway.ts",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/action-center/billing-action-center.gateway.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/socket-auth.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/action-center/billing-action-center.gateway.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
       "type": "injects"
     },
     {
@@ -85356,6 +86108,31 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-realtime.service.ts",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-realtime.service.ts",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-silences.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-silences.service.ts",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-registry.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center.service.ts",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-registry.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center.service.ts",
+      "to": "file:libs/domains/shared/backend/feature-action-center/src/lib/services/action-center-silences.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/shared/backend/feature-notifications/src/lib/controllers/webhook-endpoints.controller.ts",
       "to": "file:libs/domains/shared/backend/feature-notifications/src/lib/services/webhook-endpoint.service.ts",
       "type": "injects"
@@ -85977,6 +86754,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-action-center.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/tickets.controller.ts",
       "type": "provides"
     },
@@ -86522,6 +87304,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/action-center/agenstra-action-center.gateway.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/provisioning.service.ts",
       "type": "provides"
     },
@@ -86863,6 +87650,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-overview.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-action-center.controller.ts",
       "type": "provides"
     },
     {
@@ -88163,6 +88955,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/gateways/billing-status.gateway.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/action-center/billing-action-center.gateway.ts",
       "type": "provides"
     },
     {
@@ -91091,6 +91888,11 @@
       "type": "contains"
     },
     {
+      "from": "file:libs/domains/shared/frontend/data-access-action-center/src/lib/state/action-center",
+      "to": "file:libs/domains/shared/frontend/data-access-action-center/src/lib/services/action-center.service.ts",
+      "type": "contains"
+    },
+    {
       "from": "file:libs/domains/shared/frontend/data-access-communication/src/lib/state/contact-request",
       "to": "file:libs/domains/shared/frontend/data-access-communication/src/lib/services/contact-request.service.ts",
       "type": "contains"
@@ -92323,6 +93125,11 @@
     {
       "from": "concept:agenstra-agent-manager-host",
       "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-to-dos",
+      "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
     },
     {
@@ -94966,6 +95773,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-access",
+      "to": "api:HTTP:GET:/admin/billing/webhooks",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-access",
+      "to": "api:HTTP:POST:/admin/billing/webhooks",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-addons",
       "to": "api:HTTP:GET:/addons",
       "type": "documents"
@@ -95143,16 +95960,6 @@
     {
       "from": "concept:decabill-admin-overview",
       "to": "api:HTTP:GET:/admin/billing/overview",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-access",
-      "to": "api:HTTP:GET:/admin/billing/webhooks",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-access",
-      "to": "api:HTTP:POST:/admin/billing/webhooks",
       "type": "documents"
     },
     {
@@ -99046,6 +99853,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:shared-frontend-data-access-action-center",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-data-access-action-center",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-data-access-action-center",
+      "to": "feature-group:data-access",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:shared-frontend-data-access-agent-harness",
       "to": "domain:shared",
       "type": "belongs_to"
@@ -99271,6 +100093,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:shared-frontend-feature-action-center",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-feature-action-center",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-feature-action-center",
+      "to": "feature-group:feature",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:shared-frontend-feature-notifications",
       "to": "domain:shared",
       "type": "belongs_to"
@@ -99388,6 +100225,21 @@
     {
       "from": "project:forepath-frontend-util-configuration",
       "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-backend-feature-action-center",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-backend-feature-action-center",
+      "to": "context:backend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-backend-feature-action-center",
+      "to": "feature-group:feature",
       "type": "belongs_to"
     },
     {
@@ -100381,6 +101233,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/agenstra/features/action-center.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/agenstra/features/admin-overview.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -100697,6 +101554,11 @@
     },
     {
       "from": "file:docs/decabill/features/accounting.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/features/action-center.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -102146,12 +103008,22 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-admin-overview",
+      "from": "concept:agenstra-action-center",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-workspaces-and-combined-numbers",
+      "from": "concept:agenstra-to-dos",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-silencing",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-live-updates",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -102161,7 +103033,22 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-load",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-related",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-admin-overview",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-workspaces-and-combined-numbers",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -104686,6 +105573,41 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:decabill-action-center",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-to-dos",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-silencing",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-live-updates",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-access",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-load",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:decabill-addons",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -104742,16 +105664,6 @@
     },
     {
       "from": "concept:decabill-tenants-and-combined-numbers",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-access",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-related",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -105537,11 +106449,6 @@
     },
     {
       "from": "concept:decabill-console",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-live-updates",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

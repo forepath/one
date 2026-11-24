@@ -25,6 +25,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Tickets and Workspaces** Ticket boards, migration, and automation on the controller
 - **Usage Statistics** Controller-backed usage and filter metrics (distinct from container stats)
 - **[Admin Overview](./admin-overview.md)** Admin and manager dashboard of the instance: activity, tickets, runs and security, combined or per workspace
+- **[Action Center](./action-center.md)** Live to-do sidebar for admins and managers: approvals, failed automation and deployments, broken integrations and setup suggestions, with silencing
 - **Message Filters** Layered regex policies for chat traffic
 - **Egress Filtering** Per-environment web traffic filtering via an egress guard sidecar
 - **Container Isolation Levels** Per-environment choice between standard Docker (`runc`), a gVisor sandbox, gVisor on KVM and a KVM microVM, validated by runtime probes
@@ -236,6 +237,16 @@ Dashboard of the instance's key figures for admins and managers, laid out like t
 - Summary bar, messages and security charts and per-area figures for a selectable period
 - Combined numbers over all workspaces with a per-workspace comparison, or one workspace
 - Same chat and security totals as the audit page; PAT scope `statistics:admin`
+
+### [Action Center](./action-center.md)
+
+Live to-do list across all workspaces in a right-hand sidebar, opened from the light bulb in the top bar (admins and managers, both console modes).
+
+**Key Capabilities**:
+
+- Suggested setup steps on top, to-dos per area as card stacks with deep links into the right workspace
+- Live over Socket.IO (HTTP changes, worker events, Valkey revisions); silencing for oneself or (admins) everyone
+- PAT scope `action_center:admin` (PATs only see their user's workspaces)
 
 ### [Message Filters](./message-filters.md)
 

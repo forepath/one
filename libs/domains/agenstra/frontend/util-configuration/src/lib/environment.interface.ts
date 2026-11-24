@@ -7,7 +7,7 @@ import type {
   LandingConfigWithRestApi,
 } from '@forepath/shared/frontend/util-configuration';
 
-export type AgenstraAgentWebsocket = 'tickets' | 'status' | 'vnc' | 'pages';
+export type AgenstraAgentWebsocket = 'tickets' | 'status' | 'vnc' | 'pages' | 'action-center';
 export type AgenstraBillingWebsocket = 'billing' | 'projects';
 
 export interface AgenstraAgentConsoleEnvironment extends BaseEnvironment {

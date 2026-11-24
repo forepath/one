@@ -17,6 +17,7 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 - **Service Types and Plans** Admin-managed catalog with provider schemas and pricing
 - **Billing Administration** Manual invoices, customer profiles, KPIs, bill-now, and admin File Explorer
 - **[Admin Overview](./admin-overview.md)** Dashboard of the key tenant figures, with other tenants and combined numbers for global-view tenants
+- **[Action Center](./action-center.md)** Live to-do sidebar for admins and managers: unsent documents, overdue items, incomplete profiles, bookings and setup suggestions, with silencing
 - **Customer Profiles** Self-service and admin billing metadata required for ordering
 - **VAT and tax treatment** EU place-of-supply modes, VIES VAT ID validation, OSS threshold, reverse charge
 - **Customer Trust Score** Admin-only traffic-light trust ranking on billing profiles
@@ -178,6 +179,16 @@ Admin dashboard of a tenant's key figures across customers, receivables, payable
 - Summary bar, revenue and expense chart and per-area figures for a selectable period
 - Tenant switch and an "All tenants" view with combined numbers and a per-tenant comparison (`TENANTS_ALLOW_GLOBAL_VIEWS`)
 - Tenant-scoped queries per tenant; admin role and `billing:admin` scope required
+
+### [Action Center](./action-center.md)
+
+Live to-do list of the tenant in a right-hand sidebar, opened from the light bulb in the top bar (admins and managers, both console modes).
+
+**Key Capabilities**:
+
+- Suggested setup steps on top, to-dos per area as card stacks with deep links (switching the console mode as needed)
+- Feature-aware items (accounting, DATEV) and tenant scoping incl. `TENANTS_ALLOW_GLOBAL_VIEWS`
+- Live over Socket.IO (HTTP changes, worker events, Valkey revisions); silencing for oneself or (admins) everyone; PAT scope `action_center:admin`
 
 ### [File Explorer](./file-explorer.md)
 

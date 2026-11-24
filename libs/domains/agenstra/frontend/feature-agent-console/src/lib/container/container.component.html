@@ -14,6 +14,9 @@
     brandAlt="Agenstra"
     i18n-brandAlt="@@featureContainer-brandAlt"
   >
+    @if (actionCenterAvailable()) {
+      <shared-action-center-toggle />
+    }
     <fpc-language-switcher
       [locales]="localeService.getAvailableLocales()"
       [locale]="localeService.getCurrentLocale()"
@@ -56,7 +59,7 @@
   </fpc-top-bar>
 }
 <div
-  class="container__workspace d-flex justify-content-end flex-grow-1 overflow-hidden"
+  class="container__workspace d-flex justify-content-end flex-grow-1 overflow-hidden position-relative"
   [class.border-top]="!isMainMask()"
 >
   @if (isMainMask()) {
@@ -154,22 +157,71 @@
           <span class="small" i18n="@@featureContainer-audit">Audit</span>
         </a>
       } @else {
-        @for (item of visibleAdminNavItems$ | async; track item.routerLink.join('/')) {
-          <a
-            [routerLink]="item.routerLink"
-            routerLinkActive="active"
-            class="sidebar__item position-relative"
-            [title]="item.title"
-            [attr.aria-label]="item.title"
-            [attr.data-testid]="'sidebar-admin-' + item.routerLink.join('/').slice(1)"
-          >
-            <i class="bi {{ item.icon }}" aria-hidden="true"></i>
-            <span class="small">{{ item.label }}</span>
-            @if (item.navKey === 'updates' && (updatesAttentionBadge$ | async)) {
-              <fpc-notification-indicator placement="absolute" />
-              <span class="visually-hidden" i18n="@@featureContainer-updatesAttention">Updates need attention</span>
-            }
-          </a>
+        <!-- Overview directly, then one tile per area; it opens a popover with the area's pages. -->
+        @for (entry of adminNavEntries$ | async; track entry.key) {
+          @if (entry.kind === 'item') {
+            <a
+              [routerLink]="entry.item.routerLink"
+              routerLinkActive="active"
+              class="sidebar__item position-relative"
+              [title]="entry.item.title"
+              [attr.aria-label]="entry.item.title"
+              [attr.data-testid]="'sidebar-admin-' + entry.item.routerLink.join('/').slice(1)"
+            >
+              <i class="bi {{ entry.item.icon }}" aria-hidden="true"></i>
+              <span class="small">{{ entry.item.label }}</span>
+              @if (entry.item.navKey === 'updates' && (updatesAttentionBadge$ | async)) {
+                <fpc-notification-indicator placement="absolute" />
+                <span class="visually-hidden" i18n="@@featureContainer-updatesAttention">Updates need attention</span>
+              }
+            </a>
+          } @else {
+            <fpc-sidebar-popover
+              [open]="openNavGroup() === entry.key"
+              (openChange)="setNavGroupOpen(entry.key, $event)"
+              [ariaLabel]="entry.group.label"
+            >
+              <span
+                fpcSidebarPopoverTrigger
+                class="sidebar__item position-relative"
+                [class.active]="isNavGroupActive(entry.group)"
+                tabindex="0"
+                role="button"
+                aria-haspopup="dialog"
+                [attr.aria-expanded]="openNavGroup() === entry.key"
+                [title]="entry.group.title"
+                [attr.aria-label]="entry.group.title"
+                [attr.data-testid]="'sidebar-group-' + entry.key"
+              >
+                <i class="bi {{ entry.group.icon }}" aria-hidden="true"></i>
+                <span class="small">{{ entry.group.label }}</span>
+                @if (navGroupHasKey(entry.group, 'updates') && (updatesAttentionBadge$ | async)) {
+                  <fpc-notification-indicator placement="absolute" />
+                  <span class="visually-hidden" i18n="@@featureContainer-updatesAttention">Updates need attention</span>
+                }
+              </span>
+              @for (item of entry.group.items; track item.routerLink.join('/')) {
+                <a
+                  [routerLink]="item.routerLink"
+                  routerLinkActive="active"
+                  class="sidebar__item position-relative"
+                  [title]="item.title"
+                  [attr.aria-label]="item.title"
+                  [attr.data-testid]="'sidebar-admin-' + item.routerLink.join('/').slice(1)"
+                  (click)="setNavGroupOpen(entry.key, false)"
+                >
+                  <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+                  <span class="small">{{ item.label }}</span>
+                  @if (item.navKey === 'updates' && (updatesAttentionBadge$ | async)) {
+                    <fpc-notification-indicator placement="absolute" />
+                    <span class="visually-hidden" i18n="@@featureContainer-updatesAttention"
+                      >Updates need attention</span
+                    >
+                  }
+                </a>
+              }
+            </fpc-sidebar-popover>
+          }
         }
       }
       <div fpcSidebarFooter>
@@ -264,6 +316,10 @@
   <fpc-section-container>
     <router-outlet></router-outlet>
   </fpc-section-container>
+  @if (actionCenterAvailable() && actionCenterOpen() && !isToolWindowRoute()) {
+    <!-- Overlay on narrow screens: never wider than the content area (the rail stays visible). -->
+    <shared-action-center-panel [style.--action-center-inset-start]="isMainMask() ? 'calc(2rem + 40.5px)' : '0px'" />
+  }
 </div>
 
 <identity-logout-confirm-modal (confirmed)="onLogoutConfirmed($event)" />

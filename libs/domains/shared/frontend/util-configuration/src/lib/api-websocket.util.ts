@@ -9,6 +9,7 @@ const NAMESPACE_SUFFIX: Record<string, string> = {
   billing: '/billing',
   pages: '/pages',
   clients: '/clients',
+  'action-center': '/action-center',
 };
 
 function primaryWebsocketUrl<E extends string>(config: ApiWebsocketConfig<E>): string {
@@ -32,7 +33,7 @@ function swapNamespaceSuffix(base: string, fromSuffix: string, toSuffix: string)
 /**
  * Resolves a websocket URL from the string | endpoints union.
  * String form returns the primary URL for `default`, or derives named endpoints by swapping
- * known `/socket/*` suffixes (clients → tickets/status/vnc/…; billing → projects/inventory).
+ * known `/socket/*` suffixes (clients → tickets/status/vnc/…/action-center; billing → projects/inventory/action-center).
  */
 export function resolveApiWebsocketUrl<E extends string>(
   config: ApiWebsocketConfig<E> | undefined | null,
@@ -77,7 +78,7 @@ export function resolveApiWebsocketUrl<E extends string>(
   }
 
   if (primary.endsWith('/billing') || primary.includes('/socket/billing')) {
-    if (endpoint === 'projects' || endpoint === 'inventory') {
+    if (endpoint === 'projects' || endpoint === 'inventory' || endpoint === 'action-center') {
       return swapNamespaceSuffix(primary, '/billing', toSuffix);
     }
   }

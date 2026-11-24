@@ -1,0 +1,153 @@
+<!-- The shared page header, so the panel header lines up with the page headers next to it. -->
+<fpc-page-header class="action-center__header" [title]="panelTitle" />
+
+<fpc-tab-group class="action-center__tabs" [(activeId)]="activeTab" [ariaLabel]="tabsLabel" stretch>
+  <fpc-tab id="open" [label]="openTabLabel" icon="list-check" [badge]="openCount() || null" />
+  <fpc-tab id="silenced" [label]="silencedTabLabel" icon="bell-slash" [badge]="silencedTabBadge()" />
+</fpc-tab-group>
+
+<!-- Search + filters, for the Open and the Silenced tab alike. -->
+<fpc-list-toolbar
+  class="action-center__toolbar"
+  [(open)]="filtersOpen"
+  [title]="filtersTitle"
+  [activeCount]="activeFilterCount()"
+  (cleared)="clearFilters()"
+  data-testid="action-center-toolbar"
+>
+  <fpc-search-field
+    fpcListToolbarLead
+    inputId="action-center-search"
+    name="action-center-search"
+    [bordered]="false"
+    [placeholder]="searchPlaceholder"
+    [ariaLabel]="searchPlaceholder"
+    [value]="search()"
+    (valueChange)="search.set($event)"
+    data-testid="action-center-search"
+  />
+  <div class="fpc-filter-grid">
+    <fpc-form-field forId="action-center-filter-area" [label]="areaLabel">
+      <fpc-form-control
+        controlType="select"
+        controlId="action-center-filter-area"
+        name="action-center-filter-area"
+        [ngModel]="category() ?? ''"
+        (ngModelChange)="setCategory($event)"
+        data-testid="action-center-filter-area"
+      >
+        <option value="">{{ anyLabel }}</option>
+        @for (option of categoryOptions(); track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+    <fpc-form-field forId="action-center-filter-priority" [label]="priorityLabel">
+      <fpc-form-control
+        controlType="select"
+        controlId="action-center-filter-priority"
+        name="action-center-filter-priority"
+        [ngModel]="severity() ?? ''"
+        (ngModelChange)="setSeverity($event)"
+        data-testid="action-center-filter-priority"
+      >
+        <option value="">{{ anyLabel }}</option>
+        @for (option of severityOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </fpc-form-control>
+    </fpc-form-field>
+  </div>
+</fpc-list-toolbar>
+
+@if (error(); as message) {
+  <fpc-alert variant="danger" flush dismissible [message]="message" (closed)="dismissError()" />
+}
+
+<div class="action-center__body" [attr.aria-busy]="loading() && !view()">
+  @if (!view()) {
+    <fpc-empty-state icon="lightbulb" [title]="loadingLabel" size="sm" [loading]="loading()" />
+  } @else if (activeTab() === 'open') {
+    @if (visibleSetupGroups().length > 0) {
+      <section class="action-center__section action-center__section--setup" data-testid="action-center-setup">
+        <h3 class="action-center__section-title">
+          <i class="bi bi-stars" aria-hidden="true"></i>
+          <span>{{ categoryLabel('setup') }}</span>
+        </h3>
+        @for (group of visibleSetupGroups(); track group.type) {
+          <shared-action-center-stack
+            [group]="group"
+            [highlight]="true"
+            [canSilenceForEveryone]="canSilenceForEveryone()"
+            [disabled]="saving()"
+            (navigate)="navigate($event)"
+            (silence)="silence($event)"
+          />
+        }
+      </section>
+    }
+
+    @for (category of visibleTaskCategories(); track category.category) {
+      <section class="action-center__section" [attr.data-category]="category.category">
+        <h3 class="action-center__section-title">
+          <span>{{ categoryLabel(category.category) }}</span>
+          <span class="action-center__section-count">{{ categoryCount(category.groups) }}</span>
+        </h3>
+        @for (group of category.groups; track group.type) {
+          <shared-action-center-stack
+            [group]="group"
+            [canSilenceForEveryone]="canSilenceForEveryone()"
+            [disabled]="saving()"
+            (navigate)="navigate($event)"
+            (silence)="silence($event)"
+          />
+        }
+      </section>
+    }
+
+    @if (visibleSetupGroups().length === 0 && visibleTaskCategories().length === 0) {
+      @if (filterActive()) {
+        <fpc-empty-state icon="search" [title]="noMatchTitle" [message]="noMatchMessage" size="sm" />
+      } @else {
+        <fpc-empty-state icon="check2-circle" [title]="emptyTitle" [message]="emptyMessage" size="sm" />
+      }
+    }
+  } @else {
+    @if (silences().length === 0) {
+      <fpc-empty-state icon="bell" [title]="noSilencesTitle" [message]="noSilencesMessage" size="sm" />
+    } @else if (visibleSilences().length === 0) {
+      <fpc-empty-state icon="search" [title]="noMatchTitle" [message]="noMatchMessage" size="sm" />
+    } @else {
+      <ul class="action-center__silences" data-testid="action-center-silences">
+        @for (silence of visibleSilences(); track silence.id) {
+          <li class="action-center__silence" data-testid="action-center-silence">
+            <div class="action-center__silence-text">
+              <div class="action-center__silence-title">{{ silenceTitle(silence) }}</div>
+              <div class="action-center__silence-meta">
+                <fpc-badge size="sm" [color]="silence.audience === 'everyone' ? 'info' : 'secondary'">{{
+                  silenceAudience(silence)
+                }}</fpc-badge>
+                <span>{{ silenceScope(silence) }}</span>
+                <span>{{ silenceUntil(silence) }}</span>
+              </div>
+            </div>
+            @if (silence.removable) {
+              <fpc-button
+                variant="link"
+                size="sm"
+                iconOnly
+                [title]="liftLabel(silence)"
+                [ariaLabel]="liftLabel(silence)"
+                [disabled]="saving()"
+                (clicked)="lift(silence)"
+                data-testid="action-center-lift-silence"
+              >
+                <i class="bi bi-bell" aria-hidden="true"></i>
+              </fpc-button>
+            }
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>

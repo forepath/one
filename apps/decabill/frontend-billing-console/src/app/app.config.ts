@@ -1,10 +1,29 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withRouterConfig } from '@angular/router';
-import { getBillingTenantInterceptor } from '@forepath/decabill/frontend/data-access-billing-console';
-import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/decabill/frontend/util-configuration';
-import { getAuthInterceptor, getUsersSessionInvalidationInterceptor } from '@forepath/identity/frontend';
+import {
+  getBillingTenantInterceptor,
+  resolveBillingTenantId,
+} from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  Environment,
+  ENVIRONMENT,
+  environment,
+  provideLocale,
+  resolveApiWebsocketUrl,
+} from '@forepath/decabill/frontend/util-configuration';
+import {
+  createSocketAuthOption,
+  getAuthInterceptor,
+  getUsersSessionInvalidationInterceptor,
+  OidcAuthService,
+  resolveAuthorizationHeader$,
+} from '@forepath/identity/frontend';
 import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideOidc } from '@forepath/identity/frontend';
+import {
+  ACTION_CENTER_ENVIRONMENT,
+  ACTION_CENTER_SOCKET_AUTH,
+} from '@forepath/shared/frontend/data-access-action-center';
 import { NOTIFICATION_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-notifications';
 import { SETTINGS_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-settings';
 import { UPDATES_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-updates';
@@ -21,6 +40,7 @@ import { createCookieConsentConfig } from '@forepath/shared/frontend/util-cookie
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideNgcCookieConsent } from 'ngx-cookieconsent';
+import { map } from 'rxjs';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -122,6 +142,28 @@ export const appConfig: ApplicationConfig = {
         frontendVersion: env.application.version,
       }),
       deps: [ENVIRONMENT],
+    },
+    {
+      provide: ACTION_CENTER_ENVIRONMENT,
+      useFactory: (env: Environment) => ({
+        apiUrl: env.billing.urls.restApi,
+        basePath: 'admin/billing/action-center',
+        websocketUrl: resolveApiWebsocketUrl(env.billing.urls.websocket, 'action-center') ?? '',
+        socketHeaders: { 'X-Tenant': resolveBillingTenantId(env) },
+        socketAuthExtra: { tenantId: resolveBillingTenantId(env) },
+      }),
+      deps: [ENVIRONMENT],
+    },
+    {
+      // Resolved on every (re)connect, so the action center socket always carries the current session token.
+      provide: ACTION_CENTER_SOCKET_AUTH,
+      useFactory: (env: Environment, oidcAuthService: OidcAuthService) => () =>
+        resolveAuthorizationHeader$(env.authentication.config, oidcAuthService).pipe(
+          map((authorization) =>
+            authorization ? createSocketAuthOption(env.authentication.config, authorization) : null,
+          ),
+        ),
+      deps: [ENVIRONMENT, OidcAuthService],
     },
     {
       provide: LOGIN_SUCCESS_REDIRECT_TARGET,
