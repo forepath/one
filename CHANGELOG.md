@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.7.0](https://github.com/forepath/one/compare/v5.6.0...v5.7.0) (2026-11-24)
+
+
+### Features
+
+* **shared:** action center and sidebar grouping ([#774](https://github.com/forepath/one/issues/774)) ([3b6b8a1](https://github.com/forepath/one/commit/3b6b8a1dd232904dec67942cbfd39062d4ddf56d))
+
 ## [5.6.0](https://github.com/forepath/one/compare/v5.5.0...v5.6.0) (2026-11-23)
 
 
