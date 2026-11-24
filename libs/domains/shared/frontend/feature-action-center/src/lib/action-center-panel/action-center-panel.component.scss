@@ -1,0 +1,133 @@
+// The action center: a right-hand sidebar the full height below the top bar, wider than the navigation rail.
+// From xl it docks beside the content; below it overlays the content (the host's parent must be positioned),
+// never wider than the content area (`--action-center-inset-start` = width of the left rail) and never over the top
+// bar (it lives below it).
+:host {
+  --action-center-width: 24rem;
+  position: relative;
+  // Above content, below the top bar and its menus (same layer as the left rail).
+  z-index: var(--fpc-z-chrome, 1030);
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  width: var(--action-center-width);
+  max-width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background-color: var(--bs-tertiary-bg);
+  border-inline-start: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+@media (max-width: 1199.98px) {
+  :host {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: min(var(--action-center-width), calc(100% - var(--action-center-inset-start, 0px)));
+    box-shadow: -0.5rem 0 1.5rem rgb(0 0 0 / 0.18);
+  }
+}
+
+.action-center__header {
+  flex: 0 0 auto;
+  // Top line like the content area's top border next to it: the bottom edge then lines up with the page headers.
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.action-center__tabs {
+  flex: 0 0 auto;
+}
+
+// Search + filter strip; its drawer overlays the list below it.
+.action-center__toolbar {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 3;
+}
+
+.action-center__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-height: 0;
+  padding: 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.action-center__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.action-center__section-title {
+  // Sticky while its section scrolls through the panel; full-bleed so cards pass underneath it.
+  position: sticky;
+  // The body's top padding (1rem) is part of the scrollport: stick into it, so no card shows above the heading.
+  top: -1rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: -1rem -1rem 0;
+  padding: 0.75rem 1rem;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+  background-color: var(--bs-tertiary-bg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--bs-secondary-color);
+}
+
+.action-center__section--setup .action-center__section-title {
+  color: var(--bs-primary);
+}
+
+.action-center__section-count {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.action-center__silences {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.action-center__silence {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border: var(--bs-border-width) solid var(--bs-border-color-translucent);
+  border-radius: var(--bs-border-radius-lg);
+  background-color: var(--bs-body-bg);
+}
+
+.action-center__silence-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.action-center__silence-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.action-center__silence-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.75rem;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}

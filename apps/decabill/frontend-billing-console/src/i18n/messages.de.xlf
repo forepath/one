@@ -15582,6 +15582,606 @@
         <source>Admin mode: tenant overview and administration</source>
         <target>Adminmodus: Mandantenübersicht und Administration</target>
       </trans-unit>
+      <trans-unit id="featureActionCenter-setUp" datatype="html">
+        <source>Set up</source>
+        <target>Einrichten</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categoryReceivables" datatype="html">
+        <source>Receivables</source>
+        <target>Forderungen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categoryOffers" datatype="html">
+        <source>Offers</source>
+        <target>Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categoryPayables" datatype="html">
+        <source>Payables</source>
+        <target>Verbindlichkeiten</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categoryCustomers" datatype="html">
+        <source>Customers</source>
+        <target>Kunden</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categorySubscriptions" datatype="html">
+        <source>Subscriptions</source>
+        <target>Abonnements</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categoryInventory" datatype="html">
+        <source>Inventory</source>
+        <target>Lager</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categoryAccounting" datatype="html">
+        <source>Accounting</source>
+        <target>Buchhaltung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupIssuerTitle" datatype="html">
+        <source>Complete your company details</source>
+        <target>Firmendaten vervollständigen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupIssuerDescription" datatype="html">
+        <source>Name, VAT ID and address are printed on every invoice; documents cannot be issued without them.</source>
+        <target>Name, USt-IdNr. und Anschrift stehen auf jeder Rechnung; ohne sie können keine Belege ausgestellt werden.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupIssuerDetailsTitle" datatype="html">
+        <source>Add payment and contact details</source>
+        <target>Zahlungs- und Kontaktdaten ergänzen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupIssuerDetailsDescription" datatype="html">
+        <source>Email, IBAN and BIC tell customers how to reach and pay you.</source>
+        <target>E-Mail, IBAN und BIC zeigen Kunden, wie sie dich erreichen und bezahlen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupAccountingTitle" datatype="html">
+        <source>Finish the accounting setup</source>
+        <target>Buchhaltung fertig einrichten</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupAccountingDescription" datatype="html">
+        <source>Accounting is switched on but cannot start yet. Missing: <x id="missing" equiv-text="paramText(group.params, &apos;missing&apos;)"/></source>
+        <target>Die Buchhaltung ist eingeschaltet, kann aber noch nicht starten. Es fehlt: <x id="missing" equiv-text="paramText(group.params, &apos;missing&apos;)"/></target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupDatevTitle" datatype="html">
+        <source>Configure the DATEV export</source>
+        <target>DATEV-Export einrichten</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupDatevDescription" datatype="html">
+        <source>DATEV exports are enabled, but the consultant and client numbers are missing. Configure them or switch the export off.</source>
+        <target>DATEV-Exporte sind aktiviert, aber Berater- und Mandantennummer fehlen. Trage sie ein oder schalte den Export ab.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupFirstCustomerTitle" datatype="html">
+        <source>Add your first customer</source>
+        <target>Ersten Kunden anlegen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupFirstCustomerDescription" datatype="html">
+        <source>Create a customer profile to send offers and invoices.</source>
+        <target>Lege ein Kundenprofil an, um Angebote und Rechnungen zu versenden.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupFirstCustomerAction" datatype="html">
+        <source>Add customer</source>
+        <target>Kunde anlegen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-invoicesUnsentTitle" datatype="html">
+        <source>Invoices not sent yet</source>
+        <target>Rechnungen noch nicht versendet</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-invoicesUnsentDescription" datatype="html">
+        <source>Issued without notifying the customer. Send them when ready.</source>
+        <target>Ohne Benachrichtigung des Kunden ausgestellt. Versende sie, sobald sie bereit sind.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-creditNotesUnsentTitle" datatype="html">
+        <source>Credit notes not sent yet</source>
+        <target>Gutschriften noch nicht versendet</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-creditNotesUnsentDescription" datatype="html">
+        <source>Voided invoices whose credit note the customer has not received.</source>
+        <target>Stornierte Rechnungen, deren Gutschrift der Kunde noch nicht erhalten hat.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-invoicesDraftTitle" datatype="html">
+        <source>Draft invoices</source>
+        <target>Rechnungsentwürfe</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-invoicesDraftDescription" datatype="html">
+        <source>Review and issue or discard them.</source>
+        <target>Prüfe sie und stelle sie aus oder verwirf sie.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-invoicesOverdueTitle" datatype="html">
+        <source>Overdue invoices</source>
+        <target>Überfällige Rechnungen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-invoicesOverdueDescription" datatype="html">
+        <source>Payment is past due. Remind the customer or record the payment.</source>
+        <target>Die Zahlung ist überfällig. Erinnere den Kunden oder erfasse die Zahlung.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-dueSince" datatype="html">
+        <source>due <x id="date" equiv-text="format.date(paramText(item.params, &apos;dueDate&apos;))"/></source>
+        <target>fällig <x id="date" equiv-text="format.date(paramText(item.params, &apos;dueDate&apos;))"/></target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-autoPaymentTitle" datatype="html">
+        <source>Automatic payment failed</source>
+        <target>Automatische Zahlung fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-autoPaymentDescription" datatype="html">
+        <source>All automatic collection attempts failed. Contact the customer or collect manually.</source>
+        <target>Alle automatischen Einzugsversuche sind gescheitert. Kontaktiere den Kunden oder ziehe manuell ein.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-offersDraftTitle" datatype="html">
+        <source>Draft offers</source>
+        <target>Angebotsentwürfe</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-offersDraftDescription" datatype="html">
+        <source>Finish and finalize them so customers can accept.</source>
+        <target>Stelle sie fertig, damit Kunden annehmen können.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-offersUnsentTitle" datatype="html">
+        <source>Offers not sent yet</source>
+        <target>Angebote noch nicht versendet</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-offersUnsentDescription" datatype="html">
+        <source>Finalized without notifying the customer. Send them before they expire.</source>
+        <target>Ohne Benachrichtigung des Kunden finalisiert. Versende sie, bevor sie ablaufen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-offersExpiringTitle" datatype="html">
+        <source>Offers expiring soon</source>
+        <target>Angebote laufen bald ab</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-offersExpiringDescription" datatype="html">
+        <source>Open offers expire within a week. Follow up with the customer.</source>
+        <target>Offene Angebote laufen innerhalb einer Woche ab. Hake beim Kunden nach.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-expiresOn" datatype="html">
+        <source>expires <x id="date" equiv-text="format.date(paramText(item.params, &apos;dueDate&apos;))"/></source>
+        <target>läuft ab <x id="date" equiv-text="format.date(paramText(item.params, &apos;dueDate&apos;))"/></target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-fulfillmentFailedTitle" datatype="html">
+        <source>Accepted offers not fulfilled</source>
+        <target>Angenommene Angebote nicht erfüllt</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-fulfillmentFailedDescription" datatype="html">
+        <source>Positions of accepted offers could not be fulfilled automatically.</source>
+        <target>Positionen angenommener Angebote konnten nicht automatisch erfüllt werden.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-payablesDraftTitle" datatype="html">
+        <source>Draft supplier invoices</source>
+        <target>Entwürfe von Lieferantenrechnungen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-payablesDraftDescription" datatype="html">
+        <source>Complete and record them so they are paid and booked.</source>
+        <target>Vervollständige und erfasse sie, damit sie bezahlt und gebucht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-payablesDueTitle" datatype="html">
+        <source>Supplier invoices to pay</source>
+        <target>Zu zahlende Lieferantenrechnungen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-payablesDueDescription" datatype="html">
+        <source>Due within three days or already overdue.</source>
+        <target>Innerhalb von drei Tagen fällig oder bereits überfällig.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-overdueSince" datatype="html">
+        <source>overdue since <x id="date" equiv-text="format.date(paramText(item.params, &apos;dueDate&apos;))"/></source>
+        <target>überfällig seit <x id="date" equiv-text="format.date(paramText(item.params, &apos;dueDate&apos;))"/></target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-dueOn" datatype="html">
+        <source>due <x id="date" equiv-text="format.date(paramText(item.params, &apos;dueDate&apos;))"/></source>
+        <target>fällig <x id="date" equiv-text="format.date(paramText(item.params, &apos;dueDate&apos;))"/></target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-payablesMissingDocumentTitle" datatype="html">
+        <source>Receipts missing</source>
+        <target>Belege fehlen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-payablesMissingDocumentDescription" datatype="html">
+        <source>Supplier invoices without the original document. Upload it for your records.</source>
+        <target>Lieferantenrechnungen ohne Originalbeleg. Lade ihn für deine Unterlagen hoch.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-customersIncompleteTitle" datatype="html">
+        <source>Incomplete billing profiles</source>
+        <target>Unvollständige Rechnungsprofile</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-customersIncompleteDescription" datatype="html">
+        <source>Customers with business but missing name, email or address. Invoices and automatic payments wait for them.</source>
+        <target>Kunden mit laufenden Geschäften, aber ohne Name, E-Mail oder Anschrift. Rechnungen und automatische Zahlungen warten darauf.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-vatInvalidTitle" datatype="html">
+        <source>Invalid VAT IDs</source>
+        <target>Ungültige USt-IdNrn.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-vatInvalidDescription" datatype="html">
+        <source>The VAT ID check failed. Correct it to apply the right tax treatment.</source>
+        <target>Die Prüfung der USt-IdNr. ist fehlgeschlagen. Korrigiere sie, damit die richtige Steuerbehandlung greift.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-suppliersIncompleteTitle" datatype="html">
+        <source>Incomplete supplier profiles</source>
+        <target>Unvollständige Lieferantenprofile</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-suppliersIncompleteDescription" datatype="html">
+        <source>Name or address is missing; DATEV creditor data and documents need them.</source>
+        <target>Name oder Anschrift fehlen; DATEV-Kreditorendaten und Belege benötigen sie.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-provisioningFailedTitle" datatype="html">
+        <source>Provisioning failed</source>
+        <target>Bereitstellung fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-provisioningFailedDescription" datatype="html">
+        <source>Servers of active subscriptions could not be created.</source>
+        <target>Server aktiver Abonnements konnten nicht erstellt werden.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-addonFailedTitle" datatype="html">
+        <source>Add-ons failed</source>
+        <target>Add-ons fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-addonFailedDescription" datatype="html">
+        <source>Add-ons of active subscriptions could not be activated.</source>
+        <target>Add-ons aktiver Abonnements konnten nicht aktiviert werden.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-configChangeFailedTitle" datatype="html">
+        <source>Configuration changes failed</source>
+        <target>Konfigurationsänderungen fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-configChangeFailedDescription" datatype="html">
+        <source>Requested plan or configuration changes were not applied.</source>
+        <target>Angeforderte Tarif- oder Konfigurationsänderungen wurden nicht übernommen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-backorderFailedTitle" datatype="html">
+        <source>Backorders failed</source>
+        <target>Nachbestellungen fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-backorderFailedDescription" datatype="html">
+        <source>Orders waiting for capacity could not be fulfilled.</source>
+        <target>Bestellungen, die auf Kapazität warten, konnten nicht erfüllt werden.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-withdrawalPendingTitle" datatype="html">
+        <source>Withdrawal requests to decide</source>
+        <target>Entnahmeanfragen entscheiden</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-withdrawalPendingDescription" datatype="html">
+        <source>Accept or reject requested stock withdrawals.</source>
+        <target>Nimm angefragte Lagerentnahmen an oder lehne sie ab.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-lendingOverdueTitle" datatype="html">
+        <source>Lent items not returned</source>
+        <target>Verliehenes nicht zurückgegeben</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-lendingOverdueDescription" datatype="html">
+        <source>The return date has passed.</source>
+        <target>Das Rückgabedatum ist überschritten.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-lowStockTitle" datatype="html">
+        <source>Low stock</source>
+        <target>Niedriger Bestand</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-lowStockDescription" datatype="html">
+        <source>Articles at or below their reorder point. Reorder in time.</source>
+        <target>Artikel auf oder unter ihrem Meldebestand. Bestelle rechtzeitig nach.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-lowStockMeta" datatype="html">
+        <source><x id="number" equiv-text="paramText(item.params, &apos;articleNumber&apos;)"/>, on hand <x id="onHand" equiv-text="paramText(item.params, &apos;onHand&apos;)"/> (reorder at <x id="reorderPoint" equiv-text="paramText(item.params, &apos;reorderPoint&apos;)"/>)</source>
+        <target><x id="number" equiv-text="paramText(item.params, &apos;articleNumber&apos;)"/>, Bestand <x id="onHand" equiv-text="paramText(item.params, &apos;onHand&apos;)"/> (Meldebestand <x id="reorderPoint" equiv-text="paramText(item.params, &apos;reorderPoint&apos;)"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-unbookedTitle" datatype="html">
+        <source>Documents not booked</source>
+        <target>Belege nicht gebucht</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-unbookedDescription" datatype="html">
+        <source>Issued or voided documents without a ledger entry. Check the posting issues.</source>
+        <target>Ausgestellte oder stornierte Belege ohne Buchung. Prüfe die Buchungsprobleme.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-kindSupplierInvoice" datatype="html">
+        <source>Supplier invoice</source>
+        <target>Lieferantenrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-kindInvoice" datatype="html">
+        <source>Invoice</source>
+        <target>Rechnung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-postingIssuesTitle" datatype="html">
+        <source>Posting issues</source>
+        <target>Buchungsprobleme</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-postingIssuesDescription" datatype="html">
+        <source>Automatic bookings failed (e.g. a missing account mapping). Fix the cause; they are retried.</source>
+        <target>Automatische Buchungen sind fehlgeschlagen (z. B. fehlende Kontenzuordnung). Behebe die Ursache; sie werden erneut versucht.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-bankUnmatchedTitle" datatype="html">
+        <source>Bank transactions to reconcile</source>
+        <target>Banktransaktionen abzugleichen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-bankUnmatchedDescription" datatype="html">
+        <source>Booked transactions without a matching document.</source>
+        <target>Gebuchte Transaktionen ohne passenden Beleg.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-bankSuggestedTitle" datatype="html">
+        <source>Matches to confirm</source>
+        <target>Zuordnungen bestätigen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-bankSuggestedDescription" datatype="html">
+        <source>Bank transactions with a suggested match. Confirm or correct them.</source>
+        <target>Banktransaktionen mit vorgeschlagener Zuordnung. Bestätige oder korrigiere sie.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-bankImportFailedTitle" datatype="html">
+        <source>Bank imports failed</source>
+        <target>Bankimporte fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-bankImportFailedDescription" datatype="html">
+        <source>Statement files could not be imported. Check the file and import it again.</source>
+        <target>Kontoauszugsdateien konnten nicht importiert werden. Prüfe die Datei und importiere sie erneut.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-vatReturnDueTitle" datatype="html">
+        <source>VAT returns to file</source>
+        <target>Umsatzsteuermeldungen abzugeben</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-vatReturnDueDescription" datatype="html">
+        <source>Draft returns of finished periods. Review, file and mark them as submitted.</source>
+        <target>Entwürfe abgeschlossener Zeiträume. Prüfe, übermittle und markiere sie als abgegeben.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-datevFailedTitle" datatype="html">
+        <source>DATEV exports failed</source>
+        <target>DATEV-Exporte fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-datevFailedDescription" datatype="html">
+        <source>Run the export of these periods again after fixing the cause.</source>
+        <target>Führe den Export dieser Zeiträume nach Behebung der Ursache erneut aus.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-title" datatype="html">
+        <source>To-dos</source>
+        <target>To-dos</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-tabOpen" datatype="html">
+        <source>Open</source>
+        <target>Offen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-tabSilenced" datatype="html">
+        <source>Silenced</source>
+        <target>Stummgeschaltet</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-tabsLabel" datatype="html">
+        <source>To-do views</source>
+        <target>To-do-Ansichten</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-emptyTitle" datatype="html">
+        <source>All done</source>
+        <target>Alles erledigt</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-emptyMessage" datatype="html">
+        <source>Nothing needs your attention right now. New to-dos appear here as soon as they come up.</source>
+        <target>Gerade braucht nichts deine Aufmerksamkeit. Neue To-dos erscheinen hier, sobald sie anfallen.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-noSilencesTitle" datatype="html">
+        <source>Nothing silenced</source>
+        <target>Nichts stummgeschaltet</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-noSilencesMessage" datatype="html">
+        <source>Silence a to-do with the bell icon to hide it for you or (admins) for everyone.</source>
+        <target>Schalte ein To-do über das Glockensymbol stumm, um es für dich oder (als Admin) für alle auszublenden.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-loading" datatype="html">
+        <source>Loading to-dos</source>
+        <target>To-dos werden geladen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceScopeItem" datatype="html">
+        <source>One entry</source>
+        <target>Ein Eintrag</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceScopeType" datatype="html">
+        <source>All entries</source>
+        <target>Alle Einträge</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceAudienceEveryone" datatype="html">
+        <source>For everyone</source>
+        <target>Für alle</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceAudienceSelf" datatype="html">
+        <source>For me</source>
+        <target>Für mich</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceUntil" datatype="html">
+        <source>Until <x id="date" equiv-text="this.presenters.format.date(silence.until)"/></source>
+        <target>Bis <x id="date" equiv-text="this.presenters.format.date(silence.until)"/></target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceIndefinite" datatype="html">
+        <source>Until lifted</source>
+        <target>Bis zur Aufhebung</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-liftSilence" datatype="html">
+        <source>Lift silence &quot;<x id="title" equiv-text="this.silenceTitle(silence)"/>&quot;</source>
+        <target>Stummschaltung von &quot;<x id="title" equiv-text="this.silenceTitle(silence)"/>&quot; aufheben</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceForMe" datatype="html">
+        <source>Silence for me</source>
+        <target>Für mich stummschalten</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-snoozeDay" datatype="html">
+        <source>Snooze for 1 day</source>
+        <target>1 Tag schlummern</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-snoozeWeek" datatype="html">
+        <source>Snooze for 1 week</source>
+        <target>1 Woche schlummern</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceForEveryone" datatype="html">
+        <source>Silence for everyone</source>
+        <target>Für alle stummschalten</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-moreOnPage" datatype="html">
+        <source> <x id="INTERPOLATION" equiv-text="{{ hiddenCount() }}"/> more on the linked page </source>
+        <target> <x id="INTERPOLATION" equiv-text="{{ hiddenCount() }}"/> weitere auf der verlinkten Seite </target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-collapse" datatype="html">
+        <source>Collapse</source>
+        <target>Einklappen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-showList" datatype="html">
+        <source>Show list</source>
+        <target>Liste anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-open" datatype="html">
+        <source>Open</source>
+        <target>Öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceGroupLabel" datatype="html">
+        <source>Silence &quot;<x id="title" equiv-text="this.title()"/>&quot;</source>
+        <target>&quot;<x id="title" equiv-text="this.title()"/>&quot; stummschalten</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-silenceItemLabel" datatype="html">
+        <source>Silence &quot;<x id="title" equiv-text="this.itemTitle(item)"/>&quot;</source>
+        <target>&quot;<x id="title" equiv-text="this.itemTitle(item)"/>&quot; stummschalten</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-toggleTitleOne" datatype="html">
+        <source>To-dos: {count} open</source>
+        <target>To-dos: {count} offen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-toggleTitleOther" datatype="html">
+        <source>To-dos: {count} open</source>
+        <target>To-dos: {count} offen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-toggleTitleNone" datatype="html">
+        <source>To-dos: nothing open</source>
+        <target>To-dos: nichts offen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-categorySetup" datatype="html">
+        <source>Suggested next steps</source>
+        <target>Empfohlene nächste Schritte</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-categoryPlatform" datatype="html">
+        <source>Platform</source>
+        <target>Plattform</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-updatesTitle" datatype="html">
+        <source>Update available</source>
+        <target>Update verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-updatesDescription" datatype="html">
+        <source>Version <x id="version" equiv-text="paramText(group.params, &apos;latestVersion&apos;)"/> is available (installed: <x id="installed" equiv-text="paramText(group.params, &apos;installedVersion&apos;)"/>).</source>
+        <target>Version <x id="version" equiv-text="paramText(group.params, &apos;latestVersion&apos;)"/> ist verfügbar (installiert: <x id="installed" equiv-text="paramText(group.params, &apos;installedVersion&apos;)"/>).</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-updatesDescriptionInstances" datatype="html">
+        <source>Some instances run an outdated version.</source>
+        <target>Einige Instanzen laufen mit einer veralteten Version.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-updatesAction" datatype="html">
+        <source>Review update</source>
+        <target>Update prüfen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksTitle" datatype="html">
+        <source>Webhooks failing</source>
+        <target>Webhooks schlagen fehl</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksDescription" datatype="html">
+        <source>Deliveries fail repeatedly; endpoints are disabled after too many failures.</source>
+        <target>Zustellungen scheitern wiederholt; Endpunkte werden nach zu vielen Fehlern deaktiviert.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksDisabled" datatype="html">
+        <source>Disabled after repeated failures</source>
+        <target>Nach wiederholten Fehlern deaktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksFailures" datatype="html">
+        <source><x id="count" equiv-text="paramText(item.params, &apos;failures&apos;)"/> failed deliveries in a row</source>
+        <target><x id="count" equiv-text="paramText(item.params, &apos;failures&apos;)"/> fehlgeschlagene Zustellungen in Folge</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-emailFailedTitle" datatype="html">
+        <source>Emails not delivered</source>
+        <target>E-Mails nicht zugestellt</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-emailFailedDescription" datatype="html">
+        <source>Emails of the last 7 days could not be sent; check the mail server settings.</source>
+        <target>E-Mails der letzten 7 Tage konnten nicht versendet werden; prüfe die Mailserver-Einstellungen.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-emailSetupTitle" datatype="html">
+        <source>Set up email delivery</source>
+        <target>E-Mail-Versand einrichten</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-emailSetupDescription" datatype="html">
+        <source>No mail server is configured, so no emails (invoices, sign-in codes, notifications) are sent.</source>
+        <target>Es ist kein Mailserver eingerichtet, daher werden keine E-Mails (Rechnungen, Anmeldecodes, Benachrichtigungen) versendet.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-uploadedOn" datatype="html">
+        <source>uploaded <x id="date" equiv-text="format.date(item.occurredAt)"/></source>
+        <target>hochgeladen <x id="date" equiv-text="format.date(item.occurredAt)"/></target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-searchPlaceholder" datatype="html">
+        <source>Search to-dos</source>
+        <target>To-dos durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-filtersTitle" datatype="html">
+        <source>Filter to-dos</source>
+        <target>To-dos filtern</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-filterArea" datatype="html">
+        <source>Area</source>
+        <target>Bereich</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-filterPriority" datatype="html">
+        <source>Priority</source>
+        <target>Priorität</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-filterAny" datatype="html">
+        <source>All</source>
+        <target>Alle</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-noMatchTitle" datatype="html">
+        <source>No matching to-dos</source>
+        <target>Keine passenden To-dos</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-noMatchMessage" datatype="html">
+        <source>Change the search or the filters.</source>
+        <target>Ändere die Suche oder die Filter.</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-severityDanger" datatype="html">
+        <source>Critical</source>
+        <target>Kritisch</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-severityWarning" datatype="html">
+        <source>Attention</source>
+        <target>Achtung</target>
+      </trans-unit>
+      <trans-unit id="featureActionCenter-severityInfo" datatype="html">
+        <source>Info</source>
+        <target>Info</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupSalesTitle" datatype="html">
+        <source>Sales: customers, subscriptions, offers and promotions</source>
+        <target>Vertrieb: Kunden, Abonnements, Angebote und Aktionen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupSales" datatype="html">
+        <source>Sales</source>
+        <target>Vertrieb</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupFinanceTitle" datatype="html">
+        <source>Finance: billing, accounting and DATEV</source>
+        <target>Finanzen: Abrechnung, Buchhaltung und DATEV</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupFinance" datatype="html">
+        <source>Finance</source>
+        <target>Finanzen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupOperationsTitle" datatype="html">
+        <source>Operations: projects, suppliers, inventory and files</source>
+        <target>Betrieb: Projekte, Lieferanten, Inventar und Dateien</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupOperations" datatype="html">
+        <source>Operations</source>
+        <target>Betrieb</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupCatalogTitle" datatype="html">
+        <source>Catalog: plans, providers, configs, add-ons and meters</source>
+        <target>Katalog: Tarife, Anbieter, Konfigurationen, Add-ons und Zähler</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupCatalog" datatype="html">
+        <source>Catalog</source>
+        <target>Katalog</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupExtensionsTitle" datatype="html">
+        <source>Extensions</source>
+        <target>Erweiterungen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupExtensions" datatype="html">
+        <source>Extensions</source>
+        <target>Erweiterungen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupSystemTitle" datatype="html">
+        <source>System: users, apps, webhooks, updates and settings</source>
+        <target>System: Benutzer, Apps, Webhooks, Updates und Einstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-navGroupSystem" datatype="html">
+        <source>System</source>
+        <target>System</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

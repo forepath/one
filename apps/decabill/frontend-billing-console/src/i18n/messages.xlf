@@ -11687,6 +11687,456 @@
       <trans-unit id="featureContainer-modeAdminTitle" datatype="html">
         <source>Admin mode: tenant overview and administration</source>
         </trans-unit>
+      <trans-unit id="featureActionCenter-setUp" datatype="html">
+        <source>Set up</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categoryReceivables" datatype="html">
+        <source>Receivables</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categoryOffers" datatype="html">
+        <source>Offers</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categoryPayables" datatype="html">
+        <source>Payables</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categoryCustomers" datatype="html">
+        <source>Customers</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categorySubscriptions" datatype="html">
+        <source>Subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categoryInventory" datatype="html">
+        <source>Inventory</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-categoryAccounting" datatype="html">
+        <source>Accounting</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupIssuerTitle" datatype="html">
+        <source>Complete your company details</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupIssuerDescription" datatype="html">
+        <source>Name, VAT ID and address are printed on every invoice; documents cannot be issued without them.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupIssuerDetailsTitle" datatype="html">
+        <source>Add payment and contact details</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupIssuerDetailsDescription" datatype="html">
+        <source>Email, IBAN and BIC tell customers how to reach and pay you.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupAccountingTitle" datatype="html">
+        <source>Finish the accounting setup</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupAccountingDescription" datatype="html">
+        <source>Accounting is switched on but cannot start yet. Missing: <x id="missing" equiv-text="paramText(group.params, &apos;missing&apos;)"/></source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupDatevTitle" datatype="html">
+        <source>Configure the DATEV export</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupDatevDescription" datatype="html">
+        <source>DATEV exports are enabled, but the consultant and client numbers are missing. Configure them or switch the export off.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupFirstCustomerTitle" datatype="html">
+        <source>Add your first customer</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupFirstCustomerDescription" datatype="html">
+        <source>Create a customer profile to send offers and invoices.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-setupFirstCustomerAction" datatype="html">
+        <source>Add customer</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-invoicesUnsentTitle" datatype="html">
+        <source>Invoices not sent yet</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-invoicesUnsentDescription" datatype="html">
+        <source>Issued without notifying the customer. Send them when ready.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-creditNotesUnsentTitle" datatype="html">
+        <source>Credit notes not sent yet</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-creditNotesUnsentDescription" datatype="html">
+        <source>Voided invoices whose credit note the customer has not received.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-invoicesDraftTitle" datatype="html">
+        <source>Draft invoices</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-invoicesDraftDescription" datatype="html">
+        <source>Review and issue or discard them.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-invoicesOverdueTitle" datatype="html">
+        <source>Overdue invoices</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-invoicesOverdueDescription" datatype="html">
+        <source>Payment is past due. Remind the customer or record the payment.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-dueSince" datatype="html">
+        <source>due <x id="date" equiv-text="format.date(paramText(item.params, &apos;dueDate&apos;))"/></source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-autoPaymentTitle" datatype="html">
+        <source>Automatic payment failed</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-autoPaymentDescription" datatype="html">
+        <source>All automatic collection attempts failed. Contact the customer or collect manually.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-offersDraftTitle" datatype="html">
+        <source>Draft offers</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-offersDraftDescription" datatype="html">
+        <source>Finish and finalize them so customers can accept.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-offersUnsentTitle" datatype="html">
+        <source>Offers not sent yet</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-offersUnsentDescription" datatype="html">
+        <source>Finalized without notifying the customer. Send them before they expire.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-offersExpiringTitle" datatype="html">
+        <source>Offers expiring soon</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-offersExpiringDescription" datatype="html">
+        <source>Open offers expire within a week. Follow up with the customer.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-expiresOn" datatype="html">
+        <source>expires <x id="date" equiv-text="format.date(paramText(item.params, &apos;dueDate&apos;))"/></source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-fulfillmentFailedTitle" datatype="html">
+        <source>Accepted offers not fulfilled</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-fulfillmentFailedDescription" datatype="html">
+        <source>Positions of accepted offers could not be fulfilled automatically.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-payablesDraftTitle" datatype="html">
+        <source>Draft supplier invoices</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-payablesDraftDescription" datatype="html">
+        <source>Complete and record them so they are paid and booked.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-payablesDueTitle" datatype="html">
+        <source>Supplier invoices to pay</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-payablesDueDescription" datatype="html">
+        <source>Due within three days or already overdue.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-overdueSince" datatype="html">
+        <source>overdue since <x id="date" equiv-text="format.date(paramText(item.params, &apos;dueDate&apos;))"/></source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-dueOn" datatype="html">
+        <source>due <x id="date" equiv-text="format.date(paramText(item.params, &apos;dueDate&apos;))"/></source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-payablesMissingDocumentTitle" datatype="html">
+        <source>Receipts missing</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-payablesMissingDocumentDescription" datatype="html">
+        <source>Supplier invoices without the original document. Upload it for your records.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-customersIncompleteTitle" datatype="html">
+        <source>Incomplete billing profiles</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-customersIncompleteDescription" datatype="html">
+        <source>Customers with business but missing name, email or address. Invoices and automatic payments wait for them.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-vatInvalidTitle" datatype="html">
+        <source>Invalid VAT IDs</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-vatInvalidDescription" datatype="html">
+        <source>The VAT ID check failed. Correct it to apply the right tax treatment.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-suppliersIncompleteTitle" datatype="html">
+        <source>Incomplete supplier profiles</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-suppliersIncompleteDescription" datatype="html">
+        <source>Name or address is missing; DATEV creditor data and documents need them.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-provisioningFailedTitle" datatype="html">
+        <source>Provisioning failed</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-provisioningFailedDescription" datatype="html">
+        <source>Servers of active subscriptions could not be created.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-addonFailedTitle" datatype="html">
+        <source>Add-ons failed</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-addonFailedDescription" datatype="html">
+        <source>Add-ons of active subscriptions could not be activated.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-configChangeFailedTitle" datatype="html">
+        <source>Configuration changes failed</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-configChangeFailedDescription" datatype="html">
+        <source>Requested plan or configuration changes were not applied.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-backorderFailedTitle" datatype="html">
+        <source>Backorders failed</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-backorderFailedDescription" datatype="html">
+        <source>Orders waiting for capacity could not be fulfilled.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-withdrawalPendingTitle" datatype="html">
+        <source>Withdrawal requests to decide</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-withdrawalPendingDescription" datatype="html">
+        <source>Accept or reject requested stock withdrawals.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-lendingOverdueTitle" datatype="html">
+        <source>Lent items not returned</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-lendingOverdueDescription" datatype="html">
+        <source>The return date has passed.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-lowStockTitle" datatype="html">
+        <source>Low stock</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-lowStockDescription" datatype="html">
+        <source>Articles at or below their reorder point. Reorder in time.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-lowStockMeta" datatype="html">
+        <source><x id="number" equiv-text="paramText(item.params, &apos;articleNumber&apos;)"/>, on hand <x id="onHand" equiv-text="paramText(item.params, &apos;onHand&apos;)"/> (reorder at <x id="reorderPoint" equiv-text="paramText(item.params, &apos;reorderPoint&apos;)"/>)</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-unbookedTitle" datatype="html">
+        <source>Documents not booked</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-unbookedDescription" datatype="html">
+        <source>Issued or voided documents without a ledger entry. Check the posting issues.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-kindSupplierInvoice" datatype="html">
+        <source>Supplier invoice</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-kindInvoice" datatype="html">
+        <source>Invoice</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-postingIssuesTitle" datatype="html">
+        <source>Posting issues</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-postingIssuesDescription" datatype="html">
+        <source>Automatic bookings failed (e.g. a missing account mapping). Fix the cause; they are retried.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-bankUnmatchedTitle" datatype="html">
+        <source>Bank transactions to reconcile</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-bankUnmatchedDescription" datatype="html">
+        <source>Booked transactions without a matching document.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-bankSuggestedTitle" datatype="html">
+        <source>Matches to confirm</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-bankSuggestedDescription" datatype="html">
+        <source>Bank transactions with a suggested match. Confirm or correct them.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-bankImportFailedTitle" datatype="html">
+        <source>Bank imports failed</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-bankImportFailedDescription" datatype="html">
+        <source>Statement files could not be imported. Check the file and import it again.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-vatReturnDueTitle" datatype="html">
+        <source>VAT returns to file</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-vatReturnDueDescription" datatype="html">
+        <source>Draft returns of finished periods. Review, file and mark them as submitted.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-datevFailedTitle" datatype="html">
+        <source>DATEV exports failed</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-datevFailedDescription" datatype="html">
+        <source>Run the export of these periods again after fixing the cause.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-title" datatype="html">
+        <source>To-dos</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-tabOpen" datatype="html">
+        <source>Open</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-tabSilenced" datatype="html">
+        <source>Silenced</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-tabsLabel" datatype="html">
+        <source>To-do views</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-emptyTitle" datatype="html">
+        <source>All done</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-emptyMessage" datatype="html">
+        <source>Nothing needs your attention right now. New to-dos appear here as soon as they come up.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-noSilencesTitle" datatype="html">
+        <source>Nothing silenced</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-noSilencesMessage" datatype="html">
+        <source>Silence a to-do with the bell icon to hide it for you or (admins) for everyone.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-loading" datatype="html">
+        <source>Loading to-dos</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceScopeItem" datatype="html">
+        <source>One entry</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceScopeType" datatype="html">
+        <source>All entries</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceAudienceEveryone" datatype="html">
+        <source>For everyone</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceAudienceSelf" datatype="html">
+        <source>For me</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceUntil" datatype="html">
+        <source>Until <x id="date" equiv-text="this.presenters.format.date(silence.until)"/></source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceIndefinite" datatype="html">
+        <source>Until lifted</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-liftSilence" datatype="html">
+        <source>Lift silence &quot;<x id="title" equiv-text="this.silenceTitle(silence)"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceForMe" datatype="html">
+        <source>Silence for me</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-snoozeDay" datatype="html">
+        <source>Snooze for 1 day</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-snoozeWeek" datatype="html">
+        <source>Snooze for 1 week</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceForEveryone" datatype="html">
+        <source>Silence for everyone</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-moreOnPage" datatype="html">
+        <source> <x id="INTERPOLATION" equiv-text="{{ hiddenCount() }}"/> more on the linked page </source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-collapse" datatype="html">
+        <source>Collapse</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-showList" datatype="html">
+        <source>Show list</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-open" datatype="html">
+        <source>Open</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceGroupLabel" datatype="html">
+        <source>Silence &quot;<x id="title" equiv-text="this.title()"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceItemLabel" datatype="html">
+        <source>Silence &quot;<x id="title" equiv-text="this.itemTitle(item)"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-toggleTitleOne" datatype="html">
+        <source>To-dos: {count} open</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-toggleTitleOther" datatype="html">
+        <source>To-dos: {count} open</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-toggleTitleNone" datatype="html">
+        <source>To-dos: nothing open</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-categorySetup" datatype="html">
+        <source>Suggested next steps</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-categoryPlatform" datatype="html">
+        <source>Platform</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-updatesTitle" datatype="html">
+        <source>Update available</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-updatesDescription" datatype="html">
+        <source>Version <x id="version" equiv-text="paramText(group.params, &apos;latestVersion&apos;)"/> is available (installed: <x id="installed" equiv-text="paramText(group.params, &apos;installedVersion&apos;)"/>).</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-updatesDescriptionInstances" datatype="html">
+        <source>Some instances run an outdated version.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-updatesAction" datatype="html">
+        <source>Review update</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksTitle" datatype="html">
+        <source>Webhooks failing</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksDescription" datatype="html">
+        <source>Deliveries fail repeatedly; endpoints are disabled after too many failures.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksDisabled" datatype="html">
+        <source>Disabled after repeated failures</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksFailures" datatype="html">
+        <source><x id="count" equiv-text="paramText(item.params, &apos;failures&apos;)"/> failed deliveries in a row</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-emailFailedTitle" datatype="html">
+        <source>Emails not delivered</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-emailFailedDescription" datatype="html">
+        <source>Emails of the last 7 days could not be sent; check the mail server settings.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-emailSetupTitle" datatype="html">
+        <source>Set up email delivery</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-emailSetupDescription" datatype="html">
+        <source>No mail server is configured, so no emails (invoices, sign-in codes, notifications) are sent.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingActionCenter-uploadedOn" datatype="html">
+        <source>uploaded <x id="date" equiv-text="format.date(item.occurredAt)"/></source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-searchPlaceholder" datatype="html">
+        <source>Search to-dos</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-filtersTitle" datatype="html">
+        <source>Filter to-dos</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-filterArea" datatype="html">
+        <source>Area</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-filterPriority" datatype="html">
+        <source>Priority</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-filterAny" datatype="html">
+        <source>All</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-noMatchTitle" datatype="html">
+        <source>No matching to-dos</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-noMatchMessage" datatype="html">
+        <source>Change the search or the filters.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-severityDanger" datatype="html">
+        <source>Critical</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-severityWarning" datatype="html">
+        <source>Attention</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-severityInfo" datatype="html">
+        <source>Info</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupSalesTitle" datatype="html">
+        <source>Sales: customers, subscriptions, offers and promotions</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupSales" datatype="html">
+        <source>Sales</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupFinanceTitle" datatype="html">
+        <source>Finance: billing, accounting and DATEV</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupFinance" datatype="html">
+        <source>Finance</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupOperationsTitle" datatype="html">
+        <source>Operations: projects, suppliers, inventory and files</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupOperations" datatype="html">
+        <source>Operations</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupCatalogTitle" datatype="html">
+        <source>Catalog: plans, providers, configs, add-ons and meters</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupCatalog" datatype="html">
+        <source>Catalog</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupExtensionsTitle" datatype="html">
+        <source>Extensions</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupExtensions" datatype="html">
+        <source>Extensions</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupSystemTitle" datatype="html">
+        <source>System: users, apps, webhooks, updates and settings</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupSystem" datatype="html">
+        <source>System</source>
+        </trans-unit>
     </body>
   </file>
 </xliff>

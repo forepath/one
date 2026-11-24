@@ -61,7 +61,12 @@ import {
   IdentityAppSessionEntity,
   IdentityAppAuthorizationCodeEntity,
 } from '@forepath/identity/backend';
-import { WebhookDeliveryEntity, WebhookEndpointEntity, EmailDeliveryEntity } from '@forepath/shared/backend';
+import {
+  ActionCenterSilenceEntity,
+  WebhookDeliveryEntity,
+  WebhookEndpointEntity,
+  EmailDeliveryEntity,
+} from '@forepath/shared/backend';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
@@ -156,12 +161,14 @@ export const typeormConfig: DataSourceOptions = {
     WebhookDeliveryEntity,
     EmailDeliveryEntity,
     ControllerSettingsOverrideEntity,
+    ActionCenterSilenceEntity,
   ],
   migrations: [
     'src/migrations/*.js',
     'apps/agenstra/backend-agent-controller/src/migrations/*.ts',
     'libs/domains/identity/backend/util-auth/src/lib/migrations/*.ts',
     'libs/domains/shared/backend/feature-notifications/src/lib/migrations/*.ts',
+    'libs/domains/shared/backend/feature-action-center/src/lib/migrations/*.ts',
   ],
   synchronize: false,
   logging:

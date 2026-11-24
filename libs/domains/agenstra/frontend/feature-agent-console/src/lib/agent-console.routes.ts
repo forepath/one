@@ -271,6 +271,7 @@ import {
   identityAuthRoutes,
   roleHomeGuard,
 } from '@forepath/identity/frontend';
+import { provideActionCenter, provideActionCenterPresenters } from '@forepath/shared/frontend/feature-action-center';
 import {
   createNotificationAdminRoutes,
   notificationAdminProviders,
@@ -285,6 +286,10 @@ import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 
+import {
+  AGENSTRA_PLATFORM_ACTION_LINKS,
+  agenstraActionCenterPresenters,
+} from './action-center/agenstra-action-center.presenters';
 import { AdminOverviewComponent } from './admin-overview/admin-overview.component';
 import { AgentTasksBoardComponent } from './agent-tasks/agent-tasks-board.component';
 import { AtlassianImportAdminComponent } from './atlassian-import-admin/atlassian-import-admin.component';
@@ -482,6 +487,8 @@ export const agentConsoleRoutes: Route[] = [
       ...identityAuthProviders,
       ...notificationAdminProviders,
       ...updatesAdminProviders,
+      ...provideActionCenter(AGENSTRA_PLATFORM_ACTION_LINKS),
+      provideActionCenterPresenters(agenstraActionCenterPresenters),
       ...settingsAdminProviders,
       { provide: SETTINGS_ADMIN_LABELS, useValue: CONTROLLER_SETTINGS_LABELS },
       provideAgenstraNotificationAdminClientProvider(),

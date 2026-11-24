@@ -27,18 +27,30 @@ Tenant safeguards:
 
 ### Application Configuration
 
-| Variable                           | Description                                                                     | Default                   |
-| ---------------------------------- | ------------------------------------------------------------------------------- | ------------------------- |
-| `HOST`                             | HTTP bind address                                                               | `0.0.0.0`                 |
-| `PORT`                             | HTTP / Socket.IO port (`/api/`, `/socket/`, `/socket.io/`)                      | `3200`                    |
-| `WEBSOCKET_NAMESPACE`              | Dashboard status Socket.IO namespace                                            | `socket/billing`          |
-| `PROJECTS_WEBSOCKET_NAMESPACE`     | Project board Socket.IO namespace                                               | `socket/projects`         |
-| `INVENTORY_WEBSOCKET_NAMESPACE`    | Inventory Socket.IO namespace (admins)                                          | `socket/inventory`        |
-| `INVENTORY_REQUESTS_POLL_INTERVAL` | Poll interval (ms, 5000–120000) announcing requests raised by workers           | `15000`                   |
-| `WEBSOCKET_CORS_ORIGIN`            | WebSocket CORS origins (comma-separated); falls back to `CORS_ORIGIN`, then `*` | unset (app falls through) |
-| `NODE_ENV`                         | `development` or `production`                                                   | `development`             |
+| Variable                            | Description                                                                     | Default                   |
+| ----------------------------------- | ------------------------------------------------------------------------------- | ------------------------- |
+| `HOST`                              | HTTP bind address                                                               | `0.0.0.0`                 |
+| `PORT`                              | HTTP / Socket.IO port (`/api/`, `/socket/`, `/socket.io/`)                      | `3200`                    |
+| `WEBSOCKET_NAMESPACE`               | Dashboard status Socket.IO namespace                                            | `socket/billing`          |
+| `PROJECTS_WEBSOCKET_NAMESPACE`      | Project board Socket.IO namespace                                               | `socket/projects`         |
+| `INVENTORY_WEBSOCKET_NAMESPACE`     | Inventory Socket.IO namespace (admins)                                          | `socket/inventory`        |
+| `INVENTORY_REQUESTS_POLL_INTERVAL`  | Poll interval (ms, 5000–120000) announcing requests raised by workers           | `15000`                   |
+| `ACTION_CENTER_WEBSOCKET_NAMESPACE` | Action center Socket.IO namespace (admins and managers)                         | `socket/action-center`    |
+| `WEBSOCKET_CORS_ORIGIN`             | WebSocket CORS origins (comma-separated); falls back to `CORS_ORIGIN`, then `*` | unset (app falls through) |
+| `NODE_ENV`                          | `development` or `production`                                                   | `development`             |
 
 **Migration:** `WEBSOCKET_PORT` is removed. Socket.IO shares `PORT`. Operators must re-provision existing stacks so nginx proxies `/api/`, `/socket/`, and `/socket.io/` to that port.
+
+### Action center
+
+Live to-dos for admins and managers (see [Action Center](../features/action-center.md)). Intervals are clamped to their ranges.
+
+| Variable                                       | Description                                                                     | Default |
+| ---------------------------------------------- | ------------------------------------------------------------------------------- | ------- |
+| `ACTION_CENTER_RECOMPUTE_DEBOUNCE_MS`          | Delay (0–10000 ms) between a change and the recompute (coalesces bursts)        | `400`   |
+| `ACTION_CENTER_REVISION_POLL_INTERVAL_MS`      | How often API processes check Valkey for changes of other processes (500–60000) | `2000`  |
+| `ACTION_CENTER_REFRESH_INTERVAL_MS`            | Full recompute of watched scopes for time-based to-dos (10000–3600000)          | `60000` |
+| `ACTION_CENTER_SESSION_REVALIDATE_INTERVAL_MS` | Re-validation of connected sessions (10000–600000)                              | `60000` |
 
 ### Database Configuration
 

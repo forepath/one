@@ -15,7 +15,12 @@ import {
   usesStaticCredential,
 } from '@forepath/identity/frontend';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
+import { ActionCenterFacade } from '@forepath/shared/frontend/data-access-action-center';
 import { AdminUpdatesFacade } from '@forepath/shared/frontend/data-access-updates';
+import {
+  ActionCenterPanelComponent,
+  ActionCenterToggleComponent,
+} from '@forepath/shared/frontend/feature-action-center';
 import {
   FpcBadgeComponent,
   FpcButtonComponent,
@@ -27,6 +32,10 @@ import {
   FpcSidebarComponent,
   FpcSidebarPopoverComponent,
   FpcThemeSwitcherComponent,
+  fpcSidebarNavEntries,
+  fpcSidebarNavGroupActive,
+  type FpcSidebarNavEntry,
+  type FpcSidebarNavGroup,
 } from '@forepath/shared/frontend/ui-components';
 import { combineLatest, distinctUntilChanged, filter, map, startWith } from 'rxjs';
 
@@ -36,32 +45,6 @@ import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from '../contributors/first-party-
 import { ThemeService } from '../theme.service';
 
 import { CONSOLE_MODE_HOME, isAppsAdminUrl, nextConsoleMode, type ConsoleMode } from './console-mode';
-
-/** Order of the admin sidebar items by route (unlisted ones keep their relative order at the front of their group). */
-const ADMIN_NAV_ORDER = [
-  '/administration/overview',
-  '/administration/customer-profiles',
-  '/administration/subscriptions',
-  '/administration/billing',
-  '/administration/offers',
-  '/administration/promotions',
-  '/administration/projects',
-  '/administration/supplier-profiles',
-  '/administration/inventory',
-  '/administration/accounting',
-  '/administration/datev-exports',
-  '/administration/file-explorer',
-  '/administration/service-plans',
-  '/administration/service-types',
-  '/administration/cloud-init-configs',
-  '/administration/addons',
-  '/administration/meters',
-  '/users',
-  '/apps',
-  '/webhooks',
-  '/updates',
-  '/administration/settings',
-];
 
 @Component({
   selector: 'framework-billing-console-container',
@@ -79,6 +62,8 @@ const ADMIN_NAV_ORDER = [
     FpcSidebarComponent,
     FpcSidebarPopoverComponent,
     FpcThemeSwitcherComponent,
+    ActionCenterPanelComponent,
+    ActionCenterToggleComponent,
   ],
   styleUrls: ['./container.component.scss'],
   templateUrl: './container.component.html',
@@ -91,6 +76,7 @@ export class BillingConsoleContainerComponent implements OnInit {
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
   private readonly offersFacade = inject(OffersFacade);
   private readonly adminUpdatesFacade = inject(AdminUpdatesFacade);
+  private readonly actionCenterFacade = inject(ActionCenterFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -209,6 +195,14 @@ export class BillingConsoleContainerComponent implements OnInit {
    * This also implies that the user can access the administration console.
    */
   readonly canAccessAdministration$ = this.authenticationFacade.canAccessBillingAdministration$;
+  /**
+   * The action center (to-dos, top-bar bulb + right sidebar) for admins and managers, in both console modes:
+   * choosing a to-do switches into the mode of its page.
+   */
+  readonly actionCenterAvailable = toSignal(this.authenticationFacade.canAccessBillingAdministration$, {
+    initialValue: false,
+  });
+  readonly actionCenterOpen = toSignal(this.actionCenterFacade.panelOpen$, { initialValue: false });
   /** Admins only: settings and identity apps (managers share the rest of the administration). */
   readonly canAccessAdminOnlyAdministration = toSignal(this.authenticationFacade.canAccessAdminOnlyAdministration$, {
     initialValue: false,
@@ -393,6 +387,18 @@ export class BillingConsoleContainerComponent implements OnInit {
         }
       });
 
+    // Live to-dos while the signed-in user may administrate; disconnect on sign-out or role loss.
+    this.authenticationFacade.canAccessBillingAdministration$
+      .pipe(distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe((canAccess) => {
+        if (canAccess) {
+          this.actionCenterFacade.connect();
+        } else {
+          this.actionCenterFacade.disconnect();
+        }
+      });
+    this.destroyRef.onDestroy(() => this.actionCenterFacade.disconnect());
+
     // Check initial query params immediately
     const initialParams = this.route.snapshot.queryParams;
     const isStandalone = !!initialParams['standalone'];
@@ -427,8 +433,11 @@ export class BillingConsoleContainerComponent implements OnInit {
     this.authenticationFacade.logout(result.invalidateAllSessions);
   }
 
-  /** Admin tile grid; recomputed when the DATEV / accounting capabilities or the role flip. */
-  adminNavItems(): ContributorNavItem[] {
+  /**
+   * Admin sidebar (admin mode): Overview, then one tile per area that opens a popover with its pages; recomputed when
+   * the DATEV / accounting capabilities or the role flip. Areas with a single visible page show that page directly.
+   */
+  readonly adminNavEntries = computed<FpcSidebarNavEntry<ContributorNavItem>[]>(() => {
     const isFullAdmin = this.canAccessAdminOnlyAdministration();
     const items: ContributorNavItem[] = [
       {
@@ -602,19 +611,102 @@ export class BillingConsoleContainerComponent implements OnInit {
       });
     }
 
-    const platform = new Set(['/users', '/apps', '/webhooks', '/updates', '/administration/settings']);
-    const contributors = collectContributorNavItems(FIRST_PARTY_CONTRIBUTOR_UI_MODULES).admin;
-    const byRank = (item: ContributorNavItem) => ADMIN_NAV_ORDER.indexOf(item.routerLink.join('/'));
-    const ranked = items.filter((item) => !platform.has(item.routerLink.join('/')));
-
-    // Sidebar order (admin mode): overview, business, catalog, contributor pages, then the platform pages.
-    ranked.sort((a, b) => byRank(a) - byRank(b));
-
-    return [
-      ...ranked,
-      ...contributors,
-      ...items.filter((item) => platform.has(item.routerLink.join('/'))).sort((a, b) => byRank(a) - byRank(b)),
+    const byPath = new Map(items.map((item) => [item.routerLink.join('/'), item]));
+    const pick = (...paths: string[]) =>
+      paths.map((path) => byPath.get(path)).filter((item): item is ContributorNavItem => item !== undefined);
+    const groups: FpcSidebarNavGroup<ContributorNavItem>[] = [
+      {
+        key: 'overview',
+        icon: 'bi-grid',
+        label: '',
+        title: '',
+        items: pick('/administration/overview'),
+      },
+      {
+        key: 'sales',
+        icon: 'bi-briefcase',
+        title: $localize`:@@featureContainer-navGroupSalesTitle:Sales: customers, subscriptions, offers and promotions`,
+        label: $localize`:@@featureContainer-navGroupSales:Sales`,
+        items: pick(
+          '/administration/customer-profiles',
+          '/administration/subscriptions',
+          '/administration/offers',
+          '/administration/promotions',
+        ),
+      },
+      {
+        key: 'finance',
+        icon: 'bi-bank',
+        title: $localize`:@@featureContainer-navGroupFinanceTitle:Finance: billing, accounting and DATEV`,
+        label: $localize`:@@featureContainer-navGroupFinance:Finance`,
+        items: pick('/administration/billing', '/administration/accounting', '/administration/datev-exports'),
+      },
+      {
+        key: 'operations',
+        icon: 'bi-clipboard-data',
+        title: $localize`:@@featureContainer-navGroupOperationsTitle:Operations: projects, suppliers, inventory and files`,
+        label: $localize`:@@featureContainer-navGroupOperations:Operations`,
+        items: pick(
+          '/administration/projects',
+          '/administration/supplier-profiles',
+          '/administration/inventory',
+          '/administration/file-explorer',
+        ),
+      },
+      {
+        key: 'catalog',
+        icon: 'bi-boxes',
+        title: $localize`:@@featureContainer-navGroupCatalogTitle:Catalog: plans, providers, configs, add-ons and meters`,
+        label: $localize`:@@featureContainer-navGroupCatalog:Catalog`,
+        items: pick(
+          '/administration/service-plans',
+          '/administration/service-types',
+          '/administration/cloud-init-configs',
+          '/administration/addons',
+          '/administration/meters',
+        ),
+      },
+      {
+        key: 'extensions',
+        icon: 'bi-plugin',
+        title: $localize`:@@featureContainer-navGroupExtensionsTitle:Extensions`,
+        label: $localize`:@@featureContainer-navGroupExtensions:Extensions`,
+        items: collectContributorNavItems(FIRST_PARTY_CONTRIBUTOR_UI_MODULES).admin,
+      },
+      {
+        key: 'system',
+        icon: 'bi-gear',
+        title: $localize`:@@featureContainer-navGroupSystemTitle:System: users, apps, webhooks, updates and settings`,
+        label: $localize`:@@featureContainer-navGroupSystem:System`,
+        items: pick('/users', '/apps', '/webhooks', '/updates', '/administration/settings'),
+      },
     ];
+
+    return fpcSidebarNavEntries(groups);
+  });
+
+  /** Key of the admin area whose popover is open (one at a time). */
+  readonly openNavGroup = signal<string | null>(null);
+
+  private readonly currentUrl = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map(() => this.router.url),
+    ),
+    { initialValue: this.router.url },
+  );
+
+  setNavGroupOpen(key: string, open: boolean): void {
+    this.openNavGroup.update((current) => (open ? key : current === key ? null : current));
+  }
+
+  /** The area tile is active while one of its pages is open. */
+  isNavGroupActive(group: FpcSidebarNavGroup<ContributorNavItem>): boolean {
+    return fpcSidebarNavGroupActive(group, this.currentUrl());
+  }
+
+  navGroupHasKey(group: FpcSidebarNavGroup<ContributorNavItem>, navKey: string): boolean {
+    return group.items.some((item) => item.navKey === navKey);
   }
 
   /** Switch the sidebar mode by opening that mode's home page (the mode follows the page). */

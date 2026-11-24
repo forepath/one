@@ -1,0 +1,109 @@
+<div class="ac-stack__card">
+  <div class="ac-stack__head">
+    <span class="ac-stack__icon" aria-hidden="true"><i class="bi bi-{{ presenter().icon }}"></i></span>
+    <div class="ac-stack__titles">
+      <div class="ac-stack__title" data-testid="action-center-stack-title">{{ title() }}</div>
+      @if (description(); as text) {
+        <div class="ac-stack__description">{{ text }}</div>
+      }
+    </div>
+    @if (!highlight()) {
+      <fpc-badge
+        [pill]="true"
+        size="sm"
+        [color]="badgeColor()"
+        class="ac-stack__count"
+        data-testid="action-center-stack-count"
+        >{{ group().openCount }}</fpc-badge
+      >
+    }
+  </div>
+
+  @if (!expanded() && topItem(); as item) {
+    <button
+      type="button"
+      class="ac-stack__preview"
+      [disabled]="!canExpand() && !itemLink(item)"
+      (click)="canExpand() ? toggle() : open(itemLink(item))"
+      [attr.aria-expanded]="canExpand() ? false : null"
+      data-testid="action-center-stack-preview"
+    >
+      <span class="ac-stack__item-title">{{ itemTitle(item) }}</span>
+      @if (itemMeta(item); as meta) {
+        <span class="ac-stack__item-meta">{{ meta }}</span>
+      }
+    </button>
+  }
+
+  @if (expanded()) {
+    <ul class="ac-stack__items" data-testid="action-center-stack-items">
+      @for (item of openItems(); track item.id) {
+        <li class="ac-stack__item">
+          <button
+            type="button"
+            class="ac-stack__item-main"
+            [disabled]="!itemLink(item)"
+            (click)="open(itemLink(item))"
+            data-testid="action-center-item"
+          >
+            <span class="ac-stack__item-title">{{ itemTitle(item) }}</span>
+            @if (itemMeta(item); as meta) {
+              <span class="ac-stack__item-meta">{{ meta }}</span>
+            }
+            @if (item.occurredAt) {
+              <span class="ac-stack__item-time">{{ format.relative(item.occurredAt) }}</span>
+            }
+          </button>
+          <shared-action-center-silence-menu
+            [label]="silenceItemLabel(item)"
+            [canSilenceForEveryone]="canSilenceForEveryone()"
+            [disabled]="disabled()"
+            (silence)="silenceItem(item, $event)"
+          />
+        </li>
+      }
+      @if (hiddenCount() > 0) {
+        <li class="ac-stack__more" i18n="@@featureActionCenter-moreOnPage">
+          {{ hiddenCount() }} more on the linked page
+        </li>
+      }
+    </ul>
+  }
+
+  <div class="ac-stack__actions">
+    @if (groupLink(); as link) {
+      <fpc-button
+        size="sm"
+        iconOnly
+        variant="primary"
+        [title]="actionLabel()"
+        [ariaLabel]="actionLabel()"
+        (clicked)="open(link)"
+        data-testid="action-center-stack-open"
+      >
+        <i class="bi bi-eye" aria-hidden="true"></i>
+      </fpc-button>
+    }
+    @if (canExpand()) {
+      <fpc-button
+        size="sm"
+        iconOnly
+        [variant]="expanded() ? 'secondary' : 'outline-secondary'"
+        [title]="expanded() ? collapseLabel : showListLabel"
+        [ariaLabel]="expanded() ? collapseLabel : showListLabel"
+        [ariaExpanded]="expanded()"
+        (clicked)="toggle()"
+        data-testid="action-center-stack-toggle"
+      >
+        <i class="bi bi-list-ul" aria-hidden="true"></i>
+      </fpc-button>
+    }
+    <span class="ac-stack__spacer"></span>
+    <shared-action-center-silence-menu
+      [label]="silenceGroupLabel()"
+      [canSilenceForEveryone]="canSilenceForEveryone()"
+      [disabled]="disabled()"
+      (silence)="silenceGroup($event)"
+    />
+  </div>
+</div>

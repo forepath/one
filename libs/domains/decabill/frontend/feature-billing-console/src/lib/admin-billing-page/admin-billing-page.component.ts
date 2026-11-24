@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   AdminBillingFacade,
   AdminBillingService,
@@ -328,6 +328,7 @@ export class AdminBillingPageComponent implements OnInit {
   private readonly authFacade = inject(AuthenticationFacade);
   private readonly datePipe = inject(DatePipe);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute, { optional: true });
 
   readonly pageTitle = $localize`:@@featureAdminBilling-title:Billing`;
   readonly perspectiveLabel = $localize`:@@featureAdminBilling-perspective:Perspective`;
@@ -388,14 +389,17 @@ export class AdminBillingPageComponent implements OnInit {
     return [f.from !== d.from || f.to !== d.to, f.groupBy !== 'day', !!f.user, !!f.supplier].filter(Boolean).length;
   });
   readonly supplierFilterOptions = signal<AdminSupplierProfileListItem[]>([]);
-  /** Customer invoices: search + page + size → `GET /admin/billing/invoices?limit&offset&search` (replace-page). */
-  readonly invoicePaging = dbServerPaging((query) => this.invoiceManagerFacade.loadInvoices(query));
-  /** Supplier invoices (loaded only in the supplier perspective). */
+  /**
+   * Customer invoices: search + page + size → `GET /admin/billing/invoices?limit&offset&search` (replace-page).
+   * Synced to `?inv-q=&inv-p=&inv-n=` (deep links, e.g. from the action center).
+   */
+  readonly invoicePaging = dbServerPaging((query) => this.invoiceManagerFacade.loadInvoices(query), { url: 'inv-' });
+  /** Supplier invoices (loaded only in the supplier perspective; `?perspective=supplier&sinv-q=` deep links). */
   readonly supplierInvoicePaging = dbServerPaging(
     (query) => {
       if (this.billingPerspective() === 'supplier') this.supplierInvoiceManagerFacade.loadInvoices(query);
     },
-    { filters: () => this.billingPerspective() },
+    { url: 'sinv-', filters: () => this.billingPerspective() },
   );
 
   readonly mobilePanel = signal<AdminBillingMobilePanel>('overview');
@@ -922,6 +926,11 @@ export class AdminBillingPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Deep link into the supplier perspective (e.g. payables from the action center).
+    if (this.route?.snapshot.queryParamMap.get('perspective') === 'supplier') {
+      this.onBillingPerspectiveChange('supplier');
+    }
+
     this.restoreFilters();
     this.setDefaultDates(false);
     this.adminBillingFacade.loadSummary();

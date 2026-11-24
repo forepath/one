@@ -1,5 +1,9 @@
 import { IDENTITY_NOTIFICATION_EVENTS } from '@forepath/identity/backend';
-import { APPLICATION_NOTIFICATION_EVENTS, SEARCH_NOTIFICATION_EVENTS } from '@forepath/shared/backend';
+import {
+  ACTION_CENTER_NOTIFICATION_EVENTS,
+  APPLICATION_NOTIFICATION_EVENTS,
+  SEARCH_NOTIFICATION_EVENTS,
+} from '@forepath/shared/backend';
 
 /**
  * Decabill webhook event catalog. Names follow the shared convention (`WEBHOOK_EVENT_TYPE_PATTERN`,
@@ -116,6 +120,7 @@ export const BILLING_NOTIFICATION_EVENTS = [
   'supplier_invoice.document_uploaded',
   'supplier_creditor.allocated',
   ...APPLICATION_NOTIFICATION_EVENTS,
+  ...ACTION_CENTER_NOTIFICATION_EVENTS,
   ...SEARCH_NOTIFICATION_EVENTS,
   'offer.created',
   'offer.updated',

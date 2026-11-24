@@ -9317,6 +9317,276 @@
       <trans-unit id="featureContainer-modeAdminTitle" datatype="html">
         <source>Admin mode: instance overview and administration</source>
         </trans-unit>
+      <trans-unit id="featureAgentActionCenter-categoryWorkspaces" datatype="html">
+        <source>Workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-categoryTickets" datatype="html">
+        <source>Tickets</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-categoryAutomation" datatype="html">
+        <source>Agent automation</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-categoryDeployments" datatype="html">
+        <source>Deployments</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-categoryIntegrations" datatype="html">
+        <source>Integrations</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-setupWorkspaceTitle" datatype="html">
+        <source>Connect your first workspace</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-setupWorkspaceDescription" datatype="html">
+        <source>Register an agent manager as a workspace to create agents, tickets and automation.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-setupWorkspaceAction" datatype="html">
+        <source>Add workspace</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-isolationFailedTitle" datatype="html">
+        <source>Workspace isolation unavailable</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-isolationFailedDescription" datatype="html">
+        <source>The standard container isolation is not ready on these hosts; new environments cannot start safely.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-configSyncFailedTitle" datatype="html">
+        <source>Configuration not applied</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-configSyncFailedDescription" datatype="html">
+        <source>Agent configuration or layer files could not be synced to environments.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-graphFailedTitle" datatype="html">
+        <source>Workspace graph build failed</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-graphFailedDescription" datatype="html">
+        <source>Rebuild the graph after fixing the cause.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-automationApprovalTitle" datatype="html">
+        <source>Automation waiting for approval</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-automationApprovalDescription" datatype="html">
+        <source>Tickets prepared for autonomous work need your approval before agents start.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-automationAttentionTitle" datatype="html">
+        <source>Automation needs attention</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-automationAttentionDescription" datatype="html">
+        <source>The latest autonomous run failed, timed out or escalated to a human.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-tasksApprovalTitle" datatype="html">
+        <source>Scheduled tasks to approve</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-tasksApprovalDescription" datatype="html">
+        <source>Agents created or changed these tasks; they only run after approval.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-tasksFailedTitle" datatype="html">
+        <source>Scheduled tasks failing</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-tasksFailedDescription" datatype="html">
+        <source>The last run of these tasks failed.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-handoffsFailedTitle" datatype="html">
+        <source>Agent handoffs failed</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-handoffsFailedDescription" datatype="html">
+        <source>Work passed between agents failed or the answer could not be delivered.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-deploymentsApprovalTitle" datatype="html">
+        <source>Pipelines to approve</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-deploymentsApprovalDescription" datatype="html">
+        <source>Deployment workflows proposed or changed by agents wait for approval.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-deploymentsFailedTitle" datatype="html">
+        <source>Deployments failing</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-deploymentsFailedDescription" datatype="html">
+        <source>The last run of these pipelines failed or timed out.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-connectionsFailedTitle" datatype="html">
+        <source>Connections failing</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-connectionsFailedDescription" datatype="html">
+        <source>The last connection test failed. Check the credentials.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-importsFailedTitle" datatype="html">
+        <source>Imports failing</source>
+        </trans-unit>
+      <trans-unit id="featureAgentActionCenter-importsFailedDescription" datatype="html">
+        <source>Scheduled imports from Jira or Confluence report errors.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-title" datatype="html">
+        <source>To-dos</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-tabOpen" datatype="html">
+        <source>Open</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-tabSilenced" datatype="html">
+        <source>Silenced</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-tabsLabel" datatype="html">
+        <source>To-do views</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-emptyTitle" datatype="html">
+        <source>All done</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-emptyMessage" datatype="html">
+        <source>Nothing needs your attention right now. New to-dos appear here as soon as they come up.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-noSilencesTitle" datatype="html">
+        <source>Nothing silenced</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-noSilencesMessage" datatype="html">
+        <source>Silence a to-do with the bell icon to hide it for you or (admins) for everyone.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-loading" datatype="html">
+        <source>Loading to-dos</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceScopeItem" datatype="html">
+        <source>One entry</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceScopeType" datatype="html">
+        <source>All entries</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceAudienceEveryone" datatype="html">
+        <source>For everyone</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceAudienceSelf" datatype="html">
+        <source>For me</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceUntil" datatype="html">
+        <source>Until <x id="date" equiv-text="this.presenters.format.date(silence.until)"/></source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceIndefinite" datatype="html">
+        <source>Until lifted</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-liftSilence" datatype="html">
+        <source>Lift silence &quot;<x id="title" equiv-text="this.silenceTitle(silence)"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceForMe" datatype="html">
+        <source>Silence for me</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-snoozeDay" datatype="html">
+        <source>Snooze for 1 day</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-snoozeWeek" datatype="html">
+        <source>Snooze for 1 week</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceForEveryone" datatype="html">
+        <source>Silence for everyone</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-moreOnPage" datatype="html">
+        <source> <x id="INTERPOLATION" equiv-text="{{ hiddenCount() }}"/> more on the linked page </source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-collapse" datatype="html">
+        <source>Collapse</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-showList" datatype="html">
+        <source>Show list</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-setUp" datatype="html">
+        <source>Set up</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-open" datatype="html">
+        <source>Open</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceGroupLabel" datatype="html">
+        <source>Silence &quot;<x id="title" equiv-text="this.title()"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-silenceItemLabel" datatype="html">
+        <source>Silence &quot;<x id="title" equiv-text="this.itemTitle(item)"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-toggleTitleOne" datatype="html">
+        <source>To-dos: {count} open</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-toggleTitleOther" datatype="html">
+        <source>To-dos: {count} open</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-toggleTitleNone" datatype="html">
+        <source>To-dos: nothing open</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-categorySetup" datatype="html">
+        <source>Suggested next steps</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-categoryPlatform" datatype="html">
+        <source>Platform</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-updatesTitle" datatype="html">
+        <source>Update available</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-updatesDescription" datatype="html">
+        <source>Version <x id="version" equiv-text="paramText(group.params, &apos;latestVersion&apos;)"/> is available (installed: <x id="installed" equiv-text="paramText(group.params, &apos;installedVersion&apos;)"/>).</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-updatesDescriptionInstances" datatype="html">
+        <source>Some instances run an outdated version.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-updatesAction" datatype="html">
+        <source>Review update</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksTitle" datatype="html">
+        <source>Webhooks failing</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksDescription" datatype="html">
+        <source>Deliveries fail repeatedly; endpoints are disabled after too many failures.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksDisabled" datatype="html">
+        <source>Disabled after repeated failures</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-webhooksFailures" datatype="html">
+        <source><x id="count" equiv-text="paramText(item.params, &apos;failures&apos;)"/> failed deliveries in a row</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-emailFailedTitle" datatype="html">
+        <source>Emails not delivered</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-emailFailedDescription" datatype="html">
+        <source>Emails of the last 7 days could not be sent; check the mail server settings.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-emailSetupTitle" datatype="html">
+        <source>Set up email delivery</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-emailSetupDescription" datatype="html">
+        <source>No mail server is configured, so no emails (invoices, sign-in codes, notifications) are sent.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-searchPlaceholder" datatype="html">
+        <source>Search to-dos</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-filtersTitle" datatype="html">
+        <source>Filter to-dos</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-filterArea" datatype="html">
+        <source>Area</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-filterPriority" datatype="html">
+        <source>Priority</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-filterAny" datatype="html">
+        <source>All</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-noMatchTitle" datatype="html">
+        <source>No matching to-dos</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-noMatchMessage" datatype="html">
+        <source>Change the search or the filters.</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-severityDanger" datatype="html">
+        <source>Critical</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-severityWarning" datatype="html">
+        <source>Attention</source>
+        </trans-unit>
+      <trans-unit id="featureActionCenter-severityInfo" datatype="html">
+        <source>Info</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupAgentsTitle" datatype="html">
+        <source>Agents: agent configuration and connections</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupAgents" datatype="html">
+        <source>Agents</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupSystemTitle" datatype="html">
+        <source>System: users, apps, webhooks, updates and settings</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-navGroupSystem" datatype="html">
+        <source>System</source>
+        </trans-unit>
     </body>
   </file>
 </xliff>

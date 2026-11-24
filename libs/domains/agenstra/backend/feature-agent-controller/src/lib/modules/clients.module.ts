@@ -25,6 +25,10 @@ import { forwardRef, Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { AgenstraActionCenterGateway } from '../action-center/agenstra-action-center.gateway';
+import { AgenstraActionCenterRegistrar } from '../action-center/agenstra-action-center.registrar';
+import { AgenstraWorkspacesActionSource } from '../action-center/agenstra-workspaces.action-source';
+import { AdminActionCenterController } from '../controllers/admin-action-center.controller';
 import { AdminOpencodeConfigController } from '../controllers/admin-opencode-config.controller';
 import { AdminOpencodeLayerFilesController } from '../controllers/admin-opencode-layer-files.controller';
 import { AdminOverviewController } from '../controllers/admin-overview.controller';
@@ -184,6 +188,7 @@ import { WorkspaceGraphChangeNotifierService } from '../services/workspace-graph
 import { WorkspaceGraphSnapshotService } from '../services/workspace-graph-snapshot.service';
 import { WorkspaceGraphViewService } from '../services/workspace-graph-view.service';
 
+import { agenstraActionCenterModule } from './agenstra-action-center.module';
 import { AgenstraNotificationsModule, AGENSTRA_CONTROLLER_QUEUE_NAME } from './agenstra-notifications.module';
 import { AgenstraUpdatesModule } from './agenstra-updates.module';
 import { ContextImportModule } from './context-import.module';
@@ -244,6 +249,7 @@ import { StatisticsModule } from './statistics.module';
     AgenstraSearchModule,
     AgenstraNotificationsModule,
     AgenstraUpdatesModule,
+    agenstraActionCenterModule,
     StatisticsModule,
     forwardRef(() => ContextImportModule),
   ],
@@ -256,6 +262,7 @@ import { StatisticsModule } from './statistics.module';
     ClientStatisticsController,
     StatisticsController,
     AdminOverviewController,
+    AdminActionCenterController,
     TicketsController,
     AttachmentsController,
     KnowledgeTreeController,
@@ -374,6 +381,9 @@ import { StatisticsModule } from './statistics.module';
     TicketsBoardGateway,
     KnowledgeBoardGateway,
     StatusGateway,
+    AgenstraActionCenterGateway,
+    AgenstraWorkspacesActionSource,
+    AgenstraActionCenterRegistrar,
     ProvisioningService,
     ProvisioningProviderFactory,
     ProvisioningReferencesRepository,

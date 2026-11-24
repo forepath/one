@@ -72,6 +72,12 @@ import { AccountingReconciliationService } from './accounting/services/accountin
 import { AccountingReferenceService } from './accounting/services/accounting-reference.service';
 import { AccountingReportsService } from './accounting/services/accounting-reports.service';
 import { AccountingVatReturnService } from './accounting/services/accounting-vat-return.service';
+import { BillingActionCenterGateway } from './action-center/billing-action-center.gateway';
+import { BillingActionCenterRegistrar } from './action-center/billing-action-center.registrar';
+import { BillingDocumentsActionSource } from './action-center/billing-documents.action-source';
+import { BillingOperationsActionSource } from './action-center/billing-operations.action-source';
+import { BillingPartnersActionSource } from './action-center/billing-partners.action-source';
+import { BillingSetupActionSource } from './action-center/billing-setup.action-source';
 import { PAYMENT_PROCESSOR_INIT } from './constants/payment-processor-init.token';
 import { AgenstraControllerContributorModule } from './contributors/agenstra-controller/agenstra-controller.contributor.module';
 import { AgenstraManagerContributorModule } from './contributors/agenstra-manager/agenstra-manager.contributor.module';
@@ -81,6 +87,7 @@ import { DecabillBillingContributorModule } from './contributors/decabill-billin
 import { DigitalOceanContributorModule } from './contributors/digital-ocean/digital-ocean.contributor.module';
 import { HetznerContributorModule } from './contributors/hetzner/hetzner.contributor.module';
 import { AddonsController } from './controllers/addons.controller';
+import { AdminActionCenterController } from './controllers/admin-action-center.controller';
 import { AdminBillingSettingsController } from './controllers/admin-billing-settings.controller';
 import { AdminBillingController } from './controllers/admin-billing.controller';
 import { AdminCustomerAutoBillingController } from './controllers/admin-customer-auto-billing.controller';
@@ -204,6 +211,7 @@ import { InventoryRealtimeNotifier } from './inventory/services/inventory-realti
 import { InventoryRealtimeService } from './inventory/services/inventory-realtime.service';
 import { InventorySerialUnitsService } from './inventory/services/inventory-serial-units.service';
 import { InventoryWithdrawalRequestsService } from './inventory/services/inventory-withdrawal-requests.service';
+import { billingActionCenterModule } from './modules/billing-action-center.module';
 import { BillingIdentityEmailBridgeModule } from './modules/billing-identity-email-bridge.module';
 import { BillingIdentityNotificationBridgeModule } from './modules/billing-identity-notification-bridge.module';
 import { BillingUpdatesModule } from './modules/billing-updates.module';
@@ -457,6 +465,7 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     BillingIdentityEmailBridgeModule,
     BillingIdentityNotificationBridgeModule,
     BillingUpdatesModule,
+    billingActionCenterModule,
     BillingSearchModule,
     TypeOrmModule.forFeature([
       ServiceTypeEntity,
@@ -596,6 +605,7 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     AdminBillingSettingsController,
     AdminFileManagerController,
     AdminOverviewController,
+    AdminActionCenterController,
     PaymentsWebhookController,
     AdminUsageController,
     UsageController,
@@ -925,6 +935,12 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     RevokedUserTokensRepository,
     SocketAuthService,
     BillingStatusGateway,
+    BillingActionCenterGateway,
+    BillingDocumentsActionSource,
+    BillingPartnersActionSource,
+    BillingOperationsActionSource,
+    BillingSetupActionSource,
+    BillingActionCenterRegistrar,
     TenantUserGuard,
     {
       provide: APP_GUARD,

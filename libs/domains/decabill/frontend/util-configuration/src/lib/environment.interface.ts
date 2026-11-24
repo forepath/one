@@ -6,7 +6,7 @@ import type {
   LandingConfigWithRestApi,
 } from '@forepath/shared/frontend/util-configuration';
 
-export type DecabillBillingWebsocket = 'billing' | 'projects' | 'inventory';
+export type DecabillBillingWebsocket = 'billing' | 'projects' | 'inventory' | 'action-center';
 
 export interface DecabillBillingConsoleEnvironment extends BaseEnvironment {
   billing: ApiConfigWithWebsocket<DecabillBillingWebsocket>;

@@ -5,8 +5,25 @@ import {
   getAuthInterceptor,
   getUsersSessionInvalidationInterceptor,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
-import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/agenstra/frontend/util-configuration';
-import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideOidc } from '@forepath/identity/frontend';
+import {
+  Environment,
+  ENVIRONMENT,
+  environment,
+  provideLocale,
+  resolveApiWebsocketUrl,
+} from '@forepath/agenstra/frontend/util-configuration';
+import {
+  createSocketAuthOption,
+  IDENTITY_AUTH_ENVIRONMENT,
+  LOGIN_SUCCESS_REDIRECT_TARGET,
+  OidcAuthService,
+  provideOidc,
+  resolveAuthorizationHeader$,
+} from '@forepath/identity/frontend';
+import {
+  ACTION_CENTER_ENVIRONMENT,
+  ACTION_CENTER_SOCKET_AUTH,
+} from '@forepath/shared/frontend/data-access-action-center';
 import { NOTIFICATION_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-notifications';
 import { SETTINGS_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-settings';
 import { UPDATES_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-updates';
@@ -20,6 +37,7 @@ import {
 } from '@forepath/shared/frontend/ui-components';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
+import { map } from 'rxjs';
 
 import { ComponentReuseStrategy } from './strategies/component-reuse.strategy';
 
@@ -117,6 +135,26 @@ export const appConfig: ApplicationConfig = {
         frontendVersion: env.application.version,
       }),
       deps: [ENVIRONMENT],
+    },
+    {
+      provide: ACTION_CENTER_ENVIRONMENT,
+      useFactory: (env: Environment) => ({
+        apiUrl: env.console.urls.restApi,
+        basePath: 'admin/action-center',
+        websocketUrl: resolveApiWebsocketUrl(env.console.urls.websocket, 'action-center') ?? '',
+      }),
+      deps: [ENVIRONMENT],
+    },
+    {
+      // Resolved on every (re)connect, so the action center socket always carries the current session token.
+      provide: ACTION_CENTER_SOCKET_AUTH,
+      useFactory: (env: Environment, oidcAuthService: OidcAuthService) => () =>
+        resolveAuthorizationHeader$(env.authentication.config, oidcAuthService).pipe(
+          map((authorization) =>
+            authorization ? createSocketAuthOption(env.authentication.config, authorization) : null,
+          ),
+        ),
+      deps: [ENVIRONMENT, OidcAuthService],
     },
     {
       provide: LOGIN_SUCCESS_REDIRECT_TARGET,

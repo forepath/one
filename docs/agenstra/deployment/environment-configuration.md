@@ -17,10 +17,22 @@ An override takes precedence over the environment variable. Resetting removes th
 - `TICKETS_WEBSOCKET_NAMESPACE` - Tickets board namespace (default: `socket/tickets`)
 - `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Knowledge board namespace (default: `socket/pages`)
 - `STATUS_WEBSOCKET_NAMESPACE` - Status notifications namespace (default: `socket/status`)
+- `ACTION_CENTER_WEBSOCKET_NAMESPACE` - Action center namespace (default: `socket/action-center`); timing see below
 - `STATUS_PROVISIONING_POLL_INTERVAL_MS` - Fast `socket/status` poll interval while environment create / update operations are running (default: `3000`, clamped to 1000–30000)
 - `WEBSOCKET_CORS_ORIGIN` - Socket.IO CORS origins (comma-separated). Falls back to `CORS_ORIGIN`, then `*` when unset.
 - `NODE_ENV` - Environment mode (`development` or `production`)
 - **Migration:** `WEBSOCKET_PORT` is removed. Operators must re-provision existing stacks so nginx proxies `/api/`, `/socket/`, and `/socket.io/` to a single `PORT`.
+
+### Action center
+
+Live to-dos for admins and managers (see [Action Center](../features/action-center.md)). Intervals are clamped to their ranges.
+
+| Variable                                       | Description                                                                     | Default |
+| ---------------------------------------------- | ------------------------------------------------------------------------------- | ------- |
+| `ACTION_CENTER_RECOMPUTE_DEBOUNCE_MS`          | Delay (0–10000 ms) between a change and the recompute (coalesces bursts)        | `400`   |
+| `ACTION_CENTER_REVISION_POLL_INTERVAL_MS`      | How often API processes check Valkey for changes of other processes (500–60000) | `2000`  |
+| `ACTION_CENTER_REFRESH_INTERVAL_MS`            | Full recompute of watched scopes for time-based to-dos (10000–3600000)          | `60000` |
+| `ACTION_CENTER_SESSION_REVALIDATE_INTERVAL_MS` | Re-validation of connected sessions (10000–600000)                              | `60000` |
 
 ### Database Configuration
 

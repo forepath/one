@@ -9,12 +9,12 @@ profiles.
 
 ## Access (admin only)
 
-| Surface  | Path / rule                                                                                     |
-| -------- | ----------------------------------------------------------------------------------------------- |
-| Admin UI | `/updates` (admin guard)                                                                        |
-| REST     | `GET/POST /admin/updates*`                                                                      |
-| PAT      | Admin role + scope `updates:admin`                                                              |
-| Sidebar  | Admin mode entry + badge when an update is available (also on the Mode item while in user mode) |
+| Surface  | Path / rule                                                                                                   |
+| -------- | ------------------------------------------------------------------------------------------------------------- |
+| Admin UI | `/updates` (admin guard)                                                                                      |
+| REST     | `GET/POST /admin/updates*`                                                                                    |
+| PAT      | Admin role + scope `updates:admin`                                                                            |
+| Sidebar  | Admin mode entry (System area) + badge when an update is available (also on the Mode item while in user mode) |
 
 Non-admins receive `401`/`403` on the API and never see the nav entry or badge.
 

@@ -48,6 +48,8 @@ export const BILLING_PAT_SCOPES = [
   'attachments:admin',
   // Billing operations: summary, capabilities, tax preview, bill-now, statistics
   'billing:admin',
+  // Action center (to-dos of the tenant): read the view, silence / lift silences (admins and managers)
+  'action_center:admin',
   // Stored billing documents (admin file manager)
   'files:admin',
   'datev:admin',

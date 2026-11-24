@@ -320,6 +320,7 @@ import {
   identityAuthRoutes,
   roleHomeGuard,
 } from '@forepath/identity/frontend';
+import { provideActionCenter, provideActionCenterPresenters } from '@forepath/shared/frontend/feature-action-center';
 import {
   createNotificationAdminRoutes,
   notificationAdminProviders,
@@ -343,6 +344,10 @@ import { AccountingOpenItemsPageComponent } from './accounting/accounting-open-i
 import { AccountingOverviewPageComponent } from './accounting/accounting-overview-page.component';
 import { AccountingStatementsPageComponent } from './accounting/accounting-statements-page.component';
 import { AccountingVatReturnsPageComponent } from './accounting/accounting-vat-returns-page.component';
+import {
+  DECABILL_PLATFORM_ACTION_LINKS,
+  decabillActionCenterPresenters,
+} from './action-center/decabill-action-center.presenters';
 import { AddonsPageComponent } from './addons-page/addons-page.component';
 import { AdminBillingPageComponent } from './admin-billing-page/admin-billing-page.component';
 import { AdminCustomerProfilesPageComponent } from './admin-customer-profiles-page/admin-customer-profiles-page.component';
@@ -766,6 +771,8 @@ export const billingConsoleRoutes: Route[] = [
       ...identityAuthProviders,
       ...notificationAdminProviders,
       ...updatesAdminProviders,
+      ...provideActionCenter(DECABILL_PLATFORM_ACTION_LINKS),
+      provideActionCenterPresenters(decabillActionCenterPresenters),
       ...settingsAdminProviders,
       { provide: SETTINGS_ADMIN_LABELS, useValue: BILLING_SETTINGS_LABELS },
       CloudInitConfigsFacade,

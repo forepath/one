@@ -211,6 +211,9 @@
       "@forepath/shared/backend/feature-updates": [
         "libs/domains/shared/backend/feature-updates/src/index.ts"
       ],
+      "@forepath/shared/backend/feature-action-center": [
+        "libs/domains/shared/backend/feature-action-center/src/index.ts"
+      ],
       "@forepath/shared/frontend/data-access-settings": [
         "libs/domains/shared/frontend/data-access-settings/src/index.ts"
       ],
@@ -222,6 +225,12 @@
       ],
       "@forepath/shared/frontend/feature-updates": [
         "libs/domains/shared/frontend/feature-updates/src/index.ts"
+      ],
+      "@forepath/shared/frontend/data-access-action-center": [
+        "libs/domains/shared/frontend/data-access-action-center/src/index.ts"
+      ],
+      "@forepath/shared/frontend/feature-action-center": [
+        "libs/domains/shared/frontend/feature-action-center/src/index.ts"
       ],
       "@forepath/shared/backend/util-opensearch": [
         "libs/domains/shared/backend/util-opensearch/src/index.ts"

@@ -129,6 +129,15 @@ Webhook-only (no email). Emitted by the agent-controller update-check job and in
 
 See [Application updates](./application-updates.md).
 
+### Action center events
+
+Webhook-only (no email). Emitted when an admin silences a to-do for everyone in the [Action Center](./action-center.md) or lifts such a silence (personal silences are not published):
+
+- `action_center.silence.created` — a type or record was silenced for everyone (or its end changed)
+- `action_center.silence.removed` — a silence was lifted
+
+Payload: `{ silenceId, itemType, itemId, audience: "everyone", until, actorUserId }` (`itemId` / `until` are `null` for a whole type / until lifted).
+
 ### Search index
 
 - `search.reindex.started`, `search.reindex.completed`, `search.reindex.failed`: the OpenSearch reindex coordinator ran (`failed` also fires per failed batch, with `entityType` and `offset`)

@@ -11,6 +11,7 @@ import {
   UserPersonalAccessTokenEntity,
   UsersRepository,
 } from '@forepath/identity/backend';
+import { ActionCenterSilenceEntity } from '@forepath/shared/backend';
 import { RedisCacheService } from '@forepath/shared/backend/util-redis-cache';
 import { getQueueToken } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
@@ -102,6 +103,7 @@ class StubContextImportModule {}
         publishTicket: jest.fn(),
         publishAgentConfigUpdated: jest.fn(),
         publish: jest.fn(),
+        addListener: jest.fn(() => () => undefined),
       },
     },
   ],
@@ -262,6 +264,8 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(OpencodeLayerFileEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(OpencodeLayerFileSyncTargetEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(ActionCenterSilenceEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(OpencodeConfigSyncTargetEntity))
       .useValue(mockRepository)

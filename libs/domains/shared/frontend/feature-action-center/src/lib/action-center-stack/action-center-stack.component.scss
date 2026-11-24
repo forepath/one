@@ -1,0 +1,199 @@
+// A to-do type as a stack of cards: the card on top plus up to two offset "cards" underneath while more than one
+// record is open (`--stacked`). Severity shows in the count badge only; setup suggestions
+// (`--highlight`) get a primary-tinted border so they stand out at the top of the panel.
+:host {
+  --ac-card-bg: var(--bs-body-bg);
+  --ac-card-border: var(--bs-border-color-translucent);
+  display: block;
+  position: relative;
+  // Own stacking context: the lowest card (`::after`, z-index -1) stays above the panel background. Menus are
+  // portaled to <body>, so they are not clipped by it.
+  isolation: isolate;
+  // Room for the cards peeking out below the top card (see `--stacked`).
+  padding-bottom: 0;
+  transition: padding-bottom 0.15s ease;
+}
+
+:host(.ac-stack--stacked) {
+  padding-bottom: 0.625rem;
+}
+
+// The cards below the top one.
+:host(.ac-stack--stacked)::before,
+:host(.ac-stack--stacked)::after {
+  content: '';
+  position: absolute;
+  top: 0.5rem;
+  border: var(--bs-border-width) solid var(--ac-card-border);
+  border-radius: var(--bs-border-radius-lg);
+  background-color: var(--bs-tertiary-bg);
+  pointer-events: none;
+}
+
+:host(.ac-stack--stacked)::before {
+  inset-inline: 0.5rem;
+  bottom: 0.3125rem;
+  z-index: 0;
+}
+
+:host(.ac-stack--stacked)::after {
+  inset-inline: 1rem;
+  bottom: 0;
+  z-index: -1;
+  opacity: 0.7;
+}
+
+.ac-stack__card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: var(--bs-border-width) solid var(--ac-card-border);
+  border-radius: var(--bs-border-radius-lg);
+  background-color: var(--ac-card-bg);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+}
+
+:host(.ac-stack--highlight) .ac-stack__card {
+  border-color: rgba(var(--bs-primary-rgb), 0.35);
+}
+
+.ac-stack__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+
+.ac-stack__icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--bs-border-radius);
+  background-color: rgba(var(--bs-primary-rgb), 0.12);
+  color: var(--bs-primary);
+  font-size: 1.125rem;
+}
+
+.ac-stack__titles {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ac-stack__title {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.ac-stack__description {
+  margin-top: 0.125rem;
+  font-size: 0.8125rem;
+  color: var(--bs-secondary-color);
+}
+
+.ac-stack__count {
+  flex: 0 0 auto;
+}
+
+// Shared look of the preview row and the item rows: a quiet, full-width button.
+%ac-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0.375rem 0.5rem;
+  border: 0;
+  border-radius: var(--bs-border-radius);
+  background: transparent;
+  color: inherit;
+  text-align: start;
+
+  &:not(:disabled) {
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background-color: var(--bs-tertiary-bg);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-focus-ring-color, var(--bs-primary));
+    outline-offset: -2px;
+  }
+}
+
+.ac-stack__preview {
+  @extend %ac-row;
+
+  background-color: rgba(var(--bs-body-color-rgb), 0.03);
+}
+
+.ac-stack__items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 22rem;
+  overflow-y: auto;
+}
+
+.ac-stack__item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.ac-stack__item-main {
+  @extend %ac-row;
+
+  flex: 1 1 auto;
+}
+
+.ac-stack__item-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.ac-stack__item-meta,
+.ac-stack__item-time {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+  overflow-wrap: anywhere;
+}
+
+.ac-stack__item-time {
+  margin-inline-start: auto;
+  white-space: nowrap;
+}
+
+.ac-stack__more {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+.ac-stack__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.ac-stack__spacer {
+  flex: 1 1 auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+}
