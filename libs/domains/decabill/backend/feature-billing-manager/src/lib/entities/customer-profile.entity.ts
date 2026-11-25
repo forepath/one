@@ -2,6 +2,7 @@ import { createJsonAes256GcmTransformer } from '@forepath/shared/backend';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 
 import { CustomerType } from '../constants/customer-type.constants';
+import type { CustomerDeliveryPreference } from '../constants/document-delivery.constants';
 import { VatIdValidationSource, VatIdValidationStatus } from '../constants/vat-id-validation.constants';
 import { CustomerTrustLevel } from '../trust-score/trust-score.types';
 
@@ -83,6 +84,10 @@ export class CustomerProfileEntity {
 
   @Column({ type: 'varchar', length: 50, nullable: true, name: 'phone' })
   phone?: string;
+
+  /** `email` (default) or `letter` (documents are also posted, in addition to the email). */
+  @Column({ type: 'varchar', length: 16, name: 'preferred_delivery_channel', default: 'email' })
+  preferredDeliveryChannel!: CustomerDeliveryPreference;
 
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'stripe_customer_id' })
   stripeCustomerId?: string;

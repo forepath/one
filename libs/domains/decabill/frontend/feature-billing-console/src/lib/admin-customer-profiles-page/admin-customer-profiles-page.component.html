@@ -497,4 +497,11 @@
     [(buyerReference)]="form.buyerReference"
     [(endpoint)]="form.einvoiceEndpoint"
   />
+  <framework-delivery-preference-field
+    class="d-block mt-3"
+    [controlId]="prefix + 'PreferredDelivery'"
+    [available]="postalAvailable()"
+    [value]="form.preferredDeliveryChannel ?? 'email'"
+    (valueChange)="form.preferredDeliveryChannel = $event"
+  />
 </ng-template>

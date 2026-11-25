@@ -115,9 +115,10 @@ export const deleteAdminProjectFailure = createAction(
   props<{ error: string }>(),
 );
 
+/** `sendLetter`: issue the invoice without email, then send it as a letter (spooled). */
 export const billProjectTime = createAction(
   '[Projects] Bill Project Time',
-  props<{ projectId: string; dto: BillProjectTimeDto }>(),
+  props<{ projectId: string; dto: BillProjectTimeDto; sendLetter?: boolean }>(),
 );
 export const billProjectTimeSuccess = createAction(
   '[Projects] Bill Project Time Success',

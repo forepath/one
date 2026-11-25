@@ -49,6 +49,7 @@ Registered by the scheduler from `getBillingRepeatableJobs()`:
 | `renewal-reminder.coordinator`            | `REMINDER_SCHEDULER_INTERVAL`                   | 1h               |
 | `subscription-item-update.coordinator`    | `SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL`        | 24h              |
 | `backorder-retry.coordinator`             | `BACKORDER_RETRY_INTERVAL_MS`                   | 60s              |
+| `spooler.coordinator`                     | `SPOOLER_COORDINATOR_INTERVAL`                  | 60s              |
 | `datev-export.coordinator`                | `BILLING_DATEV_EXPORT_CRON` (cron)              | 1st of month     |
 | `price-recalc.coordinator`                | `BILLING_PRICE_RECALC_CRON` (cron)              | daily 00:00      |
 | `update-check`                            | `UPDATE_CHECK_CRON` (cron)                      | daily 00:00      |
@@ -88,6 +89,7 @@ Coordinators fan out unit jobs such as:
 - `webhook-deliver`: outbound webhook notification delivery
 - `email-deliver`: transactional email delivery (Handlebars + nodemailer)
 - `search-reindex.unit` / `search-index-sync.unit`: OpenSearch index backfill and live sync retries
+- `spooler.unit`: one spool job (document send or printout), enqueued when the job is created (one queue entry per spool job), 3 attempts with exponential backoff (see [Spooler](../features/spooler.md))
 
 BullMQ `jobId` values prevent duplicate active work for the same entity. Custom job IDs use `.` separators and only allowed characters (alphanumeric, `.`, `-`, `_`, `~`).
 

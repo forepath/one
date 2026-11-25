@@ -32,6 +32,7 @@ import {
   SubscriptionWithdrawalJobHandler,
   SubscriptionInstantCancelJobHandler,
   VatIdValidationJobHandler,
+  SpoolerService,
 } from '@forepath/decabill/backend';
 import {
   DEFAULT_TENANT,
@@ -101,6 +102,7 @@ export class BillingJobsProcessor extends WorkerHost {
     private readonly accountingFx: AccountingFxService,
     private readonly accountingProcessorSync: AccountingProcessorSyncService,
     private readonly accountingConfig: AccountingConfigService,
+    private readonly spooler: SpoolerService,
   ) {
     super();
   }
@@ -187,6 +189,17 @@ export class BillingJobsProcessor extends WorkerHost {
         break;
       case BillingJobName.OFFER_FULFILLMENT_COORDINATOR:
         await this.runOfferFulfillmentCoordinator();
+        break;
+      case BillingJobName.SPOOLER_COORDINATOR:
+        await this.spooler.coordinate();
+        break;
+      case BillingJobName.SPOOLER_UNIT:
+        await this.runWithJobTenant(job, job.data as TenantScopedPayload, () =>
+          this.spooler.process((job.data as { spoolJobId: string }).spoolJobId, {
+            attemptsMade: job.attemptsMade,
+            maxAttempts: job.opts.attempts ?? 1,
+          }),
+        );
         break;
       case BillingJobName.UPDATE_CHECK:
       case UPDATE_CHECK_JOB_NAME:

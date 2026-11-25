@@ -678,6 +678,13 @@ export class BillingEmailPublisher {
     });
   }
 
+  /** Whether document emails to this customer can be queued (billing email on the profile, else the login email). */
+  async hasRecipient(userId: string): Promise<boolean> {
+    const profile = await this.customerProfilesRepository.findByUserId(userId);
+
+    return Boolean(await this.resolveRecipientEmail(userId, profile));
+  }
+
   private async resolveRecipientEmail(
     userId: string,
     profile: CustomerProfileEntity | null,

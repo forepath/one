@@ -301,16 +301,27 @@
   (confirmed)="confirmArchive()"
   data-testid="admin-offers-archive-dialog"
 >
-  <fpc-form-check
-    class="d-block mt-3"
-    checkId="archiveNotifyCustomer"
-    [(checked)]="archiveNotifyCustomer"
-    i18n-label="@@featureAdminOffers-archiveNotifyCustomer"
-    label="Send to the customer now"
-    i18n-hint="@@featureAdminOffers-archiveNotifyCustomerHint"
-    hint="Otherwise you can send it later from the offer."
-    data-testid="admin-offers-archive-notify"
-  />
+  @if (postalAvailable()) {
+    <framework-delivery-choice
+      class="d-block mt-3"
+      idPrefix="archiveDelivery"
+      [postalAvailable]="true"
+      [allowNone]="true"
+      [(value)]="archiveDelivery"
+      data-testid="admin-offers-archive-delivery"
+    />
+  } @else {
+    <fpc-form-check
+      class="d-block mt-3"
+      checkId="archiveNotifyCustomer"
+      [(checked)]="archiveNotifyCustomer"
+      i18n-label="@@featureAdminOffers-archiveNotifyCustomer"
+      label="Send to the customer now"
+      i18n-hint="@@featureAdminOffers-archiveNotifyCustomerHint"
+      hint="Otherwise you can send it later from the offer."
+      data-testid="admin-offers-archive-notify"
+    />
+  }
   <fpc-form-check
     class="d-block mt-2"
     checkId="archiveNotifyOnExpiry"
@@ -331,7 +342,46 @@
   [confirmLabel]="sendLabel"
   (confirmed)="confirmSend()"
   data-testid="admin-offers-send-dialog"
-/>
+>
+  @if (postalAvailable()) {
+    <framework-delivery-choice
+      class="d-block mt-3"
+      idPrefix="offerSendChannel"
+      [postalAvailable]="true"
+      [value]="sendChannel()"
+      (valueChange)="sendChannel.set($event)"
+      data-testid="admin-offers-send-channel"
+    />
+  }
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [open]="pendingMarkSent() !== null"
+  (openChange)="!$event && pendingMarkSent.set(null)"
+  [title]="markSentTitle"
+  [message]="markSentMessage"
+  [confirmLabel]="markSentLabel"
+  (confirmed)="confirmMarkSent()"
+  data-testid="admin-offers-mark-sent-dialog"
+>
+  <fpc-form-field
+    class="d-block mt-3"
+    forId="offerMarkSentAt"
+    i18n-label="@@featureAdminOffers-sentAtLabel"
+    label="Sent on"
+    i18n-hint="@@featureAdminOffers-sentAtHelp"
+    hint="Not in the future and not before the offer was archived."
+  >
+    <fpc-form-control
+      controlId="offerMarkSentAt"
+      inputType="date"
+      name="offerMarkSentAt"
+      [ngModel]="markSentAt()"
+      (ngModelChange)="markSentAt.set($event)"
+      data-testid="admin-offers-mark-sent-at"
+    />
+  </fpc-form-field>
+</fpc-confirm-dialog>
 
 <fpc-confirm-dialog
   [open]="pendingRevoke() !== null"

@@ -2,6 +2,7 @@ import { Inject, Injectable, Optional } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 
 import { ACCOUNTING_POSTING_PORT, type AccountingPostingPort } from '../accounting/ports/accounting-posting.port';
+import { DeliverableDocumentType, DocumentDeliveryChannel } from '../constants/document-delivery.constants';
 import { isEuMemberState } from '../constants/eu-member-states.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { TaxMode } from '../constants/tax-mode.constants';
@@ -17,6 +18,7 @@ import { ServicePlansRepository } from '../repositories/service-plans.repository
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { mapInvoiceToSearchDocument } from '../search/billing-search-document.mapper';
 import { BillingSearchIndexService } from '../search/billing-search-index.service';
+import { PreferredLetterService } from '../spooler/preferred-letter.service';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 import {
   documentTermsLayerFromFields,
@@ -73,6 +75,7 @@ export class InvoiceIssuanceService {
     private readonly documentSettlementService: DocumentSettlementService,
     @Optional() @Inject(ACCOUNTING_POSTING_PORT) private readonly postingPort?: AccountingPostingPort,
     @Optional() private readonly einvoiceFormats?: EInvoiceFormatConfigService,
+    @Optional() private readonly preferredLetter?: PreferredLetterService,
   ) {}
 
   async issueDraft(invoiceId: string, options?: IssueDraftOptions): Promise<InvoiceEntity> {
@@ -184,8 +187,19 @@ export class InvoiceIssuanceService {
 
     if (!options?.skipNotification && !isPromotionalZeroBalance) {
       if (await this.billingEmailPublisher.publishInvoiceIssued(issued, pdfStorageKey)) {
-        issued = await this.invoicesRepository.update(invoiceId, { sentAt: new Date() });
+        issued = await this.invoicesRepository.update(invoiceId, {
+          sentAt: new Date(),
+          sentVia: DocumentDeliveryChannel.EMAIL,
+        });
       }
+
+      // Customers who prefer letters also get it posted (in addition to the email).
+      await this.preferredLetter?.sendIfPreferred({
+        documentType: DeliverableDocumentType.INVOICE,
+        documentId: invoiceId,
+        documentNumber: invoiceNumber,
+        userId: invoice.userId,
+      });
     }
 
     this.billingNotificationPublisher.publishInvoice('invoice.issued', issued);

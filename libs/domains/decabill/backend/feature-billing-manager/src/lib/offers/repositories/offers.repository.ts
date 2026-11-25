@@ -3,6 +3,7 @@ import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 
+import { DocumentDeliveryChannel } from '../../constants/document-delivery.constants';
 import { hydrateEntitiesBySearchIds } from '../../search/billing-search-hydrate.util';
 import { applyBillingSearchIlike } from '../../search/billing-search-ilike.util';
 import { BillingSearchIndexService } from '../../search/billing-search-index.service';
@@ -94,8 +95,15 @@ export class OffersRepository {
    * (or a send racing a revoke) cannot both win. Resolves `false` when the offer changed in between. Call after a
    * tenant-scoped lookup (`findByIdOrThrow`); the update itself matches the id.
    */
-  async claimSent(id: string, at: Date): Promise<boolean> {
-    const result = await this.repository.update({ id, status: OfferStatus.ARCHIVED, sentAt: IsNull() }, { sentAt: at });
+  async claimSent(
+    id: string,
+    at: Date,
+    via: DocumentDeliveryChannel = DocumentDeliveryChannel.EMAIL,
+  ): Promise<boolean> {
+    const result = await this.repository.update(
+      { id, status: OfferStatus.ARCHIVED, sentAt: IsNull() },
+      { sentAt: at, sentVia: via },
+    );
 
     return (result.affected ?? 0) === 1;
   }
@@ -114,9 +122,14 @@ export class OffersRepository {
     return (result.affected ?? 0) === 1;
   }
 
-  /** Undoes `claimSent` when the email could not be queued, so the offer can be sent again. */
-  async releaseSent(id: string, at: Date): Promise<void> {
-    await this.repository.update({ id, sentAt: at }, { sentAt: null });
+  /**
+   * Undoes `claimSent` when the offer could not be delivered (no email queued, letter rejected), so it can be sent
+   * again. Only releases the claim made at `at`; a later delivery is kept.
+   */
+  async releaseSent(id: string, at: Date): Promise<boolean> {
+    const result = await this.repository.update({ id, sentAt: at }, { sentAt: null, sentVia: null });
+
+    return (result.affected ?? 0) === 1;
   }
 
   async delete(id: string): Promise<void> {

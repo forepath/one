@@ -316,67 +316,43 @@ describe('OfferArchiveService finalize and send', () => {
     expect(result).toEqual(expect.objectContaining({ sentAt: null, canSend: true, notifyOnExpiry: false }));
   });
 
-  it('sends an archived offer: claims the send, emails the stored PDF, audits', async () => {
-    stored = archived();
-
-    await service.send('offer-1', 'admin-1');
-
-    expect(offersRepository.claimSent).toHaveBeenCalledWith('offer-1', expect.any(Date));
-    expect(billingEmailPublisher.publishOfferArchived).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'offer-1', sentAt: expect.any(Date) }),
-      'user-1/offer-1.pdf',
-    );
-    expect(offerPdfService.generateAndStore).not.toHaveBeenCalled();
-    expect(offersRepository.releaseSent).not.toHaveBeenCalled();
-    expect(auditLog.log).toHaveBeenCalledWith(expect.objectContaining({ process: 'offer.send', offerId: 'offer-1' }));
-    expect(searchIndex.scheduleUpsert).toHaveBeenCalled();
-  });
-
   it.each([
     ['a draft', { status: OfferStatus.DRAFT }],
     ['an accepted offer', { status: OfferStatus.ACCEPTED }],
     ['a revoked offer', { status: OfferStatus.REVOKED }],
     ['an offer already sent', { sentAt: new Date('2026-01-02T00:00:00Z') }],
     ['an offer past its expiry', { expiresAt: new Date('2020-01-01T00:00:00Z') }],
-  ])('refuses to send %s without emailing', async (_label, patch) => {
-    stored = archived(patch as Partial<OfferEntity>);
-
-    await expect(service.send('offer-1', 'admin-1')).rejects.toBeInstanceOf(BadRequestException);
-    expect(offersRepository.claimSent).not.toHaveBeenCalled();
-    expect(billingEmailPublisher.publishOfferArchived).not.toHaveBeenCalled();
+  ])('assertOfferSendable refuses %s', (_label, patch) => {
+    expect(() => service.assertOfferSendable(archived(patch as Partial<OfferEntity>))).toThrow(BadRequestException);
   });
 
-  it('does not email when a concurrent request won the claim', async () => {
+  it('marks an archived offer as sent manually (no email), audits and re-indexes it', async () => {
     stored = archived();
+
+    await service.markSent('offer-1', 'admin-1', { sentAt: new Date(Date.now() - 60_000).toISOString() });
+
+    expect(offersRepository.claimSent).toHaveBeenCalledWith('offer-1', expect.any(Date), 'manual');
+    expect(billingEmailPublisher.publishOfferArchived).not.toHaveBeenCalled();
+    expect(auditLog.log).toHaveBeenCalledWith(
+      expect.objectContaining({ process: 'offer.mark_sent', offerId: 'offer-1' }),
+    );
+    expect(searchIndex.scheduleUpsert).toHaveBeenCalled();
+  });
+
+  it('refuses to mark an offer sent before it was archived or twice', async () => {
+    stored = archived({ archivedAt: new Date('2026-01-01T00:00:00Z') });
+    await expect(service.markSent('offer-1', 'admin-1', { sentAt: '2000-01-01T00:00:00Z' })).rejects.toThrow(
+      /before the document was finalized/,
+    );
+
     offersRepository.claimSent.mockResolvedValue(false);
-
-    await expect(service.send('offer-1', 'admin-1')).rejects.toBeInstanceOf(BadRequestException);
-    expect(billingEmailPublisher.publishOfferArchived).not.toHaveBeenCalled();
-  });
-
-  it('releases the claim when the customer has no billing email (nothing sent)', async () => {
-    stored = archived();
-    billingEmailPublisher.publishOfferArchived.mockResolvedValue(false);
-
-    await expect(service.send('offer-1', 'admin-1')).rejects.toThrow(/no billing email/);
-    expect(offersRepository.releaseSent).toHaveBeenCalledWith('offer-1', expect.any(Date));
-    expect(auditLog.log).not.toHaveBeenCalled();
-  });
-
-  it('releases the claim when queueing the email fails', async () => {
-    stored = archived();
-    billingEmailPublisher.publishOfferArchived.mockRejectedValue(new Error('redis down'));
-
-    await expect(service.send('offer-1', 'admin-1')).rejects.toThrow('redis down');
-    expect(offersRepository.releaseSent).toHaveBeenCalledTimes(1);
+    await expect(service.markSent('offer-1', 'admin-1')).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('renders the PDF first when the stored file is missing', async () => {
     stored = archived({ pdfStorageKey: null });
 
-    await service.send('offer-1', 'admin-1');
-
+    await expect(service.getStoredPdfKey(stored)).resolves.toBe('user-1/offer-1.pdf');
     expect(offerPdfService.generateAndStore).toHaveBeenCalledTimes(1);
-    expect(billingEmailPublisher.publishOfferArchived).toHaveBeenCalledWith(expect.anything(), 'user-1/offer-1.pdf');
   });
 });

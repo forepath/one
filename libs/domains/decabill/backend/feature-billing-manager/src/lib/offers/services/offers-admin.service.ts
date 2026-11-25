@@ -1,9 +1,10 @@
 import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 
+import { DocumentDeliveryChannel } from '../../constants/document-delivery.constants';
 import { TaxCategory } from '../../constants/tax-category.constants';
 import type { PaginatedBillingAuditLogsResponseDto } from '../../dto/admin-billing.dto';
-import { shouldNotify } from '../../dto/document-delivery.dto';
+import { shouldNotify, type MarkDocumentSentDto } from '../../dto/document-delivery.dto';
 import { BillingEmailPublisher } from '../../email/billing-email.publisher';
 import { InventoryArticlesRepository } from '../../inventory/repositories/inventory-articles.repository';
 import { assertInventoryArticlesExist } from '../../inventory/utils/inventory-article-references.util';
@@ -15,6 +16,7 @@ import { BillingAuditLogService } from '../../services/billing-audit-log.service
 import { BillingDocumentTermsConfigService } from '../../services/billing-document-terms-config.service';
 import { InvoiceTaxContextService } from '../../services/invoice-tax-context.service';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
+import { DocumentDeliveryService, type SpooledDeliveryChannel } from '../../spooler/document-delivery.service';
 import { resolveCustomerNamesByUserId } from '../../utils/customer-display-name.util';
 import { normalizeDocumentNote } from '../../utils/document-note.utils';
 import { resolvePlanTaxCategory } from '../../utils/plan-tax.utils';
@@ -86,6 +88,7 @@ export class OffersAdminService {
     @Optional() private readonly customerProfilesRepository?: CustomerProfilesRepository,
     @Optional() private readonly billingEmailPublisher?: BillingEmailPublisher,
     @Optional() private readonly offerResponseService?: OfferResponseService,
+    @Optional() private readonly documentDelivery?: DocumentDeliveryService,
   ) {}
 
   async list(
@@ -168,8 +171,32 @@ export class OffersAdminService {
     });
   }
 
+  /** Spools the email of an offer archived without notification (counts as sent right away; released on failure). */
   async send(id: string, adminUserId?: string): Promise<AdminOfferDetailResponseDto> {
-    return await this.offerArchiveService.send(id, adminUserId);
+    return await this.spoolSend(id, DocumentDeliveryChannel.EMAIL, adminUserId);
+  }
+
+  /** Spools an offer archived without notification as a physical letter (postal provider). */
+  async sendLetter(id: string, adminUserId?: string): Promise<AdminOfferDetailResponseDto> {
+    return await this.spoolSend(id, DocumentDeliveryChannel.LETTER, adminUserId);
+  }
+
+  private async spoolSend(
+    id: string,
+    channel: SpooledDeliveryChannel,
+    adminUserId?: string,
+  ): Promise<AdminOfferDetailResponseDto> {
+    if (!this.documentDelivery) {
+      throw new BadRequestException('Document delivery is not available');
+    }
+
+    const { job } = await this.documentDelivery.spoolOffer(id, channel, adminUserId);
+
+    return { ...(await this.offerArchiveService.afterDelivery(id)), spoolJobId: job.id };
+  }
+
+  async markSent(id: string, adminUserId?: string, dto?: MarkDocumentSentDto): Promise<AdminOfferDetailResponseDto> {
+    return await this.offerArchiveService.markSent(id, adminUserId, dto);
   }
 
   async revoke(id: string, adminUserId?: string, dto?: RevokeAdminOfferDto): Promise<AdminOfferDetailResponseDto> {

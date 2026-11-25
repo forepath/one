@@ -14,6 +14,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+import type { DocumentDeliveryChannel } from '../constants/document-delivery.constants';
 import { PAYMENT_DUE_DAYS_MAX } from '../constants/document-terms.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 
@@ -100,7 +101,9 @@ export class ManualInvoiceDetailResponseDto extends InvoiceDetailResponseDto {
   userEmail?: string;
   /** Delivery state (admin only), as on `AdminInvoiceListItemDto`. */
   sentAt?: string | null;
+  sentVia?: DocumentDeliveryChannel | null;
   voidDocumentSentAt?: string | null;
+  voidDocumentSentVia?: DocumentDeliveryChannel | null;
   canSend?: boolean;
   canSendCreditNote?: boolean;
 }

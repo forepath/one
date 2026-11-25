@@ -8,6 +8,7 @@ import {
   ProjectTimeEntriesService,
   ProjectsFacade,
   type ProjectTimeEntryResponse,
+  BillingCapabilitiesFacade,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { EMPTY, of, throwError } from 'rxjs';
 
@@ -69,6 +70,7 @@ describe('ProjectDetailPageComponent (time entries bulk Delete)', () => {
     timeFacade = stub({ entries$: of([entry('t1'), entry('t2'), entry('t3', true)]), load: jest.fn() });
     TestBed.configureTestingModule({
       providers: [
+        { provide: BillingCapabilitiesFacade, useValue: { postalDeliveryAvailable$: of(false) } },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -166,6 +168,7 @@ describe('ProjectDetailPageComponent (time entries bulk Delete)', () => {
           { description: 'Switch', quantity: 1, unitPriceNet: 80, taxCategory: 'reduced', inventoryArticleId: 'art-1' },
         ],
       }),
+      false,
     );
 
     // Number inputs report strings; the positions must still reach the API as numbers.
@@ -177,6 +180,7 @@ describe('ProjectDetailPageComponent (time entries bulk Delete)', () => {
       expect.objectContaining({
         lineItems: [expect.objectContaining({ quantity: 2, unitPriceNet: 80.5 })],
       }),
+      false,
     );
 
     component.billNotifyCustomer = false;
@@ -184,6 +188,17 @@ describe('ProjectDetailPageComponent (time entries bulk Delete)', () => {
     expect(projectsFacade['billProjectTime']).toHaveBeenLastCalledWith(
       'pr1',
       expect.objectContaining({ notifyCustomer: false }),
+      false,
+    );
+
+    // With a postal provider the invoice can go out as a letter (issued without email).
+    Object.defineProperty(component, 'postalAvailable', { value: () => true });
+    component.billDelivery = 'letter';
+    component.submitBillTime();
+    expect(projectsFacade['billProjectTime']).toHaveBeenLastCalledWith(
+      'pr1',
+      expect.objectContaining({ notifyCustomer: false }),
+      true,
     );
   });
 });

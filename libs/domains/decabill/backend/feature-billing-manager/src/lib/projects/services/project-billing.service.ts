@@ -1,6 +1,7 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Optional } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
+import { DeliverableDocumentType, DocumentDeliveryChannel } from '../../constants/document-delivery.constants';
 import { getMinCheckoutPaymentAmount } from '../../constants/payment-amount.constants';
 import { TaxCategory } from '../../constants/tax-category.constants';
 import { shouldNotify } from '../../dto/document-delivery.dto';
@@ -14,6 +15,7 @@ import { InvoiceTaxContextService } from '../../services/invoice-tax-context.ser
 import { InvoiceService } from '../../services/invoice.service';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
 import type { LineItemInput } from '../../services/tax-calculation.service';
+import { PreferredLetterService } from '../../spooler/preferred-letter.service';
 import { mapManualInvoiceLineItemsToInputs } from '../../utils/map-manual-invoice-line-items.util';
 import type { BillProjectTimeDto, BillProjectTimeResponseDto, ProjectUnbilledTimeBoundsDto } from '../dto/project.dto';
 import type { ProjectTimeEntryEntity } from '../entities/project-time-entry.entity';
@@ -52,6 +54,7 @@ export class ProjectBillingService {
     private readonly auditLog: BillingAuditLogService,
     private readonly projectBoardSummary: ProjectBoardSummaryService,
     private readonly projectTimeReportService: ProjectTimeReportService,
+    @Optional() private readonly preferredLetter?: PreferredLetterService,
   ) {}
 
   async getUnbilledTimeBounds(projectId: string): Promise<ProjectUnbilledTimeBoundsDto> {
@@ -194,7 +197,18 @@ export class ProjectBillingService {
       notifyCustomer &&
       (await this.billingEmailPublisher.publishInvoiceIssued(issuedWithTimeReport, issuedWithTimeReport.pdfStorageKey))
     ) {
-      await this.invoicesRepository.update(issued.id, { sentAt: new Date() });
+      await this.invoicesRepository.update(issued.id, { sentAt: new Date(), sentVia: DocumentDeliveryChannel.EMAIL });
+    }
+
+    if (notifyCustomer) {
+      // Customers who prefer letters also get it posted (in addition to the email).
+      await this.preferredLetter?.sendIfPreferred({
+        documentType: DeliverableDocumentType.INVOICE,
+        documentId: issued.id,
+        documentNumber: issued.invoiceNumber ?? issued.id,
+        userId: issued.userId,
+        adminUserId,
+      });
     }
 
     await this.auditLog.log({

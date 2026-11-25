@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 import { CustomerType } from '../../constants/customer-type.constants';
+import type { DocumentDeliveryChannel } from '../../constants/document-delivery.constants';
 import { DeliveryTermsCode } from '../../constants/document-terms.constants';
 import { EinvoiceTaxCategoryCode, TaxMode } from '../../constants/tax-mode.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
@@ -91,11 +92,15 @@ export class OfferEntity {
   revokedAt?: Date | null;
 
   /**
-   * When the offer was emailed to the customer; null for drafts and for offers archived without notification (they
+   * When the offer was sent to the customer; null for drafts and for offers archived without notification (they
    * are visible in the customer's account either way, like invoices).
    */
   @Column({ type: 'timestamp', nullable: true, name: 'sent_at' })
   sentAt?: Date | null;
+
+  /** How the offer was sent (`email`, `letter`, `manual`); null while unsent. */
+  @Column({ type: 'varchar', length: 16, nullable: true, name: 'sent_via' })
+  sentVia?: DocumentDeliveryChannel | null;
 
   /** Email the customer when the (sent) offer expires; chosen when archiving. */
   @Column({ type: 'boolean', default: false, name: 'notify_on_expiry' })

@@ -8,7 +8,7 @@ Most settings below (everything except infrastructure, cryptography, authenticat
 
 Resolution, most specific first:
 
-1. **Tenant** override: applies to that tenant only. Available for settings read per request or job (issuer, document terms and branding, tax, withdrawal, minimum payable amount, email / SMTP, DATEV accounts and numbers, accounting ledger parameters).
+1. **Tenant** override: applies to that tenant only. Available for settings read per request or job (issuer, document terms and branding, tax, withdrawal, minimum payable amount, email / SMTP, postal delivery, DATEV accounts and numbers, accounting ledger parameters).
 2. **All tenants** override: applies to every tenant without its own value.
 3. The **environment variable** (as documented below), then the built-in default.
 
@@ -144,6 +144,7 @@ Billing data and users are partitioned by **`tenant_id`**. HTTP clients send **`
 | `FILE_STORAGE_S3_KEY_PREFIX`               | Optional object key prefix (e.g. `decabill/prod`)                                                                                                                                                                               |
 | `BILLING_INVOICE_PDF_STORAGE_PATH`         | **Deprecated.** Legacy migration source for invoice PDFs (was `/data/invoices`)                                                                                                                                                 |
 | `BILLING_SKIP_FILE_CACHE`                  | Skip PDF file cache when `true`                                                                                                                                                                                                 |
+| `BILLING_SPOOLER_RETENTION_DAYS`           | Days finished spool jobs (`completed`, `failed`, `cancelled`) and their files are kept (default `7`, `1`–`365`). See [Spooler](../features/spooler.md)                                                                          |
 
 ### Automatic daily price recalculation
 
@@ -248,6 +249,7 @@ Double-entry bookkeeping, bank / processor statement import, VAT returns and sta
 | `BILLING_AUTO_PAYMENT_PENDING_SAFETY_DELAY_MS` | Safety delay for pending/SCA off-session charges and incomplete-profile deferral (default 15 minutes)                                                                   |
 | `DYNAMIC_PAYMENT_PROCESSORS`                   | Comma-separated extra payment processor packages                                                                                                                        |
 | `DYNAMIC_BILLING_PROVIDER_METADATA`            | Extra billing provider metadata packages                                                                                                                                |
+| `DYNAMIC_POSTAL_PROVIDERS`                     | Comma-separated extra postal provider packages (optional; see [Postal delivery](../features/postal-delivery.md))                                                        |
 | `DYNAMIC_PROVIDERS_FAIL_FAST`                  | Abort startup if critical dynamic provider fails                                                                                                                        |
 | `DYNAMIC_PROVIDER_PLUGIN_PATH`                 | Plugin root (e.g. `/var/lib/forepath/provider-plugins`)                                                                                                                 |
 | `DYNAMIC_PROVIDER_PLUGIN_INSTALL`              | `npm install` targets at container startup                                                                                                                              |
@@ -273,6 +275,26 @@ Transactional email uses BullMQ (`email-deliver`). See [Email notifications](../
 
 When `EMAIL_COMPANY_*` is unset, Decabill typically relies on `BILLING_ISSUER_*` so invoice and email branding stay aligned.
 
+### Postal delivery
+
+Sending invoices, credit notes and offers as physical letters. All variables are tenant settings (console category **Postal delivery**), so each tenant can use its own provider account. See [Postal delivery](../features/postal-delivery.md).
+
+| Variable                          | Description                                                                                                         | Default      |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `BILLING_DEFAULT_POSTAL_PROVIDER` | Postal provider type used for letters (built-in: `pingen`; more via `DYNAMIC_POSTAL_PROVIDERS`)                     | `pingen`     |
+| `BILLING_POSTAL_COVER_PAGE`       | Prepend a cover page carrying the recipient address in the envelope window (`false` sends the document pages only)  | `true`       |
+| `BILLING_POSTAL_ADDRESS_POSITION` | Address window position: `left` (DIN 5008, EU window envelopes) or `right` (Swiss window envelopes)                 | `left`       |
+| `PINGEN_ENVIRONMENT`              | `production` or `staging` (Pingen's sandbox: letters are never printed or posted)                                   | `production` |
+| `PINGEN_CLIENT_ID`                | Client id of the Pingen API app (client credentials)                                                                | empty        |
+| `PINGEN_CLIENT_SECRET`            | Client secret of the Pingen API app (secret setting)                                                                | empty        |
+| `PINGEN_ORGANISATION_ID`          | Pingen organisation UUID                                                                                            | empty        |
+| `PINGEN_WEBHOOK_SIGNING_KEY`      | Signing key of the Pingen webhooks (20 to 32 letters and digits; secret setting). Without it, webhooks are rejected | empty        |
+| `PINGEN_DELIVERY_PRODUCT`         | `fast`, `cheap`, `bulk`, `premium` or `registered` (Pingen picks the matching product for the destination country)  | `cheap`      |
+| `PINGEN_PRINT_MODE`               | `simplex` or `duplex`                                                                                               | `simplex`    |
+| `PINGEN_PRINT_SPECTRUM`           | `color` or `grayscale`                                                                                              | `grayscale`  |
+
+Letters are available in a tenant once `PINGEN_CLIENT_ID`, `PINGEN_CLIENT_SECRET` and a valid `PINGEN_ORGANISATION_ID` are set (for the default provider `pingen`).
+
 ### Provisioning and DNS
 
 | Variable                 | Description                                             |
@@ -291,32 +313,33 @@ Provisioning SSH posture is documented under accepted risk **[DR-001](../securit
 
 These variables control repeatable **coordinator** intervals in milliseconds:
 
-| Variable                                   | Default    | Purpose                                      |
-| ------------------------------------------ | ---------- | -------------------------------------------- |
-| `BILLING_SCHEDULER_INTERVAL`               | `60000`    | Subscription billing coordinator             |
-| `BILLING_SCHEDULER_BATCH_SIZE`             | `100`      | Batch size for billing runs                  |
-| `EXPIRATION_SCHEDULER_INTERVAL`            | `60000`    | Subscription expiration                      |
-| `EXPIRATION_SCHEDULER_BATCH_SIZE`          | `100`      | Expiration batch size                        |
-| `WITHDRAWAL_SCHEDULER_INTERVAL`            | `60000`    | Subscription withdrawal teardown             |
-| `WITHDRAWAL_SCHEDULER_BATCH_SIZE`          | `100`      | Withdrawal batch size                        |
-| `INSTANT_CANCEL_SCHEDULER_INTERVAL`        | `60000`    | Admin instant-cancel teardown                |
-| `INSTANT_CANCEL_SCHEDULER_BATCH_SIZE`      | `100`      | Instant-cancel batch size                    |
-| `PROVISIONING_SCHEDULER_INTERVAL`          | `30000`    | Subscription server provisioning             |
-| `PROVISIONING_SCHEDULER_BATCH_SIZE`        | `100`      | Provisioning batch size                      |
-| `CONFIG_CHANGE_SCHEDULER_INTERVAL`         | `30000`    | Mid-life subscription config change          |
-| `CONFIG_CHANGE_SCHEDULER_BATCH_SIZE`       | `100`      | Config-change coordinator batch size         |
-| `CONFIG_CHANGE_PROCESSING_TIMEOUT_MS`      | `900000`   | Stuck config-change reclaim (15m)            |
-| `BILLING_ADDON_SSH_COMMAND_TIMEOUT_MS`     | `120000`   | Mid-life / teardown addon SSH script timeout |
-| `REMINDER_SCHEDULER_INTERVAL`              | `3600000`  | Renewal reminders                            |
-| `REMINDER_SCHEDULER_BATCH_SIZE`            | `100`      | Reminder batch size                          |
-| `REMINDER_DAYS`                            | `3`        | Days before renewal to remind                |
-| `BACKORDER_RETRY_INTERVAL_MS`              | `60000`    | Backorder retry coordinator                  |
-| `BACKORDER_RETRY_BATCH_SIZE`               | `100`      | Backorder batch size                         |
-| `INVOICE_OVERDUE_SCHEDULER_INTERVAL`       | `86400000` | Invoice overdue coordinator                  |
-| `INVOICE_OVERDUE_SCHEDULER_BATCH_SIZE`     | `100`      | Overdue batch size                           |
-| `OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL` | `86400000` | Open position invoicing                      |
-| `SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL`   | `86400000` | Subscription item updates                    |
-| `STATUS_POLL_INTERVAL`                     | `15000`    | Dashboard status polling                     |
+| Variable                                   | Default    | Purpose                                                                   |
+| ------------------------------------------ | ---------- | ------------------------------------------------------------------------- |
+| `BILLING_SCHEDULER_INTERVAL`               | `60000`    | Subscription billing coordinator                                          |
+| `BILLING_SCHEDULER_BATCH_SIZE`             | `100`      | Batch size for billing runs                                               |
+| `EXPIRATION_SCHEDULER_INTERVAL`            | `60000`    | Subscription expiration                                                   |
+| `EXPIRATION_SCHEDULER_BATCH_SIZE`          | `100`      | Expiration batch size                                                     |
+| `WITHDRAWAL_SCHEDULER_INTERVAL`            | `60000`    | Subscription withdrawal teardown                                          |
+| `WITHDRAWAL_SCHEDULER_BATCH_SIZE`          | `100`      | Withdrawal batch size                                                     |
+| `INSTANT_CANCEL_SCHEDULER_INTERVAL`        | `60000`    | Admin instant-cancel teardown                                             |
+| `INSTANT_CANCEL_SCHEDULER_BATCH_SIZE`      | `100`      | Instant-cancel batch size                                                 |
+| `PROVISIONING_SCHEDULER_INTERVAL`          | `30000`    | Subscription server provisioning                                          |
+| `PROVISIONING_SCHEDULER_BATCH_SIZE`        | `100`      | Provisioning batch size                                                   |
+| `CONFIG_CHANGE_SCHEDULER_INTERVAL`         | `30000`    | Mid-life subscription config change                                       |
+| `CONFIG_CHANGE_SCHEDULER_BATCH_SIZE`       | `100`      | Config-change coordinator batch size                                      |
+| `CONFIG_CHANGE_PROCESSING_TIMEOUT_MS`      | `900000`   | Stuck config-change reclaim (15m)                                         |
+| `BILLING_ADDON_SSH_COMMAND_TIMEOUT_MS`     | `120000`   | Mid-life / teardown addon SSH script timeout                              |
+| `REMINDER_SCHEDULER_INTERVAL`              | `3600000`  | Renewal reminders                                                         |
+| `REMINDER_SCHEDULER_BATCH_SIZE`            | `100`      | Reminder batch size                                                       |
+| `REMINDER_DAYS`                            | `3`        | Days before renewal to remind                                             |
+| `BACKORDER_RETRY_INTERVAL_MS`              | `60000`    | Backorder retry coordinator                                               |
+| `BACKORDER_RETRY_BATCH_SIZE`               | `100`      | Backorder batch size                                                      |
+| `INVOICE_OVERDUE_SCHEDULER_INTERVAL`       | `86400000` | Invoice overdue coordinator                                               |
+| `INVOICE_OVERDUE_SCHEDULER_BATCH_SIZE`     | `100`      | Overdue batch size                                                        |
+| `OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL` | `86400000` | Open position invoicing                                                   |
+| `SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL`   | `86400000` | Subscription item updates                                                 |
+| `SPOOLER_COORDINATOR_INTERVAL`             | `60000`    | Spooler: re-enqueue lost / stuck jobs, purge finished jobs past retention |
+| `STATUS_POLL_INTERVAL`                     | `15000`    | Dashboard status polling                                                  |
 
 DATEV export uses a **cron** coordinator (not `everyMs`):
 

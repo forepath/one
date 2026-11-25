@@ -1,7 +1,8 @@
 import { UsersRepository } from '@forepath/identity/backend';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 
-import { shouldNotify } from '../../dto/document-delivery.dto';
+import { DeliverableDocumentType, DocumentDeliveryChannel } from '../../constants/document-delivery.constants';
+import { parseMarkSentAt, shouldNotify, type MarkDocumentSentDto } from '../../dto/document-delivery.dto';
 import { BillingEmailPublisher } from '../../email/billing-email.publisher';
 import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import { mapOfferToSearchDocument } from '../../search/billing-search-document.mapper';
@@ -12,7 +13,9 @@ import { BillingIssuerConfigService } from '../../services/billing-issuer-config
 import { CustomerProfilesService } from '../../services/customer-profiles.service';
 import { InvoiceTaxContextService } from '../../services/invoice-tax-context.service';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
+import { PreferredLetterService } from '../../spooler/preferred-letter.service';
 import { documentTermsLayerFromFields, toDocumentTermsColumns } from '../../utils/document-terms.utils';
+import { resolveManualSentAt } from '../../utils/manual-delivery.util';
 import { getRequiredTenantId } from '../../utils/tenant-query.utils';
 import { OfferLineType } from '../constants/offer-line-type.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
@@ -53,6 +56,7 @@ export class OfferArchiveService {
     private readonly billingSearchIndexService: BillingSearchIndexService,
     private readonly auditLog: BillingAuditLogService,
     private readonly documentTermsConfig: BillingDocumentTermsConfigService,
+    @Optional() private readonly preferredLetter?: PreferredLetterService,
   ) {}
 
   /**
@@ -122,6 +126,7 @@ export class OfferArchiveService {
       archivedAt,
       // Like invoices: always visible to the customer once archived; `sentAt` only records the email.
       sentAt: notifyCustomer ? archivedAt : null,
+      sentVia: notifyCustomer ? DocumentDeliveryChannel.EMAIL : null,
       notifyOnExpiry: shouldNotify(options.notifyOnExpiry),
       subtotalNet: totals.subtotalNet,
       taxTotal: totals.taxTotal,
@@ -165,6 +170,14 @@ export class OfferArchiveService {
 
     if (notifyCustomer) {
       await this.billingEmailPublisher.publishOfferArchived(archived, pdfStorageKey);
+      // Customers who prefer letters also get it posted (in addition to the email).
+      await this.preferredLetter?.sendIfPreferred({
+        documentType: DeliverableDocumentType.OFFER,
+        documentId: id,
+        documentNumber: allocated.number,
+        userId: archived.userId,
+        adminUserId,
+      });
     }
 
     this.billingNotificationPublisher.publishOffer('offer.archived', archived);
@@ -173,13 +186,38 @@ export class OfferArchiveService {
     return await this.mapDetail(id);
   }
 
-  /**
-   * Emails an offer that was archived without notification (PDF attached). The send is claimed atomically first, so
-   * concurrent requests email the customer once.
-   */
-  async send(id: string, adminUserId?: string): Promise<AdminOfferDetailResponseDto> {
+  /** Records that an archived, unsent offer was sent outside Decabill (`sent_via = manual`); nothing is sent. */
+  async markSent(id: string, adminUserId?: string, dto?: MarkDocumentSentDto): Promise<AdminOfferDetailResponseDto> {
     const offer = await this.offersRepository.findByIdOrThrow(id);
 
+    if (offer.status !== OfferStatus.ARCHIVED) {
+      throw new BadRequestException('Only archived offers can be sent');
+    }
+
+    if (offer.sentAt) {
+      throw new BadRequestException('Offer has already been sent');
+    }
+
+    const sentAt = resolveManualSentAt(parseMarkSentAt(dto), offer.archivedAt);
+
+    if (!(await this.offersRepository.claimSent(id, sentAt, DocumentDeliveryChannel.MANUAL))) {
+      throw new BadRequestException('Offer has already been sent or is no longer pending');
+    }
+
+    await this.auditLog.log({
+      process: 'offer.mark_sent',
+      level: 'info',
+      message: `Marked offer ${offer.offerNumber ?? id} as sent`,
+      offerId: id,
+      userId: offer.userId,
+      context: { adminUserId, offerNumber: offer.offerNumber, sentAt: sentAt.toISOString() },
+    });
+
+    return await this.afterDelivery(id);
+  }
+
+  /** Archived, not sent yet and not past its expiry (send / send as letter). */
+  assertOfferSendable(offer: OfferEntity): void {
     if (offer.status !== OfferStatus.ARCHIVED) {
       throw new BadRequestException('Only archived offers can be sent');
     }
@@ -191,39 +229,10 @@ export class OfferArchiveService {
     if (isOfferPastExpiry(offer)) {
       throw new BadRequestException('Offer has expired');
     }
+  }
 
-    const pdfStorageKey = await this.getStoredPdfKey(offer);
-    const sentAt = new Date();
-
-    if (!(await this.offersRepository.claimSent(id, sentAt))) {
-      throw new BadRequestException('Offer has already been sent or is no longer pending');
-    }
-
-    let emailed = false;
-
-    try {
-      emailed = await this.billingEmailPublisher.publishOfferArchived({ ...offer, sentAt }, pdfStorageKey);
-    } catch (error) {
-      await this.offersRepository.releaseSent(id, sentAt);
-
-      throw error;
-    }
-
-    if (!emailed) {
-      await this.offersRepository.releaseSent(id, sentAt);
-
-      throw new BadRequestException('Customer has no billing email address; the offer was not sent');
-    }
-
-    await this.auditLog.log({
-      process: 'offer.send',
-      level: 'info',
-      message: `Sent offer ${offer.offerNumber ?? id} to the customer`,
-      offerId: id,
-      userId: offer.userId,
-      context: { adminUserId, offerNumber: offer.offerNumber },
-    });
-
+  /** Re-indexes a delivered offer and returns its admin detail. */
+  async afterDelivery(id: string): Promise<AdminOfferDetailResponseDto> {
     const sent = await this.offersRepository.findByIdOrThrow(id);
 
     this.billingSearchIndexService.scheduleUpsert('offers', mapOfferToSearchDocument(sent, getRequiredTenantId()));
@@ -232,7 +241,7 @@ export class OfferArchiveService {
   }
 
   /** Stored PDF of a non-draft offer, rendered and stored first when missing or unreadable. */
-  private async getStoredPdfKey(offer: OfferEntity): Promise<string> {
+  async getStoredPdfKey(offer: OfferEntity): Promise<string> {
     if (offer.pdfStorageKey && process.env.BILLING_SKIP_FILE_CACHE !== 'true') {
       try {
         await this.offerPdfService.readPdf(offer.pdfStorageKey);

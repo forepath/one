@@ -1,8 +1,9 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap } from 'rxjs';
+import { catchError, concat, map, of, switchMap } from 'rxjs';
 
 import { billingPageWindow } from '../../constants/list-paging.constants';
+import { AdminBillingService } from '../../services/admin-billing.service';
 import { AdminProjectsService } from '../../services/admin-projects.service';
 import { ProjectsService } from '../../services/projects.service';
 
@@ -180,12 +181,33 @@ export const deleteAdminProject$ = createEffect(
 );
 
 export const billProjectTime$ = createEffect(
-  (actions$ = inject(Actions), service = inject(AdminProjectsService)) =>
+  (actions$ = inject(Actions), service = inject(AdminProjectsService), billing = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(billProjectTime),
-      switchMap(({ projectId, dto }) =>
-        service.billTime(projectId, dto).pipe(
-          switchMap((result) => of(billProjectTimeSuccess({ projectId, result }), loadProjectSummary({ projectId }))),
+      switchMap(({ projectId, dto, sendLetter }) =>
+        service.billTime(projectId, sendLetter ? { ...dto, notifyCustomer: false } : dto).pipe(
+          switchMap((result) => {
+            const done = of(billProjectTimeSuccess({ projectId, result }), loadProjectSummary({ projectId }));
+
+            if (!sendLetter || !result.invoiceId) {
+              return done;
+            }
+
+            // The invoice is issued either way; a failed letter leaves it unsent (send it from the invoice).
+            return billing.sendInvoiceLetter(result.invoiceId).pipe(
+              switchMap(() => done),
+              catchError((error) =>
+                concat(
+                  done,
+                  of(
+                    billProjectTimeFailure({
+                      error: `Invoice issued, but the letter failed: ${normalizeError(error)}`,
+                    }),
+                  ),
+                ),
+              ),
+            );
+          }),
           catchError((error) => of(billProjectTimeFailure({ error: normalizeError(error) }))),
         ),
       ),

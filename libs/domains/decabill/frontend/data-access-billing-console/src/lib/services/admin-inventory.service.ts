@@ -32,6 +32,9 @@ import type {
   InventoryWithdrawalRequestStatus,
   PaginatedInventoryResponse,
 } from '../types/inventory.types';
+import type { SpoolJob } from '../types/spooler.types';
+
+import { AdminSpoolerService } from './admin-spooler.service';
 
 type QueryValue = string | number | boolean | null | undefined;
 
@@ -55,6 +58,7 @@ function toParams(values: Record<string, QueryValue>): HttpParams {
 })
 export class AdminInventoryService {
   private readonly http = inject(HttpClient);
+  private readonly spooler = inject(AdminSpoolerService);
   private readonly environment = inject<Environment>(ENVIRONMENT);
 
   private get baseUrl(): string {
@@ -198,8 +202,9 @@ export class AdminInventoryService {
     return this.http.post<InventoryMovement>(`${this.baseUrl}/movements/withdrawal`, dto);
   }
 
+  /** Movement document, rendered by the spooler (the job and its file stay on the Spooler page). */
   downloadMovementPdf(id: string): Observable<Blob> {
-    return this.http.get(`${this.baseUrl}/movements/${id}/pdf`, { responseType: 'blob' });
+    return this.spooler.spoolAndDownload(this.http.post<SpoolJob>(`${this.baseUrl}/movements/${id}/pdf/spool`, {}));
   }
 
   // ---- Withdrawal requests ----
@@ -268,8 +273,8 @@ export class AdminInventoryService {
     return this.http.get<InventoryLabelOwner>(`${this.baseUrl}/labels/owner`);
   }
 
-  /** Selected labels as one PDF (synchronous export). */
+  /** Selected labels as one PDF, rendered by the spooler (the job and its file stay on the Spooler page). */
   printLabels(request: InventoryLabelRequest): Observable<Blob> {
-    return this.http.post(`${this.baseUrl}/labels`, request, { responseType: 'blob' });
+    return this.spooler.spoolAndDownload(this.http.post<SpoolJob>(`${this.baseUrl}/labels/spool`, request));
   }
 }

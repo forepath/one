@@ -1,0 +1,1 @@
+export const POSTAL_PROVIDER_INIT = Symbol('POSTAL_PROVIDER_INIT');

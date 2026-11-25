@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap } from 'rxjs';
+import { catchError, map, mergeMap, of, switchMap } from 'rxjs';
 
 import { billingPageWindow } from '../../constants/list-paging.constants';
 import { AdminBillingService } from '../../services/admin-billing.service';
@@ -18,6 +18,9 @@ import {
   adminInvoiceManagerSend,
   adminInvoiceManagerSendCreditNote,
   adminInvoiceManagerSendCreditNoteFailure,
+  adminInvoiceManagerMarkSent,
+  adminInvoiceManagerMarkSentFailure,
+  adminInvoiceManagerMarkSentSuccess,
   adminInvoiceManagerSendCreditNoteSuccess,
   adminInvoiceManagerSendFailure,
   adminInvoiceManagerSendSuccess,
@@ -105,9 +108,13 @@ export const issueManualInvoice$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(issueManualInvoice),
-      switchMap(({ invoiceRefId, dto }) =>
-        service.issueManualInvoice(invoiceRefId, dto).pipe(
-          map((invoice) => issueManualInvoiceSuccess({ invoice })),
+      switchMap(({ invoiceRefId, dto, sendLetter }) =>
+        service.issueManualInvoice(invoiceRefId, sendLetter ? { ...dto, notifyCustomer: false } : dto).pipe(
+          mergeMap((invoice) =>
+            sendLetter
+              ? of(issueManualInvoiceSuccess({ invoice }), adminInvoiceManagerSend({ invoiceRefId, channel: 'letter' }))
+              : of(issueManualInvoiceSuccess({ invoice })),
+          ),
           catchError((error) => of(issueManualInvoiceFailure({ error: normalizeError(error) }))),
         ),
       ),
@@ -133,9 +140,16 @@ export const adminInvoiceManagerVoid$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(adminInvoiceManagerVoid),
-      switchMap(({ invoiceRefId, dto }) =>
-        service.voidInvoice(invoiceRefId, dto).pipe(
-          map((invoice) => adminInvoiceManagerVoidSuccess({ invoice })),
+      switchMap(({ invoiceRefId, dto, sendLetter }) =>
+        service.voidInvoice(invoiceRefId, sendLetter ? { ...dto, notifyCustomer: false } : dto).pipe(
+          mergeMap((invoice) =>
+            sendLetter
+              ? of(
+                  adminInvoiceManagerVoidSuccess({ invoice }),
+                  adminInvoiceManagerSendCreditNote({ invoiceRefId, channel: 'letter' }),
+                )
+              : of(adminInvoiceManagerVoidSuccess({ invoice })),
+          ),
           catchError((error) => of(adminInvoiceManagerVoidFailure({ error: normalizeError(error) }))),
         ),
       ),
@@ -147,8 +161,8 @@ export const adminInvoiceManagerSend$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(adminInvoiceManagerSend),
-      switchMap(({ invoiceRefId }) =>
-        service.sendInvoice(invoiceRefId).pipe(
+      switchMap(({ invoiceRefId, channel }) =>
+        (channel === 'letter' ? service.sendInvoiceLetter(invoiceRefId) : service.sendInvoice(invoiceRefId)).pipe(
           map((invoice) => adminInvoiceManagerSendSuccess({ invoice })),
           catchError((error) => of(adminInvoiceManagerSendFailure({ error: normalizeError(error) }))),
         ),
@@ -161,10 +175,24 @@ export const adminInvoiceManagerSendCreditNote$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(adminInvoiceManagerSendCreditNote),
-      switchMap(({ invoiceRefId }) =>
-        service.sendCreditNote(invoiceRefId).pipe(
+      switchMap(({ invoiceRefId, channel }) =>
+        (channel === 'letter' ? service.sendCreditNoteLetter(invoiceRefId) : service.sendCreditNote(invoiceRefId)).pipe(
           map((invoice) => adminInvoiceManagerSendCreditNoteSuccess({ invoice })),
           catchError((error) => of(adminInvoiceManagerSendCreditNoteFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const adminInvoiceManagerMarkSent$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
+    actions$.pipe(
+      ofType(adminInvoiceManagerMarkSent),
+      switchMap(({ invoiceRefId, creditNote, dto }) =>
+        (creditNote ? service.markCreditNoteSent(invoiceRefId, dto) : service.markInvoiceSent(invoiceRefId, dto)).pipe(
+          map((invoice) => adminInvoiceManagerMarkSentSuccess({ invoice })),
+          catchError((error) => of(adminInvoiceManagerMarkSentFailure({ error: normalizeError(error) }))),
         ),
       ),
     ),

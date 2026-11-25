@@ -1,6 +1,7 @@
 import { RequireScopes } from '@forepath/identity/backend';
 import { BadRequestException, Body, Controller, Get, Post, Req } from '@nestjs/common';
 
+import { DocumentDeliveryChannel } from '../constants/document-delivery.constants';
 import { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto';
 import { CustomerProfileDto } from '../dto/customer-profile.dto';
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
@@ -90,6 +91,8 @@ export class CustomerProfilesController {
       country: row.country,
       email: row.email,
       phone: row.phone,
+      preferredDeliveryChannel: row.preferredDeliveryChannel ?? DocumentDeliveryChannel.EMAIL,
+      postalDeliveryAvailable: this.customerProfilesService.isPostalDeliveryAvailable(),
       stripeCustomerId: row.stripeCustomerId,
       autoBillingEnabled: row.autoBillingEnabled ?? false,
       hasPaymentMethodOnFile: Boolean(row.defaultPaymentMethodExternalId),

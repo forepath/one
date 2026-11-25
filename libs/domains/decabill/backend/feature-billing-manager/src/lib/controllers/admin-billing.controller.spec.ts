@@ -91,6 +91,7 @@ describe('AdminBillingController', () => {
     accountingMissingPrerequisites: ['BILLING_ACCOUNTING_ENABLED'],
     einvoiceFormats: [{ format: 'factur-x-en16931', label: 'Factur-X / ZUGFeRD EN 16931' }],
     einvoiceDefaultFormat: 'factur-x-en16931',
+    postalDelivery: { available: false, provider: null, providerName: null },
   };
 
   it('has admin role guards on controller', () => {

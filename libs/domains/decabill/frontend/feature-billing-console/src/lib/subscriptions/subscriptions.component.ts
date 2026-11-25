@@ -139,6 +139,7 @@ import {
   getVatIdValidationStatusLabel,
   resolveNamedLabel,
 } from '../billing-status-labels';
+import { DeliveryPreferenceFieldComponent } from '../document-delivery/delivery-preference-field.component';
 import { DocumentTermsSummaryComponent } from '../document-terms/document-terms-summary.component';
 import { EinvoiceSettingsFieldsComponent } from '../einvoice/einvoice-settings-fields.component';
 import { einvoiceSettingsPayload, isEinvoiceEndpointValid } from '../einvoice/einvoice-settings.util';
@@ -197,6 +198,7 @@ type ConfigChangeWizardStep = {
   imports: [
     DocumentTermsSummaryComponent,
     EinvoiceSettingsFieldsComponent,
+    DeliveryPreferenceFieldComponent,
     FpcFormTextDirective,
     FpcStepStripComponent,
     FpcStepStripDirective,
@@ -752,6 +754,8 @@ export class SubscriptionsComponent implements OnInit {
   backorderToCancel: BackorderResponse | null = null;
 
   profileForm: CustomerProfileDto = {};
+  /** Letters can be chosen as preferred delivery (tenant has a postal provider). */
+  profilePostalAvailable = false;
 
   planNameByPlanId(plans: ServicePlanResponse[] | null, planId: string, apiPlanName?: string | null): string {
     const catalogName = plans?.find((p) => p.id === planId)?.name;
@@ -3233,7 +3237,9 @@ export class SubscriptionsComponent implements OnInit {
           phone: profile?.phone ?? undefined,
           buyerReference: profile?.buyerReference ?? '',
           einvoiceEndpoint: profile?.einvoiceEndpoint ?? '',
+          preferredDeliveryChannel: profile?.preferredDeliveryChannel ?? 'email',
         };
+        this.profilePostalAvailable = profile?.postalDeliveryAvailable === true;
         this.cdr.markForCheck();
       });
   }

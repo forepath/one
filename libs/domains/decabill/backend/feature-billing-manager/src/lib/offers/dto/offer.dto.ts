@@ -15,6 +15,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+import type { DocumentDeliveryChannel } from '../../constants/document-delivery.constants';
 import { DeliveryTermsCode } from '../../constants/document-terms.constants';
 import { TaxCategory } from '../../constants/tax-category.constants';
 import { CreateSubscriptionDto } from '../../dto/create-subscription.dto';
@@ -208,9 +209,11 @@ export class AdminOfferListItemDto {
   canPreview!: boolean;
   /** `false` for drafts and while no PDF is stored. */
   canDownload!: boolean;
-  /** When the offer was emailed to the customer; null for drafts and offers archived without notification. */
+  /** When the offer was sent to the customer; null for drafts and offers archived without notification. */
   sentAt!: string | null;
-  /** `true` for archived offers not yet sent (and not past their expiry): the send action applies. */
+  /** How the offer was sent: `email`, `letter` (postal provider) or `manual` (marked as sent); null while unsent. */
+  sentVia!: DocumentDeliveryChannel | null;
+  /** `true` for archived offers not yet sent (and not past their expiry): send / send-letter / mark-sent apply. */
   canSend!: boolean;
   /** Whether the customer is emailed when the offer expires. */
   notifyOnExpiry!: boolean;
@@ -260,6 +263,8 @@ export class DeclineAdminOfferDto {
 }
 
 export class AdminOfferDetailResponseDto extends AdminOfferListItemDto {
+  /** Set on send responses: the spool job delivering the offer (Spooler page). */
+  spoolJobId?: string;
   subtotalNet!: number;
   taxTotal!: number;
   billToOpenPositions!: boolean;

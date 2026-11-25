@@ -13,6 +13,7 @@ import {
 
 import { BillingActionCenterGateway } from './billing-action-center.gateway';
 import { BillingActionCenterRegistrar } from './billing-action-center.registrar';
+import { BillingDeliveryActionSource } from './billing-delivery.action-source';
 import { BillingDocumentsActionSource } from './billing-documents.action-source';
 import { BillingOperationsActionSource } from './billing-operations.action-source';
 import { BillingPartnersActionSource } from './billing-partners.action-source';
@@ -75,6 +76,7 @@ describe('Decabill action center sources', () => {
       new BillingDocumentsActionSource(runner as never),
       new BillingPartnersActionSource(runner as never),
       new BillingOperationsActionSource(runner as never),
+      new BillingDeliveryActionSource(runner as never),
       setupSource(runner, { accounting: true, datev: true, global: true }),
       new PlatformWebhooksActionSource(runner),
       new PlatformEmailDeliveryActionSource(runner),
@@ -106,10 +108,46 @@ describe('Decabill action center sources', () => {
       new BillingDocumentsActionSource(runner as never),
       new BillingPartnersActionSource(runner as never),
       new BillingOperationsActionSource(runner as never),
+      new BillingDeliveryActionSource(runner as never),
       setupSource(runner),
     ].flatMap((source) => source.types);
 
     expect([...declared].sort()).toEqual([...Object.values(DECABILL_ACTION_TYPES)].sort());
+  });
+
+  it('lists failed spool jobs and letters that need attention', async () => {
+    const { runner } = recordingRunner((sql) =>
+      sql.includes('billing_spool_jobs')
+        ? [
+            {
+              id: 'job-1',
+              title: 'Labels',
+              kind: 'print.inventory_labels',
+              error: 'x'.repeat(400),
+              at: new Date(),
+              total: '1',
+            },
+          ]
+        : [
+            {
+              id: 'l-1',
+              document_type: 'invoice',
+              document_id: 'inv-1',
+              number: 'R-1',
+              status: 'undeliverable',
+              reason: 'Moved away',
+              at: new Date(),
+              total: '1',
+            },
+          ],
+    );
+    const groups = await new BillingDeliveryActionSource(runner as never).collect(context);
+
+    expect(groups.map((group) => group.type)).toEqual(['decabill.spooler.failed', 'decabill.letters.attention']);
+    expect(groups[0].items?.[0].params).toEqual(expect.objectContaining({ title: 'Labels', error: 'x'.repeat(200) }));
+    expect(groups[1].items?.[0].params).toEqual(
+      expect.objectContaining({ documentId: 'inv-1', status: 'undeliverable', reason: 'Moved away' }),
+    );
   });
 
   it('maps document rows to items', async () => {
@@ -376,6 +414,7 @@ describe('BillingActionCenterRegistrar', () => {
       {} as never,
       {} as never,
       {} as never,
+      {} as never,
     );
 
     registrar.onModuleInit();
@@ -384,7 +423,7 @@ describe('BillingActionCenterRegistrar', () => {
 
     expect(registry.register).toHaveBeenCalledTimes(1);
     expect(publisher.addListener).toHaveBeenCalledTimes(1);
-    expect(registry.register.mock.calls[0]).toHaveLength(7);
+    expect(registry.register.mock.calls[0]).toHaveLength(8);
     publishListener?.('invoice.issued', 'tenant-a');
     expect(actionCenter.signalChange).toHaveBeenCalledWith('tenant-a');
 

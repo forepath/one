@@ -1,3 +1,4 @@
+import { DocumentDeliveryChannel } from '../constants/document-delivery.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 
 import { invoiceDeliveryFields } from './invoice-delivery.util';
@@ -14,7 +15,9 @@ describe('invoiceDeliveryFields', () => {
     ]) {
       expect(invoiceDeliveryFields({ ...base, status })).toEqual({
         sentAt: null,
+        sentVia: null,
         voidDocumentSentAt: null,
+        voidDocumentSentVia: null,
         canSend: true,
         canSendCreditNote: false,
       });
@@ -35,7 +38,30 @@ describe('invoiceDeliveryFields', () => {
       sentAt: new Date('2026-11-21T10:00:00Z'),
     });
 
-    expect(sent).toEqual(expect.objectContaining({ canSend: false, sentAt: '2026-11-21T10:00:00.000Z' }));
+    expect(sent).toEqual(
+      expect.objectContaining({ canSend: false, sentAt: '2026-11-21T10:00:00.000Z', sentVia: 'email' }),
+    );
+  });
+
+  it('reports the channel a document was sent on (legacy sends without a channel count as email)', () => {
+    const at = new Date('2026-11-21T10:00:00Z');
+
+    expect(
+      invoiceDeliveryFields({
+        ...base,
+        status: InvoiceStatus.ISSUED,
+        sentAt: at,
+        sentVia: DocumentDeliveryChannel.LETTER,
+      }).sentVia,
+    ).toBe('letter');
+    expect(
+      invoiceDeliveryFields({
+        ...base,
+        status: InvoiceStatus.VOID,
+        voidDocumentSentAt: at,
+        voidDocumentSentVia: DocumentDeliveryChannel.MANUAL,
+      }).voidDocumentSentVia,
+    ).toBe('manual');
   });
 
   it('offers the credit note send only for voided invoices whose credit note was not emailed', () => {

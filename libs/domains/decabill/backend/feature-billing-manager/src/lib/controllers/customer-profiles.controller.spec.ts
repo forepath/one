@@ -13,6 +13,7 @@ describe('CustomerProfilesController', () => {
   const customerProfilesService = {
     getByUserId: jest.fn(),
     upsert: jest.fn(),
+    isPostalDeliveryAvailable: jest.fn(() => true),
     revalidateVatId: jest.fn(),
   };
   const paymentProcessorFactory = {

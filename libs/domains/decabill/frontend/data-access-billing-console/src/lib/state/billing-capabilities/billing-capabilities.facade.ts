@@ -12,6 +12,7 @@ import {
   selectEinvoiceFormats,
   selectFileSigningEnabled,
   selectGlobalViewsAllowed,
+  selectPostalDeliveryAvailable,
   selectUnifiedExportAllowed,
   selectViewableTenants,
 } from './billing-capabilities.selectors';
@@ -30,6 +31,7 @@ export class BillingCapabilitiesFacade {
   readonly accountingGlobalAccess$ = this.store.select(selectAccountingGlobalAccess);
   readonly einvoiceFormats$ = this.store.select(selectEinvoiceFormats);
   readonly einvoiceDefaultFormat$ = this.store.select(selectEinvoiceDefaultFormat);
+  readonly postalDeliveryAvailable$ = this.store.select(selectPostalDeliveryAvailable);
   readonly loading$ = this.store.select(selectBillingCapabilitiesLoading);
 
   loadCapabilities(): void {

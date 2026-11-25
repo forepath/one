@@ -25,6 +25,10 @@ Optional fields may include company name, customer type (business/consumer), VAT
 
 See [VAT and tax treatment](./vat-and-tax-treatment.md) for reverse-charge eligibility and cross-border rules.
 
+## Preferred delivery
+
+`preferredDeliveryChannel` chooses how documents reach the customer: `email` (default) or `letter`, which additionally posts every emailed invoice, credit note and offer through the tenant's postal provider (the email is still sent). Customers and admins can set it; it is offered only while a postal provider is configured and needs a complete postal address. See [Postal delivery](./postal-delivery.md#customer-preference).
+
 ## Self-Service
 
 | Method | Path                                     | Purpose                                                         |

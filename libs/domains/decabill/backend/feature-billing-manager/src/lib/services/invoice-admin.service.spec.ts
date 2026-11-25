@@ -14,9 +14,10 @@ describe('InvoiceAdminService', () => {
   const invoiceService = {
     mapToResponse: jest.fn(),
     voidInvoice: jest.fn(),
-    sendIssuedInvoice: jest.fn(),
-    sendVoidDocument: jest.fn(),
+    markInvoiceSent: jest.fn(),
+    markVoidDocumentSent: jest.fn(),
   };
+  const documentDelivery = { spoolInvoice: jest.fn(), spoolCreditNote: jest.fn() };
   const auditLog = { log: jest.fn() };
   const usersRepository = { findByIdForTenant: jest.fn() };
   const customerTrustScoreService = { triggerRecomputeForUser: jest.fn() };
@@ -32,6 +33,7 @@ describe('InvoiceAdminService', () => {
     documentSettlementService as never,
     customerProfilesRepository as never,
     billingNotificationPublisher as never,
+    documentDelivery as never,
   );
   const baseInvoice = {
     id: 'inv-1',
@@ -234,32 +236,69 @@ describe('InvoiceAdminService', () => {
     );
   });
 
-  it('sendInvoice emails through the invoice service and audits the send', async () => {
-    invoicesRepository.findByIdOrThrow.mockResolvedValue(baseInvoice);
-    invoiceService.sendIssuedInvoice.mockResolvedValue({ ...baseInvoice, sentAt: new Date('2026-11-21T10:00:00Z') });
+  it('sendInvoice spools the email and returns the invoice as sent with its spool job', async () => {
+    documentDelivery.spoolInvoice.mockResolvedValue({
+      invoice: { ...baseInvoice, sentAt: new Date('2026-11-21T10:00:00Z'), sentVia: 'email' },
+      job: { id: 'job-1' },
+    });
 
     const result = await service.sendInvoice('inv-1', 'admin-1');
 
-    expect(invoiceService.sendIssuedInvoice).toHaveBeenCalledWith(baseInvoice);
-    expect(auditLog.log).toHaveBeenCalledWith(expect.objectContaining({ process: 'invoice.send', invoiceId: 'inv-1' }));
-    expect(result).toEqual(expect.objectContaining({ sentAt: '2026-11-21T10:00:00.000Z', canSend: false }));
+    expect(documentDelivery.spoolInvoice).toHaveBeenCalledWith('inv-1', 'email', 'admin-1');
+    expect(result).toEqual(
+      expect.objectContaining({
+        sentAt: '2026-11-21T10:00:00.000Z',
+        sentVia: 'email',
+        canSend: false,
+        spoolJobId: 'job-1',
+      }),
+    );
   });
 
-  it('sendCreditNote emails the credit note through the invoice service and audits it', async () => {
+  it('sendInvoiceLetter and sendCreditNoteLetter spool letters', async () => {
     const voided = { ...baseInvoice, status: InvoiceStatus.VOID };
 
-    invoicesRepository.findByIdOrThrow.mockResolvedValue(voided);
-    invoiceService.sendVoidDocument.mockResolvedValue({
-      ...voided,
-      voidDocumentSentAt: new Date('2026-11-21T10:00:00Z'),
-    });
+    documentDelivery.spoolInvoice.mockResolvedValue({ invoice: baseInvoice, job: { id: 'job-2' } });
+    documentDelivery.spoolCreditNote.mockResolvedValue({ invoice: voided, job: { id: 'job-3' } });
+
+    await service.sendInvoiceLetter('inv-1', 'admin-1');
+    await service.sendCreditNoteLetter('inv-1', 'admin-1');
+
+    expect(documentDelivery.spoolInvoice).toHaveBeenCalledWith('inv-1', 'letter', 'admin-1');
+    expect(documentDelivery.spoolCreditNote).toHaveBeenCalledWith('inv-1', 'letter', 'admin-1');
+  });
+
+  it('sendCreditNote spools the credit note email', async () => {
+    const voided = { ...baseInvoice, status: InvoiceStatus.VOID, voidDocumentSentAt: new Date() };
+
+    documentDelivery.spoolCreditNote.mockResolvedValue({ invoice: voided, job: { id: 'job-4' } });
 
     const result = await service.sendCreditNote('inv-1', 'admin-1');
 
-    expect(invoiceService.sendVoidDocument).toHaveBeenCalledWith(voided);
-    expect(auditLog.log).toHaveBeenCalledWith(
-      expect.objectContaining({ process: 'invoice.void_document_send', invoiceId: 'inv-1' }),
-    );
-    expect(result).toEqual(expect.objectContaining({ canSendCreditNote: false }));
+    expect(documentDelivery.spoolCreditNote).toHaveBeenCalledWith('inv-1', 'email', 'admin-1');
+    expect(result).toEqual(expect.objectContaining({ canSendCreditNote: false, spoolJobId: 'job-4' }));
+  });
+
+  it('markInvoiceSent records a manual send and audits it', async () => {
+    invoicesRepository.findByIdOrThrow.mockResolvedValue(baseInvoice);
+    invoiceService.markInvoiceSent.mockResolvedValue({ ...baseInvoice, sentAt: new Date(), sentVia: 'manual' });
+
+    const result = await service.markInvoiceSent('inv-1', 'admin-1', { sentAt: '2026-11-20' });
+
+    expect(invoiceService.markInvoiceSent).toHaveBeenCalledWith(baseInvoice, new Date('2026-11-20'));
+    expect(auditLog.log).toHaveBeenCalledWith(expect.objectContaining({ process: 'invoice.mark_sent' }));
+    expect(result).toEqual(expect.objectContaining({ sentVia: 'manual' }));
+  });
+
+  it('markCreditNoteSent records a manual credit note send', async () => {
+    const voided = { ...baseInvoice, status: InvoiceStatus.VOID };
+
+    invoicesRepository.findByIdOrThrow.mockResolvedValue(voided);
+    invoiceService.markVoidDocumentSent.mockResolvedValue({ ...voided, voidDocumentSentAt: new Date() });
+
+    await service.markCreditNoteSent('inv-1', 'admin-1');
+
+    expect(invoiceService.markVoidDocumentSent).toHaveBeenCalledWith(voided, undefined);
+    expect(auditLog.log).toHaveBeenCalledWith(expect.objectContaining({ process: 'invoice.void_document_mark_sent' }));
   });
 });

@@ -1,6 +1,10 @@
 import { IsEmail, IsEnum, IsIn, IsOptional, IsString, Length, Matches, MaxLength, ValidateIf } from 'class-validator';
 
 import { CustomerType } from '../constants/customer-type.constants';
+import {
+  CUSTOMER_DELIVERY_PREFERENCES,
+  type CustomerDeliveryPreference,
+} from '../constants/document-delivery.constants';
 import { EINVOICE_FORMAT_VALUES } from '../constants/e-invoice-format.constants';
 
 export class CustomerProfileDto {
@@ -59,6 +63,14 @@ export class CustomerProfileDto {
   @IsOptional()
   @IsString({ message: 'Phone must be a string' })
   phone?: string;
+
+  /**
+   * `email` (default) or `letter`: documents are also posted as a letter, in addition to the email. `letter` needs a
+   * configured postal provider and a complete postal address.
+   */
+  @IsOptional()
+  @IsIn(CUSTOMER_DELIVERY_PREFERENCES, { message: 'Preferred delivery channel must be email or letter' })
+  preferredDeliveryChannel?: CustomerDeliveryPreference;
 
   /** E-invoice format override (XRechnung for public buyers, Peppol …); empty = issuer default. */
   @IsOptional()

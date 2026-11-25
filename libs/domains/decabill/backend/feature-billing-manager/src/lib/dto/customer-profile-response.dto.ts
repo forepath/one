@@ -1,4 +1,5 @@
 import type { CustomerType } from '../constants/customer-type.constants';
+import type { CustomerDeliveryPreference } from '../constants/document-delivery.constants';
 import type { VatIdValidationSource, VatIdValidationStatus } from '../constants/vat-id-validation.constants';
 
 export class CustomerProfileResponseDto {
@@ -21,6 +22,10 @@ export class CustomerProfileResponseDto {
   country?: string;
   email?: string;
   phone?: string;
+  /** `email` or `letter` (documents are also posted, in addition to the email). */
+  preferredDeliveryChannel?: CustomerDeliveryPreference;
+  /** Letters can be chosen: the tenant has a configured postal provider. */
+  postalDeliveryAvailable?: boolean;
   einvoiceFormat?: string | null;
   buyerReference?: string | null;
   einvoiceEndpoint?: string | null;

@@ -11,6 +11,7 @@ import type {
   UpdateManualInvoiceDto,
   VoidInvoiceDto,
 } from '../../types/billing.types';
+import type { MarkDocumentSentDto, SpooledDeliveryChannel } from '../../types/spooler.types';
 
 export const loadAdminInvoiceManager = createAction(
   '[AdminInvoiceManager] Load Invoices',
@@ -50,9 +51,10 @@ export const updateManualInvoiceFailure = createAction(
   props<{ error: string }>(),
 );
 
+/** `sendLetter`: issue without email, then send the invoice as a letter (spooled). */
 export const issueManualInvoice = createAction(
   '[AdminInvoiceManager] Issue Manual Invoice',
-  props<{ invoiceRefId: string; dto?: IssueManualInvoiceDto }>(),
+  props<{ invoiceRefId: string; dto?: IssueManualInvoiceDto; sendLetter?: boolean }>(),
 );
 export const issueManualInvoiceSuccess = createAction(
   '[AdminInvoiceManager] Issue Manual Invoice Success',
@@ -76,9 +78,10 @@ export const deleteManualInvoiceFailure = createAction(
   props<{ error: string }>(),
 );
 
+/** `sendLetter`: void without email, then send the credit note as a letter (spooled). */
 export const adminInvoiceManagerVoid = createAction(
   '[AdminInvoiceManager] Void Invoice',
-  props<{ invoiceRefId: string; dto?: VoidInvoiceDto }>(),
+  props<{ invoiceRefId: string; dto?: VoidInvoiceDto; sendLetter?: boolean }>(),
 );
 export const adminInvoiceManagerVoidSuccess = createAction(
   '[AdminInvoiceManager] Void Invoice Success',
@@ -89,9 +92,10 @@ export const adminInvoiceManagerVoidFailure = createAction(
   props<{ error: string }>(),
 );
 
+/** Sends an invoice issued without notification: email (default) or letter, spooled in the background. */
 export const adminInvoiceManagerSend = createAction(
   '[AdminInvoiceManager] Send Invoice',
-  props<{ invoiceRefId: string }>(),
+  props<{ invoiceRefId: string; channel?: SpooledDeliveryChannel }>(),
 );
 export const adminInvoiceManagerSendSuccess = createAction(
   '[AdminInvoiceManager] Send Invoice Success',
@@ -104,7 +108,7 @@ export const adminInvoiceManagerSendFailure = createAction(
 
 export const adminInvoiceManagerSendCreditNote = createAction(
   '[AdminInvoiceManager] Send Credit Note',
-  props<{ invoiceRefId: string }>(),
+  props<{ invoiceRefId: string; channel?: SpooledDeliveryChannel }>(),
 );
 export const adminInvoiceManagerSendCreditNoteSuccess = createAction(
   '[AdminInvoiceManager] Send Credit Note Success',
@@ -112,6 +116,20 @@ export const adminInvoiceManagerSendCreditNoteSuccess = createAction(
 );
 export const adminInvoiceManagerSendCreditNoteFailure = createAction(
   '[AdminInvoiceManager] Send Credit Note Failure',
+  props<{ error: string }>(),
+);
+
+/** Records that the invoice (or, with `creditNote`, its credit note) was sent outside Decabill. */
+export const adminInvoiceManagerMarkSent = createAction(
+  '[AdminInvoiceManager] Mark Sent',
+  props<{ invoiceRefId: string; creditNote?: boolean; dto?: MarkDocumentSentDto }>(),
+);
+export const adminInvoiceManagerMarkSentSuccess = createAction(
+  '[AdminInvoiceManager] Mark Sent Success',
+  props<{ invoice: AdminInvoiceListItem }>(),
+);
+export const adminInvoiceManagerMarkSentFailure = createAction(
+  '[AdminInvoiceManager] Mark Sent Failure',
   props<{ error: string }>(),
 );
 

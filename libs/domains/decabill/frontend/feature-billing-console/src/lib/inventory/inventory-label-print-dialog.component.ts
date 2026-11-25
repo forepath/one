@@ -17,6 +17,8 @@ import {
   AdminInventoryService,
   type InventoryLabelKind,
   type InventoryLabelLayout,
+  SpoolJobFailedError,
+  SpoolJobPendingError,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import {
   FpcAlertComponent,
@@ -230,6 +232,22 @@ async function labelErrorMessage(error: unknown): Promise<string> {
       // Not JSON: fall through.
     }
   }
+
+  // Spool request errors are JSON; failed or still running spool jobs carry their message.
+  if (
+    error instanceof HttpErrorResponse &&
+    error.error &&
+    typeof error.error === 'object' &&
+    !(error.error instanceof Blob)
+  ) {
+    const message = (error.error as { message?: string | string[] }).message;
+
+    if (Array.isArray(message)) return message.join(', ');
+
+    if (message) return message;
+  }
+
+  if (error instanceof SpoolJobFailedError || error instanceof SpoolJobPendingError) return error.message;
 
   return $localize`:@@featureInventoryLabels-failed:The labels could not be created.`;
 }

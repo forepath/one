@@ -13,6 +13,7 @@ import type {
   RevokeAdminOfferDto,
   UpdateAdminOfferDto,
 } from '../../types/offers.types';
+import type { MarkDocumentSentDto, SpooledDeliveryChannel } from '../../types/spooler.types';
 
 export const loadAdminOffers = createAction(
   '[AdminOffers] Load Offers',
@@ -58,9 +59,10 @@ export const deleteAdminOffer = createAction('[AdminOffers] Delete Offer', props
 export const deleteAdminOfferSuccess = createAction('[AdminOffers] Delete Offer Success', props<{ id: string }>());
 export const deleteAdminOfferFailure = createAction('[AdminOffers] Delete Offer Failure', props<{ error: string }>());
 
+/** `sendLetter`: archive without email, then send the offer as a letter (spooled). */
 export const archiveAdminOffer = createAction(
   '[AdminOffers] Archive Offer',
-  props<{ id: string; dto?: ArchiveAdminOfferDto }>(),
+  props<{ id: string; dto?: ArchiveAdminOfferDto; sendLetter?: boolean }>(),
 );
 export const archiveAdminOfferSuccess = createAction(
   '[AdminOffers] Archive Offer Success',
@@ -68,7 +70,25 @@ export const archiveAdminOfferSuccess = createAction(
 );
 export const archiveAdminOfferFailure = createAction('[AdminOffers] Archive Offer Failure', props<{ error: string }>());
 
-export const sendAdminOffer = createAction('[AdminOffers] Send Offer', props<{ id: string }>());
+/** Sends an offer archived without notification: email (default) or letter, spooled in the background. */
+export const sendAdminOffer = createAction(
+  '[AdminOffers] Send Offer',
+  props<{ id: string; channel?: SpooledDeliveryChannel }>(),
+);
+
+/** Records that an offer was sent outside Decabill (nothing is sent). */
+export const markAdminOfferSent = createAction(
+  '[AdminOffers] Mark Offer Sent',
+  props<{ id: string; dto?: MarkDocumentSentDto }>(),
+);
+export const markAdminOfferSentSuccess = createAction(
+  '[AdminOffers] Mark Offer Sent Success',
+  props<{ offer: AdminOfferDetailResponse }>(),
+);
+export const markAdminOfferSentFailure = createAction(
+  '[AdminOffers] Mark Offer Sent Failure',
+  props<{ error: string }>(),
+);
 export const sendAdminOfferSuccess = createAction(
   '[AdminOffers] Send Offer Success',
   props<{ offer: AdminOfferDetailResponse }>(),

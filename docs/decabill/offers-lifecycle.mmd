@@ -17,9 +17,17 @@ sequenceDiagram
     alt notifyCustomer (default)
         AdminAPI->>Email: publishOfferArchived (sentAt = archivedAt)
     else archived without sending
-        Note over AdminAPI: sentAt null, offer visible but not emailed
-        Admin->>AdminAPI: POST :id/send (later)
-        AdminAPI->>Email: publishOfferArchived (claim sentAt)
+        Note over AdminAPI: sentAt null, offer visible but not sent
+        alt email or letter (later)
+            Admin->>AdminAPI: POST :id/send or :id/send-letter
+            Note over AdminAPI: claim sentAt + sentVia, create document.send spool job
+            AdminAPI->>Jobs: spooler.unit
+            Jobs->>Email: publishOfferArchived (email) or postal provider (letter)
+            Note over Jobs: failed for good or cancelled: claim released, offer unsent again
+        else sent outside Decabill
+            Admin->>AdminAPI: POST :id/mark-sent { sentAt? }
+            Note over AdminAPI: sentVia manual, nothing sent
+        end
     end
     AdminAPI->>Search: upsert offer document
     AdminAPI-->>Admin: archived offer

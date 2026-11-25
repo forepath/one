@@ -4622,6 +4622,60 @@ paths:
       responses:
         '200':
           description: Webhook received
+  /webhooks/postal/{provider}:
+    post:
+      summary: Postal provider webhook (letter status)
+      description: |
+        Status events of letters sent through a postal provider (built-in: `pingen`). Public: authenticity is the
+        provider's signature over the raw request body, verified with the signing key of the tenant the referenced
+        letter belongs to (the tenant is resolved from the provider letter id, not from `X-Tenant`). For Pingen the
+        signature is the hex HMAC-SHA256 of the raw body in the `Signature` header, keyed with
+        `PINGEN_WEBHOOK_SIGNING_KEY`. Pingen event types `issues`, `sent` / `dispatched`, `undeliverable` and
+        `delivered` move the letter forward (`action_required`, `sent`, `undeliverable`, `delivered`); late or
+        replayed events never move it back. Events for unknown letters (test events, letters created outside
+        Decabill) and events that do not change the letter are acknowledged without effect. Body limit 256 KB.
+      operationId: postalProviderWebhook
+      security: []
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            { type: string, pattern: '^[a-z0-9_-]{1,64}$', example: pingen }
+          description: Postal provider type
+        - name: Signature
+          in: header
+          required: false
+          schema: { type: string }
+          description: Pingen webhook signature (hex HMAC-SHA256 of the raw body)
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: Provider event as sent by the provider (Pingen JSON:API webhook payload)
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Webhook received (processed or ignored)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [received]
+                properties:
+                  received: { type: boolean, const: true }
+        '400':
+          description: Empty or oversized body
+        '401':
+          description: Invalid webhook signature (or no signing key configured for the letter's tenant)
+        '404':
+          description: Unknown postal provider
   /usage/summary/{subscriptionId}:
     get:
       summary: Usage summary
@@ -6144,10 +6198,13 @@ paths:
   /admin/billing/offers/{id}/send:
     post:
       tags: [Admin Billing]
-      summary: Send an archived offer that was not sent yet (admin)
+      summary: Email an archived offer that was not sent yet (admin)
       description: |
-        Emails the offer PDF to the customer. 400 when the offer is not
-        archived, was already sent, has expired, or the customer has no billing email address (nothing is sent then).
+        Spools the email of the offer PDF to the customer. The offer counts as sent right away (`sentAt` set,
+        `sentVia: email`, a second send is refused); the spool job emails it in the background. When the job fails
+        for good or is cancelled, the offer is released again (`sentAt` null) and can be sent another way. The
+        response carries `spoolJobId` (see `/admin/billing/spooler/jobs`). 400 when the offer is not archived, was
+        already sent, has expired, or the customer has no billing email address (nothing is sent then).
       operationId: sendAdminOffer
       security:
         - bearerAuth: [offers:admin]
@@ -6158,11 +6215,92 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '200':
-          description: Sent offer
+          description: Offer with the send spooled
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminOfferDetailResponseDto'
+        '400':
+          description: Not archived, already sent, expired, or no billing email address
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without the required scope
+        '404':
+          description: Offer not found
+  /admin/billing/offers/{id}/send-letter:
+    post:
+      tags: [Admin Billing]
+      summary: Send an archived offer as a physical letter (admin)
+      description: |
+        Spools the offer as a letter through the tenant's postal provider (`BILLING_DEFAULT_POSTAL_PROVIDER`, see
+        `GET /admin/billing/capabilities` → `postalDelivery`). Same claim rules as `POST …/send`: the offer counts as
+        sent right away (`sentVia: letter`) and is released again when the spool job fails for good or is cancelled,
+        or when the provider later reports the letter as needing action or cancelled. Letters cost money, so tokens
+        need `letters:admin` in addition to `offers:admin`. 400 when the offer is not archived, was already sent or
+        has expired, postal delivery is not configured, the issuer is incomplete, or the customer's billing profile
+        has no complete postal address (name, street, postal code, city, ISO country); nothing is sent then.
+      operationId: sendAdminOfferLetter
+      security:
+        - bearerAuth: [offers:admin, letters:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Offer with the letter spooled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOfferDetailResponseDto'
+        '400':
+          description: Offer not sendable, postal delivery not configured, or no complete postal address
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without `offers:admin` and `letters:admin`
+        '404':
+          description: Offer not found
+  /admin/billing/offers/{id}/mark-sent:
+    post:
+      tags: [Admin Billing]
+      summary: Mark an archived offer as sent outside Decabill (admin)
+      description: |
+        Records that the offer was sent another way (printed and posted by hand, handed over in person): `sentAt` as
+        given (default now) and `sentVia: manual`. Nothing is sent to the customer. `sentAt` must not be in the
+        future (5 minutes of clock skew tolerated) and not before the day the offer was archived. 400 when the offer
+        is not archived or was already sent.
+      operationId: markAdminOfferSent
+      security:
+        - bearerAuth: [offers:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkDocumentSent'
+      responses:
+        '200':
+          description: Offer marked as sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOfferDetailResponseDto'
+        '400':
+          description: Not archived, already sent, or invalid `sentAt`
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without the required scope
+        '404':
+          description: Offer not found
   /admin/billing/offers/{id}/revoke:
     post:
       tags: [Admin Billing]
@@ -6666,8 +6804,11 @@ paths:
       tags: [Admin Billing]
       summary: Email an invoice that was issued without notification (admin only)
       description: |
-        400 when the invoice is a draft or voided, was already sent, or the customer has no billing email address
-        (nothing is sent then).
+        Spools the email (invoice PDF, plus the time report for project invoices). The invoice counts as sent right
+        away (`sentAt` set, `sentVia: email`, a second send is refused); the spool job emails it in the background.
+        When the job fails for good or is cancelled, the invoice is released again (`sentAt` null) and can be sent
+        another way. The response carries `spoolJobId` (see `/admin/billing/spooler/jobs`). 400 when the invoice is
+        a draft or voided, was already sent, or the customer has no billing email address (nothing is sent then).
       operationId: adminSendInvoice
       security:
         - bearerAuth: [invoices:admin]
@@ -6678,18 +6819,28 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '200':
-          description: Sent invoice
+          description: Invoice with the send spooled
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminInvoiceListItem'
+        '400':
+          description: Draft or voided, already sent, or no billing email address
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without the required scope
+        '404':
+          description: Invoice not found
   /admin/billing/invoices/{invoiceRefId}/send-credit-note:
     post:
       tags: [Admin Billing]
       summary: Email the credit note of an invoice voided without notification (admin only)
       description: |
-        400 when the invoice is not voided, its credit note was already sent, or the customer has no billing email
-        address (nothing is sent then).
+        Spools the email of the credit note, with the same claim rules as `POST …/send` (`voidDocumentSentAt` /
+        `voidDocumentSentVia: email` set right away, released when the spool job fails for good or is cancelled).
+        The response carries `spoolJobId`. 400 when the invoice is not voided, its credit note was already sent, or
+        the customer has no billing email address (nothing is sent then).
       operationId: adminSendInvoiceCreditNote
       security:
         - bearerAuth: [invoices:admin]
@@ -6700,11 +6851,163 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '200':
-          description: Voided invoice with the credit note sent
+          description: Voided invoice with the credit note send spooled
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminInvoiceListItem'
+        '400':
+          description: Not voided, credit note already sent, or no billing email address
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without the required scope
+        '404':
+          description: Invoice not found
+  /admin/billing/invoices/{invoiceRefId}/send-letter:
+    post:
+      tags: [Admin Billing]
+      summary: Send an invoice issued without notification as a physical letter (admin only)
+      description: |
+        Spools the invoice (plus the time report for project invoices) as a letter through the tenant's postal
+        provider (`BILLING_DEFAULT_POSTAL_PROVIDER`, see `GET /admin/billing/capabilities` → `postalDelivery`).
+        Same claim rules as `POST …/send`: the invoice counts as sent right away (`sentVia: letter`) and is released
+        again when the spool job fails for good or is cancelled, or when the provider later reports the letter as
+        needing action or cancelled. Letters cost money, so tokens need `letters:admin` in addition to
+        `invoices:admin`. 400 when the invoice is a draft or voided, was already sent, postal delivery is not
+        configured, the issuer is incomplete, or the customer's billing profile has no complete postal address
+        (name, street, postal code, city, ISO country); nothing is sent then.
+      operationId: adminSendInvoiceLetter
+      security:
+        - bearerAuth: [invoices:admin, letters:admin]
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Invoice with the letter spooled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInvoiceListItem'
+        '400':
+          description: Invoice not sendable, postal delivery not configured, or no complete postal address
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without `invoices:admin` and `letters:admin`
+        '404':
+          description: Invoice not found
+  /admin/billing/invoices/{invoiceRefId}/send-credit-note-letter:
+    post:
+      tags: [Admin Billing]
+      summary: Send the credit note of an invoice voided without notification as a physical letter (admin only)
+      description: |
+        Spools the credit note as a letter through the tenant's postal provider, with the same rules as
+        `POST …/send-letter` (`voidDocumentSentVia: letter`). Tokens need `invoices:admin` and `letters:admin`.
+        400 when the invoice is not voided, its credit note was already sent, postal delivery is not configured, the
+        issuer is incomplete, or the customer has no complete postal address.
+      operationId: adminSendInvoiceCreditNoteLetter
+      security:
+        - bearerAuth: [invoices:admin, letters:admin]
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Voided invoice with the credit note letter spooled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInvoiceListItem'
+        '400':
+          description: Credit note not sendable, postal delivery not configured, or no complete postal address
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without `invoices:admin` and `letters:admin`
+        '404':
+          description: Invoice not found
+  /admin/billing/invoices/{invoiceRefId}/mark-sent:
+    post:
+      tags: [Admin Billing]
+      summary: Mark an invoice issued without notification as sent outside Decabill (admin only)
+      description: |
+        Records that the invoice was sent another way (printed and posted by hand, handed over in person): `sentAt`
+        as given (default now) and `sentVia: manual`. Nothing is sent to the customer. `sentAt` must not be in the
+        future (5 minutes of clock skew tolerated) and not before the day the invoice was issued. 400 when the
+        invoice is a draft or voided or was already sent.
+      operationId: adminMarkInvoiceSent
+      security:
+        - bearerAuth: [invoices:admin]
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkDocumentSent'
+      responses:
+        '200':
+          description: Invoice marked as sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInvoiceListItem'
+        '400':
+          description: Draft or voided, already sent, or invalid `sentAt`
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without the required scope
+        '404':
+          description: Invoice not found
+  /admin/billing/invoices/{invoiceRefId}/mark-credit-note-sent:
+    post:
+      tags: [Admin Billing]
+      summary: Mark the credit note of a voided invoice as sent outside Decabill (admin only)
+      description: |
+        Records that the credit note was sent another way: `voidDocumentSentAt` as given (default now) and
+        `voidDocumentSentVia: manual`. Nothing is sent to the customer. `sentAt` must not be in the future and not
+        before the day the invoice was voided. 400 when the invoice is not voided or its credit note was already
+        sent.
+      operationId: adminMarkInvoiceCreditNoteSent
+      security:
+        - bearerAuth: [invoices:admin]
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkDocumentSent'
+      responses:
+        '200':
+          description: Voided invoice with the credit note marked as sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInvoiceListItem'
+        '400':
+          description: Not voided, credit note already sent, or invalid `sentAt`
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without the required scope
+        '404':
+          description: Invoice not found
   /admin/billing/invoices/{invoiceRefId}/mark-paid:
     post:
       tags: [Admin Billing]
@@ -7090,6 +7393,174 @@ paths:
           description: Unauthorized
         '403':
           description: Admin access required, or cross-tenant view not allowed for this tenant
+  /admin/billing/spooler/jobs:
+    get:
+      tags: [Admin Billing]
+      summary: List spool jobs of the tenant (admin)
+      description: |
+        Spooled printouts and document sends of the request tenant (Spooler page), newest first, with the number of
+        jobs per status (`counts`). Finished jobs (`completed`, `failed`, `cancelled`) and their files are removed
+        after `BILLING_SPOOLER_RETENTION_DAYS` (default 7).
+      operationId: listSpoolJobs
+      security:
+        - bearerAuth: [spooler:admin]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/SpoolJobStatus'
+        - name: kind
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/SpoolJobKind'
+        - name: documentType
+          in: query
+          required: false
+          schema: { type: string, enum: [invoice, credit_note, offer] }
+          description: Jobs of one customer document type (document sends)
+        - name: documentId
+          in: query
+          required: false
+          schema: { type: string, format: uuid }
+          description: Invoice id (invoices and credit notes) or offer id
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+        - name: offset
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200':
+          description: Spool jobs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSpoolJobs'
+        '400':
+          description: Invalid filter
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without the required scope
+  /admin/billing/spooler/jobs/{id}:
+    get:
+      tags: [Admin Billing]
+      summary: Get a spool job (admin)
+      operationId: getSpoolJob
+      security:
+        - bearerAuth: [spooler:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Spool job
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpoolJob'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without the required scope
+        '404':
+          description: Spool job not found in the request tenant
+  /admin/billing/spooler/jobs/{id}/file:
+    get:
+      tags: [Admin Billing]
+      summary: Download the file of a completed printout job (admin)
+      description: |
+        Output of a completed printout job (`hasFile: true`), sent as an attachment. 404 when the job is not
+        completed, has no file (document sends) or the file was already removed by the retention.
+      operationId: downloadSpoolJobFile
+      security:
+        - bearerAuth: [spooler:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Job output (PDF for the built-in printouts)
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without the required scope
+        '404':
+          description: Spool job not found, or no file available
+  /admin/billing/spooler/jobs/{id}/retry:
+    post:
+      tags: [Admin Billing]
+      summary: Retry a failed spool job (admin)
+      description: |
+        Queues a `failed` job again with a fresh budget of 3 attempts. A document send is retried only while the
+        document is still unsent: it is claimed again for the new attempt (400 when it was sent meanwhile, or when
+        the channel is no longer ready, e.g. no billing email address or no complete postal address).
+      operationId: retrySpoolJob
+      security:
+        - bearerAuth: [spooler:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Requeued spool job
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpoolJob'
+        '400':
+          description: Only failed spool jobs can be retried, or the document can no longer be sent this way
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without the required scope
+        '404':
+          description: Spool job not found in the request tenant
+  /admin/billing/spooler/jobs/{id}/cancel:
+    post:
+      tags: [Admin Billing]
+      summary: Cancel a queued spool job (admin)
+      description: |
+        Cancels a job that has not started yet (`queued`). A cancelled document send releases its document, which
+        shows as unsent again.
+      operationId: cancelSpoolJob
+      security:
+        - bearerAuth: [spooler:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Cancelled spool job
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpoolJob'
+        '400':
+          description: Only queued spool jobs can be cancelled
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without the required scope
+        '404':
+          description: Spool job not found in the request tenant
   /admin/billing/settings:
     description: Admins only (not available to managers).
     get:
@@ -7707,6 +8178,41 @@ paths:
               schema:
                 type: string
                 format: binary
+  /admin/billing/projects/{projectId}/time-report/spool:
+    post:
+      tags: [Admin Billing]
+      summary: Spool a time report PDF (background printout, admin only)
+      description: |
+        Creates a `print.project_time_report` spool job for the same request body as
+        `POST /admin/billing/projects/{projectId}/time-report` and returns it right away; once it is `completed`, the
+        PDF is downloaded from `GET /admin/billing/spooler/jobs/{id}/file`. Used by the console; `POST …/time-report`
+        stays the synchronous download for API clients.
+      operationId: spoolProjectTimeReport
+      security:
+        - bearerAuth: [projects:admin, spooler:admin]
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectTimeReportRequest'
+      responses:
+        '202':
+          description: Spool job created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpoolJob'
+        '400':
+          description: Invalid request body, or the spooler is not available
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without `projects:admin` and `spooler:admin`
+        '404':
+          description: Project not found
   /projects/{projectId}/tickets:
     get:
       tags: [Project Board]
@@ -9522,6 +10028,35 @@ paths:
           content:
             application/pdf:
               schema: { type: string, format: binary }
+  /admin/billing/inventory/movements/{id}/pdf/spool:
+    post:
+      tags: [Admin Inventory]
+      summary: 'Spool the movement document (background printout)'
+      description: |
+        Creates a `print.inventory_movement` spool job and returns it right away; once it is `completed`, the PDF is
+        downloaded from `GET /admin/billing/spooler/jobs/{id}/file`. Used by the console; `GET …/pdf` stays the
+        synchronous download for API clients.
+      operationId: spoolInventoryMovementPdf
+      security:
+        - bearerAuth: [inventory:admin, spooler:admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '202':
+          description: Spool job created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpoolJob'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without `inventory:admin` and `spooler:admin`
+        '404':
+          description: Movement not found
   /admin/billing/inventory/withdrawal-requests:
     get:
       tags: [Admin Inventory]
@@ -9798,6 +10333,38 @@ paths:
               schema: { type: string, format: binary }
         '400':
           description: Nothing to print, too many labels or company name missing
+  /admin/billing/inventory/labels/spool:
+    post:
+      tags: [Admin Inventory]
+      summary: 'Spool a label print (background printout)'
+      description: |
+        Creates a `print.inventory_labels` spool job for the same request body as `POST /admin/billing/inventory/labels`
+        and returns it right away; once it is `completed`, the PDF is downloaded from
+        `GET /admin/billing/spooler/jobs/{id}/file`. Only the request shape is validated here: nothing to print, too
+        many labels or a missing company name fail the job (status `failed` with the reason in `error`, no retry).
+        Used by the console; `POST …/labels` stays the synchronous export for API clients.
+      operationId: spoolInventoryLabels
+      security:
+        - bearerAuth: [inventory:admin, spooler:admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryLabelRequest'
+      responses:
+        '202':
+          description: Spool job created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpoolJob'
+        '400':
+          description: Invalid request body
+        '401':
+          description: Unauthorized
+        '403':
+          description: Not an admin / manager, or a PAT without `inventory:admin` and `spooler:admin`
   /admin/billing/accounting/overview:
     get:
       tags: [Accounting]
@@ -11718,8 +12285,9 @@ components:
         For personal access tokens, the role names listed on an operation's `bearerAuth` requirement are the
         PAT scopes it requires (OpenAPI 3.1 role names; not enforced for interactive sessions).
         Scopes follow `<resource>:read|write|admin`; `write` implies `read`, and `admin` implies `write` and `read`.
-        `:admin` scopes are only grantable to and effective for admin users. Operations without listed scopes
-        either do not accept personal access tokens or are public.
+        `:admin` scopes are only grantable to and effective for admin users. When an operation lists several scopes,
+        a token needs all of them (e.g. `[invoices:admin, letters:admin]`). Operations without listed scopes either
+        do not accept personal access tokens or are public.
     basicAuth:
       type: http
       scheme: basic
@@ -14547,9 +15115,23 @@ components:
           nullable: true
           pattern: '^[0-9A-Z]{2,4}:[^\s]{1,128}$'
           description: 'Electronic address `scheme:id` (Peppol EAS code), e.g. `0088:4012345000009`; null or empty clears it'
+        preferredDeliveryChannel:
+          type: string
+          enum: [email, letter]
+          description: >-
+            How documents reach the customer. `email` (default). `letter`: invoices, credit notes and offers that are
+            emailed are additionally posted as a letter (supplementary, the email is still sent). Choosing `letter`
+            needs a configured postal provider (`postalDeliveryAvailable`, else 400) and a complete postal address.
     CustomerProfileResponse:
       type: object
       properties:
+        preferredDeliveryChannel:
+          type: string
+          enum: [email, letter]
+          description: Preferred delivery (default `email`); `letter` = email plus letter
+        postalDeliveryAvailable:
+          type: boolean
+          description: Letters can be chosen as preferred delivery (the tenant has a configured postal provider)
         id: { type: string, format: uuid }
         userId: { type: string, format: uuid }
         customerNumber:
@@ -15177,6 +15759,7 @@ components:
           accountingMissingPrerequisites,
           einvoiceFormats,
           einvoiceDefaultFormat,
+          postalDelivery,
         ]
       properties:
         datevExportEnabled:
@@ -15220,6 +15803,149 @@ components:
               label: { type: string }
         einvoiceDefaultFormat:
           $ref: '#/components/schemas/EInvoiceFormat'
+        postalDelivery:
+          type: object
+          required: [available, provider, providerName]
+          description: |
+            Whether documents can be sent as letters in the request tenant: the default postal provider
+            (`BILLING_DEFAULT_POSTAL_PROVIDER`, default `pingen`) is registered and configured for the tenant.
+          properties:
+            available: { type: boolean }
+            provider:
+              type: string
+              nullable: true
+              description: Provider type (e.g. `pingen`); null when not available
+            providerName:
+              type: string
+              nullable: true
+              description: Display name (e.g. `Pingen`); null when not available
+    DocumentDeliveryChannel:
+      type: string
+      enum: [email, letter, manual]
+      description: |
+        How a finalized customer document reached the customer: `email` (emailed with the PDF attached), `letter`
+        (handed to the postal provider as a physical letter) or `manual` (sent outside Decabill and marked as sent).
+        Documents sent before the channel was recorded report `email`.
+    MarkDocumentSent:
+      type: object
+      additionalProperties: false
+      properties:
+        sentAt:
+          type: string
+          format: date-time
+          description: |
+            When the document was sent (ISO 8601 date or date-time; default now). Not in the future (5 minutes of
+            clock skew tolerated) and not before the day the document was finalized (issued, voided or archived).
+    SpoolJobKind:
+      type: string
+      enum:
+        [
+          document.send,
+          print.inventory_labels,
+          print.inventory_movement,
+          print.project_time_report,
+        ]
+      description: |
+        `document.send`: send an invoice, credit note or offer to the customer (email or letter);
+        `print.inventory_labels`: label / property sticker PDF; `print.inventory_movement`: inventory movement
+        document PDF; `print.project_time_report`: project time report PDF.
+    SpoolJobStatus:
+      type: string
+      enum: [queued, processing, completed, failed, cancelled]
+      description: |
+        `queued` also covers a job waiting for its next attempt after a transient failure (`error` then holds the
+        last reason). `completed`, `failed` and `cancelled` are final; such jobs and their files are removed after
+        `BILLING_SPOOLER_RETENTION_DAYS`.
+    SpoolJob:
+      type: object
+      required:
+        [
+          id,
+          kind,
+          status,
+          outputTarget,
+          title,
+          documentType,
+          documentId,
+          attempts,
+          error,
+          hasFile,
+          fileName,
+          fileSize,
+          externalLetterId,
+          canRetry,
+          canCancel,
+          createdByUserId,
+          createdAt,
+          startedAt,
+          finishedAt,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/SpoolJobKind' }
+        status: { $ref: '#/components/schemas/SpoolJobStatus' }
+        outputTarget:
+          type: string
+          enum: [download, email, postal]
+          description: Where the output goes (`download` = file kept for the console)
+        title:
+          {
+            type: string,
+            description: 'Human-readable job title (e.g. "Invoice R-1001 by letter")',
+          }
+        documentType:
+          type: string
+          enum: [invoice, credit_note, offer]
+          nullable: true
+          description: Document of a `document.send` job; null for printouts
+        documentId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Invoice id (invoices and credit notes) or offer id; null for printouts
+        attempts:
+          {
+            type: integer,
+            description: Attempts made so far (at most 3 per run),
+          }
+        error:
+          {
+            type: string,
+            nullable: true,
+            description: Last error (shown to admins),
+          }
+        hasFile:
+          {
+            type: boolean,
+            description: A completed printout whose file can be downloaded,
+          }
+        fileName: { type: string, nullable: true }
+        fileSize: { type: integer, nullable: true }
+        externalLetterId:
+          type: string
+          nullable: true
+          description: Postal provider letter id of a document sent as a letter
+        canRetry: { type: boolean, description: '`failed`: retry applies' }
+        canCancel: { type: boolean, description: '`queued`: cancel applies' }
+        createdByUserId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
+        startedAt: { type: string, format: date-time, nullable: true }
+        finishedAt: { type: string, format: date-time, nullable: true }
+    PaginatedSpoolJobs:
+      type: object
+      required: [items, total, limit, offset, counts]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpoolJob'
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+        counts:
+          type: object
+          additionalProperties: { type: integer }
+          description: Jobs per status in the request tenant (all jobs, not only the filtered page)
     EInvoiceFormat:
       type: string
       enum:
@@ -15409,24 +16135,40 @@ components:
                 type: string,
                 format: date-time,
                 nullable: true,
-                description: 'When the invoice was emailed; null when issued without notification',
+                description: 'When the invoice was sent (emailed, handed to the postal provider or marked as sent); null while unsent',
               }
+            sentVia:
+              allOf:
+                - $ref: '#/components/schemas/DocumentDeliveryChannel'
+              nullable: true
+              description: How the invoice was sent; null while unsent
             voidDocumentSentAt:
               {
                 type: string,
                 format: date-time,
                 nullable: true,
-                description: 'When the credit note of a voided invoice was emailed; null when not sent',
+                description: 'When the credit note of a voided invoice was sent; null when not sent',
               }
+            voidDocumentSentVia:
+              allOf:
+                - $ref: '#/components/schemas/DocumentDeliveryChannel'
+              nullable: true
+              description: How the credit note was sent; null while unsent
             canSend:
               {
                 type: boolean,
-                description: 'Issued, not voided and not emailed yet',
+                description: 'Issued, not voided and not sent yet: send, send-letter and mark-sent apply',
               }
             canSendCreditNote:
               {
                 type: boolean,
-                description: 'Voided and the credit note not emailed yet',
+                description: 'Voided and the credit note not sent yet: the credit-note send, letter and mark-sent actions apply',
+              }
+            spoolJobId:
+              {
+                type: string,
+                format: uuid,
+                description: 'Only on send / send-letter responses: the spool job delivering the document',
               }
     PaginatedAdminInvoicesResponse:
       type: object
@@ -15796,24 +16538,34 @@ components:
                 type: string,
                 format: date-time,
                 nullable: true,
-                description: 'When the invoice was emailed; null when issued without notification',
+                description: 'When the invoice was sent; null while unsent',
               }
+            sentVia:
+              allOf:
+                - $ref: '#/components/schemas/DocumentDeliveryChannel'
+              nullable: true
+              description: How the invoice was sent; null while unsent
             voidDocumentSentAt:
               {
                 type: string,
                 format: date-time,
                 nullable: true,
-                description: 'When the credit note of a voided invoice was emailed; null when not sent',
+                description: 'When the credit note of a voided invoice was sent; null when not sent',
               }
+            voidDocumentSentVia:
+              allOf:
+                - $ref: '#/components/schemas/DocumentDeliveryChannel'
+              nullable: true
+              description: How the credit note was sent; null while unsent
             canSend:
               {
                 type: boolean,
-                description: 'Issued, not voided and not emailed yet',
+                description: 'Issued, not voided and not sent yet',
               }
             canSendCreditNote:
               {
                 type: boolean,
-                description: 'Voided and the credit note not emailed yet',
+                description: 'Voided and the credit note not sent yet',
               }
     AdminCustomerProfileListItem:
       type: object
@@ -17066,12 +17818,17 @@ components:
             type: string,
             format: date-time,
             nullable: true,
-            description: 'When the offer was emailed to the customer; null for drafts and offers archived silently',
+            description: 'When the offer was sent to the customer; null for drafts and unsent offers',
           }
+        sentVia:
+          allOf:
+            - $ref: '#/components/schemas/DocumentDeliveryChannel'
+          nullable: true
+          description: How the offer was sent; null while unsent
         canSend:
           {
             type: boolean,
-            description: 'Archived, not sent yet and not expired',
+            description: 'Archived, not sent yet and not expired: send, send-letter and mark-sent apply',
           }
         notifyOnExpiry:
           {
@@ -17131,6 +17888,12 @@ components:
         - $ref: '#/components/schemas/AdminOfferListItemDto'
         - type: object
           properties:
+            spoolJobId:
+              {
+                type: string,
+                format: uuid,
+                description: 'Only on send / send-letter responses: the spool job delivering the offer',
+              }
             subtotalNet: { type: number }
             taxTotal: { type: number }
             billToOpenPositions: { type: boolean }

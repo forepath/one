@@ -104,6 +104,7 @@ samples via provider/addon `collectMeters` into usage history with `usageSource:
 **Dynamic provider plugins:**
 
 - `DYNAMIC_PAYMENT_PROCESSORS` - Comma-separated extra payment processor packages (critical; use with `DYNAMIC_PROVIDERS_FAIL_FAST=true` in production)
+- `DYNAMIC_POSTAL_PROVIDERS` - Comma-separated extra postal provider packages for letters (optional; Pingen is built in, see `docs/decabill/features/postal-delivery.md`)
 - `DYNAMIC_BILLING_PROVIDER_METADATA` - Comma-separated packages exporting `providerMetadata` for the billing UI registry
 - `DYNAMIC_BILLING_PROVIDER_MODULES` - Comma-separated runtime provider modules (`collectMeters`, optional `provision` / lifecycle / catalog hooks, optional `jobs` / `migrations` / `nestModule`)
 - `DYNAMIC_ADDON_MODULES` - Addon lifecycle modules (`provision` / `teardown` / optional `collectMeters` / optional `serviceTabs` / optional `jobs` / optional `migrations` / optional `nestModule`)

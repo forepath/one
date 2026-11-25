@@ -17,6 +17,7 @@ import {
 } from '@nestjs/common';
 
 import type { PaginatedBillingAuditLogsResponseDto } from '../../dto/admin-billing.dto';
+import { MarkDocumentSentDto } from '../../dto/document-delivery.dto';
 import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
 import {
   AcceptAdminOfferDto,
@@ -117,6 +118,30 @@ export class AdminOffersController {
     @Req() req: AdminRequest,
   ): Promise<AdminOfferDetailResponseDto> {
     return await this.offersAdminService.send(id, getUserFromRequest(req)?.userId);
+  }
+
+  /**
+   * Sends an offer that was archived without notification as a physical letter through the tenant's postal provider.
+   * Letters cost money, so tokens additionally need `letters:admin`.
+   */
+  @Post(':id/send-letter')
+  @RequireScopes('offers:admin', 'letters:admin')
+  async sendLetter(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() req: AdminRequest,
+  ): Promise<AdminOfferDetailResponseDto> {
+    return await this.offersAdminService.sendLetter(id, getUserFromRequest(req)?.userId);
+  }
+
+  /** Records that an offer archived without notification was sent outside Decabill (nothing is sent). */
+  @Post(':id/mark-sent')
+  @RequireScopes('offers:admin')
+  async markSent(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: MarkDocumentSentDto,
+    @Req() req: AdminRequest,
+  ): Promise<AdminOfferDetailResponseDto> {
+    return await this.offersAdminService.markSent(id, getUserFromRequest(req)?.userId, dto);
   }
 
   @Post(':id/revoke')

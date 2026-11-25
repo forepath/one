@@ -1,5 +1,6 @@
 import { IsDateString, IsNumber, IsOptional, IsPositive, IsString, IsUUID, MaxLength } from 'class-validator';
 
+import type { DocumentDeliveryChannel } from '../constants/document-delivery.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 
 import { IsOptionalNotifyFlag } from './document-delivery.dto';
@@ -33,14 +34,20 @@ export class AdminInvoiceListItemDto extends InvoiceResponseDto {
   userEmail?: string;
   /** Billing-profile name (company, else first + last name); admin lists show it instead of the email. */
   customerName?: string;
-  /** When the invoice was emailed to the customer; null when it was issued without notification. */
+  /** When the invoice was sent to the customer; null when it was issued without notification. */
   sentAt?: string | null;
-  /** When the credit note of a voided invoice was emailed to the customer; null when not sent. */
+  /** How the invoice was sent: `email`, `letter` (postal provider) or `manual` (marked as sent); null while unsent. */
+  sentVia?: DocumentDeliveryChannel | null;
+  /** When the credit note of a voided invoice was sent to the customer; null when not sent. */
   voidDocumentSentAt?: string | null;
-  /** Issued (not voided) invoice that was not emailed yet: the send action applies. */
+  /** How the credit note was sent (`email`, `letter`, `manual`); null while unsent. */
+  voidDocumentSentVia?: DocumentDeliveryChannel | null;
+  /** Issued (not voided) invoice that was not sent yet: the send / send-letter / mark-sent actions apply. */
   canSend?: boolean;
-  /** Voided invoice whose credit note was not emailed yet: the send-credit-note action applies. */
+  /** Voided invoice whose credit note was not sent yet: the credit-note send / letter / mark-sent actions apply. */
   canSendCreditNote?: boolean;
+  /** Set on send responses: the spool job delivering the document (Spooler page). */
+  spoolJobId?: string;
 }
 
 export class PaginatedAdminInvoicesResponseDto {

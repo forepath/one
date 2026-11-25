@@ -1,4 +1,9 @@
-import { AdminBillNowJobName, DatevExportJobName, VatIdValidationJobName } from '@forepath/decabill/backend';
+import {
+  AdminBillNowJobName,
+  DatevExportJobName,
+  SpoolerJobName,
+  VatIdValidationJobName,
+} from '@forepath/decabill/backend';
 import {
   buildCoordinatorJobId,
   envCronOrDefault,
@@ -62,6 +67,8 @@ export const BillingJobName = {
   OFFER_EXPIRATION_UNIT: 'offer-expiration.unit',
   OFFER_FULFILLMENT_COORDINATOR: 'offer-fulfillment.coordinator',
   OFFER_FULFILLMENT_UNIT: 'offer-fulfillment.unit',
+  SPOOLER_COORDINATOR: SpoolerJobName.COORDINATOR,
+  SPOOLER_UNIT: SpoolerJobName.UNIT,
 } as const;
 
 export type BillingJobName = (typeof BillingJobName)[keyof typeof BillingJobName];
@@ -190,6 +197,11 @@ export function getBillingRepeatableJobs(): BillingRepeatableJobDefinition[] {
       name: BillingJobName.SUBSCRIPTION_ITEM_UPDATE_COORDINATOR,
       coordinatorJobId: buildCoordinatorJobId('subscription-item-update'),
       everyMs: parseIntervalMs('SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL', 86_400_000),
+    },
+    {
+      name: BillingJobName.SPOOLER_COORDINATOR,
+      coordinatorJobId: buildCoordinatorJobId('spooler'),
+      everyMs: parseIntervalMs('SPOOLER_COORDINATOR_INTERVAL', 60_000),
     },
     {
       name: BillingJobName.BACKORDER_RETRY_COORDINATOR,

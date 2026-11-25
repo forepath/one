@@ -15,6 +15,7 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { FormsModule } from '@angular/forms';
 import {
   AdminOffersFacade,
+  BillingCapabilitiesFacade,
   AdminBillingService,
   AdminOffersService,
   type EffectiveDocumentTerms,
@@ -93,6 +94,7 @@ import {
 } from '../billing-format';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { getOfferStatusBadgeTone, getOfferStatusLabel, getUnavailableLabel } from '../billing-status-labels';
+import { DeliveryChoiceComponent, type DeliveryChoice } from '../document-delivery/delivery-choice.component';
 import { DocumentNoteFieldComponent } from '../document-note/document-note-field.component';
 import { DocumentNoteSummaryComponent } from '../document-note/document-note-summary.component';
 import { documentNoteToInput } from '../document-note/document-note.util';
@@ -147,6 +149,7 @@ function isUnsentOffer(offer: Pick<AdminOfferListItem, 'status' | 'sentAt'>): bo
   selector: 'framework-admin-offers-page',
   standalone: true,
   imports: [
+    DeliveryChoiceComponent,
     FpcMoneyPipe,
     CommonModule,
     FormsModule,
@@ -208,6 +211,7 @@ export class AdminOffersPageComponent implements OnInit {
   private readonly facade = inject(AdminOffersFacade);
   private readonly adminOffersService = inject(AdminOffersService);
   private readonly adminBillingService = inject(AdminBillingService);
+  private readonly capabilitiesFacade = inject(BillingCapabilitiesFacade);
   private readonly datePipe = inject(DatePipe);
   private readonly destroyRef = inject(DestroyRef);
   private readonly locale = inject(LOCALE_ID);
@@ -428,6 +432,10 @@ export class AdminOffersPageComponent implements OnInit {
   readonly pendingArchive = signal<readonly AdminOfferListItem[] | null>(null);
   archiveNotifyCustomer = true;
   archiveNotifyOnExpiry = true;
+  /** Archive dialog with a postal provider: email, letter or not sent yet. */
+  archiveDelivery: DeliveryChoice = 'email';
+  /** Letters can be sent (postal provider configured for the tenant). */
+  readonly postalAvailable = toSignal(this.capabilitiesFacade.postalDeliveryAvailable$, { initialValue: false });
   readonly archiveConfirmTitle = computed(() =>
     (this.pendingArchive()?.length ?? 0) > 1
       ? $localize`:@@featureAdminOffers-archiveBulkTitle:Archive ${this.pendingArchive()?.length ?? 0}:count: draft offers?`
@@ -437,13 +445,23 @@ export class AdminOffersPageComponent implements OnInit {
 
   /** Send dialog for an offer that was archived without notification. */
   readonly pendingSend = signal<AdminOfferListItem | null>(null);
+  /** Send dialog: email or letter. */
+  readonly sendChannel = signal<DeliveryChoice>('email');
+  /** Mark-as-sent dialog: the offer was delivered outside Decabill. */
+  readonly pendingMarkSent = signal<AdminOfferListItem | null>(null);
+  readonly markSentAt = signal('');
+  readonly markSentLabel = $localize`:@@featureAdminOffers-markSent:Mark as sent`;
+  readonly markSentTitle = $localize`:@@featureAdminOffers-markSentTitle:Mark offer as sent?`;
+  readonly markSentMessage = $localize`:@@featureAdminOffers-markSentMessage:Use this when you delivered the offer yourself (printed and posted, handed over in person). Nothing is sent to the customer.`;
   readonly sendConfirmTitle = $localize`:@@featureAdminOffers-sendTitle:Send offer to the customer?`;
   readonly sendConfirmMessage = computed(() => {
     const offer = this.pendingSend();
 
-    return offer
-      ? $localize`:@@featureAdminOffers-sendMessage:Offer ${this.offerDisplayTitle(offer)}:number: is emailed to ${this.customerLabel(offer)}:customer: with the PDF attached.`
-      : '';
+    if (!offer) return '';
+
+    return this.sendChannel() === 'letter'
+      ? $localize`:@@featureAdminOffers-sendLetterMessage:Offer ${this.offerDisplayTitle(offer)}:number: is printed and posted to ${this.customerLabel(offer)}:customer: as a letter.`
+      : $localize`:@@featureAdminOffers-sendMessage:Offer ${this.offerDisplayTitle(offer)}:number: is emailed to ${this.customerLabel(offer)}:customer: with the PDF attached.`;
   });
 
   /** Revoke dialog: like a void, the email defaults to on only when the offer itself was sent. */
@@ -489,7 +507,12 @@ export class AdminOffersPageComponent implements OnInit {
     ...(this.canDownloadOffer(offer) ? [{ id: 'download', label: DB_DL_DOWNLOAD_PDF, icon: 'file-earmark-pdf' }] : []),
     { id: 'audit', label: this.auditLabel, icon: 'clock-history' },
     ...(this.canArchiveOffer(offer) ? [{ id: 'archive', label: DB_DL_ARCHIVE, icon: 'archive' }] : []),
-    ...(this.canSendOffer(offer) ? [{ id: 'send', label: DB_DL_SEND, icon: 'send' }] : []),
+    ...(this.canSendOffer(offer)
+      ? [
+          { id: 'send', label: DB_DL_SEND, icon: 'send' },
+          { id: 'mark-sent', label: this.markSentLabel, icon: 'send-check' },
+        ]
+      : []),
     ...(this.canAcceptOffer(offer) ? [{ id: 'accept', label: this.acceptLabel, icon: 'check-circle' }] : []),
     ...(this.canDeclineOffer(offer) ? [{ id: 'decline', label: this.declineLabel, icon: 'x-circle' }] : []),
     ...(this.canRevokeOffer(offer) ? [{ id: 'revoke', label: this.revokeLabel, icon: 'slash-circle' }] : []),
@@ -607,6 +630,7 @@ export class AdminOffersPageComponent implements OnInit {
     else if (action === 'audit') this.openAuditHistory(offer);
     else if (action === 'archive') this.openArchiveDialog([offer]);
     else if (action === 'send') this.openSendDialog(offer);
+    else if (action === 'mark-sent') this.openMarkSentDialog(offer);
     else if (action === 'accept') this.openAcceptDialog(offer);
     else if (action === 'decline') this.openDeclineDialog(offer);
     else if (action === 'revoke') this.openRevokeDialog(offer);
@@ -626,6 +650,7 @@ export class AdminOffersPageComponent implements OnInit {
 
     this.archiveNotifyCustomer = true;
     this.archiveNotifyOnExpiry = true;
+    this.archiveDelivery = 'email';
     this.pendingArchive.set(drafts);
   }
 
@@ -635,7 +660,13 @@ export class AdminOffersPageComponent implements OnInit {
    */
   async confirmArchive(): Promise<void> {
     const drafts = this.pendingArchive() ?? [];
-    const dto = { notifyCustomer: this.archiveNotifyCustomer, notifyOnExpiry: this.archiveNotifyOnExpiry };
+    const delivery: DeliveryChoice = this.postalAvailable()
+      ? this.archiveDelivery
+      : this.archiveNotifyCustomer
+        ? 'email'
+        : 'none';
+    const sendLetter = delivery === 'letter';
+    const dto = { notifyCustomer: delivery === 'email', notifyOnExpiry: this.archiveNotifyOnExpiry };
 
     this.pendingArchive.set(null);
 
@@ -644,12 +675,16 @@ export class AdminOffersPageComponent implements OnInit {
     const [single] = drafts;
 
     if (drafts.length === 1 && single) {
-      this.facade.archiveOffer(single.id, dto);
+      this.facade.archiveOffer(single.id, dto, sendLetter);
 
       return;
     }
 
-    const result = await fpcRunBulk(drafts, (offer) => firstValueFrom(this.adminOffersService.archive(offer.id, dto)));
+    const result = await fpcRunBulk(drafts, async (offer) => {
+      const archived = await firstValueFrom(this.adminOffersService.archive(offer.id, dto));
+
+      return sendLetter ? await firstValueFrom(this.adminOffersService.sendLetter(offer.id)) : archived;
+    });
 
     this.finishBulk(dbBulkSummary(result, (offer) => this.offerDisplayTitle(offer)));
   }
@@ -658,6 +693,7 @@ export class AdminOffersPageComponent implements OnInit {
     if (!this.canSendOffer(offer)) return;
 
     this.previewOfferModalOpen.set(false);
+    this.sendChannel.set('email');
     this.pendingSend.set(offer);
   }
 
@@ -666,7 +702,27 @@ export class AdminOffersPageComponent implements OnInit {
 
     this.pendingSend.set(null);
 
-    if (offer) this.facade.sendOffer(offer.id);
+    if (offer) this.facade.sendOffer(offer.id, this.sendChannel() === 'letter' ? 'letter' : 'email');
+  }
+
+  openMarkSentDialog(offer: AdminOfferListItem): void {
+    if (!this.canSendOffer(offer)) return;
+
+    const now = new Date();
+
+    this.previewOfferModalOpen.set(false);
+    this.markSentAt.set(
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`,
+    );
+    this.pendingMarkSent.set(offer);
+  }
+
+  confirmMarkSent(): void {
+    const offer = this.pendingMarkSent();
+
+    this.pendingMarkSent.set(null);
+
+    if (offer) this.facade.markOfferSent(offer.id, this.markSentAt() ? { sentAt: this.markSentAt() } : {});
   }
 
   openRevokeDialog(offer: AdminOfferListItem): void {

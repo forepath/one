@@ -12,6 +12,7 @@ import { DataSource } from 'typeorm';
 
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 
+import { BillingDeliveryActionSource } from './billing-delivery.action-source';
 import { BillingDocumentsActionSource } from './billing-documents.action-source';
 import { BillingOperationsActionSource } from './billing-operations.action-source';
 import { BillingPartnersActionSource } from './billing-partners.action-source';
@@ -36,6 +37,7 @@ export class BillingActionCenterRegistrar implements OnModuleInit, OnModuleDestr
     private readonly partners: BillingPartnersActionSource,
     private readonly operations: BillingOperationsActionSource,
     private readonly setup: BillingSetupActionSource,
+    private readonly delivery: BillingDeliveryActionSource,
   ) {}
 
   onModuleInit(): void {
@@ -49,6 +51,7 @@ export class BillingActionCenterRegistrar implements OnModuleInit, OnModuleDestr
       this.documents,
       this.partners,
       this.operations,
+      this.delivery,
       new PlatformUpdatesActionSource(() => this.updatesQuery.getStatusSummary()),
       new PlatformWebhooksActionSource(this.dataSource),
       // SMTP settings are tenant settings on the admin-only settings page.

@@ -109,6 +109,7 @@ describe('InvoiceIssuanceService', () => {
   const manager = { getRepository: () => invoiceRepoInTx };
   const dataSource = { transaction: async (run: (m: unknown) => unknown) => await run(manager) };
   const documentSettlementService = { applyAvailableCustomerCredit: jest.fn() };
+  const preferredLetter = { sendIfPreferred: jest.fn() };
   const service = new InvoiceIssuanceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -132,6 +133,9 @@ describe('InvoiceIssuanceService', () => {
     inventoryWithdrawalRequests as never,
     dataSource as never,
     documentSettlementService as never,
+    undefined,
+    undefined,
+    preferredLetter as never,
   );
   const draftInvoice = {
     id: 'inv-1',
@@ -358,11 +362,25 @@ describe('InvoiceIssuanceService', () => {
     expect(billingNotificationPublisher.publishInvoice).not.toHaveBeenCalledWith('invoice.paid', expect.anything());
   });
 
+  it('also posts the invoice for customers who prefer letters', async () => {
+    await service.issueDraft('inv-1');
+
+    expect(preferredLetter.sendIfPreferred).toHaveBeenCalledWith(
+      expect.objectContaining({ documentType: 'invoice', documentId: 'inv-1', userId: 'user-1' }),
+    );
+  });
+
+  it('posts nothing when the invoice is issued silently', async () => {
+    await service.issueDraft('inv-1', { skipNotification: true });
+
+    expect(preferredLetter.sendIfPreferred).not.toHaveBeenCalled();
+  });
+
   it('skips invoice email when skipNotification is set (sentAt stays unset)', async () => {
     await service.issueDraft('inv-1', { skipNotification: true });
 
     expect(billingEmailPublisher.publishInvoiceIssued).not.toHaveBeenCalled();
-    expect(invoicesRepository.update).not.toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date) });
+    expect(invoicesRepository.update).not.toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date), sentVia: 'email' });
   });
 
   it('records sentAt once the invoice email was queued', async () => {
@@ -377,7 +395,7 @@ describe('InvoiceIssuanceService', () => {
 
     await service.issueDraft('inv-1');
 
-    expect(invoicesRepository.update).toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date) });
+    expect(invoicesRepository.update).toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date), sentVia: 'email' });
   });
 
   it('leaves sentAt unset when no invoice email could be queued (no billing email)', async () => {
@@ -385,7 +403,7 @@ describe('InvoiceIssuanceService', () => {
 
     await service.issueDraft('inv-1');
 
-    expect(invoicesRepository.update).not.toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date) });
+    expect(invoicesRepository.update).not.toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date), sentVia: 'email' });
   });
 
   describe('payment and delivery terms', () => {

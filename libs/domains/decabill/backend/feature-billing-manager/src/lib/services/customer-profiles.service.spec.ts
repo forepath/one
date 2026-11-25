@@ -271,6 +271,74 @@ describe('CustomerProfilesService', () => {
     );
   });
 
+  describe('preferred delivery channel', () => {
+    const postal = (available: boolean) => ({ getDefaultConfiguredProvider: () => (available ? {} : null) });
+    const repositoryFor = (existing: CustomerProfileEntity | null) => ({
+      findByUserId: jest.fn().mockResolvedValue(existing),
+      update: jest.fn(async (_id: string, patch: Partial<CustomerProfileEntity>) => ({ ...existing, ...patch })),
+      create: jest.fn(async (dto: Partial<CustomerProfileEntity>) => ({ id: 'cp-new', ...dto })),
+    });
+    const serviceWith = (repository: unknown, available: boolean) =>
+      new CustomerProfilesService(
+        repository as never,
+        customerNumberSequencesRepository as never,
+        vatIdValidationService as never,
+        undefined,
+        postal(available) as never,
+      );
+
+    it('stores letter when a postal provider is configured and the address is complete', async () => {
+      const repository = repositoryFor(createCompleteProfile());
+
+      await serviceWith(repository, true).upsert('user-1', { preferredDeliveryChannel: 'letter' } as never);
+
+      expect(repository.update).toHaveBeenCalledWith(
+        'cp-1',
+        expect.objectContaining({ preferredDeliveryChannel: 'letter' }),
+      );
+    });
+
+    it('refuses letter without postal provider or without complete address', async () => {
+      await expect(
+        serviceWith(repositoryFor(createCompleteProfile()), false).upsert('user-1', {
+          preferredDeliveryChannel: 'letter',
+        } as never),
+      ).rejects.toThrow('Delivery by letter is not available');
+
+      await expect(
+        serviceWith(repositoryFor(createCompleteProfile()), true).upsert('user-1', {
+          preferredDeliveryChannel: 'letter',
+          city: '',
+        } as never),
+      ).rejects.toThrow(/complete postal address/);
+    });
+
+    it('keeps saving other fields when the provider is removed later, and always allows email', async () => {
+      const letterCustomer = {
+        ...createCompleteProfile(),
+        preferredDeliveryChannel: 'letter',
+      } as CustomerProfileEntity;
+
+      await expect(
+        serviceWith(repositoryFor(letterCustomer), false).upsert('user-1', { phone: '+49 30 1' } as never),
+      ).resolves.toBeDefined();
+      await expect(
+        serviceWith(repositoryFor(letterCustomer), false).upsert('user-1', {
+          preferredDeliveryChannel: 'email',
+        } as never),
+      ).resolves.toBeDefined();
+      // Removing the address while letters are preferred is refused.
+      await expect(
+        serviceWith(repositoryFor(letterCustomer), true).upsert('user-1', { addressLine1: '' } as never),
+      ).rejects.toThrow(/complete postal address/);
+    });
+
+    it('reports whether letters can be chosen', () => {
+      expect(serviceWith(repositoryFor(null), true).isPostalDeliveryAvailable()).toBe(true);
+      expect(createService(repositoryFor(null)).isPostalDeliveryAvailable()).toBe(false);
+    });
+  });
+
   describe('isProfileComplete', () => {
     it('returns false when profile is null', () => {
       const repository = { findByUserId: jest.fn(), create: jest.fn(), update: jest.fn() } as any;

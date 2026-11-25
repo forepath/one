@@ -16,12 +16,16 @@ import type {
   ProjectTimeReportRequestDto,
   UpdateAdminProjectDto,
 } from '../types/projects.types';
+import type { SpoolJob } from '../types/spooler.types';
+
+import { AdminSpoolerService } from './admin-spooler.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AdminProjectsService {
   private readonly http = inject(HttpClient);
+  private readonly spooler = inject(AdminSpoolerService);
   private readonly environment = inject<Environment>(ENVIRONMENT);
 
   private get apiUrl(): string {
@@ -70,9 +74,10 @@ export class AdminProjectsService {
     );
   }
 
+  /** Time report PDF, rendered by the spooler (the job and its file stay on the Spooler page). */
   generateTimeReport(projectId: string, dto: ProjectTimeReportRequestDto): Observable<Blob> {
-    return this.http.post(`${this.apiUrl}/admin/billing/projects/${projectId}/time-report`, dto, {
-      responseType: 'blob',
-    });
+    return this.spooler.spoolAndDownload(
+      this.http.post<SpoolJob>(`${this.apiUrl}/admin/billing/projects/${projectId}/time-report/spool`, dto),
+    );
   }
 }

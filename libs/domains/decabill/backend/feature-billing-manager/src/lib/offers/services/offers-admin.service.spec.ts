@@ -281,8 +281,13 @@ describe('OffersAdminService revoke / expiry notifications', () => {
   };
   const billingEmailPublisher = { publishOfferRevoked: jest.fn(), publishOfferExpired: jest.fn() };
   const auditLog = { log: jest.fn() };
-  const offerArchiveService = { archive: jest.fn(), send: jest.fn() };
+  const offerArchiveService = {
+    archive: jest.fn(),
+    markSent: jest.fn(),
+    afterDelivery: jest.fn(async () => ({ id: 'offer-1' })),
+  };
   const offerResponseService = { accept: jest.fn(), decline: jest.fn() };
+  const documentDelivery = { spoolOffer: jest.fn(async () => ({ offer: {}, job: { id: 'job-1' } })) };
   const service = new OffersAdminService(
     offersRepository as never,
     { findByOfferId: jest.fn().mockResolvedValue([]) } as never,
@@ -299,6 +304,7 @@ describe('OffersAdminService revoke / expiry notifications', () => {
     undefined,
     billingEmailPublisher as never,
     offerResponseService as never,
+    documentDelivery as never,
   );
   const offer = (patch: Record<string, unknown> = {}) => ({
     id: 'offer-1',
@@ -402,15 +408,23 @@ describe('OffersAdminService revoke / expiry notifications', () => {
     expect(billingEmailPublisher.publishOfferExpired).not.toHaveBeenCalled();
   });
 
-  it('passes the archive options through and delegates send', async () => {
+  it('passes the archive options through and spools sends (email / letter) and delegates mark-sent', async () => {
     await service.archive('offer-1', 'admin-1', { notifyCustomer: false, notifyOnExpiry: false });
-    await service.send('offer-1', 'admin-1');
 
     expect(offerArchiveService.archive).toHaveBeenCalledWith('offer-1', 'admin-1', {
       notifyCustomer: false,
       notifyOnExpiry: false,
     });
-    expect(offerArchiveService.send).toHaveBeenCalledWith('offer-1', 'admin-1');
+
+    await expect(service.send('offer-1', 'admin-1')).resolves.toEqual(
+      expect.objectContaining({ id: 'offer-1', spoolJobId: 'job-1' }),
+    );
+    await service.sendLetter('offer-1', 'admin-1');
+    await service.markSent('offer-1', 'admin-1', { sentAt: '2026-11-20' });
+
+    expect(documentDelivery.spoolOffer).toHaveBeenNthCalledWith(1, 'offer-1', 'email', 'admin-1');
+    expect(documentDelivery.spoolOffer).toHaveBeenNthCalledWith(2, 'offer-1', 'letter', 'admin-1');
+    expect(offerArchiveService.markSent).toHaveBeenCalledWith('offer-1', 'admin-1', { sentAt: '2026-11-20' });
   });
 
   it('records accept / decline through the shared response service as the admin (tenant-scoped lookup first)', async () => {

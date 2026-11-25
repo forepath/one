@@ -109,21 +109,37 @@ Admin routes under `/admin/billing/invoices`:
 - Mark paid or unpaid
 - Audit logs per invoice
 - PDF and void document download
-- Send an invoice or credit note that was finalized without notification (see below)
+- Send an invoice or credit note that was finalized without notification: by email, as a physical letter, or mark it as sent outside Decabill (see below)
 
 ### Finalize and send
 
-Issuing an invoice and voiding it (credit note) normally email the customer in the same step. The console asks first: the issue dialog, the void dialog, the bulk void confirmation and the project bill-time dialog each carry an **Email … to the customer** checkbox (on by default; for a void it defaults to on only when the invoice itself was sent). Unchecked, the document is finalized, booked and visible in the customer's account as before, but no email goes out; the list shows it as **… (not sent)** and the row menu offers **Send to customer** / **Send credit note**.
+Issuing an invoice and voiding it (credit note) normally email the customer in the same step. The console asks first: the issue dialog, the void dialog, the bulk void confirmation and the project bill-time dialog each carry an **Email … to the customer** checkbox (on by default; for a void it defaults to on only when the invoice itself was sent). Unchecked, the document is finalized, booked and visible in the customer's account as before, but nothing goes out; the list shows it as **… (not sent)** and the row menu offers the send actions below.
 
-| Endpoint                                                       | Body                                        |
-| -------------------------------------------------------------- | ------------------------------------------- |
-| `POST /admin/billing/invoices/{invoiceRefId}/issue`            | `notifyCustomer?` (default `true`)          |
-| `POST /admin/billing/invoices/{invoiceRefId}/void`             | `note?`, `notifyCustomer?` (default `true`) |
-| `POST /admin/billing/projects/{projectId}/bill-time`           | `…`, `notifyCustomer?` (default `true`)     |
-| `POST /admin/billing/invoices/{invoiceRefId}/send`             | —                                           |
-| `POST /admin/billing/invoices/{invoiceRefId}/send-credit-note` | —                                           |
+When the tenant has a postal provider configured, the issue, single void and bill-time dialogs show a **Send to the customer** choice instead of the checkbox: **By email**, **As a letter** or **Don't send yet** (a credit note defaults to the channel the invoice went out on). Choosing the letter finalizes the document without email and spools the letter right after. In the row menu, **Send to customer** / **Send credit note** ask for the channel the same way, and **Mark as sent** / **Mark credit note as sent** record a delivery made outside Decabill with its date.
 
-`sentAt` / `voidDocumentSentAt` record when the invoice / credit note was emailed; admin list items carry them with `canSend` / `canSendCreditNote`. A send is refused (400, nothing sent) for drafts, for already sent documents and when the customer has no billing email address; it is claimed atomically, so concurrent requests email once. Subscription invoices from the billing run and invoices created on offer acceptance are still emailed automatically. Documents finalized before this option existed count as sent.
+An unsent invoice or credit note can be delivered on one of three channels:
+
+| Channel  | Invoice endpoint                    | Credit note endpoint                            | What happens                                                                                                                                                |
+| -------- | ----------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `email`  | `POST …/{invoiceRefId}/send`        | `POST …/{invoiceRefId}/send-credit-note`        | Spooled: the PDF is emailed (project invoices with the time report attached)                                                                                |
+| `letter` | `POST …/{invoiceRefId}/send-letter` | `POST …/{invoiceRefId}/send-credit-note-letter` | Spooled: the PDF is printed and posted by the tenant's postal provider (see [Postal delivery](./postal-delivery.md)); PAT scope `letters:admin` in addition |
+| `manual` | `POST …/{invoiceRefId}/mark-sent`   | `POST …/{invoiceRefId}/mark-credit-note-sent`   | Nothing is sent: records that the document went out another way (printed and posted by hand, handed over); optional body `{ "sentAt": "<ISO date>" }`       |
+
+All paths are under `/admin/billing/invoices`; scope `invoices:admin`.
+
+| Endpoint                                             | Body                                        |
+| ---------------------------------------------------- | ------------------------------------------- |
+| `POST /admin/billing/invoices/{invoiceRefId}/issue`  | `notifyCustomer?` (default `true`)          |
+| `POST /admin/billing/invoices/{invoiceRefId}/void`   | `note?`, `notifyCustomer?` (default `true`) |
+| `POST /admin/billing/projects/{projectId}/bill-time` | `…`, `notifyCustomer?` (default `true`)     |
+
+**Spooled sends.** Email and letter sends run as `document.send` jobs of the [Spooler](./spooler.md) instead of inside the request. The document counts as sent the moment the request returns: `sentAt` (or `voidDocumentSentAt`) and the channel are set atomically, so a second send on any channel is refused and concurrent requests send once. The response is the admin list item with `spoolJobId`. The spool job then emails the document or hands it to the postal provider, with up to 3 attempts. When the job fails for good or is cancelled on the Spooler page, the claim is released: the document shows as unsent again and can be sent another way (or the job retried). For letters, the provider's later status can also release it again (see [Postal delivery](./postal-delivery.md#letter-lifecycle)).
+
+**Checks before anything is claimed** (400, nothing sent): drafts, voided invoices (for `send` / `send-letter`), invoices that are not voided (credit note actions) and already sent documents are refused. Email needs a billing email address of the customer. A letter needs a configured postal provider (`GET /admin/billing/capabilities` → `postalDelivery.available`), a complete issuer, and a complete postal address in the customer's billing profile (name or company, street, postal code, city, two-letter country).
+
+**Mark as sent.** `sentAt` defaults to now; it must not be in the future (5 minutes of clock skew are tolerated) and not before the day the invoice was issued (credit note: voided). The audit log records `invoice.mark_sent` / `invoice.void_document_mark_sent`; spooled sends record `invoice.send` / `invoice.send_letter` (credit note: `invoice.void_document_send` / `invoice.void_document_send_letter`) when the send actually happened.
+
+`sentAt` / `voidDocumentSentAt` record when the invoice / credit note was sent, `sentVia` / `voidDocumentSentVia` how (`email`, `letter`, `manual`; null while unsent). Admin list items carry them with `canSend` / `canSendCreditNote`. Subscription invoices from the billing run and invoices created on offer acceptance are still emailed automatically (directly, not spooled; `sentVia: email`). Documents finalized before this option existed count as sent; documents sent before the channel was recorded report `email`.
 
 **Bill now:** `POST /admin/billing/bill-now` forces invoice generation for selected users outside the scheduler.
 
@@ -199,6 +215,8 @@ Full schemas: [Billing Manager OpenAPI](/spec/billing-manager/openapi.yaml).
 - **[Billing Administration](./billing-administration.md)** Manual invoices and KPIs
 - **[Customer Profiles](./customer-profiles.md)** Required for issuance
 - **[Projects](./projects.md)** Bill-time from tracked hours
+- **[Postal delivery](./postal-delivery.md)** Sending invoices and credit notes as physical letters
+- **[Spooler](./spooler.md)** Background sends and printouts, retry and cancel
 - **[Subscriptions](./subscriptions.md)** Source of open positions
 - **[Multi-tenancy](./multi-tenancy.md)** Tenant-scoped invoice data
 

@@ -74,11 +74,13 @@ import { AccountingReportsService } from './accounting/services/accounting-repor
 import { AccountingVatReturnService } from './accounting/services/accounting-vat-return.service';
 import { BillingActionCenterGateway } from './action-center/billing-action-center.gateway';
 import { BillingActionCenterRegistrar } from './action-center/billing-action-center.registrar';
+import { BillingDeliveryActionSource } from './action-center/billing-delivery.action-source';
 import { BillingDocumentsActionSource } from './action-center/billing-documents.action-source';
 import { BillingOperationsActionSource } from './action-center/billing-operations.action-source';
 import { BillingPartnersActionSource } from './action-center/billing-partners.action-source';
 import { BillingSetupActionSource } from './action-center/billing-setup.action-source';
 import { PAYMENT_PROCESSOR_INIT } from './constants/payment-processor-init.token';
+import { POSTAL_PROVIDER_INIT } from './constants/postal-provider-init.token';
 import { AgenstraControllerContributorModule } from './contributors/agenstra-controller/agenstra-controller.contributor.module';
 import { AgenstraManagerContributorModule } from './contributors/agenstra-manager/agenstra-manager.contributor.module';
 import { BillingContributorHostModule } from './contributors/billing-contributor-host.module';
@@ -109,6 +111,7 @@ import { CustomerProfilesController } from './controllers/customer-profiles.cont
 import { InvoicesController } from './controllers/invoices.controller';
 import { MetersController } from './controllers/meters.controller';
 import { PaymentsWebhookController } from './controllers/payments-webhook.controller';
+import { PostalWebhookController } from './controllers/postal-webhook.controller';
 import { PricingController } from './controllers/pricing.controller';
 import { PromotionsController } from './controllers/promotions.controller';
 import { PublicServicePlanOfferingsController } from './controllers/public-service-plan-offerings.controller';
@@ -148,6 +151,7 @@ import { OssThresholdLedgerEntity } from './entities/oss-threshold-ledger.entity
 import { PaymentAttemptEntity } from './entities/payment-attempt.entity';
 import { PaymentRefundEntity } from './entities/payment-refund.entity';
 import { PaymentWebhookEventEntity } from './entities/payment-webhook-event.entity';
+import { PostalLetterEntity } from './entities/postal-letter.entity';
 import { PromotionRedemptionEntity } from './entities/promotion-redemption.entity';
 import { PromotionEntity } from './entities/promotion.entity';
 import { ProviderPriceSnapshotEntity } from './entities/provider-price-snapshot.entity';
@@ -238,6 +242,11 @@ import { SubscriptionOrderPreparationService } from './offers/services/subscript
 import { PaymentProcessorFactory } from './payment-processors/payment-processor.factory';
 import type { PaymentProcessor } from './payment-processors/payment-processor.interface';
 import { StripePaymentProcessor } from './payment-processors/processors/stripe-payment.processor';
+import { PostalLetterDocumentService } from './postal-providers/postal-letter-document.service';
+import { PostalLetterService } from './postal-providers/postal-letter.service';
+import { PostalProviderFactory } from './postal-providers/postal-provider.factory';
+import type { PostalProvider } from './postal-providers/postal-provider.interface';
+import { PingenPostalProvider } from './postal-providers/providers/pingen-postal.provider';
 import { AdminProjectsController } from './projects/controllers/admin-projects.controller';
 import { ProjectMilestonesController } from './projects/controllers/project-milestones.controller';
 import { ProjectTicketAttachmentsController } from './projects/controllers/project-ticket-attachments.controller';
@@ -276,6 +285,7 @@ import { DatevExportEnqueueAdapter } from './queue/datev-export-enqueue.adapter'
 import { DATEV_EXPORT_ENQUEUE } from './queue/datev-export-enqueue.token';
 import { PlanPriceMigrateEnqueueAdapter } from './queue/plan-price-migrate-enqueue.adapter';
 import { PLAN_PRICE_MIGRATE_ENQUEUE } from './queue/plan-price-migrate-enqueue.token';
+import { SpoolerEnqueueAdapter } from './queue/spooler-enqueue.adapter';
 import { VatIdValidationEnqueueAdapter } from './queue/vat-id-validation-enqueue.adapter';
 import { VAT_ID_VALIDATION_ENQUEUE } from './queue/vat-id-validation-enqueue.token';
 import { AddonMetersRepository } from './repositories/addon-meters.repository';
@@ -305,6 +315,7 @@ import { OssThresholdLedgersRepository } from './repositories/oss-threshold-ledg
 import { PaymentAttemptsRepository } from './repositories/payment-attempts.repository';
 import { PaymentRefundsRepository } from './repositories/payment-refunds.repository';
 import { PaymentWebhookEventsRepository } from './repositories/payment-webhook-events.repository';
+import { PostalLettersRepository } from './repositories/postal-letters.repository';
 import { PromotionRedemptionsRepository } from './repositories/promotion-redemptions.repository';
 import { PromotionsRepository } from './repositories/promotions.repository';
 import { ProviderPriceSnapshotsRepository } from './repositories/provider-price-snapshots.repository';
@@ -447,6 +458,22 @@ import { VatIdValidationJobHandler } from './services/vat-id-validation.job-hand
 import { VatIdValidationService } from './services/vat-id-validation.service';
 import { WithdrawalPolicyService } from './services/withdrawal-policy.service';
 import { WithdrawalRefundService } from './services/withdrawal-refund.service';
+import { AdminSpoolerController } from './spooler/admin-spooler.controller';
+import { DocumentDeliveryService } from './spooler/document-delivery.service';
+import { SpoolJobOutputEntity } from './spooler/entities/spool-job-output.entity';
+import { SpoolJobEntity } from './spooler/entities/spool-job.entity';
+import { DocumentSendSpoolHandler } from './spooler/handlers/document-send.spool-handler';
+import {
+  InventoryLabelsSpoolHandler,
+  InventoryMovementSpoolHandler,
+  ProjectTimeReportSpoolHandler,
+} from './spooler/handlers/printout.spool-handlers';
+import { PreferredLetterService } from './spooler/preferred-letter.service';
+import { SpoolJobsRepository } from './spooler/spool-jobs.repository';
+import { SpoolPrintoutService } from './spooler/spool-printout.service';
+import { SPOOLER_ENQUEUE } from './spooler/spooler-enqueue.token';
+import { SPOOLER_INIT } from './spooler/spooler-init.token';
+import { SpoolerService } from './spooler/spooler.service';
 import { CustomerTrustScoreService } from './trust-score/customer-trust-score.service';
 import { InternalBillingTrustScoreProvider } from './trust-score/internal-billing-trust-score.provider';
 import { TrustScoreProviderRegistry } from './trust-score/trust-score-provider.registry';
@@ -499,6 +526,9 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
       PaymentAttemptEntity,
       PaymentRefundEntity,
       PaymentWebhookEventEntity,
+      PostalLetterEntity,
+      SpoolJobEntity,
+      SpoolJobOutputEntity,
       BillingAuditLogEntity,
       OpenPositionEntity,
       ProviderPriceSnapshotEntity,
@@ -607,6 +637,8 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     AdminOverviewController,
     AdminActionCenterController,
     PaymentsWebhookController,
+    PostalWebhookController,
+    AdminSpoolerController,
     AdminUsageController,
     UsageController,
     CustomerProfilesController,
@@ -786,6 +818,69 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
       },
       inject: [PaymentProcessorFactory, StripePaymentProcessor, DynamicProviderLoaderService],
     },
+    PostalLettersRepository,
+    PostalProviderFactory,
+    PingenPostalProvider,
+    PostalLetterDocumentService,
+    PostalLetterService,
+    {
+      provide: POSTAL_PROVIDER_INIT,
+      useFactory: async (
+        factory: PostalProviderFactory,
+        pingen: PingenPostalProvider,
+        dynamicLoader: DynamicProviderLoaderService,
+      ) => {
+        factory.registerProvider(pingen);
+
+        await registerDynamicProviders<PostalProvider>({
+          envKey: 'DYNAMIC_POSTAL_PROVIDERS',
+          criticality: 'optional',
+          register: (provider) => factory.registerProvider(provider),
+          dynamicLoader,
+          loggerContext: 'PostalProviderFactory',
+        });
+
+        return true;
+      },
+      inject: [PostalProviderFactory, PingenPostalProvider, DynamicProviderLoaderService],
+    },
+    SpoolJobsRepository,
+    SpoolerService,
+    SpoolerEnqueueAdapter,
+    {
+      provide: SPOOLER_ENQUEUE,
+      useExisting: SpoolerEnqueueAdapter,
+    },
+    DocumentDeliveryService,
+    PreferredLetterService,
+    SpoolPrintoutService,
+    DocumentSendSpoolHandler,
+    InventoryLabelsSpoolHandler,
+    InventoryMovementSpoolHandler,
+    ProjectTimeReportSpoolHandler,
+    {
+      provide: SPOOLER_INIT,
+      useFactory: (
+        spooler: SpoolerService,
+        documentSend: DocumentSendSpoolHandler,
+        labels: InventoryLabelsSpoolHandler,
+        movement: InventoryMovementSpoolHandler,
+        timeReport: ProjectTimeReportSpoolHandler,
+      ) => {
+        for (const handler of [documentSend, labels, movement, timeReport]) {
+          spooler.registerHandler(handler);
+        }
+
+        return true;
+      },
+      inject: [
+        SpoolerService,
+        DocumentSendSpoolHandler,
+        InventoryLabelsSpoolHandler,
+        InventoryMovementSpoolHandler,
+        ProjectTimeReportSpoolHandler,
+      ],
+    },
     ProvisioningDispatchService,
     ProviderCatalogDispatchService,
     SubscriptionItemServerService,
@@ -939,6 +1034,7 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     BillingDocumentsActionSource,
     BillingPartnersActionSource,
     BillingOperationsActionSource,
+    BillingDeliveryActionSource,
     BillingSetupActionSource,
     BillingActionCenterRegistrar,
     TenantUserGuard,
@@ -1019,6 +1115,8 @@ import type { RegisteredContributorNestModule } from './utils/contributor-nest.t
     ProjectsRepository,
     DatevExportJobHandler,
     VatIdValidationJobHandler,
+    SpoolerService,
+    PostalLetterService,
     DatevExportConfigService,
     BillingContributorHostModule,
     SearchReindexJobHandler,

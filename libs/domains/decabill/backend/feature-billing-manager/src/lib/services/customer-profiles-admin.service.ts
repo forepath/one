@@ -1,6 +1,7 @@
 import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 
+import { DocumentDeliveryChannel } from '../constants/document-delivery.constants';
 import type {
   AdminCustomerProfileDetailDto,
   AdminCustomerProfileListItemDto,
@@ -318,6 +319,8 @@ export class CustomerProfilesAdminService {
       country: row.country,
       email: row.email,
       phone: row.phone,
+      preferredDeliveryChannel: row.preferredDeliveryChannel ?? DocumentDeliveryChannel.EMAIL,
+      postalDeliveryAvailable: this.customerProfilesService.isPostalDeliveryAvailable(),
       stripeCustomerId: row.stripeCustomerId,
       autoBillingEnabled: row.autoBillingEnabled ?? false,
       hasPaymentMethodOnFile: Boolean(row.defaultPaymentMethodExternalId),

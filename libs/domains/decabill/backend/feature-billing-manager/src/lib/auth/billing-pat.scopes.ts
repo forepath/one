@@ -14,7 +14,7 @@ export const BILLING_PAT_SCOPES = [
   'subscriptions:read',
   'subscriptions:write',
   'subscriptions:admin',
-  // Invoices; write: pay; admin: issue/void/manual invoices
+  // Invoices; write: pay; admin: issue/void/manual invoices, send (email, spooled) and mark as sent
   'invoices:read',
   'invoices:write',
   'invoices:admin',
@@ -30,9 +30,16 @@ export const BILLING_PAT_SCOPES = [
   'promotions:read',
   'promotions:write',
   'promotions:admin',
+  // Offers; admin: create, archive, send (email, spooled), mark as sent, record answers
   'offers:read',
   'offers:write',
   'offers:admin',
+  // Physical letters through the postal provider (costs money): required in addition to invoices:admin / offers:admin
+  // for the send-letter actions
+  'letters:admin',
+  // Spooler (background printouts and sends): list jobs, download their files, retry and cancel; also required in
+  // addition to the domain scope to spool printouts (labels, inventory documents, time reports)
+  'spooler:admin',
   // Projects; admin: project management, time reports, billing time
   'projects:read',
   'projects:admin',

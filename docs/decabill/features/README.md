@@ -17,6 +17,8 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 - **Service Types and Plans** Admin-managed catalog with provider schemas and pricing
 - **Billing Administration** Manual invoices, customer profiles, KPIs, bill-now, and admin File Explorer
 - **[Admin Overview](./admin-overview.md)** Dashboard of the key tenant figures, with other tenants and combined numbers for global-view tenants
+- **[Postal delivery](./postal-delivery.md)** Invoices, credit notes and offers sent as physical letters through Pingen (or a plugin provider), with letter status webhooks
+- **[Spooler](./spooler.md)** Background document sends and printouts with retries, retry / cancel and file downloads
 - **[Action Center](./action-center.md)** Live to-do sidebar for admins and managers: unsent documents, overdue items, incomplete profiles, bookings and setup suggestions, with silencing
 - **Customer Profiles** Self-service and admin billing metadata required for ordering
 - **VAT and tax treatment** EU place-of-supply modes, VIES VAT ID validation, OSS threshold, reverse charge
@@ -146,6 +148,28 @@ Issue, preview, download, void, and pay invoices. Open positions accumulate unti
 - Open positions and billing-day scheduler
 - Stripe checkout initiation and webhook reconciliation
 - Admin manual invoice draft, edit, and issue workflow
+- Delivery by email, as a physical letter or marked as sent outside Decabill
+
+### [Postal delivery](./postal-delivery.md)
+
+Send invoices, credit notes and offers as physical letters through a postal provider (built-in: Pingen).
+
+**Key Capabilities**:
+
+- Tenant-scoped provider credentials, delivery product and print options in the console settings
+- Cover page with the recipient address in the envelope window (DIN 5008 left or Swiss right window)
+- Signed status webhooks: letters the provider cannot process release the document; problems appear in the action center
+- PAT scope `letters:admin` required in addition to the document scope
+
+### [Spooler](./spooler.md)
+
+Admin document sends and printouts run as tracked background jobs instead of inside the console request.
+
+**Key Capabilities**:
+
+- Document sends (email and letter), inventory labels, inventory movement documents and project time reports
+- 3 attempts with exponential backoff; retry failed and cancel queued jobs on the Spooler page
+- Files kept for download until `BILLING_SPOOLER_RETENTION_DAYS`; PAT scope `spooler:admin`
 
 ### [Service Types and Plans](./service-types-and-plans.md)
 
