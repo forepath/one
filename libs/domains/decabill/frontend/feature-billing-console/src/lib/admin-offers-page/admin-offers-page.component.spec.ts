@@ -5,6 +5,7 @@ import {
   AdminBillingService,
   AdminOffersService,
   type AdminOfferListItem,
+  BillingCapabilitiesFacade,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { of, throwError } from 'rxjs';
 
@@ -69,6 +70,7 @@ describe('AdminOffersPageComponent (data list)', () => {
     );
     TestBed.configureTestingModule({
       providers: [
+        { provide: BillingCapabilitiesFacade, useValue: { postalDeliveryAvailable$: of(false) } },
         DatePipe,
         DecimalPipe,
         { provide: AdminOffersFacade, useValue: facade },
@@ -147,7 +149,7 @@ describe('AdminOffersPageComponent (data list)', () => {
     component.archiveNotifyOnExpiry = false;
     await component.confirmArchive();
 
-    expect(facade['archiveOffer']).toHaveBeenCalledWith('d1', { notifyCustomer: true, notifyOnExpiry: false });
+    expect(facade['archiveOffer']).toHaveBeenCalledWith('d1', { notifyCustomer: true, notifyOnExpiry: false }, false);
     expect(service.archive).not.toHaveBeenCalled();
   });
 
@@ -173,8 +175,23 @@ describe('AdminOffersPageComponent (data list)', () => {
     expect(facade['sendOffer']).not.toHaveBeenCalled();
 
     component.confirmSend();
-    expect(facade['sendOffer']).toHaveBeenCalledWith('p2');
+    expect(facade['sendOffer']).toHaveBeenCalledWith('p2', 'email');
     expect(component.pendingSend()).toBeNull();
+
+    // Letter and mark as sent (delivered outside Decabill).
+    Object.defineProperty(component, 'postalAvailable', { value: () => true });
+    component.onRowAction(unsent, 'send');
+    component.sendChannel.set('letter');
+    component.confirmSend();
+    expect(facade['sendOffer']).toHaveBeenLastCalledWith('p2', 'letter');
+
+    expect(ids(unsent)).toContain('mark-sent');
+    expect(ids(sent)).not.toContain('mark-sent');
+    component.onRowAction(unsent, 'mark-sent');
+    expect(component.pendingMarkSent()?.id).toBe('p2');
+    component.markSentAt.set('2026-11-20');
+    component.confirmMarkSent();
+    expect(facade['markOfferSent']).toHaveBeenCalledWith('p2', { sentAt: '2026-11-20' });
   });
 
   it('offers Accept / Decline exactly where the server allows it (sent or not), after a confirm', () => {

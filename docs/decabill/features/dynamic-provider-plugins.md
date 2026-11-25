@@ -10,14 +10,15 @@ This page covers **Decabill billing manager** registries only.
 
 ## Registries
 
-| Env var                             | Criticality | Registers                                                                                                                                                                       |
-| ----------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DYNAMIC_PAYMENT_PROCESSORS`        | critical    | Payment processor implementations                                                                                                                                               |
-| `DYNAMIC_BILLING_PROVIDER_METADATA` | optional    | Admin UI provider metadata (`providerMetadata` export)                                                                                                                          |
-| `DYNAMIC_BILLING_PROVIDER_MODULES`  | optional    | Runtime provider modules (`collectMeters`, optional `provision` / lifecycle / catalog hooks, `jobs`, `migrations`, optional `nestModule`) — distinct from metadata-only plugins |
-| `DYNAMIC_ADDON_MODULES`             | optional    | Addon lifecycle modules (`provision` / `teardown` / optional `collectMeters`, `configFields`, `meters`, `serviceTabs`, `jobs`, `migrations`, `nestModule`)                      |
-| `DYNAMIC_INTEGRATED_STACK_MODULES`  | optional    | Integrated stack modules (`buildUserData` / `buildUpdateCommand` / `serviceTabs` / `jobs` / `migrations` / optional `nestModule`)                                               |
-| `DYNAMIC_CLOUD_INIT_MODULES`        | optional    | CloudInit config code modules keyed by template `key` (`serviceTabs`, `jobs`, `migrations`, optional `nestModule`)                                                              |
+| Env var                             | Criticality | Registers                                                                                                                                                                                                                                    |
+| ----------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DYNAMIC_PAYMENT_PROCESSORS`        | critical    | Payment processor implementations                                                                                                                                                                                                            |
+| `DYNAMIC_BILLING_PROVIDER_METADATA` | optional    | Admin UI provider metadata (`providerMetadata` export)                                                                                                                                                                                       |
+| `DYNAMIC_BILLING_PROVIDER_MODULES`  | optional    | Runtime provider modules (`collectMeters`, optional `provision` / lifecycle / catalog hooks, `jobs`, `migrations`, optional `nestModule`) — distinct from metadata-only plugins                                                              |
+| `DYNAMIC_ADDON_MODULES`             | optional    | Addon lifecycle modules (`provision` / `teardown` / optional `collectMeters`, `configFields`, `meters`, `serviceTabs`, `jobs`, `migrations`, `nestModule`)                                                                                   |
+| `DYNAMIC_INTEGRATED_STACK_MODULES`  | optional    | Integrated stack modules (`buildUserData` / `buildUpdateCommand` / `serviceTabs` / `jobs` / `migrations` / optional `nestModule`)                                                                                                            |
+| `DYNAMIC_CLOUD_INIT_MODULES`        | optional    | CloudInit config code modules keyed by template `key` (`serviceTabs`, `jobs`, `migrations`, optional `nestModule`)                                                                                                                           |
+| `DYNAMIC_POSTAL_PROVIDERS`          | optional    | Postal providers (`PostalProvider`: `sendLetter`, webhook signature and event mapping) next to the built-in Pingen; selected per tenant with `BILLING_DEFAULT_POSTAL_PROVIDER`, see [Postal delivery](./postal-delivery.md#custom-providers) |
 
 Provider metadata capability flags (all **fail closed** when omitted, treated as `false`):
 
@@ -165,6 +166,17 @@ Processors implement the `PaymentProcessor` interface:
 - When auto-payment is supported, implement `createSetupSession` and `chargeOffSession`
 
 Built-in: `stripe` via `StripePaymentProcessor`. See [Payment Processing](./payment-processing.md) and [Auto-Billing](./auto-billing.md).
+
+## Postal Providers
+
+Postal providers implement the `PostalProvider` interface (exported from `@forepath/decabill/backend`) and are registered with `PostalProviderFactory` at module bootstrap (`DYNAMIC_POSTAL_PROVIDERS`, optional: a load error never blocks startup):
+
+- Expose a unique `getType()` (lower case, `[a-z0-9_-]`, also the webhook path segment) matching `BILLING_DEFAULT_POSTAL_PROVIDER`, and a `getDisplayName()`
+- `isConfigured()` and every other call read their settings per call inside the tenant context, so each tenant can use its own provider account
+- `sendLetter()` receives the print-ready PDF (cover page included) and returns the provider letter id; throw `PostalProviderError` with `retryable` to tell transient failures (retried by the spooler) from rejections
+- Webhooks arrive at `POST /api/webhooks/postal/{type}`: `extractWebhookLetterId()` resolves the letter (and its tenant) from the unverified body, `verifyWebhookSignature()` checks the signature with that tenant's key, `parseWebhookEvent()` maps the verified body onto the letter lifecycle
+
+Built-in: `pingen` via `PingenPostalProvider`. See [Postal delivery](./postal-delivery.md).
 
 ## Billing Provider Metadata
 

@@ -19,6 +19,7 @@ import type {
   UpdateAdminOfferDto,
 } from '../types/offers.types';
 import type { AdminOfferListItem } from '../types/offers.types';
+import type { MarkDocumentSentDto } from '../types/spooler.types';
 
 @Injectable({
   providedIn: 'root',
@@ -57,9 +58,19 @@ export class AdminOffersService {
     return this.http.post<AdminOfferDetailResponse>(`${this.apiUrl}/admin/billing/offers/${id}/archive`, dto ?? {});
   }
 
-  /** Sends an offer that was archived without notification. */
+  /** Emails an offer that was archived without notification (spooled; counts as sent right away). */
   send(id: string): Observable<AdminOfferDetailResponse> {
     return this.http.post<AdminOfferDetailResponse>(`${this.apiUrl}/admin/billing/offers/${id}/send`, {});
+  }
+
+  /** Posts an offer archived without notification as a physical letter (spooled, postal provider). */
+  sendLetter(id: string): Observable<AdminOfferDetailResponse> {
+    return this.http.post<AdminOfferDetailResponse>(`${this.apiUrl}/admin/billing/offers/${id}/send-letter`, {});
+  }
+
+  /** Records that an offer was sent outside Decabill (nothing is sent). */
+  markSent(id: string, dto: MarkDocumentSentDto = {}): Observable<AdminOfferDetailResponse> {
+    return this.http.post<AdminOfferDetailResponse>(`${this.apiUrl}/admin/billing/offers/${id}/mark-sent`, dto);
   }
 
   revoke(id: string, dto?: RevokeAdminOfferDto): Observable<AdminOfferDetailResponse> {

@@ -68,6 +68,7 @@ import {
   adminInvoiceManagerRefund$,
   adminInvoiceManagerVoid$,
   adminInvoiceManagerSend$,
+  adminInvoiceManagerMarkSent$,
   adminInvoiceManagerSendCreditNote$,
   adminInvoiceManagerWriteOff$,
   createAdminCustomerProfile$,
@@ -287,6 +288,7 @@ import {
   deleteAdminOffer$,
   archiveAdminOffer$,
   sendAdminOffer$,
+  markAdminOfferSent$,
   acceptAdminOffer$,
   declineAdminOffer$,
   revokeAdminOffer$,
@@ -357,6 +359,7 @@ import { AdminOffersPageComponent } from './admin-offers-page/admin-offers-page.
 import { AdminOverviewPageComponent } from './admin-overview-page/admin-overview-page.component';
 import { AdminProjectsPageComponent } from './admin-projects-page/admin-projects-page.component';
 import { AdminPromotionsPageComponent } from './admin-promotions-page/admin-promotions-page.component';
+import { AdminSpoolerPageComponent } from './admin-spooler-page/admin-spooler-page.component';
 import { AdminSubscriptionsPageComponent } from './admin-subscriptions-page/admin-subscriptions-page.component';
 import { AdminSupplierProfilesPageComponent } from './admin-supplier-profiles-page/admin-supplier-profiles-page.component';
 import { CloudInitConfigsPageComponent } from './cloud-init-configs-page/cloud-init-configs-page.component';
@@ -758,6 +761,12 @@ export const billingConsoleRoutes: Route[] = [
             component: AdminFileManagerPageComponent,
             title: () => buildPageTitle($localize`:@@featureContainer-adminFileExplorerPage:File explorer`),
           },
+          {
+            path: 'spooler',
+            canActivate: [authGuard, billingAdminGuard],
+            component: AdminSpoolerPageComponent,
+            title: () => buildPageTitle($localize`:@@featureContainer-adminSpoolerPage:Spooler`),
+          },
           ...createSettingsAdminRoutes([authGuard, adminOnlyGuard], 'settings'),
           ...contributorRoutes.admin,
         ],
@@ -949,6 +958,7 @@ export const billingConsoleRoutes: Route[] = [
         deleteManualInvoice$,
         adminInvoiceManagerVoid$,
         adminInvoiceManagerSend$,
+        adminInvoiceManagerMarkSent$,
         adminInvoiceManagerSendCreditNote$,
         adminInvoiceManagerMarkPaid$,
         adminInvoiceManagerMarkUnpaid$,
@@ -1007,6 +1017,7 @@ export const billingConsoleRoutes: Route[] = [
         deleteAdminOffer$,
         archiveAdminOffer$,
         sendAdminOffer$,
+        markAdminOfferSent$,
         acceptAdminOffer$,
         declineAdminOffer$,
         revokeAdminOffer$,

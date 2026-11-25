@@ -15,3 +15,8 @@ export const VatIdValidationJobName = {
 } as const;
 
 export { PlanPriceMigrateJobName } from './plan-price-migrate.payload';
+
+export const SpoolerJobName = {
+  COORDINATOR: 'spooler.coordinator',
+  UNIT: 'spooler.unit',
+} as const;

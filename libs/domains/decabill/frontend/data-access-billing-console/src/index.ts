@@ -10,6 +10,7 @@ export * from './lib/types/config-change.types';
 export * from './lib/types/offers.types';
 export * from './lib/types/document-terms.types';
 export * from './lib/types/admin-overview.types';
+export * from './lib/types/spooler.types';
 
 // Utils
 export * from './lib/constants/list-paging.constants';
@@ -336,3 +337,6 @@ export * from './lib/state/accounting/accounting.effects';
 export * from './lib/state/accounting/accounting.facade';
 export * from './lib/state/accounting/accounting.reducer';
 export * from './lib/state/accounting/accounting.selectors';
+
+// Admin Spooler
+export * from './lib/services/admin-spooler.service';

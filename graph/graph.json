@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-24T09:35:35.928Z",
+  "generatedAt": "2026-11-25T16:09:19.597Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -2974,6 +2974,14 @@
       }
     },
     {
+      "id": "package:pingen2-sdk-js",
+      "type": "package",
+      "attrs": {
+        "name": "pingen2-sdk-js",
+        "version": "0.3.0"
+      }
+    },
+    {
       "id": "package:playwright",
       "type": "package",
       "attrs": {
@@ -3395,6 +3403,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-promotions.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-frontend-data-access-billing-console"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-spooler.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-spooler.service.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-frontend-data-access-billing-console"
       }
@@ -8919,6 +8936,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/postal-webhook.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/postal-webhook.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/pricing.controller.ts",
       "type": "controller",
       "attrs": {
@@ -9882,6 +9908,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/postal-letter.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/postal-letter.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/promotion-redemption.entity.ts",
       "type": "entity",
       "attrs": {
@@ -10728,6 +10763,33 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter-document.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter-document.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/providers/pingen-postal.provider.ts",
+      "type": "provider",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/providers/pingen-postal.provider.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/admin-projects.controller.ts",
       "type": "controller",
       "attrs": {
@@ -11299,6 +11361,15 @@
       "type": "repository",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/payment-webhook-events.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/postal-letters.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/postal-letters.repository.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -12559,6 +12630,87 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/withdrawal-refund.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/admin-spooler.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/admin-spooler.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/document-delivery.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/document-delivery.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/entities/spool-job-output.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/entities/spool-job-output.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/entities/spool-job.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/entities/spool-job.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/preferred-letter.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/preferred-letter.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-jobs.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-jobs.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-printout.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-printout.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.service.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -16502,6 +16654,19 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/postal-cover-page",
+      "type": "email",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/postal-cover-page",
+        "languageOrKind": "template",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "templateName": "postal-cover-page",
+        "memberFiles": [
+          "postal-cover-page.template.html"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/price-change",
       "type": "email",
       "attrs": {
@@ -17712,6 +17877,14 @@
       }
     },
     {
+      "id": "file:docs/decabill/features/postal-delivery.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/postal-delivery.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/decabill/features/project-board.md",
       "type": "doc",
       "attrs": {
@@ -17780,6 +17953,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/decabill/features/service-types-and-plans.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/features/spooler.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/spooler.md",
         "languageOrKind": "md"
       }
     },
@@ -23757,6 +23938,17 @@
       }
     },
     {
+      "id": "api:HTTP:POST:/webhooks/postal/{provider}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/webhooks/postal/{provider}",
+        "operationId": "postalProviderWebhook",
+        "summary": "Postal provider webhook (letter status)",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/usage/summary/{subscriptionId}",
       "type": "endpoint",
       "attrs": {
@@ -24368,7 +24560,29 @@
         "method": "POST",
         "pathOrChannel": "/admin/billing/offers/{id}/send",
         "operationId": "sendAdminOffer",
-        "summary": "Send an archived offer that was not sent yet (admin)",
+        "summary": "Email an archived offer that was not sent yet (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/offers/{id}/send-letter",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/offers/{id}/send-letter",
+        "operationId": "sendAdminOfferLetter",
+        "summary": "Send an archived offer as a physical letter (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/offers/{id}/mark-sent",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/offers/{id}/mark-sent",
+        "operationId": "markAdminOfferSent",
+        "summary": "Mark an archived offer as sent outside Decabill (admin)",
         "specKind": "openapi"
       }
     },
@@ -24626,6 +24840,50 @@
       }
     },
     {
+      "id": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-letter",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/invoices/{invoiceRefId}/send-letter",
+        "operationId": "adminSendInvoiceLetter",
+        "summary": "Send an invoice issued without notification as a physical letter (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note-letter",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/invoices/{invoiceRefId}/send-credit-note-letter",
+        "operationId": "adminSendInvoiceCreditNoteLetter",
+        "summary": "Send the credit note of an invoice voided without notification as a physical letter (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-sent",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/invoices/{invoiceRefId}/mark-sent",
+        "operationId": "adminMarkInvoiceSent",
+        "summary": "Mark an invoice issued without notification as sent outside Decabill (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-credit-note-sent",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/invoices/{invoiceRefId}/mark-credit-note-sent",
+        "operationId": "adminMarkInvoiceCreditNoteSent",
+        "summary": "Mark the credit note of a voided invoice as sent outside Decabill (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-paid",
       "type": "endpoint",
       "attrs": {
@@ -24787,6 +25045,61 @@
         "pathOrChannel": "/admin/billing/overview",
         "operationId": "getAdminBillingOverview",
         "summary": "Key figures of a tenant or all tenants for the admin overview (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/spooler/jobs",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/spooler/jobs",
+        "operationId": "listSpoolJobs",
+        "summary": "List spool jobs of the tenant (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/spooler/jobs/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/spooler/jobs/{id}",
+        "operationId": "getSpoolJob",
+        "summary": "Get a spool job (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/spooler/jobs/{id}/file",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/spooler/jobs/{id}/file",
+        "operationId": "downloadSpoolJobFile",
+        "summary": "Download the file of a completed printout job (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/spooler/jobs/{id}/retry",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/spooler/jobs/{id}/retry",
+        "operationId": "retrySpoolJob",
+        "summary": "Retry a failed spool job (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/spooler/jobs/{id}/cancel",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/spooler/jobs/{id}/cancel",
+        "operationId": "cancelSpoolJob",
+        "summary": "Cancel a queued spool job (admin)",
         "specKind": "openapi"
       }
     },
@@ -25073,6 +25386,17 @@
         "pathOrChannel": "/admin/billing/projects/{projectId}/time-report",
         "operationId": "generateProjectTimeReport",
         "summary": "Generate live time report PDF (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/projects/{projectId}/time-report/spool",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/projects/{projectId}/time-report/spool",
+        "operationId": "spoolProjectTimeReport",
+        "summary": "Spool a time report PDF (background printout, admin only)",
         "specKind": "openapi"
       }
     },
@@ -26001,6 +26325,17 @@
       }
     },
     {
+      "id": "api:HTTP:POST:/admin/billing/inventory/movements/{id}/pdf/spool",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/movements/{id}/pdf/spool",
+        "operationId": "spoolInventoryMovementPdf",
+        "summary": "Spool the movement document (background printout)",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
       "type": "endpoint",
       "attrs": {
@@ -26118,6 +26453,17 @@
         "pathOrChannel": "/admin/billing/inventory/labels",
         "operationId": "printInventoryLabels",
         "summary": "Print labels (article number, EAN, property sticker) as one PDF",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/inventory/labels/spool",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/inventory/labels/spool",
+        "operationId": "spoolInventoryLabels",
+        "summary": "Spool a label print (background printout)",
         "specKind": "openapi"
       }
     },
@@ -38251,6 +38597,16 @@
       }
     },
     {
+      "id": "concept:decabill-preferred-delivery",
+      "type": "concept",
+      "attrs": {
+        "title": "Preferred delivery",
+        "docPath": "docs/decabill/features/customer-profiles.md",
+        "sectionAnchor": "preferred-delivery",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-self-service",
       "type": "concept",
       "attrs": {
@@ -38777,6 +39133,16 @@
         "title": "Payment Processors",
         "docPath": "docs/decabill/features/dynamic-provider-plugins.md",
         "sectionAnchor": "payment-processors",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-postal-providers",
+      "type": "concept",
+      "attrs": {
+        "title": "Postal Providers",
+        "docPath": "docs/decabill/features/dynamic-provider-plugins.md",
+        "sectionAnchor": "postal-providers",
         "domain": "decabill"
       }
     },
@@ -39511,6 +39877,86 @@
       }
     },
     {
+      "id": "concept:decabill-postal-delivery",
+      "type": "concept",
+      "attrs": {
+        "title": "Postal delivery",
+        "docPath": "docs/decabill/features/postal-delivery.md",
+        "sectionAnchor": "postal-delivery",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-requirements-per-letter",
+      "type": "concept",
+      "attrs": {
+        "title": "Requirements per letter",
+        "docPath": "docs/decabill/features/postal-delivery.md",
+        "sectionAnchor": "requirements-per-letter",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-the-letter",
+      "type": "concept",
+      "attrs": {
+        "title": "The letter",
+        "docPath": "docs/decabill/features/postal-delivery.md",
+        "sectionAnchor": "the-letter",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-letter-lifecycle",
+      "type": "concept",
+      "attrs": {
+        "title": "Letter lifecycle",
+        "docPath": "docs/decabill/features/postal-delivery.md",
+        "sectionAnchor": "letter-lifecycle",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-pingen-setup",
+      "type": "concept",
+      "attrs": {
+        "title": "Pingen setup",
+        "docPath": "docs/decabill/features/postal-delivery.md",
+        "sectionAnchor": "pingen-setup",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-customer-preference",
+      "type": "concept",
+      "attrs": {
+        "title": "Customer preference",
+        "docPath": "docs/decabill/features/postal-delivery.md",
+        "sectionAnchor": "customer-preference",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-in-the-console",
+      "type": "concept",
+      "attrs": {
+        "title": "In the console",
+        "docPath": "docs/decabill/features/postal-delivery.md",
+        "sectionAnchor": "in-the-console",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-custom-providers",
+      "type": "concept",
+      "attrs": {
+        "title": "Custom providers",
+        "docPath": "docs/decabill/features/postal-delivery.md",
+        "sectionAnchor": "custom-providers",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-project-board",
       "type": "concept",
       "attrs": {
@@ -40097,6 +40543,66 @@
         "title": "Availability and Pricing",
         "docPath": "docs/decabill/features/service-types-and-plans.md",
         "sectionAnchor": "availability-and-pricing",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-spooler",
+      "type": "concept",
+      "attrs": {
+        "title": "Spooler",
+        "docPath": "docs/decabill/features/spooler.md",
+        "sectionAnchor": "spooler",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-what-is-spooled",
+      "type": "concept",
+      "attrs": {
+        "title": "What is spooled",
+        "docPath": "docs/decabill/features/spooler.md",
+        "sectionAnchor": "what-is-spooled",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-spooling-endpoints",
+      "type": "concept",
+      "attrs": {
+        "title": "Spooling endpoints",
+        "docPath": "docs/decabill/features/spooler.md",
+        "sectionAnchor": "spooling-endpoints",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-job-lifecycle",
+      "type": "concept",
+      "attrs": {
+        "title": "Job lifecycle",
+        "docPath": "docs/decabill/features/spooler.md",
+        "sectionAnchor": "job-lifecycle",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-coordinator-and-retention",
+      "type": "concept",
+      "attrs": {
+        "title": "Coordinator and retention",
+        "docPath": "docs/decabill/features/spooler.md",
+        "sectionAnchor": "coordinator-and-retention",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-spooler-page",
+      "type": "concept",
+      "attrs": {
+        "title": "Spooler page",
+        "docPath": "docs/decabill/features/spooler.md",
+        "sectionAnchor": "spooler-page",
         "domain": "decabill"
       }
     },
@@ -44144,6 +44650,11 @@
     },
     {
       "from": "project:decabill-backend-billing-manager",
+      "to": "package:pingen2-sdk-js",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-backend-billing-manager",
       "to": "package:playwright",
       "type": "depends_on"
     },
@@ -45545,6 +46056,11 @@
     {
       "from": "project:decabill-frontend-data-access-billing-console",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-promotions.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-frontend-data-access-billing-console",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-spooler.service.ts",
       "type": "contains"
     },
     {
@@ -48269,6 +48785,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/postal-webhook.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/pricing.controller.ts",
       "type": "contains"
     },
@@ -48804,6 +49325,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/postal-letter.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/promotion-redemption.entity.ts",
       "type": "contains"
     },
@@ -49274,6 +49800,21 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter-document.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/providers/pingen-postal.provider.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/admin-projects.controller.ts",
       "type": "contains"
     },
@@ -49590,6 +50131,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/payment-webhook-events.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/postal-letters.repository.ts",
       "type": "contains"
     },
     {
@@ -50290,6 +50836,51 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/withdrawal-refund.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/admin-spooler.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/document-delivery.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/entities/spool-job-output.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/entities/spool-job.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/preferred-letter.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-jobs.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-printout.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.service.ts",
       "type": "contains"
     },
     {
@@ -52405,6 +52996,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/payment-succeeded",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/postal-cover-page",
       "type": "contains"
     },
     {
@@ -55479,6 +56075,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/webhooks/postal/{provider}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/usage/summary/{subscriptionId}",
       "type": "contains"
     },
@@ -55759,6 +56360,16 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send-letter",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/mark-sent",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
       "type": "contains"
     },
@@ -55874,6 +56485,26 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-letter",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note-letter",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-sent",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-credit-note-sent",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-paid",
       "type": "contains"
     },
@@ -55945,6 +56576,31 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/admin/billing/overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs/{id}/file",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/spooler/jobs/{id}/retry",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/spooler/jobs/{id}/cancel",
       "type": "contains"
     },
     {
@@ -56075,6 +56731,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/admin/billing/projects/{projectId}/time-report",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}/time-report/spool",
       "type": "contains"
     },
     {
@@ -56504,6 +57165,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/{id}/pdf/spool",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
       "type": "contains"
     },
@@ -56555,6 +57221,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/admin/billing/inventory/labels",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels/spool",
       "type": "contains"
     },
     {
@@ -64159,6 +64830,11 @@
     },
     {
       "from": "file:docs/decabill/features/customer-profiles.md",
+      "to": "concept:decabill-preferred-delivery",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/customer-profiles.md",
       "to": "concept:decabill-self-service",
       "type": "contains"
     },
@@ -64465,6 +65141,11 @@
     {
       "from": "file:docs/decabill/features/dynamic-provider-plugins.md",
       "to": "concept:decabill-payment-processors",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/dynamic-provider-plugins.md",
+      "to": "concept:decabill-postal-providers",
       "type": "contains"
     },
     {
@@ -64973,6 +65654,56 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/decabill/features/postal-delivery.md",
+      "to": "concept:decabill-postal-delivery",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/postal-delivery.md",
+      "to": "concept:decabill-overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/postal-delivery.md",
+      "to": "concept:decabill-requirements-per-letter",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/postal-delivery.md",
+      "to": "concept:decabill-the-letter",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/postal-delivery.md",
+      "to": "concept:decabill-letter-lifecycle",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/postal-delivery.md",
+      "to": "concept:decabill-pingen-setup",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/postal-delivery.md",
+      "to": "concept:decabill-customer-preference",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/postal-delivery.md",
+      "to": "concept:decabill-in-the-console",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/postal-delivery.md",
+      "to": "concept:decabill-custom-providers",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/postal-delivery.md",
+      "to": "concept:decabill-related-documentation",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/decabill/features/project-board.md",
       "to": "concept:decabill-project-board",
       "type": "contains"
@@ -65414,6 +66145,46 @@
     },
     {
       "from": "file:docs/decabill/features/service-types-and-plans.md",
+      "to": "concept:decabill-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/spooler.md",
+      "to": "concept:decabill-spooler",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/spooler.md",
+      "to": "concept:decabill-what-is-spooled",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/spooler.md",
+      "to": "concept:decabill-spooling-endpoints",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/spooler.md",
+      "to": "concept:decabill-job-lifecycle",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/spooler.md",
+      "to": "concept:decabill-coordinator-and-retention",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/spooler.md",
+      "to": "concept:decabill-spooler-page",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/spooler.md",
+      "to": "concept:decabill-api",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/spooler.md",
       "to": "concept:decabill-related-documentation",
       "type": "contains"
     },
@@ -70944,6 +71715,26 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send-letter",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send-letter",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/mark-sent",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/mark-sent",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
       "type": "implements"
     },
@@ -71170,6 +71961,46 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-letter",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-letter",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note-letter",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note-letter",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-sent",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-sent",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-credit-note-sent",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-credit-note-sent",
       "type": "implements"
     },
     {
@@ -71305,6 +72136,56 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:GET:/admin/billing/overview",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs/{id}/file",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs/{id}/file",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/spooler/jobs/{id}/retry",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/spooler/jobs/{id}/retry",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/spooler/jobs/{id}/cancel",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/spooler/jobs/{id}/cancel",
       "type": "implements"
     },
     {
@@ -71514,6 +72395,16 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}/time-report/spool",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}/time-report/spool",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/webhooks/event-types",
       "type": "implements"
     },
@@ -72144,6 +73035,16 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/{id}/pdf/spool",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/{id}/pdf/spool",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
       "type": "implements"
     },
@@ -72250,6 +73151,16 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:POST:/admin/billing/inventory/labels",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels/spool",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels/spool",
       "type": "implements"
     },
     {
@@ -73149,6 +74060,16 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send-letter",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/mark-sent",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
       "type": "implements"
     },
@@ -73264,6 +74185,26 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-letter",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note-letter",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-sent",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-credit-note-sent",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-paid",
       "type": "implements"
     },
@@ -73335,6 +74276,31 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/overview",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs/{id}/file",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/spooler/jobs/{id}/retry",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/spooler/jobs/{id}/cancel",
       "type": "implements"
     },
     {
@@ -73445,6 +74411,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/projects/{projectId}/time-report",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}/time-report/spool",
       "type": "implements"
     },
     {
@@ -73764,6 +74735,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/{id}/pdf/spool",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
       "type": "implements"
     },
@@ -73815,6 +74791,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/inventory/labels",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels/spool",
       "type": "implements"
     },
     {
@@ -74673,6 +75654,16 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/postal-webhook.controller.ts",
+      "to": "api:HTTP:POST:/webhooks/postal/{provider}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/webhooks/postal/{provider}",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/pricing.controller.ts",
       "to": "api:HTTP:POST:/pricing/preview",
       "type": "implements"
@@ -75419,6 +76410,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/{id}/pdf/spool",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
       "type": "implements"
     },
@@ -75473,6 +76469,11 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-articles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels/spool",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-labels.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/inventory/labels/owner",
       "type": "implements"
@@ -75480,6 +76481,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-labels.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/inventory/labels",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-labels.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels/spool",
       "type": "implements"
     },
     {
@@ -75639,6 +76645,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/{id}/pdf/spool",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/inventory/withdrawal-requests",
       "type": "implements"
     },
@@ -75693,6 +76704,11 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-locations.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels/spool",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/inventory/movements",
       "type": "implements"
@@ -75720,6 +76736,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}/pdf",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/{id}/pdf/spool",
       "type": "implements"
     },
     {
@@ -75785,6 +76806,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/offers/{id}/send",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send-letter",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/mark-sent",
       "type": "implements"
     },
     {
@@ -75928,6 +76959,11 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/admin-projects.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}/time-report/spool",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/projects.controller.ts",
       "to": "api:HTTP:GET:/projects",
       "type": "implements"
@@ -76175,6 +77211,31 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:DELETE:/projects/{projectId}/time-entries/{timeEntryId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/admin-spooler.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/admin-spooler.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/admin-spooler.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/spooler/jobs/{id}/file",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/admin-spooler.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/spooler/jobs/{id}/retry",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/admin-spooler.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/spooler/jobs/{id}/cancel",
       "type": "implements"
     },
     {
@@ -81178,6 +82239,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-auto-billing.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/auto-billing.service.ts",
       "type": "injects"
@@ -81365,6 +82431,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/payments-webhook.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/payment-orchestration.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/postal-webhook.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
       "type": "injects"
     },
     {
@@ -81643,6 +82714,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-labels.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-printout.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-lendings.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-lendings.service.ts",
       "type": "injects"
@@ -81655,6 +82731,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/services/inventory-movements.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/controllers/admin-inventory-movements.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-printout.service.ts",
       "type": "injects"
     },
     {
@@ -82063,6 +83144,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/preferred-letter.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-expiration.job-handler.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
       "type": "injects"
@@ -82268,6 +83354,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/document-delivery.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
       "type": "injects"
@@ -82353,8 +83444,58 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter-document.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-pdf-html-renderer.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter-document.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-document-branding-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter-document.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/postal-letters.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/customer-profiles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/invoices.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-issuer-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/admin-projects.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/projects-admin.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/admin-projects.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-printout.service.ts",
       "type": "injects"
     },
     {
@@ -82455,6 +83596,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-billing.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-time-report.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-billing.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/preferred-letter.service.ts",
       "type": "injects"
     },
     {
@@ -83473,6 +84619,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/document-delivery.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-auto-payment.job-handler.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/auto-billing.service.ts",
       "type": "injects"
@@ -83645,6 +84796,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-issuance.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/e-invoice-format-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-issuance.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/preferred-letter.service.ts",
       "type": "injects"
     },
     {
@@ -83835,6 +84991,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/document-settlement.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/preferred-letter.service.ts",
       "type": "injects"
     },
     {
@@ -85180,6 +86341,81 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/withdrawal-refund.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/oss-threshold.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/admin-spooler.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/document-delivery.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/document-delivery.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/invoices.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/document-delivery.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/document-delivery.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/document-delivery.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/document-delivery.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/preferred-letter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/customer-profiles.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/preferred-letter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/preferred-letter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-printout.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-printout.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/inventory/repositories/inventory-movements.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-printout.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/repositories/projects.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-jobs.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
       "type": "injects"
     },
     {
@@ -86668,6 +87904,11 @@
       "type": "injects"
     },
     {
+      "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/communication.module.ts",
       "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-contact-requests.controller.ts",
       "type": "provides"
@@ -87664,6 +88905,16 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/postal-webhook.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/admin-spooler.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-usage.controller.ts",
       "type": "provides"
     },
@@ -88225,6 +89476,51 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-auto-payment.job-handler.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/postal-letters.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/providers/pingen-postal.provider.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter-document.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/postal-providers/postal-letter.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-jobs.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spooler.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/document-delivery.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/preferred-letter.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/spooler/spool-printout.service.ts",
       "type": "provides"
     },
     {
@@ -89719,6 +91015,26 @@
     },
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-letter",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note-letter",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-sent",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-credit-note-sent",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-paid",
       "type": "calls"
     },
@@ -90029,6 +91345,16 @@
     },
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send-letter",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/mark-sent",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
       "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
       "type": "calls"
     },
@@ -90094,7 +91420,7 @@
     },
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-projects.service.ts",
-      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}/time-report",
+      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}/time-report/spool",
       "type": "calls"
     },
     {
@@ -96973,6 +98299,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-preferred-delivery",
+      "to": "api:HTTP:GET:/customer-profile",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-preferred-delivery",
+      "to": "api:HTTP:POST:/customer-profile",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-self-service",
       "to": "api:HTTP:GET:/customer-profile",
       "type": "documents"
@@ -97368,6 +98704,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-postal-providers",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-billing-provider-metadata",
       "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
@@ -97494,12 +98835,7 @@
     },
     {
       "from": "concept:decabill-admin-invoice-operations",
-      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-invoice-operations",
-      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note",
+      "to": "api:HTTP:GET:/admin/billing/capabilities",
       "type": "documents"
     },
     {
@@ -97688,6 +99024,46 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-lifecycle",
+      "to": "api:HTTP:GET:/admin/billing/offers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-lifecycle",
+      "to": "api:HTTP:POST:/admin/billing/offers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-lifecycle",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-lifecycle",
+      "to": "api:HTTP:PUT:/admin/billing/offers/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-lifecycle",
+      "to": "api:HTTP:DELETE:/admin/billing/offers/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-lifecycle",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-lifecycle",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send-letter",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-lifecycle",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/mark-sent",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-line-types",
       "to": "api:HTTP:GET:/projects",
       "type": "documents"
@@ -97770,6 +99146,86 @@
     {
       "from": "concept:decabill-admin-manual-payment-status",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-unpaid",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:GET:/admin/billing/invoices",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:GET:/admin/billing/invoices/{invoiceRefId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:DELETE:/admin/billing/invoices/{invoiceRefId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:GET:/admin/billing/offers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:POST:/admin/billing/offers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:PUT:/admin/billing/offers/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:DELETE:/admin/billing/offers/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send-letter",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-letter",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note-letter",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-pingen-setup",
+      "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
     },
     {
@@ -98700,6 +100156,216 @@
     {
       "from": "concept:decabill-availability-and-pricing",
       "to": "api:HTTP:POST:/pricing/preview",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-what-is-spooled",
+      "to": "api:HTTP:GET:/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-what-is-spooled",
+      "to": "api:HTTP:GET:/projects/{projectId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-what-is-spooled",
+      "to": "api:HTTP:GET:/admin/billing/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-what-is-spooled",
+      "to": "api:HTTP:POST:/admin/billing/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-what-is-spooled",
+      "to": "api:HTTP:GET:/admin/billing/projects/{projectId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-what-is-spooled",
+      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-what-is-spooled",
+      "to": "api:HTTP:DELETE:/admin/billing/projects/{projectId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-what-is-spooled",
+      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}/time-report",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-what-is-spooled",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-what-is-spooled",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-what-is-spooled",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}/pdf",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-what-is-spooled",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:GET:/admin/billing/invoices",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:GET:/admin/billing/invoices/{invoiceRefId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:DELETE:/admin/billing/invoices/{invoiceRefId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:GET:/admin/billing/offers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/offers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:PUT:/admin/billing/offers/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:DELETE:/admin/billing/offers/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/send-letter",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-letter",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/send-credit-note-letter",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:GET:/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:GET:/projects/{projectId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:GET:/admin/billing/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:GET:/admin/billing/projects/{projectId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:DELETE:/admin/billing/projects/{projectId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}/time-report",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/projects/{projectId}/time-report/spool",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:GET:/admin/billing/inventory/movements/{id}/pdf",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/inventory/movements/{id}/pdf/spool",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "api:HTTP:POST:/admin/billing/inventory/labels/spool",
       "type": "documents"
     },
     {
@@ -101708,6 +103374,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/decabill/features/postal-delivery.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/decabill/features/project-board.md",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -101749,6 +103420,11 @@
     },
     {
       "from": "file:docs/decabill/features/service-types-and-plans.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/features/spooler.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -106053,6 +107729,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:decabill-preferred-delivery",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:decabill-self-service",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -106314,6 +107995,11 @@
     },
     {
       "from": "concept:decabill-payment-processors",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-postal-providers",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -106683,6 +108369,46 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:decabill-postal-delivery",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-requirements-per-letter",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-the-letter",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-letter-lifecycle",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-pingen-setup",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-customer-preference",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-in-the-console",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-custom-providers",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:decabill-project-board",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -106974,6 +108700,36 @@
     },
     {
       "from": "concept:decabill-availability-and-pricing",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-spooler",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-what-is-spooled",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-spooling-endpoints",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-job-lifecycle",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-coordinator-and-retention",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-spooler-page",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

@@ -8,6 +8,7 @@ import {
   loadAdminOffers,
   revokeAdminOffer,
   sendAdminOffer,
+  markAdminOfferSent,
 } from './admin-offers.actions';
 import { AdminOffersFacade } from './admin-offers.facade';
 
@@ -43,8 +44,20 @@ describe('AdminOffersFacade', () => {
     expect(store.dispatch).toHaveBeenCalledWith(
       archiveAdminOffer({ id: 'offer-1', dto: { notifyCustomer: false, notifyOnExpiry: false } }),
     );
-    expect(store.dispatch).toHaveBeenCalledWith(sendAdminOffer({ id: 'offer-1' }));
+    expect(store.dispatch).toHaveBeenCalledWith(sendAdminOffer({ id: 'offer-1', channel: 'email' }));
     expect(store.dispatch).toHaveBeenCalledWith(revokeAdminOffer({ id: 'offer-1', dto: { notifyCustomer: false } }));
+  });
+
+  it('dispatches letter sends, archive-then-letter and mark-sent', () => {
+    facade.sendOffer('offer-1', 'letter');
+    facade.archiveOffer('offer-1', { notifyOnExpiry: true }, true);
+    facade.markOfferSent('offer-1', { sentAt: '2026-11-20' });
+
+    expect(store.dispatch).toHaveBeenCalledWith(sendAdminOffer({ id: 'offer-1', channel: 'letter' }));
+    expect(store.dispatch).toHaveBeenCalledWith(
+      archiveAdminOffer({ id: 'offer-1', dto: { notifyOnExpiry: true }, sendLetter: true }),
+    );
+    expect(store.dispatch).toHaveBeenCalledWith(markAdminOfferSent({ id: 'offer-1', dto: { sentAt: '2026-11-20' } }));
   });
 
   it('dispatches accept / decline with the notification choice', () => {

@@ -92,7 +92,10 @@ describe('AdminBillingPageComponent (bulk actions)', () => {
           }),
         },
         { provide: InvoicesFacade, useValue: stub() },
-        { provide: BillingCapabilitiesFacade, useValue: stub({ accountingEnabled$: of(true) }) },
+        {
+          provide: BillingCapabilitiesFacade,
+          useValue: stub({ accountingEnabled$: of(true), postalDeliveryAvailable$: of(false) }),
+        },
         { provide: AuthenticationFacade, useValue: stub({ users$: of([]) }) },
       ],
     });
@@ -169,16 +172,17 @@ describe('AdminBillingPageComponent (bulk actions)', () => {
     component.openActionModal('void', issued);
     component.actionNote.set('  Cancelled on request  ');
     component.confirmAction();
-    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', {
-      note: 'Cancelled on request',
-      notifyCustomer: false,
-    });
+    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith(
+      'i1',
+      { note: 'Cancelled on request', notifyCustomer: false },
+      false,
+    );
 
     component.openActionModal('void', issued);
     expect(component.actionNote()).toBe('');
     component.actionNote.set('   ');
     component.confirmAction();
-    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', { notifyCustomer: false });
+    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', { notifyCustomer: false }, false);
   });
 
   it('void confirm: emails the credit note by default only when the invoice itself was sent', () => {
@@ -188,12 +192,12 @@ describe('AdminBillingPageComponent (bulk actions)', () => {
     component.openActionModal('void', sent);
     expect(component.actionNotifyCustomer()).toBe(true);
     component.confirmAction();
-    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', { notifyCustomer: true });
+    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', { notifyCustomer: true }, false);
 
     component.openActionModal('void', sent);
     component.actionNotifyCustomer.set(false);
     component.confirmAction();
-    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', { notifyCustomer: false });
+    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', { notifyCustomer: false }, false);
   });
 
   it('send actions: offered for unsent documents only, confirmed through the action modal', () => {
@@ -212,12 +216,12 @@ describe('AdminBillingPageComponent (bulk actions)', () => {
     expect(component.pendingAction()).toBe('send');
     expect(component.actionConfirmLabel()).toBe('Send to customer');
     component.confirmAction();
-    expect(managerFacade['sendInvoice']).toHaveBeenCalledWith('i1');
+    expect(managerFacade['sendInvoice']).toHaveBeenCalledWith('i1', 'email');
 
     component.onInvoiceAction(voided, 'send-credit-note');
     expect(component.actionConfirmLabel()).toBe('Send credit note');
     component.confirmAction();
-    expect(managerFacade['sendCreditNote']).toHaveBeenCalledWith('v1');
+    expect(managerFacade['sendCreditNote']).toHaveBeenCalledWith('v1', 'email');
   });
 
   it('issue dialog: emails the invoice by default, silently when unchecked', () => {
@@ -231,10 +235,66 @@ describe('AdminBillingPageComponent (bulk actions)', () => {
     expect(managerFacade['issueManualInvoice']).toHaveBeenLastCalledWith(
       'd1',
       expect.objectContaining({ notifyCustomer: false }),
+      false,
     );
 
     component.openIssueModal(invoice('d1', 'draft') as never);
     expect(component.issueNotifyCustomer).toBe(true);
+  });
+
+  it('mark sent: offered with send, records the date (credit notes too)', () => {
+    const managerFacade = TestBed.inject(AdminInvoiceManagerFacade) as unknown as Record<string, jest.Mock>;
+    const unsent = { ...invoice('i1', 'issued'), canSend: true } as never;
+    const voided = { ...invoice('v1', 'void'), canSendCreditNote: true } as never;
+    const ids = (inv: never) => component.invoiceMenu(inv).map((item) => item.id);
+
+    expect(ids(unsent)).toContain('mark-sent');
+    expect(ids(invoice('i2', 'issued') as never)).not.toContain('mark-sent');
+    expect(ids(voided)).toContain('mark-credit-note-sent');
+
+    component.onInvoiceAction(unsent, 'mark-sent');
+    expect(component.actionConfirmLabel()).toBe('Mark as sent');
+    expect(component.actionSentAt()).toBe(component.todayDateInput());
+    component.actionSentAt.set('2026-11-20');
+    component.confirmAction();
+    expect(managerFacade['markSent']).toHaveBeenLastCalledWith('i1', {
+      creditNote: false,
+      dto: { sentAt: '2026-11-20' },
+    });
+
+    component.onInvoiceAction(voided, 'mark-credit-note-sent');
+    component.confirmAction();
+    expect(managerFacade['markSent']).toHaveBeenLastCalledWith('v1', expect.objectContaining({ creditNote: true }));
+  });
+
+  it('with a postal provider: letters for send, issue and void', () => {
+    const managerFacade = TestBed.inject(AdminInvoiceManagerFacade) as unknown as Record<string, jest.Mock>;
+    const sentByLetter = { ...invoice('i1', 'issued'), sentAt: '2026-11-01T00:00:00Z', sentVia: 'letter' } as never;
+
+    Object.defineProperty(component, 'postalAvailable', { value: () => true });
+
+    component.onInvoiceAction({ ...invoice('i3', 'issued'), canSend: true } as never, 'send');
+    component.actionChannel.set('letter');
+    component.confirmAction();
+    expect(managerFacade['sendInvoice']).toHaveBeenLastCalledWith('i3', 'letter');
+
+    component.openIssueModal(invoice('d1', 'draft') as never);
+    component.issueDelivery = 'letter';
+    component.submitIssue();
+    expect(managerFacade['issueManualInvoice']).toHaveBeenLastCalledWith(
+      'd1',
+      expect.objectContaining({ notifyCustomer: false }),
+      true,
+    );
+
+    // Credit notes default to the channel the invoice went out on.
+    component.openActionModal('void', sentByLetter);
+    expect(component.actionVoidDelivery()).toBe('letter');
+    component.confirmAction();
+    expect(managerFacade['voidInvoice']).toHaveBeenLastCalledWith('i1', { notifyCustomer: false }, true);
+
+    component.openActionModal('void', invoice('i2', 'issued') as never);
+    expect(component.actionVoidDelivery()).toBe('none');
   });
 
   it('manual invoice: create and edit submit the note (null when blank)', () => {

@@ -25,6 +25,8 @@ describe('BILLING_PAT_SCOPES', () => {
     'offers:read',
     'offers:write',
     'offers:admin',
+    'letters:admin',
+    'spooler:admin',
     'projects:read',
     'projects:admin',
     'milestones:read',

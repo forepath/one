@@ -62,6 +62,7 @@ describe('AdminCustomerProfilesPageComponent (data list)', () => {
           provide: BillingCapabilitiesFacade,
           useValue: {
             einvoiceFormats$: of([{ format: 'xrechnung-cii', label: 'XRechnung 3.0 (CII)' }]),
+            postalDeliveryAvailable$: of(true),
             einvoiceDefaultFormat$: of('factur-x-en16931'),
             loadCapabilities: jest.fn(),
           },
@@ -118,6 +119,7 @@ describe('AdminCustomerProfilesPageComponent (data list)', () => {
 
   it('exposes the e-invoice formats of the capabilities', () => {
     expect(component.einvoiceFormats()).toEqual([{ format: 'xrechnung-cii', label: 'XRechnung 3.0 (CII)' }]);
+    expect(component.postalAvailable()).toBe(true);
     expect(component.einvoiceDefaultFormat()).toBe('factur-x-en16931');
   });
 

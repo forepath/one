@@ -1,0 +1,50 @@
+<div class="admin-spooler border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle" />
+
+  @if (notice(); as result) {
+    <fpc-alert
+      [flush]="true"
+      [variant]="result.tone"
+      [message]="result.message"
+      [dismissible]="true"
+      (closed)="notice.set(null)"
+      data-testid="spooler-notice"
+    />
+  }
+
+  <fpc-data-table
+    class="flex-grow-1 min-h-0"
+    [ariaLabel]="pageTitle"
+    [columns]="columns"
+    [rows]="items()"
+    paging="server"
+    [total]="total()"
+    [(page)]="paging.page"
+    [(pageSize)]="paging.pageSize"
+    persistKey="decabill-spooler"
+    [searchable]="false"
+    [views]="views"
+    [activeViewId]="activeView()"
+    (viewSelect)="onViewSelect($event)"
+    [loading]="loading()"
+    refreshable
+    (refresh)="paging.reload()"
+    [error]="error()"
+    [rowMenu]="rowMenu"
+    [rowInlineActions]="rowInlineActions"
+    (rowAction)="onRowAction($event.row, $event.item.id)"
+    emptyIcon="printer"
+    data-testid="spooler-list"
+  >
+    <span fpcDataTableEmpty>
+      <fpc-empty-state
+        icon="printer"
+        size="sm"
+        i18n-message="@@featureAdminSpooler-empty"
+        message="No printouts or sends yet"
+      />
+    </span>
+    <ng-template fpcTableCell="created" let-row>{{ formatDate(row.createdAt) }}</ng-template>
+    <ng-template fpcTableCell="finished" let-row>{{ formatDate(row.finishedAt) }}</ng-template>
+  </fpc-data-table>
+</div>

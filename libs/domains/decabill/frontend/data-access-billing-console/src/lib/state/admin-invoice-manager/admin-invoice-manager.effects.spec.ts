@@ -21,6 +21,8 @@ import {
   adminInvoiceManagerSendCreditNoteSuccess,
   adminInvoiceManagerSendFailure,
   adminInvoiceManagerSendSuccess,
+  adminInvoiceManagerMarkSent,
+  adminInvoiceManagerMarkSentSuccess,
   adminInvoiceManagerVoid,
   adminInvoiceManagerVoidFailure,
   adminInvoiceManagerVoidSuccess,
@@ -51,6 +53,7 @@ import {
   adminInvoiceManagerMarkUnpaid$,
   adminInvoiceManagerRefund$,
   adminInvoiceManagerSend$,
+  adminInvoiceManagerMarkSent$,
   adminInvoiceManagerSendCreditNote$,
   adminInvoiceManagerVoid$,
   adminInvoiceManagerWriteOff$,
@@ -85,6 +88,10 @@ describe('AdminInvoiceManagerEffects', () => {
       voidInvoice: jest.fn(),
       sendInvoice: jest.fn(),
       sendCreditNote: jest.fn(),
+      sendInvoiceLetter: jest.fn(),
+      sendCreditNoteLetter: jest.fn(),
+      markInvoiceSent: jest.fn(),
+      markCreditNoteSent: jest.fn(),
       markPaid: jest.fn(),
       markUnpaid: jest.fn(),
       writeOffInvoice: jest.fn(),
@@ -194,6 +201,74 @@ describe('AdminInvoiceManagerEffects', () => {
       ).subscribe((result) => {
         expect(result.type).toBe(adminInvoiceManagerSendFailure.type);
         done();
+      });
+    });
+  });
+
+  describe('letters and mark sent', () => {
+    it('routes letter sends to the letter endpoints', (done) => {
+      const sent = { ...mockInvoice, sentVia: 'letter' };
+
+      adminBillingService.sendInvoiceLetter.mockReturnValue(of(sent as never));
+      adminBillingService.sendCreditNoteLetter.mockReturnValue(of(sent as never));
+
+      adminInvoiceManagerSendCreditNote$(
+        of(adminInvoiceManagerSendCreditNote({ invoiceRefId: 'inv-1', channel: 'letter' })) as never,
+        adminBillingService,
+      ).subscribe(() => expect(adminBillingService.sendCreditNoteLetter).toHaveBeenCalledWith('inv-1'));
+
+      adminInvoiceManagerSend$(
+        of(adminInvoiceManagerSend({ invoiceRefId: 'inv-1', channel: 'letter' })) as never,
+        adminBillingService,
+      ).subscribe((result) => {
+        expect(result).toEqual(adminInvoiceManagerSendSuccess({ invoice: sent as never }));
+        expect(adminBillingService.sendInvoiceLetter).toHaveBeenCalledWith('inv-1');
+        expect(adminBillingService.sendInvoice).not.toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('marks the invoice or its credit note as sent', (done) => {
+      adminBillingService.markInvoiceSent.mockReturnValue(of(mockInvoice as never));
+      adminBillingService.markCreditNoteSent.mockReturnValue(of(mockInvoice as never));
+
+      adminInvoiceManagerMarkSent$(
+        of(adminInvoiceManagerMarkSent({ invoiceRefId: 'inv-1', creditNote: true })) as never,
+        adminBillingService,
+      ).subscribe(() => expect(adminBillingService.markCreditNoteSent).toHaveBeenCalledWith('inv-1', undefined));
+
+      adminInvoiceManagerMarkSent$(
+        of(adminInvoiceManagerMarkSent({ invoiceRefId: 'inv-1', dto: { sentAt: '2026-11-20' } })) as never,
+        adminBillingService,
+      ).subscribe((result) => {
+        expect(result).toEqual(adminInvoiceManagerMarkSentSuccess({ invoice: mockInvoice as never }));
+        expect(adminBillingService.markInvoiceSent).toHaveBeenCalledWith('inv-1', { sentAt: '2026-11-20' });
+        done();
+      });
+    });
+
+    it('issues without email and then sends the letter', (done) => {
+      const invoice = { ...mockInvoice, id: 'inv-1', status: 'issued' };
+      const emitted: unknown[] = [];
+
+      adminBillingService.issueManualInvoice.mockReturnValue(of(invoice as never));
+
+      issueManualInvoice$(
+        of(issueManualInvoice({ invoiceRefId: 'inv-1', dto: { dueInDays: 14 }, sendLetter: true })) as never,
+        adminBillingService,
+      ).subscribe({
+        next: (action) => emitted.push(action),
+        complete: () => {
+          expect(adminBillingService.issueManualInvoice).toHaveBeenCalledWith('inv-1', {
+            dueInDays: 14,
+            notifyCustomer: false,
+          });
+          expect(emitted).toEqual([
+            issueManualInvoiceSuccess({ invoice: invoice as never }),
+            adminInvoiceManagerSend({ invoiceRefId: 'inv-1', channel: 'letter' }),
+          ]);
+          done();
+        },
       });
     });
   });

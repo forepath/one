@@ -26,6 +26,7 @@ describe('BILLING_SETTINGS', () => {
       'TENANTS_ALLOW_GLOBAL_VIEWS',
       'TENANTS_SHARED_NUMBERS',
       'DYNAMIC_PAYMENT_PROCESSORS',
+      'DYNAMIC_POSTAL_PROVIDERS',
       'FILE_STORAGE_S3_SECRET_ACCESS_KEY',
     ]) {
       expect(keys).not.toContain(excluded);

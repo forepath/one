@@ -19,6 +19,8 @@ export interface BillingCapabilitiesResponseDto {
   /** Selectable e-invoice formats and the issuer default. */
   einvoiceFormats: Array<{ format: string; label: string }>;
   einvoiceDefaultFormat: string;
+  /** Documents can be sent as letters (default postal provider registered and configured for the tenant). */
+  postalDelivery: { available: boolean; provider: string | null; providerName: string | null };
 }
 
 export interface AdminDatevExportListItemDto {

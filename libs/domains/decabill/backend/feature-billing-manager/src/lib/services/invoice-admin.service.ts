@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 
+import { DocumentDeliveryChannel } from '../constants/document-delivery.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { SettlementDocumentType, SettlementSource, SettlementType } from '../constants/settlement.constants';
 import type {
@@ -13,11 +14,12 @@ import type {
   RecordInvoiceSettlementDto,
   VoidInvoiceDto,
 } from '../dto/admin-billing.dto';
-import { shouldNotify } from '../dto/document-delivery.dto';
+import { MarkDocumentSentDto, parseMarkSentAt, shouldNotify } from '../dto/document-delivery.dto';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
+import { DocumentDeliveryService, type SpooledDeliveryChannel } from '../spooler/document-delivery.service';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 import { resolveCustomerNamesByUserId } from '../utils/customer-display-name.util';
 import { invoiceDeliveryFields } from '../utils/invoice-delivery.util';
@@ -40,6 +42,7 @@ export class InvoiceAdminService {
     private readonly documentSettlementService: DocumentSettlementService,
     @Optional() private readonly customerProfilesRepository?: CustomerProfilesRepository,
     @Optional() private readonly billingNotificationPublisher?: BillingNotificationPublisher,
+    @Optional() private readonly documentDelivery?: DocumentDeliveryService,
   ) {}
 
   async listInvoices(params: {
@@ -91,35 +94,84 @@ export class InvoiceAdminService {
     return this.mapAdminItem(voided);
   }
 
-  /** Emails an invoice that was issued without notification. */
+  /**
+   * Spools the email of an invoice that was issued without notification (the invoice counts as sent right away; a
+   * failed or cancelled spool job releases it again).
+   */
   async sendInvoice(invoiceRefId: string, adminUserId: string): Promise<AdminInvoiceListItemDto> {
+    return await this.spoolSend(invoiceRefId, 'invoice', DocumentDeliveryChannel.EMAIL, adminUserId);
+  }
+
+  /** Spools the email of the credit note of an invoice that was voided without notification. */
+  async sendCreditNote(invoiceRefId: string, adminUserId: string): Promise<AdminInvoiceListItemDto> {
+    return await this.spoolSend(invoiceRefId, 'credit_note', DocumentDeliveryChannel.EMAIL, adminUserId);
+  }
+
+  /** Spools an invoice issued without notification as a physical letter (postal provider). */
+  async sendInvoiceLetter(invoiceRefId: string, adminUserId: string): Promise<AdminInvoiceListItemDto> {
+    return await this.spoolSend(invoiceRefId, 'invoice', DocumentDeliveryChannel.LETTER, adminUserId);
+  }
+
+  /** Spools the credit note of an invoice voided without notification as a physical letter. */
+  async sendCreditNoteLetter(invoiceRefId: string, adminUserId: string): Promise<AdminInvoiceListItemDto> {
+    return await this.spoolSend(invoiceRefId, 'credit_note', DocumentDeliveryChannel.LETTER, adminUserId);
+  }
+
+  private async spoolSend(
+    invoiceRefId: string,
+    document: 'invoice' | 'credit_note',
+    channel: SpooledDeliveryChannel,
+    adminUserId: string,
+  ): Promise<AdminInvoiceListItemDto> {
+    if (!this.documentDelivery) {
+      throw new BadRequestException('Document delivery is not available');
+    }
+
+    const { invoice, job } =
+      document === 'invoice'
+        ? await this.documentDelivery.spoolInvoice(invoiceRefId, channel, adminUserId)
+        : await this.documentDelivery.spoolCreditNote(invoiceRefId, channel, adminUserId);
+
+    return { ...(await this.mapAdminItem(invoice)), spoolJobId: job.id };
+  }
+
+  /** Records that an invoice issued without notification was sent outside Decabill. */
+  async markInvoiceSent(
+    invoiceRefId: string,
+    adminUserId: string,
+    dto?: MarkDocumentSentDto,
+  ): Promise<AdminInvoiceListItemDto> {
     const invoice = await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
-    const sent = await this.invoiceService.sendIssuedInvoice(invoice);
+    const sent = await this.invoiceService.markInvoiceSent(invoice, parseMarkSentAt(dto));
 
     await this.auditLog.log({
-      process: 'invoice.send',
+      process: 'invoice.mark_sent',
       level: 'info',
-      message: `Sent invoice ${invoice.invoiceNumber ?? invoiceRefId} to the customer`,
+      message: `Marked invoice ${invoice.invoiceNumber ?? invoiceRefId} as sent`,
       invoiceId: invoiceRefId,
       userId: invoice.userId,
-      context: { adminUserId, invoiceNumber: invoice.invoiceNumber },
+      context: { adminUserId, invoiceNumber: invoice.invoiceNumber, sentAt: sent.sentAt },
     });
 
     return this.mapAdminItem(sent);
   }
 
-  /** Emails the credit note of an invoice that was voided without notification. */
-  async sendCreditNote(invoiceRefId: string, adminUserId: string): Promise<AdminInvoiceListItemDto> {
+  /** Records that the credit note of a voided invoice was sent outside Decabill. */
+  async markCreditNoteSent(
+    invoiceRefId: string,
+    adminUserId: string,
+    dto?: MarkDocumentSentDto,
+  ): Promise<AdminInvoiceListItemDto> {
     const invoice = await this.invoicesRepository.findByIdOrThrow(invoiceRefId);
-    const sent = await this.invoiceService.sendVoidDocument(invoice);
+    const sent = await this.invoiceService.markVoidDocumentSent(invoice, parseMarkSentAt(dto));
 
     await this.auditLog.log({
-      process: 'invoice.void_document_send',
+      process: 'invoice.void_document_mark_sent',
       level: 'info',
-      message: `Sent credit note for invoice ${invoice.invoiceNumber ?? invoiceRefId} to the customer`,
+      message: `Marked credit note for invoice ${invoice.invoiceNumber ?? invoiceRefId} as sent`,
       invoiceId: invoiceRefId,
       userId: invoice.userId,
-      context: { adminUserId, invoiceNumber: invoice.invoiceNumber },
+      context: { adminUserId, invoiceNumber: invoice.invoiceNumber, sentAt: sent.voidDocumentSentAt },
     });
 
     return this.mapAdminItem(sent);

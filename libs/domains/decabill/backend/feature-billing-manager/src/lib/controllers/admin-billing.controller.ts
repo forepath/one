@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
+  Optional,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
@@ -38,6 +39,7 @@ import {
 import type { AdminInvoiceListItemDto, InvoiceSettlementResponseDto } from '../dto/admin-billing.dto';
 import type { BillingCapabilitiesResponseDto } from '../dto/admin-datev-export.dto';
 import { CancelSubscriptionDto } from '../dto/cancel-subscription.dto';
+import { MarkDocumentSentDto } from '../dto/document-delivery.dto';
 import { type EffectiveDocumentTermsResponseDto, mapEffectiveDocumentTermsToResponse } from '../dto/document-terms.dto';
 import { InstantCancelSubscriptionDto } from '../dto/instant-cancel-subscription.dto';
 import {
@@ -50,6 +52,7 @@ import { ResumeSubscriptionDto } from '../dto/resume-subscription.dto';
 import { SubscriptionResponseDto } from '../dto/subscription-response.dto';
 import { TaxPreviewRequestDto } from '../dto/tax-preview.dto';
 import { WithdrawSubscriptionDto } from '../dto/withdraw-subscription.dto';
+import { PostalLetterService } from '../postal-providers/postal-letter.service';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { AdminBillNowService } from '../services/admin-bill-now.service';
 import { BillingAdminService } from '../services/billing-admin.service';
@@ -87,6 +90,7 @@ export class AdminBillingController {
     private readonly documentTermsConfig: BillingDocumentTermsConfigService,
     private readonly accountingConfig: AccountingConfigService,
     private readonly einvoiceFormats: EInvoiceFormatConfigService,
+    @Optional() private readonly postalLetterService?: PostalLetterService,
   ) {}
 
   @RequireScopes('billing:admin')
@@ -122,6 +126,11 @@ export class AdminBillingController {
         : this.accountingConfig.getMissingCorePrerequisites(),
       einvoiceFormats: this.einvoiceFormats.list().map((f) => ({ format: f.format, label: f.label })),
       einvoiceDefaultFormat: this.einvoiceFormats.getDefault(),
+      postalDelivery: this.postalLetterService?.getAvailability() ?? {
+        available: false,
+        provider: null,
+        providerName: null,
+      },
     };
   }
 
@@ -320,7 +329,7 @@ export class AdminBillingController {
     return await this.invoiceAdminService.voidInvoice(invoiceRefId, userInfo.userId, dto);
   }
 
-  /** Emails an invoice that was issued without notification. */
+  /** Emails an invoice that was issued without notification (spooled; the response carries the spool job id). */
   @RequireScopes('invoices:admin')
   @Post('invoices/:invoiceRefId/send')
   async sendInvoice(
@@ -336,7 +345,7 @@ export class AdminBillingController {
     return await this.invoiceAdminService.sendInvoice(invoiceRefId, userInfo.userId);
   }
 
-  /** Emails the credit note of an invoice that was voided without notification. */
+  /** Emails the credit note of an invoice that was voided without notification (spooled). */
   @RequireScopes('invoices:admin')
   @Post('invoices/:invoiceRefId/send-credit-note')
   async sendCreditNote(
@@ -350,6 +359,51 @@ export class AdminBillingController {
     }
 
     return await this.invoiceAdminService.sendCreditNote(invoiceRefId, userInfo.userId);
+  }
+
+  /**
+   * Sends an invoice issued without notification as a physical letter through the tenant's postal provider (spooled).
+   * Letters cost money, so tokens additionally need `letters:admin`.
+   */
+  @RequireScopes('invoices:admin', 'letters:admin')
+  @Post('invoices/:invoiceRefId/send-letter')
+  async sendInvoiceLetter(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<AdminInvoiceListItemDto> {
+    return await this.invoiceAdminService.sendInvoiceLetter(invoiceRefId, this.requireAdminUserId(req));
+  }
+
+  /** Sends the credit note of an invoice voided without notification as a physical letter (spooled). */
+  @RequireScopes('invoices:admin', 'letters:admin')
+  @Post('invoices/:invoiceRefId/send-credit-note-letter')
+  async sendCreditNoteLetter(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<AdminInvoiceListItemDto> {
+    return await this.invoiceAdminService.sendCreditNoteLetter(invoiceRefId, this.requireAdminUserId(req));
+  }
+
+  /** Records that an invoice issued without notification was sent outside Decabill (nothing is sent). */
+  @RequireScopes('invoices:admin')
+  @Post('invoices/:invoiceRefId/mark-sent')
+  async markInvoiceSent(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Body() dto: MarkDocumentSentDto,
+    @Req() req?: RequestWithUser,
+  ): Promise<AdminInvoiceListItemDto> {
+    return await this.invoiceAdminService.markInvoiceSent(invoiceRefId, this.requireAdminUserId(req), dto);
+  }
+
+  /** Records that the credit note of a voided invoice was sent outside Decabill (nothing is sent). */
+  @RequireScopes('invoices:admin')
+  @Post('invoices/:invoiceRefId/mark-credit-note-sent')
+  async markCreditNoteSent(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Body() dto: MarkDocumentSentDto,
+    @Req() req?: RequestWithUser,
+  ): Promise<AdminInvoiceListItemDto> {
+    return await this.invoiceAdminService.markCreditNoteSent(invoiceRefId, this.requireAdminUserId(req), dto);
   }
 
   @RequireScopes('invoices:admin')
@@ -593,5 +647,15 @@ export class AdminBillingController {
     }
 
     return date;
+  }
+
+  private requireAdminUserId(req?: RequestWithUser): string {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return userInfo.userId;
   }
 }

@@ -16,48 +16,52 @@ The bulb and the sidebar are shown to admins and managers in both console modes 
 
 ## To-dos
 
-| Area          | Type                                          | Condition                                                                                   | Who    |
-| ------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------- | ------ |
-| Setup         | `decabill.setup.issuer`                       | `BILLING_ISSUER_NAME`, `_VAT_ID`, `_ADDRESS_LINE1`, `_POSTAL_CODE` or `_CITY` empty         | admins |
-| Setup         | `decabill.setup.issuer_details`               | `BILLING_ISSUER_EMAIL`, `_IBAN` or `_BIC` empty                                             | admins |
-| Setup         | `decabill.setup.accounting`                   | `BILLING_ACCOUNTING_ENABLED=true`, but accounting prerequisites are missing                 | admins |
-| Setup         | `decabill.setup.datev`                        | DATEV export enabled, but the tenant's DATEV configuration is incomplete                    | admins |
-| Setup         | `decabill.setup.first_customer`               | The tenant has no customer profile of a regular user yet                                    | all    |
-| Setup         | `platform.setup.email`                        | `SMTP_HOST` empty: no emails are sent                                                       | admins |
-| Receivables   | `decabill.invoices.unsent`                    | Numbered, not void, not draft and never emailed (issued with "notify customer" off)         | all    |
-| Receivables   | `decabill.invoices.credit_note_unsent`        | Voided numbered invoice whose credit note was not emailed                                   | all    |
-| Receivables   | `decabill.invoices.draft`                     | Draft invoices                                                                              | all    |
-| Receivables   | `decabill.invoices.overdue`                   | Status `overdue`                                                                            | all    |
-| Receivables   | `decabill.invoices.auto_payment_exhausted`    | Open invoices whose automatic collection gave up                                            | all    |
-| Offers        | `decabill.offers.draft`                       | Draft offers                                                                                | all    |
-| Offers        | `decabill.offers.unsent`                      | Finalized (`archived`), never emailed, not expired                                          | all    |
-| Offers        | `decabill.offers.expiring`                    | Finalized and expiring within 7 days                                                        | all    |
-| Offers        | `decabill.offers.fulfillment_failed`          | Positions of accepted offers whose automatic fulfillment failed                             | all    |
-| Payables      | `decabill.payables.draft`                     | Draft supplier invoices                                                                     | all    |
-| Payables      | `decabill.payables.due`                       | Open supplier invoices due within 3 days or overdue                                         | all    |
-| Payables      | `decabill.payables.missing_document`          | Issued supplier invoices without an uploaded original receipt                               | all    |
-| Payables      | `decabill.suppliers.incomplete`               | Supplier profiles without a name or postal address                                          | all    |
-| Customers     | `decabill.customers.incomplete`               | Incomplete billing profiles of customers with business (live subscription or open document) | all    |
-| Customers     | `decabill.customers.vat_invalid`              | Customer or supplier VAT IDs that failed validation                                         | all    |
-| Subscriptions | `decabill.subscriptions.provisioning_failed`  | Failed server provisioning of a live subscription                                           | all    |
-| Subscriptions | `decabill.subscriptions.addon_failed`         | Failed add-ons of a live subscription                                                       | all    |
-| Subscriptions | `decabill.subscriptions.config_change_failed` | The latest configuration change of a live subscription failed                               | all    |
-| Subscriptions | `decabill.subscriptions.backorder_failed`     | Backorders that could not be fulfilled                                                      | all    |
-| Inventory     | `decabill.inventory.withdrawal_pending`       | Withdrawal requests waiting for a decision                                                  | all    |
-| Inventory     | `decabill.inventory.lending_overdue`          | Open lendings past their due date                                                           | all    |
-| Inventory     | `decabill.inventory.low_stock`                | Active articles at or below their reorder point                                             | all    |
-| Accounting    | `decabill.accounting.unbooked_documents`      | Issued / voided documents since the bookkeeping start date without a journal entry          | all    |
-| Accounting    | `decabill.accounting.posting_issues`          | Unresolved posting issues                                                                   | all    |
-| Accounting    | `decabill.accounting.bank_unmatched`          | Booked bank transactions without a match                                                    | all    |
-| Accounting    | `decabill.accounting.bank_suggested`          | Booked bank transactions with a suggested match to confirm                                  | all    |
-| Accounting    | `decabill.accounting.bank_import_failed`      | Failed bank imports of the last 30 days                                                     | all    |
-| Accounting    | `decabill.accounting.vat_return_due`          | Draft VAT returns of finished periods (global-view tenants only, entity-wide)               | all    |
-| Accounting    | `decabill.datev.export_failed`                | DATEV runs of the last 30 days whose latest attempt failed                                  | all    |
-| Platform      | `platform.updates.available`                  | A newer release or outdated instances (see [Application Updates](./application-updates.md)) | all    |
-| Platform      | `platform.webhooks.failing`                   | Webhook endpoints with consecutive failures or disabled after them                          | all    |
-| Platform      | `platform.email.delivery_failed`              | Emails of the last 7 days that finally failed                                               | all    |
+| Area          | Type                                          | Condition                                                                                      | Who    |
+| ------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------ |
+| Setup         | `decabill.setup.issuer`                       | `BILLING_ISSUER_NAME`, `_VAT_ID`, `_ADDRESS_LINE1`, `_POSTAL_CODE` or `_CITY` empty            | admins |
+| Setup         | `decabill.setup.issuer_details`               | `BILLING_ISSUER_EMAIL`, `_IBAN` or `_BIC` empty                                                | admins |
+| Setup         | `decabill.setup.accounting`                   | `BILLING_ACCOUNTING_ENABLED=true`, but accounting prerequisites are missing                    | admins |
+| Setup         | `decabill.setup.datev`                        | DATEV export enabled, but the tenant's DATEV configuration is incomplete                       | admins |
+| Setup         | `decabill.setup.first_customer`               | The tenant has no customer profile of a regular user yet                                       | all    |
+| Setup         | `platform.setup.email`                        | `SMTP_HOST` empty: no emails are sent                                                          | admins |
+| Receivables   | `decabill.invoices.unsent`                    | Numbered, not void, not draft and not sent (issued with "notify customer" off)                 | all    |
+| Receivables   | `decabill.invoices.credit_note_unsent`        | Voided numbered invoice whose credit note was not sent                                         | all    |
+| Receivables   | `decabill.invoices.draft`                     | Draft invoices                                                                                 | all    |
+| Receivables   | `decabill.invoices.overdue`                   | Status `overdue`                                                                               | all    |
+| Receivables   | `decabill.invoices.auto_payment_exhausted`    | Open invoices whose automatic collection gave up                                               | all    |
+| Receivables   | `decabill.letters.attention`                  | Letters the postal provider could not process (`action_required`) or deliver (`undeliverable`) | all    |
+| Offers        | `decabill.offers.draft`                       | Draft offers                                                                                   | all    |
+| Offers        | `decabill.offers.unsent`                      | Finalized (`archived`), not sent, not expired                                                  | all    |
+| Offers        | `decabill.offers.expiring`                    | Finalized and expiring within 7 days                                                           | all    |
+| Offers        | `decabill.offers.fulfillment_failed`          | Positions of accepted offers whose automatic fulfillment failed                                | all    |
+| Payables      | `decabill.payables.draft`                     | Draft supplier invoices                                                                        | all    |
+| Payables      | `decabill.payables.due`                       | Open supplier invoices due within 3 days or overdue                                            | all    |
+| Payables      | `decabill.payables.missing_document`          | Issued supplier invoices without an uploaded original receipt                                  | all    |
+| Payables      | `decabill.suppliers.incomplete`               | Supplier profiles without a name or postal address                                             | all    |
+| Customers     | `decabill.customers.incomplete`               | Incomplete billing profiles of customers with business (live subscription or open document)    | all    |
+| Customers     | `decabill.customers.vat_invalid`              | Customer or supplier VAT IDs that failed validation                                            | all    |
+| Subscriptions | `decabill.subscriptions.provisioning_failed`  | Failed server provisioning of a live subscription                                              | all    |
+| Subscriptions | `decabill.subscriptions.addon_failed`         | Failed add-ons of a live subscription                                                          | all    |
+| Subscriptions | `decabill.subscriptions.config_change_failed` | The latest configuration change of a live subscription failed                                  | all    |
+| Subscriptions | `decabill.subscriptions.backorder_failed`     | Backorders that could not be fulfilled                                                         | all    |
+| Inventory     | `decabill.inventory.withdrawal_pending`       | Withdrawal requests waiting for a decision                                                     | all    |
+| Inventory     | `decabill.inventory.lending_overdue`          | Open lendings past their due date                                                              | all    |
+| Inventory     | `decabill.inventory.low_stock`                | Active articles at or below their reorder point                                                | all    |
+| Accounting    | `decabill.accounting.unbooked_documents`      | Issued / voided documents since the bookkeeping start date without a journal entry             | all    |
+| Accounting    | `decabill.accounting.posting_issues`          | Unresolved posting issues                                                                      | all    |
+| Accounting    | `decabill.accounting.bank_unmatched`          | Booked bank transactions without a match                                                       | all    |
+| Accounting    | `decabill.accounting.bank_suggested`          | Booked bank transactions with a suggested match to confirm                                     | all    |
+| Accounting    | `decabill.accounting.bank_import_failed`      | Failed bank imports of the last 30 days                                                        | all    |
+| Accounting    | `decabill.accounting.vat_return_due`          | Draft VAT returns of finished periods (global-view tenants only, entity-wide)                  | all    |
+| Accounting    | `decabill.datev.export_failed`                | DATEV runs of the last 30 days whose latest attempt failed                                     | all    |
+| Platform      | `platform.updates.available`                  | A newer release or outdated instances (see [Application Updates](./application-updates.md))    | all    |
+| Platform      | `platform.webhooks.failing`                   | Webhook endpoints with consecutive failures or disabled after them                             | all    |
+| Platform      | `platform.email.delivery_failed`              | Emails of the last 7 days that finally failed                                                  | all    |
+| Platform      | `decabill.spooler.failed`                     | Spool jobs (document sends and printouts) that failed for good and were not retried yet        | all    |
 
 "Who": **all** = admins and managers; **admins** = only admins, because the fix lives on the admin-only settings page.
+
+A failed spool job leaves the list when it is retried (or when `BILLING_SPOOLER_RETENTION_DAYS` removes it). A letter stays listed while it is `action_required` or `undeliverable`; `undeliverable` is final, so silence the record once the customer has been reached another way.
 
 Feature-dependent to-dos only exist while the feature is on: accounting types need `BILLING_ACCOUNTING_ENABLED` with complete prerequisites, DATEV types need `BILLING_DATEV_EXPORT_ENABLED`. Everything is evaluated per tenant (`X-Tenant`) with the regular tenant scoping. Entity-wide accounting records (posting issues and bank lines without a tenant, VAT returns) are only shown to tenants listed in `TENANTS_ALLOW_GLOBAL_VIEWS`.
 
@@ -85,7 +89,7 @@ With `CACHE_ENABLED=false` changes from other processes arrive with the periodic
 
 - Console: admins and managers (`canAccessBillingAdministration`), users / OIDC / SAML authentication.
 - REST: `GET /api/admin/billing/action-center`, `POST /api/admin/billing/action-center/silences` (`{ itemType, itemId?, audience: "self" | "everyone", until? }`), `DELETE /api/admin/billing/action-center/silences/:id`. Admin or manager role, PAT scope `action_center:admin`. Each returns the caller's current view.
-- Personal access tokens see only the to-dos of domains they also have a scope for, so the action center never shows a token more than the domain routes would: setup `billing:admin`, receivables `invoices:admin`, offers `offers:admin`, payables `supplier_invoices:admin` (incomplete suppliers `supplier_profile:admin`), customers `customer_profile:admin`, subscriptions `subscriptions:admin`, inventory `inventory:admin`, accounting `accounting_audit:admin` (DATEV `datev:admin`), webhooks `webhooks:admin`, updates `updates:admin`, other platform items `billing:admin`. Silences of hidden to-dos are not listed either.
+- Personal access tokens see only the to-dos of domains they also have a scope for, so the action center never shows a token more than the domain routes would: setup `billing:admin`, receivables `invoices:admin`, offers `offers:admin`, payables `supplier_invoices:admin` (incomplete suppliers `supplier_profile:admin`), customers `customer_profile:admin`, subscriptions `subscriptions:admin`, inventory `inventory:admin`, accounting `accounting_audit:admin` (DATEV `datev:admin`), webhooks `webhooks:admin`, updates `updates:admin`, failed spool jobs `spooler:admin`, letters needing attention `letters:admin`, other platform items `billing:admin`. Silences of hidden to-dos are not listed either.
 - Socket: interactive console sessions only (no PATs, app tokens or the static credential).
 - The static credential (`api-key` / `mtls` mode) has no user and gets no action center.
 
@@ -99,5 +103,6 @@ A recompute runs the sources one after another with at most three concurrent que
 
 - [Admin Overview](./admin-overview.md) for the key figures behind many to-dos
 - [Invoices](./invoices.md) and [Offers](./offers.md) for sending documents later
+- [Spooler](./spooler.md) and [Postal delivery](./postal-delivery.md) for failed jobs and letters
 - [Multi-tenancy](./multi-tenancy.md) for `X-Tenant` and `TENANTS_ALLOW_GLOBAL_VIEWS`
 - Shared implementation: `libs/domains/shared/backend/feature-action-center`, `libs/domains/shared/frontend/{data-access,feature}-action-center`

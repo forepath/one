@@ -52,6 +52,7 @@ import type {
 } from '../types/billing.types';
 import type { TaxPreviewRequestDto, TaxPreviewResponse } from '../types/billing.types';
 import type { EffectiveDocumentTerms } from '../types/document-terms.types';
+import type { MarkDocumentSentDto } from '../types/spooler.types';
 
 @Injectable({
   providedIn: 'root',
@@ -110,16 +111,45 @@ export class AdminBillingService {
     );
   }
 
-  /** Emails an invoice that was issued without notification. */
+  /** Emails an invoice that was issued without notification (spooled; the invoice counts as sent right away). */
   sendInvoice(invoiceRefId: string): Observable<AdminInvoiceListItem> {
     return this.http.post<AdminInvoiceListItem>(`${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/send`, {});
   }
 
-  /** Emails the credit note of an invoice that was voided without notification. */
+  /** Emails the credit note of an invoice that was voided without notification (spooled). */
   sendCreditNote(invoiceRefId: string): Observable<AdminInvoiceListItem> {
     return this.http.post<AdminInvoiceListItem>(
       `${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/send-credit-note`,
       {},
+    );
+  }
+
+  /** Posts an invoice issued without notification as a physical letter (spooled, postal provider). */
+  sendInvoiceLetter(invoiceRefId: string): Observable<AdminInvoiceListItem> {
+    return this.http.post<AdminInvoiceListItem>(
+      `${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/send-letter`,
+      {},
+    );
+  }
+
+  /** Posts the credit note of an invoice voided without notification as a physical letter (spooled). */
+  sendCreditNoteLetter(invoiceRefId: string): Observable<AdminInvoiceListItem> {
+    return this.http.post<AdminInvoiceListItem>(
+      `${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/send-credit-note-letter`,
+      {},
+    );
+  }
+
+  /** Records that an invoice was sent outside Decabill (nothing is sent). */
+  markInvoiceSent(invoiceRefId: string, dto: MarkDocumentSentDto = {}): Observable<AdminInvoiceListItem> {
+    return this.http.post<AdminInvoiceListItem>(`${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/mark-sent`, dto);
+  }
+
+  /** Records that the credit note of a voided invoice was sent outside Decabill. */
+  markCreditNoteSent(invoiceRefId: string, dto: MarkDocumentSentDto = {}): Observable<AdminInvoiceListItem> {
+    return this.http.post<AdminInvoiceListItem>(
+      `${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/mark-credit-note-sent`,
+      dto,
     );
   }
 

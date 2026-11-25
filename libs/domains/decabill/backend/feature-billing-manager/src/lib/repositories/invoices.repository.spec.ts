@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 
+import { DocumentDeliveryChannel } from '../constants/document-delivery.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 
 import { InvoicesRepository } from './invoices.repository';
@@ -58,20 +59,23 @@ describe('InvoicesRepository', () => {
     const at = new Date('2026-11-21T10:00:00Z');
 
     await expect(claimRepository.claimDelivery('inv-1', 'sentAt', at)).resolves.toBe(true);
-    await expect(claimRepository.claimDelivery('inv-1', 'voidDocumentSentAt', at)).resolves.toBe(false);
+    await expect(
+      claimRepository.claimDelivery('inv-1', 'voidDocumentSentAt', at, DocumentDeliveryChannel.LETTER),
+    ).resolves.toBe(false);
     expect(update).toHaveBeenNthCalledWith(
       1,
       { id: 'inv-1', sentAt: expect.objectContaining({ _type: 'isNull' }) },
-      { sentAt: at },
+      { sentAt: at, sentVia: 'email' },
     );
     expect(update).toHaveBeenNthCalledWith(
       2,
       { id: 'inv-1', voidDocumentSentAt: expect.objectContaining({ _type: 'isNull' }) },
-      { voidDocumentSentAt: at },
+      { voidDocumentSentAt: at, voidDocumentSentVia: 'letter' },
     );
 
-    await claimRepository.releaseDelivery('inv-1', 'sentAt', at);
-    expect(update).toHaveBeenLastCalledWith({ id: 'inv-1', sentAt: at }, { sentAt: null });
+    update.mockResolvedValueOnce({ affected: 1 });
+    await expect(claimRepository.releaseDelivery('inv-1', 'sentAt', at)).resolves.toBe(true);
+    expect(update).toHaveBeenLastCalledWith({ id: 'inv-1', sentAt: at }, { sentAt: null, sentVia: null });
   });
 
   it('findByIdForUser returns invoice when user owns it', async () => {

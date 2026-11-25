@@ -10,6 +10,7 @@ import type {
   UpdateManualInvoiceDto,
   VoidInvoiceDto,
 } from '../../types/billing.types';
+import type { MarkDocumentSentDto, SpooledDeliveryChannel } from '../../types/spooler.types';
 
 import {
   adminInvoiceManagerMarkPaid,
@@ -17,6 +18,7 @@ import {
   adminInvoiceManagerRefund,
   adminInvoiceManagerSend,
   adminInvoiceManagerSendCreditNote,
+  adminInvoiceManagerMarkSent,
   adminInvoiceManagerVoid,
   adminInvoiceManagerWriteOff,
   createManualInvoice,
@@ -93,26 +95,35 @@ export class AdminInvoiceManagerFacade {
     this.store.dispatch(updateManualInvoice({ invoiceRefId, dto }));
   }
 
-  issueManualInvoice(invoiceRefId: string, dto?: IssueManualInvoiceDto): void {
-    this.store.dispatch(issueManualInvoice({ invoiceRefId, dto }));
+  /** Issues a draft; with `sendLetter` the invoice is not emailed but sent as a letter afterwards. */
+  issueManualInvoice(invoiceRefId: string, dto?: IssueManualInvoiceDto, sendLetter = false): void {
+    this.store.dispatch(issueManualInvoice({ invoiceRefId, dto, ...(sendLetter ? { sendLetter } : {}) }));
   }
 
   deleteManualInvoice(invoiceRefId: string): void {
     this.store.dispatch(deleteManualInvoice({ invoiceRefId }));
   }
 
-  voidInvoice(invoiceRefId: string, dto?: VoidInvoiceDto): void {
-    this.store.dispatch(adminInvoiceManagerVoid({ invoiceRefId, ...(dto ? { dto } : {}) }));
+  /** Voids an invoice; with `sendLetter` the credit note is not emailed but sent as a letter afterwards. */
+  voidInvoice(invoiceRefId: string, dto?: VoidInvoiceDto, sendLetter = false): void {
+    this.store.dispatch(
+      adminInvoiceManagerVoid({ invoiceRefId, ...(dto ? { dto } : {}), ...(sendLetter ? { sendLetter } : {}) }),
+    );
   }
 
-  /** Emails an invoice that was issued without notification. */
-  sendInvoice(invoiceRefId: string): void {
-    this.store.dispatch(adminInvoiceManagerSend({ invoiceRefId }));
+  /** Sends an invoice that was issued without notification (email by default, or a letter); spooled. */
+  sendInvoice(invoiceRefId: string, channel: SpooledDeliveryChannel = 'email'): void {
+    this.store.dispatch(adminInvoiceManagerSend({ invoiceRefId, channel }));
   }
 
-  /** Emails the credit note of an invoice that was voided without notification. */
-  sendCreditNote(invoiceRefId: string): void {
-    this.store.dispatch(adminInvoiceManagerSendCreditNote({ invoiceRefId }));
+  /** Sends the credit note of an invoice that was voided without notification (email or letter); spooled. */
+  sendCreditNote(invoiceRefId: string, channel: SpooledDeliveryChannel = 'email'): void {
+    this.store.dispatch(adminInvoiceManagerSendCreditNote({ invoiceRefId, channel }));
+  }
+
+  /** Records that the invoice (or its credit note) was sent outside Decabill. */
+  markSent(invoiceRefId: string, options: { creditNote?: boolean; dto?: MarkDocumentSentDto } = {}): void {
+    this.store.dispatch(adminInvoiceManagerMarkSent({ invoiceRefId, ...options }));
   }
 
   markPaid(invoiceRefId: string, dto?: MarkInvoicePaymentStatusDto): void {

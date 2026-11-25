@@ -1,6 +1,7 @@
 import type { ListParams, TaxCategory } from './billing.types';
 import type { DeliveryTermsCode, EffectiveDocumentTerms, DocumentTermsInput } from './document-terms.types';
 import type { ProjectPricingModel } from './projects.types';
+import type { DocumentDeliveryChannel } from './spooler.types';
 
 export type OfferStatus = 'draft' | 'archived' | 'accepted' | 'declined' | 'expired' | 'revoked';
 
@@ -94,8 +95,12 @@ export interface AdminOfferListItem {
   canDownload: boolean;
   /** When the offer was sent to the customer; null for drafts and offers archived without notification. */
   sentAt?: string | null;
-  /** Archived, not yet sent and not expired: the send action applies. */
+  /** How the offer was sent (email, letter, manual); null while unsent. */
+  sentVia?: DocumentDeliveryChannel | null;
+  /** Archived, not yet sent and not expired: send (email / letter) and mark-sent apply. */
   canSend?: boolean;
+  /** Set on send responses: the spool job delivering the offer. */
+  spoolJobId?: string;
   /** Whether the customer is emailed when the offer expires. */
   notifyOnExpiry?: boolean;
   /** The customer could accept it (archived, not expired): an admin may record the acceptance. */

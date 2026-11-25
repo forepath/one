@@ -49,6 +49,7 @@ import {
   getUnavailableLabel,
   getVatIdValidationStatusLabel,
 } from '../billing-status-labels';
+import { DeliveryPreferenceFieldComponent } from '../document-delivery/delivery-preference-field.component';
 import { EinvoiceSettingsFieldsComponent } from '../einvoice/einvoice-settings-fields.component';
 import { einvoiceSettingsPayload, isEinvoiceEndpointValid } from '../einvoice/einvoice-settings.util';
 import {
@@ -67,6 +68,7 @@ import { trustState } from '../shared/table-states';
   selector: 'framework-admin-customer-profiles-page',
   standalone: true,
   imports: [
+    DeliveryPreferenceFieldComponent,
     FpcFormTextDirective,
     CommonModule,
     FormsModule,
@@ -102,6 +104,8 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   private readonly capabilitiesFacade = inject(BillingCapabilitiesFacade);
   /** Selectable e-invoice formats and the issuer default (capabilities). */
   readonly einvoiceFormats = toSignal(this.capabilitiesFacade.einvoiceFormats$, { initialValue: [] });
+  /** Letters can be chosen as preferred delivery (postal provider configured). */
+  readonly postalAvailable = toSignal(this.capabilitiesFacade.postalDeliveryAvailable$, { initialValue: false });
   readonly einvoiceDefaultFormat = toSignal(this.capabilitiesFacade.einvoiceDefaultFormat$, { initialValue: null });
   readonly addProfileAriaLabel = $localize`:@@featureAdminProfiles-add:Add`;
   readonly searchPlaceholder = $localize`:@@featureAdminProfiles-searchPlaceholder:Search profiles`;
@@ -356,6 +360,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
           einvoiceFormat: full.einvoiceFormat ?? null,
           buyerReference: full.buyerReference ?? '',
           einvoiceEndpoint: full.einvoiceEndpoint ?? '',
+          preferredDeliveryChannel: full.preferredDeliveryChannel ?? 'email',
         };
         showBillingModal(this.editModalOpen);
       },
@@ -569,6 +574,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
       einvoiceFormat: null,
       buyerReference: '',
       einvoiceEndpoint: '',
+      preferredDeliveryChannel: 'email',
     };
   }
 
@@ -601,6 +607,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
       einvoiceFormat: null,
       buyerReference: '',
       einvoiceEndpoint: '',
+      preferredDeliveryChannel: 'email',
     };
   }
 

@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Param,
   ParseEnumPipe,
   ParseIntPipe,
@@ -15,6 +16,8 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 
+import { SpoolPrintoutService } from '../../spooler/spool-printout.service';
+import { mapSpoolJob, type SpoolJobResponseDto } from '../../spooler/spooler.dto';
 import type { RequestWithUser } from '../../utils/billing-access.utils';
 import { getUserFromRequest } from '../../utils/billing-access.utils';
 import { InventoryMovementType } from '../constants/inventory.constants';
@@ -33,7 +36,10 @@ const OPTIONAL_UUID = new ParseUUIDPipe({ version: '4', optional: true });
 @Controller('admin/billing/inventory/movements')
 @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminInventoryMovementsController {
-  constructor(private readonly movements: InventoryMovementsService) {}
+  constructor(
+    private readonly movements: InventoryMovementsService,
+    private readonly printouts: SpoolPrintoutService,
+  ) {}
 
   @RequireScopes('inventory:admin')
   @Get()
@@ -66,6 +72,14 @@ export class AdminInventoryMovementsController {
   @Get(':id')
   async get(@Param('id', UUID) id: string): Promise<InventoryMovementResponseDto> {
     return await this.movements.get(id);
+  }
+
+  /** Spools the movement document (console); the file is downloaded from the spooler once the job completed. */
+  @RequireScopes('inventory:admin', 'spooler:admin')
+  @Post(':id/pdf/spool')
+  @HttpCode(202)
+  async spoolPdf(@Param('id', UUID) id: string, @Req() req: RequestWithUser): Promise<SpoolJobResponseDto> {
+    return mapSpoolJob(await this.printouts.spoolInventoryMovement(id, getUserFromRequest(req).userId));
   }
 
   @RequireScopes('inventory:admin')

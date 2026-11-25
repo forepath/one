@@ -2,6 +2,7 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, Pri
 
 import { AutoPaymentStatus } from '../constants/auto-payment-status.constants';
 import { CustomerType } from '../constants/customer-type.constants';
+import type { DocumentDeliveryChannel } from '../constants/document-delivery.constants';
 import { DeliveryTermsCode } from '../constants/document-terms.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { EinvoiceTaxCategoryCode, TaxMode } from '../constants/tax-mode.constants';
@@ -95,13 +96,21 @@ export class InvoiceEntity {
   @Column({ type: 'timestamp', nullable: true, name: 'voided_at' })
   voidedAt?: Date;
 
-  /** When the invoice was emailed to the customer; null while it was issued without notification. */
+  /** When the invoice was sent to the customer; null while it was issued without notification. */
   @Column({ type: 'timestamp', nullable: true, name: 'sent_at' })
   sentAt?: Date | null;
 
-  /** When the credit note of a voided invoice was emailed to the customer; null while it was not sent. */
+  /** How the invoice was sent (`email`, `letter`, `manual`); null while unsent. */
+  @Column({ type: 'varchar', length: 16, nullable: true, name: 'sent_via' })
+  sentVia?: DocumentDeliveryChannel | null;
+
+  /** When the credit note of a voided invoice was sent to the customer; null while it was not sent. */
   @Column({ type: 'timestamp', nullable: true, name: 'void_document_sent_at' })
   voidDocumentSentAt?: Date | null;
+
+  /** How the credit note was sent (`email`, `letter`, `manual`); null while unsent. */
+  @Column({ type: 'varchar', length: 16, nullable: true, name: 'void_document_sent_via' })
+  voidDocumentSentVia?: DocumentDeliveryChannel | null;
 
   @Column({ type: 'timestamp', nullable: true, name: 'paid_at' })
   paidAt?: Date | null;

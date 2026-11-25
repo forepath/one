@@ -578,6 +578,13 @@ export class BillingConsoleContainerComponent implements OnInit {
         title: $localize`:@@featureContainer-adminFileExplorerTitle:File Explorer`,
         label: $localize`:@@featureContainer-adminFileExplorer:Files`,
       },
+      {
+        routerLink: ['/administration/spooler'],
+        activePaths: ['/administration/spooler'],
+        icon: 'bi-printer',
+        title: $localize`:@@featureContainer-adminSpoolerTitle:Spooler: printouts and document sends`,
+        label: $localize`:@@featureContainer-adminSpooler:Spooler`,
+      },
       ...(isFullAdmin
         ? [
             {
@@ -644,13 +651,14 @@ export class BillingConsoleContainerComponent implements OnInit {
       {
         key: 'operations',
         icon: 'bi-clipboard-data',
-        title: $localize`:@@featureContainer-navGroupOperationsTitle:Operations: projects, suppliers, inventory and files`,
+        title: $localize`:@@featureContainer-navGroupOperationsTitle:Operations: projects, suppliers, inventory, files and spooler`,
         label: $localize`:@@featureContainer-navGroupOperations:Operations`,
         items: pick(
           '/administration/projects',
           '/administration/supplier-profiles',
           '/administration/inventory',
           '/administration/file-explorer',
+          '/administration/spooler',
         ),
       },
       {

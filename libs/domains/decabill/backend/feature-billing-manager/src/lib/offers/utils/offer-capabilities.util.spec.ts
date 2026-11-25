@@ -71,7 +71,12 @@ describe('offer-capabilities.util', () => {
     };
 
     it('an archived, unsent, unexpired offer can be sent', () => {
-      expect(offerDeliveryFields(archived, now)).toEqual({ sentAt: null, canSend: true, notifyOnExpiry: true });
+      expect(offerDeliveryFields(archived, now)).toEqual({
+        sentAt: null,
+        sentVia: null,
+        canSend: true,
+        notifyOnExpiry: true,
+      });
       expect(offerDeliveryFields({ ...archived, expiresAt: null }, now).canSend).toBe(true);
     });
 

@@ -133,8 +133,9 @@ export class ProjectsFacade {
     this.store.dispatch(deleteAdminProject({ projectId }));
   }
 
-  billProjectTime(projectId: string, dto: BillProjectTimeDto): void {
-    this.store.dispatch(billProjectTime({ projectId, dto }));
+  /** Bills unbilled time; with `sendLetter` the invoice is sent as a letter instead of by email. */
+  billProjectTime(projectId: string, dto: BillProjectTimeDto, sendLetter = false): void {
+    this.store.dispatch(billProjectTime({ projectId, dto, ...(sendLetter ? { sendLetter } : {}) }));
   }
 
   clearError(): void {

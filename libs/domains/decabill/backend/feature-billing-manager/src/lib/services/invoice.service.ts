@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 
 import { ACCOUNTING_POSTING_PORT, type AccountingPostingPort } from '../accounting/ports/accounting-posting.port';
 import { isAutoPaymentBlocking } from '../constants/auto-payment-status.constants';
+import { DeliverableDocumentType, DocumentDeliveryChannel } from '../constants/document-delivery.constants';
 import { InvoiceStatus, OPEN_OVERDUE_INVOICE_STATUSES } from '../constants/invoice-status.constants';
 import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
 import { SettlementDocumentType, SettlementSource, SettlementType } from '../constants/settlement.constants';
@@ -27,8 +28,10 @@ import { ServicePlansRepository } from '../repositories/service-plans.repository
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { mapInvoiceToSearchDocument } from '../search/billing-search-document.mapper';
 import { BillingSearchIndexService } from '../search/billing-search-index.service';
+import { PreferredLetterService } from '../spooler/preferred-letter.service';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 import { normalizeDocumentNote } from '../utils/document-note.utils';
+import { resolveManualSentAt } from '../utils/manual-delivery.util';
 import { invoiceCountsTowardOssLedger } from '../utils/oss-ledger.util';
 import { roundMoney } from '../utils/settlement-state.util';
 import { getRequiredTenantId } from '../utils/tenant-query.utils';
@@ -86,6 +89,7 @@ export class InvoiceService {
     private readonly dataSource: DataSource,
     private readonly documentSettlementService: DocumentSettlementService,
     @Optional() @Inject(ACCOUNTING_POSTING_PORT) private readonly postingPort?: AccountingPostingPort,
+    @Optional() private readonly preferredLetter?: PreferredLetterService,
   ) {}
 
   async createAndIssue(params: CreateInvoiceDraftParams): Promise<{ invoiceRefId: string; invoiceNumber?: string }> {
@@ -316,8 +320,20 @@ export class InvoiceService {
       );
 
       if (emailed) {
-        await this.invoicesRepository.update(invoiceId, { voidDocumentSentAt: new Date() });
+        await this.invoicesRepository.update(invoiceId, {
+          voidDocumentSentAt: new Date(),
+          voidDocumentSentVia: DocumentDeliveryChannel.EMAIL,
+        });
       }
+
+      // Customers who prefer letters also get the credit note posted (in addition to the email).
+      await this.preferredLetter?.sendIfPreferred({
+        documentType: DeliverableDocumentType.CREDIT_NOTE,
+        documentId: invoiceId,
+        documentNumber: buildCreditNoteNumber(invoice.invoiceNumber),
+        userId: invoice.userId,
+        adminUserId,
+      });
     }
 
     const voided = await this.invoicesRepository.findByIdOrThrow(invoiceId);
@@ -594,11 +610,43 @@ export class InvoiceService {
   }
 
   /**
-   * Emails an issued invoice that was issued without notification (PDF, time report for project invoices). The send is
-   * claimed atomically first, so concurrent requests email the customer once; it is released again when no mail could
-   * be queued. Callers load the invoice tenant-scoped.
+   * Records that an issued invoice was sent outside Decabill (e.g. printed and posted by hand): `sent_via = manual`,
+   * `sent_at` as given (default now). Nothing is sent to the customer.
    */
-  async sendIssuedInvoice(invoice: InvoiceEntity): Promise<InvoiceEntity> {
+  async markInvoiceSent(invoice: InvoiceEntity, sentAt?: Date): Promise<InvoiceEntity> {
+    this.assertInvoiceSendable(invoice);
+
+    const at = resolveManualSentAt(sentAt, invoice.issuedAt);
+
+    if (!(await this.invoicesRepository.claimDelivery(invoice.id, 'sentAt', at, DocumentDeliveryChannel.MANUAL))) {
+      throw new BadRequestException('Invoice has already been sent');
+    }
+
+    return await this.invoicesRepository.findByIdOrThrow(invoice.id);
+  }
+
+  /** Records that the credit note of a voided invoice was sent outside Decabill (`sent_via = manual`). */
+  async markVoidDocumentSent(invoice: InvoiceEntity, sentAt?: Date): Promise<InvoiceEntity> {
+    this.assertCreditNoteSendable(invoice);
+
+    const at = resolveManualSentAt(sentAt, invoice.voidedAt);
+
+    if (
+      !(await this.invoicesRepository.claimDelivery(
+        invoice.id,
+        'voidDocumentSentAt',
+        at,
+        DocumentDeliveryChannel.MANUAL,
+      ))
+    ) {
+      throw new BadRequestException('Credit note has already been sent');
+    }
+
+    return await this.invoicesRepository.findByIdOrThrow(invoice.id);
+  }
+
+  /** Issued, numbered, not voided and not sent yet (send, send as letter, mark as sent). */
+  assertInvoiceSendable(invoice: InvoiceEntity): void {
     if (invoice.status === InvoiceStatus.DRAFT || invoice.status === InvoiceStatus.VOID || !invoice.invoiceNumber) {
       throw new BadRequestException('Only issued invoices that are not voided can be sent');
     }
@@ -606,63 +654,16 @@ export class InvoiceService {
     if (invoice.sentAt) {
       throw new BadRequestException('Invoice has already been sent');
     }
-
-    const storageKey = await this.getStoredPdfKey(invoice);
-    const fresh = await this.invoicesRepository.findByIdOrThrow(invoice.id);
-
-    await this.claimAndDeliver(invoice.id, 'sentAt', 'Invoice has already been sent', () =>
-      this.billingEmailPublisher.publishInvoiceIssued(fresh, storageKey),
-    );
-
-    return await this.invoicesRepository.findByIdOrThrow(invoice.id);
   }
 
-  /** Emails the credit note of an invoice that was voided without notification (same claim rules as invoices). */
-  async sendVoidDocument(invoice: InvoiceEntity): Promise<InvoiceEntity> {
+  /** Voided, numbered and its credit note not sent yet. */
+  assertCreditNoteSendable(invoice: InvoiceEntity): void {
     if (invoice.status !== InvoiceStatus.VOID || !invoice.invoiceNumber) {
       throw new BadRequestException('Only voided invoices have a credit note to send');
     }
 
     if (invoice.voidDocumentSentAt) {
       throw new BadRequestException('Credit note has already been sent');
-    }
-
-    const invoiceNumber = invoice.invoiceNumber;
-    const storageKey = await this.getStoredVoidDocumentKey(invoice);
-
-    await this.claimAndDeliver(invoice.id, 'voidDocumentSentAt', 'Credit note has already been sent', () =>
-      this.billingEmailPublisher.publishVoidDocument(invoice, storageKey, buildCreditNoteNumber(invoiceNumber)),
-    );
-
-    return await this.invoicesRepository.findByIdOrThrow(invoice.id);
-  }
-
-  private async claimAndDeliver(
-    invoiceId: string,
-    field: 'sentAt' | 'voidDocumentSentAt',
-    alreadySentMessage: string,
-    deliver: () => Promise<boolean>,
-  ): Promise<void> {
-    const at = new Date();
-
-    if (!(await this.invoicesRepository.claimDelivery(invoiceId, field, at))) {
-      throw new BadRequestException(alreadySentMessage);
-    }
-
-    let emailed = false;
-
-    try {
-      emailed = await deliver();
-    } catch (error) {
-      await this.invoicesRepository.releaseDelivery(invoiceId, field, at);
-
-      throw error;
-    }
-
-    if (!emailed) {
-      await this.invoicesRepository.releaseDelivery(invoiceId, field, at);
-
-      throw new BadRequestException('Customer has no billing email address; nothing was sent');
     }
   }
 

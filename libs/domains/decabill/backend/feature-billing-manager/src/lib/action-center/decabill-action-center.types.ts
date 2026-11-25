@@ -44,6 +44,9 @@ export const DECABILL_ACTION_TYPES = {
   accountingBankSuggested: 'decabill.accounting.bank_suggested',
   accountingBankImportFailed: 'decabill.accounting.bank_import_failed',
   accountingVatReturnsDue: 'decabill.accounting.vat_return_due',
+  // delivery (spooler, postal letters)
+  spoolJobsFailed: 'decabill.spooler.failed',
+  lettersAttention: 'decabill.letters.attention',
   // DATEV (only with BILLING_DATEV_EXPORT_ENABLED)
   datevExportFailed: 'decabill.datev.export_failed',
 } as const;

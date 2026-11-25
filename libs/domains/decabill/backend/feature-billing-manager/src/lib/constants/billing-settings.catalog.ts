@@ -2,6 +2,14 @@ import { SettingDefinition } from '@forepath/shared/backend/util-settings-overri
 
 import { DEFAULT_DOCUMENT_BRAND_COLOR } from './document-branding.constants';
 import { EINVOICE_FORMAT_VALUES } from './e-invoice-format.constants';
+import { DEFAULT_POSTAL_PROVIDER } from './postal-letter.constants';
+import {
+  PINGEN_DELIVERY_PRODUCTS,
+  PINGEN_ENVIRONMENTS,
+  PINGEN_PRINT_MODES,
+  PINGEN_PRINT_SPECTRUMS,
+  POSTAL_ADDRESS_POSITIONS,
+} from './postal-provider.constants';
 
 /**
  * Billing manager settings overridable from the console (Administration → Settings).
@@ -22,6 +30,7 @@ export const BILLING_SETTINGS_CATEGORIES = [
   'withdrawal',
   'payments',
   'email',
+  'postal',
   'links',
   'datev',
   'accounting',
@@ -42,6 +51,7 @@ const t = (category: BillingSettingsCategory, key: string, type: SettingDefiniti
 const restart = { restartRequired: true } as const;
 const COUNTRY = { maxLength: 2, pattern: '^[A-Za-z]{2}$' } as const;
 const CURRENCY = { maxLength: 3, pattern: '^[A-Za-z]{3}$' } as const;
+const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$';
 const interval = (key: string, defaultValue: string): SettingDefinition =>
   g('background_jobs', key, 'duration', { defaultValue, ...restart });
 const batch = (key: string, defaultValue = '100'): SettingDefinition =>
@@ -125,6 +135,19 @@ export const BILLING_SETTINGS: readonly SettingDefinition[] = [
   t('email', 'EMAIL_COMPANY_COUNTRY', 'string', COUNTRY),
   t('email', 'EMAIL_COMPANY_VAT_ID', 'string', { maxLength: 32 }),
   t('email', 'EMAIL_COMPANY_EMAIL', 'email'),
+
+  // Postal delivery (documents sent as physical letters through a postal provider; Pingen is built in)
+  t('postal', 'BILLING_DEFAULT_POSTAL_PROVIDER', 'string', { maxLength: 64, defaultValue: DEFAULT_POSTAL_PROVIDER }),
+  t('postal', 'BILLING_POSTAL_COVER_PAGE', 'boolean', { defaultValue: 'true' }),
+  t('postal', 'BILLING_POSTAL_ADDRESS_POSITION', 'enum', { options: POSTAL_ADDRESS_POSITIONS, defaultValue: 'left' }),
+  t('postal', 'PINGEN_ENVIRONMENT', 'enum', { options: PINGEN_ENVIRONMENTS, defaultValue: 'production' }),
+  t('postal', 'PINGEN_CLIENT_ID', 'string', { maxLength: 255 }),
+  t('postal', 'PINGEN_CLIENT_SECRET', 'secret', { maxLength: 255 }),
+  t('postal', 'PINGEN_ORGANISATION_ID', 'string', { maxLength: 36, pattern: UUID_PATTERN }),
+  t('postal', 'PINGEN_WEBHOOK_SIGNING_KEY', 'secret', { maxLength: 32, pattern: '^[A-Za-z0-9]{20,32}$' }),
+  t('postal', 'PINGEN_DELIVERY_PRODUCT', 'enum', { options: PINGEN_DELIVERY_PRODUCTS, defaultValue: 'cheap' }),
+  t('postal', 'PINGEN_PRINT_MODE', 'enum', { options: PINGEN_PRINT_MODES, defaultValue: 'simplex' }),
+  t('postal', 'PINGEN_PRINT_SPECTRUM', 'enum', { options: PINGEN_PRINT_SPECTRUMS, defaultValue: 'grayscale' }),
 
   // Console links (Stripe returns, email links)
   g('links', 'BILLING_FRONTEND_URL', 'url'),
@@ -212,6 +235,7 @@ export const BILLING_SETTINGS: readonly SettingDefinition[] = [
 
   // Files
   g('files', 'BILLING_SKIP_FILE_CACHE', 'boolean', { defaultValue: 'false' }),
+  g('files', 'BILLING_SPOOLER_RETENTION_DAYS', 'integer', { min: 1, max: 365, defaultValue: '7' }),
   g('files', 'DECABILL_TICKET_ATTACHMENT_MAX_BYTES', 'integer', { min: 1024, defaultValue: '26214400', ...restart }),
 
   // Background jobs (coordinator intervals and batch sizes)
@@ -241,6 +265,7 @@ export const BILLING_SETTINGS: readonly SettingDefinition[] = [
   interval('SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL', '86400000'),
   interval('OFFER_EXPIRATION_SCHEDULER_INTERVAL', '3600000'),
   interval('OFFER_FULFILLMENT_SCHEDULER_INTERVAL', '60000'),
+  interval('SPOOLER_COORDINATOR_INTERVAL', '60000'),
   g('background_jobs', 'BILLING_METER_COLLECT_ENABLED', 'boolean', { defaultValue: 'true', ...restart }),
   interval('BILLING_METER_COLLECT_INTERVAL', '60000'),
   batch('BILLING_METER_COLLECT_BATCH_SIZE', '500'),

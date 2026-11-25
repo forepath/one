@@ -869,7 +869,10 @@ describe('InvoiceService', () => {
 
       await service.voidInvoice('inv-1', subscriptionId, 'admin-1');
 
-      expect(invoicesRepository.update).toHaveBeenCalledWith('inv-1', { voidDocumentSentAt: expect.any(Date) });
+      expect(invoicesRepository.update).toHaveBeenCalledWith('inv-1', {
+        voidDocumentSentAt: expect.any(Date),
+        voidDocumentSentVia: 'email',
+      });
     });
 
     it('does not record voidDocumentSentAt when the void was silent or no mail was queued', async () => {
@@ -889,21 +892,10 @@ describe('InvoiceService', () => {
       await service.voidInvoice('inv-1', subscriptionId, 'admin-1', {}, { skipNotification: true });
 
       expect(billingEmailPublisher.publishVoidDocument).toHaveBeenCalledTimes(1);
-      expect(invoicesRepository.update).not.toHaveBeenCalledWith('inv-1', { voidDocumentSentAt: expect.any(Date) });
-    });
-
-    it('sendIssuedInvoice claims the send and emails the stored PDF', async () => {
-      invoicePdfService.readPdf.mockResolvedValue(Buffer.from('%PDF'));
-      invoicesRepository.findByIdOrThrow.mockResolvedValue(issued);
-      invoicesRepository.claimDelivery.mockResolvedValue(true);
-      billingEmailPublisher.publishInvoiceIssued.mockResolvedValue(true);
-
-      await service.sendIssuedInvoice(issued);
-
-      expect(invoicesRepository.claimDelivery).toHaveBeenCalledWith('inv-1', 'sentAt', expect.any(Date));
-      expect(billingEmailPublisher.publishInvoiceIssued).toHaveBeenCalledWith(issued, 'sub-1/inv-1.pdf');
-      expect(invoicesRepository.releaseDelivery).not.toHaveBeenCalled();
-      expect(invoicePdfService.generateAndStore).not.toHaveBeenCalled();
+      expect(invoicesRepository.update).not.toHaveBeenCalledWith('inv-1', {
+        voidDocumentSentAt: expect.any(Date),
+        voidDocumentSentVia: 'email',
+      });
     });
 
     it.each([
@@ -911,60 +903,55 @@ describe('InvoiceService', () => {
       ['a voided invoice', { status: InvoiceStatus.VOID }],
       ['an invoice without number', { invoiceNumber: null }],
       ['an invoice already sent', { sentAt: new Date('2026-01-01T00:00:00Z') }],
-    ])('sendIssuedInvoice refuses %s without emailing', async (_label, patch) => {
-      await expect(service.sendIssuedInvoice({ ...issued, ...patch } as InvoiceEntity)).rejects.toBeInstanceOf(
+    ])('assertInvoiceSendable refuses %s', (_label, patch) => {
+      expect(() => service.assertInvoiceSendable({ ...issued, ...patch } as InvoiceEntity)).toThrow(
         BadRequestException,
-      );
-      expect(invoicesRepository.claimDelivery).not.toHaveBeenCalled();
-      expect(billingEmailPublisher.publishInvoiceIssued).not.toHaveBeenCalled();
-    });
-
-    it('sendIssuedInvoice does not email when a concurrent request won the claim', async () => {
-      invoicePdfService.readPdf.mockResolvedValue(Buffer.from('%PDF'));
-      invoicesRepository.findByIdOrThrow.mockResolvedValue(issued);
-      invoicesRepository.claimDelivery.mockResolvedValue(false);
-
-      await expect(service.sendIssuedInvoice(issued)).rejects.toBeInstanceOf(BadRequestException);
-      expect(billingEmailPublisher.publishInvoiceIssued).not.toHaveBeenCalled();
-    });
-
-    it('sendIssuedInvoice releases the claim when the customer has no billing email', async () => {
-      invoicePdfService.readPdf.mockResolvedValue(Buffer.from('%PDF'));
-      invoicesRepository.findByIdOrThrow.mockResolvedValue(issued);
-      invoicesRepository.claimDelivery.mockResolvedValue(true);
-      billingEmailPublisher.publishInvoiceIssued.mockResolvedValue(false);
-
-      await expect(service.sendIssuedInvoice(issued)).rejects.toThrow(/no billing email/);
-      expect(invoicesRepository.releaseDelivery).toHaveBeenCalledWith('inv-1', 'sentAt', expect.any(Date));
-    });
-
-    it('sendVoidDocument emails the credit note of a voided invoice once', async () => {
-      const voided = { ...issued, status: InvoiceStatus.VOID, voidedAt: new Date('2026-02-01T00:00:00Z') };
-
-      invoiceVoidDocumentsRepository.findByInvoiceId.mockResolvedValue({ pdfStorageKey: 'sub-1/inv-1-void.pdf' });
-      invoicePdfService.readPdf.mockResolvedValue(Buffer.from('%PDF'));
-      invoicesRepository.claimDelivery.mockResolvedValue(true);
-      invoicesRepository.findByIdOrThrow.mockResolvedValue(voided);
-      billingEmailPublisher.publishVoidDocument.mockResolvedValue(true);
-
-      await service.sendVoidDocument(voided as InvoiceEntity);
-
-      expect(invoicesRepository.claimDelivery).toHaveBeenCalledWith('inv-1', 'voidDocumentSentAt', expect.any(Date));
-      expect(billingEmailPublisher.publishVoidDocument).toHaveBeenCalledWith(
-        voided,
-        'sub-1/inv-1-void.pdf',
-        'INV-2026-00001-CN',
       );
     });
 
     it.each([
       ['an issued invoice', { status: InvoiceStatus.ISSUED }],
       ['a credit note already sent', { status: InvoiceStatus.VOID, voidDocumentSentAt: new Date('2026-02-02') }],
-    ])('sendVoidDocument refuses %s', async (_label, patch) => {
-      await expect(service.sendVoidDocument({ ...issued, ...patch } as InvoiceEntity)).rejects.toBeInstanceOf(
+    ])('assertCreditNoteSendable refuses %s', (_label, patch) => {
+      expect(() => service.assertCreditNoteSendable({ ...issued, ...patch } as InvoiceEntity)).toThrow(
         BadRequestException,
       );
-      expect(billingEmailPublisher.publishVoidDocument).not.toHaveBeenCalled();
+    });
+
+    it('markInvoiceSent records a manual send at the given time without emailing', async () => {
+      const sentAt = new Date(Date.now() - 60_000);
+
+      invoicesRepository.claimDelivery.mockResolvedValue(true);
+      invoicesRepository.findByIdOrThrow.mockResolvedValue({ ...issued, sentAt, sentVia: 'manual' });
+
+      const result = await service.markInvoiceSent(issued, sentAt);
+
+      expect(invoicesRepository.claimDelivery).toHaveBeenCalledWith('inv-1', 'sentAt', sentAt, 'manual');
+      expect(billingEmailPublisher.publishInvoiceIssued).not.toHaveBeenCalled();
+      expect(result.sentVia).toBe('manual');
+    });
+
+    it('markInvoiceSent refuses a future time and a concurrent send', async () => {
+      await expect(service.markInvoiceSent(issued, new Date(Date.now() + 3_600_000))).rejects.toThrow(/future/);
+
+      invoicesRepository.claimDelivery.mockResolvedValue(false);
+      await expect(service.markInvoiceSent(issued)).rejects.toThrow(/already been sent/);
+    });
+
+    it('markVoidDocumentSent records a manual credit note send', async () => {
+      const voided = { ...issued, status: InvoiceStatus.VOID, voidedAt: new Date('2026-02-01T00:00:00Z') };
+
+      invoicesRepository.claimDelivery.mockResolvedValue(true);
+      invoicesRepository.findByIdOrThrow.mockResolvedValue(voided);
+
+      await service.markVoidDocumentSent(voided as InvoiceEntity);
+
+      expect(invoicesRepository.claimDelivery).toHaveBeenCalledWith(
+        'inv-1',
+        'voidDocumentSentAt',
+        expect.any(Date),
+        'manual',
+      );
     });
   });
 });

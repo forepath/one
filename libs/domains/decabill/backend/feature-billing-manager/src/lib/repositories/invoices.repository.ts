@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, In, IsNull, Repository } from 'typeorm';
 
 import { AutoPaymentStatus } from '../constants/auto-payment-status.constants';
+import { DocumentDeliveryChannel } from '../constants/document-delivery.constants';
 import {
   BILLED_INVOICE_STATUSES,
   CUSTOMER_VISIBLE_INVOICE_STATUSES,
@@ -681,25 +682,40 @@ export class InvoicesRepository {
 
   /**
    * Atomically marks an invoice (or its credit note) as sent, only while it is still unsent: concurrent send requests
-   * cannot both win, so the customer is emailed once. Resolves `false` when another request sent it first. Call after
-   * a tenant-scoped lookup (`findByIdOrThrow`); the update itself matches the id.
+   * cannot both win, so the customer receives the document once. Resolves `false` when another request sent it first.
+   * Call after a tenant-scoped lookup (`findByIdOrThrow`); the update itself matches the id.
    */
-  async claimDelivery(id: string, field: 'sentAt' | 'voidDocumentSentAt', at: Date): Promise<boolean> {
+  async claimDelivery(
+    id: string,
+    field: 'sentAt' | 'voidDocumentSentAt',
+    at: Date,
+    via: DocumentDeliveryChannel = DocumentDeliveryChannel.EMAIL,
+  ): Promise<boolean> {
     const result =
       field === 'sentAt'
-        ? await this.repository.update({ id, sentAt: IsNull() }, { sentAt: at })
-        : await this.repository.update({ id, voidDocumentSentAt: IsNull() }, { voidDocumentSentAt: at });
+        ? await this.repository.update({ id, sentAt: IsNull() }, { sentAt: at, sentVia: via })
+        : await this.repository.update(
+            { id, voidDocumentSentAt: IsNull() },
+            { voidDocumentSentAt: at, voidDocumentSentVia: via },
+          );
 
     return (result.affected ?? 0) === 1;
   }
 
-  /** Undoes `claimDelivery` when the email could not be queued, so the document can be sent again. */
-  async releaseDelivery(id: string, field: 'sentAt' | 'voidDocumentSentAt', at: Date): Promise<void> {
-    if (field === 'sentAt') {
-      await this.repository.update({ id, sentAt: at }, { sentAt: null });
-    } else {
-      await this.repository.update({ id, voidDocumentSentAt: at }, { voidDocumentSentAt: null });
-    }
+  /**
+   * Undoes `claimDelivery` when the document could not be delivered (no email queued, letter rejected), so it can be
+   * sent again. Only releases the claim made at `at`; a later delivery is kept.
+   */
+  async releaseDelivery(id: string, field: 'sentAt' | 'voidDocumentSentAt', at: Date): Promise<boolean> {
+    const result =
+      field === 'sentAt'
+        ? await this.repository.update({ id, sentAt: at }, { sentAt: null, sentVia: null })
+        : await this.repository.update(
+            { id, voidDocumentSentAt: at },
+            { voidDocumentSentAt: null, voidDocumentSentVia: null },
+          );
+
+    return (result.affected ?? 0) === 1;
   }
 
   async create(dto: Partial<InvoiceEntity>): Promise<InvoiceEntity> {

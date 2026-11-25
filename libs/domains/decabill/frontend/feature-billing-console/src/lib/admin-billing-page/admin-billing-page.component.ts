@@ -122,6 +122,7 @@ import {
   getUnavailableLabel,
   isBalanceIncreasingSettlement,
 } from '../billing-status-labels';
+import { DeliveryChoiceComponent, type DeliveryChoice } from '../document-delivery/delivery-choice.component';
 import { DocumentNoteFieldComponent } from '../document-note/document-note-field.component';
 import { DocumentNoteSummaryComponent } from '../document-note/document-note-summary.component';
 import { documentNoteToInput } from '../document-note/document-note.util';
@@ -204,7 +205,16 @@ interface SupplierInvoiceFormLineItem extends SupplierInvoiceLineItemDto {
   accountingOpen?: boolean;
 }
 
-type AdminInvoiceAction = 'void' | 'markPaid' | 'markUnpaid' | 'writeOff' | 'refund' | 'send' | 'sendCreditNote';
+type AdminInvoiceAction =
+  | 'void'
+  | 'markPaid'
+  | 'markUnpaid'
+  | 'writeOff'
+  | 'refund'
+  | 'send'
+  | 'sendCreditNote'
+  | 'markSent'
+  | 'markCreditNoteSent';
 
 interface InvoicePreviewLineItem {
   description: string;
@@ -246,6 +256,7 @@ type AdminBillingPerspective = 'customer' | 'supplier';
   selector: 'framework-admin-billing-page',
   standalone: true,
   imports: [
+    DeliveryChoiceComponent,
     FpcMoneyPipe,
     FpcDatePipe,
     DocumentTermsFieldsComponent,
@@ -439,12 +450,27 @@ export class AdminBillingPageComponent implements OnInit {
         return this.sendToCustomerLabel;
       case 'sendCreditNote':
         return this.sendCreditNoteLabel;
+      case 'markSent':
+      case 'markCreditNoteSent':
+        return this.markSentLabel;
       default:
         return DB_DL_VOID;
     }
   });
   readonly sendToCustomerLabel = $localize`:@@featureAdminInvoices-sendToCustomer:Send to customer`;
   readonly sendCreditNoteLabel = $localize`:@@featureAdminInvoices-sendCreditNote:Send credit note`;
+  readonly markSentLabel = $localize`:@@featureAdminInvoices-markSent:Mark as sent`;
+  readonly markCreditNoteSentLabel = $localize`:@@featureAdminInvoices-markCreditNoteSent:Mark credit note as sent`;
+  /** Letters can be sent (postal provider configured for the tenant). */
+  readonly postalAvailable = toSignal(this.capabilitiesFacade.postalDeliveryAvailable$, { initialValue: false });
+  /** Send / send credit note: email or letter. */
+  readonly actionChannel = signal<DeliveryChoice>('email');
+  /** Void with a postal provider: email, letter or no credit note sent yet. */
+  readonly actionVoidDelivery = signal<DeliveryChoice>('email');
+  /** Mark (credit note) as sent: date it was sent outside Decabill (`yyyy-mm-dd`, default today). */
+  readonly actionSentAt = signal('');
+  /** Issue dialog with a postal provider: email, letter or not sent yet. */
+  issueDelivery: DeliveryChoice = 'email';
   /** Void: email the credit note right away (defaults to on when the invoice itself was sent). */
   readonly actionNotifyCustomer = signal(true);
   /** Issue dialog: email the invoice right away. */
@@ -776,10 +802,15 @@ export class AdminBillingPageComponent implements OnInit {
 
       if (this.canRefund(inv)) menu.push({ id: 'refund', label: DB_DL_REFUND, icon: 'cash-coin' });
 
-      if (inv.canSend) menu.push({ id: 'send', label: this.sendToCustomerLabel, icon: 'send' });
+      if (inv.canSend) {
+        menu.push({ id: 'send', label: this.sendToCustomerLabel, icon: 'send' });
+        menu.push({ id: 'mark-sent', label: this.markSentLabel, icon: 'send-check' });
+      }
 
-      if (inv.canSendCreditNote)
+      if (inv.canSendCreditNote) {
         menu.push({ id: 'send-credit-note', label: this.sendCreditNoteLabel, icon: 'envelope-arrow-up' });
+        menu.push({ id: 'mark-credit-note-sent', label: this.markCreditNoteSentLabel, icon: 'send-check' });
+      }
 
       if (inv.canDownload) {
         menu.push({ id: 'download', label: DB_DL_DOWNLOAD_PDF, icon: 'file-earmark-pdf' });
@@ -1066,6 +1097,7 @@ export class AdminBillingPageComponent implements OnInit {
   openIssueModal(invoice: AdminInvoiceListItem): void {
     this.issueInvoiceId = invoice.id;
     this.issueNotifyCustomer = true;
+    this.issueDelivery = 'email';
     this.issueTermsForm = emptyDocumentTermsForm();
     showBillingModal(this.issueModalOpen);
   }
@@ -1428,12 +1460,17 @@ export class AdminBillingPageComponent implements OnInit {
     if (!isDocumentTermsFormValid(this.issueTermsForm)) return;
 
     const { paymentDueDays, ...deliveryTerms } = documentTermsFormToInput(this.issueTermsForm);
+    const delivery: DeliveryChoice = this.postalAvailable()
+      ? this.issueDelivery
+      : this.issueNotifyCustomer
+        ? 'email'
+        : 'none';
 
-    this.invoiceManagerFacade.issueManualInvoice(this.issueInvoiceId, {
-      dueInDays: paymentDueDays,
-      ...deliveryTerms,
-      notifyCustomer: this.issueNotifyCustomer,
-    });
+    this.invoiceManagerFacade.issueManualInvoice(
+      this.issueInvoiceId,
+      { dueInDays: paymentDueDays, ...deliveryTerms, notifyCustomer: delivery === 'email' },
+      delivery === 'letter',
+    );
   }
 
   confirmDelete(): void {
@@ -1458,7 +1495,20 @@ export class AdminBillingPageComponent implements OnInit {
     this.actionPaidAt.set(this.actionHasDate(action) ? this.defaultPaidAtLocalInput() : '');
     // A credit note for an invoice the customer never received is not sent by default.
     this.actionNotifyCustomer.set(action !== 'void' || Boolean(invoice.sentAt));
+    // Credit notes go out the way the invoice did (letter only while a postal provider is configured).
+    this.actionVoidDelivery.set(
+      !invoice.sentAt ? 'none' : invoice.sentVia === 'letter' && this.postalAvailable() ? 'letter' : 'email',
+    );
+    this.actionChannel.set('email');
+    this.actionSentAt.set(this.todayDateInput());
     showBillingModal(this.actionConfirmModalOpen);
+  }
+
+  /** Today as `yyyy-mm-dd` in local time (date inputs). */
+  todayDateInput(): string {
+    const now = new Date();
+
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   }
 
   /** Mark paid records the payment date; write-off and refund their booking date. */
@@ -1487,15 +1537,26 @@ export class AdminBillingPageComponent implements OnInit {
 
     if (action === 'void') {
       const note = documentNoteToInput(this.actionNote());
+      const delivery: DeliveryChoice = this.postalAvailable()
+        ? this.actionVoidDelivery()
+        : this.actionNotifyCustomer()
+          ? 'email'
+          : 'none';
 
-      this.invoiceManagerFacade.voidInvoice(invoice.id, {
-        ...(note ? { note } : {}),
-        notifyCustomer: this.actionNotifyCustomer(),
-      });
+      this.invoiceManagerFacade.voidInvoice(
+        invoice.id,
+        { ...(note ? { note } : {}), notifyCustomer: delivery === 'email' },
+        delivery === 'letter',
+      );
     } else if (action === 'send') {
-      this.invoiceManagerFacade.sendInvoice(invoice.id);
+      this.invoiceManagerFacade.sendInvoice(invoice.id, this.actionChannel() === 'letter' ? 'letter' : 'email');
     } else if (action === 'sendCreditNote') {
-      this.invoiceManagerFacade.sendCreditNote(invoice.id);
+      this.invoiceManagerFacade.sendCreditNote(invoice.id, this.actionChannel() === 'letter' ? 'letter' : 'email');
+    } else if (action === 'markSent' || action === 'markCreditNoteSent') {
+      this.invoiceManagerFacade.markSent(invoice.id, {
+        creditNote: action === 'markCreditNoteSent',
+        dto: this.actionSentAt() ? { sentAt: this.actionSentAt() } : {},
+      });
     } else if (action === 'markPaid') {
       if (!this.actionAmountValid()) return;
 
@@ -1671,6 +1732,8 @@ export class AdminBillingPageComponent implements OnInit {
     else if (action === 'preview') this.openPreview(inv);
     else if (action === 'send') this.openActionModal('send', inv);
     else if (action === 'send-credit-note') this.openActionModal('sendCreditNote', inv);
+    else if (action === 'mark-sent') this.openActionModal('markSent', inv);
+    else if (action === 'mark-credit-note-sent') this.openActionModal('markCreditNoteSent', inv);
     else if (
       action === 'void' ||
       action === 'markPaid' ||

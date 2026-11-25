@@ -12,6 +12,7 @@ import type {
   RevokeAdminOfferDto,
   UpdateAdminOfferDto,
 } from '../../types/offers.types';
+import type { MarkDocumentSentDto, SpooledDeliveryChannel } from '../../types/spooler.types';
 
 import {
   acceptAdminOffer,
@@ -24,6 +25,7 @@ import {
   loadAdminOffers,
   revokeAdminOffer,
   sendAdminOffer,
+  markAdminOfferSent,
   updateAdminOffer,
 } from './admin-offers.actions';
 import {
@@ -124,14 +126,22 @@ export class AdminOffersFacade {
     this.store.dispatch(deleteAdminOffer({ id }));
   }
 
-  /** Finalizes a draft; `dto.notifyCustomer: false` archives it without sending it yet. */
-  archiveOffer(id: string, dto?: ArchiveAdminOfferDto): void {
-    this.store.dispatch(archiveAdminOffer({ id, dto }));
+  /**
+   * Finalizes a draft; `dto.notifyCustomer: false` archives it without sending it yet, `sendLetter` archives it without
+   * email and sends it as a letter.
+   */
+  archiveOffer(id: string, dto?: ArchiveAdminOfferDto, sendLetter = false): void {
+    this.store.dispatch(archiveAdminOffer({ id, dto, ...(sendLetter ? { sendLetter } : {}) }));
   }
 
-  /** Sends an offer that was archived without notification. */
-  sendOffer(id: string): void {
-    this.store.dispatch(sendAdminOffer({ id }));
+  /** Sends an offer that was archived without notification (email by default, or a letter); spooled. */
+  sendOffer(id: string, channel: SpooledDeliveryChannel = 'email'): void {
+    this.store.dispatch(sendAdminOffer({ id, channel }));
+  }
+
+  /** Records that an offer was sent outside Decabill. */
+  markOfferSent(id: string, dto?: MarkDocumentSentDto): void {
+    this.store.dispatch(markAdminOfferSent({ id, ...(dto ? { dto } : {}) }));
   }
 
   revokeOffer(id: string, dto?: RevokeAdminOfferDto): void {

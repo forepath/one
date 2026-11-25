@@ -87,6 +87,12 @@ export async function bootstrap(): Promise<void> {
     next();
   });
 
+  // Postal provider webhooks (Pingen posts application/vnd.api+json): the signature covers the raw body.
+  app.use('/api/webhooks/postal', express.raw({ type: () => true, limit: '256kb' }), (req, _res, next) => {
+    (req as express.Request & { rawBody?: Buffer }).rawBody = req.body as Buffer;
+    next();
+  });
+
   const isProduction = process.env.NODE_ENV === 'production';
   const corsOrigin = process.env.CORS_ORIGIN;
   let origin: string | string[];

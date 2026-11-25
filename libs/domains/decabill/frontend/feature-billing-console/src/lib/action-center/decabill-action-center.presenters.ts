@@ -421,6 +421,38 @@ export function decabillActionCenterPresenters(): ActionCenterPresenterSet {
         itemMeta: (item, format) =>
           paramText(item.params, 'resultAmount') ? format.money(paramText(item.params, 'resultAmount'), 'EUR') : null,
       },
+      // --- delivery (spooler, letters) ------------------------------------------------------------------------------
+      'decabill.spooler.failed': {
+        icon: 'printer',
+        title: $localize`:@@featureBillingActionCenter-spoolerFailedTitle:Printouts and sends failed`,
+        description: $localize`:@@featureBillingActionCenter-spoolerFailedDescription:Background jobs that gave up. Retry them on the Spooler page; failed sends left their document unsent.`,
+        link: () => link(['/administration/spooler']),
+        itemTitle: (item) => paramText(item.params, 'title'),
+        itemMeta: (item) => paramText(item.params, 'error') || null,
+        itemLink: () => link(['/administration/spooler']),
+      },
+      'decabill.letters.attention': {
+        icon: 'mailbox',
+        title: $localize`:@@featureBillingActionCenter-lettersAttentionTitle:Letters need attention`,
+        description: $localize`:@@featureBillingActionCenter-lettersAttentionDescription:The postal provider could not process or deliver these letters. Check the address and send the document again.`,
+        link: () => link(INVOICES),
+        itemTitle: (item) => paramText(item.params, 'number'),
+        itemMeta: (item) =>
+          joinParts(
+            paramText(item.params, 'status') === 'undeliverable'
+              ? $localize`:@@featureBillingActionCenter-letterUndeliverable:Undeliverable`
+              : $localize`:@@featureBillingActionCenter-letterActionRequired:Needs action at the provider`,
+            paramText(item.params, 'reason'),
+          ),
+        itemLink: (item) =>
+          paramText(item.params, 'documentType') === 'offer'
+            ? paramText(item.params, 'number')
+              ? link(OFFERS, { 'off-q': paramText(item.params, 'number') })
+              : link(OFFERS)
+            : paramText(item.params, 'number')
+              ? link(INVOICES, { 'inv-q': paramText(item.params, 'number').replace(/-CN$/, '') })
+              : link(INVOICES),
+      },
       'decabill.datev.export_failed': {
         icon: 'cloud-slash',
         title: $localize`:@@featureBillingActionCenter-datevFailedTitle:DATEV exports failed`,

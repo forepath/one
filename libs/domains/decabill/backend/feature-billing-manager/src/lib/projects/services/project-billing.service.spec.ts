@@ -209,7 +209,7 @@ describe('ProjectBillingService', () => {
     );
     expect(projectBoardSummary.emitSummaryChanged).toHaveBeenCalledWith(project);
     expect(projectsRepository.incrementBilledAmountNet).toHaveBeenCalledWith('p1', 150);
-    expect(invoicesRepository.update).toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date) });
+    expect(invoicesRepository.update).toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date), sentVia: 'email' });
   });
 
   it('bills silently with notifyCustomer false (no email, sentAt unset)', async () => {
@@ -234,7 +234,7 @@ describe('ProjectBillingService', () => {
 
     expect(invoiceIssuanceService.issueDraft).toHaveBeenCalledWith('draft-1', { skipNotification: true });
     expect(billingEmailPublisher.publishInvoiceIssued).not.toHaveBeenCalled();
-    expect(invoicesRepository.update).not.toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date) });
+    expect(invoicesRepository.update).not.toHaveBeenCalledWith('inv-1', { sentAt: expect.any(Date), sentVia: 'email' });
     expect(auditLog.log).toHaveBeenCalledWith(
       expect.objectContaining({ context: expect.objectContaining({ notifyCustomer: false }) }),
     );

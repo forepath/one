@@ -1,10 +1,13 @@
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 
 import { CustomerType } from '../constants/customer-type.constants';
+import { DocumentDeliveryChannel } from '../constants/document-delivery.constants';
 import { VatIdValidationStatus } from '../constants/vat-id-validation.constants';
 import type { CustomerProfileDto } from '../dto/customer-profile.dto';
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
+import { buildPostalRecipient } from '../postal-providers/postal-letter.service';
+import { PostalProviderFactory } from '../postal-providers/postal-provider.factory';
 import { CustomerNumberSequencesRepository } from '../repositories/customer-number-sequences.repository';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { normalizeVatId } from '../utils/vat-id.utils';
@@ -48,7 +51,13 @@ export class CustomerProfilesService {
     private readonly customerNumberSequencesRepository: CustomerNumberSequencesRepository,
     private readonly vatIdValidationService: VatIdValidationService,
     @Optional() private readonly billingNotificationPublisher?: BillingNotificationPublisher,
+    @Optional() private readonly postalProviders?: PostalProviderFactory,
   ) {}
+
+  /** Letters can be chosen as preferred delivery (the tenant's default postal provider is configured). */
+  isPostalDeliveryAvailable(): boolean {
+    return this.postalProviders?.getDefaultConfiguredProvider() != null;
+  }
 
   /**
    * Returns true if the profile exists and all required fields for ordering are non-null and non-empty.
@@ -72,6 +81,8 @@ export class CustomerProfilesService {
   ): Promise<CustomerProfileEntity> {
     const existing = await this.customerProfilesRepository.findByUserId(userId);
     const prepared = this.prepareProfilePatch(dto, existing);
+
+    this.assertDeliveryPreference(prepared, existing);
 
     if (existing) {
       const updated = await this.customerProfilesRepository.update(existing.id, prepared);
@@ -139,6 +150,32 @@ export class CustomerProfilesService {
     }
 
     return await this.customerProfilesRepository.update(profile.id, { stripeCustomerId });
+  }
+
+  /**
+   * `letter` as preferred delivery is offered only while the tenant has a postal provider (checked when it is chosen,
+   * so a later configuration change never blocks saving other fields) and needs a complete postal address (checked on
+   * every save while it is preferred).
+   */
+  private assertDeliveryPreference(
+    patch: Partial<CustomerProfileEntity>,
+    existing: CustomerProfileEntity | null,
+  ): void {
+    const next = patch.preferredDeliveryChannel ?? existing?.preferredDeliveryChannel ?? DocumentDeliveryChannel.EMAIL;
+
+    if (next !== DocumentDeliveryChannel.LETTER) {
+      return;
+    }
+
+    if (existing?.preferredDeliveryChannel !== DocumentDeliveryChannel.LETTER && !this.isPostalDeliveryAvailable()) {
+      throw new BadRequestException('Delivery by letter is not available');
+    }
+
+    if (!buildPostalRecipient({ ...existing, ...patch } as CustomerProfileEntity)) {
+      throw new BadRequestException(
+        'Delivery by letter needs a complete postal address (name, street, postal code, city and country)',
+      );
+    }
   }
 
   private prepareProfilePatch(

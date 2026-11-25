@@ -712,26 +712,77 @@
       [value]="actionNote()"
       (valueChange)="actionNote.set($event)"
     />
-    <fpc-form-check
-      class="d-block mb-3"
-      checkId="actionNotifyCustomer"
-      [checked]="actionNotifyCustomer()"
-      (checkedChange)="actionNotifyCustomer.set($event)"
-      i18n-label="@@featureAdminBilling-voidNotify"
-      label="Email the credit note to the customer"
-      i18n-hint="@@featureAdminBilling-voidNotifyHint"
-      hint="Otherwise you can send a credit note later from the invoice."
-      data-testid="admin-invoice-void-notify"
-    />
+    @if (postalAvailable()) {
+      <framework-delivery-choice
+        class="d-block mb-3"
+        idPrefix="actionVoidDelivery"
+        [postalAvailable]="true"
+        [allowNone]="true"
+        [value]="actionVoidDelivery()"
+        (valueChange)="actionVoidDelivery.set($event)"
+        data-testid="admin-invoice-void-delivery"
+      />
+    } @else {
+      <fpc-form-check
+        class="d-block mb-3"
+        checkId="actionNotifyCustomer"
+        [checked]="actionNotifyCustomer()"
+        (checkedChange)="actionNotifyCustomer.set($event)"
+        i18n-label="@@featureAdminBilling-voidNotify"
+        label="Email the credit note to the customer"
+        i18n-hint="@@featureAdminBilling-voidNotifyHint"
+        hint="Otherwise you can send a credit note later from the invoice."
+        data-testid="admin-invoice-void-notify"
+      />
+    }
   }
-  @if (pendingAction() === 'send') {
-    <p class="mb-0" i18n="@@featureAdminBilling-sendInvoiceMessage">
-      The invoice is emailed to the customer with its PDF attached (and the time report of a project invoice).
+  @if (pendingAction() === 'send' || pendingAction() === 'sendCreditNote') {
+    @if (postalAvailable()) {
+      <framework-delivery-choice
+        class="d-block mb-3"
+        idPrefix="actionSendChannel"
+        [postalAvailable]="true"
+        [value]="actionChannel()"
+        (valueChange)="actionChannel.set($event)"
+        data-testid="admin-invoice-send-channel"
+      />
+    }
+    @if (actionChannel() === 'letter') {
+      <p class="mb-0" i18n="@@featureAdminBilling-sendLetterMessage">
+        The document is printed and posted to the customer's postal address as a letter (with a cover page carrying the
+        address).
+      </p>
+    } @else if (pendingAction() === 'send') {
+      <p class="mb-0" i18n="@@featureAdminBilling-sendInvoiceMessage">
+        The invoice is emailed to the customer with its PDF attached (and the time report of a project invoice).
+      </p>
+    } @else {
+      <p class="mb-0" i18n="@@featureAdminBilling-sendCreditNoteMessage">
+        The credit note of this voided invoice is emailed to the customer with its PDF attached.
+      </p>
+    }
+  } @else if (pendingAction() === 'markSent' || pendingAction() === 'markCreditNoteSent') {
+    <p i18n="@@featureAdminBilling-markSentMessage">
+      Use this when you delivered the document yourself (printed and posted, handed over in person). Nothing is sent to
+      the customer.
     </p>
-  } @else if (pendingAction() === 'sendCreditNote') {
-    <p class="mb-0" i18n="@@featureAdminBilling-sendCreditNoteMessage">
-      The credit note of this voided invoice is emailed to the customer with its PDF attached.
-    </p>
+    <fpc-form-field
+      forId="actionSentAt"
+      i18n-label="@@featureAdminBilling-sentAtLabel"
+      label="Sent on"
+      i18n-hint="@@featureAdminBilling-sentAtHelp"
+      hint="Not in the future and not before the document was finalized."
+    >
+      <fpc-form-control
+        controlId="actionSentAt"
+        inputType="date"
+        name="actionSentAt"
+        [max]="todayDateInput()"
+        [ngModel]="actionSentAt()"
+        (ngModelChange)="actionSentAt.set($event)"
+        data-testid="admin-invoice-mark-sent-at"
+      />
+    </fpc-form-field>
   } @else {
     <fpc-form-field forId="actionReason" i18n-label="@@featureAdminBilling-reasonOptional" label="Reason (optional)">
       <fpc-form-control
@@ -1345,16 +1396,27 @@
     </div>
   } @else {
     <framework-document-terms-fields [form]="issueTermsForm" idPrefix="issueInvoice" />
-    <fpc-form-check
-      class="d-block mt-3"
-      checkId="issueNotifyCustomer"
-      [(checked)]="issueNotifyCustomer"
-      i18n-label="@@featureAdminInvoices-issueNotify"
-      label="Email the invoice to the customer"
-      i18n-hint="@@featureAdminInvoices-issueNotifyHint"
-      hint="Otherwise you can send it later from the invoice."
-      data-testid="admin-invoice-issue-notify"
-    />
+    @if (postalAvailable()) {
+      <framework-delivery-choice
+        class="d-block mt-3"
+        idPrefix="issueDelivery"
+        [postalAvailable]="true"
+        [allowNone]="true"
+        [(value)]="issueDelivery"
+        data-testid="admin-invoice-issue-delivery"
+      />
+    } @else {
+      <fpc-form-check
+        class="d-block mt-3"
+        checkId="issueNotifyCustomer"
+        [(checked)]="issueNotifyCustomer"
+        i18n-label="@@featureAdminInvoices-issueNotify"
+        label="Email the invoice to the customer"
+        i18n-hint="@@featureAdminInvoices-issueNotifyHint"
+        hint="Otherwise you can send it later from the invoice."
+        data-testid="admin-invoice-issue-notify"
+      />
+    }
   }
   <div *fpcModalFooter class="d-flex justify-content-end gap-2">
     <fpc-button

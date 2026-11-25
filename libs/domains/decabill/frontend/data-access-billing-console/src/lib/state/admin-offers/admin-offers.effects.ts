@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap } from 'rxjs';
+import { catchError, map, mergeMap, of, switchMap } from 'rxjs';
 
 import { BILLING_LIST_PAGE_SIZE, billingPageWindow } from '../../constants/list-paging.constants';
 import { AdminOffersService } from '../../services/admin-offers.service';
@@ -35,6 +35,9 @@ import {
   revokeAdminOfferSuccess,
   sendAdminOffer,
   sendAdminOfferFailure,
+  markAdminOfferSent,
+  markAdminOfferSentFailure,
+  markAdminOfferSentSuccess,
   sendAdminOfferSuccess,
   updateAdminOffer,
   updateAdminOfferFailure,
@@ -127,9 +130,13 @@ export const archiveAdminOffer$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminOffersService)) =>
     actions$.pipe(
       ofType(archiveAdminOffer),
-      switchMap(({ id, dto }) =>
-        service.archive(id, dto).pipe(
-          map((offer) => archiveAdminOfferSuccess({ offer })),
+      switchMap(({ id, dto, sendLetter }) =>
+        service.archive(id, sendLetter ? { ...dto, notifyCustomer: false } : dto).pipe(
+          mergeMap((offer) =>
+            sendLetter
+              ? of(archiveAdminOfferSuccess({ offer }), sendAdminOffer({ id, channel: 'letter' }))
+              : of(archiveAdminOfferSuccess({ offer })),
+          ),
           catchError((error) => of(archiveAdminOfferFailure({ error: normalizeError(error) }))),
         ),
       ),
@@ -141,10 +148,24 @@ export const sendAdminOffer$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminOffersService)) =>
     actions$.pipe(
       ofType(sendAdminOffer),
-      switchMap(({ id }) =>
-        service.send(id).pipe(
+      switchMap(({ id, channel }) =>
+        (channel === 'letter' ? service.sendLetter(id) : service.send(id)).pipe(
           map((offer) => sendAdminOfferSuccess({ offer })),
           catchError((error) => of(sendAdminOfferFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const markAdminOfferSent$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminOffersService)) =>
+    actions$.pipe(
+      ofType(markAdminOfferSent),
+      switchMap(({ id, dto }) =>
+        service.markSent(id, dto).pipe(
+          map((offer) => markAdminOfferSentSuccess({ offer })),
+          catchError((error) => of(markAdminOfferSentFailure({ error: normalizeError(error) }))),
         ),
       ),
     ),
@@ -202,6 +223,7 @@ export const reloadAdminOfferStatisticsAfterMutation$ = createEffect(
         deleteAdminOfferSuccess,
         archiveAdminOfferSuccess,
         sendAdminOfferSuccess,
+        markAdminOfferSentSuccess,
         revokeAdminOfferSuccess,
         acceptAdminOfferSuccess,
         declineAdminOfferSuccess,

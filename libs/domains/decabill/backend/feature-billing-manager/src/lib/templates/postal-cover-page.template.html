@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /*
+        Cover page of a letter (virtual cover page): the recipient address sits exactly in the window of the envelope
+        the postal provider uses, because the document itself (invoice, credit note, offer) prints its addresses in
+        side-by-side boxes. Positions are absolute millimetres on an A4 page without margins:
+        - left:  DIN 5008 form B window: 20 mm from the left, 45 mm from the top, 85 x 45 mm
+                 (5 lines return address / remarks zone, then the address zone from 62.7 mm)
+        - right: Swiss window envelope (C5/4 right): 118 mm from the left, 50 mm from the top, 85 x 40 mm
+        Neutral palette; the brand color is used for the document title only (like every other document).
+      */
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      :root {
+        --accent: {{branding.accentColor}};
+        --body-color: #404040;
+        --body-emphasis: #111111;
+        --secondary: #666666;
+        --border: #cccccc;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 210mm;
+        height: 297mm;
+      }
+
+      body {
+        position: relative;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: var(--body-color);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .logo {
+        position: absolute;
+        top: 15mm;
+        right: 20mm;
+        max-width: 60mm;
+        max-height: 22mm;
+        object-fit: contain;
+      }
+
+      .window {
+        position: absolute;
+        width: 85mm;
+        overflow: hidden;
+      }
+
+      .window.left {
+        left: 20mm;
+        top: 45mm;
+        height: 45mm;
+      }
+
+      .window.right {
+        left: 118mm;
+        top: 50mm;
+        height: 40mm;
+      }
+
+      .return-address {
+        position: absolute;
+        left: 5mm;
+        right: 5mm;
+        bottom: calc(100% - 15mm);
+        margin: 0;
+        font-size: 7pt;
+        line-height: 1.2;
+        color: var(--secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .window.right .return-address {
+        bottom: calc(100% - 9mm);
+      }
+
+      /*
+        Left: the address starts 16 mm into the window (61 mm from the top) and holds up to six lines (about 24 mm), so
+        it stays inside the address zones postal providers validate (Pingen: 60 to 85.3 mm from the top, 22 to 107.5 mm
+        from the left). Providers that print their own postage and sender block above it get no return-address line.
+      */
+      .recipient {
+        position: absolute;
+        left: 5mm;
+        right: 5mm;
+        top: 16mm;
+        margin: 0;
+        font-size: 9pt;
+        line-height: 1.25;
+        color: var(--body-emphasis);
+      }
+
+      .window.right .recipient {
+        top: 10mm;
+      }
+
+      .recipient span {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .content {
+        position: absolute;
+        left: 25mm;
+        right: 20mm;
+        top: 105mm;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 22pt;
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        color: var(--accent);
+      }
+
+      .meta {
+        margin: 4mm 0 0;
+        font-size: 10pt;
+        color: var(--secondary);
+      }
+
+      .note {
+        margin: 10mm 0 0;
+        font-size: 10pt;
+        line-height: 1.5;
+      }
+
+      .footer {
+        position: absolute;
+        left: 25mm;
+        right: 20mm;
+        bottom: 15mm;
+        padding-top: 3mm;
+        border-top: 1px solid var(--border);
+        font-size: 7.5pt;
+        line-height: 1.4;
+        color: var(--secondary);
+      }
+    </style>
+  </head>
+  <body>
+    {{#if branding.logoDataUri}}
+    <img class="logo" src="{{branding.logoDataUri}}" alt="{{senderName}}" />
+    {{/if}}
+    <div class="window {{addressPosition}}" data-testid="postal-address-window">
+      {{#if returnAddress}}
+      <p class="return-address">{{returnAddress}}</p>
+      {{/if}}
+      <p class="recipient">
+        {{#each recipientLines}}
+        <span>{{this}}</span>
+        {{/each}}
+      </p>
+    </div>
+    <div class="content">
+      <h1 class="title">{{documentTitle}}</h1>
+      <p class="meta">{{documentNumber}}{{#if dateLabel}} &ndash; {{dateLabel}}{{/if}}</p>
+      <p class="note">{{coverNote}}</p>
+    </div>
+    <div class="footer">{{footerLine}}</div>
+  </body>
+</html>

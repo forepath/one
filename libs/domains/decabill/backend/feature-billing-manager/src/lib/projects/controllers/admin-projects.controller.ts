@@ -8,6 +8,7 @@ import {
   Header,
   HttpCode,
   HttpStatus,
+  Optional,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
@@ -19,6 +20,8 @@ import {
 import { StreamableFile } from '@nestjs/common';
 import type { Response } from 'express';
 
+import { SpoolPrintoutService } from '../../spooler/spool-printout.service';
+import { mapSpoolJob, type SpoolJobResponseDto } from '../../spooler/spooler.dto';
 import type { RequestWithUser } from '../../utils/billing-access.utils';
 import { getUserFromRequest } from '../../utils/billing-access.utils';
 // Request DTOs are value imports: with `import type` the emitted param metadata is `Object` and the global
@@ -39,7 +42,10 @@ import { ProjectsAdminService } from '../services/projects-admin.service';
 @Controller('admin/billing/projects')
 @UsersRoles(UserRole.ADMIN, UserRole.MANAGER)
 export class AdminProjectsController {
-  constructor(private readonly projectsAdminService: ProjectsAdminService) {}
+  constructor(
+    private readonly projectsAdminService: ProjectsAdminService,
+    @Optional() private readonly printouts?: SpoolPrintoutService,
+  ) {}
 
   @RequireScopes('projects:admin')
   @Get()
@@ -85,6 +91,22 @@ export class AdminProjectsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<ProjectUnbilledTimeBoundsDto> {
     return await this.projectsAdminService.getUnbilledTimeBounds(id);
+  }
+
+  /** Spools the time report PDF (console); the file is downloaded from the spooler once the job completed. */
+  @RequireScopes('projects:admin', 'spooler:admin')
+  @Post(':id/time-report/spool')
+  @HttpCode(202)
+  async spoolTimeReport(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: ProjectTimeReportRequestDto,
+    @Req() req: RequestWithUser,
+  ): Promise<SpoolJobResponseDto> {
+    if (!this.printouts) {
+      throw new BadRequestException('The spooler is not available');
+    }
+
+    return mapSpoolJob(await this.printouts.spoolProjectTimeReport(id, dto, getUserFromRequest(req).userId));
   }
 
   @RequireScopes('projects:admin')

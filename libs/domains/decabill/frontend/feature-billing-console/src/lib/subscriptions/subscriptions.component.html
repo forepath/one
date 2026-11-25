@@ -2340,6 +2340,14 @@
         [(endpoint)]="profileForm.einvoiceEndpoint"
       />
     }
+    <framework-delivery-preference-field
+      class="d-block mt-3"
+      controlId="profilePreferredDelivery"
+      [available]="profilePostalAvailable"
+      [disabled]="(customerProfileUpdating$ | async) === true"
+      [value]="profileForm.preferredDeliveryChannel ?? 'email'"
+      (valueChange)="profileForm.preferredDeliveryChannel = $event"
+    />
     @if (customerProfile$ | async; as profile) {
       @if (profile.supportsAutoPayment !== false && (isCustomerProfileComplete$ | async) === true) {
         <div class="bg-body-tertiary border rounded p-4 mt-3">

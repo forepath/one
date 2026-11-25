@@ -55,3 +55,9 @@ export const selectBillingCapabilitiesLoading = createSelector(
   selectBillingCapabilitiesState,
   (state) => state.loading,
 );
+
+/** Documents can be sent as letters (postal provider configured for the tenant). */
+export const selectPostalDeliveryAvailable = createSelector(
+  selectBillingCapabilities,
+  (capabilities) => capabilities?.postalDelivery?.available === true,
+);

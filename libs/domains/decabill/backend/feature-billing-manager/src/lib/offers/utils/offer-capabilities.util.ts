@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 
+import { DocumentDeliveryChannel } from '../../constants/document-delivery.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
 import type { OfferEntity } from '../entities/offer.entity';
 
@@ -22,11 +23,12 @@ export function offerCapabilityFlags(offer: Pick<OfferEntity, 'status'>): {
  * and only while it has not expired yet (a customer could not accept it anymore).
  */
 export function offerDeliveryFields(
-  offer: Pick<OfferEntity, 'status' | 'sentAt' | 'expiresAt' | 'notifyOnExpiry'>,
+  offer: Pick<OfferEntity, 'status' | 'sentAt' | 'sentVia' | 'expiresAt' | 'notifyOnExpiry'>,
   now: Date = new Date(),
-): { sentAt: string | null; canSend: boolean; notifyOnExpiry: boolean } {
+): { sentAt: string | null; sentVia: DocumentDeliveryChannel | null; canSend: boolean; notifyOnExpiry: boolean } {
   return {
     sentAt: offer.sentAt?.toISOString() ?? null,
+    sentVia: offer.sentAt ? (offer.sentVia ?? DocumentDeliveryChannel.EMAIL) : null,
     canSend: offer.status === OfferStatus.ARCHIVED && !offer.sentAt && !isOfferPastExpiry(offer, now),
     notifyOnExpiry: offer.notifyOnExpiry === true,
   };

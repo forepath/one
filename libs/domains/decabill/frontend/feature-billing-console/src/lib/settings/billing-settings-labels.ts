@@ -33,6 +33,11 @@ export const BILLING_SETTINGS_LABELS: SettingsAdminLabels = {
       section: $localize`:@@featureBillingSettings-section-communication:Communication`,
       label: $localize`:@@featureBillingSettings-category-email:Email`,
     },
+    postal: {
+      icon: 'mailbox',
+      section: $localize`:@@featureBillingSettings-section-communication:Communication`,
+      label: $localize`:@@featureBillingSettings-category-postal:Postal delivery`,
+    },
     links: {
       icon: 'link-45deg',
       section: $localize`:@@featureBillingSettings-section-communication:Communication`,
@@ -229,6 +234,50 @@ export const BILLING_SETTINGS_LABELS: SettingsAdminLabels = {
     SMTP_USER: {
       title: $localize`:@@featureBillingSettings-title-SMTP_USER:SMTP user`,
       description: $localize`:@@featureBillingSettings-description-SMTP_USER:User name for SMTP authentication.`,
+    },
+    BILLING_DEFAULT_POSTAL_PROVIDER: {
+      title: $localize`:@@featureBillingSettings-title-BILLING_DEFAULT_POSTAL_PROVIDER:Postal provider`,
+      description: $localize`:@@featureBillingSettings-description-BILLING_DEFAULT_POSTAL_PROVIDER:Provider that prints and posts letters (built in: pingen).`,
+    },
+    BILLING_POSTAL_COVER_PAGE: {
+      title: $localize`:@@featureBillingSettings-title-BILLING_POSTAL_COVER_PAGE:Cover page`,
+      description: $localize`:@@featureBillingSettings-description-BILLING_POSTAL_COVER_PAGE:Adds a cover page with the address in the envelope window (needed for Decabill documents).`,
+    },
+    BILLING_POSTAL_ADDRESS_POSITION: {
+      title: $localize`:@@featureBillingSettings-title-BILLING_POSTAL_ADDRESS_POSITION:Address window`,
+      description: $localize`:@@featureBillingSettings-description-BILLING_POSTAL_ADDRESS_POSITION:Window position of the envelope: left (DIN 5008) or right (Swiss envelopes).`,
+    },
+    PINGEN_ENVIRONMENT: {
+      title: $localize`:@@featureBillingSettings-title-PINGEN_ENVIRONMENT:Pingen environment`,
+      description: $localize`:@@featureBillingSettings-description-PINGEN_ENVIRONMENT:Staging is the Pingen sandbox: letters are never printed or posted.`,
+    },
+    PINGEN_CLIENT_ID: {
+      title: $localize`:@@featureBillingSettings-title-PINGEN_CLIENT_ID:Pingen client ID`,
+      description: $localize`:@@featureBillingSettings-description-PINGEN_CLIENT_ID:Client ID of the Pingen API app (client credentials).`,
+    },
+    PINGEN_CLIENT_SECRET: {
+      title: $localize`:@@featureBillingSettings-title-PINGEN_CLIENT_SECRET:Pingen client secret`,
+      description: $localize`:@@featureBillingSettings-description-PINGEN_CLIENT_SECRET:Client secret of the Pingen API app.`,
+    },
+    PINGEN_ORGANISATION_ID: {
+      title: $localize`:@@featureBillingSettings-title-PINGEN_ORGANISATION_ID:Pingen organisation ID`,
+      description: $localize`:@@featureBillingSettings-description-PINGEN_ORGANISATION_ID:UUID of the Pingen organisation the letters are sent from.`,
+    },
+    PINGEN_WEBHOOK_SIGNING_KEY: {
+      title: $localize`:@@featureBillingSettings-title-PINGEN_WEBHOOK_SIGNING_KEY:Pingen webhook signing key`,
+      description: $localize`:@@featureBillingSettings-description-PINGEN_WEBHOOK_SIGNING_KEY:Signing key of the Pingen webhooks (20 to 32 letters and digits).`,
+    },
+    PINGEN_DELIVERY_PRODUCT: {
+      title: $localize`:@@featureBillingSettings-title-PINGEN_DELIVERY_PRODUCT:Delivery product`,
+      description: $localize`:@@featureBillingSettings-description-PINGEN_DELIVERY_PRODUCT:Pingen product: fast, cheap, bulk, premium or registered.`,
+    },
+    PINGEN_PRINT_MODE: {
+      title: $localize`:@@featureBillingSettings-title-PINGEN_PRINT_MODE:Print mode`,
+      description: $localize`:@@featureBillingSettings-description-PINGEN_PRINT_MODE:Simplex (one side) or duplex (both sides).`,
+    },
+    PINGEN_PRINT_SPECTRUM: {
+      title: $localize`:@@featureBillingSettings-title-PINGEN_PRINT_SPECTRUM:Print colors`,
+      description: $localize`:@@featureBillingSettings-description-PINGEN_PRINT_SPECTRUM:Color or grayscale.`,
     },
     SMTP_PASSWORD: {
       title: $localize`:@@featureBillingSettings-title-SMTP_PASSWORD:SMTP password`,
@@ -534,6 +583,10 @@ export const BILLING_SETTINGS_LABELS: SettingsAdminLabels = {
       title: $localize`:@@featureBillingSettings-title-BILLING_ADDON_SSH_COMMAND_TIMEOUT_MS:Add-on script timeout (ms)`,
       description: $localize`:@@featureBillingSettings-description-BILLING_ADDON_SSH_COMMAND_TIMEOUT_MS:Timeout of add-on SSH scripts on servers.`,
     },
+    BILLING_SPOOLER_RETENTION_DAYS: {
+      title: $localize`:@@featureBillingSettings-title-BILLING_SPOOLER_RETENTION_DAYS:Spooler retention (days)`,
+      description: $localize`:@@featureBillingSettings-description-BILLING_SPOOLER_RETENTION_DAYS:Finished spool jobs and their files are removed after this many days.`,
+    },
     BILLING_SKIP_FILE_CACHE: {
       title: $localize`:@@featureBillingSettings-title-BILLING_SKIP_FILE_CACHE:Skip file cache`,
       description: $localize`:@@featureBillingSettings-description-BILLING_SKIP_FILE_CACHE:Regenerates PDFs instead of using stored files.`,
@@ -673,6 +726,10 @@ export const BILLING_SETTINGS_LABELS: SettingsAdminLabels = {
     OFFER_EXPIRATION_SCHEDULER_INTERVAL: {
       title: $localize`:@@featureBillingSettings-title-OFFER_EXPIRATION_SCHEDULER_INTERVAL:Offer expiration: interval`,
       description: $localize`:@@featureBillingSettings-description-OFFER_EXPIRATION_SCHEDULER_INTERVAL:How often the coordinator runs (e.g. 60000 or 1m).`,
+    },
+    SPOOLER_COORDINATOR_INTERVAL: {
+      title: $localize`:@@featureBillingSettings-title-SPOOLER_COORDINATOR_INTERVAL:Spooler: interval`,
+      description: $localize`:@@featureBillingSettings-description-SPOOLER_COORDINATOR_INTERVAL:How often stuck spool jobs are re-queued and old ones removed (e.g. 60000 or 1m).`,
     },
     OFFER_FULFILLMENT_SCHEDULER_INTERVAL: {
       title: $localize`:@@featureBillingSettings-title-OFFER_FULFILLMENT_SCHEDULER_INTERVAL:Offer fulfillment: interval`,

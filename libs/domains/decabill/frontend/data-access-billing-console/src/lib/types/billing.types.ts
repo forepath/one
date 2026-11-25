@@ -7,6 +7,7 @@ import type {
   EffectiveDocumentTerms,
 } from './document-terms.types';
 import type { ServicePlanInventoryArticle } from './inventory.types';
+import type { CustomerDeliveryPreference, DocumentDeliveryChannel, PostalDeliveryCapability } from './spooler.types';
 
 // Enums
 export type BillingIntervalType = 'hour' | 'day' | 'month' | 'year';
@@ -1108,6 +1109,10 @@ export interface CustomerProfileResponse {
   country?: string | null;
   email?: string | null;
   phone?: string | null;
+  /** `email` (default) or `letter`: documents are also posted, in addition to the email. */
+  preferredDeliveryChannel?: CustomerDeliveryPreference;
+  /** Letters can be chosen (the tenant has a configured postal provider). */
+  postalDeliveryAvailable?: boolean;
   /** E-invoice format override; null = issuer default. */
   einvoiceFormat?: string | null;
   /** BT-10 buyer reference (Leitweg-ID for German public buyers). */
@@ -1138,6 +1143,7 @@ export interface CustomerProfileDto {
   country?: string;
   email?: string;
   phone?: string;
+  preferredDeliveryChannel?: CustomerDeliveryPreference;
   /** E-invoice format override; null / empty = issuer default. */
   einvoiceFormat?: string | null;
   /** BT-10 buyer reference (Leitweg-ID), max 64 characters. */
@@ -1416,14 +1422,20 @@ export interface AdminInvoiceListItem extends InvoiceResponse {
   userEmail?: string;
   /** Billing-profile name (company, else first + last name); shown instead of the email in admin lists. */
   customerName?: string;
-  /** When the invoice was emailed to the customer; null when issued without notification. */
+  /** When the invoice was sent to the customer; null when issued without notification. */
   sentAt?: string | null;
-  /** When the credit note of a voided invoice was emailed; null when not sent. */
+  /** How the invoice was sent (email, letter, manual); null while unsent. */
+  sentVia?: DocumentDeliveryChannel | null;
+  /** When the credit note of a voided invoice was sent; null when not sent. */
   voidDocumentSentAt?: string | null;
-  /** Issued (not voided) and not emailed yet: the send action applies. */
+  /** How the credit note was sent; null while unsent. */
+  voidDocumentSentVia?: DocumentDeliveryChannel | null;
+  /** Issued (not voided) and not sent yet: send (email / letter) and mark-sent apply. */
   canSend?: boolean;
-  /** Voided and its credit note not emailed yet: the send-credit-note action applies. */
+  /** Voided and its credit note not sent yet: the credit-note send / mark-sent actions apply. */
   canSendCreditNote?: boolean;
+  /** Set on send responses: the spool job delivering the document. */
+  spoolJobId?: string;
 }
 
 export interface PaginatedAdminInvoicesResponse {
@@ -1611,7 +1623,9 @@ export interface ManualInvoiceDetailResponse extends InvoiceDetailResponse {
   userEmail?: string;
   /** Delivery state, as on `AdminInvoiceListItem`. */
   sentAt?: string | null;
+  sentVia?: DocumentDeliveryChannel | null;
   voidDocumentSentAt?: string | null;
+  voidDocumentSentVia?: DocumentDeliveryChannel | null;
   canSend?: boolean;
   canSendCreditNote?: boolean;
 }
@@ -1725,6 +1739,8 @@ export interface BillingCapabilitiesResponse {
   einvoiceFormats: BillingEinvoiceFormatOption[];
   /** Issuer default e-invoice format. */
   einvoiceDefaultFormat: string;
+  /** Documents can be sent as letters (postal provider configured for the tenant). Absent on older backends. */
+  postalDelivery?: PostalDeliveryCapability;
 }
 
 export interface BillingEinvoiceFormatOption {

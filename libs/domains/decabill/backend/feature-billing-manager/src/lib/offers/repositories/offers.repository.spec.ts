@@ -1,3 +1,4 @@
+import { DocumentDeliveryChannel } from '../../constants/document-delivery.constants';
 import { OfferStatus } from '../constants/offer-status.constants';
 
 import { OffersRepository } from './offers.repository';
@@ -63,11 +64,13 @@ describe('OffersRepository customer pages', () => {
     const at = new Date('2026-11-21T10:00:00Z');
 
     await expect(repository.claimSent('offer-1', at)).resolves.toBe(true);
-    await expect(repository.claimSent('offer-1', at)).resolves.toBe(false);
-    expect(update).toHaveBeenCalledWith(
+    await expect(repository.claimSent('offer-1', at, DocumentDeliveryChannel.MANUAL)).resolves.toBe(false);
+    expect(update).toHaveBeenNthCalledWith(
+      1,
       { id: 'offer-1', status: OfferStatus.ARCHIVED, sentAt: expect.objectContaining({ _type: 'isNull' }) },
-      { sentAt: at },
+      { sentAt: at, sentVia: 'email' },
     );
+    expect(update).toHaveBeenNthCalledWith(2, expect.anything(), { sentAt: at, sentVia: 'manual' });
   });
 
   it('keeps the user scope on index search hits and pages in SQL', async () => {

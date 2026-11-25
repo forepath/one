@@ -55,6 +55,8 @@ export class AdminActionCenterController {
  */
 const TYPE_SCOPES: Readonly<Record<string, string>> = {
   'decabill.datev.export_failed': 'datev:admin',
+  'decabill.spooler.failed': 'spooler:admin',
+  'decabill.letters.attention': 'letters:admin',
   'decabill.suppliers.incomplete': 'supplier_profile:admin',
   'platform.webhooks.failing': 'webhooks:admin',
   'platform.updates.available': 'updates:admin',

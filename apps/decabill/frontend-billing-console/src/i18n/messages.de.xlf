@@ -16151,8 +16151,8 @@
         <target>Finanzen</target>
       </trans-unit>
       <trans-unit id="featureContainer-navGroupOperationsTitle" datatype="html">
-        <source>Operations: projects, suppliers, inventory and files</source>
-        <target>Betrieb: Projekte, Lieferanten, Inventar und Dateien</target>
+        <source>Operations: projects, suppliers, inventory, files and spooler</source>
+        <target>Betrieb: Projekte, Lieferanten, Lager, Dateien und Spooler</target>
       </trans-unit>
       <trans-unit id="featureContainer-navGroupOperations" datatype="html">
         <source>Operations</source>
@@ -16181,6 +16181,346 @@
       <trans-unit id="featureContainer-navGroupSystem" datatype="html">
         <source>System</source>
         <target>System</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-spoolerFailedTitle" datatype="html">
+        <source>Printouts and sends failed</source>
+        <target>Ausdrucke und Versand fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-spoolerFailedDescription" datatype="html">
+        <source>Background jobs that gave up. Retry them on the Spooler page; failed sends left their document unsent.</source>
+        <target>Hintergrundaufträge, die aufgegeben wurden. Wiederholen Sie sie auf der Spooler-Seite; fehlgeschlagene Sendungen haben ihr Dokument als nicht versendet hinterlassen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-lettersAttentionTitle" datatype="html">
+        <source>Letters need attention</source>
+        <target>Briefe benötigen Aufmerksamkeit</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-lettersAttentionDescription" datatype="html">
+        <source>The postal provider could not process or deliver these letters. Check the address and send the document again.</source>
+        <target>Der Postdienstleister konnte diese Briefe nicht verarbeiten oder zustellen. Prüfen Sie die Adresse und senden Sie das Dokument erneut.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-letterUndeliverable" datatype="html">
+        <source>Undeliverable</source>
+        <target>Unzustellbar</target>
+      </trans-unit>
+      <trans-unit id="featureBillingActionCenter-letterActionRequired" datatype="html">
+        <source>Needs action at the provider</source>
+        <target>Aktion beim Dienstleister nötig</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-markSentMessage" datatype="html">
+        <source> Use this when you delivered the document yourself (printed and posted, handed over in person). Nothing is sent to the customer. </source>
+        <target>Verwenden Sie dies, wenn Sie das Dokument selbst zugestellt haben (gedruckt und verschickt, persönlich übergeben). An den Kunden wird nichts gesendet.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-sentAtLabel" datatype="html">
+        <source>Sent on</source>
+        <target>Versendet am</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-sentAtHelp" datatype="html">
+        <source>Not in the future and not before the document was finalized.</source>
+        <target>Nicht in der Zukunft und nicht vor dem Abschluss des Dokuments.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-markSent" datatype="html">
+        <source>Mark as sent</source>
+        <target>Als versendet markieren</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-markCreditNoteSent" datatype="html">
+        <source>Mark credit note as sent</source>
+        <target>Gutschrift als versendet markieren</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-sentAtLabel" datatype="html">
+        <source>Sent on</source>
+        <target>Versendet am</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-sentAtHelp" datatype="html">
+        <source>Not in the future and not before the offer was archived.</source>
+        <target>Nicht in der Zukunft und nicht vor der Archivierung des Angebots.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-markSent" datatype="html">
+        <source>Mark as sent</source>
+        <target>Als versendet markieren</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-markSentTitle" datatype="html">
+        <source>Mark offer as sent?</source>
+        <target>Angebot als versendet markieren?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-markSentMessage" datatype="html">
+        <source>Use this when you delivered the offer yourself (printed and posted, handed over in person). Nothing is sent to the customer.</source>
+        <target>Verwenden Sie dies, wenn Sie das Angebot selbst zugestellt haben (gedruckt und verschickt, persönlich übergeben). An den Kunden wird nichts gesendet.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-empty" datatype="html">
+        <source>No printouts or sends yet</source>
+        <target>Noch keine Ausdrucke oder Sendungen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-kindDocumentSend" datatype="html">
+        <source>Document send</source>
+        <target>Dokumentversand</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-kindLabels" datatype="html">
+        <source>Labels</source>
+        <target>Etiketten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-kindMovement" datatype="html">
+        <source>Inventory document</source>
+        <target>Lagerbeleg</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-kindTimeReport" datatype="html">
+        <source>Time report</source>
+        <target>Zeitnachweis</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-targetDownload" datatype="html">
+        <source>Download</source>
+        <target>Download</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-targetEmail" datatype="html">
+        <source>Email</source>
+        <target>E-Mail</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-targetPostal" datatype="html">
+        <source>Letter</source>
+        <target>Brief</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-statusQueued" datatype="html">
+        <source>Queued</source>
+        <target>In Warteschlange</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-statusProcessing" datatype="html">
+        <source>Processing</source>
+        <target>In Bearbeitung</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-statusCompleted" datatype="html">
+        <source>Completed</source>
+        <target>Abgeschlossen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-statusFailed" datatype="html">
+        <source>Failed</source>
+        <target>Fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-statusCancelled" datatype="html">
+        <source>Cancelled</source>
+        <target>Abgebrochen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-title" datatype="html">
+        <source>Spooler</source>
+        <target>Spooler</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-viewAll" datatype="html">
+        <source>All</source>
+        <target>Alle</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-colStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-colJob" datatype="html">
+        <source>Job</source>
+        <target>Auftrag</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-colKind" datatype="html">
+        <source>Type</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-colTarget" datatype="html">
+        <source>Output</source>
+        <target>Ausgabe</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-colCreated" datatype="html">
+        <source>Created</source>
+        <target>Erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-colFinished" datatype="html">
+        <source>Finished</source>
+        <target>Beendet</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-colAttempts" datatype="html">
+        <source>Attempts</source>
+        <target>Versuche</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-colError" datatype="html">
+        <source>Error</source>
+        <target>Fehler</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-retried" datatype="html">
+        <source>The job was queued again.</source>
+        <target>Der Auftrag wurde erneut eingereiht.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSpooler-cancelled" datatype="html">
+        <source>The job was cancelled.</source>
+        <target>Der Auftrag wurde abgebrochen.</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminSpoolerPage" datatype="html">
+        <source>Spooler</source>
+        <target>Spooler</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminSpoolerTitle" datatype="html">
+        <source>Spooler: printouts and document sends</source>
+        <target>Spooler: Ausdrucke und Dokumentversand</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminSpooler" datatype="html">
+        <source>Spooler</source>
+        <target>Spooler</target>
+      </trans-unit>
+      <trans-unit id="featureDeliveryChoice-label" datatype="html">
+        <source>Send to the customer</source>
+        <target>An den Kunden senden</target>
+      </trans-unit>
+      <trans-unit id="featureDeliveryChoice-email" datatype="html">
+        <source>By email (PDF attached)</source>
+        <target>Per E-Mail (PDF im Anhang)</target>
+      </trans-unit>
+      <trans-unit id="featureDeliveryChoice-letter" datatype="html">
+        <source>As a letter (printed and posted)</source>
+        <target>Als Brief (gedruckt und verschickt)</target>
+      </trans-unit>
+      <trans-unit id="featureDeliveryChoice-letterHint" datatype="html">
+        <source>Sent through the postal provider; postage is charged by the provider.</source>
+        <target>Versand über den Postdienstleister; das Porto berechnet der Dienstleister.</target>
+      </trans-unit>
+      <trans-unit id="featureDeliveryChoice-none" datatype="html">
+        <source>Don&apos;t send yet</source>
+        <target>Noch nicht senden</target>
+      </trans-unit>
+      <trans-unit id="featureDeliveryChoice-noneHint" datatype="html">
+        <source>Send it later, or mark it as sent when you deliver it yourself.</source>
+        <target>Später senden oder als versendet markieren, wenn Sie es selbst zustellen.</target>
+      </trans-unit>
+      <trans-unit id="featureDeliveryChoice-spoolHint" datatype="html">
+        <source> Sending runs in the background; you can follow it on the Spooler page. </source>
+        <target>Der Versand läuft im Hintergrund; Sie können ihn auf der Spooler-Seite verfolgen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-category-postal" datatype="html">
+        <source>Postal delivery</source>
+        <target>Postversand</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_DEFAULT_POSTAL_PROVIDER" datatype="html">
+        <source>Postal provider</source>
+        <target>Postdienstleister</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_DEFAULT_POSTAL_PROVIDER" datatype="html">
+        <source>Provider that prints and posts letters (built in: pingen).</source>
+        <target>Dienstleister, der Briefe druckt und verschickt (integriert: pingen).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_POSTAL_COVER_PAGE" datatype="html">
+        <source>Cover page</source>
+        <target>Deckblatt</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_POSTAL_COVER_PAGE" datatype="html">
+        <source>Adds a cover page with the address in the envelope window (needed for Decabill documents).</source>
+        <target>Fügt ein Deckblatt mit der Adresse im Sichtfenster hinzu (für Decabill-Dokumente nötig).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_POSTAL_ADDRESS_POSITION" datatype="html">
+        <source>Address window</source>
+        <target>Adressfenster</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_POSTAL_ADDRESS_POSITION" datatype="html">
+        <source>Window position of the envelope: left (DIN 5008) or right (Swiss envelopes).</source>
+        <target>Fensterposition des Umschlags: links (DIN 5008) oder rechts (Schweizer Umschläge).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-PINGEN_ENVIRONMENT" datatype="html">
+        <source>Pingen environment</source>
+        <target>Pingen-Umgebung</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-PINGEN_ENVIRONMENT" datatype="html">
+        <source>Staging is the Pingen sandbox: letters are never printed or posted.</source>
+        <target>Staging ist die Pingen-Sandbox: Briefe werden nie gedruckt oder verschickt.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-PINGEN_CLIENT_ID" datatype="html">
+        <source>Pingen client ID</source>
+        <target>Pingen-Client-ID</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-PINGEN_CLIENT_ID" datatype="html">
+        <source>Client ID of the Pingen API app (client credentials).</source>
+        <target>Client-ID der Pingen-API-App (Client Credentials).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-PINGEN_CLIENT_SECRET" datatype="html">
+        <source>Pingen client secret</source>
+        <target>Pingen-Client-Secret</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-PINGEN_CLIENT_SECRET" datatype="html">
+        <source>Client secret of the Pingen API app.</source>
+        <target>Client-Secret der Pingen-API-App.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-PINGEN_ORGANISATION_ID" datatype="html">
+        <source>Pingen organisation ID</source>
+        <target>Pingen-Organisations-ID</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-PINGEN_ORGANISATION_ID" datatype="html">
+        <source>UUID of the Pingen organisation the letters are sent from.</source>
+        <target>UUID der Pingen-Organisation, aus der die Briefe verschickt werden.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-PINGEN_WEBHOOK_SIGNING_KEY" datatype="html">
+        <source>Pingen webhook signing key</source>
+        <target>Pingen-Webhook-Signaturschlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-PINGEN_WEBHOOK_SIGNING_KEY" datatype="html">
+        <source>Signing key of the Pingen webhooks (20 to 32 letters and digits).</source>
+        <target>Signaturschlüssel der Pingen-Webhooks (20 bis 32 Buchstaben und Ziffern).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-PINGEN_DELIVERY_PRODUCT" datatype="html">
+        <source>Delivery product</source>
+        <target>Versandprodukt</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-PINGEN_DELIVERY_PRODUCT" datatype="html">
+        <source>Pingen product: fast, cheap, bulk, premium or registered.</source>
+        <target>Pingen-Produkt: fast, cheap, bulk, premium oder registered.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-PINGEN_PRINT_MODE" datatype="html">
+        <source>Print mode</source>
+        <target>Druckmodus</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-PINGEN_PRINT_MODE" datatype="html">
+        <source>Simplex (one side) or duplex (both sides).</source>
+        <target>Simplex (einseitig) oder Duplex (beidseitig).</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-PINGEN_PRINT_SPECTRUM" datatype="html">
+        <source>Print colors</source>
+        <target>Druckfarben</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-PINGEN_PRINT_SPECTRUM" datatype="html">
+        <source>Color or grayscale.</source>
+        <target>Farbe oder Graustufen.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-BILLING_SPOOLER_RETENTION_DAYS" datatype="html">
+        <source>Spooler retention (days)</source>
+        <target>Spooler-Aufbewahrung (Tage)</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-BILLING_SPOOLER_RETENTION_DAYS" datatype="html">
+        <source>Finished spool jobs and their files are removed after this many days.</source>
+        <target>Beendete Spooler-Aufträge und ihre Dateien werden nach so vielen Tagen entfernt.</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-title-SPOOLER_COORDINATOR_INTERVAL" datatype="html">
+        <source>Spooler: interval</source>
+        <target>Spooler: Intervall</target>
+      </trans-unit>
+      <trans-unit id="featureBillingSettings-description-SPOOLER_COORDINATOR_INTERVAL" datatype="html">
+        <source>How often stuck spool jobs are re-queued and old ones removed (e.g. 60000 or 1m).</source>
+        <target>Wie oft hängende Spooler-Aufträge neu eingereiht und alte entfernt werden (z. B. 60000 oder 1m).</target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-sendLetterMessage" datatype="html">
+        <source> The document is printed and posted to the customer&apos;s postal address as a letter (with a cover page carrying the address). </source>
+        <target> Das Dokument wird gedruckt und als Brief an die Postanschrift des Kunden verschickt (mit einem Deckblatt, das die Adresse trägt). </target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-sendLetterMessage" datatype="html">
+        <source>Offer <x id="number" equiv-text="this.offerDisplayTitle(offer)"/> is printed and posted to <x id="customer" equiv-text="this.customerLabel(offer)"/> as a letter.</source>
+        <target>Angebot <x id="number" equiv-text="this.offerDisplayTitle(offer)"/> wird gedruckt und als Brief an <x id="customer" equiv-text="this.customerLabel(offer)"/> verschickt.</target>
+      </trans-unit>
+      <trans-unit id="featureDeliveryPreference-label" datatype="html">
+        <source>Preferred delivery</source>
+        <target>Bevorzugter Versand</target>
+      </trans-unit>
+      <trans-unit id="featureDeliveryPreference-email" datatype="html">
+        <source>Email</source>
+        <target>E-Mail</target>
+      </trans-unit>
+      <trans-unit id="featureDeliveryPreference-letter" datatype="html">
+        <source> Email and letter by post </source>
+        <target> E-Mail und Brief per Post </target>
+      </trans-unit>
+      <trans-unit id="featureDeliveryPreference-hint" datatype="html">
+        <source>With letters, invoices, credit notes and offers are also posted to the billing address; the email is still sent.</source>
+        <target>Mit Briefen werden Rechnungen, Gutschriften und Angebote zusätzlich an die Rechnungsadresse verschickt; die E-Mail wird weiterhin gesendet.</target>
+      </trans-unit>
+      <trans-unit id="featureDeliveryPreference-unavailable" datatype="html">
+        <source>Letters are currently not available; documents are only emailed.</source>
+        <target>Briefe sind derzeit nicht verfügbar; Dokumente werden nur per E-Mail gesendet.</target>
       </trans-unit>
     </body>
   </file>

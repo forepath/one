@@ -1,5 +1,5 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 
 import { AdminProjectsService } from './admin-projects.service';
@@ -73,25 +73,30 @@ describe('AdminProjectsService', () => {
     req.flush(response);
   });
 
-  it('posts time-report and returns PDF blob', (done) => {
+  it('spools the time report and returns the finished PDF', fakeAsync(() => {
     const dto = {
       from: '2026-06-01T08:00:00.000Z',
       to: '2026-06-01T17:00:00.000Z',
       unbilledOnly: true,
     };
     const blob = new Blob(['pdf'], { type: 'application/pdf' });
+    let res: Blob | undefined;
 
-    service.generateTimeReport('p-1', dto).subscribe((res) => {
-      expect(res).toBe(blob);
-      done();
-    });
+    service.generateTimeReport('p-1', dto).subscribe((value) => (res = value));
 
-    const req = httpMock.expectOne(`${apiUrl}/admin/billing/projects/p-1/time-report`);
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/projects/p-1/time-report/spool`);
 
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(dto);
-    req.flush(blob);
-  });
+    req.flush({ id: 'job-1', status: 'queued', hasFile: false });
+    tick(0);
+    httpMock
+      .expectOne(`${apiUrl}/admin/billing/spooler/jobs/job-1`)
+      .flush({ id: 'job-1', status: 'completed', hasFile: true });
+    httpMock.expectOne(`${apiUrl}/admin/billing/spooler/jobs/job-1/file`).flush(blob);
+
+    expect(res).toBe(blob);
+  }));
 
   it('creates project with targetHours', (done) => {
     const dto = {

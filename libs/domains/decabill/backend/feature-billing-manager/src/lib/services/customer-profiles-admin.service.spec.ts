@@ -14,6 +14,7 @@ describe('CustomerProfilesAdminService', () => {
   const customerProfilesService = {
     isProfileComplete: jest.fn().mockReturnValue(true),
     upsert: jest.fn(),
+    isPostalDeliveryAvailable: jest.fn(() => false),
     revalidateVatId: jest.fn(),
     markVatIdValidatedByAdmin: jest.fn(),
   };

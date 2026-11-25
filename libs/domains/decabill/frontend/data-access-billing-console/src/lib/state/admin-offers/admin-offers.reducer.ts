@@ -34,6 +34,9 @@ import {
   revokeAdminOfferSuccess,
   sendAdminOffer,
   sendAdminOfferFailure,
+  markAdminOfferSent,
+  markAdminOfferSentFailure,
+  markAdminOfferSentSuccess,
   sendAdminOfferSuccess,
   updateAdminOffer,
   updateAdminOfferFailure,
@@ -179,13 +182,13 @@ export const adminOffersReducer = createReducer(
     offers: upsertOffer(state.offers, offer),
   })),
   on(archiveAdminOfferFailure, (state, { error }) => ({ ...state, archiving: false, error })),
-  on(sendAdminOffer, (state) => ({ ...state, sending: true, error: null })),
-  on(sendAdminOfferSuccess, (state, { offer }) => ({
+  on(sendAdminOffer, markAdminOfferSent, (state) => ({ ...state, sending: true, error: null })),
+  on(sendAdminOfferSuccess, markAdminOfferSentSuccess, (state, { offer }) => ({
     ...state,
     sending: false,
     offers: upsertOffer(state.offers, offer),
   })),
-  on(sendAdminOfferFailure, (state, { error }) => ({ ...state, sending: false, error })),
+  on(sendAdminOfferFailure, markAdminOfferSentFailure, (state, { error }) => ({ ...state, sending: false, error })),
   on(revokeAdminOffer, (state) => ({ ...state, revoking: true, error: null })),
   on(revokeAdminOfferSuccess, (state, { offer }) => ({
     ...state,

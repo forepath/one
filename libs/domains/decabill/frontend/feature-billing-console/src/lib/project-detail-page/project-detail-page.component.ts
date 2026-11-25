@@ -6,6 +6,7 @@ import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/ro
 import {
   AdminBillingService,
   AdminProjectsService,
+  BillingCapabilitiesFacade,
   ProjectBoardSocketFacade,
   ProjectTimeEntriesFacade,
   ProjectTimeEntriesService,
@@ -73,6 +74,7 @@ import { BillingAdminSubscriptionSelectComponent } from '../billing-admin-subscr
 import { formatBillingClockRange, formatBillingMoney } from '../billing-format';
 import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { isProjectTimeEntryBilled } from '../billing-status-labels';
+import { DeliveryChoiceComponent, type DeliveryChoice } from '../document-delivery/delivery-choice.component';
 import { DocumentNoteFieldComponent } from '../document-note/document-note-field.component';
 import { documentNoteToInput } from '../document-note/document-note.util';
 import { InventoryArticleSelectComponent } from '../inventory/inventory-article-select.component';
@@ -114,6 +116,7 @@ interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
   selector: 'framework-project-detail-page',
   standalone: true,
   imports: [
+    DeliveryChoiceComponent,
     FpcFormTextDirective,
     FpcBadgeComponent,
     FpcButtonGroupComponent,
@@ -168,6 +171,9 @@ export class ProjectDetailPageComponent implements OnInit {
   private readonly projectsFacade = inject(ProjectsFacade);
   private readonly adminProjectsService = inject(AdminProjectsService);
   private readonly adminBillingService = inject(AdminBillingService);
+  private readonly capabilitiesFacade = inject(BillingCapabilitiesFacade);
+  /** Letters can be sent (postal provider configured for the tenant). */
+  readonly postalAvailable = toSignal(this.capabilitiesFacade.postalDeliveryAvailable$, { initialValue: false });
   private readonly timeEntriesFacade = inject(ProjectTimeEntriesFacade);
   private readonly socketFacade = inject(ProjectBoardSocketFacade);
   private readonly destroyRef = inject(DestroyRef);
@@ -331,6 +337,8 @@ export class ProjectDetailPageComponent implements OnInit {
   billNote = '';
   /** Email the project invoice (with time report) to the customer right away. */
   billNotifyCustomer = true;
+  /** Bill time with a postal provider: email, letter or invoice not sent yet. */
+  billDelivery: DeliveryChoice = 'email';
   readonly billBoundsLoading = signal(false);
   readonly billBoundsEntryCount = signal(0);
   readonly billTimeSubscriptions = signal<SubscriptionResponse[]>([]);
@@ -591,7 +599,7 @@ export class ProjectDetailPageComponent implements OnInit {
       from: this.datetimeLocalToIso(this.billFormFrom),
       to: this.datetimeLocalToIso(this.billFormTo),
       subscriptionId: this.billSubscriptionId.trim() || undefined,
-      notifyCustomer: this.billNotifyCustomer,
+      notifyCustomer: this.billDeliveryChoice() === 'email',
     };
 
     if (this.billPricingModel() === 'fixed' && this.billAmountNet != null && Number(this.billAmountNet) > 0) {
@@ -614,7 +622,14 @@ export class ProjectDetailPageComponent implements OnInit {
       dto.note = note;
     }
 
-    this.projectsFacade.billProjectTime(this.projectId, dto);
+    this.projectsFacade.billProjectTime(this.projectId, dto, this.billDeliveryChoice() === 'letter');
+  }
+
+  /** The delivery of the billed invoice: the radio choice with a postal provider, else the email checkbox. */
+  private billDeliveryChoice(): DeliveryChoice {
+    if (this.postalAvailable()) return this.billDelivery;
+
+    return this.billNotifyCustomer ? 'email' : 'none';
   }
 
   billTimeLineSummary(line: BillTimeFormLineItem): PricingTotalsSummary | null {
@@ -972,6 +987,7 @@ export class ProjectDetailPageComponent implements OnInit {
     this.billCustomLineItems = [];
     this.billNote = '';
     this.billNotifyCustomer = true;
+    this.billDelivery = 'email';
     this.billTimeSubscriptions.set([]);
     this.billTimeSubscriptionsLoading.set(false);
     this.billTimeSubscriptionsRequest?.unsubscribe();
