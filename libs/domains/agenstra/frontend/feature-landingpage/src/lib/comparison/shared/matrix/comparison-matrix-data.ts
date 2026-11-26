@@ -81,18 +81,18 @@ const AGENSTRA_SCORES: readonly MatrixStrength[] = [
 ];
 const AGENSTRA_TOOLTIPS: readonly string[] = [
   $localize`:@@featurePortalComparison-agenstraT1:Controller + RBAC over many remote agent-manager endpoints from one console.`,
-  $localize`:@@featurePortalComparison-agenstraT2:Per-client users with admin/user roles; OIDC/SAML single sign-on or JWT users. API-key mode bypasses user checks.`,
+  $localize`:@@featurePortalComparison-agenstraT2:Per-client users with admin and user roles plus an instance-wide manager role; OIDC/SAML single sign-on or JWT users. API-key mode bypasses user checks.`,
   $localize`:@@featurePortalComparison-agenstraT3:Dockerized controller and manager; you choose where they run. EU-friendly provider automation where offered.`,
-  $localize`:@@featurePortalComparison-agenstraT4:WebSocket chat to Docker-backed agents with logs and container lifecycle via agent-manager.`,
+  $localize`:@@featurePortalComparison-agenstraT4:WebSocket chat to OpenCode agents with logs and container lifecycle via agent-manager, isolated from gVisor sandboxes up to KVM microVMs.`,
   $localize`:@@featurePortalComparison-agenstraT5:Monaco editor plus proxied Git (status, branches, commit, push, pull, rebase, conflicts).`,
   $localize`:@@featurePortalComparison-agenstraT6:Ticket REST, realtime board, automation and migration APIs on the controller.`,
   $localize`:@@featurePortalComparison-agenstraT7:Knowledge tree, relations, activity, and prompt-context endpoints.`,
-  $localize`:@@featurePortalComparison-agenstraT8:Deployments APIs cover configs, workflows, runs, logs, and cancel. All of that is scoped to agents.`,
+  $localize`:@@featurePortalComparison-agenstraT8:GitHub Actions, GitLab CI, and Jenkins pipelines with runs, logs, and cancel. Agents can read and trigger them through the built-in MCP server.`,
   $localize`:@@featurePortalComparison-agenstraT9:Documented automation for Hetzner and DigitalOcean to install agent-manager and register clients.`,
   $localize`:@@featurePortalComparison-agenstraT10:Layered message filters and per-environment web traffic filtering (egress guard), pluggable chat filters, audit statistics for drops, flags, blocked destinations and entity events.`,
   $localize`:@@featurePortalComparison-agenstraT11:Statistics REST for chat I/O, filter incidents, and entity lifecycle (per client and aggregate).`,
   $localize`:@@featurePortalComparison-agenstraT12:Plugin agent providers and chat filters in agent-manager.`,
-  $localize`:@@featurePortalComparison-agenstraT13:OIDC or SAML with any identity provider, built-in JWT users, or static API key. Connect corporate IdPs such as Entra ID, Okta or Keycloak directly.`,
+  $localize`:@@featurePortalComparison-agenstraT13:OIDC or SAML with any identity provider, built-in JWT users, mTLS client certificates, or static API key. Connect corporate IdPs such as Entra ID, Okta or Keycloak directly.`,
 ];
 const COMPETITOR_SCORES: Record<ComparisonSlug, readonly MatrixStrength[]> = {
   devin: [

@@ -41,12 +41,14 @@ export class PortalHomeComponent implements OnInit {
   /** Hero feature badges, in the two rows of the badge band. */
   protected readonly heroBadgeRows: readonly (readonly string[])[] = [
     [
-      $localize`:@@featureDecabillHome-heroBadge1:Services & projects`,
+      $localize`:@@featureDecabillHome-heroBadge1:Offers & projects`,
       $localize`:@@featureDecabillHome-heroBadge2:SaaS subscriptions`,
       $localize`:@@featureDecabillHome-heroBadge3:Automatic provisioning`,
+      $localize`:@@featureDecabillHome-heroBadge7:Inventory`,
     ],
     [
-      $localize`:@@featureDecabillHome-heroBadge4:ZUGFeRD invoicing`,
+      $localize`:@@featureDecabillHome-heroBadge4:ZUGFeRD & XRechnung`,
+      $localize`:@@featureDecabillHome-heroBadge8:Double-entry accounting`,
       $localize`:@@featureDecabillHome-heroBadge5:Stripe payments`,
       $localize`:@@featureDecabillHome-heroBadge6:Multi-tenant`,
     ],
@@ -85,7 +87,7 @@ export class PortalHomeComponent implements OnInit {
 
     const pageTitle = $localize`:@@featureDecabillHome-metaTitlePage:Billing for agencies and digital products`;
     const metaTitle = formatProductMetaTitle(pageTitle, this.environment.application.productName);
-    const metaDescription = $localize`:@@featureDecabillHome-metaDescription:Decabill helps agencies and digital product teams bill services, projects, SaaS subscriptions, and hosting. Invoicing, payments, and customer self-service in one multi-tenant platform.`;
+    const metaDescription = $localize`:@@featureDecabillHome-metaDescription:Decabill helps agencies and digital product teams bill services, projects, SaaS subscriptions, and hosting. Offers, e-invoicing, payments, accounting, and customer self-service in one multi-tenant platform.`;
 
     this.titleService.setTitle(metaTitle);
     this.destroyRef.onDestroy(
@@ -93,7 +95,7 @@ export class PortalHomeComponent implements OnInit {
         this.metaService,
         buildPageMetaTags({
           description: metaDescription,
-          keywords: $localize`:@@featureDecabillHome-metaKeywords:Decabill, agency billing, digital products, SaaS billing, hosting billing, multi-tenant, NestJS, invoicing, Stripe, ZUGFeRD`,
+          keywords: $localize`:@@featureDecabillHome-metaKeywords:Decabill, agency billing, digital products, SaaS billing, hosting billing, multi-tenant, NestJS, invoicing, Stripe, ZUGFeRD, XRechnung, accounting, DATEV`,
           author: 'IPvX UG (haftungsbeschränkt)',
           robots: 'index, follow',
           canonicalUrl: 'https://decabill.com',

@@ -267,8 +267,8 @@
                   Leadership clarity
                 </p>
                 <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageWorkspacesBenefit1Desc">
-                  Executives and platform teams share one map of agent activity instead of reconciling spreadsheets and
-                  chat threads.
+                  An admin overview shows workspaces, active agents, messages, tokens, and cost in one place instead of
+                  spreadsheets and chat threads.
                 </p>
               </div>
               <div class="col">
@@ -410,7 +410,8 @@
                   Humans approve the blast radius
                 </p>
                 <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantagePolicyBenefit3Desc">
-                  Autonomous runs start only when the right owner says yes, with limits on scope and runtime.
+                  Autonomous runs start only when the right owner says yes, and the action center lists every approval
+                  that is still waiting.
                 </p>
               </div>
             </div>
@@ -816,7 +817,8 @@
                   <i class="bi bi-people text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
                   <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarRunPoint2Title">The right access</p>
                   <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability1Item2">
-                    Invite teammates with roles per workspace and sign in with your company identity provider
+                    Invite teammates with roles per workspace, let managers run day-to-day administration, and sign in
+                    through OIDC or SAML
                   </p>
                 </div>
                 <div class="col">
@@ -930,7 +932,8 @@
                     Ship with confidence
                   </p>
                   <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability3Item3">
-                    Trigger releases, follow run logs, and use Git from the same place you chat with agents
+                    Run GitHub Actions, GitLab CI, and Jenkins pipelines, follow their logs, and use Git from the same
+                    place you chat with agents
                   </p>
                 </div>
               </div>
@@ -1032,10 +1035,12 @@
                   </p>
                 </div>
                 <div class="col">
-                  <i class="bi bi-cpu text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
-                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarConnectPoint2Title">Your agents</p>
+                  <i class="bi bi-braces text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarConnectPoint2Title">
+                    OpenAI-compatible API
+                  </p>
                   <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability4Item2">
-                    Use Cursor and OpenCode on infrastructure you choose
+                    Call any agent from the SDKs, chat interfaces, and CLIs that already speak the OpenAI API
                   </p>
                 </div>
                 <div class="col">
@@ -1055,6 +1060,142 @@
     </div>
     <span id="delivery" class="visually-hidden" aria-hidden="true"></span>
     <span id="integration" class="visually-hidden" aria-hidden="true"></span>
+  </div>
+</section>
+
+<!-- Agents: what agents do inside a workspace -->
+<section id="agents" class="py-10 bg-body-tertiary home-agents grid-section">
+  <div class="container grid-section__container">
+    <div class="row justify-content-center text-center pb-10">
+      <div class="col-lg-9">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featurePortalHome-agentsTitle">
+          Agents that plan, schedule, and hand off work
+        </h2>
+        <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalHome-agentsLead">
+          Agenstra runs OpenCode agents with the context and tools of their workspace. They plan before they build, pick
+          up recurring work, and ask a teammate agent when a task belongs elsewhere.
+        </p>
+      </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4">
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 home-agents-tile">
+          <i class="bi bi-signpost-2 text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-agentsTile1Title">Plan before they build</h3>
+          <p class="small text-muted mb-0" i18n="@@featurePortalHome-agentsTile1Desc">
+            Agents explore the repository read-only and propose a plan you refine before a single file changes
+          </p>
+        </article>
+      </div>
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 home-agents-tile">
+          <i class="bi bi-calendar-check text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-agentsTile2Title">Work on a schedule</h3>
+          <p class="small text-muted mb-0" i18n="@@featurePortalHome-agentsTile2Desc">
+            Give an agent a prompt and a cron schedule for daily reports, dependency checks, or health probes
+          </p>
+        </article>
+      </div>
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 home-agents-tile">
+          <i class="bi bi-arrow-left-right text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-agentsTile3Title">Hand work to a peer</h3>
+          <p class="small text-muted mb-0" i18n="@@featurePortalHome-agentsTile3Desc">
+            A backend agent asks the frontend agent of the same workspace to adapt the UI and gets the answer back
+          </p>
+        </article>
+      </div>
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 home-agents-tile">
+          <i class="bi bi-diagram-2 text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-agentsTile4Title">Context on demand</h3>
+          <p class="small text-muted mb-0" i18n="@@featurePortalHome-agentsTile4Desc">
+            A built-in MCP server gives agents tickets, knowledge pages, pipelines, and a graph of the code without
+            bloating every prompt
+          </p>
+        </article>
+      </div>
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 home-agents-tile">
+          <i class="bi bi-plug text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-agentsTile5Title">Tools from the MCP registry</h3>
+          <p class="small text-muted mb-0" i18n="@@featurePortalHome-agentsTile5Desc">
+            Add servers from the official MCP registry, with allow and block lists from the instance down to a single
+            environment
+          </p>
+        </article>
+      </div>
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 home-agents-tile">
+          <i class="bi bi-display text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-agentsTile6Title">A desktop when they need one</h3>
+          <p class="small text-muted mb-0" i18n="@@featurePortalHome-agentsTile6Desc">
+            Open a remote desktop session into an environment to watch or steer browser and GUI work
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Secure by default -->
+<section id="security" class="py-10 bg-primary text-white home-security grid-section">
+  <div class="container grid-section__container">
+    <div class="row justify-content-center text-center pb-10">
+      <div class="col-lg-9">
+        <i class="bi bi-shield-lock home-security-icon mb-3" aria-hidden="true"></i>
+        <h2 class="h2 fw-semibold mb-4" i18n="@@featurePortalHome-securityTitle">Secure by default</h2>
+        <p class="lead mb-0 mx-auto home-security-lead" i18n="@@featurePortalHome-securityLead">
+          Agents run code, install packages, and reach the network. Agenstra treats them like any workload you would not
+          trust blindly: every environment is isolated, its traffic is filtered, and every caller is authenticated.
+        </p>
+      </div>
+    </div>
+    <div class="row g-4 g-lg-5 justify-content-center">
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm p-4 h-100">
+          <i class="bi bi-boxes text-white icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2 text-white" i18n="@@featurePortalHome-securityPoint1Title">
+            Isolation that matches the host
+          </h3>
+          <p class="small mb-0" i18n="@@featurePortalHome-securityPoint1Desc">
+            Each environment starts at the strongest level its host supports, from gVisor sandboxes up to KVM microVMs
+            with their own guest kernel.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm p-4 h-100">
+          <i class="bi bi-router text-white icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2 text-white" i18n="@@featurePortalHome-securityPoint2Title">
+            Egress you decide
+          </h3>
+          <p class="small mb-0" i18n="@@featurePortalHome-securityPoint2Desc">
+            An egress guard routes all outbound traffic through your layered web traffic policy, so agents only reach
+            the hosts you allow.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm p-4 h-100">
+          <i class="bi bi-key text-white icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2 text-white" i18n="@@featurePortalHome-securityPoint3Title">
+            Access your security team signs off
+          </h3>
+          <p class="small mb-0" i18n="@@featurePortalHome-securityPoint3Desc">
+            OIDC and SAML single sign-on, mTLS client certificates, and scoped access tokens cover people and automation
+            alike.
+          </p>
+        </article>
+      </div>
+    </div>
+    <div class="text-center pt-10">
+      <a routerLink="/how-it-works" fragment="isolation" class="fw-semibold text-white home-security-link">
+        <span i18n="@@featurePortalHome-securityCta">See how isolation works</span>
+        <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+      </a>
+    </div>
   </div>
 </section>
 
@@ -1127,7 +1268,8 @@
                 <div>
                   <h4 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-ecosystemDesktopTitle">Agenstra Desktop</h4>
                   <p class="small text-muted mb-3" i18n="@@featurePortalHome-ecosystemDesktopDesc">
-                    A desktop app for daily operators with the same sign-in and permissions as the web console.
+                    A desktop app for daily operators with the same sign-in and permissions as the web console. Signed
+                    releases keep it up to date.
                   </p>
                   <a
                     routerLink="/desktop"

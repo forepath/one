@@ -201,3 +201,28 @@
     width: var(--hero-mascot-width);
   }
 }
+
+.home-agents-tile {
+  background-color: var(--bs-body-bg);
+}
+
+// Primary band (same treatment as the Decabill compliance section): hairline borders on the cards,
+// a softer lead and a large plain icon above the title.
+.home-security {
+  --bs-border-color: rgba(255, 255, 255, 0.12);
+}
+
+.home-security-lead {
+  color: rgba(255, 255, 255, 0.88);
+  max-width: 46rem;
+}
+
+.home-security-icon {
+  display: block;
+  font-size: 4.5rem;
+  line-height: 1;
+}
+
+.home-security-link {
+  text-underline-offset: 0.25em;
+}

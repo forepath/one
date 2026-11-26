@@ -43,8 +43,8 @@ export const COMPARISON_MATRIX_ROW_LABELS: readonly ComparisonMatrixRowLabel[] =
     question: $localize`:@@featureDecabillComparison-matrixQ9:Do operators and customers see live server and subscription state, not batch emails or manual checks?`,
   },
   {
-    dimension: $localize`:@@featureDecabillComparison-matrixDim10:Finance export and bookkeeping handoff (DATEV ecosystem)`,
-    question: $localize`:@@featureDecabillComparison-matrixQ10:Can finance close the month without re-keying line items, especially in German agency contexts?`,
+    dimension: $localize`:@@featureDecabillComparison-matrixDim10:Bookkeeping and finance export (accounting + DATEV)`,
+    question: $localize`:@@featureDecabillComparison-matrixQ10:Can finance book, reconcile, and close the month without re-keying line items, especially in German agency contexts?`,
   },
   {
     dimension: $localize`:@@featureDecabillComparison-matrixDim11:Payment processor flexibility (Stripe + extensibility)`,
@@ -58,23 +58,28 @@ export const COMPARISON_MATRIX_ROW_LABELS: readonly ComparisonMatrixRowLabel[] =
     dimension: $localize`:@@featureDecabillComparison-matrixDim13:Full billing API and integration surface`,
     question: $localize`:@@featureDecabillComparison-matrixQ13:Can we integrate ordering, subscriptions, invoices, and admin flows via documented APIs, not screen-scraping?`,
   },
+  {
+    dimension: $localize`:@@featureDecabillComparison-matrixDim14:Offers, projects, and time billing`,
+    question: $localize`:@@featureDecabillComparison-matrixQ14:Can an accepted quote become the subscription, project, and invoice it describes, with time billed hourly, capped, or at a fixed price?`,
+  },
 ];
 
-const DECABILL_SCORES: readonly MatrixStrength[] = Array(13).fill('strong') as MatrixStrength[];
+const DECABILL_SCORES: readonly MatrixStrength[] = Array(14).fill('strong') as MatrixStrength[];
 const DECABILL_TOOLTIPS: readonly string[] = [
   $localize`:@@featureDecabillComparison-decabillT1:Single catalog for SaaS subscriptions, agency-style services, and managed hosting in one billing core and console.`,
   $localize`:@@featureDecabillComparison-decabillT2:Multi-tenant deployment with X-Tenant scoping and per-tenant URLs so agencies can run multiple brands and clients from one stack.`,
   $localize`:@@featureDecabillComparison-decabillT3:Open-source core with Docker-based self-hosting and optional Decabill Cloud for managed operation.`,
   $localize`:@@featureDecabillComparison-decabillT4:Dedicated customer console for subscriptions, invoices, payment state, and hosting lifecycle in one view.`,
-  $localize`:@@featureDecabillComparison-decabillT5:Admin billing module with KPIs, open and overdue views, bill-now, and manual invoice lifecycle designed for operators and finance.`,
-  $localize`:@@featureDecabillComparison-decabillT6:Emits ZUGFeRD-style PDFs with embedded EN 16931 XML so invoices align with German and EU e-invoicing mandates.`,
+  $localize`:@@featureDecabillComparison-decabillT5:Admin overview, action center, open and overdue views, bill-now, and manual invoice lifecycle designed for operators and finance.`,
+  $localize`:@@featureDecabillComparison-decabillT6:Emits Factur-X / ZUGFeRD PDFs with embedded EN 16931 XML, plus XRechnung, Peppol BIS 3.0, and UBL per customer, so invoices align with German and EU e-invoicing mandates.`,
   $localize`:@@featureDecabillComparison-decabillT7:Built-in Hetzner Cloud and DigitalOcean provisioning via cloud-init, with subscription-driven lifecycle and backorders when capacity is exhausted.`,
   $localize`:@@featureDecabillComparison-decabillT8:Service types and plans with provider schemas and pricing previews, exposed via a public offerings API for marketing sites.`,
   $localize`:@@featureDecabillComparison-decabillT9:WebSocket-powered dashboards stream live provisioning and subscription status into operator and customer views.`,
-  $localize`:@@featureDecabillComparison-decabillT10:Structured ZUGFeRD and EN 16931 invoices plus export posture aimed at German DATEV-style workflows and long-term e-archive requirements.`,
+  $localize`:@@featureDecabillComparison-decabillT10:Double-entry accounting per national standard with bank statement import, reconciliation, VAT returns, and DATEV, GoBD, FEC, or SAF-T exports from a signed archive.`,
   $localize`:@@featureDecabillComparison-decabillT11:Stripe Checkout and webhook integration combined with pluggable payment providers so operators can keep their own PSP relationships.`,
   $localize`:@@featureDecabillComparison-decabillT12:Supports any OIDC or SAML identity provider plus built-in users and API-key based automation for agency and enterprise setups.`,
   $localize`:@@featureDecabillComparison-decabillT13:OpenAPI-described REST API for customers, subscriptions, invoices, and admin workflows enables deep integration without scraping UIs.`,
+  $localize`:@@featureDecabillComparison-decabillT14:Numbered offers customers accept online turn into subscriptions, projects, and invoices. Projects track tickets and time with hourly, capped, or fixed pricing.`,
 ];
 const COMPETITOR_SCORES: Record<ComparisonSlug, readonly MatrixStrength[]> = {
   whmcs: [
@@ -91,6 +96,7 @@ const COMPETITOR_SCORES: Record<ComparisonSlug, readonly MatrixStrength[]> = {
     'partial',
     'weak',
     'weak',
+    'partial',
   ],
   hostbill: [
     'partial',
@@ -99,6 +105,7 @@ const COMPETITOR_SCORES: Record<ComparisonSlug, readonly MatrixStrength[]> = {
     'partial',
     'partial',
     'weak',
+    'partial',
     'partial',
     'partial',
     'partial',
@@ -121,6 +128,7 @@ const COMPETITOR_SCORES: Record<ComparisonSlug, readonly MatrixStrength[]> = {
     'weak',
     'partial',
     'partial',
+    'partial',
   ],
   chargebee: [
     'partial',
@@ -130,6 +138,7 @@ const COMPETITOR_SCORES: Record<ComparisonSlug, readonly MatrixStrength[]> = {
     'partial',
     'weak',
     'weak',
+    'partial',
     'partial',
     'partial',
     'partial',
@@ -151,6 +160,7 @@ const COMPETITOR_SCORES: Record<ComparisonSlug, readonly MatrixStrength[]> = {
     'weak',
     'partial',
     'partial',
+    'weak',
   ],
 };
 const COMPETITOR_TOOLTIPS: Record<ComparisonSlug, readonly string[]> = {
@@ -168,6 +178,7 @@ const COMPETITOR_TOOLTIPS: Record<ComparisonSlug, readonly string[]> = {
     $localize`:@@featureDecabillComparison-whmcsT11:Supports multiple gateways such as Stripe, PayPal, and Authorize.net as classic card processors, not as a modular payment-orchestration layer extendable by operators.`,
     $localize`:@@featureDecabillComparison-whmcsT12:Authentication focuses on local accounts. SSO for staff or clients is not a native core capability and usually depends on community modules or reverse proxies.`,
     $localize`:@@featureDecabillComparison-whmcsT13:WHMCS exposes a limited API focused on hosting operations. Many teams rely on custom hooks or unofficial API extensions to cover full billing scenarios.`,
+    $localize`:@@featureDecabillComparison-whmcsT14:Quotes convert into invoices and a separate project management add-on tracks tasks and time, but a quote does not set up subscriptions or capped projects in one step.`,
   ],
   hostbill: [
     $localize`:@@featureDecabillComparison-hostbillT1:Strong hosting and domain focus. SaaS or project billing is possible via generic products but lacks the unified services, SaaS, and cloud positioning agencies need.`,
@@ -183,6 +194,7 @@ const COMPETITOR_TOOLTIPS: Record<ComparisonSlug, readonly string[]> = {
     $localize`:@@featureDecabillComparison-hostbillT11:Many gateways and modules exist but are packaged as HostBill-specific integrations. Swapping processors without touching HostBill is harder than with a plugin-centric billing core.`,
     $localize`:@@featureDecabillComparison-hostbillT12:OIDC admin-auth module and related add-ons exist, but enterprise SSO is an optional extension, not a pervasive, first-class identity model across all surfaces.`,
     $localize`:@@featureDecabillComparison-hostbillT13:API coverage exists for core entities, but many billing and admin use cases still rely on HostBill modules or GUI workflows, limiting fully headless integration.`,
+    $localize`:@@featureDecabillComparison-hostbillT14:Estimates can be sent and converted into invoices. Project delivery with time tracking and price caps is not part of the documented core.`,
   ],
   'stripe-billing': [
     $localize`:@@featureDecabillComparison-stripeT1:Optimized for SaaS subscriptions and usage-based pricing. Service projects and managed hosting require custom modeling and separate tooling.`,
@@ -198,6 +210,7 @@ const COMPETITOR_TOOLTIPS: Record<ComparisonSlug, readonly string[]> = {
     $localize`:@@featureDecabillComparison-stripeT11:Tightly coupled to Stripe's own payment processing. Using other PSPs for the same billing stack is not supported.`,
     $localize`:@@featureDecabillComparison-stripeT12:Stripe Dashboard SSO and role management are SaaS features. Customer identity integration for consoles beyond payment pages must be built separately.`,
     $localize`:@@featureDecabillComparison-stripeT13:Excellent APIs for payments and subscriptions, but broader billing-ops surfaces such as manual invoices, hosting lifecycle, and multi-tenant admin live outside Stripe's scope and must be custom-built.`,
+    $localize`:@@featureDecabillComparison-stripeT14:Stripe Quotes can start subscriptions and invoices, but project boards, time entries, and fixed or capped project prices are out of scope.`,
   ],
   chargebee: [
     $localize`:@@featureDecabillComparison-chargebeeT1:Subscription-first platform focused on SaaS and recurring revenue. Project work and managed hosting require workarounds or adjacent systems.`,
@@ -213,6 +226,7 @@ const COMPETITOR_TOOLTIPS: Record<ComparisonSlug, readonly string[]> = {
     $localize`:@@featureDecabillComparison-chargebeeT11:Integrates with Stripe, Braintree, Adyen, and others, but as a closed SaaS platform where processors are configured in Chargebee rather than through an extensible plugin surface.`,
     $localize`:@@featureDecabillComparison-chargebeeT12:SSO and role management exist in higher tiers, yet as a hosted app this is primarily for Chargebee's UI, not a self-hosted identity fabric for customer consoles.`,
     $localize`:@@featureDecabillComparison-chargebeeT13:Provides solid APIs around subscriptions and invoices, but deep integration with infra provisioning and multi-tenant admin still requires significant custom work.`,
+    $localize`:@@featureDecabillComparison-chargebeeT14:Quotes for subscriptions and one-off charges are available, yet project delivery, time tracking, and capped project billing live in other tools.`,
   ],
   paddle: [
     $localize`:@@featureDecabillComparison-paddleT1:Merchant-of-record platform optimized for SaaS and digital products. Project work and managed hosting fall outside its core focus.`,
@@ -228,6 +242,7 @@ const COMPETITOR_TOOLTIPS: Record<ComparisonSlug, readonly string[]> = {
     $localize`:@@featureDecabillComparison-paddleT11:Paddle is an all-in-one MoR. You cannot choose your own underlying PSP or swap processors while keeping Paddle's billing.`,
     $localize`:@@featureDecabillComparison-paddleT12:Identity and access management are tied to Paddle's SaaS dashboards. Deep integration with customer IdPs for a self-hosted console is not the model.`,
     $localize`:@@featureDecabillComparison-paddleT13:APIs focus on subscription and payment flows, with less emphasis on exposing MoR internals or integrating infra and tenant-level operations.`,
+    $localize`:@@featureDecabillComparison-paddleT14:Built around checkout and subscriptions. Quotations, project boards, and time-based billing are not part of the model.`,
   ],
 };
 
