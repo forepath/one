@@ -1,0 +1,441 @@
+<!-- Hero -->
+<section
+  id="hero"
+  class="py-10 py-lg-6 bg-body text-body-emphasis position-relative overflow-hidden grid-section grid-section--deep"
+>
+  <!-- The brand mark stack, as on the home heroes (it runs off the top-right corner). -->
+  <shared-mark-stack brand="decabill" />
+  <div class="container grid-section__container">
+    <div class="row align-items-center">
+      <div class="col-lg-6 mb-5 mb-lg-0 text-center text-lg-start">
+        <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureDecabillDesktop-heroTitle">
+          Your <span class="text-primary">Billing Console</span>, Right On Your Desktop
+        </h1>
+        <p class="lead mb-5 mx-auto mx-lg-0 hero-lead max-w-650" i18n="@@featureDecabillDesktop-heroDescription">
+          Decabill Desktop runs the billing console in its own window. Customers, offers, projects, and invoices stay
+          one click away, connected to your self-hosted Decabill or to Decabill Cloud.
+        </p>
+        <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
+          <fpc-button
+            variant="primary"
+            size="xl"
+            btnClass="rounded-3"
+            href="https://downloads.decabill.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            i18n="@@featureDecabillDesktop-downloadCtaHero"
+          >
+            <i class="bi bi-download" aria-hidden="true"></i>Download Decabill Desktop
+          </fpc-button>
+          <fpc-button
+            variant="dark"
+            size="xl"
+            btnClass="rounded-3"
+            href="https://docs.decabill.com/en/docs/applications/native-billing-console"
+            target="_blank"
+            rel="noopener noreferrer"
+            i18n="@@featureDecabillDesktop-setupGuide"
+          >
+            <i class="bi bi-book" aria-hidden="true"></i>Read setup guide
+          </fpc-button>
+        </div>
+        <p class="small text-muted mt-3 mb-0" i18n="@@featureDecabillDesktop-platforms">
+          Available for: Windows, Linux
+        </p>
+      </div>
+      <div class="col-lg-6 text-center position-relative desktop-hero-visual">
+        <!-- The brand character hangs from the illustration's top-right corner. -->
+        <div class="desktop-hero-frame">
+          <shared-hero-mascot brand="decabill" pose="corner" class="desktop-hero-mascot" />
+          <framework-portal-desktop-illustration
+            label="Decabill Desktop showing an invoice in the billing console"
+            i18n-label="@@featureDecabillDesktop-heroAlt"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Same console, three places -->
+<section id="value" class="py-10 bg-body desktop-value grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featureDecabillDesktop-valueTitle">
+        The same console, wherever you bill
+      </h2>
+      <p class="lead text-muted mb-3 mx-auto section-lead" i18n="@@featureDecabillDesktop-valueLead">
+        The browser is great for a quick look. The people who bill every day want a window that is always where they
+        left it.
+      </p>
+      <p class="text-muted mb-0 mx-auto section-lead" i18n="@@featureDecabillDesktop-valueSub">
+        Decabill Desktop is that window. It runs the billing console you know from the web, against the same server,
+        with the same customers, invoices, and permissions.
+      </p>
+    </div>
+    <div class="row align-items-center justify-content-center g-4 text-center">
+      <div class="col-md-4">
+        <div class="card border rounded-3 shadow-sm p-4 h-100 bg-body">
+          <i class="bi bi-globe text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-1" i18n="@@featureDecabillDesktop-webLabel">Web console</h3>
+          <p class="small text-muted mb-0" i18n="@@featureDecabillDesktop-webUse">From any browser</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border rounded-3 shadow-sm p-4 h-100 card-capability card-capability-primary">
+          <i class="bi bi-display text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-1" i18n="@@featureDecabillDesktop-desktopLabel">Desktop app</h3>
+          <p class="small text-muted mb-0" i18n="@@featureDecabillDesktop-desktopUse">Daily billing work</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Capabilities: pill tabs -->
+<section id="features" class="py-10 bg-body-tertiary desktop-features grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featureDecabillDesktop-featuresTitle">
+        Built for the people who bill every day
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureDecabillDesktop-featuresLead">
+        Keep the whole billing console at hand, and let the app keep itself up to date.
+      </p>
+    </div>
+    <ul class="nav nav-pills nav-fill flex-wrap gap-2 justify-content-center mb-4 portal-page-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active px-4 py-2"
+          id="desktop-tab-work"
+          data-bs-toggle="tab"
+          data-bs-target="#desktop-pane-work"
+          type="button"
+          role="tab"
+          aria-controls="desktop-pane-work"
+          aria-selected="true"
+          i18n="@@featureDecabillDesktop-tabWork"
+        >
+          <i class="bi bi-briefcase me-2" aria-hidden="true"></i>
+          Work
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-4 py-2"
+          id="desktop-tab-current"
+          data-bs-toggle="tab"
+          data-bs-target="#desktop-pane-current"
+          type="button"
+          role="tab"
+          aria-controls="desktop-pane-current"
+          aria-selected="false"
+          i18n="@@featureDecabillDesktop-tabCurrent"
+        >
+          <i class="bi bi-arrow-repeat me-2" aria-hidden="true"></i>
+          Stay current
+        </button>
+      </li>
+    </ul>
+    <div class="tab-content desktop-pillar-panels">
+      <div
+        class="tab-pane fade show active"
+        id="desktop-pane-work"
+        role="tabpanel"
+        aria-labelledby="desktop-tab-work"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden desktop-pillar-panel card-capability-primary">
+          <div class="row g-0 align-items-stretch">
+            <div class="col-lg-5 p-4 p-lg-5 border-end landing-bento-visual">
+              <div
+                class="desktop-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+                aria-hidden="true"
+              >
+                <i class="bi bi-briefcase-fill text-primary icon-xl"></i>
+              </div>
+              <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featureDecabillDesktop-pillarWorkTitle">
+                Everything from the web console
+              </h3>
+              <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureDecabillDesktop-pillarWorkLead">
+                Customers, subscriptions, offers, projects, and invoices, in a window of its own next to the rest of
+                your day.
+              </p>
+            </div>
+            <div class="col-lg-7 p-4 p-lg-5 d-flex align-items-center">
+              <div class="row row-cols-1 row-cols-sm-3 g-3">
+                <div class="col">
+                  <i class="bi bi-window-stack text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featureDecabillDesktop-feature1Title">The full console</p>
+                  <p class="small text-muted mb-0" i18n="@@featureDecabillDesktop-feature1Desc">
+                    The same billing console as the web, served by a local server that ships with the app
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-hdd-network text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featureDecabillDesktop-feature2Title">
+                    Any Decabill server
+                  </p>
+                  <p class="small text-muted mb-0" i18n="@@featureDecabillDesktop-feature2Desc">
+                    Point the app at your self-hosted instance or at Decabill Cloud in its settings
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-person-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featureDecabillDesktop-feature3Title">
+                    Same sign-in, same roles
+                  </p>
+                  <p class="small text-muted mb-0" i18n="@@featureDecabillDesktop-feature3Desc">
+                    Your account and its permissions work exactly as they do in the browser
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="tab-pane fade"
+        id="desktop-pane-current"
+        role="tabpanel"
+        aria-labelledby="desktop-tab-current"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden desktop-pillar-panel card-capability-primary">
+          <div class="row g-0 align-items-stretch">
+            <div class="col-lg-5 p-4 p-lg-5 border-end landing-bento-visual">
+              <div
+                class="desktop-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+                aria-hidden="true"
+              >
+                <i class="bi bi-arrow-repeat text-primary icon-xl"></i>
+              </div>
+              <h3
+                class="h4 fw-semibold mb-3 text-center text-lg-start"
+                i18n="@@featureDecabillDesktop-pillarCurrentTitle"
+              >
+                Updates that look after themselves
+              </h3>
+              <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureDecabillDesktop-pillarCurrentLead">
+                The app looks for new releases on its own and installs only what passes verification.
+              </p>
+            </div>
+            <div class="col-lg-7 p-4 p-lg-5 d-flex align-items-center">
+              <div class="row row-cols-1 row-cols-sm-3 g-3">
+                <div class="col">
+                  <i class="bi bi-clock-history text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featureDecabillDesktop-feature4Title">Automatic checks</p>
+                  <p class="small text-muted mb-0" i18n="@@featureDecabillDesktop-feature4Desc">
+                    Shortly after start and every six hours, or on demand from the settings
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-signpost-split text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featureDecabillDesktop-feature5Title">Stable or beta</p>
+                  <p class="small text-muted mb-0" i18n="@@featureDecabillDesktop-feature5Desc">
+                    Stay on the stable channel or try new features early on the beta channel
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-patch-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featureDecabillDesktop-feature6Title">
+                    Verified before install
+                  </p>
+                  <p class="small text-muted mb-0" i18n="@@featureDecabillDesktop-feature6Desc">
+                    Every update is checked against a signed release manifest before it installs
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Security: trust and control -->
+<section id="security" class="py-10 bg-body desktop-security grid-section">
+  <div class="container grid-section__container">
+    <div class="row d-flex align-items-stretch g-5">
+      <div class="col-lg-6">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureDecabillDesktop-securityTitle">
+          Convenient on the desk, controlled on the server
+        </h2>
+        <p class="lead mb-5 text-muted" i18n="@@featureDecabillDesktop-securityLead">
+          Decabill Desktop is a window into your Decabill server, not a copy of it. Billing data, payment settings, and
+          permissions stay where your team already manages them.
+        </p>
+        <div class="d-flex flex-column gap-3">
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-shield-check text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureDecabillDesktop-securityItem1">
+                  Respect existing roles and permissions
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillDesktop-securityItem1Sub">
+                  Same access control as the web console
+                </p>
+              </div>
+            </div>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-hdd-stack text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureDecabillDesktop-securityItem2">
+                  Billing data stays on your server
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillDesktop-securityItem2Sub">
+                  The app shows it, your server keeps it
+                </p>
+              </div>
+            </div>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-patch-check text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureDecabillDesktop-securityItem3">
+                  Install only verified releases
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillDesktop-securityItem3Sub">
+                  Signature, version, and SHA-256 checked against the signed release manifest
+                </p>
+              </div>
+            </div>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-key text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featureDecabillDesktop-securityItem4">
+                  Signed package repositories
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillDesktop-securityItem4Sub">
+                  apt and rpm repositories signed with the ForePath desktop key
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="landing-bento-visual card border rounded-3 shadow-sm overflow-hidden h-100 card-capability-primary">
+          <div class="desktop-security-illustration landing-illustration-fill">
+            <framework-portal-desktop-update-illustration
+              label="Decabill Desktop verifying an update before it installs"
+              i18n-label="@@featureDecabillDesktop-securityIllustration"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Install -->
+<section id="install" class="py-10 bg-body-tertiary desktop-install grid-section">
+  <div class="container grid-section__container">
+    <div class="row g-5 align-items-stretch">
+      <div class="col-lg-7 order-2 order-lg-1">
+        <div class="card border rounded-3 shadow-sm desktop-install-terminal">
+          <div class="desktop-install-terminal__bar" aria-hidden="true">
+            <span class="desktop-install-terminal__dot"></span>
+            <span class="desktop-install-terminal__dot"></span>
+            <span class="desktop-install-terminal__dot"></span>
+            <span class="desktop-install-terminal__title">Terminal</span>
+          </div>
+          <!-- The commands from the native billing console docs; code, so not translated. -->
+          <pre
+            class="desktop-install-terminal__body"
+          ><span class="desktop-install-terminal__comment"># Debian / Ubuntu</span>
+<span class="desktop-install-terminal__prompt">$ </span>curl -fsSL https://downloads.decabill.com/forepath-desktop.asc \
+    | sudo gpg --dearmor -o /usr/share/keyrings/forepath-desktop.gpg
+<span class="desktop-install-terminal__prompt">$ </span>sudo curl -fsSL -o /etc/apt/sources.list.d/decabill.sources \
+    https://downloads.decabill.com/apt/decabill-stable.sources
+<span class="desktop-install-terminal__prompt">$ </span>sudo apt update &amp;&amp; sudo apt install decabill
+
+<span class="desktop-install-terminal__comment"># Fedora / RHEL / openSUSE</span>
+<span class="desktop-install-terminal__prompt">$ </span>sudo rpm --import https://downloads.decabill.com/forepath-desktop.asc
+<span class="desktop-install-terminal__prompt">$ </span>sudo curl -fsSL -o /etc/yum.repos.d/decabill.repo \
+    https://downloads.decabill.com/rpm/stable/decabill.repo
+<span class="desktop-install-terminal__prompt">$ </span>sudo dnf install decabill</pre>
+        </div>
+      </div>
+      <div class="col-lg-5 order-1 order-lg-2 d-flex flex-column justify-content-center">
+        <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featureDecabillDesktop-installTitle">
+          Install it your way
+        </h2>
+        <p class="lead text-muted mb-4" i18n="@@featureDecabillDesktop-installLead">
+          Run the Windows installer, grab a Linux package, or add the signed repository so new versions arrive with your
+          system updates.
+        </p>
+        <div class="d-flex flex-column gap-3">
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-windows text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <p class="mb-0" i18n="@@featureDecabillDesktop-installItem1">
+                Windows installer that updates the app for you
+              </p>
+            </div>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-ubuntu text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <p class="mb-0" i18n="@@featureDecabillDesktop-installItem2">.deb packages and an apt repository</p>
+            </div>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-box-seam text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <p class="mb-0" i18n="@@featureDecabillDesktop-installItem3">.rpm packages and an rpm repository</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="py-10 bg-body grid-section grid-section--deep">
+  <div class="container grid-section__container">
+    <div class="row">
+      <div class="col-12">
+        <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
+          <h2 class="h2 fw-semibold mb-4" i18n="@@featureDecabillDesktop-ctaTitle">
+            Bring Decabill Desktop to your billing team
+          </h2>
+          <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featureDecabillDesktop-ctaLead">
+            Install the app, point it at your Decabill server, and sign in with the account you already use.
+          </p>
+          <shared-contact-person brand="decabill" />
+          <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
+              href="https://downloads.decabill.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@featureDecabillDesktop-downloadCta"
+            >
+              <i class="bi bi-download" aria-hidden="true"></i>Download Decabill Desktop
+            </fpc-button>
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
+              routerLink="/contact"
+              i18n="@@featureDecabillDesktop-talkToTeam"
+            >
+              <i class="bi bi-chat-dots" aria-hidden="true"></i>Talk to the team
+            </fpc-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

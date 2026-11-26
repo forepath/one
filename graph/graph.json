@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-25T16:09:19.597Z",
+  "generatedAt": "2026-11-26T16:31:19.866Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -42940,6 +42940,11 @@
     },
     {
       "from": "project:decabill-frontend-feature-landingpage",
+      "to": "project:decabill-frontend-data-access-portal",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-feature-landingpage",
       "to": "project:shared-frontend-feature-landingpage",
       "type": "depends_on"
     },
@@ -42956,11 +42961,6 @@
     {
       "from": "project:decabill-frontend-feature-landingpage",
       "to": "project:shared-frontend-util-meta",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-feature-landingpage",
-      "to": "project:decabill-frontend-data-access-portal",
       "type": "depends_on"
     },
     {

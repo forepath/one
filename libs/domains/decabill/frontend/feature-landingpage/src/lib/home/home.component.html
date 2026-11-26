@@ -699,75 +699,78 @@
         </h2>
         <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureDecabillHome-backOfficeLead">
           Selling is only half the work. Decabill runs offers, projects, stock, letters, and supplier bills on the same
-          customer records, so nothing is re-typed between tools.
+          records, so nothing is re-typed between tools.
         </p>
       </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4">
-      <div class="col">
-        <article class="card border rounded-3 shadow-sm p-4 h-100 home-back-office-tile">
-          <i class="bi bi-file-earmark-check text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-backOfficeTile1Title">Offers customers accept</h3>
+    <!-- Hub: the six back-office areas around the one record they all read and write. -->
+    <div class="home-hub">
+      <ul class="home-hub__side home-hub__side--start list-unstyled mb-0">
+        <li class="home-hub__item">
+          <i class="bi bi-file-earmark-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-1 text-body-emphasis" i18n="@@featureDecabillHome-backOfficeTile1Title">
+            Offers customers accept
+          </h3>
           <p class="small text-muted mb-0" i18n="@@featureDecabillHome-backOfficeTile1Desc">
             Numbered offers with frozen prices turn into subscriptions, projects, and invoices the moment a customer
             accepts
           </p>
-        </article>
-      </div>
-      <div class="col">
-        <article class="card border rounded-3 shadow-sm p-4 h-100 home-back-office-tile">
-          <i class="bi bi-kanban text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-backOfficeTile2Title">
+        </li>
+        <li class="home-hub__item">
+          <i class="bi bi-kanban text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-1 text-body-emphasis" i18n="@@featureDecabillHome-backOfficeTile2Title">
             Projects with a price cap
           </h3>
           <p class="small text-muted mb-0" i18n="@@featureDecabillHome-backOfficeTile2Desc">
             Track milestones, tickets, and time on a live board and bill hourly, up to a cap, or at a fixed price
           </p>
-        </article>
+        </li>
+        <li class="home-hub__item">
+          <i class="bi bi-palette text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-1 text-body-emphasis" i18n="@@featureDecabillHome-backOfficeTile6Title">
+            Documents in your brand
+          </h3>
+          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-backOfficeTile6Desc">
+            Your logo and brand color on invoices, offers, time reports, and inventory documents
+          </p>
+        </li>
+      </ul>
+      <div class="home-hub__core">
+        <div class="home-hub__node" aria-hidden="true"><i class="bi bi-database"></i></div>
+        <p class="home-hub__label fw-semibold text-body-emphasis mb-0" i18n="@@featureDecabillHome-backOfficeHub">
+          One record
+        </p>
       </div>
-      <div class="col">
-        <article class="card border rounded-3 shadow-sm p-4 h-100 home-back-office-tile">
-          <i class="bi bi-envelope-paper text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-backOfficeTile3Title">
+      <ul class="home-hub__side home-hub__side--end list-unstyled mb-0">
+        <li class="home-hub__item">
+          <i class="bi bi-envelope-paper text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-1 text-body-emphasis" i18n="@@featureDecabillHome-backOfficeTile3Title">
             Letters without a print room
           </h3>
           <p class="small text-muted mb-0" i18n="@@featureDecabillHome-backOfficeTile3Desc">
             Send invoices, credit notes, and offers as physical letters, tracked with retries in the spooler
           </p>
-        </article>
-      </div>
-      <div class="col">
-        <article class="card border rounded-3 shadow-sm p-4 h-100 home-back-office-tile">
-          <i class="bi bi-upc-scan text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-backOfficeTile4Title">
+        </li>
+        <li class="home-hub__item">
+          <i class="bi bi-upc-scan text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-1 text-body-emphasis" i18n="@@featureDecabillHome-backOfficeTile4Title">
             Stock that follows the paperwork
           </h3>
           <p class="small text-muted mb-0" i18n="@@featureDecabillHome-backOfficeTile4Desc">
             Warehouses, barcode labels, and lendings, with withdrawals raised from offers, invoices, and subscriptions
           </p>
-        </article>
-      </div>
-      <div class="col">
-        <article class="card border rounded-3 shadow-sm p-4 h-100 home-back-office-tile">
-          <i class="bi bi-inbox text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-backOfficeTile5Title">
+        </li>
+        <li class="home-hub__item">
+          <i class="bi bi-inbox text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-1 text-body-emphasis" i18n="@@featureDecabillHome-backOfficeTile5Title">
             Supplier bills, same books
           </h3>
           <p class="small text-muted mb-0" i18n="@@featureDecabillHome-backOfficeTile5Desc">
             Capture inbound invoices, read their EN 16931 data, and track payables next to receivables
           </p>
-        </article>
-      </div>
-      <div class="col">
-        <article class="card border rounded-3 shadow-sm p-4 h-100 home-back-office-tile">
-          <i class="bi bi-palette text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-backOfficeTile6Title">Documents in your brand</h3>
-          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-backOfficeTile6Desc">
-            Your logo and brand color on invoices, offers, time reports, and inventory documents
-          </p>
-        </article>
-      </div>
+        </li>
+      </ul>
     </div>
   </div>
 </section>
@@ -1064,7 +1067,7 @@
                 >Get started</fpc-button
               >
               <a
-                routerLink="/pricing"
+                routerLink="/cloud"
                 class="text-primary fw-semibold small text-decoration-none"
                 i18n="@@featureDecabillHome-ecosystemCloudExplore"
                 >View plans</a

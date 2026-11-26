@@ -41,16 +41,43 @@
         </button>
         <div class="collapse navbar-collapse mobile-navbar" [class.mobile-open]="mobileMenuOpen()" id="navbarNav">
           <ul class="navbar-nav ms-auto align-items-center">
-            <li class="nav-item">
-              <a
-                routerLink="/"
-                class="nav-link landing-ink"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="{ exact: true }"
-                (click)="closeMobileMenu()"
-                i18n="@@featureDecabillPortal-navPlatform"
-                >Platform</a
-              >
+            <li class="nav-item portal-nav-dropdown">
+              <fpc-dropdown class="w-100" alignment="end" [(open)]="productNavOpen">
+                <a
+                  fpcDropdownTrigger
+                  class="nav-link dropdown-toggle landing-ink portal-nav-dropdown-toggle"
+                  [class.active]="productDropdownActive()"
+                  href="#"
+                  id="productNavDropdown"
+                  role="button"
+                  [attr.aria-expanded]="productNavOpen()"
+                  (click)="$event.preventDefault()"
+                >
+                  <span i18n="@@featureDecabillPortal-navProduct">Product</span>
+                  <i class="bi bi-chevron-down portal-nav-dropdown-chevron" aria-hidden="true"></i>
+                </a>
+                <fpc-dropdown-item
+                  routerLink="/"
+                  itemClass="portal-nav-dropdown-item"
+                  (selected)="closeMobileMenu()"
+                  i18n="@@featureDecabillPortal-navPlatform"
+                  >Platform</fpc-dropdown-item
+                >
+                <fpc-dropdown-item
+                  routerLink="/desktop"
+                  itemClass="portal-nav-dropdown-item"
+                  (selected)="closeMobileMenu()"
+                  i18n="@@featureDecabillPortal-navDesktop"
+                  >Desktop</fpc-dropdown-item
+                >
+                <fpc-dropdown-item
+                  routerLink="/cloud"
+                  itemClass="portal-nav-dropdown-item"
+                  (selected)="closeMobileMenu()"
+                  i18n="@@featureDecabillPortal-navCloud"
+                  >Cloud</fpc-dropdown-item
+                >
+              </fpc-dropdown>
             </li>
             <li class="nav-item">
               <a
@@ -165,6 +192,22 @@
           <li class="mb-2">
             <a routerLink="/" class="text-decoration-none footer-link small" i18n="@@featureDecabillPortal-navPlatform"
               >Platform</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/desktop"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureDecabillPortal-navDesktop"
+              >Desktop</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/cloud"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureDecabillPortal-navCloud"
+              >Cloud</a
             >
           </li>
           <li class="mb-2">

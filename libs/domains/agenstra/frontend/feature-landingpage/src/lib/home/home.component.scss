@@ -202,8 +202,166 @@
   }
 }
 
-.home-agents-tile {
+// Agents section: the work loop as connected steps (icon nodes joined by arrowed connectors), then the equipment
+// every agent works with in one panel, tied to the loop by a dashed stem. Phones stack the steps along a vertical
+// line on the start side; from `lg` the loop runs left to right.
+.home-agents-flow {
+  --agents-node-size: 4.5rem;
+  --agents-gap: 2rem;
+  --agents-connector-pad: 0.75rem;
+
+  display: grid;
+  gap: var(--agents-gap);
+  margin-inline: auto;
+  max-width: 64rem;
+}
+
+.home-agents-flow__step {
+  display: grid;
+  grid-template-columns: var(--agents-node-size) 1fr;
+  column-gap: 1.25rem;
+  align-items: start;
+  position: relative;
+}
+
+.home-agents-flow__node {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--agents-node-size);
+  height: var(--agents-node-size);
+  border-radius: 50%;
+  position: relative;
+  z-index: 1;
+  font-size: 1.75rem;
+  color: var(--bs-primary);
+  background: radial-gradient(
+    circle at 30% 25%,
+    var(--bs-body-bg) 0%,
+    color-mix(in srgb, var(--bs-primary) 10%, var(--bs-body-bg)) 100%
+  );
+  border: var(--bs-border-width) solid color-mix(in srgb, var(--bs-primary) 35%, transparent);
+  box-shadow:
+    0 0 0 0.375rem color-mix(in srgb, var(--bs-primary) 6%, transparent),
+    0 0.75rem 1.75rem color-mix(in srgb, var(--bs-primary) 16%, transparent);
+}
+
+.home-agents-flow__copy {
+  padding-top: 0.75rem;
+}
+
+// Connector to the next step + its arrowhead (vertical on phones).
+.home-agents-flow__step:not(:last-child)::after,
+.home-agents-flow__step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.home-agents-flow__step:not(:last-child)::after {
+  left: calc(var(--agents-node-size) / 2 - 1px);
+  top: calc(var(--agents-node-size) + var(--agents-connector-pad));
+  bottom: calc(-1 * var(--agents-gap) + var(--agents-connector-pad) + 5px);
+  width: 2px;
+  border-radius: 1px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bs-primary) 20%, transparent),
+    color-mix(in srgb, var(--bs-primary) 80%, transparent)
+  );
+}
+
+.home-agents-flow__step:not(:last-child)::before {
+  left: calc(var(--agents-node-size) / 2 - 5px);
+  bottom: calc(-1 * var(--agents-gap) + var(--agents-connector-pad));
+  border-top: 7px solid color-mix(in srgb, var(--bs-primary) 80%, transparent);
+  border-inline: 5px solid transparent;
+}
+
+// Dashed stem from the loop down to the equipment panel (only where the loop runs across).
+.home-agents-stem {
+  display: none;
+}
+
+.home-agents-kit {
+  display: grid;
+  margin: 3rem auto 0;
+  max-width: 64rem;
   background-color: var(--bs-body-bg);
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  box-shadow: var(--bs-box-shadow-sm);
+  overflow: hidden;
+}
+
+.home-agents-kit__item {
+  padding: 1.5rem;
+
+  & + & {
+    border-top: var(--bs-border-width) solid var(--bs-border-color);
+  }
+}
+
+@media (min-width: 992px) {
+  .home-agents-flow {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .home-agents-flow__step {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .home-agents-flow__copy {
+    max-width: 18rem;
+    padding-top: 1.5rem;
+  }
+
+  // Horizontal connector: from this node's edge to the next node's edge (the next centre sits one column width plus
+  // the gap further right).
+  .home-agents-flow__step:not(:last-child)::after {
+    top: calc(var(--agents-node-size) / 2 - 1px);
+    bottom: auto;
+    left: calc(50% + var(--agents-node-size) / 2 + var(--agents-connector-pad));
+    right: calc(-1 * (var(--agents-gap) + 50% - var(--agents-node-size) / 2 - var(--agents-connector-pad)) + 6px);
+    width: auto;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--bs-primary) 20%, transparent),
+      color-mix(in srgb, var(--bs-primary) 80%, transparent)
+    );
+  }
+
+  .home-agents-flow__step:not(:last-child)::before {
+    top: calc(var(--agents-node-size) / 2 - 5px);
+    bottom: auto;
+    left: auto;
+    right: calc(-1 * (var(--agents-gap) + 50% - var(--agents-node-size) / 2 - var(--agents-connector-pad)));
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-inline: 0;
+    border-left: 7px solid color-mix(in srgb, var(--bs-primary) 80%, transparent);
+  }
+
+  .home-agents-stem {
+    display: block;
+    width: 0;
+    height: 2.5rem;
+    margin: 2rem auto 0;
+    border-left: 2px dashed color-mix(in srgb, var(--bs-primary) 35%, transparent);
+  }
+
+  .home-agents-kit {
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 0;
+  }
+
+  .home-agents-kit__item + .home-agents-kit__item {
+    border-top: 0;
+    border-left: var(--bs-border-width) solid var(--bs-border-color);
+  }
 }
 
 // Primary band (same treatment as the Decabill compliance section): hairline borders on the cards,
@@ -221,8 +379,4 @@
   display: block;
   font-size: 4.5rem;
   line-height: 1;
-}
-
-.home-security-link {
-  text-underline-offset: 0.25em;
 }

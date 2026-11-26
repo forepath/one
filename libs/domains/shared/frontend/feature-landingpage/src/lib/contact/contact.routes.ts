@@ -8,7 +8,10 @@ import {
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 
-import type { SharedContactPersonBrand } from '../contact-person/contact-person.component';
+import type {
+  SharedContactPersonBrand,
+  SharedContactPersonSignature,
+} from '../contact-person/contact-person.component';
 
 import { SharedContactPageComponent } from './contact-page.component';
 import type { SharedContactPageConfig, SharedContactPageHeroTheme } from './contact-page.config';
@@ -25,6 +28,8 @@ export interface CreateSharedContactRouteOptions {
   contactDetails: SharedContactDetails;
   /** Shows who reads the messages under the hero, with the brand's line. */
   contactPerson?: SharedContactPersonBrand;
+  /** Signature layout under the hero quotes; defaults to `facing`. */
+  contactPersonSignature?: SharedContactPersonSignature;
 }
 
 export function createSharedContactRoute(options: CreateSharedContactRouteOptions): Route {
@@ -33,6 +38,7 @@ export function createSharedContactRoute(options: CreateSharedContactRouteOption
     heroTheme: options.heroTheme,
     contactDetails: options.contactDetails,
     contactPerson: options.contactPerson,
+    contactPersonSignature: options.contactPersonSignature,
   };
 
   return {
