@@ -1,0 +1,399 @@
+<!-- Hero -->
+<section id="hero" class="py-10 py-lg-6 bg-body text-body-emphasis grid-section grid-section--deep position-relative">
+  <!-- The brand mark stack, as on the home heroes (it runs off the top-right corner). -->
+  <shared-mark-stack brand="decabill" />
+  <!-- The brand character peeking up from the hero's bottom edge, at the content's right edge. -->
+  <shared-hero-mascot brand="decabill" pose="peek-point" class="shared-hero-mascot--section-end" />
+  <div class="container grid-section__container">
+    <div class="text-center text-lg-start">
+      <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureDecabillCloud-heroTitle">
+        <span class="text-primary">Fully managed billing</span> for agencies and product teams
+      </h1>
+      <p class="lead mb-4 mx-auto mx-lg-0 hero-lead max-w-750" i18n="@@featureDecabillCloud-heroLead">
+        Run Decabill as a fully managed cloud service. Bill services, subscriptions, projects, and hosting from day one
+        while we operate, scale, and update the platform.
+      </p>
+      <div class="cloud-hero-price mx-auto mx-lg-0 mb-5">
+        <div class="card border border-secondary rounded-2 bg-transparent p-3 text-center text-lg-start hero-lead">
+          <div class="mb-2" i18n="@@featureDecabillCloud-heroFrom">From</div>
+          <div class="h3 fw-bold hero-lead mb-0">
+            @if (cheapestOfferingLoading() || !cheapestLoaded()) {
+              <span class="hero-lead" aria-hidden="true">...</span>
+            } @else {
+              @if (cheapestOffering(); as cloudPlan) {
+                @if (formatPublicOfferingPrice(cloudPlan); as price) {
+                  {{ price.prefix }}€{{ price.amount | number: '1.2-2'
+                  }}<span class="fs-6 hero-lead fw-normal">{{ billingIntervalSuffix(cloudPlan) }}</span>
+                }
+              } @else {
+                <span class="hero-lead fs-6 fw-normal" i18n="@@featureDecabillCloud-heroPriceUnavailable"
+                  >On request</span
+                >
+              }
+            }
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
+          [href]="billingBaseUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          i18n="@@featureDecabillCloud-heroCtaPrimary"
+        >
+          <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>Get started
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="."
+          fragment="why"
+          i18n="@@featureDecabillCloud-heroCtaSecondary"
+        >
+          <i class="bi bi-play-circle" aria-hidden="true"></i>See what is included
+        </fpc-button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why Cloud: bento -->
+<section id="why" class="py-10 bg-body-tertiary cloud-why grid-section">
+  <div class="container grid-section__container">
+    <div class="row justify-content-center text-center pb-10">
+      <div class="col-lg-9">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureDecabillCloud-teaserTitle">
+          The full platform without running it yourself
+        </h2>
+        <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureDecabillCloud-teaserLead">
+          Decabill Cloud is the same billing platform as the open source stack. We handle the infrastructure, upgrades,
+          and scaling, so your team spends its time on customers and revenue.
+        </p>
+      </div>
+    </div>
+    <div class="cloud-why-bento">
+      <div class="row g-3 g-lg-4">
+        <div class="col-lg-7">
+          <div
+            class="card border rounded-3 shadow-sm overflow-hidden h-100 card-capability card-capability-primary cloud-why-visual landing-bento-visual"
+          >
+            <div class="p-3 p-lg-4 pb-0">
+              <fpc-badge color="primary" class="mb-3 bento-badge" i18n="@@featureDecabillCloud-teaserVisualBadge"
+                >Managed billing platform</fpc-badge
+              >
+            </div>
+            <div class="cloud-why-illustration landing-illustration-fill">
+              <framework-portal-cloud-illustration
+                label="Decabill Cloud administration overview with a platform update and a running billing cycle"
+                i18n-label="@@featureDecabillCloud-teaserIllustrationAlt"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5 d-flex flex-column gap-3">
+          <article class="card border rounded-3 shadow-sm p-4 h-100">
+            <div>
+              <i class="bi bi-cloud-check text-primary icon-md mb-3 d-inline-block" aria-hidden="true"></i>
+              <h3 class="h6 fw-semibold" i18n="@@featureDecabillCloud-teaserItem1Title">Fully managed</h3>
+              <p class="text-muted small mb-0" i18n="@@featureDecabillCloud-teaserItem1">
+                We run the infrastructure, updates, and maintenance. Nobody on your team patches a server.
+              </p>
+            </div>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-4 h-100">
+            <div>
+              <i class="bi bi-grid text-primary icon-md mb-3 d-inline-block" aria-hidden="true"></i>
+              <h3 class="h6 fw-semibold" i18n="@@featureDecabillCloud-teaserItem2Title">The full platform</h3>
+              <p class="text-muted small mb-0" i18n="@@featureDecabillCloud-teaserItem2">
+                Customer console, admin billing, e-invoicing, accounting, and provisioning from the start.
+              </p>
+            </div>
+          </article>
+        </div>
+        <div class="col-md-7">
+          <article class="card border rounded-3 shadow-sm p-4 h-100">
+            <div>
+              <i class="bi bi-graph-up-arrow text-primary icon-md mb-3 d-inline-block" aria-hidden="true"></i>
+              <h3 class="h6 fw-semibold" i18n="@@featureDecabillCloud-teaserItem3Title">Scales with you</h3>
+              <p class="text-muted small mb-0" i18n="@@featureDecabillCloud-teaserItem3">
+                Capacity grows with your catalog, your customers, and your tenants.
+              </p>
+            </div>
+          </article>
+        </div>
+        <div class="col-md-5">
+          <article class="card border rounded-3 shadow-sm p-4 h-100">
+            <div>
+              <i class="bi bi-shield-check text-primary icon-md mb-3 d-inline-block" aria-hidden="true"></i>
+              <h3 class="h6 fw-semibold" i18n="@@featureDecabillCloud-teaserItem4Title">99.9% uptime SLA</h3>
+              <p class="text-muted small mb-0" i18n="@@featureDecabillCloud-teaserItem4">
+                Reliable operation for the invoices and payments your business runs on.
+              </p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Plans carousel + getting started -->
+<section id="plans" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <h2 class="h2 fw-semibold mb-4 text-center text-body-emphasis" i18n="@@featureDecabillCloud-plansTitle">
+      Cloud plans that match how you bill
+    </h2>
+    <p class="lead text-center text-muted pb-10 mx-auto max-w-700" i18n="@@featureDecabillCloud-plansLead">
+      Pick a managed plan with clear pricing. Each tier shows its interval and what is included, and you subscribe in
+      the same storefront your customers use.
+    </p>
+    <div class="position-relative">
+      <div class="cloud-plans-carousel-buttons d-none d-lg-flex justify-content-between align-items-center">
+        <fpc-button
+          variant="primary"
+          iconOnly
+          btnClass="cloud-plans-carousel-button-left"
+          (clicked)="scrollCloudPlans('left')"
+          [disabled]="plansScrollAtStart()"
+          ariaLabel="Previous plans"
+          i18n-ariaLabel="@@featureDecabillCloud-plansScrollPrev"
+        >
+          <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          iconOnly
+          btnClass="cloud-plans-carousel-button-right"
+          (clicked)="scrollCloudPlans('right')"
+          [disabled]="plansScrollAtEnd()"
+          ariaLabel="Next plans"
+          i18n-ariaLabel="@@featureDecabillCloud-plansScrollNext"
+        >
+          <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </fpc-button>
+      </div>
+      <div
+        #plansCarousel
+        class="row g-4 flex-lg-nowrap overflow-x-hidden position-relative pb-4 pb-lg-5 cloud-plans-row"
+        (scroll)="syncPlansScrollState()"
+      >
+        @if (!plansLoaded() || (plansLoading() && plans().length === 0)) {
+          @for (s of planSkeletonPlaceholders; track s) {
+            <div class="col-lg-4 flex-shrink-0 cloud-plan-col" style="min-width: min(100%, 320px)">
+              <div class="card h-100 border-0 shadow-sm placeholder-glow">
+                <div class="card-body p-5">
+                  <span class="placeholder col-8 mb-3"></span>
+                  <span class="placeholder col-5 mb-4"></span>
+                  <span class="placeholder col-12 mb-2"></span>
+                  <span class="placeholder col-11 mb-2"></span>
+                  <span class="placeholder col-10"></span>
+                </div>
+              </div>
+            </div>
+          }
+        } @else if (plansError()) {
+          <div class="col-12 text-center text-muted py-5" i18n="@@featureDecabillCloud-plansLoadError">
+            Plans could not be loaded right now. Please refresh the page or try again later.
+          </div>
+        } @else if (plans().length === 0) {
+          <div class="col-12 text-center text-muted py-5" i18n="@@featureDecabillCloud-plansEmpty">
+            Plans will appear here as soon as they are available.
+          </div>
+        } @else {
+          @for (plan of plans(); track plan.id) {
+            <div class="col-lg-4 flex-shrink-0 cloud-plan-col" style="min-width: min(100%, 320px)">
+              <div class="card h-100 border rounded-3 shadow-sm">
+                <div class="card-body p-5 d-flex flex-column">
+                  <div class="text-center">
+                    <h3 class="h4 m-0">{{ plan.name }}</h3>
+                    <fpc-badge variant="marketing" color="secondary" class="my-2">{{ plan.serviceTypeName }}</fpc-badge>
+                    <div class="card border-0 rounded-2 card-capability card-capability-primary p-3 my-3">
+                      <div class="display-6 fw-bold text-primary mb-0">
+                        @if (formatPublicOfferingPrice(plan); as price) {
+                          {{ price.prefix }}€{{ price.amount | number: '1.2-2'
+                          }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(plan) }}</span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                  @if (plan.description) {
+                    <p class="text-muted small text-center mb-4 border p-3 rounded-2">{{ plan.description }}</p>
+                  }
+                  <ul class="list-unstyled mb-4 flex-grow-1">
+                    @for (h of plan.orderingHighlights; track h.icon + h.text) {
+                      <li class="mb-3 d-flex gap-3 align-items-center justify-content-start lh-1">
+                        <i
+                          aria-hidden="true"
+                          [attr.class]="
+                            (h.icon && h.icon.trim() ? h.icon : 'bi bi-check-circle-fill') +
+                            ' fs-7 p-2 bg-body-tertiary rounded'
+                          "
+                        ></i>
+                        <span>{{ h.text }}</span>
+                      </li>
+                    }
+                    @if (plan.orderingHighlights.length === 0) {
+                      <li class="mb-0 d-flex align-items-start gap-2 text-muted small">
+                        <i class="bi bi-info-circle-fill mt-1" aria-hidden="true"></i>
+                        <span i18n="@@featureDecabillCloud-planHighlightsFallback"
+                          >The full feature list is shown at checkout.</span
+                        >
+                      </li>
+                    }
+                  </ul>
+                  <div class="d-grid mt-auto">
+                    <fpc-button
+                      [href]="billingBaseUrl"
+                      variant="primary"
+                      block
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      i18n="@@featureDecabillCloud-planCta"
+                    >
+                      Get started
+                    </fpc-button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+    <div class="cloud-onboarding card border rounded-3 shadow-sm p-4 p-lg-5">
+      <h3 class="h5 fw-semibold mb-4 text-center text-body-emphasis" i18n="@@featureDecabillCloud-gettingStartedTitle">
+        Getting started
+      </h3>
+      <ol class="cloud-onboarding-track list-unstyled mb-0">
+        <li class="cloud-onboarding-step">
+          <span class="cloud-onboarding-num rounded-circle bg-primary text-white" aria-hidden="true">1</span>
+          <p class="cloud-onboarding-step-label small fw-semibold mb-0" i18n="@@featureDecabillCloud-step1">
+            Choose a plan
+          </p>
+        </li>
+        <li class="cloud-onboarding-step">
+          <span class="cloud-onboarding-num rounded-circle bg-primary text-white" aria-hidden="true">2</span>
+          <p class="cloud-onboarding-step-label small fw-semibold mb-0" i18n="@@featureDecabillCloud-step2">
+            Sign in to your console
+          </p>
+        </li>
+        <li class="cloud-onboarding-step">
+          <span class="cloud-onboarding-num rounded-circle bg-primary text-white" aria-hidden="true">3</span>
+          <p class="cloud-onboarding-step-label small fw-semibold mb-0" i18n="@@featureDecabillCloud-step3">
+            Set up your catalog
+          </p>
+        </li>
+        <li class="cloud-onboarding-step">
+          <span class="cloud-onboarding-num rounded-circle bg-primary text-white" aria-hidden="true">4</span>
+          <p class="cloud-onboarding-step-label small fw-semibold mb-0" i18n="@@featureDecabillCloud-step4">
+            Send your first invoice
+          </p>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- Infrastructure -->
+<section id="infrastructure" class="py-10 bg-body-tertiary cloud-infra grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featureDecabillCloud-infraTitle">
+        Where Decabill Cloud runs
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureDecabillCloud-infraLead">
+        We choose providers and regions deliberately. Security, latency, and your requirements shape the roadmap.
+      </p>
+    </div>
+    <div class="row g-4">
+      @for (infrastructureProvider of infrastructureProviders; track infrastructureProvider.id; let idx = $index) {
+        <div class="col-lg-6">
+          <article class="card border rounded-3 shadow-sm h-100 overflow-hidden cloud-infra-card">
+            <div class="cloud-infra-card-accent" aria-hidden="true"></div>
+            <div class="card-body p-4 p-lg-5">
+              <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+                <img
+                  [src]="'assets/images/logos/' + infrastructureProvider.id + '.svg'"
+                  [alt]="infrastructureProvider.name"
+                  class="img-fluid provider-logo"
+                  [class.logo-partner--small]="infrastructureProvider.id === 'hetzner'"
+                />
+                <fpc-badge variant="marketing">{{ infrastructureProvider.name }}</fpc-badge>
+              </div>
+              <p class="text-muted mb-4">{{ infrastructureProvider.tagline }}</p>
+              <ul class="list-unstyled small mb-0 cloud-infra-specs">
+                <li class="mb-3 d-flex gap-3">
+                  <span
+                    class="text-muted flex-shrink-0 cloud-infra-spec-label"
+                    i18n="@@featureDecabillCloud-infraLabelDc"
+                    >Datacenters</span
+                  >
+                  <span>{{ infrastructureProvider.datacenters }}</span>
+                </li>
+                <li class="mb-3 d-flex gap-3">
+                  <span
+                    class="text-muted flex-shrink-0 cloud-infra-spec-label"
+                    i18n="@@featureDecabillCloud-infraLabelNet"
+                    >Network</span
+                  >
+                  <span>{{ infrastructureProvider.network }}</span>
+                </li>
+                <li class="d-flex gap-3">
+                  <span
+                    class="text-muted flex-shrink-0 cloud-infra-spec-label"
+                    i18n="@@featureDecabillCloud-infraLabelHw"
+                    >Hardware</span
+                  >
+                  <span>{{ infrastructureProvider.hardware }}</span>
+                </li>
+              </ul>
+            </div>
+          </article>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section id="cta" class="py-10 bg-body grid-section grid-section--deep">
+  <div class="container grid-section__container">
+    <div class="row">
+      <div class="col-12">
+        <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
+          <h2 class="h2 fw-semibold mb-4" i18n="@@featureDecabillCloud-ctaTitle">Ready to bill on Decabill Cloud?</h2>
+          <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featureDecabillCloud-ctaLead">
+            Pick a plan and start billing, or talk to us about how Decabill Cloud fits your agency or product.
+          </p>
+          <shared-contact-person brand="decabill" />
+          <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
+              [href]="billingBaseUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@featureDecabillCloud-ctaPrimary"
+            >
+              <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>Get started
+            </fpc-button>
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
+              routerLink="/contact"
+              i18n="@@featureDecabillCloud-ctaTalkToTeam"
+            >
+              <i class="bi bi-chat-dots" aria-hidden="true"></i>Talk to the team
+            </fpc-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

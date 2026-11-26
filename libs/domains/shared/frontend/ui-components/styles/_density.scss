@@ -4,7 +4,14 @@
 // New row-based components (`fpc-tree`, `fpc-data-table`) read their row height from the service
 // for virtual scrolling; existing chrome is tightened here through its host classes.
 
+// Page header block padding (`fpc-page-header`); the sidebar derives its row height from it so the first rail
+// item lines up with the header's bottom border.
+:root {
+  --fpc-page-header-padding-y: 1rem;
+}
+
 body.fpc-density-compact {
+  --fpc-page-header-padding-y: 0.625rem;
   --fpc-density-row-py: 0.25rem;
   --fpc-density-cell-px: 0.5rem;
 
@@ -24,8 +31,8 @@ body.fpc-density-compact {
   }
 
   .fpc-page-header:not(.fpc-page-header--compact) {
-    padding-top: 0.625rem;
-    padding-bottom: 0.625rem;
+    padding-top: var(--fpc-page-header-padding-y);
+    padding-bottom: var(--fpc-page-header-padding-y);
   }
 
   .fpc-summary-card {

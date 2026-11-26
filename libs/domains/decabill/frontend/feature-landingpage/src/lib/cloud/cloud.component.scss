@@ -1,0 +1,153 @@
+@import '../page.component.scss';
+
+// Hero "From" price. Same card pattern as pricing page cloud tier.
+.cloud-hero-price {
+  max-width: 17rem;
+}
+
+.cloud-onboarding-track {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.cloud-onboarding-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.cloud-onboarding-num {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cloud-onboarding-step-label {
+  max-width: 11rem;
+}
+
+@media (min-width: 992px) {
+  .cloud-onboarding-track {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem 0.75rem;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 1rem;
+      left: 8%;
+      right: 8%;
+      height: 1px;
+      margin-top: -0.5px;
+      background: var(--bs-border-color);
+      z-index: 0;
+      pointer-events: none;
+    }
+  }
+
+  .cloud-onboarding-step {
+    position: relative;
+    z-index: 1;
+    padding: 0 0.25rem;
+  }
+
+  .cloud-onboarding-step-label {
+    max-width: none;
+    padding: 0 0.25rem;
+  }
+}
+
+.cloud-infra-card {
+  position: relative;
+  padding-left: 0.35rem;
+}
+
+.cloud-infra-card-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+}
+
+.cloud-infra-card--primary .cloud-infra-card-accent {
+  background: var(--bs-primary);
+}
+
+.cloud-infra-card--secondary .cloud-infra-card-accent {
+  background: var(--bs-success);
+}
+
+.cloud-infra-spec-label {
+  min-width: 6.5rem;
+}
+
+.provider-logo {
+  display: block;
+  max-height: 24px;
+}
+
+.logo-partner--small {
+  max-height: 16px;
+}
+
+// Plans carousel (pricing page pattern)
+.cloud-plans-carousel-buttons {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  z-index: 1;
+  width: 100%;
+  pointer-events: none;
+
+  // Reach inner `.btn` / btnClass hooks inside `fpc-button`.
+  ::ng-deep {
+    .btn {
+      pointer-events: auto;
+
+      &:disabled {
+        --bs-btn-disabled-opacity: 1;
+        --bs-btn-disabled-bg: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
+        --bs-btn-disabled-border-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
+
+        i {
+          opacity: 0.25;
+        }
+      }
+    }
+
+    .cloud-plans-carousel-button-left {
+      transform: translateX(-50%);
+    }
+
+    .cloud-plans-carousel-button-right {
+      transform: translateX(50%);
+    }
+  }
+}
+
+@media (width >= 992px) {
+  .cloud-plans-row {
+    overflow-x: hidden;
+  }
+}
+
+// Illustration window inset from the left, running off the card's right and bottom edges (the card
+// clips it), so it reads as a peek into the app rather than a framed picture.
+.cloud-why-illustration {
+  margin: 0 -18% -2.5rem 0;
+  padding-left: 1.5rem;
+}

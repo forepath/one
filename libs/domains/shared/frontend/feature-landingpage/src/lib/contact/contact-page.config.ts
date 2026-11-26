@@ -1,4 +1,7 @@
-import type { SharedContactPersonBrand } from '../contact-person/contact-person.component';
+import type {
+  SharedContactPersonBrand,
+  SharedContactPersonSignature,
+} from '../contact-person/contact-person.component';
 
 import type { SharedContactDetails } from './shared-contact-details.constants';
 
@@ -17,4 +20,6 @@ export interface SharedContactPageConfig {
   contactDetails: SharedContactDetails;
   /** Shows who reads the messages under the hero, with the brand's line (see `shared-contact-person`). */
   contactPerson?: SharedContactPersonBrand;
+  /** Signature layout under the hero quotes (default `facing`, as in the closing calls to action). */
+  contactPersonSignature?: SharedContactPersonSignature;
 }

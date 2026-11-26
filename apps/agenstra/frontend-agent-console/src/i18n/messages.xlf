@@ -3436,6 +3436,12 @@
       <trans-unit id="featureContainer-sidebarAriaLabel" datatype="html">
         <source>Main navigation</source>
         </trans-unit>
+      <trans-unit id="featureContainer-sidebarCollapse" datatype="html">
+        <source>Collapse sidebar</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-sidebarExpand" datatype="html">
+        <source>Expand sidebar</source>
+        </trans-unit>
       <trans-unit id="featureContainer-securityTitle" datatype="html">
         <source>Security</source>
         </trans-unit>

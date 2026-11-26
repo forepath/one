@@ -6,7 +6,7 @@ import {
 } from '../notification-indicator/notification-indicator.component';
 
 /**
- * Tile inside `fpc-sidebar`. Renders an anchor when `href` is set and a button otherwise, so
+ * Item inside `fpc-sidebar` (icon with the label next to it; icon only while the rail is collapsed). Renders an anchor when `href` is set and a button otherwise, so
  * routing stays with the consuming app (the library deliberately does not depend on
  * `@angular/router`).
  */

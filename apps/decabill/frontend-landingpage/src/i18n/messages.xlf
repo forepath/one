@@ -828,7 +828,7 @@
         <source> Everything after the sale, in one back office </source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-backOfficeLead" datatype="html">
-        <source> Selling is only half the work. Decabill runs offers, projects, stock, letters, and supplier bills on the same customer records, so nothing is re-typed between tools. </source>
+        <source> Selling is only half the work. Decabill runs offers, projects, stock, letters, and supplier bills on the same records, so nothing is re-typed between tools. </source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-backOfficeTile1Title" datatype="html">
         <source>Offers customers accept</source>
@@ -991,18 +991,6 @@
         </trans-unit>
       <trans-unit id="featureDecabillHome-ecosystemCloudExplore" datatype="html">
         <source>View plans</source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-ecosystemDesktopTitle" datatype="html">
-        <source>Decabill Desktop</source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-ecosystemDesktopDesc" datatype="html">
-        <source> The billing console as a desktop app, with the same sign-in and permissions as the web. Signed releases keep it up to date, and it works with self-hosted Decabill and Decabill Cloud alike. </source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-ecosystemDesktopPlatforms" datatype="html">
-        <source> Available for: Windows, Linux </source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-ecosystemDesktopCta" datatype="html">
-        <source>Download</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-ctaTitle" datatype="html">
         <source> Ready to bill services, SaaS, and hosting on Decabill? </source>
@@ -1939,6 +1927,369 @@
         </trans-unit>
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillDesktop-heroTitle" datatype="html">
+        <source>Your <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Billing Console<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/>, Right On Your Desktop</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-heroDescription" datatype="html">
+        <source>Decabill Desktop runs the billing console in its own window. Customers, offers, projects, and invoices stay one click away, connected to your self-hosted Decabill or to Decabill Cloud.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-downloadCtaHero" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Download Decabill Desktop</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-setupGuide" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Read setup guide</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-platforms" datatype="html">
+        <source>Available for: Windows, Linux</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-heroAlt" datatype="html">
+        <source>Decabill Desktop showing an invoice in the billing console</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-valueTitle" datatype="html">
+        <source>The same console, wherever you bill</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-valueLead" datatype="html">
+        <source>The browser is great for a quick look. The people who bill every day want a window that is always where they left it.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-valueSub" datatype="html">
+        <source>Decabill Desktop is that window. It runs the billing console you know from the web, against the same server, with the same customers, invoices, and permissions.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-webLabel" datatype="html">
+        <source>Web console</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-webUse" datatype="html">
+        <source>From any browser</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-desktopLabel" datatype="html">
+        <source>Desktop app</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-desktopUse" datatype="html">
+        <source>Daily billing work</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-featuresTitle" datatype="html">
+        <source>Built for the people who bill every day</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-featuresLead" datatype="html">
+        <source>Keep the whole billing console at hand, and let the app keep itself up to date.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-tabWork" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-briefcase&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Work</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-tabCurrent" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-repeat&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Stay current</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-pillarWorkTitle" datatype="html">
+        <source>Everything from the web console</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-pillarWorkLead" datatype="html">
+        <source>Customers, subscriptions, offers, projects, and invoices, in a window of its own next to the rest of your day.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-feature1Title" datatype="html">
+        <source>The full console</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-feature1Desc" datatype="html">
+        <source>The same billing console as the web, served by a local server that ships with the app</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-feature2Title" datatype="html">
+        <source>Any Decabill server</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-feature2Desc" datatype="html">
+        <source>Point the app at your self-hosted instance or at Decabill Cloud in its settings</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-feature3Title" datatype="html">
+        <source>Same sign-in, same roles</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-feature3Desc" datatype="html">
+        <source>Your account and its permissions work exactly as they do in the browser</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-pillarCurrentTitle" datatype="html">
+        <source>Updates that look after themselves</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-pillarCurrentLead" datatype="html">
+        <source>The app looks for new releases on its own and installs only what passes verification.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-feature4Title" datatype="html">
+        <source>Automatic checks</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-feature4Desc" datatype="html">
+        <source>Shortly after start and every six hours, or on demand from the settings</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-feature5Title" datatype="html">
+        <source>Stable or beta</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-feature5Desc" datatype="html">
+        <source>Stay on the stable channel or try new features early on the beta channel</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-feature6Title" datatype="html">
+        <source>Verified before install</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-feature6Desc" datatype="html">
+        <source>Every update is checked against a signed release manifest before it installs</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-securityTitle" datatype="html">
+        <source>Convenient on the desk, controlled on the server</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-securityLead" datatype="html">
+        <source>Decabill Desktop is a window into your Decabill server, not a copy of it. Billing data, payment settings, and permissions stay where your team already manages them.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-securityItem1" datatype="html">
+        <source>Respect existing roles and permissions</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-securityItem1Sub" datatype="html">
+        <source>Same access control as the web console</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-securityItem2" datatype="html">
+        <source>Billing data stays on your server</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-securityItem2Sub" datatype="html">
+        <source>The app shows it, your server keeps it</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-securityItem3" datatype="html">
+        <source>Install only verified releases</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-securityItem3Sub" datatype="html">
+        <source>Signature, version, and SHA-256 checked against the signed release manifest</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-securityItem4" datatype="html">
+        <source>Signed package repositories</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-securityItem4Sub" datatype="html">
+        <source>apt and rpm repositories signed with the ForePath desktop key</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-securityIllustration" datatype="html">
+        <source>Decabill Desktop verifying an update before it installs</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-installTitle" datatype="html">
+        <source>Install it your way</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-installLead" datatype="html">
+        <source>Run the Windows installer, grab a Linux package, or add the signed repository so new versions arrive with your system updates.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-installItem1" datatype="html">
+        <source>Windows installer that updates the app for you</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-installItem2" datatype="html">
+        <source>.deb packages and an apt repository</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-installItem3" datatype="html">
+        <source>.rpm packages and an rpm repository</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-ctaTitle" datatype="html">
+        <source>Bring Decabill Desktop to your billing team</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-ctaLead" datatype="html">
+        <source>Install the app, point it at your Decabill server, and sign in with the account you already use.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-downloadCta" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Download Decabill Desktop</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-talkToTeam" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Talk to the team</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Fully managed billing<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for agencies and product teams</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-heroLead" datatype="html">
+        <source>Run Decabill as a fully managed cloud service. Bill services, subscriptions, projects, and hosting from day one while we operate, scale, and update the platform.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-heroFrom" datatype="html">
+        <source>From</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-heroPriceUnavailable" datatype="html">
+        <source>On request</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-heroCtaPrimary" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get started</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-heroCtaSecondary" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-play-circle&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>See what is included</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-teaserTitle" datatype="html">
+        <source>The full platform without running it yourself</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-teaserLead" datatype="html">
+        <source>Decabill Cloud is the same billing platform as the open source stack. We handle the infrastructure, upgrades, and scaling, so your team spends its time on customers and revenue.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-teaserVisualBadge" datatype="html">
+        <source>Managed billing platform</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-teaserIllustrationAlt" datatype="html">
+        <source>Decabill Cloud administration overview with a platform update and a running billing cycle</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-teaserItem1Title" datatype="html">
+        <source>Fully managed</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-teaserItem1" datatype="html">
+        <source>We run the infrastructure, updates, and maintenance. Nobody on your team patches a server.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-teaserItem2Title" datatype="html">
+        <source>The full platform</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-teaserItem2" datatype="html">
+        <source>Customer console, admin billing, e-invoicing, accounting, and provisioning from the start.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-teaserItem3Title" datatype="html">
+        <source>Scales with you</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-teaserItem3" datatype="html">
+        <source>Capacity grows with your catalog, your customers, and your tenants.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-teaserItem4Title" datatype="html">
+        <source>99.9% uptime SLA</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-teaserItem4" datatype="html">
+        <source>Reliable operation for the invoices and payments your business runs on.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-plansTitle" datatype="html">
+        <source>Cloud plans that match how you bill</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-plansLead" datatype="html">
+        <source>Pick a managed plan with clear pricing. Each tier shows its interval and what is included, and you subscribe in the same storefront your customers use.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-plansScrollPrev" datatype="html">
+        <source>Previous plans</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-plansScrollNext" datatype="html">
+        <source>Next plans</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-plansLoadError" datatype="html">
+        <source>Plans could not be loaded right now. Please refresh the page or try again later.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-plansEmpty" datatype="html">
+        <source>Plans will appear here as soon as they are available.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-planHighlightsFallback" datatype="html">
+        <source>The full feature list is shown at checkout.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-planCta" datatype="html">
+        <source>Get started</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-gettingStartedTitle" datatype="html">
+        <source>Getting started</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-step1" datatype="html">
+        <source>Choose a plan</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-step2" datatype="html">
+        <source>Sign in to your console</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-step3" datatype="html">
+        <source>Set up your catalog</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-step4" datatype="html">
+        <source>Send your first invoice</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-ctaTitle" datatype="html">
+        <source>Ready to bill on Decabill Cloud?</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-ctaLead" datatype="html">
+        <source>Pick a plan and start billing, or talk to us about how Decabill Cloud fits your agency or product.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-ctaPrimary" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get started</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-ctaTalkToTeam" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Talk to the team</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeHub" datatype="html">
+        <source>One record</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillPortal-navProduct" datatype="html">
+        <source>Product</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillPortal-navDesktop" datatype="html">
+        <source>Desktop</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillPortal-navCloud" datatype="html">
+        <source>Cloud</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-metaTitlePage" datatype="html">
+        <source>Your billing console on the desktop</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-metaDescription" datatype="html">
+        <source>Decabill Desktop runs the billing console in its own window on Windows and Linux. Connect to your self-hosted Decabill or Decabill Cloud, with verified updates and signed package repositories.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillDesktop-metaKeywords" datatype="html">
+        <source>Decabill Desktop, billing desktop app, invoicing app for Windows, invoicing app for Linux, billing console</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-metaTitlePage" datatype="html">
+        <source>Fully managed billing, zero platform ops</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-metaDescription" datatype="html">
+        <source>Decabill Cloud is the fully managed billing platform for agencies and product teams. Customer console, e-invoicing, accounting, and provisioning, with infrastructure, updates, and scaling handled for you.</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-metaKeywords" datatype="html">
+        <source>Decabill Cloud, managed billing platform, hosted invoicing, SaaS billing, subscription billing, e-invoicing</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-planPriceMonth" datatype="html">
+        <source>/ month</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-planPriceHour" datatype="html">
+        <source>/ hour</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-planPriceDay" datatype="html">
+        <source>/ day</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-planPriceYear" datatype="html">
+        <source>/ year</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-planPriceMonths" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> months</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-planPriceHours" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> hours</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-planPriceDays" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> days</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-planPriceYears" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> years</source>
+      </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraDigitalOceanDc" datatype="html">
+        <source>New York, San Francisco, and Toronto; London, Amsterdam, and Frankfurt; Singapore and Bangalore.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraDigitalOceanHw" datatype="html">
+        <source>SSD-backed Droplets from shared vCPU sizes for typical workloads to dedicated vCPU plans when you need steady CPU performance.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraDigitalOceanName" datatype="html">
+        <source>DigitalOcean</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraDigitalOceanNet" datatype="html">
+        <source>VPC private networking between Droplets in the same region, optional floating IPv4 addresses, and IPv6 where the region supports it.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraDigitalOceanTagline" datatype="html">
+        <source>Simple, developer-focused cloud with regions across North America, Europe, and Asia.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraHetznerDc" datatype="html">
+        <source>Nuremberg and Falkenstein (Germany), Helsinki (Finland), Ashburn (US), and Singapore.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraHetznerHw" datatype="html">
+        <source>NVMe storage and current-generation AMD and Intel CPUs so workloads stay responsive under load.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraHetznerName" datatype="html">
+        <source>Hetzner Cloud</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraHetznerNet" datatype="html">
+        <source>Redundant uplinks, IPv4 and IPv6, and private networking between your resources where it fits your architecture.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraHetznerTagline" datatype="html">
+        <source>European data centers with modern networking and dependable hardware.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraLabelDc" datatype="html">
+        <source>Datacenters</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraLabelHw" datatype="html">
+        <source>Hardware</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraLabelNet" datatype="html">
+        <source>Network</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraLead" datatype="html">
+        <source> We choose providers and regions deliberately. Security, latency, and your requirements shape the roadmap. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillCloud-infraTitle" datatype="html">
+        <source> Where Decabill Cloud runs </source>
         </trans-unit>
     </body>
   </file>

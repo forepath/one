@@ -101,8 +101,194 @@
   background-color: var(--bs-body-bg);
 }
 
-.home-back-office-tile {
+// Back office hub: the one record in the middle, the six back-office areas around it. From `lg` each side
+// is a bracket (a stub per card into a rail, the rail into the record), so the areas visibly hang off the same data.
+// Below `lg` the record sits on top and the areas form a grid under it.
+.home-hub {
+  --hub-arm: 1.75rem;
+  --hub-gap: 1rem;
+  --hub-node: 8rem;
+  --hub-line: color-mix(in srgb, var(--bs-primary) 35%, transparent);
+
+  display: grid;
+  gap: var(--hub-gap);
+}
+
+.home-hub__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hub-gap);
+}
+
+.home-hub__item {
+  position: relative;
+  padding: 1.5rem;
   background-color: var(--bs-body-bg);
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  box-shadow: var(--bs-box-shadow-sm);
+}
+
+.home-hub__core {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  order: -1;
+  padding-bottom: 1.5rem;
+}
+
+.home-hub__node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--hub-node);
+  height: var(--hub-node);
+  border-radius: 50%;
+  position: relative;
+  z-index: 1;
+  font-size: 2.75rem;
+  color: var(--bs-white);
+  background: radial-gradient(
+    circle at 30% 25%,
+    color-mix(in srgb, var(--bs-primary) 70%, var(--bs-white)) 0%,
+    var(--bs-primary) 70%
+  );
+  box-shadow:
+    0 0 0 0.75rem color-mix(in srgb, var(--bs-primary) 12%, transparent),
+    0 0 0 1.5rem color-mix(in srgb, var(--bs-primary) 6%, transparent),
+    0 1rem 2.5rem color-mix(in srgb, var(--bs-primary) 30%, transparent);
+}
+
+@media (min-width: 768px) {
+  .home-hub {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-hub__core {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 992px) {
+  .home-hub {
+    grid-template-columns: minmax(0, 1fr) 15rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0;
+  }
+
+  .home-hub__core {
+    grid-column: auto;
+    order: 0;
+    position: relative;
+    padding-bottom: 0;
+  }
+
+  // The label hangs below the node, so the node itself sits on the row's centre line with the side links.
+  .home-hub__label {
+    position: absolute;
+    top: calc(50% + var(--hub-node) / 2 + 2.25rem);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  // Lines from the core column's edges to the node.
+  .home-hub__core::before,
+  .home-hub__core::after {
+    content: '';
+    position: absolute;
+    top: calc(50% - 1px);
+    width: calc(50% - var(--hub-node) / 2);
+    height: 2px;
+    background-color: var(--hub-line);
+  }
+
+  .home-hub__core::before {
+    left: 0;
+  }
+
+  .home-hub__core::after {
+    right: 0;
+  }
+
+  .home-hub__side {
+    position: relative;
+  }
+
+  .home-hub__side--start {
+    padding-inline-end: calc(2 * var(--hub-arm));
+  }
+
+  .home-hub__side--end {
+    padding-inline-start: calc(2 * var(--hub-arm));
+  }
+
+  // Rail into the core column (stops 1px short of the rail's centre line, so the translucent lines
+  // never overlap into a darker dot).
+  .home-hub__side::after {
+    content: '';
+    position: absolute;
+    top: calc(50% - 1px);
+    width: calc(var(--hub-arm) - 1px);
+    height: 2px;
+    background-color: var(--hub-line);
+  }
+
+  .home-hub__side--start::after {
+    right: 0;
+  }
+
+  .home-hub__side--end::after {
+    left: 0;
+  }
+
+  // Per card: a stub to the rail and its share of the rail (first: down from its middle, last: up to it).
+  .home-hub__item::before,
+  .home-hub__item::after {
+    content: '';
+    position: absolute;
+    background-color: var(--hub-line);
+    pointer-events: none;
+  }
+
+  .home-hub__item::before {
+    top: calc(50% - 1px);
+    width: calc(var(--hub-arm) - 1px);
+    height: 2px;
+  }
+
+  // Offsets count from the padding box, so add the card border: neighbouring segments then meet
+  // exactly in the middle of the gap, without a seam or an overlap.
+  .home-hub__item::after {
+    width: 2px;
+    top: calc(-1 * var(--hub-gap) / 2 - var(--bs-border-width));
+    bottom: calc(-1 * var(--hub-gap) / 2 - var(--bs-border-width));
+  }
+
+  .home-hub__item:first-child::after {
+    top: 50%;
+  }
+
+  .home-hub__item:last-child::after {
+    bottom: 50%;
+  }
+
+  .home-hub__side--start .home-hub__item::before {
+    right: calc(-1 * var(--hub-arm) - var(--bs-border-width) + 1px);
+  }
+
+  .home-hub__side--start .home-hub__item::after {
+    right: calc(-1 * var(--hub-arm) - var(--bs-border-width) - 1px);
+  }
+
+  .home-hub__side--end .home-hub__item::before {
+    left: calc(-1 * var(--hub-arm) - var(--bs-border-width) + 1px);
+  }
+
+  .home-hub__side--end .home-hub__item::after {
+    left: calc(-1 * var(--hub-arm) - var(--bs-border-width) - 1px);
+  }
 }
 
 // Illustration window inset from the left, running off the card's right and bottom edges (the card

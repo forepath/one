@@ -1242,6 +1242,14 @@
         <source>Main navigation</source>
         <target>Hauptnavigation</target>
       </trans-unit>
+      <trans-unit id="featureContainer-sidebarCollapse" datatype="html">
+        <source>Collapse sidebar</source>
+        <target>Seitenleiste einklappen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-sidebarExpand" datatype="html">
+        <source>Expand sidebar</source>
+        <target>Seitenleiste ausklappen</target>
+      </trans-unit>
       <trans-unit id="featureContainer-toggleDarkMode" datatype="html">
         <source>Toggle dark mode</source>
         <target>Dunkelmodus ein-/ausschalten</target>

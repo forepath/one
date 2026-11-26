@@ -10,12 +10,14 @@ import { createSharedContactRoute, createBrandContactDetails } from '@forepath/s
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 
+import { PortalCloudComponent } from './cloud/cloud.component';
 import { PortalComparisonChargebeeComponent } from './comparison/chargebee/chargebee.component';
 import { PortalComparisonHostbillComponent } from './comparison/hostbill/hostbill.component';
 import { PortalComparisonPaddleComponent } from './comparison/paddle/paddle.component';
 import { PortalComparisonStripeBillingComponent } from './comparison/stripe-billing/stripe-billing.component';
 import { PortalComparisonWhmcsComponent } from './comparison/whmcs/whmcs.component';
 import { PortalContainerComponent } from './container/container.component';
+import { PortalDesktopComponent } from './desktop/desktop.component';
 import { PortalHomeComponent } from './home/home.component';
 import { PortalLegalDisclosureComponent } from './legal/disclosure/disclosure.component';
 import { PortalLegalPrivacyComponent } from './legal/privacy/privacy.component';
@@ -54,6 +56,14 @@ export const portalRoutes: Route[] = [
         path: 'platform',
         redirectTo: '',
         pathMatch: 'full',
+      },
+      {
+        path: 'desktop',
+        component: PortalDesktopComponent,
+      },
+      {
+        path: 'cloud',
+        component: PortalCloudComponent,
       },
       {
         path: 'pricing',
@@ -95,6 +105,7 @@ export const portalRoutes: Route[] = [
         canonicalUrl: 'https://decabill.com/contact',
         heroTheme: 'dark',
         contactPerson: 'decabill',
+        contactPersonSignature: 'start',
         contactDetails: createBrandContactDetails({
           email: 'hi@decabill.com',
           websiteUrl: 'https://decabill.com',

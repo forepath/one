@@ -33,6 +33,10 @@ function portalRoutePathFromRouterUrl(url: string): string {
   return segments.join('/');
 }
 
+function isProductDropdownRoutePath(path: string): boolean {
+  return path === '' || path === 'desktop' || path === 'cloud';
+}
+
 function isComparisonDropdownRoutePath(path: string): boolean {
   return path === 'compare' || path.startsWith('compare/');
 }
@@ -87,11 +91,16 @@ export class PortalContainerComponent {
     { initialValue: this.router.url },
   );
 
+  readonly productDropdownActive = computed(() =>
+    isProductDropdownRoutePath(portalRoutePathFromRouterUrl(this.navUrl() ?? '')),
+  );
+
   readonly comparisonDropdownActive = computed(() =>
     isComparisonDropdownRoutePath(portalRoutePathFromRouterUrl(this.navUrl() ?? '')),
   );
 
   readonly mobileMenuOpen = signal<boolean>(false);
+  readonly productNavOpen = signal(false);
   readonly comparisonNavOpen = signal(false);
   readonly isScrolled = signal<boolean>(false);
 
@@ -106,6 +115,7 @@ export class PortalContainerComponent {
 
   closeMobileMenu(): void {
     this.mobileMenuOpen.set(false);
+    this.productNavOpen.set(false);
     this.comparisonNavOpen.set(false);
   }
 }

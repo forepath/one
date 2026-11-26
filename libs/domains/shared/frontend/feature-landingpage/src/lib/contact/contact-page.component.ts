@@ -98,6 +98,7 @@ export class SharedContactPageComponent implements OnInit {
   readonly mascotBrand = this.pageConfig.contactPerson ?? null;
   readonly contactDetails = this.pageConfig.contactDetails;
   readonly contactPerson = this.pageConfig.contactPerson ?? null;
+  readonly contactPersonSignature = this.pageConfig.contactPersonSignature ?? 'facing';
 
   constructor() {
     this.turnstileSiteKey = this.environment.communication.turnstileSiteKey;

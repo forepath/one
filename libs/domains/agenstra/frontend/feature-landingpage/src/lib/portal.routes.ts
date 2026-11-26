@@ -110,6 +110,7 @@ export const portalRoutes: Route[] = [
         canonicalUrl: 'https://agenstra.com/contact',
         heroTheme: 'dark',
         contactPerson: 'agenstra',
+        contactPersonSignature: 'start',
         contactDetails: createBrandContactDetails({
           email: 'hi@agenstra.com',
           websiteUrl: 'https://agenstra.com',

@@ -2,6 +2,12 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 export type SharedContactPersonBrand = 'forepath' | 'agenstra' | 'decabill';
 
+/**
+ * How the signatures under the quotes sit: `facing` mirrors the first one so both photos meet in the
+ * middle (the closing calls to action); `start` puts every photo first, then name and role.
+ */
+export type SharedContactPersonSignature = 'facing' | 'start';
+
 interface SharedContactPerson {
   id: 'marcel' | 'maya';
   name: string;
@@ -68,7 +74,10 @@ export const SHARED_CONTACT_PEOPLE: readonly SharedContactPerson[] = [
   host: { class: 'shared-contact-person' },
   template: `
     @for (person of people; track person.id; let first = $first) {
-      <div class="shared-contact-person__column" [class.shared-contact-person__column--start]="first">
+      <div
+        class="shared-contact-person__column"
+        [class.shared-contact-person__column--start]="first && signature() === 'facing'"
+      >
         <blockquote class="shared-contact-person__card">
           <i class="bi bi-quote shared-contact-person__quote" aria-hidden="true"></i>
           <p class="shared-contact-person__message">{{ person.quote[brand()] }}</p>
@@ -113,6 +122,8 @@ export const SHARED_CONTACT_PEOPLE: readonly SharedContactPerson[] = [
 export class SharedContactPersonComponent {
   /** Picks the quotes: the product sites name themselves. */
   readonly brand = input.required<SharedContactPersonBrand>();
+  /** Signature layout; the default mirrors the first one (see `SharedContactPersonSignature`). */
+  readonly signature = input<SharedContactPersonSignature>('facing');
 
   protected readonly people = SHARED_CONTACT_PEOPLE;
   /** Short mark on the avatar of a virtual persona (the photo's alt text spells it out). */

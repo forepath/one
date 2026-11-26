@@ -1,0 +1,94 @@
+@import '../page.component.scss';
+
+// Plain brand-coloured icon (no tinted tile).
+.desktop-pillar-icon {
+  width: fit-content;
+  height: auto;
+  background: none;
+}
+
+@media (max-width: 991.98px) {
+  .desktop-pillar-panel .border-end {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--bs-border-color) !important;
+  }
+}
+
+// The visual column: beside the copy from lg up, below it before that.
+.desktop-hero-visual {
+  @media (min-width: 992px) {
+    min-height: 12rem;
+  }
+}
+
+.desktop-hero-frame {
+  position: relative;
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+// The brand character hanging from the illustration's top-right corner.
+.desktop-hero-mascot {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  width: clamp(6rem, 9vw, 8rem);
+}
+
+// Update scene inset in the card, running off its right and bottom edges.
+.desktop-security-illustration {
+  margin: 2rem -18% -2.5rem 0;
+  padding-left: 2rem;
+}
+
+// Install commands as a terminal card (the commands are the real ones from the docs, not translated).
+.desktop-install-terminal {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.desktop-install-terminal__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem 1rem;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+  background-color: var(--bs-tertiary-bg);
+}
+
+.desktop-install-terminal__dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  background-color: var(--bs-border-color);
+}
+
+.desktop-install-terminal__title {
+  margin-inline-start: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--bs-secondary-color);
+}
+
+.desktop-install-terminal__body {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.8;
+  white-space: pre;
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+}
+
+.desktop-install-terminal__comment {
+  color: var(--bs-secondary-color);
+}
+
+.desktop-install-terminal__prompt {
+  color: var(--bs-primary);
+  user-select: none;
+}

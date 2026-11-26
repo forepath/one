@@ -2243,8 +2243,8 @@
         <target state="translated">Standardmäßig sicher</target>
       </trans-unit>
       <trans-unit id="featurePortalHome-securityLead" datatype="html">
-        <source> Agents run code, install packages, and reach the network. Agenstra treats them like any workload you would not trust blindly: every environment is isolated, its traffic is filtered, and every caller is authenticated. </source>
-        <target state="translated"> Agenten führen Code aus, installieren Pakete und greifen aufs Netzwerk zu. Agenstra behandelt sie wie jeden Workload, dem Sie nicht blind vertrauen: Jede Umgebung ist isoliert, ihr Datenverkehr wird gefiltert und jeder Aufrufer authentifiziert. </target>
+        <source> Agents run code, install packages, and reach the network. Agenstra treats them like any workload you would not trust blindly. Every environment is isolated, its traffic is filtered, and every caller is authenticated. </source>
+        <target state="translated"> Agenten führen Code aus, installieren Pakete und greifen aufs Netzwerk zu. Agenstra behandelt sie wie jeden Workload, dem Sie nicht blind vertrauen. Jede Umgebung ist isoliert, ihr Datenverkehr wird gefiltert und jeder Aufrufer authentifiziert. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-securityPoint1Title" datatype="html">
         <source> Isolation that matches the host </source>
@@ -2269,10 +2269,6 @@
       <trans-unit id="featurePortalHome-securityPoint3Desc" datatype="html">
         <source> OIDC and SAML single sign-on, mTLS client certificates, and scoped access tokens cover people and automation alike. </source>
         <target state="translated"> OIDC- und SAML-Single-Sign-on, mTLS-Client-Zertifikate und Zugriffstokens mit Scopes decken Menschen und Automatisierung gleichermaßen ab. </target>
-      </trans-unit>
-      <trans-unit id="featurePortalHome-securityCta" datatype="html">
-        <source>See how isolation works</source>
-        <target state="translated">So funktioniert die Isolation</target>
       </trans-unit>
       <trans-unit id="featurePortalHome-ecosystemTitle" datatype="html">
         <source>One platform, flexible surfaces</source>

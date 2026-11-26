@@ -63,7 +63,12 @@
   [class.border-top]="!isMainMask()"
 >
   @if (isMainMask()) {
-    <fpc-sidebar [ariaLabel]="sidebarAriaLabel">
+    <fpc-sidebar
+      [ariaLabel]="sidebarAriaLabel"
+      storageKey="agent-console-sidebar-collapsed"
+      [collapseLabel]="sidebarCollapseLabel"
+      [expandLabel]="sidebarExpandLabel"
+    >
       <!-- Sidebar items follow the console mode (Mode switch in the footer): workspace pages or administration. -->
       @if (consoleMode() === 'user') {
         <a
@@ -157,7 +162,7 @@
           <span class="small" i18n="@@featureContainer-audit">Audit</span>
         </a>
       } @else {
-        <!-- Overview directly, then one tile per area; it opens a popover with the area's pages. -->
+        <!-- Overview directly, then one item per area; it opens a popover with the area's pages. -->
         @for (entry of adminNavEntries$ | async; track entry.key) {
           @if (entry.kind === 'item') {
             <a
@@ -233,6 +238,8 @@
               [class.active]="isAccountRouteActive()"
               tabindex="0"
               role="button"
+              aria-haspopup="dialog"
+              [attr.aria-expanded]="accountPopoverOpen"
               i18n-title="@@featureContainer-accountTitle"
               title="Account"
               i18n-aria-label="@@featureContainer-accountTitle"
@@ -271,13 +278,15 @@
           </fpc-sidebar-popover>
         }
         @if (canAccessUserManager$ | async) {
-          <fpc-sidebar-popover [(open)]="modePopoverOpen" [ariaLabel]="modeTitle" [columns]="modeOptions.length">
+          <fpc-sidebar-popover [(open)]="modePopoverOpen" [ariaLabel]="modeTitle">
             <span
               fpcSidebarPopoverTrigger
               class="sidebar__item sidebar__item--mode border-top position-relative"
               data-testid="sidebar-mode"
               tabindex="0"
               role="button"
+              aria-haspopup="dialog"
+              [attr.aria-expanded]="modePopoverOpen"
               [title]="modeTitle"
               [attr.aria-label]="modeTitle"
             >
@@ -318,7 +327,7 @@
   </fpc-section-container>
   @if (actionCenterAvailable() && actionCenterOpen() && !isToolWindowRoute()) {
     <!-- Overlay on narrow screens: never wider than the content area (the rail stays visible). -->
-    <shared-action-center-panel [style.--action-center-inset-start]="isMainMask() ? 'calc(2rem + 40.5px)' : '0px'" />
+    <shared-action-center-panel [style.--action-center-inset-start]="sidebarInset()" />
   }
 </div>
 

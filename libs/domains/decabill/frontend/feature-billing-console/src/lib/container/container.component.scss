@@ -6,90 +6,20 @@
   overflow: hidden; // Prevent page-level overflow
 }
 
-@mixin sidebar-item-layout {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-direction: column;
-  width: 72px;
-  height: 72px;
-  border: 0;
-  outline: 0;
-  background-color: transparent;
-  color: var(--bs-heading-color);
-  text-decoration: none;
-
-  span {
-    &.small {
-      font-size: 0.65rem;
-    }
-  }
-}
-
-@mixin sidebar-item-states {
-  &.active {
-    background-color: var(--sidebar-item-active-bg);
-
-    &:hover {
-      background-color: var(--sidebar-item-active-bg);
-    }
-  }
-
-  &:hover {
-    background-color: var(--sidebar-item-hover-bg);
-  }
-}
-
-@mixin sidebar-item-states-dark {
-  &:hover {
-    background-color: var(--sidebar-item-hover-bg);
-  }
-
-  &.active {
-    background-color: var(--sidebar-item-active-bg);
-
-    &:hover {
-      background-color: var(--sidebar-item-active-bg);
-    }
-  }
-}
-
-:host-context(html[data-bs-theme='dark']) {
-  .sidebar {
-    &__item {
-      @include sidebar-item-states-dark;
-    }
-  }
-}
-
 .section__container {
   flex-grow: 1;
   min-height: 0; // Critical for flex scrolling
   overflow: hidden; // Prevent page-level overflow
 }
 
-.sidebar {
-  min-width: calc(2rem + 40.5px);
-  width: calc(2rem + 40.5px);
-  height: 100%;
-  background-color: var(--bs-tertiary-bg);
-  border-right: 1px solid var(--bs-border-color);
-  // Scrolling is owned by `fpc-sidebar__items`; keep the host from competing.
-  overflow: hidden;
-
-  &__item {
-    @include sidebar-item-layout;
-    @include sidebar-item-states;
-    flex-shrink: 0;
-  }
-}
+// Rail layout, item rows and the collapsed state live in `fpc-sidebar` (shared ui-components).
 
 // Mode rail item: a slight primary tint (the same in both modes) so the switch stands out from the page items. Its
-// popover tiles stay neutral. Hover / active reuse the shared item rules through the sidebar tokens.
+// popover rows stay neutral. Hover / active reuse the shared item rules through the sidebar tokens.
 .sidebar__item--mode {
   --sidebar-item-hover-bg: color-mix(in srgb, var(--bs-primary) 28%, var(--bs-tertiary-bg));
   --sidebar-item-active-bg: color-mix(in srgb, var(--bs-primary) 36%, var(--bs-tertiary-bg));
+  --sidebar-item-open-bg: color-mix(in srgb, var(--bs-primary) 26%, var(--bs-tertiary-bg));
 
   background-color: color-mix(in srgb, var(--bs-primary) 20%, var(--bs-tertiary-bg));
   color: var(--bs-primary-text-emphasis);
