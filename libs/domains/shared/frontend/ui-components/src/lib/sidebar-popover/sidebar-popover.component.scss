@@ -4,29 +4,60 @@
   // Standalone Storybook / usage outside `fpc-sidebar` still gets tile tint tokens.
   --sidebar-item-hover-bg: rgb(0 0 0 / 0.05);
   --sidebar-item-active-bg: rgb(0 0 0 / 0.05);
+  --sidebar-item-open-bg: rgb(0 0 0 / 0.035);
+  // Entry dividers (see below): quieter than the panel border, so they set a rhythm without boxing the rows.
+  --fpc-sidebar-popover-divider-color: color-mix(in srgb, var(--bs-border-color) 55%, transparent);
 }
 
 :host-context(html[data-bs-theme='dark']) {
   --sidebar-item-hover-bg: rgb(255 255 255 / 0.075);
   --sidebar-item-active-bg: rgb(255 255 255 / 0.075);
+  --sidebar-item-open-bg: rgb(255 255 255 / 0.05);
+  --fpc-sidebar-popover-divider-color: color-mix(in srgb, var(--bs-border-color) 45%, transparent);
 }
 
-@mixin sidebar-popover-tile {
+// Menu row: icon, then the label next to it (the full page title is the row's tooltip). Same height as the rail
+// items in `fpc-sidebar` (`--fpc-sidebar-item-height`, 0.375rem block padding), so rows line up with the rail.
+@mixin sidebar-popover-row {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: var(
+    --fpc-sidebar-item-height,
+    calc(
+      2 * var(--fpc-page-header-padding-y, 1rem) + var(--fpc-control-height-header, 2.35rem) + var(--bs-border-width)
+    )
+  );
+  margin: 0;
+  padding: 0.375rem 1rem;
+  box-sizing: border-box;
   cursor: pointer;
-  flex-direction: column;
-  width: 72px;
-  height: 72px;
   border: 0;
+  border-radius: 0;
   outline: 0;
   background-color: transparent;
   color: var(--bs-heading-color);
+  font: inherit;
+  text-align: start;
   text-decoration: none;
+  white-space: normal;
 
-  span.small {
-    font-size: 0.65rem;
+  > i.bi {
+    flex: 0 0 1.25rem;
+    width: 1.25rem;
+    text-align: center;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  > span.small {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.875rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
   }
 
   &:hover {
@@ -36,6 +67,16 @@
   &.active,
   &.active:hover {
     background-color: var(--sidebar-item-active-bg);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-focus-ring-color, rgb(13 110 253 / 0.25));
+    outline-offset: -2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
   }
 }
 
@@ -78,23 +119,76 @@
   }
 }
 
-.fpc-sidebar-popover__grid {
-  display: grid;
-  grid-template-columns: repeat(var(--fpc-sidebar-popover-columns, 3), 72px);
+.fpc-sidebar-popover__list {
+  display: flex;
+  flex-direction: column;
+  min-width: 13rem;
+  // Wide enough for long page titles (e.g. Atlassian import), never wider than the viewport.
+  max-width: min(20rem, 100vw);
+  // No inner block padding: rows run flush to the panel edges, like the rail.
+  padding: 0;
   background-color: var(--bs-tertiary-bg);
 }
 
-// Projected tiles (raw `.sidebar__item` or `.fpc-sidebar-popover__tile`) sit outside this
+.fpc-sidebar-popover__trigger {
+  position: relative;
+}
+
+// Flyout hint next to the trigger label: only in an expanded rail (collapsed rails show icons only).
+.fpc-sidebar-popover__chevron {
+  display: none;
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  line-height: 1;
+  color: var(--bs-secondary-color);
+  pointer-events: none;
+  z-index: 1;
+}
+
+:host-context(.fpc-sidebar:not(.fpc-sidebar--collapsed)) .fpc-sidebar-popover__chevron {
+  display: block;
+}
+
+// Projected rows (raw `.sidebar__item` or `.fpc-sidebar-popover__tile`) sit outside this
 // component's template; pierce encapsulation so Storybook / apps without local rail mixins work.
 :host ::ng-deep {
   .fpc-sidebar-popover .sidebar__item,
   .fpc-sidebar-popover .fpc-sidebar-popover__tile {
-    @include sidebar-popover-tile;
+    @include sidebar-popover-row;
   }
 
   .fpc-sidebar-popover .sidebar__item.position-relative,
   .fpc-sidebar-popover .fpc-sidebar-popover__tile.position-relative {
     position: relative;
+  }
+
+  // Thin solid divider between entries (none above the first / below the last): the rows keep the rail height, the
+  // lines give the list an even rhythm. Applies to raw rows and
+  // `fpc-sidebar-nav-item` hosts alike (both are direct children of the list).
+  .fpc-sidebar-popover__list > * + * {
+    position: relative;
+  }
+
+  .fpc-sidebar-popover__list > * + *::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: 1;
+    height: var(--bs-border-width);
+    background-color: var(--fpc-sidebar-popover-divider-color);
+    pointer-events: none;
+  }
+
+  // Attention dots at the icon's top end corner (as in the rail).
+  .fpc-sidebar-popover .sidebar__item > fpc-notification-indicator.fpc-notification-indicator--absolute,
+  .fpc-sidebar-popover .fpc-sidebar-popover__tile > fpc-notification-indicator.fpc-notification-indicator--absolute {
+    top: calc(50% - 0.75rem);
+    right: auto;
+    left: 2rem;
   }
 
   .fpc-sidebar-popover .fpc-sidebar-popover__tile-badge {
@@ -105,7 +199,7 @@
     border-radius: 0.25rem;
     background-color: var(--bs-primary);
     position: absolute;
-    top: 0.35rem;
-    right: 0.35rem;
+    top: calc(50% - 0.75rem);
+    left: 2rem;
   }
 }

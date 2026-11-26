@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { afterNextRender, Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+  ViewChild,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
@@ -110,6 +120,11 @@ export class AgentConsoleContainerComponent implements OnInit {
   readonly toggleDarkModeTitle = $localize`:@@featureContainer-toggleDarkMode:Toggle dark mode`;
   readonly loadingFileLabel = $localize`:@@featureContainer-loadingFile:Loading file...`;
   readonly sidebarAriaLabel = $localize`:@@featureContainer-sidebarAriaLabel:Main navigation`;
+  readonly sidebarCollapseLabel = $localize`:@@featureContainer-sidebarCollapse:Collapse sidebar`;
+  readonly sidebarExpandLabel = $localize`:@@featureContainer-sidebarExpand:Expand sidebar`;
+  private readonly sidebar = viewChild(FpcSidebarComponent);
+  /** Width of the left rail (collapsed or expanded) so the action center overlay never covers it. */
+  readonly sidebarInset = computed(() => this.sidebar()?.layoutWidth() ?? '0px');
   readonly modeLabel = $localize`:@@featureContainer-mode:Mode`;
   readonly modeTitle = $localize`:@@featureContainer-modeTitle:Switch between user and admin mode`;
   /** Entries of the Mode popover: the workspace pages (user) and the administration (admin). */

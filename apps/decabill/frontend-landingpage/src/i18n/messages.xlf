@@ -992,18 +992,6 @@
       <trans-unit id="featureDecabillHome-ecosystemCloudExplore" datatype="html">
         <source>View plans</source>
         </trans-unit>
-      <trans-unit id="featureDecabillHome-ecosystemDesktopTitle" datatype="html">
-        <source>Decabill Desktop</source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-ecosystemDesktopDesc" datatype="html">
-        <source> The billing console as a desktop app, with the same sign-in and permissions as the web. Signed releases keep it up to date, and it works with self-hosted Decabill and Decabill Cloud alike. </source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-ecosystemDesktopPlatforms" datatype="html">
-        <source> Available for: Windows, Linux </source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-ecosystemDesktopCta" datatype="html">
-        <source>Download</source>
-        </trans-unit>
       <trans-unit id="featureDecabillHome-ctaTitle" datatype="html">
         <source> Ready to bill services, SaaS, and hosting on Decabill? </source>
         </trans-unit>

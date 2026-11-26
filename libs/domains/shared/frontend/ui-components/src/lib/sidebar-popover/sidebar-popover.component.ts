@@ -14,13 +14,15 @@ import {
 } from '@angular/core';
 
 /**
- * Tile grid that opens next to the sidebar (admin switcher pattern). Rendered inline rather than
+ * Menu list (icon with the label next to it) that opens next to the sidebar (group / account / mode
+ * pattern). Rendered inline rather than
  * appended to `<body>`; the panel uses `position: fixed` so overflow on sidebar/workspace ancestors
  * does not clip it. Vertical placement flips upward when needed; height is capped to the viewport
  * with scrolling and flush edge borders for mobile-friendly full-height sheets.
  *
- * Tile chrome for projected content lives in this component's styles (`::ng-deep`); hover tokens
- * inherit from `fpc-sidebar` when nested there.
+ * Row chrome for projected content lives in this component's styles (`::ng-deep`); hover tokens
+ * inherit from `fpc-sidebar` when nested there. Inside an expanded `fpc-sidebar` the trigger shows a
+ * chevron so group items read as flyouts.
  */
 @Component({
   selector: 'fpc-sidebar-popover',
@@ -28,8 +30,15 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'fpc-sidebar-popover-host' },
   template: `
-    <div class="fpc-sidebar-popover__trigger" (click)="toggle()">
+    <div
+      class="fpc-sidebar-popover__trigger"
+      [class.fpc-sidebar-popover__trigger--open]="open()"
+      (click)="toggle()"
+      (keydown.enter)="onTriggerKey($event)"
+      (keydown.space)="onTriggerKey($event)"
+    >
       <ng-content select="[fpcSidebarPopoverTrigger]" />
+      <i class="bi bi-chevron-right fpc-sidebar-popover__chevron" aria-hidden="true"></i>
     </div>
 
     @if (open()) {
@@ -46,7 +55,7 @@ import {
         [style.max-height.px]="panelMaxHeight()"
       >
         <div class="popover-body">
-          <div class="fpc-sidebar-popover__grid" [style.--fpc-sidebar-popover-columns]="columns()">
+          <div class="fpc-sidebar-popover__list">
             <ng-content />
           </div>
         </div>
@@ -61,7 +70,6 @@ export class FpcSidebarPopoverComponent {
   private readonly panelRef = viewChild<ElementRef<HTMLElement>>('panel');
 
   readonly open = model(false);
-  readonly columns = input(3);
   readonly ariaLabel = input<string | null>('Workspace switcher');
 
   /** Viewport coordinates and size for the fixed panel (set when opening). */
@@ -105,6 +113,16 @@ export class FpcSidebarPopoverComponent {
 
   protected toggle(): void {
     this.open.set(!this.open());
+  }
+
+  /** `role="button"` span triggers: Enter / Space toggle like a click (native buttons and links already click). */
+  protected onTriggerKey(event: Event): void {
+    const target = event.target instanceof Element ? event.target : null;
+
+    if (!target || target.closest('button, a[href]')) return;
+
+    event.preventDefault();
+    this.toggle();
   }
 
   private syncPanelPosition(): void {

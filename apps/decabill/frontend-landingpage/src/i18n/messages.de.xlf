@@ -1302,22 +1302,6 @@
         <source>View plans</source>
         <target state="translated">Pläne ansehen</target>
       </trans-unit>
-      <trans-unit id="featureDecabillHome-ecosystemDesktopTitle" datatype="html">
-        <source>Decabill Desktop</source>
-        <target state="translated">Decabill Desktop</target>
-      </trans-unit>
-      <trans-unit id="featureDecabillHome-ecosystemDesktopDesc" datatype="html">
-        <source> The billing console as a desktop app, with the same sign-in and permissions as the web. Signed releases keep it up to date, and it works with self-hosted Decabill and Decabill Cloud alike. </source>
-        <target state="translated"> Die Abrechnungskonsole als Desktop-App, mit derselben Anmeldung und denselben Berechtigungen wie im Web. Signierte Releases halten sie aktuell, und sie arbeitet mit selbst gehostetem Decabill ebenso wie mit Decabill Cloud. </target>
-      </trans-unit>
-      <trans-unit id="featureDecabillHome-ecosystemDesktopPlatforms" datatype="html">
-        <source> Available for: Windows, Linux </source>
-        <target state="translated"> Verfügbar für: Windows, Linux </target>
-      </trans-unit>
-      <trans-unit id="featureDecabillHome-ecosystemDesktopCta" datatype="html">
-        <source>Download</source>
-        <target state="translated">Herunterladen</target>
-      </trans-unit>
       <trans-unit id="featureDecabillHome-ctaTitle" datatype="html">
         <source> Ready to bill services, SaaS, and hosting on Decabill? </source>
         <target state="translated">Bereit, Services, SaaS und Hosting mit Decabill abzurechnen?</target>
