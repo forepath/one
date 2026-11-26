@@ -600,13 +600,13 @@
         <source>Controller + RBAC over many remote agent-manager endpoints from one console.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-agenstraT2" datatype="html">
-        <source>Per-client users with admin/user roles; OIDC/SAML single sign-on or JWT users. API-key mode bypasses user checks.</source>
+        <source>Per-client users with admin and user roles plus an instance-wide manager role; OIDC/SAML single sign-on or JWT users. API-key mode bypasses user checks.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-agenstraT3" datatype="html">
         <source>Dockerized controller and manager; you choose where they run. EU-friendly provider automation where offered.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-agenstraT4" datatype="html">
-        <source>WebSocket chat to Docker-backed agents with logs and container lifecycle via agent-manager.</source>
+        <source>WebSocket chat to OpenCode agents with logs and container lifecycle via agent-manager, isolated from gVisor sandboxes up to KVM microVMs.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-agenstraT5" datatype="html">
         <source>Monaco editor plus proxied Git (status, branches, commit, push, pull, rebase, conflicts).</source>
@@ -618,7 +618,7 @@
         <source>Knowledge tree, relations, activity, and prompt-context endpoints.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-agenstraT8" datatype="html">
-        <source>Deployments APIs cover configs, workflows, runs, logs, and cancel. All of that is scoped to agents.</source>
+        <source>GitHub Actions, GitLab CI, and Jenkins pipelines with runs, logs, and cancel. Agents can read and trigger them through the built-in MCP server.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-agenstraT9" datatype="html">
         <source>Documented automation for Hetzner and DigitalOcean to install agent-manager and register clients.</source>
@@ -633,7 +633,7 @@
         <source>Plugin agent providers and chat filters in agent-manager.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-agenstraT13" datatype="html">
-        <source>OIDC or SAML with any identity provider, built-in JWT users, or static API key. Connect corporate IdPs such as Entra ID, Okta or Keycloak directly.</source>
+        <source>OIDC or SAML with any identity provider, built-in JWT users, mTLS client certificates, or static API key. Connect corporate IdPs such as Entra ID, Okta or Keycloak directly.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-devinT1" datatype="html">
         <source>Multi-org enterprise APIs exist; focus is vendor-hosted sessions, not your fleet of independent runtimes.</source>
@@ -1208,6 +1208,12 @@
       <trans-unit id="featurePortalDesktop-securityItem3Sub" datatype="html">
         <source> No bypass of governance </source>
         </trans-unit>
+      <trans-unit id="featurePortalDesktop-securityItem4" datatype="html">
+        <source>Install only signed releases</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-securityItem4Sub" datatype="html">
+        <source> Updates are verified against our release key before they install </source>
+        </trans-unit>
       <trans-unit id="featurePortalDesktop-securityIllustration" datatype="html">
         <source>Agenstra Desktop connected through company sign-in, with the permissions of your role</source>
         </trans-unit>
@@ -1271,14 +1277,20 @@
       <trans-unit id="featurePortalHome-heroFeatureBadge4" datatype="html">
         <source>Code &amp; Git in the browser</source>
         </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge9" datatype="html">
+        <source>Sandboxed workspaces</source>
+        </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge5" datatype="html">
-        <source>Deployments</source>
+        <source>CI/CD pipelines</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge6" datatype="html">
         <source>Team knowledge</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge7" datatype="html">
         <source>Roles &amp; single sign-on</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-heroFeatureBadge10" datatype="html">
+        <source>OpenAI-compatible API</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge8" datatype="html">
         <source>Your cloud or ours</source>
@@ -1338,7 +1350,7 @@
         <source> Leadership clarity </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit1Desc" datatype="html">
-        <source> Executives and platform teams share one map of agent activity instead of reconciling spreadsheets and chat threads. </source>
+        <source> An admin overview shows workspaces, active agents, messages, tokens, and cost in one place instead of spreadsheets and chat threads. </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit2Title" datatype="html">
         <source> Team autonomy </source>
@@ -1398,7 +1410,7 @@
         <source> Humans approve the blast radius </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantagePolicyBenefit3Desc" datatype="html">
-        <source> Autonomous runs start only when the right owner says yes, with limits on scope and runtime. </source>
+        <source> Autonomous runs start only when the right owner says yes, and the action center lists every approval that is still waiting. </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageTicketsHeadline" datatype="html">
         <source> Automation that matches how you ship </source>
@@ -1551,7 +1563,7 @@
         <source>The right access</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability1Item2" datatype="html">
-        <source> Invite teammates with roles per workspace and sign in with your company identity provider </source>
+        <source> Invite teammates with roles per workspace, let managers run day-to-day administration, and sign in through OIDC or SAML </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-pillarRunPoint3Title" datatype="html">
         <source>Clear boundaries</source>
@@ -1605,7 +1617,7 @@
         <source> Ship with confidence </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability3Item3" datatype="html">
-        <source> Trigger releases, follow run logs, and use Git from the same place you chat with agents </source>
+        <source> Run GitHub Actions, GitLab CI, and Jenkins pipelines, follow their logs, and use Git from the same place you chat with agents </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability5Title" datatype="html">
         <source> Context everyone actually uses </source>
@@ -1647,16 +1659,85 @@
         <source> Pull issue and wiki context into workspaces so agents start informed </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-pillarConnectPoint2Title" datatype="html">
-        <source>Your agents</source>
+        <source> OpenAI-compatible API </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability4Item2" datatype="html">
-        <source> Use Cursor and OpenCode on infrastructure you choose </source>
+        <source> Call any agent from the SDKs, chat interfaces, and CLIs that already speak the OpenAI API </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-pillarConnectPoint3Title" datatype="html">
         <source> Your deployment </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-capability4Item3" datatype="html">
         <source> Run on your own servers, our managed cloud, or Desktop for day-to-day operators </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsTitle" datatype="html">
+        <source> Agents that plan, schedule, and hand off work </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsLead" datatype="html">
+        <source> Agenstra runs OpenCode agents with the context and tools of their workspace. They plan before they build, pick up recurring work, and ask a teammate agent when a task belongs elsewhere. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsTile1Title" datatype="html">
+        <source>Plan before they build</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsTile1Desc" datatype="html">
+        <source> Agents explore the repository read-only and propose a plan you refine before a single file changes </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsTile2Title" datatype="html">
+        <source>Work on a schedule</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsTile2Desc" datatype="html">
+        <source> Give an agent a prompt and a cron schedule for daily reports, dependency checks, or health probes </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsTile3Title" datatype="html">
+        <source>Hand work to a peer</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsTile3Desc" datatype="html">
+        <source> A backend agent asks the frontend agent of the same workspace to adapt the UI and gets the answer back </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsTile4Title" datatype="html">
+        <source>Context on demand</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsTile4Desc" datatype="html">
+        <source> A built-in MCP server gives agents tickets, knowledge pages, pipelines, and a graph of the code without bloating every prompt </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsTile5Title" datatype="html">
+        <source>Tools from the MCP registry</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsTile5Desc" datatype="html">
+        <source> Add servers from the official MCP registry, with allow and block lists from the instance down to a single environment </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsTile6Title" datatype="html">
+        <source>A desktop when they need one</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-agentsTile6Desc" datatype="html">
+        <source> Open a remote desktop session into an environment to watch or steer browser and GUI work </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-securityTitle" datatype="html">
+        <source>Secure by default</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-securityLead" datatype="html">
+        <source> Agents run code, install packages, and reach the network. Agenstra treats them like any workload you would not trust blindly: every environment is isolated, its traffic is filtered, and every caller is authenticated. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-securityPoint1Title" datatype="html">
+        <source> Isolation that matches the host </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-securityPoint1Desc" datatype="html">
+        <source> Each environment starts at the strongest level its host supports, from gVisor sandboxes up to KVM microVMs with their own guest kernel. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-securityPoint2Title" datatype="html">
+        <source> Egress you decide </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-securityPoint2Desc" datatype="html">
+        <source> An egress guard routes all outbound traffic through your layered web traffic policy, so agents only reach the hosts you allow. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-securityPoint3Title" datatype="html">
+        <source> Access your security team signs off </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-securityPoint3Desc" datatype="html">
+        <source> OIDC and SAML single sign-on, mTLS client certificates, and scoped access tokens cover people and automation alike. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-securityCta" datatype="html">
+        <source>See how isolation works</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-ecosystemTitle" datatype="html">
         <source> One platform, flexible surfaces </source>
@@ -1695,7 +1776,7 @@
         <source>Agenstra Desktop</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-ecosystemDesktopDesc" datatype="html">
-        <source> A desktop app for daily operators with the same sign-in and permissions as the web console. </source>
+        <source> A desktop app for daily operators with the same sign-in and permissions as the web console. Signed releases keep it up to date. </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-ecosystemDesktopCta" datatype="html">
         <source>Explore Desktop</source>
@@ -1737,10 +1818,10 @@
         <source>One place to run, govern, and ship with agents :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-metaDescription" datatype="html">
-        <source>Run and govern coding agents at enterprise scale: workspaces, ticket automation, in-browser coding, releases, policy, and audit trails. Self-host Agenstra or run on Agenstra Cloud.</source>
+        <source>Run and govern coding agents at enterprise scale: sandboxed workspaces, ticket automation, in-browser coding, CI/CD pipelines, policy, and audit trails. Self-host Agenstra or run on Agenstra Cloud.</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-metaKeywords" datatype="html">
-        <source>Agenstra, enterprise coding agents, AI agent governance, ticket automation, agent audit, self-hosted AI platform, software delivery, team knowledge, Cursor OpenCode integration</source>
+        <source>Agenstra, enterprise coding agents, AI agent governance, ticket automation, agent audit, self-hosted AI platform, software delivery, team knowledge, OpenCode integration, sandboxed agents, OpenAI-compatible API</source>
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-heroTitle" datatype="html">
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>How Agenstra works<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/>, from the first prompt to the last packet </source>

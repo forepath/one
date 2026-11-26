@@ -46,11 +46,13 @@ export class PortalHomeComponent implements OnInit {
       $localize`:@@featurePortalHome-heroFeatureBadge2:Ticket automation`,
       $localize`:@@featurePortalHome-heroFeatureBadge3:Policy & audit trails`,
       $localize`:@@featurePortalHome-heroFeatureBadge4:Code & Git in the browser`,
+      $localize`:@@featurePortalHome-heroFeatureBadge9:Sandboxed workspaces`,
     ],
     [
-      $localize`:@@featurePortalHome-heroFeatureBadge5:Deployments`,
+      $localize`:@@featurePortalHome-heroFeatureBadge5:CI/CD pipelines`,
       $localize`:@@featurePortalHome-heroFeatureBadge6:Team knowledge`,
       $localize`:@@featurePortalHome-heroFeatureBadge7:Roles & single sign-on`,
+      $localize`:@@featurePortalHome-heroFeatureBadge10:OpenAI-compatible API`,
       $localize`:@@featurePortalHome-heroFeatureBadge8:Your cloud or ours`,
     ],
   ];
@@ -98,7 +100,7 @@ export class PortalHomeComponent implements OnInit {
     }
 
     const metaTitle = $localize`:@@featurePortalHome-metaTitle:One place to run, govern, and ship with agents :: Agenstra`;
-    const metaDescription = $localize`:@@featurePortalHome-metaDescription:Run and govern coding agents at enterprise scale: workspaces, ticket automation, in-browser coding, releases, policy, and audit trails. Self-host Agenstra or run on Agenstra Cloud.`;
+    const metaDescription = $localize`:@@featurePortalHome-metaDescription:Run and govern coding agents at enterprise scale: sandboxed workspaces, ticket automation, in-browser coding, CI/CD pipelines, policy, and audit trails. Self-host Agenstra or run on Agenstra Cloud.`;
 
     this.titleService.setTitle(metaTitle);
     this.destroyRef.onDestroy(
@@ -106,7 +108,7 @@ export class PortalHomeComponent implements OnInit {
         this.metaService,
         buildPageMetaTags({
           description: metaDescription,
-          keywords: $localize`:@@featurePortalHome-metaKeywords:Agenstra, enterprise coding agents, AI agent governance, ticket automation, agent audit, self-hosted AI platform, software delivery, team knowledge, Cursor OpenCode integration`,
+          keywords: $localize`:@@featurePortalHome-metaKeywords:Agenstra, enterprise coding agents, AI agent governance, ticket automation, agent audit, self-hosted AI platform, software delivery, team knowledge, OpenCode integration, sandboxed agents, OpenAI-compatible API`,
           author: 'IPvX UG (haftungsbeschränkt)',
           robots: 'index, follow',
           canonicalUrl: 'https://agenstra.com',

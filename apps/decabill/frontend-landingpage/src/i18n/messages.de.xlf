@@ -83,8 +83,8 @@
         <target state="translated">Funktionsvergleich</target>
       </trans-unit>
       <trans-unit id="featureDecabillComparison-matrixIntro" datatype="html">
-        <source> The same thirteen capabilities appear on every page. You can compare vendors without chasing different rubrics. </source>
-        <target state="translated"> Auf jeder Seite finden Sie dieselben dreizehn Funktionen. So vergleichen Sie Anbieter ohne unterschiedliche Bewertungsraster. </target>
+        <source> The same fourteen capabilities appear on every page. You can compare vendors without chasing different rubrics. </source>
+        <target state="translated"> Auf jeder Seite finden Sie dieselben vierzehn Funktionen. So vergleichen Sie Anbieter ohne unterschiedliche Bewertungsraster. </target>
       </trans-unit>
       <trans-unit id="featureDecabillComparison-matrixLegend" datatype="html">
         <source> Hover an icon for a short rationale. Ratings follow a public research pass (Strong / Partial / Weak / N.A.) and are meant for orientation. They are not a substitute for your own procurement review. </source>
@@ -183,12 +183,12 @@
         <target state="translated">Sehen Betreiber und Kunden den Live-Status von Servern und Abonnements, nicht nur Sammel-E-Mails oder manuelle Prüfungen?</target>
       </trans-unit>
       <trans-unit id="featureDecabillComparison-matrixDim10" datatype="html">
-        <source>Finance export and bookkeeping handoff (DATEV ecosystem)</source>
-        <target state="translated">Finanzexport und Buchhaltungsübergabe (DATEV-Ökosystem)</target>
+        <source>Bookkeeping and finance export (accounting + DATEV)</source>
+        <target state="translated">Buchhaltung und Finanzexport (Buchführung + DATEV)</target>
       </trans-unit>
       <trans-unit id="featureDecabillComparison-matrixQ10" datatype="html">
-        <source>Can finance close the month without re-keying line items, especially in German agency contexts?</source>
-        <target state="translated">Kann Finance den Monatsabschluss ohne erneute Erfassung von Positionen schließen, besonders im deutschen Agenturkontext?</target>
+        <source>Can finance book, reconcile, and close the month without re-keying line items, especially in German agency contexts?</source>
+        <target state="translated">Kann Finance buchen, abstimmen und den Monatsabschluss ohne erneute Erfassung von Positionen schließen, besonders im deutschen Agenturkontext?</target>
       </trans-unit>
       <trans-unit id="featureDecabillComparison-matrixDim11" datatype="html">
         <source>Payment processor flexibility (Stripe + extensibility)</source>
@@ -214,6 +214,14 @@
         <source>Can we integrate ordering, subscriptions, invoices, and admin flows via documented APIs, not screen-scraping?</source>
         <target state="translated">Können wir Bestellung, Abonnements, Rechnungen und Admin-Flows über dokumentierte APIs integrieren, nicht per Screen-Scraping?</target>
       </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim14" datatype="html">
+        <source>Offers, projects, and time billing</source>
+        <target state="translated">Angebote, Projekte und Zeitabrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ14" datatype="html">
+        <source>Can an accepted quote become the subscription, project, and invoice it describes, with time billed hourly, capped, or at a fixed price?</source>
+        <target state="translated">Kann ein angenommenes Angebot zu dem Abonnement, dem Projekt und der Rechnung werden, die es beschreibt, mit Zeit nach Stunden, mit Preisobergrenze oder zum Festpreis abgerechnet?</target>
+      </trans-unit>
       <trans-unit id="featureDecabillComparison-decabillT1" datatype="html">
         <source>Single catalog for SaaS subscriptions, agency-style services, and managed hosting in one billing core and console.</source>
         <target state="translated">Ein Katalog für SaaS-Abonnements, agenturtypische Services und Managed Hosting in einem Abrechnungskern und einer Konsole.</target>
@@ -231,12 +239,12 @@
         <target state="translated">Eigene Kundenkonsole für Abonnements, Rechnungen, Zahlungsstatus und Hosting-Lebenszyklus in einer Ansicht.</target>
       </trans-unit>
       <trans-unit id="featureDecabillComparison-decabillT5" datatype="html">
-        <source>Admin billing module with KPIs, open and overdue views, bill-now, and manual invoice lifecycle designed for operators and finance.</source>
-        <target state="translated">Admin-Abrechnungsmodul mit KPIs, offenen und überfälligen Ansichten, Sofortabrechnung und manuellem Rechnungslebenszyklus für Betreiber und Finance.</target>
+        <source>Admin overview, action center, open and overdue views, bill-now, and manual invoice lifecycle designed for operators and finance.</source>
+        <target state="translated">Admin-Übersicht, Action Center, offene und überfällige Ansichten, Sofortabrechnung und manueller Rechnungslebenszyklus für Betreiber und Finance.</target>
       </trans-unit>
       <trans-unit id="featureDecabillComparison-decabillT6" datatype="html">
-        <source>Emits ZUGFeRD-style PDFs with embedded EN 16931 XML so invoices align with German and EU e-invoicing mandates.</source>
-        <target state="translated">Erzeugt ZUGFeRD-konforme PDFs mit eingebettetem EN-16931-XML, damit Rechnungen deutschen und EU-Vorgaben zur E-Rechnung entsprechen.</target>
+        <source>Emits Factur-X / ZUGFeRD PDFs with embedded EN 16931 XML, plus XRechnung, Peppol BIS 3.0, and UBL per customer, so invoices align with German and EU e-invoicing mandates.</source>
+        <target state="translated">Erzeugt Factur-X-/ZUGFeRD-PDFs mit eingebettetem EN-16931-XML sowie XRechnung, Peppol BIS 3.0 und UBL je Kunde, damit Rechnungen deutschen und EU-Vorgaben zur E-Rechnung entsprechen.</target>
       </trans-unit>
       <trans-unit id="featureDecabillComparison-decabillT7" datatype="html">
         <source>Built-in Hetzner Cloud and DigitalOcean provisioning via cloud-init, with subscription-driven lifecycle and backorders when capacity is exhausted.</source>
@@ -251,8 +259,8 @@
         <target state="translated">WebSocket-gestützte Dashboards streamen Live-Provisioning und Abonnementstatus in Betreiber- und Kundenansichten.</target>
       </trans-unit>
       <trans-unit id="featureDecabillComparison-decabillT10" datatype="html">
-        <source>Structured ZUGFeRD and EN 16931 invoices plus export posture aimed at German DATEV-style workflows and long-term e-archive requirements.</source>
-        <target state="translated">Strukturierte ZUGFeRD- und EN-16931-Rechnungen plus Exportfunktionen für DATEV-typische Workflows und langfristige E-Archiv-Anforderungen.</target>
+        <source>Double-entry accounting per national standard with bank statement import, reconciliation, VAT returns, and DATEV, GoBD, FEC, or SAF-T exports from a signed archive.</source>
+        <target state="translated">Doppelte Buchführung nach nationalem Standard mit Kontoauszugsimport, Abstimmung, Umsatzsteuermeldungen und DATEV-, GoBD-, FEC- oder SAF-T-Exporten aus einem signierten Archiv.</target>
       </trans-unit>
       <trans-unit id="featureDecabillComparison-decabillT11" datatype="html">
         <source>Stripe Checkout and webhook integration combined with pluggable payment providers so operators can keep their own PSP relationships.</source>
@@ -265,6 +273,10 @@
       <trans-unit id="featureDecabillComparison-decabillT13" datatype="html">
         <source>OpenAPI-described REST API for customers, subscriptions, invoices, and admin workflows enables deep integration without scraping UIs.</source>
         <target state="translated">OpenAPI-beschriebene REST-API für Kunden, Abonnements, Rechnungen und Admin-Workflows ermöglicht tiefe Integration ohne UI-Scraping.</target>
+      </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT14" datatype="html">
+        <source>Numbered offers customers accept online turn into subscriptions, projects, and invoices. Projects track tickets and time with hourly, capped, or fixed pricing.</source>
+        <target state="translated">Nummerierte Angebote, die Kunden online annehmen, werden zu Abonnements, Projekten und Rechnungen. Projekte erfassen Tickets und Zeiten und rechnen nach Stunden, mit Preisobergrenze oder zum Festpreis ab.</target>
       </trans-unit>
       <trans-unit id="featureDecabillComparison-whmcsT1" datatype="html">
         <source>Optimized for classic hosting, domains, and add-ons. SaaS and project or service billing require custom products and workflows rather than a unified model.</source>
@@ -318,6 +330,10 @@
         <source>WHMCS exposes a limited API focused on hosting operations. Many teams rely on custom hooks or unofficial API extensions to cover full billing scenarios.</source>
         <target state="translated">WHMCS bietet eine begrenzte API für Hosting-Operationen. Viele Teams nutzen Custom Hooks oder inoffizielle API-Erweiterungen für vollständige Abrechnungsszenarien.</target>
       </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT14" datatype="html">
+        <source>Quotes convert into invoices and a separate project management add-on tracks tasks and time, but a quote does not set up subscriptions or capped projects in one step.</source>
+        <target state="translated">Angebote lassen sich in Rechnungen umwandeln und ein separates Projektmanagement-Add-on erfasst Aufgaben und Zeiten, aber ein Angebot legt nicht in einem Schritt Abonnements oder gedeckelte Projekte an.</target>
+      </trans-unit>
       <trans-unit id="featureDecabillComparison-hostbillT1" datatype="html">
         <source>Strong hosting and domain focus. SaaS or project billing is possible via generic products but lacks the unified services, SaaS, and cloud positioning agencies need.</source>
         <target state="translated">Starker Fokus auf Hosting und Domains. SaaS- oder Projekt-Abrechnung ist über generische Produkte möglich, aber ohne die vereinheitlichte Services-, SaaS- und Cloud-Positionierung, die Agenturen brauchen.</target>
@@ -369,6 +385,10 @@
       <trans-unit id="featureDecabillComparison-hostbillT13" datatype="html">
         <source>API coverage exists for core entities, but many billing and admin use cases still rely on HostBill modules or GUI workflows, limiting fully headless integration.</source>
         <target state="translated">API-Abdeckung für Kernentitäten existiert, aber viele Abrechnungs- und Admin-Fälle hängen weiter an HostBill-Modulen oder GUI-Workflows und begrenzen vollständig headless Integration.</target>
+      </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT14" datatype="html">
+        <source>Estimates can be sent and converted into invoices. Project delivery with time tracking and price caps is not part of the documented core.</source>
+        <target state="translated">Kostenvoranschläge lassen sich versenden und in Rechnungen umwandeln. Projektarbeit mit Zeiterfassung und Preisobergrenzen gehört nicht zum dokumentierten Kern.</target>
       </trans-unit>
       <trans-unit id="featureDecabillComparison-stripeT1" datatype="html">
         <source>Optimized for SaaS subscriptions and usage-based pricing. Service projects and managed hosting require custom modeling and separate tooling.</source>
@@ -422,6 +442,10 @@
         <source>Excellent APIs for payments and subscriptions, but broader billing-ops surfaces such as manual invoices, hosting lifecycle, and multi-tenant admin live outside Stripe&apos;s scope and must be custom-built.</source>
         <target state="translated">Exzellente APIs für Zahlungen und Abonnements, aber breitere Billing-Ops-Oberflächen wie manuelle Rechnungen, Hosting-Lebenszyklus und Multi-Tenant-Admin liegen außerhalb des Scopes von Stripe und müssen custom gebaut werden.</target>
       </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT14" datatype="html">
+        <source>Stripe Quotes can start subscriptions and invoices, but project boards, time entries, and fixed or capped project prices are out of scope.</source>
+        <target state="translated">Stripe Quotes können Abonnements und Rechnungen starten, aber Projektboards, Zeiteinträge und Fest- oder Maximalpreise für Projekte liegen außerhalb des Umfangs.</target>
+      </trans-unit>
       <trans-unit id="featureDecabillComparison-chargebeeT1" datatype="html">
         <source>Subscription-first platform focused on SaaS and recurring revenue. Project work and managed hosting require workarounds or adjacent systems.</source>
         <target state="translated">Abonnement-first-Plattform für SaaS und wiederkehrende Umsätze. Projektarbeit und Managed Hosting erfordern Workarounds oder angrenzende Systeme.</target>
@@ -474,6 +498,10 @@
         <source>Provides solid APIs around subscriptions and invoices, but deep integration with infra provisioning and multi-tenant admin still requires significant custom work.</source>
         <target state="translated">Solide APIs für Abonnements und Rechnungen, aber tiefe Integration mit Infra-Provisioning und Multi-Tenant-Admin erfordert weiterhin erhebliche Eigenentwicklung.</target>
       </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT14" datatype="html">
+        <source>Quotes for subscriptions and one-off charges are available, yet project delivery, time tracking, and capped project billing live in other tools.</source>
+        <target state="translated">Angebote für Abonnements und Einmalgebühren sind verfügbar, doch Projektabwicklung, Zeiterfassung und gedeckelte Projektabrechnung liegen in anderen Tools.</target>
+      </trans-unit>
       <trans-unit id="featureDecabillComparison-paddleT1" datatype="html">
         <source>Merchant-of-record platform optimized for SaaS and digital products. Project work and managed hosting fall outside its core focus.</source>
         <target state="translated">Merchant-of-Record-Plattform für SaaS und digitale Produkte. Projektarbeit und Managed Hosting liegen außerhalb des Kernfokus.</target>
@@ -525,6 +553,10 @@
       <trans-unit id="featureDecabillComparison-paddleT13" datatype="html">
         <source>APIs focus on subscription and payment flows, with less emphasis on exposing MoR internals or integrating infra and tenant-level operations.</source>
         <target state="translated">APIs fokussieren Abonnement- und Zahlungsflows mit weniger Schwerpunkt auf MoR-Interna oder Integration von Infra- und Mandanten-Operationen.</target>
+      </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT14" datatype="html">
+        <source>Built around checkout and subscriptions. Quotations, project boards, and time-based billing are not part of the model.</source>
+        <target state="translated">Auf Checkout und Abonnements ausgelegt. Angebote, Projektboards und zeitbasierte Abrechnung gehören nicht zum Modell.</target>
       </trans-unit>
       <trans-unit id="featureDecabillComparison-matrixLabelStrong" datatype="html">
         <source>Strong fit</source>
@@ -719,12 +751,12 @@
         <target><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Abrechnung für Agenturen<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> und digitale Produkte</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-heroLead" datatype="html">
-        <source> Decabill is one platform for agencies and digital product teams. Bill client services and projects, SaaS subscriptions, and managed hosting without stitching together separate tools. </source>
-        <target>Decabill ist eine Plattform für Agenturen und Teams für digitale Produkte. Rechnen Sie Kundenservices und Projekte, SaaS-Abonnements und verwaltetes Hosting ab, ohne separate Tools zusammenzuführen.</target>
+        <source> Decabill is one platform for agencies and digital product teams. Quote, bill, and book client projects, SaaS subscriptions, and managed hosting from the first offer to closed books without stitching together separate tools. </source>
+        <target> Decabill ist eine Plattform für Agenturen und Teams für digitale Produkte. Erstellen Sie Angebote für Kundenprojekte, SaaS-Abonnements und verwaltetes Hosting, rechnen Sie sie ab und verbuchen Sie sie, vom ersten Angebot bis zum Abschluss, ohne separate Tools zusammenzuführen. </target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-heroBadge1" datatype="html">
-        <source>Services &amp; projects</source>
-        <target state="translated">Services &amp; Projekte</target>
+        <source>Offers &amp; projects</source>
+        <target state="translated">Angebote &amp; Projekte</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-heroBadge2" datatype="html">
         <source>SaaS subscriptions</source>
@@ -734,9 +766,17 @@
         <source>Automatic provisioning</source>
         <target state="translated">Automatische Provisionierung</target>
       </trans-unit>
+      <trans-unit id="featureDecabillHome-heroBadge7" datatype="html">
+        <source>Inventory</source>
+        <target state="translated">Lagerverwaltung</target>
+      </trans-unit>
       <trans-unit id="featureDecabillHome-heroBadge4" datatype="html">
-        <source>ZUGFeRD invoicing</source>
-        <target state="translated">ZUGFeRD-Rechnungen</target>
+        <source>ZUGFeRD &amp; XRechnung</source>
+        <target state="translated">ZUGFeRD &amp; XRechnung</target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-heroBadge8" datatype="html">
+        <source>Double-entry accounting</source>
+        <target state="translated">Doppelte Buchführung</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-heroBadge5" datatype="html">
         <source>Stripe payments</source>
@@ -794,6 +834,10 @@
         <source>Built to scale</source>
         <target state="translated">Skalierbar gebaut</target>
       </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageTabBooks" datatype="html">
+        <source>Closed books</source>
+        <target state="translated">Saubere Bücher</target>
+      </trans-unit>
       <trans-unit id="featureDecabillHome-solutionAdvantageUnifiedHeadline" datatype="html">
         <source> One system for how you actually sell </source>
         <target state="translated">Ein System für Ihre tatsächlichen Verkaufsmodelle</target>
@@ -839,8 +883,8 @@
         <target state="translated">Vertretbare Belege</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-solutionAdvantageComplianceBenefit1Desc" datatype="html">
-        <source> ZUGFeRD-style invoices give finance structured data and customer-ready PDFs from the same source of truth. </source>
-        <target state="translated">ZUGFeRD-Rechnungen liefern der Finanzabteilung strukturierte Daten und kundenfertige PDFs aus derselben Quelle.</target>
+        <source> Factur-X, ZUGFeRD, XRechnung, and Peppol invoices give finance structured data and customer-ready PDFs from the same source of truth. </source>
+        <target state="translated"> Factur-X-, ZUGFeRD-, XRechnung- und Peppol-Rechnungen liefern der Finanzabteilung strukturierte Daten und kundenfertige PDFs aus derselben Quelle. </target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-solutionAdvantageComplianceBenefit2Title" datatype="html">
         <source> Reconciliation you can explain </source>
@@ -851,12 +895,12 @@
         <target state="translated">Zahlungsereignisse verknüpfen sich mit ausgestellten Rechnungen, sodass offene Salden nicht als rätselhafte Positionen verbleiben.</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-solutionAdvantageComplianceBenefit3Title" datatype="html">
-        <source> Audit-ready operations </source>
-        <target state="translated">Prüfbereite Abläufe</target>
+        <source> Audit-ready archive </source>
+        <target state="translated"> Prüfbereites Archiv </target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-solutionAdvantageComplianceBenefit3Desc" datatype="html">
-        <source> Admin workflows for manual invoices and adjustments stay inside the same system customers see, not in side spreadsheets. </source>
-        <target state="translated">Admin-Workflows für manuelle Rechnungen und Anpassungen bleiben im selben System wie für Kunden sichtbar, nicht in Neben-Tabellen.</target>
+        <source> Every archived document is signed, so any copy can be checked against the registry before it goes to an auditor. </source>
+        <target state="translated"> Jedes archivierte Dokument ist signiert, sodass sich jede Kopie gegen das Register prüfen lässt, bevor sie an die Prüfung geht. </target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-solutionAdvantageCustomersHeadline" datatype="html">
         <source> Self-service that earns customer confidence </source>
@@ -903,8 +947,8 @@
         <target state="translated">Eine Operations-Ansicht</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-solutionAdvantageOperationsBenefit1Desc" datatype="html">
-        <source> Catalog management, manual billing, and customer profiles share the same admin experience your team already uses daily. </source>
-        <target state="translated">Katalogverwaltung, manuelle Abrechnung und Kundenprofile teilen dieselbe Admin-Erfahrung, die Ihr Team täglich nutzt.</target>
+        <source> An admin overview puts revenue, expenses, receivables, payables, offers, and inventory on the page your team opens every morning. </source>
+        <target state="translated"> Eine Admin-Übersicht zeigt Umsatz, Ausgaben, Forderungen, Verbindlichkeiten, Angebote und Lagerbestand auf der Seite, die Ihr Team jeden Morgen öffnet. </target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-solutionAdvantageOperationsBenefit2Title" datatype="html">
         <source> Live status, less guessing </source>
@@ -919,8 +963,8 @@
         <target state="translated">Entscheidungen ohne Feuerwehrübungen</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-solutionAdvantageOperationsBenefit3Desc" datatype="html">
-        <source> Bill now, backorder retries, and KPI views help your ops team clear billing exceptions before month-end turns messy. </source>
-        <target>Sofortabrechnung, erneute Backorder-Versuche und KPI-Ansichten helfen dem Betriebsteam, Abrechnungsausnahmen zu klären, bevor sie zum Monatsende eskalieren.</target>
+        <source> The action center lists unsent documents, overdue invoices, and bookings to reconcile, so your team clears exceptions before month-end turns messy. </source>
+        <target> Das Action Center listet unversendete Dokumente, überfällige Rechnungen und abzustimmende Buchungen, damit Ihr Team Ausnahmen klärt, bevor sie zum Monatsende eskalieren. </target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-solutionAdvantageScaleHeadline" datatype="html">
         <source> Room to add brands without rebuilding billing </source>
@@ -954,6 +998,38 @@
         <source> Optional provisioning connects recurring revenue to hosted product stacks as your offers mature, not before you are ready. </source>
         <target state="translated">Optionales Provisioning verbindet wiederkehrenden Umsatz mit gehosteten Produkt-Stacks, wenn Ihre Angebote reif sind, nicht bevor Sie bereit sind.</target>
       </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageBooksHeadline" datatype="html">
+        <source> Bookkeeping that starts where billing ends </source>
+        <target state="translated"> Buchhaltung, die dort beginnt, wo die Abrechnung endet </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageBooksLead" datatype="html">
+        <source> Invoices, payments, and supplier bills land in a double-entry journal that follows your country&apos;s standard, so the month-end close becomes a review instead of a rebuild. </source>
+        <target state="translated"> Rechnungen, Zahlungen und Lieferantenrechnungen landen in einem Journal der doppelten Buchführung nach dem Standard Ihres Landes. So wird der Monatsabschluss zur Durchsicht statt zum Neuaufbau. </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageBooksBenefit1Title" datatype="html">
+        <source> Statements that match </source>
+        <target state="translated"> Kontoauszüge, die passen </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageBooksBenefit1Desc" datatype="html">
+        <source> Import bank and payment processor statements and let match rules reconcile them against open items. </source>
+        <target state="translated"> Importieren Sie Bank- und Zahlungsanbieter-Auszüge und lassen Sie Abgleichsregeln sie mit offenen Posten abstimmen. </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageBooksBenefit2Title" datatype="html">
+        <source> Returns from the same journal </source>
+        <target state="translated"> Meldungen aus demselben Journal </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageBooksBenefit2Desc" datatype="html">
+        <source> VAT returns, balance sheet, and profit and loss come from the bookings behind your invoices, on accrual or cash basis. </source>
+        <target state="translated"> Umsatzsteuermeldungen, Bilanz und GuV oder EÜR entstehen aus den Buchungen hinter Ihren Rechnungen. </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageBooksBenefit3Title" datatype="html">
+        <source> Exports your accountant expects </source>
+        <target state="translated"> Exporte, die Ihre Steuerberatung erwartet </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageBooksBenefit3Desc" datatype="html">
+        <source> Hand over DATEV, GoBD, FEC, or SAF-T exports instead of re-keying line items. </source>
+        <target state="translated"> Übergeben Sie DATEV-, GoBD-, FEC- oder SAF-T-Exporte, statt Positionen neu zu erfassen. </target>
+      </trans-unit>
       <trans-unit id="featureDecabillHome-howTitle" datatype="html">
         <source> How Decabill fits the way you already work </source>
         <target state="translated">So passt Decabill zu Ihrer bestehenden Arbeitsweise</target>
@@ -967,8 +1043,8 @@
         <target state="translated">Integrationen, die zählen</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-howIntegrationsLead" datatype="html">
-        <source> Plug in payments, hosting, identity, and bookkeeping without rebuilding your stack around one-off scripts for every new product line. </source>
-        <target state="translated">Binden Sie Zahlungen, Hosting, Identität und Buchhaltung an, ohne Ihren Stack für jede neue Produktlinie mit Einmal-Skripten neu aufzubauen.</target>
+        <source> Plug in payments, hosting, identity, postal delivery, and bookkeeping without rebuilding your stack around one-off scripts for every new product line. </source>
+        <target state="translated"> Binden Sie Zahlungen, Hosting, Identität, Postversand und Buchhaltung an, ohne Ihren Stack für jede neue Produktlinie mit Einmal-Skripten neu aufzubauen. </target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-howPoint1" datatype="html">
         <source>Customers pay through the processors you already trust</source>
@@ -978,9 +1054,13 @@
         <source>Hosting products provision on the clouds your team already operates</source>
         <target state="translated">Hosting-Produkte werden in den Clouds bereitgestellt, die Ihr Team bereits betreibt</target>
       </trans-unit>
+      <trans-unit id="featureDecabillHome-howPoint4" datatype="html">
+        <source>Invoices and offers reach customers by email or as printed letters through Pingen</source>
+        <target state="translated">Rechnungen und Angebote erreichen Kunden per E-Mail oder als gedruckter Brief über Pingen</target>
+      </trans-unit>
       <trans-unit id="featureDecabillHome-howPoint3" datatype="html">
-        <source>Finance gets a clean handoff to DATEV when it is time to close the books</source>
-        <target state="translated">Die Finanzabteilung erhält eine saubere Übergabe an DATEV, wenn die Bücher geschlossen werden</target>
+        <source>Finance keeps the books in Decabill and hands DATEV the export when it is time to close</source>
+        <target state="translated">Die Finanzabteilung führt die Bücher in Decabill und übergibt DATEV den Export, wenn der Abschluss ansteht</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-howExampleLabel" datatype="html">
         <source> See it in practice </source>
@@ -991,12 +1071,68 @@
         <target state="translated">Eine Agentur mit SaaS und verwaltetem Hosting</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-howExampleLead" datatype="html">
-        <source> Customers subscribe from the marketing site, pay through Stripe, and receive compliant invoices. Hosting orders provision on Hetzner when plans include infrastructure. At month end, finance exports to DATEV without re-keying line items from side spreadsheets. </source>
-        <target state="translated">Kunden abonnieren über die Marketingseite, zahlen über Stripe und erhalten konforme Rechnungen. Hosting-Bestellungen werden auf Hetzner bereitgestellt, wenn Pläne Infrastruktur enthalten. Zum Monatsende exportiert die Finanzabteilung nach DATEV, ohne Positionen aus Neben-Tabellen neu einzutippen.</target>
+        <source> An accepted offer starts a fixed-price project and a hosting subscription. Customers pay through Stripe and receive compliant invoices, hosting provisions on Hetzner, and bank statements reconcile against open items. At month end, finance exports to DATEV without re-keying line items from side spreadsheets. </source>
+        <target state="translated"> Ein angenommenes Angebot startet ein Festpreisprojekt und ein Hosting-Abonnement. Kunden zahlen über Stripe und erhalten konforme Rechnungen, Hosting wird auf Hetzner bereitgestellt und Kontoauszüge werden mit offenen Posten abgestimmt. Zum Monatsende exportiert die Finanzabteilung nach DATEV, ohne Positionen aus Neben-Tabellen neu einzutippen. </target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-howIntegrationGridLabel" datatype="html">
         <source>Billing integrations and connected systems</source>
         <target state="translated">Abrechnungsintegrationen und angebundene Systeme</target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeTitle" datatype="html">
+        <source> Everything after the sale, in one back office </source>
+        <target state="translated"> Alles nach dem Verkauf in einem Backoffice </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeLead" datatype="html">
+        <source> Selling is only half the work. Decabill runs offers, projects, stock, letters, and supplier bills on the same customer records, so nothing is re-typed between tools. </source>
+        <target state="translated"> Verkaufen ist nur die halbe Arbeit. Decabill führt Angebote, Projekte, Lager, Briefe und Lieferantenrechnungen auf denselben Kundendaten, damit nichts zwischen Tools abgetippt wird. </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeTile1Title" datatype="html">
+        <source>Offers customers accept</source>
+        <target state="translated">Angebote, die Kunden annehmen</target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeTile1Desc" datatype="html">
+        <source> Numbered offers with frozen prices turn into subscriptions, projects, and invoices the moment a customer accepts </source>
+        <target state="translated"> Nummerierte Angebote mit festen Preisen werden zu Abonnements, Projekten und Rechnungen, sobald ein Kunde annimmt </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeTile2Title" datatype="html">
+        <source> Projects with a price cap </source>
+        <target state="translated"> Projekte mit Preisobergrenze </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeTile2Desc" datatype="html">
+        <source> Track milestones, tickets, and time on a live board and bill hourly, up to a cap, or at a fixed price </source>
+        <target state="translated"> Erfassen Sie Meilensteine, Tickets und Zeiten auf einem Live-Board und rechnen Sie nach Stunden, bis zu einer Obergrenze oder zum Festpreis ab </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeTile3Title" datatype="html">
+        <source> Letters without a print room </source>
+        <target state="translated"> Briefe ohne Poststelle </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeTile3Desc" datatype="html">
+        <source> Send invoices, credit notes, and offers as physical letters, tracked with retries in the spooler </source>
+        <target state="translated"> Versenden Sie Rechnungen, Gutschriften und Angebote als echte Briefe, nachverfolgt mit Wiederholungen im Spooler </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeTile4Title" datatype="html">
+        <source> Stock that follows the paperwork </source>
+        <target state="translated"> Lager, das den Belegen folgt </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeTile4Desc" datatype="html">
+        <source> Warehouses, barcode labels, and lendings, with withdrawals raised from offers, invoices, and subscriptions </source>
+        <target state="translated"> Lagerorte, Barcode-Etiketten und Ausleihen, mit Entnahmeanforderungen aus Angeboten, Rechnungen und Abonnements </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeTile5Title" datatype="html">
+        <source> Supplier bills, same books </source>
+        <target state="translated"> Lieferantenrechnungen in denselben Büchern </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeTile5Desc" datatype="html">
+        <source> Capture inbound invoices, read their EN 16931 data, and track payables next to receivables </source>
+        <target state="translated"> Erfassen Sie Eingangsrechnungen, lesen Sie ihre EN-16931-Daten aus und behalten Sie Verbindlichkeiten neben Forderungen im Blick </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeTile6Title" datatype="html">
+        <source>Documents in your brand</source>
+        <target state="translated">Dokumente in Ihrer Marke</target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-backOfficeTile6Desc" datatype="html">
+        <source> Your logo and brand color on invoices, offers, time reports, and inventory documents </source>
+        <target state="translated"> Ihr Logo und Ihre Markenfarbe auf Rechnungen, Angeboten, Zeitnachweisen und Lagerbelegen </target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-complianceTitle" datatype="html">
         <source>Compliance by design</source>
@@ -1011,8 +1147,8 @@
         <target state="translated">Eingebaut, nicht aufgesetzt</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-compliancePoint1Desc" datatype="html">
-        <source> Invoices, payments, and audit trails share one system from issuance through finance export. You do not need parallel spreadsheets holding the real numbers. </source>
-        <target state="translated">Rechnungen, Zahlungen und Prüfpfade teilen sich ein System von der Ausstellung bis zum Finanzexport. Sie brauchen keine parallelen Tabellen mit den echten Zahlen.</target>
+        <source> Invoices, payments, bookings, and signed archives share one system from issuance through finance export. You do not need parallel spreadsheets holding the real numbers. </source>
+        <target state="translated"> Rechnungen, Zahlungen, Buchungen und signierte Archive teilen sich ein System von der Ausstellung bis zum Finanzexport. Sie brauchen keine parallelen Tabellen mit den echten Zahlen. </target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-compliancePoint2Title" datatype="html">
         <source>We run what we ship</source>
@@ -1166,6 +1302,22 @@
         <source>View plans</source>
         <target state="translated">Pläne ansehen</target>
       </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemDesktopTitle" datatype="html">
+        <source>Decabill Desktop</source>
+        <target state="translated">Decabill Desktop</target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemDesktopDesc" datatype="html">
+        <source> The billing console as a desktop app, with the same sign-in and permissions as the web. Signed releases keep it up to date, and it works with self-hosted Decabill and Decabill Cloud alike. </source>
+        <target state="translated"> Die Abrechnungskonsole als Desktop-App, mit derselben Anmeldung und denselben Berechtigungen wie im Web. Signierte Releases halten sie aktuell, und sie arbeitet mit selbst gehostetem Decabill ebenso wie mit Decabill Cloud. </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemDesktopPlatforms" datatype="html">
+        <source> Available for: Windows, Linux </source>
+        <target state="translated"> Verfügbar für: Windows, Linux </target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemDesktopCta" datatype="html">
+        <source>Download</source>
+        <target state="translated">Herunterladen</target>
+      </trans-unit>
       <trans-unit id="featureDecabillHome-ctaTitle" datatype="html">
         <source> Ready to bill services, SaaS, and hosting on Decabill? </source>
         <target state="translated">Bereit, Services, SaaS und Hosting mit Decabill abzurechnen?</target>
@@ -1187,12 +1339,12 @@
         <target>Abrechnung für Agenturen und digitale Produkte</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-metaDescription" datatype="html">
-        <source>Decabill helps agencies and digital product teams bill services, projects, SaaS subscriptions, and hosting. Invoicing, payments, and customer self-service in one multi-tenant platform.</source>
-        <target>Decabill hilft Agenturen und Teams für digitale Produkte, Services, Projekte, SaaS-Abonnements und Hosting abzurechnen. Rechnungsstellung, Zahlungen und Kunden-Self-Service auf einer Multi-Tenant-Plattform.</target>
+        <source>Decabill helps agencies and digital product teams bill services, projects, SaaS subscriptions, and hosting. Offers, e-invoicing, payments, accounting, and customer self-service in one multi-tenant platform.</source>
+        <target>Decabill hilft Agenturen und Teams für digitale Produkte, Services, Projekte, SaaS-Abonnements und Hosting abzurechnen. Angebote, E-Rechnungen, Zahlungen, Buchhaltung und Kunden-Self-Service auf einer Multi-Tenant-Plattform.</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-metaKeywords" datatype="html">
-        <source>Decabill, agency billing, digital products, SaaS billing, hosting billing, multi-tenant, NestJS, invoicing, Stripe, ZUGFeRD</source>
-        <target state="translated">Decabill, agency billing, digital products, SaaS billing, hosting billing, multi-tenant, NestJS, invoicing, Stripe, ZUGFeRD</target>
+        <source>Decabill, agency billing, digital products, SaaS billing, hosting billing, multi-tenant, NestJS, invoicing, Stripe, ZUGFeRD, XRechnung, accounting, DATEV</source>
+        <target state="translated">Decabill, agency billing, digital products, SaaS billing, hosting billing, multi-tenant, NestJS, invoicing, Stripe, ZUGFeRD, XRechnung, accounting, DATEV</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-planPriceMonth" datatype="html">
         <source>/ month</source>
@@ -2187,8 +2339,8 @@
         <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Vollständig verwaltet.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Wir kümmern uns um Infrastruktur, Updates und Wartung.</target>
       </trans-unit>
       <trans-unit id="featureDecabillPricing-cloudFeature2" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Full platform.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Customer console, admin billing, ZUGFeRD invoicing, and provisioning</source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Volle Plattform.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Kundenkonsole, Admin-Abrechnung, ZUGFeRD-Rechnungen und Bereitstellung.</target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Full platform.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Customer console, admin billing, e-invoicing, accounting, and provisioning</source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Volle Plattform.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Kundenkonsole, Admin-Abrechnung, E-Rechnungen, Buchhaltung und Bereitstellung.</target>
       </trans-unit>
       <trans-unit id="featureDecabillPricing-cloudFeature3" datatype="html">
         <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Automatic scaling.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Capacity grows with your catalog and tenants</source>

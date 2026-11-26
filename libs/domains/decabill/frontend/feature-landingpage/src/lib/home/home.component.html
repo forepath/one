@@ -8,8 +8,9 @@
           <span class="text-primary">Billing for agencies</span> and digital products
         </h1>
         <p class="hero-lead lead fs-5 mb-5 mx-auto mx-lg-0" i18n="@@featureDecabillHome-heroLead">
-          Decabill is one platform for agencies and digital product teams. Bill client services and projects, SaaS
-          subscriptions, and managed hosting without stitching together separate tools.
+          Decabill is one platform for agencies and digital product teams. Quote, bill, and book client projects, SaaS
+          subscriptions, and managed hosting from the first offer to closed books without stitching together separate
+          tools.
         </p>
         <!--
           Feature badges as a slow two-row band (rows run in opposite directions, the edges fade), so at
@@ -199,6 +200,21 @@
           <span i18n="@@featureDecabillHome-solutionAdvantageTabScale">Built to scale</span>
         </button>
       </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-books"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-books"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-books"
+          aria-selected="false"
+        >
+          <i class="bi bi-journal-check me-2" aria-hidden="true"></i>
+          <span i18n="@@featureDecabillHome-solutionAdvantageTabBooks">Closed books</span>
+        </button>
+      </li>
     </ul>
 
     <div class="tab-content home-solution-panels">
@@ -305,8 +321,8 @@
                   Defensible documents
                 </p>
                 <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageComplianceBenefit1Desc">
-                  ZUGFeRD-style invoices give finance structured data and customer-ready PDFs from the same source of
-                  truth.
+                  Factur-X, ZUGFeRD, XRechnung, and Peppol invoices give finance structured data and customer-ready PDFs
+                  from the same source of truth.
                 </p>
               </div>
               <div class="col">
@@ -321,11 +337,11 @@
               <div class="col">
                 <i class="bi bi-clipboard-data text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
                 <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageComplianceBenefit3Title">
-                  Audit-ready operations
+                  Audit-ready archive
                 </p>
                 <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageComplianceBenefit3Desc">
-                  Admin workflows for manual invoices and adjustments stay inside the same system customers see, not in
-                  side spreadsheets.
+                  Every archived document is signed, so any copy can be checked against the registry before it goes to
+                  an auditor.
                 </p>
               </div>
             </div>
@@ -436,8 +452,8 @@
                   One operations view
                 </p>
                 <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageOperationsBenefit1Desc">
-                  Catalog management, manual billing, and customer profiles share the same admin experience your team
-                  already uses daily.
+                  An admin overview puts revenue, expenses, receivables, payables, offers, and inventory on the page
+                  your team opens every morning.
                 </p>
               </div>
               <div class="col">
@@ -456,8 +472,8 @@
                   Decisions without fire drills
                 </p>
                 <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageOperationsBenefit3Desc">
-                  Bill now, backorder retries, and KPI views help your ops team clear billing exceptions before
-                  month-end turns messy.
+                  The action center lists unsent documents, overdue invoices, and bookings to reconcile, so your team
+                  clears exceptions before month-end turns messy.
                 </p>
               </div>
             </div>
@@ -530,6 +546,70 @@
           </div>
         </div>
       </div>
+
+      <div
+        class="tab-pane fade"
+        id="solution-pane-books"
+        role="tabpanel"
+        aria-labelledby="solution-tab-books"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
+          <div class="home-solution-panel-top p-4 p-lg-5 border-bottom landing-surface-tint">
+            <div
+              class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-journal-check text-primary icon-xl"></i>
+            </div>
+            <h3
+              class="h4 fw-semibold mb-3 text-center text-lg-start"
+              i18n="@@featureDecabillHome-solutionAdvantageBooksHeadline"
+            >
+              Bookkeeping that starts where billing ends
+            </h3>
+            <p
+              class="text-muted mb-0 text-center text-lg-start"
+              i18n="@@featureDecabillHome-solutionAdvantageBooksLead"
+            >
+              Invoices, payments, and supplier bills land in a double-entry journal that follows your country's
+              standard, so the month-end close becomes a review instead of a rebuild.
+            </p>
+          </div>
+          <div class="home-solution-panel-bottom landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
+              <div class="col">
+                <i class="bi bi-bank text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageBooksBenefit1Title">
+                  Statements that match
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageBooksBenefit1Desc">
+                  Import bank and payment processor statements and let match rules reconcile them against open items.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-calculator text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageBooksBenefit2Title">
+                  Returns from the same journal
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageBooksBenefit2Desc">
+                  VAT returns, balance sheet, and profit and loss come from the bookings behind your invoices, on
+                  accrual or cash basis.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-box-arrow-up-right text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageBooksBenefit3Title">
+                  Exports your accountant expects
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageBooksBenefit3Desc">
+                  Hand over DATEV, GoBD, FEC, or SAF-T exports instead of re-keying line items.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -551,8 +631,8 @@
       <div class="col-lg-6 home-how-copy d-flex flex-column">
         <h3 class="h4 fw-semibold mb-3" i18n="@@featureDecabillHome-howIntegrationsTitle">Integrations that matter</h3>
         <p class="text-muted mb-4" i18n="@@featureDecabillHome-howIntegrationsLead">
-          Plug in payments, hosting, identity, and bookkeeping without rebuilding your stack around one-off scripts for
-          every new product line.
+          Plug in payments, hosting, identity, postal delivery, and bookkeeping without rebuilding your stack around
+          one-off scripts for every new product line.
         </p>
         <ul class="list-unstyled mb-5">
           <li class="mb-2 d-flex gap-2">
@@ -565,10 +645,16 @@
               >Hosting products provision on the clouds your team already operates</span
             >
           </li>
+          <li class="mb-2 d-flex gap-2">
+            <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
+            <span i18n="@@featureDecabillHome-howPoint4"
+              >Invoices and offers reach customers by email or as printed letters through Pingen</span
+            >
+          </li>
           <li class="d-flex gap-2">
             <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
             <span i18n="@@featureDecabillHome-howPoint3"
-              >Finance gets a clean handoff to DATEV when it is time to close the books</span
+              >Finance keeps the books in Decabill and hands DATEV the export when it is time to close</span
             >
           </li>
         </ul>
@@ -584,9 +670,9 @@
             An agency that ships SaaS and managed hosting
           </h4>
           <p class="small text-muted mb-0" i18n="@@featureDecabillHome-howExampleLead">
-            Customers subscribe from the marketing site, pay through Stripe, and receive compliant invoices. Hosting
-            orders provision on Hetzner when plans include infrastructure. At month end, finance exports to DATEV
-            without re-keying line items from side spreadsheets.
+            An accepted offer starts a fixed-price project and a hosting subscription. Customers pay through Stripe and
+            receive compliant invoices, hosting provisions on Hetzner, and bank statements reconcile against open items.
+            At month end, finance exports to DATEV without re-keying line items from side spreadsheets.
           </p>
         </article>
       </div>
@@ -598,6 +684,89 @@
             i18n-label="@@featureDecabillHome-howIntegrationGridLabel"
           />
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Back office: everything after the sale -->
+<section id="back-office" class="py-10 bg-body home-back-office grid-section">
+  <div class="container grid-section__container">
+    <div class="row justify-content-center text-center pb-10">
+      <div class="col-lg-9">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureDecabillHome-backOfficeTitle">
+          Everything after the sale, in one back office
+        </h2>
+        <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureDecabillHome-backOfficeLead">
+          Selling is only half the work. Decabill runs offers, projects, stock, letters, and supplier bills on the same
+          customer records, so nothing is re-typed between tools.
+        </p>
+      </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4">
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 home-back-office-tile">
+          <i class="bi bi-file-earmark-check text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-backOfficeTile1Title">Offers customers accept</h3>
+          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-backOfficeTile1Desc">
+            Numbered offers with frozen prices turn into subscriptions, projects, and invoices the moment a customer
+            accepts
+          </p>
+        </article>
+      </div>
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 home-back-office-tile">
+          <i class="bi bi-kanban text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-backOfficeTile2Title">
+            Projects with a price cap
+          </h3>
+          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-backOfficeTile2Desc">
+            Track milestones, tickets, and time on a live board and bill hourly, up to a cap, or at a fixed price
+          </p>
+        </article>
+      </div>
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 home-back-office-tile">
+          <i class="bi bi-envelope-paper text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-backOfficeTile3Title">
+            Letters without a print room
+          </h3>
+          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-backOfficeTile3Desc">
+            Send invoices, credit notes, and offers as physical letters, tracked with retries in the spooler
+          </p>
+        </article>
+      </div>
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 home-back-office-tile">
+          <i class="bi bi-upc-scan text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-backOfficeTile4Title">
+            Stock that follows the paperwork
+          </h3>
+          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-backOfficeTile4Desc">
+            Warehouses, barcode labels, and lendings, with withdrawals raised from offers, invoices, and subscriptions
+          </p>
+        </article>
+      </div>
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 home-back-office-tile">
+          <i class="bi bi-inbox text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-backOfficeTile5Title">
+            Supplier bills, same books
+          </h3>
+          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-backOfficeTile5Desc">
+            Capture inbound invoices, read their EN 16931 data, and track payables next to receivables
+          </p>
+        </article>
+      </div>
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 home-back-office-tile">
+          <i class="bi bi-palette text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-backOfficeTile6Title">Documents in your brand</h3>
+          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-backOfficeTile6Desc">
+            Your logo and brand color on invoices, offers, time reports, and inventory documents
+          </p>
+        </article>
       </div>
     </div>
   </div>
@@ -633,8 +802,8 @@
             Built in, not bolted on
           </h3>
           <p class="small mb-0" i18n="@@featureDecabillHome-compliancePoint1Desc">
-            Invoices, payments, and audit trails share one system from issuance through finance export. You do not need
-            parallel spreadsheets holding the real numbers.
+            Invoices, payments, bookings, and signed archives share one system from issuance through finance export. You
+            do not need parallel spreadsheets holding the real numbers.
           </p>
         </article>
       </div>
@@ -899,6 +1068,37 @@
                 class="text-primary fw-semibold small text-decoration-none"
                 i18n="@@featureDecabillHome-ecosystemCloudExplore"
                 >View plans</a
+              >
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="col-12">
+        <article class="card border rounded-3 shadow-sm overflow-hidden home-ecosystem-product">
+          <div class="row g-0 align-items-stretch">
+            <div class="col-lg-8 p-4 p-lg-5 bg-body">
+              <div class="mb-3">
+                <i class="bi bi-window-desktop text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+                <h3 class="h5 fw-semibold mb-0" i18n="@@featureDecabillHome-ecosystemDesktopTitle">Decabill Desktop</h3>
+              </div>
+              <p class="text-muted mb-4 mb-lg-0" i18n="@@featureDecabillHome-ecosystemDesktopDesc">
+                The billing console as a desktop app, with the same sign-in and permissions as the web. Signed releases
+                keep it up to date, and it works with self-hosted Decabill and Decabill Cloud alike.
+              </p>
+            </div>
+            <div
+              class="col-lg-4 p-4 p-lg-5 text-center landing-surface-tint landing-divider-start home-ecosystem-cloud-aside d-flex flex-column justify-content-center"
+            >
+              <p class="small text-muted mb-3" i18n="@@featureDecabillHome-ecosystemDesktopPlatforms">
+                Available for: Windows, Linux
+              </p>
+              <fpc-button
+                href="https://downloads.decabill.com/"
+                variant="primary"
+                target="_blank"
+                rel="noopener noreferrer"
+                i18n="@@featureDecabillHome-ecosystemDesktopCta"
+                >Download</fpc-button
               >
             </div>
           </div>
