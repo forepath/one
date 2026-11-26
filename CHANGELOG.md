@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.8.0](https://github.com/forepath/one/compare/v5.7.0...v5.8.0) (2026-11-26)
+
+
+### Features
+
+* **decabill:** spooler service and postal delivery ([#775](https://github.com/forepath/one/issues/775)) ([824aab4](https://github.com/forepath/one/commit/824aab40d38c67230eaf9bb9bd8fceea55142fcf))
+* **shared:** extended sidebar ([#777](https://github.com/forepath/one/issues/777)) ([86fdbe5](https://github.com/forepath/one/commit/86fdbe53bf65ca912d94030278166389dbf167b0))
+* **shared:** landingpage content refresh ([#776](https://github.com/forepath/one/issues/776)) ([5d4521b](https://github.com/forepath/one/commit/5d4521b1d9c91fff42a722b17b057d621e06f9ae))
+
 ## [5.7.0](https://github.com/forepath/one/compare/v5.6.0...v5.7.0) (2026-11-24)
 
 
