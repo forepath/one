@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-26T16:31:19.866Z",
+  "generatedAt": "2026-11-27T06:38:11.073Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -3034,7 +3034,7 @@
       "type": "package",
       "attrs": {
         "name": "bootstrap-icons",
-        "version": "1.13.1"
+        "version": "1.13.2"
       }
     },
     {
