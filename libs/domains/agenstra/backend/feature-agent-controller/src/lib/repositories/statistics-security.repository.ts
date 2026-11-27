@@ -163,7 +163,7 @@ export class StatisticsSecurityRepository {
     try {
       const rows = await this.statisticsClients.find({
         where: { id: In(statisticsClientIds) },
-        select: ['originalClientId'],
+        select: { originalClientId: true },
       });
       const clientIds = rows.map((row) => row.originalClientId);
 
@@ -233,7 +233,7 @@ export class StatisticsSecurityRepository {
 
     const entities = await this.egressEvents.find({
       where: { id: In(ids) },
-      relations: ['statisticsClient', 'statisticsAgent'],
+      relations: { statisticsClient: true, statisticsAgent: true },
     });
     const byId = new Map(entities.map((entity) => [entity.id, entity]));
 

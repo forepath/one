@@ -16,6 +16,7 @@ import {
   untracked,
   ViewChild,
   LOCALE_ID,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -321,6 +322,7 @@ const WORKSPACE_PROGRESS_SEGMENT_VARIANTS: FpcProgressVariant[] = [
   styleUrls: ['./chat.component.scss'],
   templateUrl: './chat.component.html',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   providers: [AgentChatTodosExpandCoordinator],
 })
 export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDestroy {

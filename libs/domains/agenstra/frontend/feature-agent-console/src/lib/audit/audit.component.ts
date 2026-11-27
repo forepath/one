@@ -1,5 +1,15 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, effect, inject, OnInit, signal, untracked, LOCALE_ID } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  OnInit,
+  signal,
+  untracked,
+  LOCALE_ID,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, type UrlTree } from '@angular/router';
@@ -183,6 +193,7 @@ interface AuditDonutChartOptions {
   ],
   providers: [DatePipe],
   templateUrl: './audit.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./audit.component.scss'],
 })
 export class AuditComponent implements OnInit {

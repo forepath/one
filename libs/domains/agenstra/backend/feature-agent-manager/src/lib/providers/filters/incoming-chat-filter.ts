@@ -41,7 +41,6 @@ export class IncomingChatFilter implements ChatFilter {
    * @param _context - Optional context about the message (unused in example)
    * @returns Filter result
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async filter(message: string, _context?: FilterContext): Promise<FilterResult> {
     // Example: Filter messages containing "test-filter" (replace with actual logic)
     if (message.toLowerCase().includes('test-filter')) {

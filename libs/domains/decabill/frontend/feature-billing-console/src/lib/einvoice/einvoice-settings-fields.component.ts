@@ -1,4 +1,4 @@
-import { Component, computed, input, model } from '@angular/core';
+import { Component, computed, input, model, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type { BillingEinvoiceFormatOption } from '@forepath/decabill/frontend/data-access-billing-console';
 import { FpcFormControlComponent, FpcFormFieldComponent } from '@forepath/shared/frontend/ui-components';
@@ -20,6 +20,7 @@ import {
   selector: 'framework-einvoice-settings-fields',
   standalone: true,
   imports: [FormsModule, FpcFormFieldComponent, FpcFormControlComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @if (formats().length > 0) {
       <fpc-form-field

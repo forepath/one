@@ -6,7 +6,7 @@ This guide helps you run Decabill locally, connect the billing console to the bi
 
 Before you begin, ensure you have:
 
-- **Node.js** 24.22.1 or higher
+- **Node.js** 26.13.1 or higher
 - **Docker** and **Docker Compose** (recommended for Postgres, Valkey, and Mailhog)
 - **Git** (to clone the monorepo)
 - **OIDC or SAML identity provider** (optional, for SSO in the billing console; [platform authentication](../../apps/shared/platform-authentication/README.md) runs Keycloak locally)

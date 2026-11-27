@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -136,6 +136,7 @@ function hasPrevious(nodes: readonly AccountingStatementNode[]): boolean {
     FpcSpinnerComponent,
   ],
   templateUrl: './accounting-statements-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './accounting-section.scss',
 })
 export class AccountingStatementsPageComponent implements OnInit {

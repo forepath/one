@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { AgentsFacade, ClientsFacade, VcsFacade } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { FpcSpinnerComponent } from '@forepath/shared/frontend/ui-components';
@@ -17,6 +17,7 @@ import { GitBranchModalComponent } from '../git-branch-modal/git-branch-modal.co
   standalone: true,
   imports: [CommonModule, FpcSpinnerComponent, GitBranchModalComponent],
   templateUrl: './git-sidebar-status-bar.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./git-sidebar-status-bar.component.scss'],
 })
 export class GitSidebarStatusBarComponent {

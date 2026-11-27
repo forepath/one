@@ -9,6 +9,7 @@ import {
   signal,
   ViewChild,
   viewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
@@ -88,6 +89,7 @@ interface AdminNavItem {
   ],
   styleUrls: ['./container.component.scss'],
   templateUrl: './container.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class AgentConsoleContainerComponent implements OnInit {

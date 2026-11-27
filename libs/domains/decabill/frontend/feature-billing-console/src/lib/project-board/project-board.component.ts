@@ -12,6 +12,7 @@ import {
   OnInit,
   signal,
   viewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -163,6 +164,7 @@ interface ProjectTicketDetailSubtaskRow {
     FpcTabGroupComponent,
   ],
   templateUrl: './project-board.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./project-board.component.scss'],
 })
 export class ProjectBoardComponent implements OnInit {

@@ -145,7 +145,7 @@ describe('ClientsRepository', () => {
       const result = await repository.findAllIds();
 
       expect(result).toEqual(['id-1', 'id-2']);
-      expect(mockTypeOrmRepository.find).toHaveBeenCalledWith({ select: ['id'] });
+      expect(mockTypeOrmRepository.find).toHaveBeenCalledWith({ select: { id: true } });
     });
 
     it('should return empty array when no clients', async () => {
@@ -166,7 +166,7 @@ describe('ClientsRepository', () => {
       expect(result).toEqual(['client-a', 'client-b']);
       expect(mockTypeOrmRepository.find).toHaveBeenCalledWith({
         where: { userId: 'user-123' },
-        select: ['id'],
+        select: { id: true },
       });
     });
 

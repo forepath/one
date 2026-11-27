@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { FpcSpinnerComponent } from '@forepath/shared/frontend/ui-components';
 
 import {
@@ -14,6 +14,7 @@ export type PricingTotalsSummaryVariant = 'tertiary' | 'primary';
   selector: 'framework-pricing-totals-summary',
   standalone: true,
   imports: [CommonModule, FpcSpinnerComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './pricing-totals-summary.component.html',
 })
 export class PricingTotalsSummaryComponent {

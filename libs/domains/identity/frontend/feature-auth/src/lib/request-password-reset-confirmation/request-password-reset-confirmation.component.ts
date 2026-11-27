@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -52,6 +52,7 @@ import { IdentityAuthMascotComponent } from '../auth-mascot/auth-mascot.componen
   ],
   styleUrls: ['./request-password-reset-confirmation.component.scss'],
   templateUrl: './request-password-reset-confirmation.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class IdentityRequestPasswordResetConfirmationComponent implements OnInit {

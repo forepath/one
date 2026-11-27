@@ -10,6 +10,7 @@ import {
   OnInit,
   signal,
   viewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -171,6 +172,7 @@ function isDashboardUrl(url: string | null | undefined): boolean {
   ],
   providers: [DatePipe],
   templateUrl: './service-detail-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./service-detail-page.component.scss'],
 })
 export class ServiceDetailPageComponent implements OnInit {

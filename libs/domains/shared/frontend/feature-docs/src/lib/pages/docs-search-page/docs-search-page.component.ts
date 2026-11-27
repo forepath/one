@@ -1,5 +1,16 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, LOCALE_ID, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  LOCALE_ID,
+  OnInit,
+  PLATFORM_ID,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -32,6 +43,7 @@ import { getDocsSearchMetaDescription } from '../../utils/docs-seo-metadata';
   ],
   templateUrl: './docs-search-page.component.html',
   styleUrls: ['./docs-search-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class DocsSearchPageComponent implements OnInit {

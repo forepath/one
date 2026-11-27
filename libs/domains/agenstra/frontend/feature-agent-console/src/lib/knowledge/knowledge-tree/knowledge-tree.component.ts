@@ -10,6 +10,7 @@ import {
   ViewChild,
   inject,
   signal,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
@@ -86,6 +87,7 @@ const ALLOWED_UPLOAD_EXTENSIONS = new Set(['.md', '.mmd', '.txt']);
   templateUrl: './knowledge-tree.component.html',
   styleUrls: ['./knowledge-tree.component.scss'],
   providers: [KnowledgeTreeClipboardService],
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     tabindex: '0',
     '(keydown)': 'onTreeKeydown($event)',

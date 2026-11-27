@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
@@ -10,6 +10,7 @@ import { FpcTabGroupComponent, fpcSplitTabOverflow } from './tab-group.component
 @Component({
   standalone: true,
   imports: [FpcTabGroupComponent, FpcTabComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-tab-group activeId="a">
       <fpc-tab id="a" label="Summary" />
@@ -77,6 +78,7 @@ describe('fpcSplitTabOverflow', () => {
 @Component({
   standalone: true,
   imports: [FpcTabGroupComponent, FpcTabComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-tab-group [(activeId)]="active" moreLabel="More tabs">
       @for (id of ids; track id) {

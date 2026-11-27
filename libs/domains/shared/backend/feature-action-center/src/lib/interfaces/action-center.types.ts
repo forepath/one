@@ -176,7 +176,6 @@ export interface ActionCenterView {
  * `query`). Keeps sources independent of how the product provides its connection.
  */
 export interface ActionCenterSqlRunner {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   query(sql: string, parameters?: unknown[]): Promise<any>;
 }
 

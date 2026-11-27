@@ -13,6 +13,7 @@ import {
   SimpleChanges,
   ViewChild,
   inject,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { Crepe, CrepeFeature } from '@milkdown/crepe';
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
@@ -22,6 +23,7 @@ import { listener, listenerCtx } from '@milkdown/plugin-listener';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './project-ticket-editor.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./project-ticket-editor.component.scss'],
 })
 export class ProjectTicketEditorComponent implements AfterViewInit, OnChanges, OnDestroy {

@@ -4,8 +4,6 @@ import { isAgentContentWriter } from '../utils/agent-content-writer.utils';
 
 import { AgentContentChangesService } from './agent-content-changes.service';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- repository / service doubles */
-
 describe('AgentContentChangesService', () => {
   const clientId = 'client-1';
   const agentId = '11111111-1111-4111-8111-111111111111';

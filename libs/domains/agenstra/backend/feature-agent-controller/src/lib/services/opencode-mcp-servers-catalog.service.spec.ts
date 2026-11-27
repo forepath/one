@@ -244,7 +244,7 @@ describe('OpencodeMcpServersCatalogService', () => {
       ]),
       { conflictPaths: ['name'], skipUpdateIfNoValuesChanged: false },
     );
-    expect(repository.find).toHaveBeenCalledWith({ select: ['name'] });
+    expect(repository.find).toHaveBeenCalledWith({ select: { name: true } });
     expect(deleteWhere).toHaveBeenCalledWith('name IN (:...names)', {
       names: ['io.example/stale'],
     });

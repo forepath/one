@@ -9,6 +9,7 @@
     "build": {
       "executor": "@nx/angular:ng-packagr-lite",
       "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "defaultConfiguration": "production",
       "options": {
         "project": "libs/domains/shared/frontend/ui-components/ng-package.json",
         "tsConfig": "libs/domains/shared/frontend/ui-components/tsconfig.lib.json"
@@ -17,8 +18,7 @@
         "production": {
           "tsConfig": "libs/domains/shared/frontend/ui-components/tsconfig.lib.prod.json"
         }
-      },
-      "defaultConfiguration": "production"
+      }
     },
     "test": {
       "executor": "@nx/jest:jest",

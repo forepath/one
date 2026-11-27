@@ -23,7 +23,7 @@ export class UsersBillingDayRepository {
   async getEffectiveBillingDayForUser(userId: string): Promise<number> {
     const user = await this.repository.findOne({
       where: { id: userId, tenantId: getRequiredTenantId() },
-      select: ['createdAt', 'billingDayOfMonth'],
+      select: { createdAt: true, billingDayOfMonth: true },
     });
 
     if (!user?.createdAt) {

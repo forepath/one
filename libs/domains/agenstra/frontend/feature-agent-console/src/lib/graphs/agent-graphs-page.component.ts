@@ -10,6 +10,7 @@ import {
   signal,
   untracked,
   viewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -152,6 +153,7 @@ interface AgentGraphAttrRow {
     WorkspaceSwitchTableComponent,
   ],
   templateUrl: './agent-graphs-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./agent-graphs-page.component.scss'],
 })
 export class AgentGraphsPageComponent {

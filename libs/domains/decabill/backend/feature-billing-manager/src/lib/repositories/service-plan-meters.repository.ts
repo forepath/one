@@ -14,7 +14,7 @@ export class ServicePlanMetersRepository {
   async findByPlanId(servicePlanId: string): Promise<ServicePlanMeterEntity[]> {
     return await this.repository.find({
       where: { servicePlanId },
-      relations: ['meter'],
+      relations: { meter: true },
       order: { createdAt: 'ASC' },
     });
   }
@@ -26,7 +26,7 @@ export class ServicePlanMetersRepository {
 
     return await this.repository.find({
       where: { servicePlanId: In(servicePlanIds) },
-      relations: ['meter'],
+      relations: { meter: true },
       order: { createdAt: 'ASC' },
     });
   }
@@ -34,7 +34,7 @@ export class ServicePlanMetersRepository {
   async findByPlanAndMeter(servicePlanId: string, meterId: string): Promise<ServicePlanMeterEntity | null> {
     return await this.repository.findOne({
       where: { servicePlanId, meterId },
-      relations: ['meter'],
+      relations: { meter: true },
     });
   }
 

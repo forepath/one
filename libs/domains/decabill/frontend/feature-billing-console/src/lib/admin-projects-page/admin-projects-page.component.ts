@@ -1,5 +1,14 @@
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -67,6 +76,7 @@ import { projectState } from '../shared/table-states';
   ],
   providers: [DecimalPipe],
   templateUrl: './admin-projects-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-projects-page.component.scss'],
 })
 export class AdminProjectsPageComponent implements OnInit {

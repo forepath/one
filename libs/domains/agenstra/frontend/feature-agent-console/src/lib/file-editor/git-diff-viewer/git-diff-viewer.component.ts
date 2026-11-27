@@ -12,6 +12,7 @@ import {
   output,
   signal,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { VcsFacade } from '@forepath/agenstra/frontend/data-access-agent-console';
@@ -37,6 +38,7 @@ function base64ToUtf8(base64: string): string {
   imports: [CommonModule, FpcButtonComponent, FpcSpinnerComponent],
   templateUrl: './git-diff-viewer.component.html',
   styleUrls: ['./git-diff-viewer.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class GitDiffViewerComponent implements AfterViewInit, AfterViewChecked, OnDestroy {

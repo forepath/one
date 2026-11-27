@@ -10,6 +10,7 @@ import {
   OnDestroy,
   PLATFORM_ID,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 
 import { ThemeService } from '../../services';
@@ -22,6 +23,7 @@ import { ThemeService } from '../../services';
   imports: [CommonModule],
   templateUrl: './mermaid-diagram.component.html',
   styleUrls: ['./mermaid-diagram.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class MermaidDiagramComponent implements AfterViewInit, OnDestroy {

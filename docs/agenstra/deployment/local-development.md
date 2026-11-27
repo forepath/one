@@ -6,7 +6,7 @@ Setting up Agenstra for local development and testing.
 
 Before you begin, ensure you have:
 
-- **Node.js** 24.22.1 or higher
+- **Node.js** 26.13.1 or higher
 - **PostgreSQL** database (running locally or in Docker)
 - **Docker** and **Docker Compose** (for agent containers)
 - **OIDC or SAML identity provider** (optional, can use API key or users authentication; [platform authentication](../../../apps/shared/platform-authentication/README.md) runs Keycloak locally)

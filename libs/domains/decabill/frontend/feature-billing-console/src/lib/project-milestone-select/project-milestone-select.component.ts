@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, input, model, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  model,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
   ProjectMilestonesService,
@@ -13,6 +23,7 @@ import { catchError, debounceTime, distinctUntilChanged, of, skip, switchMap, ta
   standalone: true,
   imports: [FpcDatePipe, CommonModule, FpcBadgeComponent, FpcTypeaheadSelectComponent],
   templateUrl: './project-milestone-select.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./project-milestone-select.component.scss'],
 })
 export class ProjectMilestoneSelectComponent {

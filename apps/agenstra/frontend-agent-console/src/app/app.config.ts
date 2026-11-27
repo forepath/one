@@ -1,4 +1,4 @@
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withXhr } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, RouteReuseStrategy, withRouterConfig } from '@angular/router';
 import {
@@ -164,7 +164,7 @@ export const appConfig: ApplicationConfig = {
     // because the runtime config (`/config`) decides the auth method; it is a no-op unless the type is 'oidc'.
     provideOidc(),
     // Provide HTTP client with auth interceptor (API key, OIDC access token, or users / SAML session JWT)
-    provideHttpClient(withInterceptors([getAuthInterceptor(), getUsersSessionInvalidationInterceptor()])),
+    provideHttpClient(withXhr(), withInterceptors([getAuthInterceptor(), getUsersSessionInvalidationInterceptor()])),
     // NgRx Store - base store required at root level
     provideStore(),
     // NgRx Store DevTools - only enabled in non-production environments

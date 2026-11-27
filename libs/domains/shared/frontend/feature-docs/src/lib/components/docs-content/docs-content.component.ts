@@ -12,6 +12,7 @@ import {
   signal,
   ViewChild,
   ViewContainerRef,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ENVIRONMENT, type EnvironmentWithDocs } from '@forepath/shared/frontend/util-configuration';
@@ -28,6 +29,7 @@ import { MermaidDiagramComponent } from '../mermaid-diagram/mermaid-diagram.comp
   imports: [CommonModule],
   templateUrl: './docs-content.component.html',
   styleUrls: ['./docs-content.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class DocsContentComponent implements AfterViewInit {

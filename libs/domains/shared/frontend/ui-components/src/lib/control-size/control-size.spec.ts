@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, RouterOutlet } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -11,11 +11,17 @@ import { provideFpcControlSize } from './control-size';
 @Component({
   standalone: true,
   imports: [FpcFormControlComponent, FpcButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<fpc-form-control controlId="f" /><fpc-button>Go</fpc-button>`,
 })
 class PageComponent {}
 
-@Component({ standalone: true, imports: [RouterOutlet], template: `<router-outlet />` })
+@Component({
+  standalone: true,
+  imports: [RouterOutlet],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<router-outlet />`,
+})
 class ShellComponent {}
 
 describe('FPC_CONTROL_SIZE across routes', () => {

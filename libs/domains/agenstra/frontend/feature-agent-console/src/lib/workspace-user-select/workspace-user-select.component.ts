@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, input, model, output, signal } from '@angular/core';
+import { Component, DestroyRef, inject, input, model, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { isReferenceAccessDenied } from '@forepath/agenstra/frontend/feature-agent-config';
 import { AuthService, type UserResponseDto } from '@forepath/identity/frontend';
@@ -16,6 +16,7 @@ import { catchError, debounceTime, distinctUntilChanged, of, skip, switchMap, ta
   standalone: true,
   imports: [FpcBadgeComponent, FpcTypeaheadSelectComponent],
   styleUrls: ['./workspace-user-select.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="workspace-user-select">
       @if (email(); as selected) {

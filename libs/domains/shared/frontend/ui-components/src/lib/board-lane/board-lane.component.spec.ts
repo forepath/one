@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { FpcPanelComponent } from '../panel/panel.component';
@@ -8,6 +8,7 @@ import { FpcBoardLaneComponent } from './board-lane.component';
 @Component({
   standalone: true,
   imports: [FpcBoardLaneComponent, FpcPanelComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-board-lane [scrollX]="wide()"><table class="t"></table></fpc-board-lane>
     <fpc-panel title="Panel" [scroll]="wide()" flush><table class="t"></table></fpc-panel>
@@ -42,6 +43,7 @@ describe('scroll-both bodies (board lane / panel)', () => {
 @Component({
   standalone: true,
   imports: [FpcBoardLaneComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-board-lane [padded]="padded()">
       <nav fpcBoardLaneToolbar class="crumbs">a / b</nav>

@@ -253,8 +253,8 @@ describe('AutonomousRunOrchestratorService', () => {
       manager: {
         query: jest.fn().mockResolvedValue([{ ticket_id: ticketId, client_id: clientId, agent_id: agentId }]),
       },
-      findOne: jest.fn().mockImplementation((opts: { select?: string[] }) => {
-        if (opts?.select?.length === 1 && opts.select[0] === 'updatedAt') {
+      findOne: jest.fn().mockImplementation((opts: { select?: Record<string, boolean> }) => {
+        if (opts?.select?.updatedAt === true && Object.keys(opts.select).length === 1) {
           return Promise.resolve({ updatedAt: postSaveUpdatedAt });
         }
 
@@ -801,8 +801,8 @@ describe('AutonomousRunOrchestratorService', () => {
       manager: {
         query: jest.fn().mockResolvedValue([{ ticket_id: ticketId, client_id: clientId, agent_id: agentId }]),
       },
-      findOne: jest.fn().mockImplementation((opts: { select?: string[] }) => {
-        if (opts?.select?.length === 1 && opts.select[0] === 'updatedAt') {
+      findOne: jest.fn().mockImplementation((opts: { select?: Record<string, boolean> }) => {
+        if (opts?.select?.updatedAt === true && Object.keys(opts.select).length === 1) {
           return Promise.resolve({ updatedAt: postFailSaveUpdatedAt });
         }
 

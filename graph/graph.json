@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-27T06:38:11.073Z",
+  "generatedAt": "2026-11-27T14:16:46.533Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -235,8 +235,8 @@
         "type": "lib",
         "targets": [
           "lint",
-          "build",
-          "test"
+          "test",
+          "build"
         ],
         "domain": "agenstra",
         "context": "shared",
@@ -405,8 +405,8 @@
         "type": "lib",
         "targets": [
           "lint",
-          "build",
-          "test"
+          "test",
+          "build"
         ],
         "domain": "agenstra",
         "context": "shared",
@@ -662,8 +662,8 @@
         "type": "lib",
         "targets": [
           "lint",
-          "build",
-          "test"
+          "test",
+          "build"
         ],
         "domain": "agenstra",
         "context": "backend",
@@ -727,8 +727,8 @@
         "type": "lib",
         "targets": [
           "lint",
-          "build",
-          "test"
+          "test",
+          "build"
         ],
         "domain": "agenstra",
         "context": "shared",
@@ -1065,8 +1065,8 @@
         "type": "lib",
         "targets": [
           "lint",
-          "build",
-          "test"
+          "test",
+          "build"
         ],
         "domain": "shared",
         "context": "shared",
@@ -1130,8 +1130,8 @@
         "type": "lib",
         "targets": [
           "lint",
-          "build",
-          "test"
+          "test",
+          "build"
         ],
         "domain": "shared",
         "context": "backend",
@@ -1258,8 +1258,8 @@
         "type": "lib",
         "targets": [
           "lint",
-          "build",
-          "test"
+          "test",
+          "build"
         ],
         "domain": "shared",
         "context": "shared",
@@ -1365,11 +1365,11 @@
         "type": "lib",
         "targets": [
           "lint",
+          "test",
+          "build-storybook",
           "nx-release-publish",
           "build",
-          "test",
-          "storybook",
-          "build-storybook"
+          "storybook"
         ],
         "domain": "shared",
         "context": "frontend",
@@ -1454,8 +1454,8 @@
         "type": "lib",
         "targets": [
           "lint",
-          "build",
-          "test"
+          "test",
+          "build"
         ],
         "domain": "identity",
         "context": "backend",
@@ -1477,8 +1477,8 @@
         "type": "lib",
         "targets": [
           "lint",
-          "build",
-          "test"
+          "test",
+          "build"
         ],
         "domain": "shared",
         "context": "backend",
@@ -1521,7 +1521,9 @@
         "type": "app",
         "targets": [
           "lint",
+          "test",
           "build",
+          "sbom",
           "prune-lockfile",
           "copy-workspace-modules",
           "compile-migrations",
@@ -1529,11 +1531,9 @@
           "prune",
           "serve",
           "reindex-knowledge-embeddings",
-          "test",
           "api-container-image",
           "start-containers",
-          "openapi-client-js",
-          "sbom"
+          "openapi-client-js"
         ],
         "domain": "agenstra",
         "context": "backend",
@@ -1554,18 +1554,18 @@
         "type": "app",
         "targets": [
           "lint",
-          "stage-monaco-assets",
+          "test",
+          "sbom",
           "build",
+          "prebuild-server",
+          "stage-monaco-assets",
           "serve",
           "extract-i18n-angular",
           "extract-i18n",
-          "test",
           "serve-static",
-          "prebuild-server",
           "server",
           "server-container-image",
-          "start-containers",
-          "sbom"
+          "start-containers"
         ],
         "domain": "agenstra",
         "context": "frontend",
@@ -1586,18 +1586,18 @@
         "type": "app",
         "targets": [
           "lint",
-          "stage-monaco-assets",
+          "test",
+          "sbom",
           "build",
+          "prebuild-server",
+          "stage-monaco-assets",
           "serve",
           "extract-i18n-angular",
           "extract-i18n",
-          "test",
           "serve-static",
-          "prebuild-server",
           "server",
           "server-container-image",
-          "start-containers",
-          "sbom"
+          "start-containers"
         ],
         "domain": "decabill",
         "context": "frontend",
@@ -1618,18 +1618,18 @@
         "type": "app",
         "targets": [
           "lint",
-          "stage-monaco-assets",
+          "test",
+          "sbom",
           "build",
+          "prebuild-server",
+          "stage-monaco-assets",
           "serve",
           "extract-i18n-angular",
           "extract-i18n",
-          "test",
           "serve-static",
-          "prebuild-server",
           "server",
           "server-container-image",
-          "start-containers",
-          "sbom"
+          "start-containers"
         ],
         "domain": "forepath",
         "context": "frontend",
@@ -1714,18 +1714,18 @@
         "type": "app",
         "targets": [
           "lint",
+          "test",
           "build",
+          "sbom",
           "prune-lockfile",
           "copy-workspace-modules",
           "compile-migrations",
           "verify-install-provider-plugins",
           "prune",
           "serve",
-          "test",
           "api-container-image",
           "start-containers",
-          "openapi-client-js",
-          "sbom"
+          "openapi-client-js"
         ],
         "domain": "decabill",
         "context": "backend",
@@ -1747,8 +1747,8 @@
         "type": "lib",
         "targets": [
           "lint",
-          "build",
-          "test"
+          "test",
+          "build"
         ],
         "domain": "shared",
         "context": "backend",
@@ -1769,18 +1769,18 @@
         "type": "app",
         "targets": [
           "lint",
-          "stage-monaco-assets",
+          "test",
+          "sbom",
           "build",
+          "prebuild-server",
+          "stage-monaco-assets",
           "serve",
           "extract-i18n-angular",
           "extract-i18n",
-          "test",
           "serve-static",
-          "prebuild-server",
           "server",
           "server-container-image",
-          "start-containers",
-          "sbom"
+          "start-containers"
         ],
         "domain": "agenstra",
         "context": "frontend",
@@ -1801,14 +1801,15 @@
         ],
         "type": "app",
         "targets": [
+          "lint",
+          "test",
+          "sbom",
           "start",
           "electron",
           "make",
           "build",
           "serve",
-          "package",
-          "test",
-          "sbom"
+          "package"
         ],
         "domain": "decabill",
         "context": "native",
@@ -1830,14 +1831,15 @@
         "type": "app",
         "targets": [
           "lint",
+          "test",
           "build",
+          "sbom",
           "prune-lockfile",
           "copy-workspace-modules",
           "compile-migrations",
           "verify-install-provider-plugins",
           "prune",
           "serve",
-          "test",
           "api-container-image",
           "copy-context-mcp",
           "copy-microvm-bridge",
@@ -1845,8 +1847,7 @@
           "worker-microvm-container-image",
           "egress-guard-container-image",
           "start-containers",
-          "openapi-client-js",
-          "sbom"
+          "openapi-client-js"
         ],
         "domain": "agenstra",
         "context": "backend",
@@ -1868,16 +1869,16 @@
         "type": "app",
         "targets": [
           "lint",
+          "test",
           "build",
+          "sbom",
           "prune-lockfile",
           "copy-workspace-modules",
           "prune",
           "serve",
-          "test",
           "api-container-image",
           "start-containers",
-          "openapi-client-js",
-          "sbom"
+          "openapi-client-js"
         ],
         "domain": "forepath",
         "context": "backend",
@@ -1919,17 +1920,17 @@
         "type": "app",
         "targets": [
           "lint",
+          "test",
+          "sbom",
           "build",
           "serve",
           "extract-i18n-angular",
           "extract-i18n",
-          "test",
           "serve-static",
           "build-delegating-server",
           "postbuild",
           "server-container-image",
-          "start-containers",
-          "sbom"
+          "start-containers"
         ],
         "domain": "agenstra",
         "context": "frontend",
@@ -1950,14 +1951,15 @@
         ],
         "type": "app",
         "targets": [
+          "lint",
+          "test",
+          "sbom",
           "start",
           "electron",
           "make",
           "build",
           "serve",
-          "package",
-          "test",
-          "sbom"
+          "package"
         ],
         "domain": "agenstra",
         "context": "native",
@@ -1978,17 +1980,17 @@
         "type": "app",
         "targets": [
           "lint",
+          "test",
+          "sbom",
           "build",
           "serve",
           "extract-i18n-angular",
           "extract-i18n",
-          "test",
           "serve-static",
           "build-delegating-server",
           "postbuild",
           "server-container-image",
-          "start-containers",
-          "sbom"
+          "start-containers"
         ],
         "domain": "decabill",
         "context": "frontend",
@@ -2012,11 +2014,11 @@
           "docker:build",
           "docker:run",
           "nx-release-publish",
+          "test",
           "build",
           "serve",
           "extract-i18n-angular",
           "extract-i18n",
-          "test",
           "serve-static",
           "build-delegating-server",
           "postbuild",
@@ -2042,8 +2044,8 @@
         "type": "app",
         "targets": [
           "lint",
-          "build",
-          "test"
+          "test",
+          "build"
         ],
         "domain": "agenstra",
         "context": "backend",
@@ -2064,18 +2066,18 @@
         "type": "app",
         "targets": [
           "lint",
-          "generate-docs",
+          "test",
+          "sbom",
           "build",
+          "generate-docs",
           "serve",
           "extract-i18n-angular",
           "extract-i18n",
-          "test",
           "serve-static",
           "build-delegating-server",
           "postbuild",
           "server-container-image",
-          "start-containers",
-          "sbom"
+          "start-containers"
         ],
         "domain": "agenstra",
         "context": "frontend",
@@ -2096,18 +2098,18 @@
         "type": "app",
         "targets": [
           "lint",
-          "generate-docs",
+          "test",
+          "sbom",
           "build",
+          "generate-docs",
           "serve",
           "extract-i18n-angular",
           "extract-i18n",
-          "test",
           "serve-static",
           "build-delegating-server",
           "postbuild",
           "server-container-image",
-          "start-containers",
-          "sbom"
+          "start-containers"
         ],
         "domain": "decabill",
         "context": "frontend",
@@ -2149,8 +2151,8 @@
         "type": "tool",
         "targets": [
           "lint",
-          "build",
           "test",
+          "build",
           "release-manifest",
           "generate-release-key"
         ]
@@ -2169,14 +2171,14 @@
         "type": "app",
         "targets": [
           "lint",
+          "test",
+          "sbom",
           "build",
           "prune-lockfile",
           "copy-workspace-modules",
           "prune",
           "watch",
-          "debug",
-          "test",
-          "sbom"
+          "debug"
         ],
         "domain": "shared",
         "context": "backend",
@@ -2217,14 +2219,14 @@
         "type": "app",
         "targets": [
           "lint",
+          "test",
+          "sbom",
           "build",
           "prune-lockfile",
           "copy-workspace-modules",
           "prune",
           "watch",
-          "test",
-          "debug",
-          "sbom"
+          "debug"
         ],
         "domain": "shared",
         "context": "backend",
@@ -2242,8 +2244,9 @@
         ],
         "type": "tool",
         "targets": [
-          "build",
+          "lint",
           "test",
+          "build",
           "generate-kg",
           "serve",
           "query",
@@ -2264,8 +2267,8 @@
         "type": "tool",
         "targets": [
           "lint",
-          "build",
           "test",
+          "build",
           "mcp"
         ]
       }
@@ -2283,8 +2286,9 @@
         ],
         "type": "tool",
         "targets": [
-          "build",
-          "test"
+          "lint",
+          "test",
+          "build"
         ]
       }
     },
@@ -2300,8 +2304,8 @@
         "type": "tool",
         "targets": [
           "lint",
-          "build",
           "test",
+          "build",
           "mcp",
           "scripts-binary"
         ]
@@ -2338,7 +2342,7 @@
       "type": "package",
       "attrs": {
         "name": "@aws-sdk/client-s3",
-        "version": "3.1115.0"
+        "version": "3.1173.0"
       }
     },
     {
@@ -2346,7 +2350,7 @@
       "type": "package",
       "attrs": {
         "name": "@bull-board/api",
-        "version": "7.1.5"
+        "version": "9.13.2"
       }
     },
     {
@@ -2354,7 +2358,7 @@
       "type": "package",
       "attrs": {
         "name": "@bull-board/express",
-        "version": "7.1.5"
+        "version": "9.13.2"
       }
     },
     {
@@ -2362,7 +2366,7 @@
       "type": "package",
       "attrs": {
         "name": "@bull-board/nestjs",
-        "version": "7.1.5"
+        "version": "9.13.2"
       }
     },
     {
@@ -2370,7 +2374,15 @@
       "type": "package",
       "attrs": {
         "name": "@bull-board/ui",
-        "version": "7.1.5"
+        "version": "9.13.2"
+      }
+    },
+    {
+      "id": "package:@nestjs/bull-shared",
+      "type": "package",
+      "attrs": {
+        "name": "@nestjs/bull-shared",
+        "version": "11.0.5"
       }
     },
     {
@@ -2378,7 +2390,7 @@
       "type": "package",
       "attrs": {
         "name": "@nestjs/bullmq",
-        "version": "11.0.4"
+        "version": "11.0.5"
       }
     },
     {
@@ -2386,7 +2398,7 @@
       "type": "package",
       "attrs": {
         "name": "@nestjs/common",
-        "version": "11.1.6"
+        "version": "11.2.11"
       }
     },
     {
@@ -2394,7 +2406,7 @@
       "type": "package",
       "attrs": {
         "name": "@nestjs/core",
-        "version": "11.1.6"
+        "version": "11.2.11"
       }
     },
     {
@@ -2410,7 +2422,7 @@
       "type": "package",
       "attrs": {
         "name": "@nestjs/platform-express",
-        "version": "11.1.6"
+        "version": "11.2.11"
       }
     },
     {
@@ -2418,7 +2430,7 @@
       "type": "package",
       "attrs": {
         "name": "@nestjs/platform-socket.io",
-        "version": "11.1.6"
+        "version": "11.2.11"
       }
     },
     {
@@ -2426,7 +2438,7 @@
       "type": "package",
       "attrs": {
         "name": "@nestjs/throttler",
-        "version": "6.5.0"
+        "version": "6.8.0"
       }
     },
     {
@@ -2434,7 +2446,7 @@
       "type": "package",
       "attrs": {
         "name": "@nestjs/typeorm",
-        "version": "11.0.0"
+        "version": "11.0.3"
       }
     },
     {
@@ -2442,7 +2454,7 @@
       "type": "package",
       "attrs": {
         "name": "@nestjs/websockets",
-        "version": "11.1.6"
+        "version": "11.2.11"
       }
     },
     {
@@ -2458,7 +2470,7 @@
       "type": "package",
       "attrs": {
         "name": "@opencode-ai/sdk",
-        "version": "1.18.31"
+        "version": "1.19.6"
       }
     },
     {
@@ -2466,7 +2478,7 @@
       "type": "package",
       "attrs": {
         "name": "@opensearch-project/opensearch",
-        "version": "3.6.0"
+        "version": "3.10.0"
       }
     },
     {
@@ -2474,7 +2486,7 @@
       "type": "package",
       "attrs": {
         "name": "@opentelemetry/api",
-        "version": "1.9.1"
+        "version": "1.10.0"
       }
     },
     {
@@ -2482,7 +2494,7 @@
       "type": "package",
       "attrs": {
         "name": "@opentelemetry/auto-instrumentations-node",
-        "version": "0.79.0"
+        "version": "0.83.1"
       }
     },
     {
@@ -2490,7 +2502,7 @@
       "type": "package",
       "attrs": {
         "name": "@opentelemetry/exporter-logs-otlp-http",
-        "version": "0.221.0"
+        "version": "0.301.2"
       }
     },
     {
@@ -2498,7 +2510,7 @@
       "type": "package",
       "attrs": {
         "name": "@opentelemetry/exporter-prometheus",
-        "version": "0.221.0"
+        "version": "0.301.2"
       }
     },
     {
@@ -2506,7 +2518,7 @@
       "type": "package",
       "attrs": {
         "name": "@opentelemetry/exporter-trace-otlp-http",
-        "version": "0.221.0"
+        "version": "0.301.2"
       }
     },
     {
@@ -2514,7 +2526,7 @@
       "type": "package",
       "attrs": {
         "name": "@opentelemetry/resources",
-        "version": "2.10.0"
+        "version": "3.1.1"
       }
     },
     {
@@ -2522,7 +2534,7 @@
       "type": "package",
       "attrs": {
         "name": "@opentelemetry/sdk-logs",
-        "version": "0.221.0"
+        "version": "3.1.1"
       }
     },
     {
@@ -2530,7 +2542,7 @@
       "type": "package",
       "attrs": {
         "name": "@opentelemetry/sdk-metrics",
-        "version": "2.10.0"
+        "version": "3.1.1"
       }
     },
     {
@@ -2538,7 +2550,7 @@
       "type": "package",
       "attrs": {
         "name": "@opentelemetry/sdk-node",
-        "version": "0.220.0"
+        "version": "0.301.2"
       }
     },
     {
@@ -2546,7 +2558,7 @@
       "type": "package",
       "attrs": {
         "name": "@opentelemetry/semantic-conventions",
-        "version": "1.43.0"
+        "version": "1.45.0"
       }
     },
     {
@@ -2554,7 +2566,7 @@
       "type": "package",
       "attrs": {
         "name": "@valkey/valkey-glide",
-        "version": "2.5.3"
+        "version": "2.6.0"
       }
     },
     {
@@ -2562,7 +2574,7 @@
       "type": "package",
       "attrs": {
         "name": "axios",
-        "version": "1.12.2"
+        "version": "1.21.1"
       }
     },
     {
@@ -2594,7 +2606,7 @@
       "type": "package",
       "attrs": {
         "name": "class-validator",
-        "version": "0.14.2"
+        "version": "0.15.1"
       }
     },
     {
@@ -2610,7 +2622,7 @@
       "type": "package",
       "attrs": {
         "name": "dockerode",
-        "version": "5.0.0"
+        "version": "5.0.1"
       }
     },
     {
@@ -2618,7 +2630,7 @@
       "type": "package",
       "attrs": {
         "name": "express",
-        "version": "4.21.2"
+        "version": "4.22.3"
       }
     },
     {
@@ -2634,7 +2646,7 @@
       "type": "package",
       "attrs": {
         "name": "ioredis",
-        "version": "5.10.1"
+        "version": "6.0.0"
       }
     },
     {
@@ -2650,7 +2662,7 @@
       "type": "package",
       "attrs": {
         "name": "nestjs-otel",
-        "version": "8.1.0"
+        "version": "8.1.1"
       }
     },
     {
@@ -2658,7 +2670,7 @@
       "type": "package",
       "attrs": {
         "name": "nodemailer",
-        "version": "7.0.13"
+        "version": "10.6.0"
       }
     },
     {
@@ -2666,7 +2678,7 @@
       "type": "package",
       "attrs": {
         "name": "pg",
-        "version": "8.16.3"
+        "version": "8.23.1"
       }
     },
     {
@@ -2674,7 +2686,7 @@
       "type": "package",
       "attrs": {
         "name": "reflect-metadata",
-        "version": "0.1.14"
+        "version": "0.2.2"
       }
     },
     {
@@ -2690,7 +2702,7 @@
       "type": "package",
       "attrs": {
         "name": "socket.io",
-        "version": "4.8.1"
+        "version": "4.8.3"
       }
     },
     {
@@ -2698,7 +2710,7 @@
       "type": "package",
       "attrs": {
         "name": "socket.io-client",
-        "version": "4.8.3"
+        "version": "4.8.4"
       }
     },
     {
@@ -2722,7 +2734,7 @@
       "type": "package",
       "attrs": {
         "name": "turndown",
-        "version": "7.2.4"
+        "version": "7.2.5"
       }
     },
     {
@@ -2738,7 +2750,7 @@
       "type": "package",
       "attrs": {
         "name": "typeorm",
-        "version": "0.3.27"
+        "version": "1.1.3"
       }
     },
     {
@@ -2754,7 +2766,7 @@
       "type": "package",
       "attrs": {
         "name": "ws",
-        "version": "8.20.0"
+        "version": "8.23.0"
       }
     },
     {
@@ -2762,7 +2774,7 @@
       "type": "package",
       "attrs": {
         "name": "zod",
-        "version": "4.3.6"
+        "version": "4.6.7"
       }
     },
     {
@@ -2770,7 +2782,7 @@
       "type": "package",
       "attrs": {
         "name": "@angular/animations",
-        "version": "21.2.6"
+        "version": "22.1.8"
       }
     },
     {
@@ -2778,7 +2790,7 @@
       "type": "package",
       "attrs": {
         "name": "@angular/common",
-        "version": "21.2.6"
+        "version": "22.1.8"
       }
     },
     {
@@ -2786,7 +2798,7 @@
       "type": "package",
       "attrs": {
         "name": "@angular/compiler",
-        "version": "21.2.6"
+        "version": "22.1.8"
       }
     },
     {
@@ -2794,7 +2806,7 @@
       "type": "package",
       "attrs": {
         "name": "@angular/core",
-        "version": "21.2.6"
+        "version": "22.1.8"
       }
     },
     {
@@ -2802,7 +2814,7 @@
       "type": "package",
       "attrs": {
         "name": "@angular/forms",
-        "version": "21.2.6"
+        "version": "22.1.8"
       }
     },
     {
@@ -2810,7 +2822,7 @@
       "type": "package",
       "attrs": {
         "name": "@angular/platform-browser",
-        "version": "21.2.6"
+        "version": "22.1.8"
       }
     },
     {
@@ -2818,7 +2830,7 @@
       "type": "package",
       "attrs": {
         "name": "@angular/platform-server",
-        "version": "21.2.6"
+        "version": "22.1.8"
       }
     },
     {
@@ -2826,7 +2838,7 @@
       "type": "package",
       "attrs": {
         "name": "@angular/router",
-        "version": "21.2.6"
+        "version": "22.1.8"
       }
     },
     {
@@ -2834,7 +2846,7 @@
       "type": "package",
       "attrs": {
         "name": "@angular/ssr",
-        "version": "21.2.6"
+        "version": "22.1.9"
       }
     },
     {
@@ -2858,7 +2870,7 @@
       "type": "package",
       "attrs": {
         "name": "@ngrx/effects",
-        "version": "21.1.0"
+        "version": "22.0.1"
       }
     },
     {
@@ -2866,7 +2878,7 @@
       "type": "package",
       "attrs": {
         "name": "@ngrx/store",
-        "version": "21.1.0"
+        "version": "22.0.1"
       }
     },
     {
@@ -2898,7 +2910,7 @@
       "type": "package",
       "attrs": {
         "name": "monaco-editor",
-        "version": "0.55.1"
+        "version": "0.56.0"
       }
     },
     {
@@ -2922,7 +2934,7 @@
       "type": "package",
       "attrs": {
         "name": "ngx-monaco-editor-v2",
-        "version": "21.1.4"
+        "version": "22.0.5"
       }
     },
     {
@@ -2938,7 +2950,7 @@
       "type": "package",
       "attrs": {
         "name": "sass",
-        "version": "1.97.3"
+        "version": "1.101.0"
       }
     },
     {
@@ -2946,7 +2958,7 @@
       "type": "package",
       "attrs": {
         "name": "zone.js",
-        "version": "0.16.1"
+        "version": "0.16.3"
       }
     },
     {
@@ -2962,7 +2974,7 @@
       "type": "package",
       "attrs": {
         "name": "iconv-lite",
-        "version": "0.7.2"
+        "version": "0.7.3"
       }
     },
     {
@@ -2986,7 +2998,7 @@
       "type": "package",
       "attrs": {
         "name": "playwright",
-        "version": "1.55.1"
+        "version": "1.65.1"
       }
     },
     {
@@ -3002,7 +3014,7 @@
       "type": "package",
       "attrs": {
         "name": "stripe",
-        "version": "22.1.1"
+        "version": "23.2.0"
       }
     },
     {
@@ -3058,7 +3070,7 @@
       "type": "package",
       "attrs": {
         "name": "nest-cloudflare-turnstile",
-        "version": "0.0.17"
+        "version": "1.2.0"
       }
     },
     {
@@ -3074,7 +3086,7 @@
       "type": "package",
       "attrs": {
         "name": "@mlc-ai/web-llm",
-        "version": "0.2.84"
+        "version": "0.2.89"
       }
     },
     {
@@ -43795,6 +43807,11 @@
     },
     {
       "from": "project:agenstra-backend-agent-controller",
+      "to": "package:@nestjs/bull-shared",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-controller",
       "to": "package:@nestjs/bullmq",
       "type": "depends_on"
     },
@@ -44455,6 +44472,11 @@
     },
     {
       "from": "project:decabill-backend-billing-manager",
+      "to": "package:@nestjs/bull-shared",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-backend-billing-manager",
       "to": "package:@nestjs/bullmq",
       "type": "depends_on"
     },
@@ -44886,6 +44908,11 @@
     {
       "from": "project:agenstra-backend-agent-manager",
       "to": "package:@bull-board/ui",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-manager",
+      "to": "package:@nestjs/bull-shared",
       "type": "depends_on"
     },
     {

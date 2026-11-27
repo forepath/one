@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FpcProgressRowComponent } from './progress-row.component';
@@ -103,6 +103,7 @@ describe('FpcProgressRowComponent', () => {
 @Component({
   standalone: true,
   imports: [FpcProgressRowComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<fpc-progress-row label="Step" [value]="10">
     <span fpcProgressRowAside class="aside">12:00</span>
     <p class="detail">Failure</p>

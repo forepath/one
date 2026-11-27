@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, input, model, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  model,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { AgentsService, type AgentResponseDto } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { FpcBadgeComponent, FpcTypeaheadSelectComponent } from '@forepath/shared/frontend/ui-components';
@@ -10,6 +20,7 @@ import { catchError, debounceTime, distinctUntilChanged, of, skip, switchMap, ta
   standalone: true,
   imports: [CommonModule, FpcBadgeComponent, FpcTypeaheadSelectComponent],
   templateUrl: './agent-select.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./agent-select.component.scss'],
 })
 export class AgentSelectComponent {

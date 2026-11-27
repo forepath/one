@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, input, model, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, input, model, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
   AdminSupplierProfilesService,
@@ -13,6 +13,7 @@ import { catchError, debounceTime, distinctUntilChanged, map, of, skip, switchMa
   standalone: true,
   imports: [CommonModule, FpcBadgeComponent, FpcTypeaheadSelectComponent],
   templateUrl: './billing-admin-supplier-select.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../billing-admin-user-select/billing-admin-user-select.component.scss'],
 })
 export class BillingAdminSupplierSelectComponent {

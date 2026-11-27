@@ -1,5 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, OnInit, signal, untracked, ViewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  OnInit,
+  signal,
+  untracked,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
@@ -154,6 +165,7 @@ interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
     FpcProgressComponent,
   ],
   templateUrl: './project-detail-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./project-detail-page.component.scss'],
 })
 export class ProjectDetailPageComponent implements OnInit {

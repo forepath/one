@@ -10,6 +10,7 @@ import {
   signal,
   untracked,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -192,6 +193,7 @@ function isUnsentOffer(offer: Pick<AdminOfferListItem, 'status' | 'sentAt'>): bo
   ],
   providers: [DatePipe],
   templateUrl: './admin-offers-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-offers-page.component.scss'],
 })
 export class AdminOffersPageComponent implements OnInit {

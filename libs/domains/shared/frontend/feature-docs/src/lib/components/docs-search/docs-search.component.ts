@@ -1,4 +1,4 @@
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import {
@@ -21,6 +21,7 @@ import { DocsSearchService, SearchResult } from '../../services';
   templateUrl: './docs-search.component.html',
   styleUrls: ['./docs-search.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     class: 'docs-search',
     '(document:keydown)': 'onDocumentKeydown($event)',

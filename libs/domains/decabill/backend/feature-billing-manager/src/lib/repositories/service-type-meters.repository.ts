@@ -14,7 +14,7 @@ export class ServiceTypeMetersRepository {
   async findByServiceTypeId(serviceTypeId: string): Promise<ServiceTypeMeterEntity[]> {
     return await this.repository.find({
       where: { serviceTypeId },
-      relations: ['meter'],
+      relations: { meter: true },
       order: { createdAt: 'ASC' },
     });
   }
@@ -26,7 +26,7 @@ export class ServiceTypeMetersRepository {
 
     return await this.repository.find({
       where: { serviceTypeId: In(serviceTypeIds) },
-      relations: ['meter'],
+      relations: { meter: true },
       order: { createdAt: 'ASC' },
     });
   }
@@ -34,7 +34,7 @@ export class ServiceTypeMetersRepository {
   async findByServiceTypeAndMeter(serviceTypeId: string, meterId: string): Promise<ServiceTypeMeterEntity | null> {
     return await this.repository.findOne({
       where: { serviceTypeId, meterId },
-      relations: ['meter'],
+      relations: { meter: true },
     });
   }
 

@@ -20,7 +20,7 @@ export class InvoicePromotionApplicationsRepository {
   async findByInvoiceId(invoiceId: string): Promise<InvoicePromotionApplicationEntity[]> {
     return await this.repository.find({
       where: { invoiceId },
-      relations: ['redemption', 'redemption.promotion'],
+      relations: { redemption: { promotion: true } },
     });
   }
 

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DOCUMENT_NOTE_MAX_LENGTH } from '@forepath/decabill/frontend/data-access-billing-console';
 import { FpcFormControlComponent, FpcFormFieldComponent } from '@forepath/shared/frontend/ui-components';
@@ -11,6 +11,7 @@ import { FpcFormControlComponent, FpcFormFieldComponent } from '@forepath/shared
   selector: 'framework-document-note-field',
   standalone: true,
   imports: [FormsModule, FpcFormFieldComponent, FpcFormControlComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './document-note-field.component.html',
 })
 export class DocumentNoteFieldComponent {

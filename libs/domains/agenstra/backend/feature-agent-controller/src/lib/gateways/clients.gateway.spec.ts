@@ -989,7 +989,6 @@ describe('ClientsGateway', () => {
     await new Promise((resolve) => setImmediate(resolve));
     // Clear previous emit calls to isolate this test
     (socket.emit as jest.Mock).mockClear();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (gateway as any).lastAgentIdBySocket.set(socket.id, 'agent-uuid');
     // Simulate fileUpdateNotification event from remote agent-manager gateway
     const fileUpdateNotification = {
@@ -1106,7 +1105,6 @@ describe('ClientsGateway', () => {
     } as any);
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     await new Promise((resolve) => setImmediate(resolve));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (gateway as any).lastAgentIdBySocket.set(socket.id, 'agent-uuid');
     const onAnyHandler = remote.onAny.mock.calls[remote.onAny.mock.calls.length - 1]?.[0];
 
@@ -1142,7 +1140,6 @@ describe('ClientsGateway', () => {
     await new Promise((resolve) => setImmediate(resolve));
     mockAgentConsoleStatusService.notifyVcsStateChanged.mockClear();
     (socket.emit as jest.Mock).mockClear();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (gateway as any).lastAgentIdBySocket.set(socket.id, 'agent-uuid');
 
     const onAnyHandler = remote.onAny.mock.calls[0]?.[0];
@@ -1175,7 +1172,6 @@ describe('ClientsGateway', () => {
     remote.triggerEvent('connect');
     await new Promise((resolve) => setImmediate(resolve));
     mockAgentConsoleStatusService.notifyVcsStateChanged.mockClear();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (gateway as any).lastAgentIdBySocket.delete(socket.id);
 
     const onAnyHandler = remote.onAny.mock.calls[0]?.[0];

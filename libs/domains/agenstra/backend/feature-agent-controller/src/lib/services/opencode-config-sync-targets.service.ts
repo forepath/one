@@ -251,7 +251,7 @@ export class OpencodeConfigSyncTargetsService {
       where: { syncStatus: In(['pending', 'failed']) },
       order: { updatedAt: 'ASC' },
       take: max,
-      select: ['id'],
+      select: { id: true },
     });
 
     return rows.map((row) => row.id);
@@ -314,7 +314,7 @@ export class OpencodeConfigSyncTargetsService {
       where: { clientId, syncStatus: In(['pending', 'failed']) },
       order: { updatedAt: 'ASC' },
       take: max,
-      select: ['id'],
+      select: { id: true },
     });
 
     return rows.map((row) => row.id);

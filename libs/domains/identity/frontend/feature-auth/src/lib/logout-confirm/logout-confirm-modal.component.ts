@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, output, signal } from '@angular/core';
+import { Component, inject, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthenticationFacade } from '@forepath/identity/frontend';
 import { FpcConfirmDialogComponent, FpcFormCheckComponent } from '@forepath/shared/frontend/ui-components';
@@ -12,6 +12,7 @@ export interface LogoutConfirmResult {
   selector: 'identity-logout-confirm-modal',
   imports: [CommonModule, FpcConfirmDialogComponent, FpcFormCheckComponent],
   templateUrl: './logout-confirm-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class IdentityLogoutConfirmModalComponent {

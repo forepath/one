@@ -224,7 +224,6 @@ export class ControllerJobsProcessor extends WorkerHost {
     const batchSize = getKnowledgeEmbeddingPageBatchSize();
     let offset = 0;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const pages = await this.knowledgeEmbeddingIndex.findPageIdsBatch(offset, batchSize);
 

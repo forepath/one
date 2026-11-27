@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import {
   AGENT_GRAPH_LIMITS,
   isAgentGraphQueryLayer,

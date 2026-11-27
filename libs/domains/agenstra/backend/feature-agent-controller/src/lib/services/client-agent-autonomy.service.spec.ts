@@ -77,7 +77,7 @@ describe('ClientAgentAutonomyService', () => {
     expect(res).toEqual({ agentIds: ['a1', 'a2'] });
     expect(repo.find).toHaveBeenCalledWith({
       where: { clientId: '00000000-0000-4000-8000-000000000010', enabled: true },
-      select: ['agentId'],
+      select: { agentId: true },
       order: { agentId: 'ASC' },
     });
     await module.close();

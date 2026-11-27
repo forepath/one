@@ -4,7 +4,7 @@
   </fpc-page-header>
   <framework-accounting-nav active="banking" />
 
-  @let kpis = statistics().data?.kpis;
+  @let kpis = $safeNavigationMigration(statistics().data?.kpis);
   <fpc-summary-bar [columns]="5">
     <fpc-summary-card
       icon="bank"

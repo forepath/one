@@ -19,7 +19,7 @@ describe('SubscriptionAddonsRepository', () => {
   it('findByIdOrThrow returns entity or throws', async () => {
     typeorm.findOne.mockResolvedValueOnce({ id: 'sa-1' });
     await expect(repository.findByIdOrThrow('sa-1')).resolves.toEqual({ id: 'sa-1' });
-    expect(typeorm.findOne).toHaveBeenCalledWith({ where: { id: 'sa-1' }, relations: ['addon'] });
+    expect(typeorm.findOne).toHaveBeenCalledWith({ where: { id: 'sa-1' }, relations: { addon: true } });
 
     typeorm.findOne.mockResolvedValueOnce(null);
     await expect(repository.findByIdOrThrow('missing')).rejects.toThrow(NotFoundException);
@@ -31,7 +31,7 @@ describe('SubscriptionAddonsRepository', () => {
     await repository.findBySubscriptionId('sub-1');
     expect(typeorm.find).toHaveBeenCalledWith({
       where: { subscriptionId: 'sub-1' },
-      relations: ['addon'],
+      relations: { addon: true },
       order: { createdAt: 'ASC' },
     });
 
@@ -39,7 +39,7 @@ describe('SubscriptionAddonsRepository', () => {
     expect(typeorm.find).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ subscriptionId: 'sub-1' }),
-        relations: ['addon'],
+        relations: { addon: true },
       }),
     );
 

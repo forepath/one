@@ -213,7 +213,7 @@ export class OpencodeMcpServersCatalogService {
     );
 
     const keepNames = new Set(mapped.servers.map((server) => server.name));
-    const existing = await this.serversRepository.find({ select: ['name'] });
+    const existing = await this.serversRepository.find({ select: { name: true } });
     const staleNames = existing.map((row) => row.name).filter((name) => !keepNames.has(name));
     let removed = 0;
 

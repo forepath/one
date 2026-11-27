@@ -37,7 +37,6 @@ jest.mock('fs', () => ({
   readFileSync: (...args: unknown[]) => mockReadFileSync(...args),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const sbomExecutor = require('./impl').default;
 
 function workspaceCyclonedxCliPath(): string {

@@ -1,5 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, inject, PLATFORM_ID, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import {
@@ -31,6 +31,7 @@ import { DocsSearchComponent } from '../docs-search/docs-search.component';
   ],
   templateUrl: './docs-layout.component.html',
   styleUrls: ['./docs-layout.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class DocsLayoutComponent {

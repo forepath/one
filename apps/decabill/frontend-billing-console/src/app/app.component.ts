@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 import { CookieConsentComponent } from '@forepath/shared/frontend/util-cookie-consent';
@@ -6,6 +6,7 @@ import { CookieConsentComponent } from '@forepath/shared/frontend/util-cookie-co
 @Component({
   imports: [RouterModule, CookieConsentComponent],
   selector: 'app-root',
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './app.component.html',
 })
 export class AppComponent {

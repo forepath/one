@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
@@ -12,6 +12,7 @@ const options: FpcMultiSelectOption[] = Array.from({ length: 9 }, (_, index) => 
 @Component({
   standalone: true,
   imports: [FpcMultiSelectComponent, ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<fpc-multi-select [formControl]="control" [options]="options()" />`,
 })
 class HostComponent {

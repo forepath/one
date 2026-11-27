@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { BillingTenantSwitchComponent, type BillingTenantSwitchOption } from './tenant-switch.component';
@@ -6,6 +6,7 @@ import { BillingTenantSwitchComponent, type BillingTenantSwitchOption } from './
 @Component({
   standalone: true,
   imports: [BillingTenantSwitchComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<framework-billing-tenant-switch
     [options]="options"
     [activeId]="active()"

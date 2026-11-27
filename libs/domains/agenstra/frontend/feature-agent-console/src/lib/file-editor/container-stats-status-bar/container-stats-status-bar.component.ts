@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, input } from '@angular/core';
+import { Component, DestroyRef, inject, input, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import type { ContainerStatsEntry } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { StatsFacade } from '@forepath/agenstra/frontend/data-access-agent-console';
@@ -10,6 +10,7 @@ import { combineLatest, map, switchMap } from 'rxjs';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './container-stats-status-bar.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./container-stats-status-bar.component.scss'],
 })
 export class ContainerStatsStatusBarComponent {

@@ -10,6 +10,7 @@ import {
   SimpleChanges,
   inject,
   signal,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -81,6 +82,7 @@ import {
     FpcSpinnerComponent,
   ],
   templateUrl: './plan-order-configurator.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./plan-order-configurator.component.scss'],
 })
 export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {

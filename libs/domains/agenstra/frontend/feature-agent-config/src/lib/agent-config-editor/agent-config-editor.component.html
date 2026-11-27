@@ -1406,7 +1406,7 @@
                     }
                     <div class="d-flex justify-content-end">
                       <span class="small text-secondary">{{
-                        mcpRuntimeStatusLabel(mcpRuntimeStatusFor(key)?.status)
+                        mcpRuntimeStatusLabel($safeNavigationMigration(mcpRuntimeStatusFor(key)?.status))
                       }}</span>
                     </div>
                   </div>

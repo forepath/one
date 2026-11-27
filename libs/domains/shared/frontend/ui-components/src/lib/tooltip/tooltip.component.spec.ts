@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FpcTooltipComponent } from './tooltip.component';
@@ -9,6 +9,7 @@ const BUBBLE_HEIGHT = 220;
 @Component({
   standalone: true,
   imports: [FpcTooltipComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="scroller" style="overflow: auto">
       <div class="cell" style="overflow: hidden">

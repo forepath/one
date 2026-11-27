@@ -1,5 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { NgcCookieConsentService } from 'ngx-cookieconsent';
 import { Subscription } from 'rxjs';
@@ -10,6 +10,7 @@ import { createCookieConsentConfig } from './cookie-consent.config';
   selector: 'framework-cookie-consent',
   imports: [CommonModule],
   template: ``,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class CookieConsentComponent implements OnInit, OnDestroy {
@@ -72,7 +73,6 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
 
     // Subscribe to revokeChoice$ to trigger our onRevokeChoice callback
     const revokeChoiceSub = this.cookieConsentService.revokeChoice$.subscribe(() => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const win = window as any;
 
       if (!win.dataLayer) {
@@ -86,7 +86,6 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
 
     // Subscribe to noCookieLaw$ to trigger our onNoCookieLaw callback
     const noCookieLawSub = this.cookieConsentService.noCookieLaw$.subscribe((event) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const win = window as any;
 
       if (!win.dataLayer) {
@@ -101,7 +100,6 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
 
   private ensureCookieConsentInitialized(): void {
     const checkCookieConsent = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const win = window as any;
 
       if (typeof window !== 'undefined' && win.cookieconsent) {
@@ -132,7 +130,6 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
   }
 
   private manualInitialize(): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const win = window as any;
 
     if (typeof window !== 'undefined' && win.cookieconsent) {
@@ -149,7 +146,6 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
   }
 
   private sendConsentEvent(status: 'allow' | 'deny' | 'dismiss'): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const win = window as any;
 
     if (!win.dataLayer) {

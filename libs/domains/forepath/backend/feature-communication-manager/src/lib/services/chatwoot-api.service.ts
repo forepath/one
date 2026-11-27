@@ -3,7 +3,6 @@ import { randomUUID } from 'node:crypto';
 import { incrementCounter, recordHistogram } from '@forepath/shared/backend/util-otel/metrics';
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 import FormData = require('form-data');
 
 import { CHATWOOT_API_TIMEOUT_MS } from '../constants/chatwoot-api.constants';

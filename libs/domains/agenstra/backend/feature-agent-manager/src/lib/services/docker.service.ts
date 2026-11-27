@@ -2814,7 +2814,8 @@ export class DockerService {
       }
     }
 
-    const bridgeIp = inspectInfo.NetworkSettings?.IPAddress;
+    // Top-level IPAddress is only reported by Docker daemons older than API 1.44 (dropped from @types/dockerode 4).
+    const bridgeIp = (inspectInfo.NetworkSettings as { IPAddress?: string } | undefined)?.IPAddress;
 
     if (bridgeIp) {
       return `http://${bridgeIp}:${containerPort}`;

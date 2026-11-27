@@ -11,8 +11,6 @@ import { AgentTaskRunnerService } from './agent-task-runner.service';
 import type { AgentTasksService } from './agent-tasks.service';
 import type { RemoteAgentsSessionService } from './remote-agents-session.service';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- in-memory repository doubles */
-
 /** Minimal TypeORM `where` matching (plain values, `In`, `IsNull`, `LessThan`) for the in-memory rows. */
 function matches(row: Record<string, any>, where: Record<string, any>): boolean {
   return Object.entries(where).every(([key, expected]) => {

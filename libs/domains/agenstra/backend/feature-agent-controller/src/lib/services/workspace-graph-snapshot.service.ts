@@ -113,7 +113,7 @@ export class WorkspaceGraphSnapshotService implements OnModuleInit, OnApplicatio
   async listMemberAgentIds(clientId: string): Promise<string[]> {
     const rows = await this.credentialsRepo.find({
       where: { clientId },
-      select: ['agentId'],
+      select: { agentId: true },
       order: { createdAt: 'ASC' },
     });
 
@@ -500,27 +500,27 @@ export class WorkspaceGraphSnapshotService implements OnModuleInit, OnApplicatio
         ),
         this.knowledgeRepo.find({
           where: { clientId },
-          select: ['id', 'nodeType', 'parentId', 'title', 'longSha'],
+          select: { id: true, nodeType: true, parentId: true, title: true, longSha: true },
           order: { sortOrder: 'ASC', createdAt: 'ASC' },
           take: WORKSPACE_GRAPH_LIMITS.maxKnowledgeNodes,
         }),
         this.ticketsRepo.find({
           where: { clientId },
-          select: ['id', 'parentId', 'title', 'longSha', 'status', 'priority'],
+          select: { id: true, parentId: true, title: true, longSha: true, status: true, priority: true },
           order: { updatedAt: 'DESC' },
           take: WORKSPACE_GRAPH_LIMITS.maxTickets,
         }),
         agentIds.length > 0
           ? this.plansRepo.find({
               where: { clientId, agentId: In(agentIds) },
-              select: ['id', 'agentId', 'summary', 'longSha', 'status'],
+              select: { id: true, agentId: true, summary: true, longSha: true, status: true },
               order: { startedAt: 'DESC' },
               take: WORKSPACE_GRAPH_LIMITS.maxPlans,
             })
           : Promise.resolve([] as ChatPlanEntity[]),
         this.relationsRepo.find({
           where: { clientId },
-          select: ['sourceType', 'sourceId', 'targetType', 'targetNodeId', 'targetTicketLongSha'],
+          select: { sourceType: true, sourceId: true, targetType: true, targetNodeId: true, targetTicketLongSha: true },
           take: WORKSPACE_GRAPH_LIMITS.maxKnowledgeRelations,
         }),
       ]);

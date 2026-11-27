@@ -50,8 +50,7 @@ export class ClientAgentVncProxyService {
         validateStatus: (status) => status < 500,
         timeout: 30_000,
         httpsAgent: baseUrl.startsWith('https://')
-          ? // eslint-disable-next-line @typescript-eslint/no-var-requires
-            new (require('https').Agent)({
+          ? new (require('https').Agent)({
               rejectUnauthorized: tlsPolicy.rejectUnauthorized,
             })
           : undefined,

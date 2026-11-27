@@ -23,7 +23,6 @@ function findControllerFiles(dir: string): string[] {
 }
 
 describe('Decabill PAT route scopes', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   const modules = findControllerFiles(libDir).map((file) => require(file) as Record<string, unknown>);
   const controllers = collectControllerClasses(modules);
 

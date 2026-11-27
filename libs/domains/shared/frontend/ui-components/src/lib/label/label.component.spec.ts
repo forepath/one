@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { provideFpcControlSize } from '../control-size/control-size';
@@ -9,6 +9,7 @@ import { FpcLabelComponent } from './label.component';
 @Component({
   standalone: true,
   imports: [FpcLabelComponent, FpcFormFieldComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-label forId="a" [required]="true">A rather long label that does not fit</fpc-label>
     <fpc-form-field forId="b" label="Field label"><input id="b" /></fpc-form-field>

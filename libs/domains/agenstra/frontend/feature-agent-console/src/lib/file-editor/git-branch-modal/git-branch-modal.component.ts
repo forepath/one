@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { VcsFacade, VcsService, type GitBranch } from '@forepath/agenstra/frontend/data-access-agent-console';
@@ -56,6 +66,7 @@ export type GitBranchTab = 'local' | 'remote';
   ],
   templateUrl: './git-branch-modal.component.html',
   styleUrls: ['./git-branch-modal.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class GitBranchModalComponent {

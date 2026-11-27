@@ -11,7 +11,8 @@
     "isolatedModules": true,
     "emitDecoratorMetadata": false,
     "module": "es2022",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "ignoreDeprecations": "6.0"
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

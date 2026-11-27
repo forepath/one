@@ -27,6 +27,7 @@
       "dependsOn": ["stage-monaco-assets"],
       "executor": "@angular-devkit/build-angular:application",
       "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/decabill/frontend-billing-console",
         "index": "apps/decabill/frontend-billing-console/src/index.html",
@@ -104,12 +105,12 @@
         "de": {
           "localize": ["de"]
         }
-      },
-      "defaultConfiguration": "production"
+      }
     },
     "serve": {
       "continuous": true,
       "executor": "@angular-devkit/build-angular:dev-server",
+      "defaultConfiguration": "development",
       "options": {
         "hmr": false,
         "port": 4202
@@ -121,8 +122,7 @@
         "production": {
           "buildTarget": "decabill-frontend-billing-console:build:production,serve,en"
         }
-      },
-      "defaultConfiguration": "development"
+      }
     },
     "extract-i18n-angular": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
@@ -133,11 +133,11 @@
     },
     "extract-i18n": {
       "executor": "nx:run-commands",
+      "dependsOn": ["extract-i18n-angular"],
       "options": {
         "command": "node ../../../remove-context-groups.cjs src/i18n/messages.xlf",
         "cwd": "apps/decabill/frontend-billing-console"
-      },
-      "dependsOn": ["extract-i18n-angular"]
+      }
     },
     "lint": {
       "executor": "@nx/eslint:lint"
@@ -164,6 +164,7 @@
       "executor": "@nx/esbuild:esbuild",
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
+      "dependsOn": ["build"],
       "options": {
         "platform": "node",
         "outputPath": "dist/apps/decabill/frontend-billing-console/server",
@@ -189,23 +190,23 @@
             "sourcemap": false
           }
         }
-      },
-      "dependsOn": ["build"]
+      }
     },
     "server": {
       "executor": "nx:run-commands",
       "outputs": [
         "{workspaceRoot}/dist/apps/decabill/frontend-billing-console/server/browser"
       ],
+      "dependsOn": ["prebuild-server"],
       "options": {
         "command": "bash -c \"test -d dist/apps/decabill/frontend-billing-console/browser && mkdir -p dist/apps/decabill/frontend-billing-console/server && cp -r dist/apps/decabill/frontend-billing-console/browser dist/apps/decabill/frontend-billing-console/server/browser || (echo 'Error: Browser directory not found. Please run build first.' && exit 1)\""
-      },
-      "dependsOn": ["prebuild-server"]
+      }
     },
     "server-container-image": {
       "dependsOn": ["server"],
       "cache": false,
       "executor": "@nx-tools/nx-container:build",
+      "defaultConfiguration": "test",
       "options": {
         "engine": "docker",
         "file": "apps/decabill/frontend-billing-console/Dockerfile.server",
@@ -227,8 +228,7 @@
             "ghcr.io/forepath/decabill-billing-console-server:$VERSION"
           ]
         }
-      },
-      "defaultConfiguration": "test"
+      }
     },
     "start-containers": {
       "dependsOn": ["server-container-image"],

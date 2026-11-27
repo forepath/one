@@ -78,7 +78,7 @@ export class UsersRepository {
    */
   async findAllIdsAndRoles(): Promise<{ id: string; role: string }[]> {
     return this.repository.find({
-      select: ['id', 'role'],
+      select: { id: true, role: true },
     });
   }
 

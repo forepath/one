@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -102,6 +102,7 @@ export function openItemState(row: Pick<AccountingOpenItemRow, 'daysOverdue'>): 
     FpcTabGroupComponent,
   ],
   templateUrl: './accounting-open-items-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './accounting-section.scss',
 })
 export class AccountingOpenItemsPageComponent implements OnInit {

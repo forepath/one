@@ -2102,9 +2102,7 @@ describe('AgentsService', () => {
 
   describe('generateRandomPassword', () => {
     it('should generate passwords of correct length', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const password1 = (service as any).generateRandomPassword();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const password2 = (service as any).generateRandomPassword();
 
       expect(password1).toHaveLength(16);
@@ -2113,7 +2111,6 @@ describe('AgentsService', () => {
     });
 
     it('should generate passwords with alphanumeric characters', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const password = (service as any).generateRandomPassword();
       const alphanumericRegex = /^[a-zA-Z0-9]+$/;
 
@@ -2133,7 +2130,6 @@ describe('AgentsService', () => {
 
       dockerService.sendCommandToContainer.mockResolvedValue(undefined);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (service as any).createNetrcFile(containerId, process.env.GIT_REPOSITORY_URL);
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(2);
@@ -2174,7 +2170,6 @@ describe('AgentsService', () => {
       process.env.GIT_REPOSITORY_URL = 'https://github.com/user/repo.git';
       dockerService.sendCommandToContainer.mockResolvedValue(undefined);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (service as any).createNetrcFile(containerId, process.env.GIT_REPOSITORY_URL);
 
       // Verify that special characters are properly handled in base64 content
@@ -2201,7 +2196,6 @@ describe('AgentsService', () => {
 
       delete process.env.GIT_USERNAME;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await expect((service as any).createNetrcFile(containerId)).rejects.toThrow(BadRequestException);
     });
 
@@ -2211,7 +2205,6 @@ describe('AgentsService', () => {
       delete process.env.GIT_TOKEN;
       delete process.env.GIT_PASSWORD;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await expect((service as any).createNetrcFile(containerId)).rejects.toThrow(BadRequestException);
     });
 
@@ -2220,7 +2213,6 @@ describe('AgentsService', () => {
 
       delete process.env.GIT_REPOSITORY_URL;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await expect((service as any).createNetrcFile(containerId)).rejects.toThrow(BadRequestException);
     });
 
@@ -2232,7 +2224,6 @@ describe('AgentsService', () => {
       process.env.GIT_REPOSITORY_URL = 'https://github.com/user/repo.git';
       dockerService.sendCommandToContainer.mockResolvedValue(undefined);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (service as any).createNetrcFile(containerId, process.env.GIT_REPOSITORY_URL);
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(2);
@@ -2251,7 +2242,6 @@ describe('AgentsService', () => {
       dockerService.getContainerHomeDirectory.mockResolvedValueOnce(customHome);
       dockerService.sendCommandToContainer.mockResolvedValue(undefined);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (service as any).createNetrcFile(containerId, process.env.GIT_REPOSITORY_URL);
 
       expect(dockerService.getContainerHomeDirectory).toHaveBeenCalledWith(containerId);
@@ -2276,28 +2266,24 @@ describe('AgentsService', () => {
 
   describe('escapeForShell', () => {
     it('should escape strings with single quotes', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).escapeForShell("test'string");
 
       expect(result).toBe("'test'\\''string'");
     });
 
     it('should wrap simple strings in single quotes', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).escapeForShell('simple-string');
 
       expect(result).toBe("'simple-string'");
     });
 
     it('should handle empty strings', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).escapeForShell('');
 
       expect(result).toBe("''");
     });
 
     it('should handle strings with multiple single quotes', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).escapeForShell("a'b'c");
 
       expect(result).toBe("'a'\\''b'\\''c'");
@@ -2318,7 +2304,6 @@ describe('AgentsService', () => {
 
       dockerService.sendCommandToContainer.mockResolvedValue(undefined);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await (service as any).configureSshAccess(
         containerId,
         'git@github.com:user/repo.git',
@@ -2386,7 +2371,6 @@ describe('AgentsService', () => {
 
       dockerService.sendCommandToContainer.mockResolvedValue(undefined);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (service as any).configureSshAccess(containerId, 'ssh://git@github.com:22/user/repo.git', privateKeyPem);
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
@@ -2400,7 +2384,6 @@ describe('AgentsService', () => {
 
     it('should throw BadRequestException for invalid private key', async () => {
       const containerId = 'container-id-123';
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const serviceAny = service as any;
 
       await expect(
@@ -2418,7 +2401,6 @@ describe('AgentsService', () => {
         .mockResolvedValueOnce('')
         .mockRejectedValueOnce(new Error('ssh-keyscan failed'));
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await expect(
         (service as any).configureSshAccess('container-id-123', 'git@github.com:user/repo.git', privateKey),
       ).rejects.toThrow('ssh-keyscan failed');
@@ -2433,7 +2415,6 @@ describe('AgentsService', () => {
       dockerService.getContainerHomeDirectory.mockResolvedValueOnce(customHome);
       dockerService.sendCommandToContainer.mockResolvedValue(undefined);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (service as any).configureSshAccess(containerId, 'git@github.com:user/repo.git', privateKeyPem);
 
       expect(dockerService.getContainerHomeDirectory).toHaveBeenCalledWith(containerId);

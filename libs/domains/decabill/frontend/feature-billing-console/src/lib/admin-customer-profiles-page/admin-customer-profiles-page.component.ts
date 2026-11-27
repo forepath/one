@@ -1,5 +1,14 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -89,6 +98,7 @@ import { trustState } from '../shared/table-states';
   ],
   providers: [DatePipe],
   templateUrl: './admin-customer-profiles-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-customer-profiles-page.component.scss'],
 })
 export class AdminCustomerProfilesPageComponent implements OnInit {

@@ -9,6 +9,7 @@ import {
   signal,
   untracked,
   LOCALE_ID,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -148,6 +149,7 @@ const RUNNING_HISTORY_REFRESH_MS = 10_000;
     FpcPageHeaderComponent,
   ],
   templateUrl: './agent-tasks-board.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./agent-tasks-board.component.scss'],
 })
 export class AgentTasksBoardComponent implements AfterViewInit {

@@ -74,7 +74,7 @@
       "options": {
         "commands": [
           "mkdir -p dist/apps/agenstra/backend-agent-manager/src/migrations",
-          "npx tsc $(find apps/agenstra/backend-agent-manager/src/migrations -name '*.ts') --outDir dist/apps/agenstra/backend-agent-manager/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/agenstra/backend-agent-manager/src/migrations",
+          "npx tsc $(find apps/agenstra/backend-agent-manager/src/migrations -name '*.ts') --outDir dist/apps/agenstra/backend-agent-manager/src/migrations --module commonjs --target es2021 --moduleResolution node --ignoreDeprecations 6.0 --types node --strict false --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/agenstra/backend-agent-manager/src/migrations",
           "npx esbuild apps/agenstra/backend-agent-manager/src/scripts/install-provider-plugins.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/apps/agenstra/backend-agent-manager/install-provider-plugins.js --tsconfig=tsconfig.base.json --packages=external"
         ]
       }

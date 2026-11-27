@@ -11,6 +11,7 @@ import {
   effect,
   inject,
   signal,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -99,6 +100,7 @@ import { KnowledgeTreeComponent } from './knowledge-tree/knowledge-tree.componen
     FpcTypeaheadSelectComponent,
   ],
   templateUrl: './knowledge-board.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./knowledge-board.component.scss'],
 })
 export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {

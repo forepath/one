@@ -36,7 +36,16 @@ export class WorkspaceGraphSnapshotsRepository {
 
     return await this.repository.find({
       where: { clientId: In(clientIds) },
-      select: ['id', 'clientId', 'status', 'nodeCount', 'edgeCount', 'builtAt', 'error', 'updatedAt'],
+      select: {
+        id: true,
+        clientId: true,
+        status: true,
+        nodeCount: true,
+        edgeCount: true,
+        builtAt: true,
+        error: true,
+        updatedAt: true,
+      },
     });
   }
 

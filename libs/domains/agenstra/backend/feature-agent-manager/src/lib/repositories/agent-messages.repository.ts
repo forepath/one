@@ -53,7 +53,7 @@ export class AgentMessagesRepository {
       take: limit,
       skip: offset,
       order: { createdAt: 'ASC' }, // Chronological order for chat history
-      relations: ['agent'],
+      relations: { agent: true },
     });
   }
 
@@ -68,7 +68,7 @@ export class AgentMessagesRepository {
       take: limit,
       skip: offset,
       order: { createdAt: 'ASC' },
-      relations: ['agent'],
+      relations: { agent: true },
     });
   }
 
@@ -135,7 +135,7 @@ export class AgentMessagesRepository {
       take: limit,
       skip: offset,
       order: { createdAt: 'DESC' },
-      relations: ['agent'],
+      relations: { agent: true },
     });
   }
 

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { FpcContextMenuComponent, FpcContextMenuPosition } from '../context-menu/context-menu.component';
@@ -37,6 +37,7 @@ describe('FpcBodyPortal', () => {
 @Component({
   standalone: true,
   imports: [FpcModalComponent, FpcContextMenuComponent, FpcDropdownComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="frame" style="position: relative; z-index: 1">
       <fpc-modal [(open)]="open" title="Dialog"><p class="modal-text">Body</p></fpc-modal>

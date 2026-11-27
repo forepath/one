@@ -1,4 +1,13 @@
-import { Component, LOCALE_ID, computed, effect, inject, signal, untracked } from '@angular/core';
+import {
+  Component,
+  LOCALE_ID,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -93,6 +102,7 @@ const WORKSPACE_OPTIONS_LIMIT = 500;
     FpcTableCellDirective,
   ],
   templateUrl: './deployment-connections-admin.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./deployment-connections-admin.component.scss'],
 })
 export class DeploymentConnectionsAdminComponent {

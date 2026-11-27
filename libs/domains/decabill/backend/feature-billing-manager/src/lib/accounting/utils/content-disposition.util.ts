@@ -5,7 +5,6 @@
  */
 export function attachmentDisposition(fileName: string): string {
   const name = (fileName ?? '').normalize('NFC').trim() || 'download';
-  // eslint-disable-next-line no-control-regex
   const ascii =
     name
       .replace(/[^\x20-\x7e]/g, '_')

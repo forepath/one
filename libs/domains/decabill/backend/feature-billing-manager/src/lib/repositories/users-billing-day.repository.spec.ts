@@ -34,7 +34,7 @@ describe('UsersBillingDayRepository', () => {
 
       expect(mockRepository.findOne).toHaveBeenCalledWith({
         where: { id: 'user-1', tenantId: 'default' },
-        select: ['createdAt', 'billingDayOfMonth'],
+        select: { createdAt: true, billingDayOfMonth: true },
       });
       expect(result).toBe(20);
     });

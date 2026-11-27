@@ -7,12 +7,14 @@
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "moduleResolution": "node",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "ignoreDeprecations": "6.0"
   },
   "ts-node": {
     "esm": false,
     "compilerOptions": {
-      "module": "commonjs"
+      "module": "commonjs",
+      "ignoreDeprecations": "6.0"
     }
   },
   "include": ["generate-docs.ts"]

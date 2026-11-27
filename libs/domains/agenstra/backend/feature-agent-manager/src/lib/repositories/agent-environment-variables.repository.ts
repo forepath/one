@@ -53,7 +53,7 @@ export class AgentEnvironmentVariablesRepository {
       take: limit,
       skip: offset,
       order: { createdAt: 'ASC' }, // Chronological order for environment variable history
-      relations: ['agent'],
+      relations: { agent: true },
     });
   }
 
@@ -77,7 +77,7 @@ export class AgentEnvironmentVariablesRepository {
       take: limit,
       skip: offset,
       order: { createdAt: 'ASC' },
-      relations: ['agent'],
+      relations: { agent: true },
     });
   }
 

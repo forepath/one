@@ -423,7 +423,7 @@ export class AgentContextRequestHandlerService {
   private async mapTickets(clientId: string, rows: TicketEntity[]): Promise<AgentContextMetadata[]> {
     const parentIds = [...new Set(rows.map((row) => row.parentId).filter((id): id is string => !!id))];
     const parents = parentIds.length
-      ? await this.ticketRepo.find({ where: { clientId, id: In(parentIds) }, select: ['id', 'longSha'] })
+      ? await this.ticketRepo.find({ where: { clientId, id: In(parentIds) }, select: { id: true, longSha: true } })
       : [];
     const parentSha = new Map(parents.map((parent) => [parent.id, parent.longSha ?? null]));
 
@@ -443,7 +443,10 @@ export class AgentContextRequestHandlerService {
   private async mapKnowledge(clientId: string, rows: KnowledgeNodeEntity[]): Promise<AgentContextMetadata[]> {
     const parentIds = [...new Set(rows.map((row) => row.parentId).filter((id): id is string => !!id))];
     const parents = parentIds.length
-      ? await this.knowledgeNodeRepo.find({ where: { clientId, id: In(parentIds) }, select: ['id', 'longSha'] })
+      ? await this.knowledgeNodeRepo.find({
+          where: { clientId, id: In(parentIds) },
+          select: { id: true, longSha: true },
+        })
       : [];
     const parentSha = new Map(parents.map((parent) => [parent.id, parent.longSha ?? null]));
 

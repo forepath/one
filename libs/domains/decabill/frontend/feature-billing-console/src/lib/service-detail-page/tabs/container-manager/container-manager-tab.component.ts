@@ -14,6 +14,7 @@ import {
   signal,
   untracked,
   viewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -106,6 +107,7 @@ const TOPOLOGY_NODE_RADIUS = 16;
     FpcEmptyStateComponent,
   ],
   templateUrl: './container-manager-tab.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./container-manager-tab.component.scss'],
 })
 export class ContainerManagerTabComponent implements OnInit, OnChanges {

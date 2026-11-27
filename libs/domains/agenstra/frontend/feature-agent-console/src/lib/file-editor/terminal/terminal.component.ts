@@ -10,6 +10,7 @@ import {
   OnDestroy,
   signal,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ContainerSocketFacade, TerminalsFacade } from '@forepath/agenstra/frontend/data-access-agent-console';
@@ -85,6 +86,7 @@ const XTERM_THEME_LIGHT: ITheme = {
   imports: [CommonModule, FpcButtonComponent, FpcDropdownComponent, FpcDropdownItemComponent],
   templateUrl: './terminal.component.html',
   styleUrls: ['./terminal.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class TerminalComponent implements AfterViewInit, OnDestroy {

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { FpcLaneHeaderComponent } from '@forepath/shared/frontend/ui-components';
 
 /** Read-only document note for invoice and offer details. Renders nothing without a note. */
@@ -7,6 +7,7 @@ import { FpcLaneHeaderComponent } from '@forepath/shared/frontend/ui-components'
   standalone: true,
   imports: [FpcLaneHeaderComponent],
   templateUrl: './document-note-summary.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: ['.document-note-summary__text { white-space: pre-line; }'],
 })
 export class DocumentNoteSummaryComponent {

@@ -25,8 +25,6 @@ import { toConversationId, toItemId, toResponseId } from '../utils/openai-compat
 
 import { OpenAiCompatibleController } from './openai-compatible.controller';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- HTTP-level fakes */
-
 const mockEnsureClientAccess = jest.fn();
 
 jest.mock('@forepath/identity/backend', () => ({

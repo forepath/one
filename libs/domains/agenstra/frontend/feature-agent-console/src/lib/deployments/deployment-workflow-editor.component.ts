@@ -9,6 +9,7 @@ import {
   output,
   signal,
   untracked,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -76,6 +77,7 @@ const REPOSITORY_SEARCH_DEBOUNCE_MS = 300;
     FpcMultiSelectComponent,
     FpcTypeaheadSelectComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './deployment-workflow-editor.component.html',
 })
 export class DeploymentWorkflowEditorComponent {

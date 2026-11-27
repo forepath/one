@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
@@ -21,6 +21,7 @@ type SamlCallbackState = 'exchanging' | 'failed';
   selector: 'identity-saml-callback',
   imports: [CommonModule, RouterModule, FpcAlertComponent],
   templateUrl: './saml-callback.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class IdentitySamlCallbackComponent implements OnInit {

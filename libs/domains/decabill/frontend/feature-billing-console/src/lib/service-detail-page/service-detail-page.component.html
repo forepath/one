@@ -86,7 +86,7 @@
       @if (detailValue.serverInfo; as serverInfo) {
         <div fpcPageHeaderActions class="d-flex align-items-center gap-2 flex-shrink-0">
           @if (
-            (serverActionInProgressMap$ | async)?.[subscriptionId] === undefined &&
+            $safeNavigationMigration((serverActionInProgressMap$ | async)?.[subscriptionId]) === undefined &&
             !isServerStatusTransitional(serverInfo)
           ) {
             <fpc-button-group

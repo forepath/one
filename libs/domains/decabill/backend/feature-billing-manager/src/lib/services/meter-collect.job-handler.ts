@@ -51,7 +51,6 @@ export class MeterCollectJobHandler {
     await runWithTenantId(tenantId, async () => {
       let offset = 0;
 
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         const subscriptions = await this.subscriptionsRepository.findActiveArrearForMeterCollect(
           this.batchSize,

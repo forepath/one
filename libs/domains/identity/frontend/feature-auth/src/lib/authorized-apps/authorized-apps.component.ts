@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { AuthService, IdentityAppsFacade, type IdentityAppGrantResponseDto } from '@forepath/identity/frontend';
 import {
@@ -39,6 +39,7 @@ import { SHARED_DL_REVOKE, sharedBulkSummary } from '../data-list';
   ],
   templateUrl: './authorized-apps.component.html',
   styleUrls: ['./authorized-apps.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class IdentityAuthorizedAppsComponent implements OnInit {

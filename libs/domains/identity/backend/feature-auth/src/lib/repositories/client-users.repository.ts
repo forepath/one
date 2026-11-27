@@ -57,7 +57,7 @@ export class ClientUsersRepository {
   async findByClientId(clientId: string): Promise<ClientUserEntity[]> {
     return await this.repository.find({
       where: { clientId },
-      relations: ['user'],
+      relations: { user: true },
       order: { createdAt: 'DESC' },
     });
   }

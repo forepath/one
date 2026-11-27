@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -89,6 +89,7 @@ const NONE_PROVIDER_SENTINEL = '';
     FpcPageHeaderComponent,
   ],
   templateUrl: './service-types-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./service-types-page.component.scss'],
 })
 export class ServiceTypesPageComponent implements OnInit {

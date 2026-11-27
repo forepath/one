@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { FpcMapEditorComponent, type FpcMapValue, fpcMapRowError } from './map-editor.component';
@@ -6,6 +6,7 @@ import { FpcMapEditorComponent, type FpcMapValue, fpcMapRowError } from './map-e
 @Component({
   standalone: true,
   imports: [FpcMapEditorComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<fpc-map-editor label="Labels" [(value)]="labels" [valueType]="type()" keyPattern="^[a-z]+$" />`,
 })
 class HostComponent {

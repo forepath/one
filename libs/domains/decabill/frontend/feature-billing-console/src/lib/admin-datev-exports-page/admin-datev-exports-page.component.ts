@@ -1,5 +1,14 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal, untracked } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+  untracked,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -68,6 +77,7 @@ import { BillingTenantSwitchComponent, type BillingTenantSwitchOption } from '..
   ],
   providers: [DatePipe],
   templateUrl: './admin-datev-exports-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-datev-exports-page.component.scss',
 })
 export class AdminDatevExportsPageComponent implements OnInit {

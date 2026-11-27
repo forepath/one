@@ -418,7 +418,7 @@ export class TicketAutomationService {
         payload,
       }),
     );
-    const t = await this.ticketRepo.findOne({ where: { id: ticketId }, select: ['clientId'] });
+    const t = await this.ticketRepo.findOne({ where: { id: ticketId }, select: { clientId: true } });
 
     if (t) {
       this.ticketBoardRealtime.emitToClient(
@@ -464,7 +464,7 @@ export class TicketAutomationService {
     const refreshed = await this.automationRepo.findOne({ where: { ticketId } });
 
     if (refreshed) {
-      const t = await this.ticketRepo.findOne({ where: { id: ticketId }, select: ['clientId'] });
+      const t = await this.ticketRepo.findOne({ where: { id: ticketId }, select: { clientId: true } });
 
       if (t) {
         this.ticketBoardRealtime.emitToClient(
@@ -642,7 +642,7 @@ export class TicketAutomationService {
       const automationRow = await this.automationRepo.findOne({ where: { ticketId } });
 
       if (automationRow?.approvedAt) {
-        const u = await this.ticketRepo.findOne({ where: { id: ticketId }, select: ['updatedAt'] });
+        const u = await this.ticketRepo.findOne({ where: { id: ticketId }, select: { updatedAt: true } });
 
         if (u) {
           await this.automationRepo.update({ ticketId }, { approvalBaselineTicketUpdatedAt: u.updatedAt });

@@ -61,8 +61,8 @@ export class FpcListEditorItemDirective<T = unknown> {
 
   static ngTemplateContextGuard<T>(
     _dir: FpcListEditorItemDirective<T>,
-    ctx: unknown,
-  ): ctx is FpcListEditorItemContext<T> {
+    _ctx: unknown,
+  ): _ctx is FpcListEditorItemContext<T> {
     return true;
   }
 }

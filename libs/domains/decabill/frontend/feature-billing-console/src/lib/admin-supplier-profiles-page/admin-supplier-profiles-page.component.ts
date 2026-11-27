@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -74,6 +74,7 @@ import { profileCompleteState } from '../shared/table-states';
   ],
   providers: [DatePipe],
   templateUrl: './admin-supplier-profiles-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-supplier-profiles-page.component.scss'],
 })
 export class AdminSupplierProfilesPageComponent implements OnInit {

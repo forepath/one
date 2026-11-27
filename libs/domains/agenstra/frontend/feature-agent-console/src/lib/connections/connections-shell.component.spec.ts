@@ -1,10 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
 import { ConnectionsShellComponent, connectionsSectionFromUrl } from './connections-shell.component';
 
-@Component({ standalone: true, template: '<p data-testid="page">page</p>' })
+@Component({
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: '<p data-testid="page">page</p>',
+})
 class EmptyPageComponent {}
 
 describe('ConnectionsShellComponent', () => {

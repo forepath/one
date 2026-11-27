@@ -12,8 +12,6 @@ import { OpenAiApiError } from '../utils/openai-compatible-errors';
 import { isOpenAiCompatibleApiEnabled, OpenAiCompatibleService } from './openai-compatible.service';
 import { RemoteChatTurnAbortedError } from './remote-agents-session.service';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- collaborator fakes */
-
 describe('OpenAiCompatibleService', () => {
   const clientId = 'client-1';
   const agentId = 'agent-1';

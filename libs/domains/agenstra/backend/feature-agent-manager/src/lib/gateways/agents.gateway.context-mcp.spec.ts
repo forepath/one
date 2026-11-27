@@ -21,8 +21,6 @@ import type { AgentContextTicketRecord } from '../types/agent-context.types';
 
 import { AgentsGateway } from './agents.gateway';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- private gateway helpers are exercised directly */
-
 describe('AgentsGateway context MCP integration', () => {
   const agentId = '11111111-1111-4111-8111-111111111111';
   const agent = {

@@ -37,7 +37,7 @@ The application integrates the `@forepath/agenstra/backend/feature-agent-manager
 
 ### Prerequisites
 
-- Node.js 24.22.1 or higher
+- Node.js 26.13.1 or higher
 - PostgreSQL database
 - OIDC identity provider (for HTTP authentication, optional if using API key authentication)
 - Docker (for agent container management)

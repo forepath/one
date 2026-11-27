@@ -67,7 +67,7 @@ export class ClientAgentAutonomyService {
     await this.assertAccess(clientId, req);
     const rows = await this.repo.find({
       where: { clientId, enabled: true },
-      select: ['agentId'],
+      select: { agentId: true },
       order: { agentId: 'ASC' },
     });
 
