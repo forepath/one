@@ -4,8 +4,6 @@ import type { OpenCodeEventMapper } from './opencode-event-mapper';
 import { OpenCodeRuntimeService } from './opencode-runtime.service';
 import type { OpenCodeSessionService } from './opencode-session.service';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- only the session start of the drain is exercised */
-
 describe('OpenCodeRuntimeService automation sessions', () => {
   const stop = new Error('stop after the session was resolved');
   let sessions: { clearSession: jest.Mock; getOrCreateSessionId: jest.Mock };

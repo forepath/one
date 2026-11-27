@@ -18,7 +18,6 @@ const controllersDir = join(__dirname, '..', 'controllers');
 describe('Agenstra PAT route scopes', () => {
   const modules = readdirSync(controllersDir)
     .filter((file) => file.endsWith('.controller.ts'))
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
     .map((file) => require(join(controllersDir, file)) as Record<string, unknown>);
   const controllers = collectControllerClasses(modules);
 

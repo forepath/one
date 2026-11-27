@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { FpcButtonComponent } from '../button/button.component';
@@ -10,6 +10,7 @@ import { FpcModalComponent, fpcModalContentAtCap } from './modal.component';
 @Component({
   standalone: true,
   imports: [FpcModalComponent, FpcModalFooterDirective, FpcButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-modal [(open)]="open" title="Create thing">
       <p>Body <fpc-button class="body-action">Add row</fpc-button></p>

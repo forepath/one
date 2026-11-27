@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -62,6 +72,7 @@ import { buildPathPrefixSuggestions } from './path-prefix-suggestions.util';
     FpcTypeaheadSelectComponent,
   ],
   templateUrl: './workspace-search-panel.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./workspace-search-panel.component.scss'],
 })
 export class WorkspaceSearchPanelComponent {

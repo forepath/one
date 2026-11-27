@@ -129,14 +129,16 @@
                   @if (selectedContainer(); as container) {
                     <dl class="row small mb-3">
                       <dt class="col-sm-3 text-body-secondary" i18n="@@featureContainerManager-cpu">CPU</dt>
-                      <dd class="col-sm-9">{{ formatPercent(container.stats?.cpuPercent) }}</dd>
+                      <dd class="col-sm-9">
+                        {{ formatPercent($safeNavigationMigration(container.stats?.cpuPercent)) }}
+                      </dd>
                       <dt class="col-sm-3 text-body-secondary" i18n="@@featureContainerManager-memory">Memory</dt>
                       <dd class="col-sm-9">
-                        {{ formatPercent(container.stats?.memoryPercent) }}
-                        @if (container.stats?.memoryUsageBytes !== null) {
-                          ({{ formatBytes(container.stats?.memoryUsageBytes) }}
-                          @if (container.stats?.memoryLimitBytes !== null) {
-                            / {{ formatBytes(container.stats?.memoryLimitBytes) }}
+                        {{ formatPercent($safeNavigationMigration(container.stats?.memoryPercent)) }}
+                        @if ($safeNavigationMigration(container.stats?.memoryUsageBytes) !== null) {
+                          ({{ formatBytes($safeNavigationMigration(container.stats?.memoryUsageBytes)) }}
+                          @if ($safeNavigationMigration(container.stats?.memoryLimitBytes) !== null) {
+                            / {{ formatBytes($safeNavigationMigration(container.stats?.memoryLimitBytes)) }}
                           }
                           )
                         }
@@ -148,13 +150,13 @@
                             <span class="container-manager-tab__metric-circle" aria-hidden="true">
                               <i class="bi bi-arrow-down"></i>
                             </span>
-                            <span>{{ formatBytes(container.stats?.networkRxBytes) }}</span>
+                            <span>{{ formatBytes($safeNavigationMigration(container.stats?.networkRxBytes)) }}</span>
                           </span>
                           <span class="container-manager-tab__metric">
                             <span class="container-manager-tab__metric-circle" aria-hidden="true">
                               <i class="bi bi-arrow-up"></i>
                             </span>
-                            <span>{{ formatBytes(container.stats?.networkTxBytes) }}</span>
+                            <span>{{ formatBytes($safeNavigationMigration(container.stats?.networkTxBytes)) }}</span>
                           </span>
                         </div>
                       </dd>
@@ -163,11 +165,11 @@
                         <div class="container-manager-tab__metric-row">
                           <span class="container-manager-tab__metric">
                             <span class="container-manager-tab__metric-circle" aria-hidden="true">R</span>
-                            <span>{{ formatBytes(container.stats?.blockReadBytes) }}</span>
+                            <span>{{ formatBytes($safeNavigationMigration(container.stats?.blockReadBytes)) }}</span>
                           </span>
                           <span class="container-manager-tab__metric">
                             <span class="container-manager-tab__metric-circle" aria-hidden="true">W</span>
-                            <span>{{ formatBytes(container.stats?.blockWriteBytes) }}</span>
+                            <span>{{ formatBytes($safeNavigationMigration(container.stats?.blockWriteBytes)) }}</span>
                           </span>
                         </div>
                       </dd>

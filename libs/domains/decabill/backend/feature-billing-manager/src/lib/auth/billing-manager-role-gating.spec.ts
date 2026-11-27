@@ -40,7 +40,6 @@ function routeRoles(controller: new (...args: never[]) => unknown): Array<{ rout
 }
 
 describe('Decabill manager role gating', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   const modules = findControllerFiles(libDir).map((file) => require(file) as Record<string, unknown>);
   const routes = collectControllerClasses(modules).flatMap((controller) => routeRoles(controller as never));
   const gated = routes.filter((route) => route.roles.length > 0);

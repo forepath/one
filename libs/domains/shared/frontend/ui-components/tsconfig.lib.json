@@ -16,5 +16,8 @@
     "src/test-setup.ts",
     "**/*.stories.ts",
     "**/*.stories.js"
-  ]
+  ],
+  "angularCompilerOptions": {
+    "strictTemplates": false
+  }
 }

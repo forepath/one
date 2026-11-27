@@ -11,6 +11,7 @@ import {
   signal,
   untracked,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -231,6 +232,7 @@ type ConfigChangeWizardStep = {
   ],
   providers: [DatePipe],
   templateUrl: './subscriptions.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./subscriptions.component.scss'],
 })
 export class SubscriptionsComponent implements OnInit {

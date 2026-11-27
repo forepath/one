@@ -179,7 +179,6 @@ export class AtlassianImportProvider implements ExternalContextImportProvider {
     if (agileBoardId != null) {
       let startAt = 0;
 
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         const url = new URL(`${base}/rest/agile/1.0/board/${agileBoardId}/issue`);
 
@@ -220,7 +219,6 @@ export class AtlassianImportProvider implements ExternalContextImportProvider {
     } else {
       let startAt = 0;
 
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         const res = await atlassianFetchJson(`${base}/rest/api/3/search`, {
           method: 'POST',

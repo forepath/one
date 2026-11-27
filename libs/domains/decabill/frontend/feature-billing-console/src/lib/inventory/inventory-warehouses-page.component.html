@@ -580,7 +580,9 @@
         name="inventoryAddQuantity"
         data-testid="inventory-add-article-quantity"
       />
-      <span class="input-group-text" fpcInputGroupSuffix>{{ unitLabelOf(addArticle()?.unit) }}</span>
+      <span class="input-group-text" fpcInputGroupSuffix>{{
+        unitLabelOf($safeNavigationMigration(addArticle()?.unit))
+      }}</span>
     </fpc-input-group>
   </fpc-form-field>
   <div *fpcModalFooter class="d-flex flex-wrap justify-content-end gap-2">

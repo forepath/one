@@ -1,9 +1,9 @@
 import { formatFiles, Tree, updateJson } from '@nx/devkit';
 import { applicationGenerator as generatorFn } from '@nx/nest';
-import { setupDockerGenerator as setupDockerGeneratorFn } from '@nx/node/src/generators/setup-docker/setup-docker';
 
 import { BackendGeneratorSchema } from './schema';
 import { resolveDomainAppPaths } from '../utils/domain-app-paths';
+import { setupDocker as setupDockerGeneratorFn } from '../utils/setup-docker';
 
 export async function backendGenerator(tree: Tree, options: BackendGeneratorSchema) {
   const { roleName, projectName, appRoot } = resolveDomainAppPaths(options.name, 'backend', options, 'agenstra');
@@ -87,21 +87,22 @@ export async function backendGenerator(tree: Tree, options: BackendGeneratorSche
     return json;
   });
 
-  updateJson(tree, '.eslintrc.json', (json) => {
-    const depConstraints = json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints || [];
-    const scopeTag = `scope:backend`;
+  updateJson(
+    tree,
+    'eslint.dep-constraints.json',
+    (depConstraints: { sourceTag: string; onlyDependOnLibsWithTags: string[] }[]) => {
+      const scopeTag = `scope:backend`;
 
-    if (!depConstraints.some((constraint) => constraint.sourceTag === scopeTag)) {
-      depConstraints.push({
-        sourceTag: scopeTag,
-        onlyDependOnLibsWithTags: [scopeTag, 'scope:shared'],
-      });
-    }
+      if (!depConstraints.some((constraint) => constraint.sourceTag === scopeTag)) {
+        depConstraints.push({
+          sourceTag: scopeTag,
+          onlyDependOnLibsWithTags: [scopeTag, 'scope:shared'],
+        });
+      }
 
-    json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints = depConstraints;
-
-    return json;
-  });
+      return depConstraints;
+    },
+  );
 
   if (options.protected) {
     // TODO: Bootstrap authentication

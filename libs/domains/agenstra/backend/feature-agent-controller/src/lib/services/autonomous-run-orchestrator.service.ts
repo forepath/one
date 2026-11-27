@@ -459,7 +459,7 @@ export class AutonomousRunOrchestratorService {
     } = { consecutiveFailureCount: 0, nextRetryAt: null };
 
     if (automation.approvedAt) {
-      const u = await this.ticketRepo.findOne({ where: { id: ticket.id }, select: ['updatedAt'] });
+      const u = await this.ticketRepo.findOne({ where: { id: ticket.id }, select: { updatedAt: true } });
 
       if (u) {
         successAutomationPatch.approvalBaselineTicketUpdatedAt = u.updatedAt;
@@ -669,7 +669,7 @@ export class AutonomousRunOrchestratorService {
     };
 
     if (auto?.approvedAt) {
-      const u = await this.ticketRepo.findOne({ where: { id: ticket.id }, select: ['updatedAt'] });
+      const u = await this.ticketRepo.findOne({ where: { id: ticket.id }, select: { updatedAt: true } });
 
       if (u) {
         failAutomationPatch.approvalBaselineTicketUpdatedAt = u.updatedAt;
@@ -747,7 +747,7 @@ export class AutonomousRunOrchestratorService {
         payload,
       }),
     );
-    const t = await this.ticketRepo.findOne({ where: { id: ticketId }, select: ['clientId'] });
+    const t = await this.ticketRepo.findOne({ where: { id: ticketId }, select: { clientId: true } });
 
     if (t) {
       this.ticketBoardRealtime.emitToClient(

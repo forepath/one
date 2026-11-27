@@ -104,7 +104,6 @@ class McpProxy {
   }
 
   private startFileWatcher(): void {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const fs = require('node:fs');
     const targetPath = this.config.targetArgs[0];
     let watchPath: string;

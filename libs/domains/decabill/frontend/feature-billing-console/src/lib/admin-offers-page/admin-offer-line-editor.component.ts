@@ -11,6 +11,7 @@ import {
   SimpleChanges,
   computed,
   signal,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -68,6 +69,7 @@ import {
     FpcFormFieldComponent,
     FpcItemCardComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './admin-offer-line-editor.component.html',
 })
 export class AdminOfferLineEditorComponent implements OnInit, OnChanges {

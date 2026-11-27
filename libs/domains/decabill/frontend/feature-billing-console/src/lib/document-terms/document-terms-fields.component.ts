@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   DELIVERY_TERMS_PLACE_MAX_LENGTH,
@@ -26,6 +26,7 @@ import {
   selector: 'framework-document-terms-fields',
   standalone: true,
   imports: [FormsModule, FpcFormFieldComponent, FpcFormControlComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './document-terms-fields.component.html',
 })
 export class DocumentTermsFieldsComponent {

@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import {
@@ -15,7 +15,12 @@ import { AgentGraphCanvasComponent } from './agent-graph-canvas.component';
 import { AgentGraphsPageComponent } from './agent-graphs-page.component';
 
 /** jsdom has no 2D canvas: the viewer is replaced by a stub. */
-@Component({ selector: 'framework-agent-graph-canvas', standalone: true, template: '' })
+@Component({
+  selector: 'framework-agent-graph-canvas',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: '',
+})
 class AgentGraphCanvasStubComponent {
   readonly document = input<AgentGraphDocument | null>(null);
   readonly selectedId = input<string | null>(null);

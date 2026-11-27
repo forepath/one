@@ -470,7 +470,6 @@ export class BillingJobsProcessor extends WorkerHost {
 
       await this.invoiceOverdue.markOverdueSupplierInvoices();
 
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         const ids = await this.invoiceOverdue.findInvoiceIdsPage(offset);
 
@@ -501,7 +500,6 @@ export class BillingJobsProcessor extends WorkerHost {
     await this.forEachConfiguredTenant(async (tenantId) => {
       let offset = 0;
 
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         const ids = await this.invoiceAutoPayment.findInvoiceIdsPage(offset);
 

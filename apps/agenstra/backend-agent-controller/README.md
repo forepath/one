@@ -37,7 +37,7 @@ The application integrates the `@forepath/agenstra/backend/feature-agent-control
 
 ### Prerequisites
 
-- Node.js 24.22.1 or higher
+- Node.js 26.13.1 or higher
 - PostgreSQL database
 - OIDC or SAML identity provider (optional; API key or users authentication work without one). For local testing see [platform authentication](../../shared/platform-authentication/README.md)
 - Docker (for server provisioning)

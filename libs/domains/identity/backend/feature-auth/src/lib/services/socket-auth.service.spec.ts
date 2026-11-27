@@ -270,7 +270,6 @@ describe('SocketAuthService', () => {
     });
 
     it('resolves the identity in the socket tenant, not the (unbound) default tenant', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
       const { getTenantIdOrDefault } = require('@forepath/shared/backend');
       let tenantDuringResolve: string | undefined;
 

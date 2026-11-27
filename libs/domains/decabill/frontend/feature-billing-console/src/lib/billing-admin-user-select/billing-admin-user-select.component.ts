@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, input, model, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  model,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { AuthService, type UserResponseDto } from '@forepath/identity/frontend';
 import { FpcBadgeComponent, FpcTypeaheadSelectComponent } from '@forepath/shared/frontend/ui-components';
@@ -10,6 +20,7 @@ import { catchError, debounceTime, distinctUntilChanged, of, skip, switchMap, ta
   standalone: true,
   imports: [CommonModule, FpcBadgeComponent, FpcTypeaheadSelectComponent],
   templateUrl: './billing-admin-user-select.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./billing-admin-user-select.component.scss'],
 })
 export class BillingAdminUserSelectComponent {

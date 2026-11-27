@@ -218,7 +218,7 @@
                                 <span class="fw-medium text-break flex-grow-1 min-width-0">{{
                                   relation.targetType === 'ticket'
                                     ? relationTicketDisplay(relation.targetTicketLongSha)
-                                    : relationKnowledgeTitle(relationNode?.title)
+                                    : relationKnowledgeTitle($safeNavigationMigration(relationNode?.title))
                                 }}</span>
                               </span>
                             </fpc-button>

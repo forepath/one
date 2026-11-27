@@ -7,8 +7,6 @@ import type { OpenCodeEventMapper } from './opencode-event-mapper';
 import { OpenCodeRuntimeService } from './opencode-runtime.service';
 import type { OpenCodeSessionService } from './opencode-session.service';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- the drain itself is stubbed */
-
 describe('OpenCodeRuntimeService active turns', () => {
   const chatId = '33333333-3333-4333-8333-333333333333';
   const key = { agentId: 'agent-1', containerId: 'container-1', resumeSessionSuffix: `-chat-${chatId}` };

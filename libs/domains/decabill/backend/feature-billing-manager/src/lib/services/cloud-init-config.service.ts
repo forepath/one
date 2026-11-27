@@ -303,7 +303,6 @@ export class CloudInitConfigService {
     const referencing: string[] = [];
     let offset = 0;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const plans = await this.servicePlansRepository.findAll(SERVICE_PLAN_REFERENCE_BATCH_SIZE, offset);
       const batchMatches = plans.filter((plan) => {

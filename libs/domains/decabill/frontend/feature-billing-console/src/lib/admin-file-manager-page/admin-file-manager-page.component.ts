@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -56,6 +56,7 @@ interface TreeNodeView {
     FpcTooltipComponent,
   ],
   templateUrl: './admin-file-manager-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-file-manager-page.component.scss',
 })
 export class AdminFileManagerPageComponent implements OnInit {

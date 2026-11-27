@@ -12,6 +12,7 @@ import {
   SimpleChanges,
   ViewChild,
   inject,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { Crepe } from '@milkdown/crepe';
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
@@ -21,6 +22,7 @@ import { listener, listenerCtx } from '@milkdown/plugin-listener';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './knowledge-editor.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./knowledge-editor.component.scss'],
 })
 export class KnowledgeEditorComponent implements AfterViewInit, OnChanges, OnDestroy {

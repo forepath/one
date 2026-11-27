@@ -1,5 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, input, NgZone, OnDestroy, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  NgZone,
+  OnDestroy,
+  output,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FpcButtonComponent, FpcButtonGroupComponent } from '@forepath/shared/frontend/ui-components';
 import type { editor } from 'monaco-editor';
 import * as monaco from 'monaco-editor';
@@ -14,6 +25,7 @@ import { applyDecabillMonacoEditorTheme } from './monaco-decabill-theme';
   standalone: true,
   imports: [CommonModule, MonacoEditorModule, FpcButtonComponent, FpcButtonGroupComponent],
   templateUrl: './monaco-editor-wrapper.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./monaco-editor-wrapper.component.scss'],
 })
 export class MonacoEditorWrapperComponent implements OnDestroy {

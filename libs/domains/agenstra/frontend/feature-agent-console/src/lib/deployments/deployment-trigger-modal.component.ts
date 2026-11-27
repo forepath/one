@@ -9,6 +9,7 @@ import {
   output,
   signal,
   untracked,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -76,6 +77,7 @@ export function deploymentInputsFromMap(value: FpcMapValue): Record<string, stri
     FpcModalFooterDirective,
     FpcTypeaheadSelectComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-modal [(open)]="open" size="lg" [scrollable]="true" [title]="title()">
       @if (error()) {

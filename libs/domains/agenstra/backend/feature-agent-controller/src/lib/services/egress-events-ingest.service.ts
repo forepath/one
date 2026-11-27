@@ -49,7 +49,7 @@ export class EgressEventsIngestService {
       return clientIds;
     }
 
-    const rows = await this.cursors.find({ select: ['clientId', 'updatedAt'] });
+    const rows = await this.cursors.find({ select: { clientId: true, updatedAt: true } });
     const polledAt = new Map(rows.map((row) => [row.clientId, row.updatedAt?.getTime() ?? 0]));
 
     return [...clientIds].sort((left, right) => (polledAt.get(left) ?? -1) - (polledAt.get(right) ?? -1)).slice(0, max);

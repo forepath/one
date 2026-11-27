@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnDestroy, effect, inject, input, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  effect,
+  inject,
+  input,
+  signal,
+  viewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { VncSessionsService } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { FpcEmptyStateComponent } from '@forepath/shared/frontend/ui-components';
@@ -11,6 +21,7 @@ import { loadNovncRfb, type NovncRfbInstance } from './load-novnc-rfb';
   imports: [CommonModule, FpcEmptyStateComponent],
   templateUrl: './virtual-desktop.component.html',
   styleUrls: ['./virtual-desktop.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class VirtualDesktopComponent implements OnDestroy {

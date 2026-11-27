@@ -11,8 +11,6 @@ import type { AgentTaskRunnerService } from './agent-task-runner.service';
 import type { ClientAgentChatsProxyService } from './client-agent-chats-proxy.service';
 import type { RemoteAgentsSessionService, RemoteChatStreamingParams } from './remote-agents-session.service';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- typeorm FindOperator internals in the repository fake */
-
 function matches(row: Record<string, unknown>, where: Record<string, unknown>): boolean {
   return Object.entries(where).every(([key, expected]) => {
     const actual = row[key];

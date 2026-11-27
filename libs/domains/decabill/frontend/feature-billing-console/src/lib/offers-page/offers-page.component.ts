@@ -1,5 +1,15 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, OnInit, signal, untracked } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  OnInit,
+  signal,
+  untracked,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -75,6 +85,7 @@ type CustomerOffersTab = 'pending' | 'history';
   ],
   providers: [DatePipe],
   templateUrl: './offers-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./offers-page.component.scss'],
 })
 export class OffersPageComponent implements OnInit {

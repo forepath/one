@@ -7,8 +7,6 @@ import { createPinnedSocketAgent } from '../utils/client-endpoint-security';
 
 import { RemoteAgentsSessionService } from './remote-agents-session.service';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- minimal socket.io client fake */
-
 class FakeRemoteSocket extends EventEmitter {
   readonly sent: Array<{ event: string; payload: unknown }> = [];
 

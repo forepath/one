@@ -61,21 +61,22 @@ export async function libGenerator(tree: Tree, options: LibGeneratorSchema) {
     return json;
   });
 
-  updateJson(tree, '.eslintrc.json', (json) => {
-    const depConstraints = json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints || [];
-    const scopeTag = `scope:${options.scope}`;
+  updateJson(
+    tree,
+    'eslint.dep-constraints.json',
+    (depConstraints: { sourceTag: string; onlyDependOnLibsWithTags: string[] }[]) => {
+      const scopeTag = `scope:${options.scope}`;
 
-    if (!depConstraints.some((constraint) => constraint.sourceTag === scopeTag)) {
-      depConstraints.push({
-        sourceTag: scopeTag,
-        onlyDependOnLibsWithTags: [scopeTag, 'scope:shared'],
-      });
-    }
+      if (!depConstraints.some((constraint) => constraint.sourceTag === scopeTag)) {
+        depConstraints.push({
+          sourceTag: scopeTag,
+          onlyDependOnLibsWithTags: [scopeTag, 'scope:shared'],
+        });
+      }
 
-    json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints = depConstraints;
-
-    return json;
-  });
+      return depConstraints;
+    },
+  );
 
   await formatFiles(tree);
 }

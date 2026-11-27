@@ -21,8 +21,6 @@ import type { WorkspaceChangeNotifierService } from '../services/workspace-chang
 
 import { AgentsGateway } from './agents.gateway';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- private gateway state is exercised directly */
-
 describe('AgentsGateway client tools', () => {
   const agentId = '11111111-1111-4111-8111-111111111111';
   const agent = { id: agentId, name: 'Agent', containerId: 'container-1', agentType: 'opencode' };

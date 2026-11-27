@@ -1,5 +1,15 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, OnInit, signal, untracked } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  OnInit,
+  signal,
+  untracked,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -116,6 +126,7 @@ interface AddonMeterOption {
   ],
   providers: [DatePipe],
   templateUrl: './admin-subscriptions-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-subscriptions-page.component.scss'],
 })
 export class AdminSubscriptionsPageComponent implements OnInit {

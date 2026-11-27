@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, OnInit, signal, untracked } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal, untracked, ChangeDetectionStrategy } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -144,6 +144,7 @@ function toAmount(value: number | string | null | undefined): number {
     FpcTabGroupComponent,
   ],
   templateUrl: './accounting-journal-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './accounting-section.scss',
 })
 export class AccountingJournalPageComponent implements OnInit {

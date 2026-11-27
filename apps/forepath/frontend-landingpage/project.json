@@ -15,6 +15,7 @@
     "build": {
       "executor": "@angular-devkit/build-angular:application",
       "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/forepath/frontend-landingpage",
         "index": "apps/forepath/frontend-landingpage/src/index.html",
@@ -98,12 +99,12 @@
         "de": {
           "localize": ["de"]
         }
-      },
-      "defaultConfiguration": "production"
+      }
     },
     "serve": {
       "continuous": true,
       "executor": "@angular-devkit/build-angular:dev-server",
+      "defaultConfiguration": "development",
       "options": {
         "hmr": false,
         "port": 4300
@@ -115,8 +116,7 @@
         "development": {
           "buildTarget": "forepath-frontend-landingpage:build:development,en"
         }
-      },
-      "defaultConfiguration": "development"
+      }
     },
     "extract-i18n-angular": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
@@ -127,11 +127,11 @@
     },
     "extract-i18n": {
       "executor": "nx:run-commands",
+      "dependsOn": ["extract-i18n-angular"],
       "options": {
         "command": "node ../../../remove-context-groups.cjs src/i18n/messages.xlf",
         "cwd": "apps/forepath/frontend-landingpage"
-      },
-      "dependsOn": ["extract-i18n-angular"]
+      }
     },
     "lint": {
       "executor": "@nx/eslint:lint"
@@ -166,15 +166,16 @@
     },
     "postbuild": {
       "executor": "nx:run-commands",
+      "dependsOn": ["build", "build-delegating-server"],
       "options": {
         "command": "cp dist/apps/forepath/frontend-landingpage-delegating-server/server/delegating-server.js dist/apps/forepath/frontend-landingpage/server/server.mjs && cp -r dist/apps/forepath/frontend-landingpage/browser dist/apps/forepath/frontend-landingpage/server/browser"
-      },
-      "dependsOn": ["build", "build-delegating-server"]
+      }
     },
     "server-container-image": {
       "dependsOn": ["postbuild"],
       "cache": false,
       "executor": "@nx-tools/nx-container:build",
+      "defaultConfiguration": "test",
       "options": {
         "engine": "docker",
         "file": "apps/forepath/frontend-landingpage/Dockerfile.server",
@@ -196,8 +197,7 @@
             "ghcr.io/forepath/forepath-landingpage-server:$VERSION"
           ]
         }
-      },
-      "defaultConfiguration": "test"
+      }
     },
     "start-containers": {
       "dependsOn": ["server-container-image"],

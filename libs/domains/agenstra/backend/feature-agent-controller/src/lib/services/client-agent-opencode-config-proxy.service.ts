@@ -1,5 +1,4 @@
 import type { EffectivePlatformSecurityPolicy } from '@forepath/agenstra/shared/util-opencode-config';
-/* eslint-disable @typescript-eslint/no-var-requires */
 import { AuthenticationType } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';

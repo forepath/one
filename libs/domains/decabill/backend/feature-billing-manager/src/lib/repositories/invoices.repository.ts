@@ -815,7 +815,7 @@ export class InvoicesRepository {
 
     const found = await this.repository.find({
       where: { id: In(lookup.ids) },
-      relations: ['subscription'],
+      relations: { subscription: true },
     });
     const byId = new Map(found.map((item) => [item.id, item]));
 

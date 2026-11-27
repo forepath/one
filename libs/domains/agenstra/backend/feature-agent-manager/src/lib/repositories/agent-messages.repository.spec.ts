@@ -120,7 +120,7 @@ describe('AgentMessagesRepository', () => {
         take: 50,
         skip: 0,
         order: { createdAt: 'ASC' },
-        relations: ['agent'],
+        relations: { agent: true },
       });
     });
 
@@ -136,7 +136,7 @@ describe('AgentMessagesRepository', () => {
         take: 50,
         skip: 0,
         order: { createdAt: 'ASC' },
-        relations: ['agent'],
+        relations: { agent: true },
       });
     });
   });
@@ -236,7 +236,7 @@ describe('AgentMessagesRepository', () => {
         take: 50,
         skip: 0,
         order: { createdAt: 'DESC' },
-        relations: ['agent'],
+        relations: { agent: true },
       });
     });
 
@@ -251,7 +251,7 @@ describe('AgentMessagesRepository', () => {
         take: 50,
         skip: 0,
         order: { createdAt: 'DESC' },
-        relations: ['agent'],
+        relations: { agent: true },
       });
     });
   });

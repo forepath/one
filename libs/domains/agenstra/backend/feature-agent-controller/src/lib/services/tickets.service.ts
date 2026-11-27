@@ -266,7 +266,7 @@ export class TicketsService {
   private async collectSubtreeTicketIds(rootId: string, sourceClientId: string): Promise<string[]> {
     const all = await this.ticketRepo.find({
       where: { clientId: sourceClientId },
-      select: ['id', 'parentId'],
+      select: { id: true, parentId: true },
     });
     const byParent = new Map<string | null, string[]>();
 
@@ -803,7 +803,7 @@ export class TicketsService {
       }
 
       visited.add(current);
-      const row = await this.ticketRepo.findOne({ where: { id: current }, select: ['parentId'] });
+      const row = await this.ticketRepo.findOne({ where: { id: current }, select: { parentId: true } });
 
       current = row?.parentId ?? null;
     }
@@ -1131,7 +1131,7 @@ export class TicketsService {
     if (normalized.length >= 40) {
       ticket = await this.ticketRepo.findOne({
         where: { clientId, longSha: normalized.slice(0, 40) },
-        select: ['id'],
+        select: { id: true },
       });
     } else {
       ticket = await this.ticketRepo
@@ -1180,7 +1180,9 @@ export class TicketsService {
   async listAutomationPromptTicketLongShas(ticket: TicketEntity): Promise<string[]> {
     const parentChain = await this.loadParentChainEntities(ticket);
     const ids = [ticket.id, ...(await this.collectDescendantTicketIds(ticket.id)), ...parentChain.map((row) => row.id)];
-    const rows = ids.length ? await this.ticketRepo.find({ where: { id: In(ids) }, select: ['id', 'longSha'] }) : [];
+    const rows = ids.length
+      ? await this.ticketRepo.find({ where: { id: In(ids) }, select: { id: true, longSha: true } })
+      : [];
     const shas = rows
       .map((row) => row.longSha?.trim().toLowerCase())
       .filter((sha): sha is string => !!sha && sha.length > 0);
@@ -1191,7 +1193,7 @@ export class TicketsService {
   private async collectDescendantTicketIds(ticketId: string): Promise<string[]> {
     const children = await this.ticketRepo.find({
       where: { parentId: ticketId },
-      select: ['id'],
+      select: { id: true },
       order: { createdAt: 'ASC' },
     });
     const ids: string[] = [];
@@ -1400,7 +1402,7 @@ export class TicketsService {
 
     const rows = await this.ticketAutomationRepo.find({
       where: { ticketId: In(ticketIds) },
-      select: ['ticketId', 'eligible'],
+      select: { ticketId: true, eligible: true },
     });
 
     for (const r of rows) {

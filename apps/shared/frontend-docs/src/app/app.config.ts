@@ -1,6 +1,6 @@
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { provideClientHydration, withEventReplay, withNoIncrementalHydration } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { provideFpcDensity } from '@forepath/shared/frontend/ui-components';
 import { createCookieConsentConfig } from '@forepath/shared/frontend/util-cookie-consent';
@@ -12,7 +12,7 @@ import { appRoutes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideClientHydration(withEventReplay()),
+    provideClientHydration(withEventReplay(), withNoIncrementalHydration()),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes),
     provideHttpClient(withFetch()),

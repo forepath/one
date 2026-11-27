@@ -10,6 +10,7 @@ import {
   signal,
   untracked,
   viewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -108,6 +109,7 @@ const ACTIVITY_RELOAD_DEBOUNCE_MS = 1000;
     WorkspaceSwitchTableComponent,
   ],
   templateUrl: './chat-plans-board.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./chat-plans-board.component.scss'],
 })
 export class ChatPlansBoardComponent implements AfterViewInit {

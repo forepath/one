@@ -1,4 +1,4 @@
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withXhr } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withRouterConfig } from '@angular/router';
 import {
@@ -174,6 +174,7 @@ export const appConfig: ApplicationConfig = {
     provideOidc(),
     // Provide HTTP client with auth interceptor (API key, OIDC access token, or users / SAML session JWT)
     provideHttpClient(
+      withXhr(),
       withInterceptors([getBillingTenantInterceptor(), getAuthInterceptor(), getUsersSessionInvalidationInterceptor()]),
     ),
     // NgRx Store - base store required at root level

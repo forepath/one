@@ -102,7 +102,6 @@ describe('env.utils', () => {
 
   describe('shellSingleQuote', () => {
     it('produces a literal that bash prints verbatim (no expansion / injection)', () => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
       const { execFileSync } = require('node:child_process') as typeof import('node:child_process');
       const hostile = `ssh-ed25519 AAAAC3Nza x"; touch /tmp/should-not-exist-$$; echo "$(id) \`id\` 'q' \\`;
       const output = execFileSync('bash', ['-c', `printf '%s\\n' ${shellSingleQuote(hostile)}`]).toString();

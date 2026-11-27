@@ -1,5 +1,15 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject, OnInit, signal, untracked } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  OnInit,
+  signal,
+  untracked,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -73,6 +83,7 @@ type PromotionsTab = 'active' | 'history';
   ],
   providers: [DatePipe],
   templateUrl: './promotions-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./promotions-page.component.scss'],
 })
 export class PromotionsPageComponent implements OnInit {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, Input, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, Input, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -57,6 +57,7 @@ type MilestoneEditForm = {
     FpcTableCellDirective,
   ],
   templateUrl: './project-milestones-panel.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./project-milestones-panel.component.scss'],
 })
 export class ProjectMilestonesPanelComponent implements OnInit {

@@ -24,6 +24,14 @@ import { isStripeCheckoutFraudProtectionEnabled } from '../stripe-checkout.confi
 
 type StripeClient = ReturnType<typeof StripeCtor>;
 
+/**
+ * Stripe API version every request is sent with. Pinned explicitly so the API generation only changes
+ * with a deliberate SDK bump, not with the account default. The SDK types the option as its own pin, so
+ * typecheck and spec fail when an SDK bump moves it; update this value then. Webhook payloads use the
+ * version configured on the webhook endpoint in the Stripe Dashboard, so update that one alongside.
+ */
+export const STRIPE_API_VERSION = '2026-11-18.endive' as const;
+
 interface StripeCheckoutSessionPayload {
   id: string;
   mode?: string | null;
@@ -56,7 +64,7 @@ export class StripePaymentProcessor implements PaymentProcessor {
     const secretKey = process.env.STRIPE_SECRET_KEY ?? '';
 
     this.webhookSecret = process.env.STRIPE_WEBHOOK_SECRET ?? '';
-    this.stripe = secretKey ? new StripeCtor(secretKey) : null;
+    this.stripe = secretKey ? new StripeCtor(secretKey, { apiVersion: STRIPE_API_VERSION }) : null;
   }
 
   getType(): string {

@@ -14,6 +14,7 @@ import {
   untracked,
   viewChild,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -351,6 +352,7 @@ const AUTOMATION_RUN_ICON: Record<TicketAutomationRunStatus, string> = {
     ReferenceComboboxComponent,
   ],
   templateUrl: './tickets-board.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./tickets-board.component.scss'],
 })
 export class TicketsBoardComponent implements OnInit {

@@ -4,7 +4,8 @@
     "outDir": "../../dist/out-tsc/tools/sbom",
     "module": "commonjs",
     "moduleResolution": "node",
-    "types": ["jest", "node"]
+    "types": ["jest", "node"],
+    "rootDir": "."
   },
   "include": ["jest.config.ts", "executors/**/*.spec.ts"]
 }

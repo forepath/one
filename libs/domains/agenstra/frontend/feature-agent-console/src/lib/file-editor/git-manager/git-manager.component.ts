@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { VcsFacade, type GitFileStatus } from '@forepath/agenstra/frontend/data-access-agent-console';
@@ -27,6 +27,7 @@ import { combineLatest, filter, map, pairwise, startWith, switchMap, take } from
   ],
   templateUrl: './git-manager.component.html',
   styleUrls: ['./git-manager.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class GitManagerComponent {

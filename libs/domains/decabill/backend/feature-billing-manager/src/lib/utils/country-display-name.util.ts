@@ -7,7 +7,6 @@ function ensureEnglishLocale(): void {
     return;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   registerLocale(require('i18n-iso-countries/langs/en.json') as Parameters<typeof registerLocale>[0]);
   localeRegistered = true;
 }

@@ -10,8 +10,6 @@ import {
 } from './openai-client-tool-turns.service';
 import type { OpenAiTurnRelayStore, RelayedCallRecord } from './openai-turn-relay.store';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- collaborator fakes */
-
 /** In-memory stand-in for Valkey shared by several "replicas". */
 class SharedKv {
   readonly values = new Map<string, string>();

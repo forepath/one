@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
@@ -10,6 +10,7 @@ import { FpcListToolbarComponent } from './list-toolbar.component';
 @Component({
   standalone: true,
   imports: [FpcListToolbarComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-list-toolbar
       [(open)]="open"
@@ -182,7 +183,7 @@ describe('fpcListQueryState', () => {
   });
 });
 
-@Component({ standalone: true, template: '' })
+@Component({ standalone: true, changeDetection: ChangeDetectionStrategy.Eager, template: '' })
 class PagedHostComponent {
   status = signal('');
   search = signal('');
@@ -234,7 +235,7 @@ describe('fpcListQueryState paging', () => {
   });
 });
 
-@Component({ standalone: true, template: '' })
+@Component({ standalone: true, changeDetection: ChangeDetectionStrategy.Eager, template: '' })
 class DefaultsHostComponent {
   // Like the statistics pages: the range starts empty and the page fills in "last 30 days" afterwards.
   defaultFrom = signal('2026-10-01');

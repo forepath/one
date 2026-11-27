@@ -938,7 +938,6 @@ describe('DockerService', () => {
 
       await expect(
         (async () => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           for await (const _item of iter) {
             // no-op
           }
@@ -1436,7 +1435,6 @@ describe('DockerService', () => {
       const logsGenerator = service.getContainerLogs(containerId);
 
       await expect(async () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for await (const _ of logsGenerator) {
           // Consume the generator to trigger the error
         }
@@ -1604,7 +1602,6 @@ describe('DockerService', () => {
       const logsGenerator = service.getContainerLogs(containerId);
 
       await expect(async () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for await (const _ of logsGenerator) {
           // Consume the generator
         }
@@ -1620,7 +1617,6 @@ describe('DockerService', () => {
       const logsGenerator = service.getContainerLogs(containerId);
 
       await expect(async () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for await (const _ of logsGenerator) {
           // Consume the generator to trigger the error
         }
@@ -1639,7 +1635,6 @@ describe('DockerService', () => {
 
       const logsGenerator = service.getContainerLogs(containerId);
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for await (const _ of logsGenerator) {
         // Consume the generator
       }

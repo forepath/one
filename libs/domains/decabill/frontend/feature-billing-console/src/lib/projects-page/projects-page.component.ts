@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { ProjectsFacade, type ProjectListItem } from '@forepath/decabill/frontend/data-access-billing-console';
@@ -22,6 +22,7 @@ import { projectState } from '../shared/table-states';
   standalone: true,
   imports: [FpcDataTableComponent, FpcEmptyStateComponent, FpcPageHeaderComponent],
   templateUrl: './projects-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./projects-page.component.scss'],
 })
 export class ProjectsPageComponent {

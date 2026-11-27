@@ -18,8 +18,6 @@ import type { WorkspaceChangeNotifierService } from '../services/workspace-chang
 
 import { AgentsGateway } from './agents.gateway';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- private gateway helpers are exercised directly */
-
 describe('AgentsGateway agent deployments bridge', () => {
   const agentId = '11111111-1111-4111-8111-111111111111';
   const otherAgentId = '22222222-2222-4222-8222-222222222222';

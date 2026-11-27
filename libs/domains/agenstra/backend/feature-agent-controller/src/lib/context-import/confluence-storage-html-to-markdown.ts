@@ -384,7 +384,6 @@ let turndown: TurndownService | null = null;
 
 function getTurndown(): TurndownService {
   if (!turndown) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const TurndownCtor = require('turndown') as new (options?: {
       headingStyle?: 'setext' | 'atx';
       codeBlockStyle?: 'indented' | 'fenced';
@@ -392,7 +391,6 @@ function getTurndown(): TurndownService {
       emDelimiter?: '_' | '*';
       preformattedCode?: boolean;
     }) => TurndownService;
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const tables = require('turndown-plugin-gfm').tables as (svc: TurndownService) => void;
     const svc = new TurndownCtor({
       headingStyle: 'atx',

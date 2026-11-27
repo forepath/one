@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, input, model, signal } from '@angular/core';
+import { Component, computed, input, model, signal, ChangeDetectionStrategy } from '@angular/core';
 import { type SubscriptionResponse } from '@forepath/decabill/frontend/data-access-billing-console';
 import { FpcBadgeComponent, FpcTypeaheadSelectComponent } from '@forepath/shared/frontend/ui-components';
 
@@ -15,6 +15,7 @@ import {
   standalone: true,
   imports: [CommonModule, FpcBadgeComponent, FpcTypeaheadSelectComponent],
   templateUrl: './billing-subscription-select.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./billing-subscription-select.component.scss'],
 })
 export class BillingSubscriptionSelectComponent {

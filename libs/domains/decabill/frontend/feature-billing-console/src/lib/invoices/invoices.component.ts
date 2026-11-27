@@ -10,6 +10,7 @@ import {
   OnInit,
   signal,
   untracked,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -123,6 +124,7 @@ type PaymentReturnFeedback = 'waiting' | 'confirmed' | 'canceled';
   ],
   providers: [DatePipe],
   templateUrl: './invoices.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./invoices.component.scss'],
 })
 export class InvoicesComponent implements OnInit {

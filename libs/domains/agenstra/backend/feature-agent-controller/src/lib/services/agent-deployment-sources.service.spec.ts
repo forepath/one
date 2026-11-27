@@ -4,8 +4,6 @@ import { TicketAutomationRunStatus } from '../entities/ticket-automation.enums';
 
 import { AgentDeploymentSourcesService, parseAgentDeploymentActionSource } from './agent-deployment-sources.service';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- repository doubles */
-
 describe('AgentDeploymentSourcesService', () => {
   const clientId = 'client-1';
   const agentId = '11111111-1111-4111-8111-111111111111';

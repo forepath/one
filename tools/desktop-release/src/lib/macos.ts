@@ -107,9 +107,7 @@ export async function signAndNotarizeMac(
 
     const identity = parseDeveloperIdIdentity(run('security', ['find-identity', '-v', '-p', 'codesigning', keychain]));
     const entitlements = resolve(root, app.macos.entitlements);
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const osxSign: OsxSign = opts.osxSign ?? require('@electron/osx-sign');
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const notarize: Notarize = opts.notarize ?? require('@electron/notarize');
 
     log.info(`codesign: ${appPath}`);

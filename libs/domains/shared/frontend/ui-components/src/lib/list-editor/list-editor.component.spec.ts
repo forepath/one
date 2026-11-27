@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import {
@@ -16,6 +16,7 @@ interface Disk {
 @Component({
   standalone: true,
   imports: [FpcListEditorComponent, FpcListEditorItemDirective],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-list-editor
       class="outer"

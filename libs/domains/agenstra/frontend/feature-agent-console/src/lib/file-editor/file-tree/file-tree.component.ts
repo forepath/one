@@ -12,6 +12,7 @@ import {
   signal,
   untracked,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -145,6 +146,7 @@ interface PendingUpload {
   styleUrls: ['./file-tree.component.scss'],
   standalone: true,
   providers: [FileTreeClipboardService],
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     tabindex: '0',
     '(keydown)': 'onTreeKeydown($event)',

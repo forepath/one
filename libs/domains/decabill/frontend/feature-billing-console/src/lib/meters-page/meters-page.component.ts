@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -65,6 +65,7 @@ interface MeterForm {
     FpcPageHeaderComponent,
   ],
   templateUrl: './meters-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./meters-page.component.scss'],
 })
 export class MetersPageComponent implements OnInit {

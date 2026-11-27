@@ -20,7 +20,7 @@ export class PromotionRedemptionsRepository {
   async findById(id: string): Promise<PromotionRedemptionEntity | null> {
     return await this.repository.findOne({
       where: { id },
-      relations: ['promotion', 'subscription'],
+      relations: { promotion: true, subscription: true },
     });
   }
 
@@ -75,7 +75,7 @@ export class PromotionRedemptionsRepository {
   async findActiveBySubscription(subscriptionId: string): Promise<PromotionRedemptionEntity[]> {
     return await this.repository.find({
       where: { subscriptionId, status: PromotionRedemptionStatus.ACTIVE },
-      relations: ['promotion', 'subscription'],
+      relations: { promotion: true, subscription: true },
       order: { redeemedAt: 'ASC' },
     });
   }

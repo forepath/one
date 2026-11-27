@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -73,6 +73,7 @@ const emptyForm = (): TokenFormState => ({
   ],
   templateUrl: './token-manager.component.html',
   styleUrls: ['./token-manager.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class IdentityTokenManagerComponent implements OnInit {

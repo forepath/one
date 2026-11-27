@@ -44,7 +44,6 @@ export function createCorrelationAwareSocketIoClient(
   url: string,
   options: { extraHeaders?: Record<string, string> } & Record<string, unknown>,
 ): IoClientSocket {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { io } = require('socket.io-client') as { io: (u: string, o: object) => IoClientSocket };
 
   return io(url, applySocketIoClientCorrelationHeaders(options));
@@ -100,10 +99,8 @@ function applyOutboundCorrelationHeader(config: AxiosRequestConfigLike, correlat
  * @param axiosInstance Default `axios` or an instance from `axios.create()` (typed loosely for Axios overload compatibility).
  */
 export function registerAxiosCorrelationIdPropagation(axiosInstance: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Axios `use()` overloads are not assignable to a narrow callback type
   interceptors: { request: { use: (onFulfilled: any) => any } };
 }): void {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   axiosInstance.interceptors.request.use((config: any) => {
     const correlationId = getCorrelationId();
 

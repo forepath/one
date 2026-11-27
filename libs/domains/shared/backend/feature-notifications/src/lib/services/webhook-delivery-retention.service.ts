@@ -58,7 +58,6 @@ export class WebhookDeliveryRetentionService {
     let deletedByAge = 0;
     let deletedByCount = 0;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const endpoints = await this.endpointsRepository.findAllBatch(offset, batchSize);
 

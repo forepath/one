@@ -1,5 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, LOCALE_ID, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  LOCALE_ID,
+  OnInit,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -116,6 +125,7 @@ export type AtlassianImportAdminLane = 'connections' | 'configs';
     FpcTypeaheadSelectComponent,
   ],
   templateUrl: './atlassian-import-admin.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './atlassian-import-admin.component.scss',
 })
 export class AtlassianImportAdminComponent implements OnInit {

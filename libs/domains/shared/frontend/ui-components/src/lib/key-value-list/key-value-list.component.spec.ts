@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { FpcKeyValueDirective, FpcKeyValueItem, FpcKeyValueListComponent } from './key-value-list.component';
@@ -6,6 +6,7 @@ import { FpcKeyValueDirective, FpcKeyValueItem, FpcKeyValueListComponent } from 
 @Component({
   standalone: true,
   imports: [FpcKeyValueListComponent, FpcKeyValueDirective],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-key-value-list [items]="items" [columns]="2">
       <ng-template fpcKeyValue="status" let-item

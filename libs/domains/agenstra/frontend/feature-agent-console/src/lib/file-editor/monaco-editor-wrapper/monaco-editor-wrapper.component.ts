@@ -14,6 +14,7 @@ import {
   SecurityContext,
   signal,
   untracked,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { DomSanitizer, SafeHtml, SafeResourceUrl } from '@angular/platform-browser';
 import type { AgentFileType } from '@forepath/agenstra/frontend/data-access-agent-console';
@@ -47,6 +48,7 @@ interface Marked {
   ],
   templateUrl: './monaco-editor-wrapper.component.html',
   styleUrls: ['./monaco-editor-wrapper.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
@@ -235,7 +237,8 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
     suggestOnTriggerCharacters: true,
     acceptSuggestionOnEnter: 'on' as const,
     tabCompletion: 'on' as const,
-    wordBasedSuggestions: true,
+    // Monaco 0.56 replaced the boolean with an enum; 'matchingDocuments' is what `true` meant.
+    wordBasedSuggestions: 'matchingDocuments' as const,
     suggestSelection: 'first' as const,
     snippetSuggestions: 'top' as const,
   }));

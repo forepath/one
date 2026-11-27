@@ -261,7 +261,7 @@ export class ClientIsolationService {
       return clientIds;
     }
 
-    const rows = await this.snapshots.find({ select: ['clientId', 'checkedAt'] });
+    const rows = await this.snapshots.find({ select: { clientId: true, checkedAt: true } });
     const checkedAt = new Map(rows.map((row) => [row.clientId, row.checkedAt?.getTime() ?? 0]));
 
     return [...clientIds]

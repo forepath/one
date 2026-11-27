@@ -1,5 +1,15 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, DestroyRef, effect, inject, LOCALE_ID, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  inject,
+  LOCALE_ID,
+  OnInit,
+  PLATFORM_ID,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
@@ -43,6 +53,7 @@ const DOCS_MASCOT_BRANDS: Record<string, SharedHeroMascotBrand> = {
   ],
   templateUrl: './docs-page.component.html',
   styleUrls: ['./docs-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class DocsPageComponent implements OnInit {

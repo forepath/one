@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -111,6 +111,7 @@ const PLAN_PREVIEW_ROWS = 60;
     FpcTabGroupComponent,
   ],
   templateUrl: './accounting-assets-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './accounting-section.scss',
 })
 export class AccountingAssetsPageComponent implements OnInit {

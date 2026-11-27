@@ -76,7 +76,7 @@ export class StatisticsRepository {
 
     const rows = await this.statisticsClients.find({
       where: { id: In(statisticsClientIds) },
-      select: ['originalClientId'],
+      select: { originalClientId: true },
     });
 
     return rows.map((row) => row.originalClientId);
@@ -511,7 +511,7 @@ export class StatisticsRepository {
   private async loadChatIoWithRelations(ids: string[]): Promise<StatisticsChatIoEntity[]> {
     const entities = await this.statisticsChatIo.find({
       where: { id: In(ids) },
-      relations: ['statisticsClient', 'statisticsAgent', 'statisticsUser'],
+      relations: { statisticsClient: true, statisticsAgent: true, statisticsUser: true },
     });
     const byId = new Map(entities.map((e) => [e.id, e]));
 
@@ -755,7 +755,7 @@ export class StatisticsRepository {
   private async loadFilterDropsWithRelations(ids: string[]): Promise<StatisticsChatFilterDropEntity[]> {
     const entities = await this.statisticsChatFilterDrops.find({
       where: { id: In(ids) },
-      relations: ['statisticsClient', 'statisticsAgent', 'statisticsUser'],
+      relations: { statisticsClient: true, statisticsAgent: true, statisticsUser: true },
     });
     const byId = new Map(entities.map((e) => [e.id, e]));
 
@@ -948,7 +948,7 @@ export class StatisticsRepository {
   private async loadFilterFlagsWithRelations(ids: string[]): Promise<StatisticsChatFilterFlagEntity[]> {
     const entities = await this.statisticsChatFilterFlags.find({
       where: { id: In(ids) },
-      relations: ['statisticsClient', 'statisticsAgent', 'statisticsUser'],
+      relations: { statisticsClient: true, statisticsAgent: true, statisticsUser: true },
     });
     const byId = new Map(entities.map((e) => [e.id, e]));
 
@@ -1240,7 +1240,7 @@ export class StatisticsRepository {
   private async loadEntityEventsWithRelations(ids: string[]): Promise<StatisticsEntityEventEntity[]> {
     const entities = await this.statisticsEntityEvents.find({
       where: { id: In(ids) },
-      relations: ['statisticsUser', 'statisticsAgents', 'statisticsAgents.statisticsClient'],
+      relations: { statisticsUser: true, statisticsAgents: { statisticsClient: true } },
     });
     const byId = new Map(entities.map((e) => [e.id, e]));
 

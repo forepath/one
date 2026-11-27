@@ -24,7 +24,6 @@ registerRuntimeConfigEndpoint(app);
 
 function getBaseDistPath(): string {
   // Method 1: Use require.main.filename (CommonJS - most reliable)
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   const mainModule = typeof require !== 'undefined' ? require.main : null;
 
   if (mainModule?.filename) {

@@ -14,6 +14,7 @@ import {
   output,
   signal,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import {
@@ -94,6 +95,7 @@ import { WorkspaceSearchPanelComponent } from './workspace-search-panel/workspac
   ],
   templateUrl: './file-editor.component.html',
   styleUrls: ['./file-editor.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class FileEditorComponent implements OnDestroy, AfterViewInit {

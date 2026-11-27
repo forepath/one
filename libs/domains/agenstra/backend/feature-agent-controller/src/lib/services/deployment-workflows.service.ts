@@ -739,7 +739,9 @@ export class DeploymentWorkflowsService {
   private async removeEntity(entity: DeploymentWorkflowEntity, actor: WorkflowActor): Promise<void> {
     const clientId = entity.clientId;
     const summary = this.toSummary(entity);
-    const runIds = (await this.runRepo.find({ select: ['id'], where: { workflowId: entity.id } })).map((run) => run.id);
+    const runIds = (await this.runRepo.find({ select: { id: true }, where: { workflowId: entity.id } })).map(
+      (run) => run.id,
+    );
 
     await this.workflowRepo.delete({ id: entity.id, clientId });
 

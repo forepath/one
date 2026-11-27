@@ -33,7 +33,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Queue } from 'bullmq';
-import { In, Repository } from 'typeorm';
+import { In, Repository, type FindOptionsSelect } from 'typeorm';
 
 import {
   AGENT_TASK_RUNS_DEFAULT_LIMIT,
@@ -61,22 +61,22 @@ import { assertValidPreferredModel } from '../utils/preferred-model.utils';
 import { AgentTaskRealtimeService } from './agent-task-realtime.service';
 
 /** Every run column except `transcript`. */
-const AGENT_TASK_RUN_SUMMARY_COLUMNS: Array<keyof AgentTaskRunEntity> = [
-  'id',
-  'taskId',
-  'clientId',
-  'agentId',
-  'trigger',
-  'status',
-  'scheduledFor',
-  'startedAt',
-  'finishedAt',
-  'outputExcerpt',
-  'failureMessage',
-  'awaitingHandoffSince',
-  'createdAt',
-  'updatedAt',
-];
+const AGENT_TASK_RUN_SUMMARY_COLUMNS: FindOptionsSelect<AgentTaskRunEntity> = {
+  id: true,
+  taskId: true,
+  clientId: true,
+  agentId: true,
+  trigger: true,
+  status: true,
+  scheduledFor: true,
+  startedAt: true,
+  finishedAt: true,
+  outputExcerpt: true,
+  failureMessage: true,
+  awaitingHandoffSince: true,
+  createdAt: true,
+  updatedAt: true,
+};
 
 export interface AgentTaskRunsPageOptions {
   limit?: number;

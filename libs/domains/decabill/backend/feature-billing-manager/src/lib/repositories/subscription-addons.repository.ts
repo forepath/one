@@ -12,7 +12,7 @@ export class SubscriptionAddonsRepository {
   ) {}
 
   async findByIdOrThrow(id: string): Promise<SubscriptionAddonEntity> {
-    const entity = await this.repository.findOne({ where: { id }, relations: ['addon'] });
+    const entity = await this.repository.findOne({ where: { id }, relations: { addon: true } });
 
     if (!entity) {
       throw new NotFoundException(`Subscription addon with ID ${id} not found`);
@@ -24,7 +24,7 @@ export class SubscriptionAddonsRepository {
   async findBySubscriptionId(subscriptionId: string): Promise<SubscriptionAddonEntity[]> {
     return await this.repository.find({
       where: { subscriptionId },
-      relations: ['addon'],
+      relations: { addon: true },
       order: { createdAt: 'ASC' },
     });
   }
@@ -32,7 +32,7 @@ export class SubscriptionAddonsRepository {
   async findActiveBySubscriptionId(subscriptionId: string): Promise<SubscriptionAddonEntity[]> {
     return await this.repository.find({
       where: { subscriptionId, status: In(['pending', 'active'] as SubscriptionAddonStatus[]) },
-      relations: ['addon'],
+      relations: { addon: true },
       order: { createdAt: 'ASC' },
     });
   }

@@ -7,12 +7,12 @@
   "types": "./src/index.d.ts",
   "dependencies": {
     "tslib": "2.8.1",
-    "@nestjs/core": "11.1.6",
-    "@nestjs/common": "11.1.6",
-    "@nestjs/throttler": "6.5.0",
+    "@nestjs/core": "11.2.11",
+    "@nestjs/common": "11.2.11",
+    "@nestjs/throttler": "6.8.0",
     "jsonwebtoken": "9.0.3",
-    "express": "4.21.2",
-    "typeorm": "0.3.27",
+    "express": "4.22.3",
+    "typeorm": "1.1.3",
     "bcrypt": "6.0.0",
     "@forepath/shared/backend/util-otel": "0.0.1",
     "@shared/backend/util-crypto": "0.0.1"

@@ -50,7 +50,6 @@ async function runGenerate(rootAbs: string): Promise<void> {
 
   const { sumsPath, jsonPath } = await writeIntegrityFiles(rootAbs, artifacts);
 
-  // eslint-disable-next-line no-console
   console.log(`Wrote ${artifacts.length} entries to ${sumsPath} and ${jsonPath}`);
 }
 
@@ -59,7 +58,6 @@ async function runVerify(rootAbs: string): Promise<void> {
 
   if (!result.ok) {
     for (const line of result.errors) {
-      // eslint-disable-next-line no-console
       console.error(line);
     }
 
@@ -68,7 +66,6 @@ async function runVerify(rootAbs: string): Promise<void> {
     );
   }
 
-  // eslint-disable-next-line no-console
   console.log(`OK: verified ${result.verifiedCount} file(s) using ${result.used} manifest`);
 }
 
@@ -90,7 +87,6 @@ async function main(): Promise<void> {
 main().catch((err: unknown) => {
   const message = err instanceof Error ? err.message : String(err);
 
-  // eslint-disable-next-line no-console
   console.error(message);
   process.exitCode = 1;
 });

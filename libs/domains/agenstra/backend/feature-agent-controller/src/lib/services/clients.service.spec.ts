@@ -1090,9 +1090,7 @@ describe('ClientsService', () => {
 
   describe('generateRandomApiKey', () => {
     it('should generate API keys of correct length', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const apiKey1 = (service as any).generateRandomApiKey();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const apiKey2 = (service as any).generateRandomApiKey();
 
       expect(apiKey1).toHaveLength(32);
@@ -1101,7 +1099,6 @@ describe('ClientsService', () => {
     });
 
     it('should generate API keys with alphanumeric characters', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const apiKey = (service as any).generateRandomApiKey();
       const alphanumericRegex = /^[a-zA-Z0-9]+$/;
 
@@ -1122,7 +1119,6 @@ describe('ClientsService', () => {
 
       mockProvisioningReferencesRepository.findByClientId.mockResolvedValue(mockProvisioningReference);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await (service as any).mapToResponseDto(mockClient);
 
       expect(result).not.toHaveProperty('apiKey');
@@ -1140,7 +1136,6 @@ describe('ClientsService', () => {
     it('should set isAutoProvisioned to false when no provisioning reference exists', async () => {
       provisioningReferencesRepository.findByClientId.mockResolvedValue(null);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await (service as any).mapToResponseDto(mockClient);
 
       expect(result.isAutoProvisioned).toBe(false);

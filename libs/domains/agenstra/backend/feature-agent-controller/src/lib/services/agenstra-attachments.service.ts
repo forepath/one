@@ -73,7 +73,7 @@ export class AgenstraAttachmentsService {
   }
 
   async getTicketClientId(ticketId: string): Promise<string> {
-    const ticket = await this.ticketRepo.findOne({ where: { id: ticketId }, select: ['id', 'clientId'] });
+    const ticket = await this.ticketRepo.findOne({ where: { id: ticketId }, select: { id: true, clientId: true } });
 
     if (!ticket) throw new NotFoundException('Ticket not found');
 
@@ -81,7 +81,10 @@ export class AgenstraAttachmentsService {
   }
 
   async getKnowledgePageClientId(pageId: string): Promise<string> {
-    const page = await this.knowledgeRepo.findOne({ where: { id: pageId }, select: ['id', 'clientId', 'nodeType'] });
+    const page = await this.knowledgeRepo.findOne({
+      where: { id: pageId },
+      select: { id: true, clientId: true, nodeType: true },
+    });
 
     if (!page || page.nodeType !== KnowledgeNodeType.PAGE) throw new NotFoundException('Knowledge page not found');
 

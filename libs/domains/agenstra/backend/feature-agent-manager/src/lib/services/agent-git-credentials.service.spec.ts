@@ -45,42 +45,36 @@ describe('AgentGitCredentialsService', () => {
     });
 
     it('should extract domain from https URL', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const domain = (service as any).extractGitDomain('https://github.com/user/repo.git');
 
       expect(domain).toBe('github.com');
     });
 
     it('should extract domain from http URL', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const domain = (service as any).extractGitDomain('http://gitlab.com/user/repo.git');
 
       expect(domain).toBe('gitlab.com');
     });
 
     it('should extract domain from git@ URL', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const domain = (service as any).extractGitDomain('git@github.com:user/repo.git');
 
       expect(domain).toBe('github.com');
     });
 
     it('should extract domain from URL with port', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const domain = (service as any).extractGitDomain('https://git.example.com:8443/user/repo.git');
 
       expect(domain).toBe('git.example.com');
     });
 
     it('should return default github.com for invalid URL', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const domain = (service as any).extractGitDomain('invalid-url');
 
       expect(domain).toBe('github.com');
     });
 
     it('should extract domain from URL with path', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const domain = (service as any).extractGitDomain('https://bitbucket.org/workspace/repo.git');
 
       expect(domain).toBe('bitbucket.org');
@@ -89,42 +83,36 @@ describe('AgentGitCredentialsService', () => {
 
   describe('isSshRepository', () => {
     it('should return true for git@ URL', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).isSshRepository('git@github.com:user/repo.git');
 
       expect(result).toBe(true);
     });
 
     it('should return true for ssh:// URL', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).isSshRepository('ssh://git@github.com/user/repo.git');
 
       expect(result).toBe(true);
     });
 
     it('should return false for https:// URL', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).isSshRepository('https://github.com/user/repo.git');
 
       expect(result).toBe(false);
     });
 
     it('should return false for http:// URL', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).isSshRepository('http://github.com/user/repo.git');
 
       expect(result).toBe(false);
     });
 
     it('should return false for undefined URL', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).isSshRepository(undefined);
 
       expect(result).toBe(false);
     });
 
     it('should return false for empty string', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).isSshRepository('');
 
       expect(result).toBe(false);
@@ -133,28 +121,24 @@ describe('AgentGitCredentialsService', () => {
 
   describe('getSshHostInfo', () => {
     it('should extract host from ssh:// URL', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshHostInfo('ssh://git@github.com:22/user/repo.git');
 
       expect(result).toEqual({ host: 'github.com', port: 22 });
     });
 
     it('should extract host from ssh:// URL without port', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshHostInfo('ssh://git@github.com/user/repo.git');
 
       expect(result).toEqual({ host: 'github.com' });
     });
 
     it('should extract host from git@ URL', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshHostInfo('git@github.com:user/repo.git');
 
       expect(result).toEqual({ host: 'github.com' });
     });
 
     it('should fallback to extractGitDomain for other formats', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshHostInfo('https://gitlab.com/user/repo.git');
 
       expect(result).toEqual({ host: 'gitlab.com' });
@@ -163,42 +147,36 @@ describe('AgentGitCredentialsService', () => {
 
   describe('getSshKeyFilename', () => {
     it('should return id_rsa for RSA keys', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshKeyFilename('rsa');
 
       expect(result).toBe('id_rsa');
     });
 
     it('should return id_ed25519 for Ed25519 keys', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshKeyFilename('ed25519');
 
       expect(result).toBe('id_ed25519');
     });
 
     it('should return id_ecdsa for ECDSA keys', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshKeyFilename('ecdsa');
 
       expect(result).toBe('id_ecdsa');
     });
 
     it('should return id_dsa for DSA keys', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshKeyFilename('dsa');
 
       expect(result).toBe('id_dsa');
     });
 
     it('should handle uppercase key types', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshKeyFilename('RSA');
 
       expect(result).toBe('id_rsa');
     });
 
     it('should default to id_rsa for unknown key types', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).getSshKeyFilename('unknown');
 
       expect(result).toBe('id_rsa');
@@ -210,7 +188,6 @@ describe('AgentGitCredentialsService', () => {
       const key = sshpk.generatePrivateKey('ed25519');
       const privateKeyPem = key.toString('openssh');
       const publicKey = key.toPublic().toString('ssh');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).prepareSshKeyPair(privateKeyPem);
 
       expect(result.privateKey).toContain('BEGIN');
@@ -225,7 +202,6 @@ describe('AgentGitCredentialsService', () => {
       const key = sshpk.generatePrivateKey('ed25519');
       const privateKeyPem = key.toString('openssh');
       const publicKey = key.toPublic().toString('ssh');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).prepareSshKeyPair(privateKeyPem);
 
       expect(result.privateKey).toContain('BEGIN');
@@ -236,21 +212,17 @@ describe('AgentGitCredentialsService', () => {
     });
 
     it('should throw BadRequestException for invalid private key', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(() => (service as any).prepareSshKeyPair('invalid-key')).toThrow(BadRequestException);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(() => (service as any).prepareSshKeyPair('invalid-key')).toThrow(
         'Invalid SSH private key. Ensure it is in PEM or OpenSSH format without a passphrase.',
       );
     });
 
     it('should throw BadRequestException when private key is undefined', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(() => (service as any).prepareSshKeyPair(undefined)).toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException when private key is empty string', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(() => (service as any).prepareSshKeyPair('')).toThrow(BadRequestException);
     });
 
@@ -258,7 +230,6 @@ describe('AgentGitCredentialsService', () => {
       const key = sshpk.generatePrivateKey('ed25519');
       const privateKeyPem = key.toString('openssh');
       const publicKey = key.toPublic().toString('ssh');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = (service as any).prepareSshKeyPair(`  ${privateKeyPem}  `);
 
       // Compare public keys by extracting the key part (before any comment)
@@ -275,7 +246,6 @@ describe('AgentGitCredentialsService', () => {
 
       dockerService.sendCommandToContainer.mockResolvedValue(undefined);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (service as any).writeFileToContainer(containerId, filePath, contents);
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(1);
@@ -300,7 +270,6 @@ describe('AgentGitCredentialsService', () => {
 
       dockerService.sendCommandToContainer.mockResolvedValue(undefined);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (service as any).writeFileToContainer(containerId, filePath, contents);
 
       const callArgs = dockerService.sendCommandToContainer.mock.calls[0];

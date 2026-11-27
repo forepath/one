@@ -129,7 +129,7 @@ export class ExternalImportConfigService {
   async findEntityWithConnection(id: string): Promise<ExternalImportConfigEntity | null> {
     return await this.repo.findOne({
       where: { id },
-      relations: ['atlassianConnection'],
+      relations: { atlassianConnection: true },
     });
   }
 
@@ -138,7 +138,7 @@ export class ExternalImportConfigService {
       where: { enabled: true, provider: ExternalImportProviderId.ATLASSIAN },
       order: { lastRunAt: 'ASC', id: 'ASC' },
       take: limit,
-      relations: ['atlassianConnection'],
+      relations: { atlassianConnection: true },
     });
   }
 

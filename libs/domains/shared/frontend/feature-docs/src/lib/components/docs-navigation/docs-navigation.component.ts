@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { NavigationNode } from '@forepath/shared/frontend/util-docs-parser';
 
@@ -10,6 +10,7 @@ import { DocsNavigationService } from '../../services';
   imports: [CommonModule, RouterModule],
   templateUrl: './docs-navigation.component.html',
   styleUrls: ['./docs-navigation.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class DocsNavigationComponent {

@@ -18,21 +18,22 @@ export async function mcpGenerator(tree: Tree, options: McpGeneratorSchema) {
     e2eTestRunner: 'jest',
   });
 
-  updateJson(tree, '.eslintrc.json', (json) => {
-    const depConstraints = json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints || [];
-    const scopeTag = `scope:backend`;
+  updateJson(
+    tree,
+    'eslint.dep-constraints.json',
+    (depConstraints: { sourceTag: string; onlyDependOnLibsWithTags: string[] }[]) => {
+      const scopeTag = `scope:backend`;
 
-    if (!depConstraints.some((constraint) => constraint.sourceTag === scopeTag)) {
-      depConstraints.push({
-        sourceTag: scopeTag,
-        onlyDependOnLibsWithTags: [scopeTag, 'scope:shared'],
-      });
-    }
+      if (!depConstraints.some((constraint) => constraint.sourceTag === scopeTag)) {
+        depConstraints.push({
+          sourceTag: scopeTag,
+          onlyDependOnLibsWithTags: [scopeTag, 'scope:shared'],
+        });
+      }
 
-    json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints = depConstraints;
-
-    return json;
-  });
+      return depConstraints;
+    },
+  );
 
   generateFiles(tree, path.join(__dirname, 'files'), appRoot, options, {
     overwriteStrategy: OverwriteStrategy.Overwrite,

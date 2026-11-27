@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, input, signal, ChangeDetectionStrategy } from '@angular/core';
 import { DocHeading } from '@forepath/shared/frontend/util-docs-parser';
 
 @Component({
@@ -7,6 +7,7 @@ import { DocHeading } from '@forepath/shared/frontend/util-docs-parser';
   imports: [CommonModule],
   templateUrl: './docs-table-of-contents.component.html',
   styleUrls: ['./docs-table-of-contents.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class DocsTableOfContentsComponent {

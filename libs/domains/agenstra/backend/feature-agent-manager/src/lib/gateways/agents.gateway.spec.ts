@@ -288,15 +288,11 @@ describe('AgentsGateway', () => {
   afterEach(() => {
     jest.clearAllMocks();
     // Clear authenticated clients map and socket references
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (gateway as any).authenticatedClients.clear();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (gateway as any).socketById.clear();
     // Clear agents with first message sent tracking
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (gateway as any).agentsWithFirstMessageSent.clear();
     // Clear stats intervals
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const statsIntervals = (gateway as any).statsIntervalsByAgent;
 
     if (statsIntervals) {
@@ -410,7 +406,6 @@ describe('AgentsGateway', () => {
       gateway.handleConnection(mockSocket as Socket);
       expect(loggerSpy).toHaveBeenCalledWith(`Client connected: ${mockSocket.id}`);
       // Verify socket is stored
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((gateway as any).socketById.get(mockSocket.id)).toBe(mockSocket);
       loggerSpy.mockRestore();
     });
@@ -422,15 +417,11 @@ describe('AgentsGateway', () => {
       // Add authenticated session and socket reference
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       gateway.handleDisconnect(mockSocket as Socket);
       expect(loggerSpy).toHaveBeenCalledWith(`Client disconnected: ${socketId}`);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((gateway as any).authenticatedClients.has(socketId)).toBe(false);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((gateway as any).socketById.has(socketId)).toBe(false);
       loggerSpy.mockRestore();
     });
@@ -440,13 +431,10 @@ describe('AgentsGateway', () => {
       // Store socket reference
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       gateway.handleDisconnect(mockSocket as Socket);
       expect(loggerSpy).toHaveBeenCalledWith(`Client disconnected: ${socketId}`);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((gateway as any).authenticatedClients.has(socketId)).toBe(false);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((gateway as any).socketById.has(socketId)).toBe(false);
       loggerSpy.mockRestore();
     });
@@ -476,7 +464,6 @@ describe('AgentsGateway', () => {
           timestamp: expect.any(String),
         }),
       );
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((gateway as any).authenticatedClients.get(socketId)).toBe(mockAgent.id);
     });
 
@@ -857,7 +844,6 @@ describe('AgentsGateway', () => {
         }),
       );
       expect(loggerWarnSpy).toHaveBeenCalledWith(`Failed login attempt: agent not found (non-existent)`);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((gateway as any).authenticatedClients.has(socketId)).toBe(false);
       loggerWarnSpy.mockRestore();
     });
@@ -883,7 +869,6 @@ describe('AgentsGateway', () => {
         }),
       );
       expect(loggerWarnSpy).toHaveBeenCalledWith(`Failed login attempt: invalid password for agent ${mockAgent.id}`);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((gateway as any).authenticatedClients.has(socketId)).toBe(false);
       loggerWarnSpy.mockRestore();
     });
@@ -914,9 +899,7 @@ describe('AgentsGateway', () => {
     it('injects hidden hydration summary once when pending summary exists', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -961,10 +944,8 @@ describe('AgentsGateway', () => {
     it('should broadcast chat message for authenticated user and emit agent response', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -1045,10 +1026,8 @@ describe('AgentsGateway', () => {
     it('runs overlapping turns of one chat session one after another', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -1112,10 +1091,8 @@ describe('AgentsGateway', () => {
     it('stamps the turn correlationId on the agent answer and its filter results', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -1173,9 +1150,7 @@ describe('AgentsGateway', () => {
     it('should include model flag in container command when provided', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -1225,7 +1200,6 @@ describe('AgentsGateway', () => {
     it('should ignore empty messages', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
       await gateway.handleChat({ message: '   ' }, mockSocket as Socket);
@@ -1237,7 +1211,6 @@ describe('AgentsGateway', () => {
     it('should ignore messages with only whitespace', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
       await gateway.handleChat({ message: '\n\t  \n' }, mockSocket as Socket);
@@ -1249,7 +1222,6 @@ describe('AgentsGateway', () => {
     it('should handle missing message property', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
       await gateway.handleChat({} as ChatPayload, mockSocket as Socket);
@@ -1261,7 +1233,6 @@ describe('AgentsGateway', () => {
     it('should handle errors when fetching agent details', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       agentsService.findOne.mockRejectedValue(new Error('Database error'));
       const loggerErrorSpy = jest.spyOn(gateway['logger'], 'error').mockImplementation();
@@ -1286,10 +1257,8 @@ describe('AgentsGateway', () => {
     it('should not emit agent response if response is empty', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -1338,9 +1307,7 @@ describe('AgentsGateway', () => {
     it('should drop incoming message when filter returns drop action', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
       const mockFilter: jest.Mocked<ChatFilter> = {
@@ -1418,9 +1385,7 @@ describe('AgentsGateway', () => {
     it('should flag incoming message when filter returns flag action', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -1504,9 +1469,7 @@ describe('AgentsGateway', () => {
     it('should modify incoming message when filter returns modifiedMessage', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -1601,9 +1564,7 @@ describe('AgentsGateway', () => {
     it('should modify outgoing message when filter returns modifiedMessage', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -1717,9 +1678,7 @@ describe('AgentsGateway', () => {
     it('should not allow modifiedMessage when action is drop', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
       const mockFilter: jest.Mocked<ChatFilter> = {
@@ -1765,9 +1724,7 @@ describe('AgentsGateway', () => {
     it('should allow multiple filters to modify message sequentially', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -1871,9 +1828,7 @@ describe('AgentsGateway', () => {
     it('should drop outgoing message when filter returns drop action', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -2002,9 +1957,7 @@ describe('AgentsGateway', () => {
     it('should flag outgoing message when filter returns flag action', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -2144,10 +2097,8 @@ describe('AgentsGateway', () => {
     it('should fall back to text if JSON parsing fails', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -2214,10 +2165,8 @@ describe('AgentsGateway', () => {
     it('should handle errors when getting agent response gracefully', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -2267,10 +2216,8 @@ describe('AgentsGateway', () => {
     it('should trim message whitespace', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -2319,13 +2266,9 @@ describe('AgentsGateway', () => {
           connected: true,
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(requesterSocketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(requesterSocketId, mockSocket);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(otherSocketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(otherSocketId, otherViewerSocket);
 
         agentsService.findOne.mockResolvedValue(mockAgentResponse);
@@ -2407,13 +2350,9 @@ describe('AgentsGateway', () => {
           connected: true,
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(requesterSocketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(requesterSocketId, mockSocket);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(otherSocketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(otherSocketId, otherViewerSocket);
 
         agentsService.findOne.mockResolvedValue(mockAgentResponse);
@@ -2479,7 +2418,6 @@ describe('AgentsGateway', () => {
       });
 
       it('rejects ticket-auto resumeSessionSuffix without unattendedAutomation trust marker', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(mockSocket.id || 'test-socket-id', mockAgent.id);
 
         await gateway.handleChat(
@@ -2503,7 +2441,6 @@ describe('AgentsGateway', () => {
       });
 
       it('rejects agent task resumeSessionSuffix without unattendedAutomation trust marker', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(mockSocket.id || 'test-socket-id', mockAgent.id);
 
         await gateway.handleChat(
@@ -2527,7 +2464,6 @@ describe('AgentsGateway', () => {
       });
 
       it('rejects invalid chatId UUID before processing', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(mockSocket.id || 'test-socket-id', mockAgent.id);
 
         await gateway.handleChat(
@@ -2557,13 +2493,9 @@ describe('AgentsGateway', () => {
           connected: true,
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(requesterSocketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(requesterSocketId, mockSocket);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(otherSocketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(otherSocketId, otherViewerSocket);
 
         agentsService.findOne.mockResolvedValue(mockAgentResponse);
@@ -2614,9 +2546,7 @@ describe('AgentsGateway', () => {
       it('suppresses user chatMessage when suppressUserMessage is true but still emits agent reply', async () => {
         const requesterSocketId = mockSocket.id || 'test-socket-id';
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(requesterSocketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(requesterSocketId, mockSocket);
 
         agentsService.findOne.mockResolvedValue(mockAgentResponse);
@@ -2703,7 +2633,6 @@ describe('AgentsGateway', () => {
           { type: 'result', subtype: 'success', result: essay, duration_ms: 42 },
           { type: 'result', subtype: 'success', result: essay, usage: { outputTokens: 7 } },
         ];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const built = (gateway as any).buildFinalStreamingResponse(streamedUnified, '') as {
           type: string;
           subtype?: string;
@@ -2728,7 +2657,6 @@ describe('AgentsGateway', () => {
           { type: 'delta', delta: 'world' },
           { type: 'result', subtype: 'success', result: 'Hello world' },
         ];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const built = (gateway as any).buildFinalStreamingResponse(streamedUnified, '') as {
           type: string;
           parts: Array<Record<string, unknown>>;
@@ -2773,7 +2701,6 @@ describe('AgentsGateway', () => {
           { type: 'interaction_query', query: 'Confirm?' },
           { type: 'result', subtype: 'success', result: 'Yes.' },
         ];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const built = (gateway as any).buildFinalStreamingResponse(streamedUnified, '') as {
           type: string;
           parts: Array<{ type?: string; query?: string }>;
@@ -2790,9 +2717,7 @@ describe('AgentsGateway', () => {
       it('persists deduped agenstra_turn when handleChat uses sendMessageStream with doubled Cursor result text', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(socketId, mockSocket);
         agentsService.findOne.mockResolvedValue(mockAgentResponse);
         agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -2863,9 +2788,7 @@ describe('AgentsGateway', () => {
       it('streaming persist does not triple assistant prose when deltas plus repeated result NDJSON lines', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(socketId, mockSocket);
         agentsService.findOne.mockResolvedValue(mockAgentResponse);
         agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -2937,9 +2860,7 @@ describe('AgentsGateway', () => {
       it('should send initialization message on first user message when no chat history exists', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(socketId, mockSocket);
         agentsService.findOne.mockResolvedValue(mockAgentResponse);
         agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -2956,7 +2877,6 @@ describe('AgentsGateway', () => {
         expect(mockAgentProvider.sendInitialization).toHaveBeenCalledWith(mockAgent.id, mockAgent.containerId, {});
         expect(loggerDebugSpy).toHaveBeenCalledWith(expect.stringContaining('Sent initialization message to agent'));
         // Should mark agent as having received first message
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((gateway as any).agentsWithFirstMessageSent.has(mockAgent.id)).toBe(true);
         // Should still process the user message normally
         expect(mockSocket.emit).toHaveBeenCalledWith(
@@ -2978,9 +2898,7 @@ describe('AgentsGateway', () => {
       it('should not send initialization message if chat history exists', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(socketId, mockSocket);
         agentsService.findOne.mockResolvedValue(mockAgentResponse);
         agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -3014,7 +2932,6 @@ describe('AgentsGateway', () => {
         );
         expect(loggerDebugSpy).not.toHaveBeenCalledWith(expect.stringContaining('Sent initialization message'));
         // Should mark agent as initialized
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((gateway as any).agentsWithFirstMessageSent.has(mockAgent.id)).toBe(true);
         loggerDebugSpy.mockRestore();
       });
@@ -3022,12 +2939,9 @@ describe('AgentsGateway', () => {
       it('should not send initialization message if already sent for this agent', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(socketId, mockSocket);
         // Mark agent as already initialized
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).agentsWithFirstMessageSent.add(mockAgent.id);
         agentsService.findOne.mockResolvedValue(mockAgentResponse);
         agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -3054,9 +2968,7 @@ describe('AgentsGateway', () => {
       it('should handle initialization message send failure gracefully', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(socketId, mockSocket);
         agentsService.findOne.mockResolvedValue(mockAgentResponse);
         agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -3089,7 +3001,6 @@ describe('AgentsGateway', () => {
           }),
         );
         // Should mark agent as initialized even if initialization message failed
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((gateway as any).agentsWithFirstMessageSent.has(mockAgent.id)).toBe(true);
         loggerWarnSpy.mockRestore();
         loggerLogSpy.mockRestore();
@@ -3098,9 +3009,7 @@ describe('AgentsGateway', () => {
       it('should include model flag in initialization message when provided', async () => {
         const socketId = mockSocket.id || 'test-socket-id';
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).socketById.set(socketId, mockSocket);
         agentsService.findOne.mockResolvedValue(mockAgentResponse);
         agentsRepository.findById.mockResolvedValue(mockAgent);
@@ -3121,7 +3030,6 @@ describe('AgentsGateway', () => {
 
   describe('git state changed broadcasts', () => {
     it('does not convert non-displayable structured status payloads into assistant text events', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const events = (gateway as any).agentResponseToChatEvents(mockAgent.id, 'corr-1', 1, {
         type: 'status',
         subtype: 'structured_output',
@@ -3134,12 +3042,9 @@ describe('AgentsGateway', () => {
     it('emits gitStateChanged after workspace tool results', () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).broadcastChatEvent(mockAgent.id, {
         eventId: 'event-1',
         kind: 'toolResult',
@@ -3169,10 +3074,8 @@ describe('AgentsGateway', () => {
     it('should broadcast file update notification for authenticated user', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       const loggerLogSpy = jest.spyOn(gateway['logger'], 'log').mockImplementation();
@@ -3231,7 +3134,6 @@ describe('AgentsGateway', () => {
     it('should reject file update with missing filePath', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
       await gateway.handleFileUpdate({ filePath: '' }, mockSocket as Socket);
@@ -3254,10 +3156,8 @@ describe('AgentsGateway', () => {
     it('should trim filePath whitespace', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       const loggerLogSpy = jest.spyOn(gateway['logger'], 'log').mockImplementation();
@@ -3287,10 +3187,8 @@ describe('AgentsGateway', () => {
     it('should handle errors when fetching agent details gracefully', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       // Store socket reference for broadcasting
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       agentsService.findOne.mockRejectedValue(new Error('Database error'));
       const loggerErrorSpy = jest.spyOn(gateway['logger'], 'error').mockImplementation();
@@ -3319,14 +3217,10 @@ describe('AgentsGateway', () => {
       const mockSocket2 = { id: socketId2, emit: jest.fn(), connected: true } as unknown as Socket;
 
       // Authenticate both sockets to the same agent
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId1, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId2, mockAgent.id);
       // Store socket references for broadcasting
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId1, mockSocket1);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId2, mockSocket2);
 
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
@@ -3381,9 +3275,7 @@ describe('AgentsGateway', () => {
     beforeEach(() => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       mockAgentChatSessionsService.resolveSessionForChat.mockResolvedValue({
         ...mockPrimaryChatSession,
@@ -3476,7 +3368,6 @@ describe('AgentsGateway', () => {
     it('should logout authenticated user successfully', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       const loggerLogSpy = jest.spyOn(gateway['logger'], 'log').mockImplementation();
@@ -3499,7 +3390,6 @@ describe('AgentsGateway', () => {
           timestamp: expect.any(String),
         }),
       );
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((gateway as any).authenticatedClients.has(socketId)).toBe(false);
       loggerLogSpy.mockRestore();
     });
@@ -3507,7 +3397,6 @@ describe('AgentsGateway', () => {
     it('should handle logout gracefully when agent details fetch fails', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
       agentsService.findOne.mockRejectedValue(new Error('Database error'));
       const loggerWarnSpy = jest.spyOn(gateway['logger'], 'warn').mockImplementation();
@@ -3515,7 +3404,6 @@ describe('AgentsGateway', () => {
       await gateway.handleLogout(mockSocket as Socket);
 
       // Session should still be cleared
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((gateway as any).authenticatedClients.has(socketId)).toBe(false);
       // Should still emit success
       expect(mockSocket.emit).toHaveBeenCalledWith(
@@ -3564,7 +3452,6 @@ describe('AgentsGateway', () => {
     it('should find agent by UUID', async () => {
       agentsRepository.findById.mockResolvedValue(mockAgent);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await (gateway as any).findAgentIdByIdentifier(mockAgent.id);
 
       expect(result).toBe(mockAgent.id);
@@ -3576,7 +3463,6 @@ describe('AgentsGateway', () => {
       agentsRepository.findById.mockResolvedValue(null);
       agentsRepository.findByName.mockResolvedValue(mockAgent);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await (gateway as any).findAgentIdByIdentifier(mockAgent.name);
 
       expect(result).toBe(mockAgent.id);
@@ -3588,7 +3474,6 @@ describe('AgentsGateway', () => {
       agentsRepository.findById.mockResolvedValue(null);
       agentsRepository.findByName.mockResolvedValue(null);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await (gateway as any).findAgentIdByIdentifier('non-existent');
 
       expect(result).toBeNull();
@@ -3697,7 +3582,6 @@ describe('AgentsGateway', () => {
 
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
@@ -3744,9 +3628,7 @@ describe('AgentsGateway', () => {
 
       // Ensure socket is connected and in the maps
       mockSocket.connected = true;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
@@ -3757,10 +3639,8 @@ describe('AgentsGateway', () => {
       const emitSpy = jest.fn();
 
       mockSocket.emit = emitSpy;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
       mockSocket.connected = true;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
       await jest.advanceTimersByTimeAsync(15000);
@@ -3843,7 +3723,6 @@ describe('AgentsGateway', () => {
 
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
       await gateway.handleLogin({ agentId: agentWithoutContainer.id, password: 'password123' }, mockSocket as Socket);
@@ -3861,13 +3740,11 @@ describe('AgentsGateway', () => {
 
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
       // Verify interval exists
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const statsIntervals = (gateway as any).statsIntervalsByAgent;
 
       expect(statsIntervals.has(mockAgent.id)).toBe(true);
@@ -3888,15 +3765,12 @@ describe('AgentsGateway', () => {
 
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
       // Verify interval exists
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const statsIntervals = (gateway as any).statsIntervalsByAgent;
 
       expect(statsIntervals.has(mockAgent.id)).toBe(true);
@@ -3917,12 +3791,10 @@ describe('AgentsGateway', () => {
 
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const statsIntervals = (gateway as any).statsIntervalsByAgent;
 
       expect(statsIntervals.has(mockAgent.id)).toBe(true);
@@ -3941,7 +3813,6 @@ describe('AgentsGateway', () => {
 
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
@@ -3972,13 +3843,11 @@ describe('AgentsGateway', () => {
 
       const socketId = mockSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).socketById.set(socketId, mockSocket);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
       // Verify interval exists
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const statsIntervals = (gateway as any).statsIntervalsByAgent;
 
       expect(statsIntervals.has(mockAgent.id)).toBe(true);
@@ -4060,7 +3929,6 @@ describe('AgentsGateway', () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
       // Mark agent as already authenticated (simulating reconnection scenario)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
       const mockMessages = [
@@ -4134,7 +4002,6 @@ describe('AgentsGateway', () => {
       const newSocket = { ...mockSocket, recovered: false } as Socket;
       const socketId = newSocket.id || 'test-socket-id';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.delete(socketId);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, newSocket);

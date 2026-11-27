@@ -193,7 +193,7 @@ export class AccountingJournalService {
   async getEntry(entryId: string, manager?: EntityManager): Promise<AccountingJournalEntryEntity> {
     const entry = await (manager ?? this.dataSource.manager)
       .getRepository(AccountingJournalEntryEntity)
-      .findOne({ where: { id: entryId }, relations: ['lines'] });
+      .findOne({ where: { id: entryId }, relations: { lines: true } });
 
     if (!entry) {
       throw new NotFoundException('Journal entry not found');
@@ -222,7 +222,7 @@ export class AccountingJournalService {
 
     return await this.dataSource.getRepository(AccountingJournalEntryEntity).find({
       where: { id: In([...new Set(links.map((l) => l.entryId))]) },
-      relations: ['lines'],
+      relations: { lines: true },
       order: { postingDate: 'ASC', entryNumber: 'ASC' },
     });
   }

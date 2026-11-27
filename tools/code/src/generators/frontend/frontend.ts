@@ -2,10 +2,10 @@ import * as path from 'path';
 
 import { E2eTestRunner, applicationGenerator as generatorFn, UnitTestRunner } from '@nx/angular/generators';
 import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from '@nx/devkit';
-import { setupDockerGenerator as setupDockerGeneratorFn } from '@nx/node/src/generators/setup-docker/setup-docker';
 
 import { FrontendGeneratorSchema } from './schema';
 import { resolveDomainAppPaths } from '../utils/domain-app-paths';
+import { setupDocker as setupDockerGeneratorFn } from '../utils/setup-docker';
 
 export async function frontendGenerator(tree: Tree, options: FrontendGeneratorSchema) {
   const { projectName, appRoot } = resolveDomainAppPaths(options.name, 'frontend', options, 'agenstra');
@@ -25,21 +25,22 @@ export async function frontendGenerator(tree: Tree, options: FrontendGeneratorSc
     e2eTestRunner: E2eTestRunner.Playwright,
   });
 
-  updateJson(tree, '.eslintrc.json', (json) => {
-    const depConstraints = json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints || [];
-    const scopeTag = `scope:frontend`;
+  updateJson(
+    tree,
+    'eslint.dep-constraints.json',
+    (depConstraints: { sourceTag: string; onlyDependOnLibsWithTags: string[] }[]) => {
+      const scopeTag = `scope:frontend`;
 
-    if (!depConstraints.some((constraint) => constraint.sourceTag === scopeTag)) {
-      depConstraints.push({
-        sourceTag: scopeTag,
-        onlyDependOnLibsWithTags: [scopeTag, 'scope:shared'],
-      });
-    }
+      if (!depConstraints.some((constraint) => constraint.sourceTag === scopeTag)) {
+        depConstraints.push({
+          sourceTag: scopeTag,
+          onlyDependOnLibsWithTags: [scopeTag, 'scope:shared'],
+        });
+      }
 
-    json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints = depConstraints;
-
-    return json;
-  });
+      return depConstraints;
+    },
+  );
 
   const appSrcPath = `${appRoot}/src`;
 

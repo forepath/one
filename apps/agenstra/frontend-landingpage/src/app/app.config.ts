@@ -1,7 +1,7 @@
 import { ViewportScroller } from '@angular/common';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { provideClientHydration, withEventReplay, withNoIncrementalHydration } from '@angular/platform-browser';
 import { provideRouter, withInMemoryScrolling, withRouterConfig } from '@angular/router';
 import { environment, provideLocale } from '@forepath/agenstra/frontend/util-configuration';
 import { getBillingTenantInterceptor } from '@forepath/decabill/frontend/data-access-billing-console';
@@ -14,7 +14,7 @@ import { ViewportScrollerOffset } from './viewport-scroller-offset.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideClientHydration(withEventReplay()),
+    provideClientHydration(withEventReplay(), withNoIncrementalHydration()),
     provideZoneChangeDetection({ eventCoalescing: true }),
     // NgRx Store - base store required at root level
     provideStore(),

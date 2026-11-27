@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import type { DocumentTerms } from '@forepath/decabill/frontend/data-access-billing-console';
 import { FpcLaneHeaderComponent } from '@forepath/shared/frontend/ui-components';
 
@@ -13,6 +13,7 @@ export type DocumentTermsSummaryLayout = 'card' | 'inline';
   standalone: true,
   imports: [NgTemplateOutlet, FpcLaneHeaderComponent],
   templateUrl: './document-terms-summary.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: ['.document-terms-summary__text { white-space: pre-line; }'],
 })
 export class DocumentTermsSummaryComponent {

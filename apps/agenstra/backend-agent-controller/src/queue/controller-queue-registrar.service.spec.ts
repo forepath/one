@@ -8,23 +8,25 @@ describe('ControllerQueueRegistrarService', () => {
     process.env = originalEnv;
   });
 
-  it('removes retired repeatables before registering active ones', async () => {
+  it('removes retired jobs before registering active schedulers', async () => {
     process.env = { ...originalEnv, QUEUE_ROLE: 'scheduler' };
 
     const retired = RETIRED_CONTROLLER_REPEATABLE_JOBS[0];
     const removeRepeatableByKey = jest.fn().mockResolvedValue(true);
     const queue = {
-      getRepeatableJobs: jest
+      getJobSchedulers: jest
         .fn()
-        .mockResolvedValue([{ name: retired.name, id: retired.coordinatorJobId, key: 'repeat:old' }]),
+        .mockResolvedValue([{ name: retired.name, id: retired.coordinatorJobId, key: 'legacy:old' }]),
       removeRepeatableByKey,
-      add: jest.fn().mockResolvedValue({}),
+      removeJobScheduler: jest.fn().mockResolvedValue(true),
+      upsertJobScheduler: jest.fn().mockResolvedValue({}),
     };
     const service = new ControllerQueueRegistrarService(queue as never);
 
     await service.onModuleInit();
 
-    expect(removeRepeatableByKey).toHaveBeenCalledWith('repeat:old');
-    expect(queue.add).toHaveBeenCalled();
+    expect(removeRepeatableByKey).toHaveBeenCalledWith('legacy:old');
+    expect(queue.removeJobScheduler).toHaveBeenCalledWith(retired.coordinatorJobId);
+    expect(queue.upsertJobScheduler).toHaveBeenCalled();
   });
 });

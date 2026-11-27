@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FpcBreadcrumbItemComponent, FpcBreadcrumbsComponent } from '@forepath/shared/frontend/ui-components';
 import { NavigationNode } from '@forepath/shared/frontend/util-docs-parser';
@@ -11,6 +11,7 @@ import { DocsNavigationService } from '../../services';
   imports: [CommonModule, RouterModule, FpcBreadcrumbsComponent, FpcBreadcrumbItemComponent],
   templateUrl: './docs-breadcrumbs.component.html',
   styleUrls: ['./docs-breadcrumbs.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class DocsBreadcrumbsComponent {

@@ -76,7 +76,7 @@ export class KnowledgeEmbeddingIndexService {
         };
     const pages = await this.knowledgeNodeRepo.find({
       where,
-      select: ['id', 'clientId', 'title', 'content'],
+      select: { id: true, clientId: true, title: true, content: true },
       order: { updatedAt: 'DESC' },
       skip: offset,
       take: limit,
@@ -98,7 +98,7 @@ export class KnowledgeEmbeddingIndexService {
         };
     const pages = await this.knowledgeNodeRepo.find({
       where,
-      select: ['id', 'clientId', 'title', 'content'],
+      select: { id: true, clientId: true, title: true, content: true },
       order: { updatedAt: 'DESC' },
     });
 

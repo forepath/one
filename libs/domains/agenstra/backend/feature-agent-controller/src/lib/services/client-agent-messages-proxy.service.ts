@@ -65,8 +65,7 @@ export class ClientAgentMessagesProxyService {
         validateStatus: (status) => status < 500,
         timeout: process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT, 10) : 60000,
         httpsAgent: url.startsWith('https://')
-          ? // eslint-disable-next-line @typescript-eslint/no-var-requires
-            new (require('https').Agent)({
+          ? new (require('https').Agent)({
               rejectUnauthorized: tlsPolicy.rejectUnauthorized,
             })
           : undefined,

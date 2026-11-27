@@ -3,8 +3,6 @@ import * as path from 'path';
 
 import type { AgenstraContext, AgenstraMetadata, RuleEntry, SkillEntry } from '../types';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const matter = require('gray-matter') as (input: string) => { data: Record<string, unknown>; content: string };
 
 function readFileSafe(dir: string, file: string): string | null {

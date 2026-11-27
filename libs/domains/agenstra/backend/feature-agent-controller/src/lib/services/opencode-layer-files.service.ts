@@ -145,7 +145,7 @@ export class OpencodeLayerFilesService {
     const pending = await this.syncRepo.find({
       where: { syncStatus: In(['pending', 'failed']) },
       take: limit,
-      relations: ['file'],
+      relations: { file: true },
       order: { updatedAt: 'ASC' },
     });
     let done = 0;
@@ -167,7 +167,7 @@ export class OpencodeLayerFilesService {
       where: { syncStatus: In(['pending', 'failed']) },
       order: { updatedAt: 'ASC' },
       take: max,
-      select: ['id'],
+      select: { id: true },
     });
 
     return rows.map((row) => row.id);
@@ -176,7 +176,7 @@ export class OpencodeLayerFilesService {
   async processTargetById(targetId: string): Promise<void> {
     const target = await this.syncRepo.findOne({
       where: { id: targetId },
-      relations: ['file'],
+      relations: { file: true },
     });
 
     if (!target?.file) {

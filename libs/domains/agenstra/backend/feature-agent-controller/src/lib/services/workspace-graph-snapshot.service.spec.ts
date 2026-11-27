@@ -583,7 +583,9 @@ describe('WorkspaceGraphSnapshotService', () => {
     expect(saved.graph.nodes.some((entry) => entry.id === 'ticket:t')).toBe(true);
     expect(result).toEqual(expect.objectContaining({ clientId: CLIENT_A, status: 'ready', error: null }));
     expect(ticketsRepo.find).toHaveBeenCalledWith(
-      expect.objectContaining({ select: ['id', 'parentId', 'title', 'longSha', 'status', 'priority'] }),
+      expect.objectContaining({
+        select: { id: true, parentId: true, title: true, longSha: true, status: true, priority: true },
+      }),
     );
   });
 

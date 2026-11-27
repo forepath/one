@@ -1,4 +1,4 @@
-import { HttpEventType, provideHttpClient } from '@angular/common/http';
+import { HttpEventType, provideHttpClient, withXhr } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { encodeAgentHarnessEvent, type AgentHarnessEvent } from '@forepath/shared/shared/util-agent-harness';
@@ -17,7 +17,7 @@ describe('AgentHarnessTransportService (relay)', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         { provide: AGENT_HARNESS_ENVIRONMENT, useValue: { mode: 'relay', relayUrl: '/api/assistant/' } },
       ],
@@ -110,7 +110,7 @@ describe('AgentHarnessTransportService (direct)', () => {
     try {
       TestBed.configureTestingModule({
         providers: [
-          provideHttpClient(),
+          provideHttpClient(withXhr()),
           {
             provide: AGENT_HARNESS_ENVIRONMENT,
             useValue: {

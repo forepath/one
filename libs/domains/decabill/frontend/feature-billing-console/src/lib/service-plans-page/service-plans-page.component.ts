@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -170,6 +170,7 @@ interface ServerTypeProviderGroup {
     InventoryArticleSelectComponent,
   ],
   templateUrl: './service-plans-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./service-plans-page.component.scss'],
 })
 export class ServicePlansPageComponent implements OnInit {

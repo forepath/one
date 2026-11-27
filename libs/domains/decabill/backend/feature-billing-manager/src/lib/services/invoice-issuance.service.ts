@@ -151,7 +151,7 @@ export class InvoiceIssuanceService {
         : await this.documentSettlementService.applyAvailableCustomerCredit(invoiceId, manager, issuedAt);
       const reloaded = await manager
         .getRepository(InvoiceEntity)
-        .findOneOrFail({ where: { id: invoiceId }, relations: ['subscription'] });
+        .findOneOrFail({ where: { id: invoiceId }, relations: { subscription: true } });
 
       return { updated: reloaded, invoiceNumber: allocated, creditApplied: applied };
     });

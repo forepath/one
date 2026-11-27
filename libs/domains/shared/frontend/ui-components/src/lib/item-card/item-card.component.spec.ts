@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FpcItemCardComponent } from './item-card.component';
@@ -6,6 +6,7 @@ import { FpcItemCardComponent } from './item-card.component';
 @Component({
   standalone: true,
   imports: [FpcItemCardComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-item-card [title]="title">
       <span fpcItemCardTitle data-testid="title-extra">extra</span>

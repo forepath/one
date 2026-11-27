@@ -152,7 +152,7 @@ export class KnowledgeTreeService {
       }
 
       visited.add(current);
-      const row = await this.knowledgeNodeRepo.findOne({ where: { id: current }, select: ['parentId'] });
+      const row = await this.knowledgeNodeRepo.findOne({ where: { id: current }, select: { parentId: true } });
 
       current = row?.parentId ?? null;
     }
@@ -187,7 +187,7 @@ export class KnowledgeTreeService {
   private async nextSortOrder(clientId: string, parentId?: string | null): Promise<number> {
     const siblings = await this.knowledgeNodeRepo.find({
       where: { clientId, parentId: parentId ?? null },
-      select: ['sortOrder'],
+      select: { sortOrder: true },
       order: { sortOrder: 'DESC' },
       take: 1,
     });

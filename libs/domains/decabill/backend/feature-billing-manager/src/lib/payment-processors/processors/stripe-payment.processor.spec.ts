@@ -20,9 +20,11 @@ jest.mock('stripe', () => ({
   })),
 }));
 
+import StripeCtor from 'stripe';
+
 import { STRIPE_CHECKOUT_FRAUD_PROTECTION_ENV } from '../stripe-checkout.config';
 
-import { StripePaymentProcessor } from './stripe-payment.processor';
+import { STRIPE_API_VERSION, StripePaymentProcessor } from './stripe-payment.processor';
 
 describe('StripePaymentProcessor', () => {
   let processor: StripePaymentProcessor;
@@ -51,6 +53,14 @@ describe('StripePaymentProcessor', () => {
     } else {
       process.env[STRIPE_CHECKOUT_FRAUD_PROTECTION_ENV] = originalFraudProtection;
     }
+  });
+
+  it('pins the API version the installed SDK was generated for', () => {
+    type StripeModule = { API_VERSION: string; default?: { API_VERSION: string } };
+    const actualModule = jest.requireActual<StripeModule>('stripe');
+
+    expect(STRIPE_API_VERSION).toBe((actualModule.default ?? actualModule).API_VERSION);
+    expect(StripeCtor).toHaveBeenLastCalledWith('sk_test_example', { apiVersion: STRIPE_API_VERSION });
   });
 
   const sessionPayload = {

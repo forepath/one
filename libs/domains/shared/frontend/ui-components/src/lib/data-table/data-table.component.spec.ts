@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { FpcMenuItem } from '../menu/menu.types';
@@ -35,6 +35,7 @@ const rows: Row[] = [
 @Component({
   standalone: true,
   imports: [FpcDataTableComponent, FpcTableCellDirective],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-data-table
       ariaLabel="Resources"
@@ -302,6 +303,7 @@ describe('FpcDataTableComponent', () => {
 @Component({
   standalone: true,
   imports: [FpcDataTableComponent, FpcDataTableFooterDirective],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-data-table
       ariaLabel="Totals"
@@ -377,6 +379,7 @@ describe('FpcDataTableComponent sticky head / foot', () => {
 @Component({
   standalone: true,
   imports: [FpcDataTableComponent, FpcTableRowDetailDirective],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-data-table
       ariaLabel="Lines"
@@ -422,6 +425,7 @@ describe('FpcDataTableComponent row detail', () => {
 @Component({
   standalone: true,
   imports: [FpcDataTableComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<fpc-data-table ariaLabel="Lines" [columns]="columns" [rows]="rows" [searchable]="searchable()" />`,
 })
 class ChooserHostComponent {
@@ -459,6 +463,7 @@ describe('FpcDataTableComponent column chooser placement', () => {
 @Component({
   standalone: true,
   imports: [FpcDataTableComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<fpc-data-table ariaLabel="Lines" [columns]="columns" [rows]="[]" [(query)]="query" emptyIcon="hdd" />`,
 })
 class EmptyHostComponent {
@@ -516,6 +521,7 @@ const STATE_TONE = { ok: 'success', failed: 'danger', pending: 'warning' } as co
 @Component({
   standalone: true,
   imports: [FpcDataTableComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-data-table
       ariaLabel="Things"
@@ -794,6 +800,7 @@ interface LaneRow {
 @Component({
   standalone: true,
   imports: [FpcDataTableComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @for (lane of lanes; track lane) {
       <fpc-data-table
@@ -947,6 +954,7 @@ describe('FpcDataTableComponent stacked + row drag and drop', () => {
 @Component({
   standalone: true,
   imports: [FpcDataTableComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-data-table
       ariaLabel="Kinds"

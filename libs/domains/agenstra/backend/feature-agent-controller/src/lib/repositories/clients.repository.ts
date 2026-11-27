@@ -108,7 +108,7 @@ export class ClientsRepository {
    * @returns Array of client UUIDs
    */
   async findAllIds(): Promise<string[]> {
-    const rows = await this.repository.find({ select: ['id'] });
+    const rows = await this.repository.find({ select: { id: true } });
 
     return rows.map((r) => r.id);
   }
@@ -121,7 +121,7 @@ export class ClientsRepository {
     { id: string; name: string; endpoint: string; authenticationType: AuthenticationType }[]
   > {
     const rows = await this.repository.find({
-      select: ['id', 'name', 'endpoint', 'authenticationType'],
+      select: { id: true, name: true, endpoint: true, authenticationType: true },
     });
 
     return rows.map((r) => ({
@@ -140,7 +140,7 @@ export class ClientsRepository {
   async findIdsByCreatorId(userId: string): Promise<string[]> {
     const rows = await this.repository.find({
       where: { userId },
-      select: ['id'],
+      select: { id: true },
     });
 
     return rows.map((r) => r.id);

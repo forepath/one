@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import {
   AdminUpdatesFacade,
@@ -90,6 +90,7 @@ export function fpcIsContainerHostname(hostname: string | null | undefined): boo
   ],
   templateUrl: './updates-manager.component.html',
   styleUrls: ['./updates-manager.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class UpdatesManagerComponent implements OnInit {

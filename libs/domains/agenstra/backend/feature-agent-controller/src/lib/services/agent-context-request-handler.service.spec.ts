@@ -7,8 +7,6 @@ import {
   AgentContextRequestHandlerService,
 } from './agent-context-request-handler.service';
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- repository / query builder doubles */
-
 function queryBuilder(rows: unknown[]) {
   const qb: any = {
     where: jest.fn().mockReturnThis(),

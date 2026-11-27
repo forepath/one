@@ -84,7 +84,10 @@ export class HostDaemon {
 
     this.guest = connection;
     connection.openOutbound(CONTROL_STREAM);
-    socket.on('data', (chunk: Buffer) => connection.receive(chunk));
+    // Both transport types are event emitters; @types/node 26 no longer unifies their typed .on overloads.
+    const events: NodeJS.EventEmitter = socket;
+
+    events.on('data', (chunk: Buffer) => connection.receive(chunk));
   }
 
   /** The guest transport closed (QEMU exited). Fails everything still open. */

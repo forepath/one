@@ -10,6 +10,7 @@ import {
   inject,
   signal,
   untracked,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -141,6 +142,7 @@ type BulkTone = 'success' | 'warning' | 'danger';
     WorkspaceSwitchTableComponent,
   ],
   templateUrl: './deployments-board.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./deployments-board.component.scss'],
 })
 export class DeploymentsBoardComponent implements AfterViewInit {

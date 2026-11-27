@@ -11,7 +11,6 @@ jest.mock('node:dns', () => ({
   },
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const dns = require('node:dns') as { promises: { lookup: jest.Mock } };
 
 describe('parseAllowedHosts', () => {

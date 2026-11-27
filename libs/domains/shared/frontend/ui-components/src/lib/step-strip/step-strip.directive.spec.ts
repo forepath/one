@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { FpcStepStripComponent } from './step-strip.component';
@@ -7,6 +7,7 @@ import { FpcStepStripDirective } from './step-strip.directive';
 @Component({
   standalone: true,
   imports: [FpcStepStripDirective],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <ol fpcStepStrip>
       @for (s of steps; track s; let i = $index) {

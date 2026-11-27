@@ -26,21 +26,22 @@ export async function domainGenerator(tree: Tree, options: DomainGeneratorSchema
     return json;
   });
 
-  updateJson(tree, '.eslintrc.json', (json) => {
-    const depConstraints = json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints || [];
-    const domainTag = `domain:${options.name}`;
+  updateJson(
+    tree,
+    'eslint.dep-constraints.json',
+    (depConstraints: { sourceTag: string; onlyDependOnLibsWithTags: string[] }[]) => {
+      const domainTag = `domain:${options.name}`;
 
-    if (!depConstraints.some((constraint) => constraint.sourceTag === domainTag)) {
-      depConstraints.push({
-        sourceTag: domainTag,
-        onlyDependOnLibsWithTags: [domainTag, 'domain:shared'],
-      });
-    }
+      if (!depConstraints.some((constraint) => constraint.sourceTag === domainTag)) {
+        depConstraints.push({
+          sourceTag: domainTag,
+          onlyDependOnLibsWithTags: [domainTag, 'domain:shared'],
+        });
+      }
 
-    json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints = depConstraints;
-
-    return json;
-  });
+      return depConstraints;
+    },
+  );
 
   await formatFiles(tree);
 }

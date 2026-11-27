@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -68,6 +68,7 @@ function passwordsMatchValidator(control: AbstractControl): ValidationErrors | n
   ],
   templateUrl: './security-settings.component.html',
   styleUrls: ['./security-settings.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class IdentitySecuritySettingsComponent implements OnInit {

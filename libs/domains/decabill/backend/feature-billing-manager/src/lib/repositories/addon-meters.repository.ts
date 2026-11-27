@@ -14,7 +14,7 @@ export class AddonMetersRepository {
   async findByAddonId(addonId: string): Promise<AddonMeterEntity[]> {
     return await this.repository.find({
       where: { addonId },
-      relations: ['meter'],
+      relations: { meter: true },
       order: { createdAt: 'ASC' },
     });
   }
@@ -26,7 +26,7 @@ export class AddonMetersRepository {
 
     return await this.repository.find({
       where: { addonId: In(addonIds) },
-      relations: ['meter'],
+      relations: { meter: true },
       order: { createdAt: 'ASC' },
     });
   }
@@ -34,7 +34,7 @@ export class AddonMetersRepository {
   async findByAddonAndMeter(addonId: string, meterId: string): Promise<AddonMeterEntity | null> {
     return await this.repository.findOne({
       where: { addonId, meterId },
-      relations: ['meter'],
+      relations: { meter: true },
     });
   }
 

@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+  ViewChild,
+  viewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
@@ -67,6 +77,7 @@ import { CONSOLE_MODE_HOME, isAppsAdminUrl, nextConsoleMode, type ConsoleMode } 
   ],
   styleUrls: ['./container.component.scss'],
   templateUrl: './container.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class BillingConsoleContainerComponent implements OnInit {

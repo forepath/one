@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { FpcSectionColumnComponent } from './section-column.component';
@@ -6,6 +6,7 @@ import { FpcSectionColumnComponent } from './section-column.component';
 @Component({
   standalone: true,
   imports: [FpcSectionColumnComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-section-column class="sized" [style.flex-basis.px]="width()" />
     <fpc-section-column class="grown" [grow]="grow()" />

@@ -1,6 +1,9 @@
-import { createPublicKey, type JsonWebKey, type KeyObject } from 'node:crypto';
+import { createPublicKey, type KeyObject, type webcrypto } from 'node:crypto';
 
 import { type OidcFetch, oidcFetchJson } from './oidc-http';
+
+// @types/node 26 only exposes the JWK type through webcrypto.
+type JsonWebKey = webcrypto.JsonWebKey;
 
 interface Jwk extends JsonWebKey {
   kid?: string;

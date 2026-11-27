@@ -10,6 +10,7 @@ import {
   signal,
   untracked,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -305,6 +306,7 @@ type AdminBillingPerspective = 'customer' | 'supplier';
   ],
   providers: [DatePipe],
   templateUrl: './admin-billing-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./admin-billing-page.component.scss'],
 })
 export class AdminBillingPageComponent implements OnInit {

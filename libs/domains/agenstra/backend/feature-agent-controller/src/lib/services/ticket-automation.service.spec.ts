@@ -314,8 +314,8 @@ describe('TicketAutomationService', () => {
     it('refreshes approval baseline after restoring ticket status when automation was approved', async () => {
       const postCancelUpdatedAt = new Date('2026-04-17T20:00:00.000Z');
 
-      ticketRepo.findOne.mockImplementation((opts: { select?: string[] }) => {
-        if (opts?.select?.length === 1 && opts.select[0] === 'updatedAt') {
+      ticketRepo.findOne.mockImplementation((opts: { select?: Record<string, boolean> }) => {
+        if (opts?.select?.updatedAt === true && Object.keys(opts.select).length === 1) {
           return Promise.resolve({ updatedAt: postCancelUpdatedAt });
         }
 

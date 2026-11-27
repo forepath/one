@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FpcSidebarPopoverComponent } from '../sidebar-popover/sidebar-popover.component';
@@ -8,6 +8,7 @@ import { fpcReadSidebarCollapsed, fpcWriteSidebarCollapsed, FpcSidebarComponent 
 @Component({
   standalone: true,
   imports: [FpcSidebarComponent, FpcSidebarPopoverComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <fpc-sidebar storageKey="test-sidebar" collapseLabel="Einklappen" expandLabel="Ausklappen">
       <a href="#/one" class="sidebar__item" data-testid="link"

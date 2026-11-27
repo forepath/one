@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, signal, viewChild, ChangeDetectionStrategy } from '@angular/core';
 import { AgentConfigEditorComponent } from '@forepath/agenstra/frontend/feature-agent-config';
 import { FpcButtonComponent, FpcModalComponent, FpcPageHeaderComponent } from '@forepath/shared/frontend/ui-components';
 
@@ -72,6 +72,7 @@ import { LayerFileIdeComponent } from '../layer-file-ide/layer-file-ide.componen
       </fpc-modal>
     }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `
       :host {

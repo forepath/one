@@ -308,7 +308,7 @@ export class AgenstraSearchIndexService {
 
     const rows = await this.statisticsClientsRepo.find({
       where: { id: In(statisticsClientIds) },
-      select: ['id', 'originalClientId'],
+      select: { id: true, originalClientId: true },
     });
 
     return new Map(rows.map((row) => [row.id, row.originalClientId]));
@@ -514,7 +514,7 @@ export class AgenstraSearchIndexService {
 
   private async reindexDeploymentWorkflows(offset: number, limit: number): Promise<AgenstraReindexBatchResult> {
     const rows = await this.deploymentWorkflowsRepo.find({
-      relations: ['connection'],
+      relations: { connection: true },
       order: { createdAt: 'ASC', id: 'ASC' },
       skip: offset,
       take: limit,
@@ -530,7 +530,7 @@ export class AgenstraSearchIndexService {
 
   private async reindexDeploymentRuns(offset: number, limit: number): Promise<AgenstraReindexBatchResult> {
     const rows = await this.deploymentRunsRepo.find({
-      relations: ['workflowEntity'],
+      relations: { workflowEntity: true },
       order: { createdAt: 'ASC', id: 'ASC' },
       skip: offset,
       take: limit,

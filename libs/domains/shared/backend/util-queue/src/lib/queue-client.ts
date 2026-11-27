@@ -32,7 +32,6 @@ export function createBullMqConnection(
   }
 
   // Loaded lazily so ioredis deployments never load the native GLIDE binding.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const glide = require('@valkey/valkey-glide') as GlideModule;
   const client = createValkeyGlideClient(
     glide.GlideClient.createClient({

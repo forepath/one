@@ -1,5 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal, type WritableSignal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+  type WritableSignal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -134,6 +143,7 @@ const MIN_RANDOM_DEFAULT_LENGTH = 21;
     FpcPageHeaderComponent,
   ],
   templateUrl: './cloud-init-configs-page.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./cloud-init-configs-page.component.scss'],
 })
 export class CloudInitConfigsPageComponent implements OnInit {

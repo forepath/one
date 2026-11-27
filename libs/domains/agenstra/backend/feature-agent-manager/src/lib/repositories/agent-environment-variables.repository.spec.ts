@@ -108,7 +108,7 @@ describe('AgentEnvironmentVariablesRepository', () => {
         take: 50,
         skip: 0,
         order: { createdAt: 'ASC' },
-        relations: ['agent'],
+        relations: { agent: true },
       });
     });
     it('should use default pagination values', async () => {
@@ -123,7 +123,7 @@ describe('AgentEnvironmentVariablesRepository', () => {
         take: 50,
         skip: 0,
         order: { createdAt: 'ASC' },
-        relations: ['agent'],
+        relations: { agent: true },
       });
     });
   });
@@ -172,7 +172,7 @@ describe('AgentEnvironmentVariablesRepository', () => {
         take: 50,
         skip: 0,
         order: { createdAt: 'ASC' },
-        relations: ['agent'],
+        relations: { agent: true },
       });
     });
 
@@ -187,7 +187,7 @@ describe('AgentEnvironmentVariablesRepository', () => {
         take: 50,
         skip: 0,
         order: { createdAt: 'ASC' },
-        relations: ['agent'],
+        relations: { agent: true },
       });
     });
   });

@@ -423,14 +423,12 @@ export class LayeredSecurityPoliciesAndEgressEvents1792000000000 implements Migr
       }
     }
 
-    // eslint-disable-next-line no-console
     console.warn(
       '[migration] Legacy filter rules moved to the layered "Message filters" configuration. Semantics changed: ' +
         'the most restrictive outcome now wins (drop > replace > flag) instead of the first matching rule by priority.',
     );
 
     if (skipped.length > 0) {
-      // eslint-disable-next-line no-console
       console.warn(
         `[migration] ${skipped.length} legacy filter rule(s) were not migrated (invalid regex, unsupported flags or ` +
           `catastrophic-backtracking risk); recreate them manually if still needed:\n  ${skipped.join('\n  ')}`,
